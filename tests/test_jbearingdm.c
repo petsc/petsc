@@ -47,7 +47,6 @@ typedef struct {
 
 
 /* User-defined routines found in this file */
-//static PetscErrorCode AppCtxInitialize(void *ptr);
 static PetscErrorCode FormInitialGuess(TaoDM, Vec);
 static PetscErrorCode FormBounds(TaoDM, Vec, Vec);
 static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal*, Vec, void*);
@@ -68,12 +67,10 @@ static PetscErrorCode WholeJBearHessian(TAO_APPLICATION,DA,Vec,Mat,void*);
 int main(int argc, char **argv) {
   PetscErrorCode       ierr;
   PetscInt             Nx,Ny;
-  //PetscReal          ff,gnorm;
   DM              dm;
   PetscBool       flg;
   AppCtx          user;                    /* user-defined work context */
   TaoDM           *taodm;                     /* TaoSolver solver context */
-  //TaoSolverTerminationReason reason;
 
     /* Initialize TAO */
   PetscInitialize(&argc, &argv, (char *)0, help);
@@ -106,9 +103,11 @@ int main(int argc, char **argv) {
 
 
   ierr = TaoDMSetLocalObjectiveAndGradientRoutine(taodm,FormFunctionGradientLocal); CHKERRQ(ierr);
-//  ierr = TaoDMSetLocalHessianRoutine(taodm,FormHessianLocal); CHKERRQ(ierr);
-  //ierr = TaoDMSetObjectiveAndGradientRoutine(taodm,FormFunctionGradient); CHKERRQ(ierr);
-  //ierr = TaoDMSetHessianRoutine(taodm,FormHessian); CHKERRQ(ierr);
+  /*  
+      ierr = TaoDMSetLocalHessianRoutine(taodm,FormHessianLocal); CHKERRQ(ierr);
+      ierr = TaoDMSetObjectiveAndGradientRoutine(taodm,FormFunctionGradient); CHKERRQ(ierr);
+      ierr = TaoDMSetHessianRoutine(taodm,FormHessian); CHKERRQ(ierr);
+  */
   ierr = TaoDMSetInitialGuessRoutine(taodm,FormInitialGuess); CHKERRQ(ierr);
   ierr = TaoDMSetVariableBoundsRoutine(taodm,FormBounds); CHKERRQ(ierr);
   ierr = TaoDMSetPreLevelMonitor(taodm,Monitor,PETSC_NULL); CHKERRQ(ierr);
@@ -623,7 +622,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
 	 tt+=v[kk]*x[col[kk]];
        }
        row=(j-ys)*xm + (i-xs);
-       g[row]=tt - user->ecc*hxhy*sinxi; // B 
+       g[row]=tt - user->ecc*hxhy*sinxi; /* B  */
        floc-=user->ecc*hxhy*sinxi * x[row];
      }
 
@@ -639,7 +638,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   ierr = VecDot(X,G,&f1); CHKERRQ(ierr);
   *fcn = f1/2.0 + f2;
   
-  ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr); //TODO
+  ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 
 }

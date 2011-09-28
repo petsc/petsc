@@ -11,7 +11,6 @@ EXTERN_C_END
 
 extern PetscBool TaoLineSearchInitialized;
 
-//PetscClassId TAOLINESEARCH_CLASSID=0;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)

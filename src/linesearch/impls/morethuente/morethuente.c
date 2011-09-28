@@ -225,9 +225,9 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
 
       if (PetscIsInfOrNanReal(*f) || PetscIsInfOrNanReal(dg)) {
-	// User provided compute function generated Not-a-Number, assume 
-	// domain violation and set function value and directional
-	// derivative to infinity.
+	/* User provided compute function generated Not-a-Number, assume 
+	 domain violation and set function value and directional
+	 derivative to infinity. */
 	*f = TAO_INFINITY;
 	dg = TAO_INFINITY;
       }
@@ -345,7 +345,7 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
     ctx->infoc=1;
     ls->data = (void*)ctx;
     ls->initstep = 1.0;
-    ls->ops->setup=0; //TaoLineSearchSetup_MT;
+    ls->ops->setup=0; 
     ls->ops->apply=TaoLineSearchApply_MT;
     ls->ops->view =TaoLineSearchView_MT;
     ls->ops->destroy=TaoLineSearchDestroy_MT;
@@ -432,20 +432,20 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
 
   PetscFunctionBegin;
 
-  // Check the input parameters for errors
+  /* Check the input parameters for errors */
   mtP->infoc = 0;
   if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(PETSC_COMM_SELF,1,"bad stp in bracket");
   if (*dx * (*stp-*stx) >= 0.0) SETERRQ(PETSC_COMM_SELF,1,"dx * (stp-stx) >= 0.0");
   if (ls->stepmax < ls->stepmin) SETERRQ(PETSC_COMM_SELF,1,"stepmax > stepmin");
 
-  // Determine if the derivatives have opposite sign */
+  /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx / PetscAbsReal(*dx));
 
   if (*fp > *fx) {
-    // Case 1: a higher function value.
-    // The minimum is bracketed. If the cubic step is closer
-    // to stx than the quadratic step, the cubic step is taken,
-    // else the average of the cubic and quadratic steps is taken.
+    /* Case 1: a higher function value.
+     The minimum is bracketed. If the cubic step is closer
+     to stx than the quadratic step, the cubic step is taken,
+     else the average of the cubic and quadratic steps is taken. */
 
     mtP->infoc = 1;
     bound = 1;
@@ -470,10 +470,10 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     mtP->bracket = 1;
   }
   else if (sgnd < 0.0) {
-    // Case 2: A lower function value and derivatives of
-    // opposite sign. The minimum is bracketed. If the cubic
-    // step is closer to stx than the quadratic (secant) step,
-    // the cubic step is taken, else the quadratic step is taken.
+    /* Case 2: A lower function value and derivatives of
+     opposite sign. The minimum is bracketed. If the cubic
+     step is closer to stx than the quadratic (secant) step,
+     the cubic step is taken, else the quadratic step is taken. */
 
     mtP->infoc = 2;
     bound = 0;
@@ -497,14 +497,14 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     mtP->bracket = 1;
   }
   else if (PetscAbsReal(*dp) < PetscAbsReal(*dx)) {
-    // Case 3: A lower function value, derivatives of the
-    // same sign, and the magnitude of the derivative decreases.
-    // The cubic step is only used if the cubic tends to infinity
-    // in the direction of the step or if the minimum of the cubic
-    // is beyond stp. Otherwise the cubic step is defined to be
-    // either stepmin or stepmax. The quadratic (secant) step is also
-    // computed and if the minimum is bracketed then the the step
-    // closest to stx is taken, else the step farthest away is taken.
+    /* Case 3: A lower function value, derivatives of the
+     same sign, and the magnitude of the derivative decreases.
+     The cubic step is only used if the cubic tends to infinity
+     in the direction of the step or if the minimum of the cubic
+     is beyond stp. Otherwise the cubic step is defined to be
+     either stepmin or stepmax. The quadratic (secant) step is also
+     computed and if the minimum is bracketed then the the step
+     closest to stx is taken, else the step farthest away is taken. */
 
     mtP->infoc = 3;
     bound = 1;
@@ -512,8 +512,8 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     s = PetscMax(PetscAbsReal(theta),PetscAbsReal(*dx));
     s = PetscMax(s,PetscAbsReal(*dp));
 
-    // The case gamma1 = 0 only arises if the cubic does not tend
-    // to infinity in the direction of the step.
+    /* The case gamma1 = 0 only arises if the cubic does not tend
+       to infinity in the direction of the step. */
     gamma1 = s*sqrt(PetscMax(0.0,pow(theta/s,2.0) - (*dx/s)*(*dp/s)));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
@@ -542,10 +542,10 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     }
   }
   else {
-    // Case 4: A lower function value, derivatives of the
-    // same sign, and the magnitude of the derivative does
-    // not decrease. If the minimum is not bracketed, the step
-    // is either stpmin or stpmax, else the cubic step is taken.
+    /* Case 4: A lower function value, derivatives of the
+       same sign, and the magnitude of the derivative does
+       not decrease. If the minimum is not bracketed, the step
+       is either stpmin or stpmax, else the cubic step is taken. */
 
     mtP->infoc = 4;
     bound = 0;
@@ -571,8 +571,8 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     }
   }
   
-  // Update the interval of uncertainty.  This update does not
-  // depend on the new step or the case analysis above.
+  /* Update the interval of uncertainty.  This update does not
+     depend on the new step or the case analysis above. */
 
   if (*fp > *fx) {
     *sty = *stp;
@@ -590,7 +590,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     *dx = *dp;
   }
   
-  // Compute the new step and safeguard it.
+  /* Compute the new step and safeguard it. */
   stpf = PetscMin(ls->stepmax,stpf);
   stpf = PetscMax(ls->stepmin,stpf);
   *stp = stpf;

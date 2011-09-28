@@ -145,7 +145,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
     nm->indices[i] = i;
   }
   
-  // Xbar  = (Sum of all simplex vectors - worst vector)/N
+  /*  Xbar  = (Sum of all simplex vectors - worst vector)/N */
   ierr = NelderMeadSort(nm); CHKERRQ(ierr);
   ierr = VecSet(Xbar,0.0); CHKERRQ(ierr);
   for (i=0;i<nm->N;i++) {
@@ -161,20 +161,20 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
 
     
     
-    //x(mu) = (1 + mu)Xbar - mu*X_N+1
+    /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */
     ierr = VecAXPBYPCZ(Xmur,1+nm->mu_r,-nm->mu_r,0,Xbar,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
     ierr = TaoComputeObjective(tao,Xmur,&fr); CHKERRQ(ierr);
 
 
     if (nm->f_values[nm->indices[0]] <= fr && fr < nm->f_values[nm->indices[nm->N-1]]) {
-      // reflect
+      /*  reflect */
       nm->nreflect++;
       ierr = PetscInfo(0,"Reflect\n"); CHKERRQ(ierr);
       ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr); CHKERRQ(ierr);
     }
 
     else if (fr < nm->f_values[nm->indices[0]]) {
-      // expand
+      /*  expand */
       nm->nexpand++;
       ierr = PetscInfo(0,"Expand\n"); CHKERRQ(ierr);
       ierr = VecAXPBYPCZ(Xmue,1+nm->mu_e,-nm->mu_e,0,Xbar,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
       }
 
     } else if (nm->f_values[nm->indices[nm->N-1]] <= fr && fr < nm->f_values[nm->indices[nm->N]]) {
-      //outside contraction
+      /* outside contraction */
       nm->noutcontract++;
       ierr = PetscInfo(0,"Outside Contraction\n"); CHKERRQ(ierr);
       ierr = VecAXPBYPCZ(Xmuc,1+nm->mu_oc,-nm->mu_oc,0,Xbar,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
@@ -197,7 +197,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
       }	else 
 	shrink=1;
     } else {
-      //inside contraction
+      /* inside contraction */
       nm->nincontract++;
       ierr = PetscInfo(0,"Inside Contraction\n"); CHKERRQ(ierr);
       ierr = VecAXPBYPCZ(Xmuc,1+nm->mu_ic,-nm->mu_ic,0,Xbar,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
@@ -219,10 +219,10 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
       }
       ierr = VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]); CHKERRQ(ierr);
 
-      // Add last vector's fraction of average
+      /*  Add last vector's fraction of average */
       ierr = VecAXPY(Xbar,nm->oneOverN,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
       ierr = NelderMeadSort(nm);
-      // Subtract new last vector from average
+      /*  Subtract new last vector from average */
       ierr = VecAXPY(Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
     }
     
@@ -298,14 +298,14 @@ PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, Pe
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  // Add new vector's fraction of average
+  /*  Add new vector's fraction of average */
   ierr = VecAXPY(nm->Xbar,nm->oneOverN,Xmu); CHKERRQ(ierr);
   ierr = VecCopy(Xmu,nm->simplex[index]); CHKERRQ(ierr);
   nm->f_values[index] = f;
 
   ierr = NelderMeadSort(nm);
 
-  // Subtract last vector from average
+  /*  Subtract last vector from average */
   ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

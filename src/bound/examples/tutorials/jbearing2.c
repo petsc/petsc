@@ -177,8 +177,6 @@ int main( int argc, char **argv )
   /* Solve the bound constrained problem */
   info = TaoSolve(tao); CHKERRQ(info);
 
-  //info = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
-
   info = TaoGetTerminationReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");

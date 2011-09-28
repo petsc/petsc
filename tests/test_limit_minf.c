@@ -49,7 +49,6 @@ int main(int argc,char **argv)
   AppCtx     user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
-  //PetscInitialize(&argc,&argv,(char *)0,help);
   TaoInitialize(&argc,&argv,(char*)0,help);
   info = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(info);
   info = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(info);
@@ -97,7 +96,6 @@ int main(int argc,char **argv)
 
   /* Get termination information */
   info = TaoGetTerminationReason(tao,&reason); CHKERRQ(info);
-  // info = TaoView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
   if (reason <= 0)
     PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");
 
@@ -110,7 +108,6 @@ int main(int argc,char **argv)
   info = MatDestroy(&H); CHKERRQ(info);
 
   TaoFinalize();
-//  PetscFinalize();
 
   return 0;
 }

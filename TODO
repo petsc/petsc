@@ -1,3 +1,13 @@
+options
+  -tao_max_funcs ->
+  -tao_max_its -> -tao_max_it
+  -tao_ls_maxfev -> -tao_ls_max_funcs
+  -help option
+    display more options
+    not every iteration!
+
+stop in blmvm if line search failed
+
 update manual
   add pounders section
 
@@ -8,12 +18,8 @@ jacobian in leastsquares
 
 One Library (libtaosolver)
 
-C-style comments
-
 Check documentation
   header /*I 
-  TAO_SOLVER
-  TAO_NULL
   Examples
   html
 
@@ -23,12 +29,6 @@ add web pages to repository, not distribution
 Examples/tests
   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
   remake output
-  Correct list of routines used in examples
-  Test src tree examples
-  Separate test examples from run tests
-
-TaoSolver -> Tao
-
 
 Test on arches
   Visual Studio

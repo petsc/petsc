@@ -166,13 +166,6 @@ int main( int argc, char **argv )
   /* Check for any tao command line options */
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
-  /* Limit the number of iterations in the KSP linear solver */
-  //ierr = TaoAppGetKSP(minsurfapp,&ksp); CHKERRQ(ierr);
-  //if (ksp) {                                              /* Modify the PETSc KSP structure */
-//    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my);
-//    CHKERRQ(ierr);
-//  }
-
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
@@ -181,7 +174,7 @@ int main( int argc, char **argv )
   /* Get information on termination */
   ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0 ){
-      PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");//, adjust some parameters, or check the function evaluation routines\n");
+      PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");
   }
 
 
@@ -699,7 +692,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       xt=l;
       limit=lsize;
       boundary=user->left;
-    } else { //if (j==3)
+    } else { /* if (j==3) */
       yt=b+hy*ys;
       xt=r;
       limit=rsize;
@@ -726,7 +719,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
 	xt=xt+hx;
-      } else { // if (j==2 || j==3)
+      } else { /*  if (j==2 || j==3) */
 	yt=yt+hy;
       }
       

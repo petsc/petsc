@@ -230,7 +230,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
   /* Evaluate Lagrangian function and gradient */
   /* p0 */
-  ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); // Initial guess in CG
+  ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
   if (tao->jacobian_state_inv) {
     ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
   } else {
@@ -278,7 +278,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
        point is the Newton direction */
     
     /* Solve r = A\con */
-    ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); // Initial guess in CG
+    ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
     if (tao->jacobian_state_inv) {
       ierr = MatMult(tao->jacobian_state_inv, tao->constraints, lclP->r); CHKERRQ(ierr);
     } else {
@@ -356,7 +356,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     }
 
 
-    // TODO: use a heuristic to choose how many iterations should be performed within phase 2
+    /* TODO: use a heuristic to choose how many iterations should be performed within phase 2 */
     for (phase2_iter=0; phase2_iter<lclP->phase2_niter; phase2_iter++){
       /* We now minimize the objective function starting from the fraction of
 	 the Newton point accepted by applying one step of a reduced-space
@@ -377,7 +377,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Compute multipliers */
       /* p1 */
-      ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); // Initial guess in CG
+      ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       if (tao->jacobian_state_inv) {
 	ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
       } else {
@@ -405,7 +405,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Recover the full space direction */ 
       ierr = MatMult(tao->jacobian_design,lclP->s,lclP->WU); CHKERRQ(ierr);
-      ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); // Initial guess in CG
+      ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       if (tao->jacobian_state_inv) {
 	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r); CHKERRQ(ierr);
       } else {

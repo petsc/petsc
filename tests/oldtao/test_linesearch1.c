@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
     info = TaoAppSetInitialSolutionVec(app,x); CHKERRQ(info);
 
     info = TaoCreateMoreThuenteLineSearch(tao,0.0001, 0.9); CHKERRQ(info);
-//    info = TaoCreateUnitLineSearch(tao); CHKERRQ(info);
     info = TaoSetOptions(app,tao); CHKERRQ(info);
     info = TaoSetApplication(tao,app); CHKERRQ(info);
     info = TaoLineSearchSetUp(tao); CHKERRQ(info);

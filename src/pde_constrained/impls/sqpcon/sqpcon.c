@@ -2,7 +2,6 @@
 #include "src/matrix/lmvmmat.h"
 #include "src/matrix/approxmat.h"
 #include "src/matrix/submatfree.h"
-//static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_SQPCON"
@@ -95,11 +94,6 @@ static PetscErrorCode TaoSetup_SQPCON(TaoSolver tao)
   ierr = VecGetSize(tao->solution, &sqpconP->n); CHKERRQ(ierr);
   ierr = VecGetSize(tao->constraints, &sqpconP->m); CHKERRQ(ierr);
 
-  //ierr = VecGetOwnershipRange(tao->solution,&lo,&hi); CHKERRQ(ierr);
-  //ierr = ISComplement(tao->state_is,lo,hi,&tao->design_is); CHKERRQ(ierr);
-
-  //ierr = VecGetOwnershipRange(tao->constraints,&lo,&hi); CHKERRQ(ierr);
-  //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo,1,&sqpconP->UIM);
 
   IS is_state, is_design;
   ierr = VecCreate(((PetscObject)tao)->comm,&sqpconP->U); CHKERRQ(ierr);
@@ -151,7 +145,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal step=1.0,f,fm, fold;
   PetscReal cnorm, mnorm;
-  PetscBool use_update=PETSC_TRUE; // don't update Q if line search failed
+  PetscBool use_update=PETSC_TRUE; /*  don't update Q if line search failed */
   
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -177,8 +171,6 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
   ierr = VecScatterEnd(sqpconP->design_scatter, tao->gradient, sqpconP->GV, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient, NORM_2, &mnorm); CHKERRQ(ierr);
 
-  //ierr = MatMultTranspose(tao->jacobian_state_inv,sqpconP->GU,sqpconP->LM); CHKERRQ(ierr); // ***
-  
   /* Evaluate constraint norm */
   ierr = VecNorm(tao->constraints, NORM_2, &cnorm); CHKERRQ(ierr);
   
@@ -189,8 +181,6 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
 
 
     /* Solve tbar = -A\t (t is constraints vector) */
-    //ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, sqpconP->statematflag); CHKERRQ(ierr);
-    //ierr = KSPSolve(tao->ksp,  tao->constraints, sqpconP->Tbar); CHKERRQ(ierr);
     ierr = MatMult(tao->jacobian_state_inv, tao->constraints, sqpconP->Tbar); CHKERRQ(ierr);
     ierr = VecScale(sqpconP->Tbar, -1.0); CHKERRQ(ierr);
 
@@ -202,9 +192,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
       ierr = VecCopy(sqpconP->Tbar, sqpconP->WV); CHKERRQ(ierr);
     }
     ierr = VecAXPY(sqpconP->WV,1.0,sqpconP->GU); CHKERRQ(ierr);
-    //VecView(sqpconP->LM,PETSC_VIEWER_STDOUT_WORLD); abort();
-    
-    //ierr = KSPSolve(tao->ksp, sqpconP->WV, sqpconP->aqwac); CHKERRQ(ierr);
+
     ierr = MatMultTranspose(tao->jacobian_state_inv, sqpconP->WV, sqpconP->aqwac); CHKERRQ(ierr);
 
     /* Reduced Gradient dbar = d -  B^t * aqwac */
@@ -221,7 +209,6 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
 
     /* Backsolve for u =  A\(g - B*dv)  = tbar - A\(B*dv)*/
     ierr = MatMult(tao->jacobian_design, sqpconP->DV, sqpconP->WL); CHKERRQ(ierr);
-    //ierr = KSPSolve(tao->ksp, sqpconP->WL, sqpconP->DU); CHKERRQ(ierr);
     ierr = MatMult(tao->jacobian_state_inv, sqpconP->WL, sqpconP->DU); CHKERRQ(ierr);
     ierr = VecScale(sqpconP->DU, -1.0); CHKERRQ(ierr); 
     ierr = VecAXPY(sqpconP->DU, 1.0, sqpconP->Tbar); CHKERRQ(ierr);
@@ -283,8 +270,6 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
       ierr = MatApproxUpdate(sqpconP->Q,sqpconP->U,sqpconP->GU); CHKERRQ(ierr);
     }
 
-    //ierr = MatMultTranspose(tao->jacobian_state_inv,sqpconP->GU,sqpconP->LM); CHKERRQ(ierr); // ***
-    
     ierr = VecNorm(sqpconP->GL, NORM_2, &mnorm); CHKERRQ(ierr);
 
     /* Evaluate constraint norm */
@@ -326,20 +311,12 @@ PetscErrorCode TaoCreate_SQPCON(TaoSolver tao)
   tao->grtol=1e-4;
   
 
-  //sqpconP->subset_type=SQPCON_SUBSETes_SUBMAT;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
 
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao); CHKERRQ(ierr);
 
-    //SetObjectiveAndGradient(tao->linesearch,SQPCONObjectiveAndGradient, tao); CHKERRQ(ierr);
-
-
-  //ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
-
-  //ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 
 }
@@ -353,22 +330,17 @@ static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscR
 {
   TaoSolver tao = (TaoSolver)ptr;
   TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
-  //PetscReal lmh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TaoComputeObjectiveAndGradient(tao,X,f,G); CHKERRQ(ierr);
   ierr = TaoComputeConstraints(tao,X,tao->constraints); CHKERRQ(ierr);
-  //ierr = TaoComputeJacobianState(tao,X,&tao->jacobian_state,&tao->jacobian_state_pre,&sqpconP->statematflag); CHKERRQ(ierr);
-  //ierr = TaoComputeJacobianDesign(tao,X,&tao->jacobian_design,&tao->jacobian_design_pre,&sqpconP->designmatflag); CHKERRQ(ierr);
 
-  //ierr = VecDot(tao->constraints,sqpconP->LM,&lmh); CHKERRQ(ierr);
-
-  // *f -= lmh;
+  /*  *f -= lmh; */
   
-  // Gradient of Lagrangian GL = G - J' * lamda 
-  //      WU = A' * WL
-  //      WV = B' * WL 
+  /*  Gradient of Lagrangian GL = G - J' * lamda  */
+  /*       WU = A' * WL */
+  /*       WV = B' * WL  */
   ierr = MatMultTranspose(tao->jacobian_state,sqpconP->LM,sqpconP->WU); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian_design,sqpconP->LM,sqpconP->WV); CHKERRQ(ierr);
   

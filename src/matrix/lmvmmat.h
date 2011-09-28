@@ -32,25 +32,25 @@ typedef struct{
     PetscInt scaleType;
     PetscInt rScaleType;
     
-    PetscReal s_alpha;	// Factor for scalar scaling
-    PetscReal r_alpha;	// Factor on scalar for rescaling diagonal matrix
-    PetscReal r_beta;	// Factor on diagonal for rescaling diagonal matrix
-    PetscReal mu;		// Factor for using historical information
-    PetscReal nu;		// Factor for using historical information
-    PetscReal phi;		// Factor for Broyden scaling
+    PetscReal s_alpha;	/*  Factor for scalar scaling */
+    PetscReal r_alpha;	/*  Factor on scalar for rescaling diagonal matrix */
+    PetscReal r_beta;	/*  Factor on diagonal for rescaling diagonal matrix */
+    PetscReal mu;		/*  Factor for using historical information */
+    PetscReal nu;		/*  Factor for using historical information */
+    PetscReal phi;		/*  Factor for Broyden scaling */
 
-  PetscInt scalar_history;	// Amount of history to keep for scalar scaling
-  PetscReal *yy_history;	// Past information for scalar scaling
-  PetscReal *ys_history;	// Past information for scalar scaling
-  PetscReal *ss_history;	// Past information for scalar scaling
+  PetscInt scalar_history;	/*  Amount of history to keep for scalar scaling */
+  PetscReal *yy_history;	/*  Past information for scalar scaling */
+  PetscReal *ys_history;	/*  Past information for scalar scaling */
+  PetscReal *ss_history;	/*  Past information for scalar scaling */
 
-  PetscInt rescale_history;  // Amount of history to keep for rescaling diagonal
-  PetscReal *yy_rhistory;	// Past information for scalar rescaling
-  PetscReal *ys_rhistory;	// Past information for scalar rescaling
-  PetscReal *ss_rhistory;	// Past information for scalar rescaling
+  PetscInt rescale_history;  /*  Amount of history to keep for rescaling diagonal */
+  PetscReal *yy_rhistory;	/*  Past information for scalar rescaling */
+  PetscReal *ys_rhistory;	/*  Past information for scalar rescaling */
+  PetscReal *ss_rhistory;	/*  Past information for scalar rescaling */
 
-  PetscReal delta_max;	// Maximum value for delta
-  PetscReal delta_min;	// Minimum value for delta
+  PetscReal delta_max;	/*  Maximum value for delta */
+  PetscReal delta_min;	/*  Minimum value for delta */
 
   PetscInt lmnow;
   PetscInt iter;
@@ -83,7 +83,6 @@ typedef struct{
 
 } MatLMVMCtx;
 
-//typedef  struct _p_MatLMVMCtx* MatLMVMCtx;
 
 extern PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 

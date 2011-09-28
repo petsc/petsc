@@ -1,3 +1,5 @@
+ msa_plate
+ msa_plate
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   1, Function value 1.57666, Residual: 0.422933 
 iter =   2, Function value 1.53299, Residual: 0.282673 
@@ -8,5 +10,3 @@ iter =   6, Function value 1.50675, Residual: 0.040162
 iter =   7, Function value 1.50598, Residual: 0.0532671 
 iter =   8, Function value 1.50576, Residual: 0.0271325 
 iter =   9, Function value 1.50568, Residual: 0.00807937 
- msa_plate
- msa_plate

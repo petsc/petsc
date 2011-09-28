@@ -28,7 +28,7 @@ TaoSolver: 3 MPI processes
     type: stcg
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=2.13095e-07
+  Residual in Function/Gradient:=2.13096e-07
   Objective value=1.41937
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=11,      (max: 4000)

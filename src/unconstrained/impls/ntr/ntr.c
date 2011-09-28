@@ -50,34 +50,34 @@ static const char *NTR_UPDATE[64] = {
   "reduction", "interpolation"
 };
 
-// Routine for BFGS preconditioner
+/*  Routine for BFGS preconditioner */
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
 
-
-// TaoSolve_NTR - Implements Newton's Method with a trust region approach 
-// for solving unconstrained minimization problems.  
-//
-// The basic algorithm is taken from MINPACK-2 (dstrn).
-//
-// TaoSolve_NTR computes a local minimizer of a twice differentiable function
-// f by applying a trust region variant of Newton's method.  At each stage 
-// of the algorithm, we use the prconditioned conjugate gradient method to
-// determine an approximate minimizer of the quadratic equation
-//
-//      q(s) = <s, Hs + g>
-//
-// subject to the trust region constraint
-//
-//      || s ||_M <= radius,
-//
-// where radius is the trust region radius and M is a symmetric positive
-// definite matrix (the preconditioner).  Here g is the gradient and H 
-// is the Hessian matrix.
-//
-// Note:  TaoSolve_NTR MUST use the iterative solver KSPNASH, KSPSTCG,
-//        or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this 
-//        routine regardless of what the user may have previously specified.
-
+/*
+   TaoSolve_NTR - Implements Newton's Method with a trust region approach 
+   for solving unconstrained minimization problems.  
+  
+   The basic algorithm is taken from MINPACK-2 (dstrn).
+  
+   TaoSolve_NTR computes a local minimizer of a twice differentiable function
+   f by applying a trust region variant of Newton's method.  At each stage 
+   of the algorithm, we use the prconditioned conjugate gradient method to
+   determine an approximate minimizer of the quadratic equation
+  
+        q(s) = <s, Hs + g>
+  
+   subject to the trust region constraint
+  
+        || s ||_M <= radius,
+  
+   where radius is the trust region radius and M is a symmetric positive
+   definite matrix (the preconditioner).  Here g is the gradient and H 
+   is the Hessian matrix.
+  
+   Note:  TaoSolve_NTR MUST use the iterative solver KSPNASH, KSPSTCG,
+          or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this 
+          routine regardless of what the user may have previously specified.
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolve_NTR"
 static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
@@ -171,7 +171,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
     break;
   }
 
-  // Modify the preconditioner to use the bfgs approximation
+  /*  Modify the preconditioner to use the bfgs approximation */
   ierr = KSPGetPC(tao->ksp, &pc); CHKERRQ(ierr);
   switch(tr->pc_type) {
   case NTR_PC_NONE:
@@ -200,18 +200,18 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
     break;
 
   default:
-    // Use the pc method set by pc_type
+    /*  Use the pc method set by pc_type */
     break;
   }
 
-  // Initialize trust-region radius
+  /*  Initialize trust-region radius */
   switch(tr->init_type) {
   case NTR_INIT_CONSTANT:
-    // Use the initial radius specified
+    /*  Use the initial radius specified */
     break;
 
   case NTR_INIT_INTERPOLATION:
-    // Use the initial radius specified
+    /*  Use the initial radius specified */
     max_radius = 0.0;
 
     for (j = 0; j < j_max; ++j) {
@@ -257,7 +257,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 	  tau_max = PetscMax(tau_1, tau_2);
 
 	  if (PetscAbsScalar(kappa - 1.0) <= tr->mu1_i) {
-	    // Great agreement
+	    /*  Great agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
 	    if (tau_max < 1.0) {
@@ -271,7 +271,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
             }
           }
           else if (PetscAbsScalar(kappa - 1.0) <= tr->mu2_i) {
-	    // Good agreement
+	    /*  Good agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
 	    if (tau_max < tr->gamma2_i) {
@@ -285,7 +285,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
             }
           }
           else {
-	    // Not good agreement
+	    /*  Not good agreement */
 	    if (tau_min > 1.0) {
 	      tau = tr->gamma2_i;
             }
@@ -331,20 +331,20 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
     }
     tao->trust = PetscMax(tao->trust, max_radius);
 
-    // Modify the radius if it is too large or small
+    /*  Modify the radius if it is too large or small */
     tao->trust = PetscMax(tao->trust, tr->min_radius);
     tao->trust = PetscMin(tao->trust, tr->max_radius);
     break;
 
   default:
-    // Norm of the first direction will initialize radius
+    /*  Norm of the first direction will initialize radius */
     tao->trust = 0.0;
     break;
   }
 
-  // Set initial scaling for the BFGS preconditioner 
-  // This step is done after computing the initial trust-region radius
-  // since the function value may have decreased
+  /* Set initial scaling for the BFGS preconditioner 
+     This step is done after computing the initial trust-region radius
+     since the function value may have decreased */
   if (NTR_PC_BFGS == tr->pc_type) {
     if (f != 0.0) {
       delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
@@ -391,7 +391,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 	ierr = KSPSTCGSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
-      } else { //NTR_KSP_GLTR
+      } else { /* NTR_KSP_GLTR */
 	ierr = KSPGLTRSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
@@ -423,7 +423,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 	    ierr = KSPSTCGSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	    ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
-	  } else { //NTR_KSP_GLTR
+	  } else { /* NTR_KSP_GLTR */
 	    ierr = KSPGLTRSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	    ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
@@ -781,9 +781,7 @@ PetscErrorCode TaoCreate_NTR(TaoSolver tao)
 
   tao->trust0 = 100.0;
 
-    //ierr = TaoSetTrustRegionTolerance(tao, 1.0e-12); CHKERRQ(ierr);
-
-  // Standard trust region update parameters
+  /*  Standard trust region update parameters */
   tr->eta1 = 1.0e-4;
   tr->eta2 = 0.25;
   tr->eta3 = 0.50;
@@ -795,7 +793,7 @@ PetscErrorCode TaoCreate_NTR(TaoSolver tao)
   tr->alpha4 = 2.00;
   tr->alpha5 = 4.00;
 
-  // Interpolation parameters
+  /*  Interpolation parameters */
   tr->mu1_i = 0.35;
   tr->mu2_i = 0.50;
 
@@ -806,7 +804,7 @@ PetscErrorCode TaoCreate_NTR(TaoSolver tao)
 
   tr->theta_i = 0.25;
 
-  // Interpolation trust region update parameters
+  /*  Interpolation trust region update parameters */
   tr->mu1 = 0.10;
   tr->mu2 = 0.50;
 

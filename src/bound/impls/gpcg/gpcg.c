@@ -16,8 +16,6 @@ static const char *TAOSUBSET[64] = {
     "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
 };
 
-//static PetscErrorCode TaoGradProjections(TaoSolver);
-//static PetscErrorCode GPCGCheckOptimalFace(Vec, Vec, Vec, Vec, Vec, IS, IS, PetscBool *);
 static PetscErrorCode GPCGGradProjections(TaoSolver tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
@@ -239,8 +237,6 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 
     }      
 
-     //    if (gpcg->n_free == gpcg->n)
-
     if (gpcg->n_free > 0){
       
       /* Create a reduced linear system */
@@ -262,7 +258,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       }
 
       if (gpcg->subset_type == TAOSUBSET_REDISTRIBUTE) {
-	  // Need to create ksp each time  (really only if size changes...)
+          /* Need to create ksp each time  (really only if size changes...) */
 	  if (tao->ksp) {
 	      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
 	  }
@@ -279,10 +275,9 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 	      (*tao->ksp->ops->setfromoptions)(tao->ksp);
 	  }
 
-	  //ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
       }      
       
-      ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr); //give options for this...
+      ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr); 
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub_pre); CHKERRQ(ierr);
 

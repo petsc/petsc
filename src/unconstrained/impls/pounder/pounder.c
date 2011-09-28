@@ -163,7 +163,7 @@ static PetscErrorCode TaoSolve_POUNDER(TaoSolver tao)
   ierr = PetscInfo1(tao,"gesv returned %D\n",info); CHKERRQ(ierr);
 
   cres = minnorm;
-  /* Gres = G*F(xkin,1:m)' //  G (nxm)   Fk (m)   */
+  /* Gres = G*F(xkin,1:m)'   G (nxm)   Fk (m)   */
   BLASgemv_("N",&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->C,&ione,&zero,mfqP->Gres,&ione);
 
   /*  Hres = G*G'  */

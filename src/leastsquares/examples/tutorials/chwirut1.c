@@ -124,10 +124,6 @@ int main(int argc,char **argv)
   }
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
-  /* Use VecView to print x to screen  */
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-
-
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 

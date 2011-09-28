@@ -21,10 +21,10 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 	*svmin = 0.0;
 	z[0] = 1.0;
     } else {
-	// Solve R'*y = e
+      /* Solve R'*y = e */
 	for (i=0;i<n;i++) {
 	    
-	    // Scale y. The scaling factor (0.01) reduces the number of scalings
+	  /* Scale y. The scaling factor (0.01) reduces the number of scalings */
 	    if (z[i] >= 0.0) 
 		e=-PetscAbs(e);
 	    else
@@ -37,7 +37,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 		e = temp*e;
 	    }
 	
-	    // Determine the two possible choices of y[i]
+	    /* Determine the two possible choices of y[i] */
 	    if (r[i + ldr*i] == 0.0)
 		w = wm = 1.0;
 	    else {
@@ -45,7 +45,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 		wm = - (e + z[i]) / r[i + ldr*i];
 	    }
 
-	    // Chose y[i] based on the predicted value of y[j] for j>i
+	    /*  Chose y[i] based on the predicted value of y[j] for j>i */
 	    s = PetscAbs(e - z[i]);
 	    sm = PetscAbs(e + z[i]);
 	    for (j=i+1;j<n;j++) {
@@ -68,10 +68,10 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 
 	ynorm = BLASnrm2_(&blasn, z, &blas1);
 
-	// Solve R*z = y
+	/* Solve R*z = y */
 	for (j=n-1; j>=0; j--) {
 	    
-	    // Scale z
+	  /* Scale z */
 	    
 	    if (PetscAbs(z[j]) > PetscAbs(r[j + ldr*j])) {
 		temp = PetscMin(0.01, PetscAbs(r[j + ldr*j] / z[j]));
@@ -88,7 +88,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 	    BLASaxpy_(&blasj,&temp,&r[0+ldr*j],&blas1,z,&blas1);
 	}
 				
-	// Compute svmin and normalize z
+	/* Compute svmin and normalize z */
 	znorm = 1.0 / BLASnrm2_(&blasn, z, &blas1);
 	*svmin = ynorm*znorm;
 	BLASscal_(&blasn, &znorm, z, &blas1);
@@ -258,7 +258,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	z[j] = 0.0;
     }
     
-    // Copy the diagonal and save A in its lower triangle
+    /* Copy the diagonal and save A in its lower triangle */
     BLAScopy_(&blasn,a,&blasldap1, wa1, &blas1);
     CHKMEMQ;
     for (j=0;j<n-1;j++) {
@@ -267,8 +267,8 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	CHKMEMQ;
     }
     
-    // Calculate the l1-norm of A, the Gershgorin row sums, and the
-    // l2-norm of b
+    /* Calculate the l1-norm of A, the Gershgorin row sums, and the
+       l2-norm of b */
     anorm = 0.0;
     for (j=0;j<n;j++) {
 	wa2[j] = BLASasum_(&blasn, &a[0 + lda*j], &blas1);
@@ -280,9 +280,9 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
     }
     bnorm = BLASnrm2_(&blasn,b,&blas1);
     CHKMEMQ;
-    // Calculate a lower bound, pars, for the domain of the problem.
-    // Also calculate an upper bound, paru, and a lower bound, parl,
-    // for the Lagrange multiplier.
+    /* Calculate a lower bound, pars, for the domain of the problem.
+       Also calculate an upper bound, paru, and a lower bound, parl,
+       for the Lagrange multiplier. */
     pars = parl = paru = -anorm;
     for (j=0;j<n;j++) {
 	pars = PetscMax(pars, -wa1[j]);
@@ -293,27 +293,27 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
     parl = PetscMax(0.0,parl);
     paru = PetscMax(0.0, bnorm/delta + paru);
     
-    // If the input par lies outside of the interval (parl, paru),
-    // set par to the closer endpoint.
+    /* If the input par lies outside of the interval (parl, paru),
+       set par to the closer endpoint. */
 
     par = PetscMax(par,parl);
     par = PetscMin(par,paru);
 
-    // Special case: parl == paru
+    /* Special case: parl == paru */
     paru = PetscMax(paru, (1.0 + rtol)*parl);
     
-    // Beginning of an iteration
+    /* Beginning of an iteration */
 
     info = 0;
     for (iter=1;iter<=itmax;iter++) {
 	
-	// Safeguard par
+      /* Safeguard par */
 	if (par <= pars && paru > 0) {
 	    par = PetscMax(p001, sqrt(parl/paru)) * paru;
 	}
 	
-	// Copy the lower triangle of A into its upper triangle and
-	// compute A + par*I
+	/* Copy the lower triangle of A into its upper triangle and 
+	   compute A + par*I */
 
 	for (j=0;j<n-1;j++) {
 	    iblas = n - j - 1;
@@ -325,16 +325,16 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	    a[j + j*lda] = wa1[j] + par;
 	}
 
-	// Attempt the Cholesky factorization of A without referencing
-	// the lower triangular part.
+	/* Attempt the Cholesky factorization of A without referencing
+	   the lower triangular part. */
 	LAPACKpotrf_("U",&blasn,a,&blaslda,&indef);
 	CHKMEMQ;
 	
-	// Case 1: A + par*I is pos. def.
+	/* Case 1: A + par*I is pos. def. */
 	if (indef == 0) {
 
-	    // Compute an approximate solution x and save the
-	    // last value of par with A + par*I pos. def.
+  	  /* Compute an approximate solution x and save the
+	     last value of par with A + par*I pos. def. */
 
 	    parf = par;
 	    BLAScopy_(&blasn, b, &blas1, wa2, &blas1);
@@ -351,29 +351,28 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	    xnorm = BLASnrm2_(&blasn, x, &blas1);
 	    CHKMEMQ;
 
-	    // Test for convergence
+	    /* Test for convergence */
 	    if (PetscAbs(xnorm - delta) <= rtol*delta ||
 		(par == 0  && xnorm <= (1.0+rtol)*delta)) {
 		info = 1;
 	    }
 	    
-	    // Compute a direction of negative curvature and use this
-	    // information to improve pars.
+	    /* Compute a direction of negative curvature and use this
+	       information to improve pars. */
 
 	    iblas=blasn*blasn;
 	    
 	    ierr = estsv(n,a,lda,&rznorm,z); CHKERRQ(ierr);
-	    //destsv_(&n, a, &lda, &rznorm, z);
 	    CHKMEMQ;
 	    pars = PetscMax(pars, par-rznorm*rznorm);
 	    
-	    // Compute a negative curvature solution of the form
-	    // x + alpha*z,  where norm(x+alpha*z)==delta
+	    /* Compute a negative curvature solution of the form
+	       x + alpha*z,  where norm(x+alpha*z)==delta */
 	    
 	    rednc = 0;
 	    if (xnorm < delta) {
 		
-		// Compute alpha
+	        /* Compute alpha */
 		prod = BLASdot_(&blasn, z, &blas1, x, &blas1) / delta;
 		temp = (delta - xnorm)*((delta + xnorm)/delta);
 		alpha = temp/(PetscAbs(prod) + sqrt(prod*prod + temp/delta));
@@ -383,15 +382,15 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		    alpha =-PetscAbs(alpha);
 
 
-		// Test to decide if the negative curvature step
-		// produces a larger reduction than with z=0
+		/* Test to decide if the negative curvature step
+		   produces a larger reduction than with z=0 */
 		
 		rznorm = PetscAbs(alpha) * rznorm;
 		if ((rznorm*rznorm + par*xnorm*xnorm)/(delta2) <= par) {
 		    rednc = 1;
 		}
 		
-		// Test for convergence
+		/* Test for convergence */
 		if (p5 * rznorm*rznorm / delta2 <= 
 		    rtol*(1.0-p5*rtol)*(par + rxnorm*rxnorm/delta2)) {
 		    info = 1;
@@ -401,7 +400,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		}
 	    }
 	    
-	    // Compute the Newton correction parc to par.
+	    /* Compute the Newton correction parc to par. */
 	    if (xnorm == 0) {
 		parc = -par;
 	    } else {
@@ -416,28 +415,28 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		parc = (xnorm - delta)/(delta*temp*temp);
 	    }
 	    
-	    // update parl or paru
+	    /* update parl or paru */
 	    if (xnorm > delta) {
 		parl = PetscMax(parl, par);
 	    } else if (xnorm < delta) {
 		paru = PetscMin(paru, par);
 	    }
 	} else {
-	    // Case 2: A + par*I is not pos. def.
+	    /* Case 2: A + par*I is not pos. def. */
 	    
-	    // Use the rank information from the Cholesky 
-	    // decomposition to update par.
+	    /* Use the rank information from the Cholesky 
+	       decomposition to update par. */
 
 	    if (indef > 1) {
 		
-		// Restore column indef to A + par*I.
+	        /* Restore column indef to A + par*I. */
 		iblas = indef - 1;
 		BLAScopy_(&iblas,&a[indef-1 + 0*lda],&blaslda,
 			  &a[0 + (indef-1)*lda],&blas1);
 		CHKMEMQ;
 		a[indef-1 + (indef-1)*lda] = wa1[indef-1] + par;
 		
-		// compute parc.
+		/* compute parc. */
 		
 		BLAScopy_(&iblas,&a[0 + (indef-1)*lda], &blas1, wa2, &blas1);
 		CHKMEMQ;
@@ -458,30 +457,29 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	    parc = - a[indef-1 + (indef-1)*lda]/(temp*temp);
 	    pars = PetscMax(pars,par+parc);
 	    
-	    // If necessary, increase paru slightly.
-	    // This is needed because in some exceptional situations
-	    // paru is the optimal value of par.
+	    /* If necessary, increase paru slightly.
+	       This is needed because in some exceptional situations
+	       paru is the optimal value of par. */
 	    
 	    paru = PetscMax(paru, (1.0+rtol)*pars);
 	}
 
-	// Use pars to update parl
+	/* Use pars to update parl */
 	parl = PetscMax(parl,pars);
 	
-	// Test for termination.
-	
+	/* Test for termination. */
 	if (info == 0) {
 	    if (iter == itmax) info=4;
 	    if (paru <= (1.0+p5*rtol)*pars) info=3;
 	    if (paru == 0.0) info = 2;
 	}
 	
-	// If exiting, store the best approximation and restore
-	// the upper triangle of A.
+	/* If exiting, store the best approximation and restore
+	   the upper triangle of A. */
 	
 	if (info != 0) {
 	    
-	    // Compute the best current estimates for x and f.
+	  /* Compute the best current estimates for x and f. */
 	    
 	    par = parf;
 	    f = -p5 * (rxnorm*rxnorm + par*xnorm*xnorm);
@@ -491,7 +489,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		CHKMEMQ;
 	    }
 
-	    // Restore the upper triangle of A
+	    /* Restore the upper triangle of A */
 	    
 	    for (j = 0; j<n; j++) {
 		iblas = n - j - 1;

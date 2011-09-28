@@ -30,7 +30,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n"); CHKERRQ(ierr);
   }
 
-  // Check convergence criteria
+  /*  Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
@@ -42,7 +42,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     PetscFunctionReturn(0);
   }
 
-  // Set initial scaling for the function
+  /*  Set initial scaling for the function */
   if (f != 0.0) {
     delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
   }
@@ -51,27 +51,29 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
   }
   ierr = MatLMVMSetDelta(lmP->M,delta); CHKERRQ(ierr);
 
-  // Set counter for gradient/reset steps
+  /*  Set counter for gradient/reset steps */
   lmP->bfgs = 0;
   lmP->sgrad = 0;
   lmP->grad = 0;
 
-  // Have not converged; continue with Newton method
+  /*  Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    // Compute direction
+    /*  Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient); CHKERRQ(ierr);
     ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D); CHKERRQ(ierr);
     ++lmP->bfgs;
 
-    // Check for success (descent direction)
+    /*  Check for success (descent direction) */
     ierr = VecDot(lmP->D, tao->gradient, &gdx); CHKERRQ(ierr);
     if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
-      // Step is not descent or direction produced not a number
-      // We can assert bfgsUpdates > 1 in this case because
-      // the first solve produces the scaled gradient direction,
-      // which is guaranteed to be descent
-      //
-      // Use steepest descent direction (scaled)
+      /* Step is not descent or direction produced not a number
+         We can assert bfgsUpdates > 1 in this case because
+         the first solve produces the scaled gradient direction,
+         which is guaranteed to be descent
+        
+         Use steepest descent direction (scaled)
+      */
+
       ++lmP->grad;
 
       if (f != 0.0) {
@@ -85,12 +87,8 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient); CHKERRQ(ierr);
       ierr = MatLMVMSolve(lmP->M,tao->gradient, lmP->D); CHKERRQ(ierr);
 
-      // On a reset, the direction cannot be not a number; it is a 
-      // scaled gradient step.  No need to check for this condition.
-      // info = D->Norm2(&dnorm); CHKERRQ(info);
-      // if (PetscIsInfOrNanReal(dnorm)) {
-      //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
-      // }
+      /* On a reset, the direction cannot be not a number; it is a 
+	 scaled gradient step.  No need to check for this condition. */
 
       lmP->bfgs = 1;
       ++lmP->sgrad;
@@ -98,7 +96,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     }
     else {
       if (1 == lmP->bfgs) {
-        // The first BFGS direction is always the scaled gradient
+        /*  The first BFGS direction is always the scaled gradient */
         ++lmP->sgrad;
         stepType = LMVM_SCALED_GRADIENT;
       }
@@ -109,7 +107,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     }
     ierr = VecScale(lmP->D, -1.0); CHKERRQ(ierr);
     
-    // Perform the linesearch
+    /*  Perform the linesearch */
     fold = f;
     ierr = VecCopy(tao->solution, lmP->Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, lmP->Gold); CHKERRQ(ierr);
@@ -119,16 +117,16 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     
 
     while (((int)ls_status < 0) && (stepType != LMVM_GRADIENT)) {
-      // Linesearch failed
-      // Reset factors and use scaled gradient step
+      /*  Linesearch failed */
+      /*  Reset factors and use scaled gradient step */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution); CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient); CHKERRQ(ierr);
         
       switch(stepType) {
       case LMVM_BFGS:
-        // Failed to obtain acceptable iterate with BFGS step
-        // Attempt to use the scaled gradient direction
+        /*  Failed to obtain acceptable iterate with BFGS step */
+        /*  Attempt to use the scaled gradient direction */
 
         if (f != 0.0) {
           delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
@@ -141,12 +139,8 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
 	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient); CHKERRQ(ierr);
 	ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D); CHKERRQ(ierr);
 
-        // On a reset, the direction cannot be not a number; it is a 
-        // scaled gradient step.  No need to check for this condition.
-        // info = D->Norm2(&dnorm); CHKERRQ(info);
-        // if (PetscIsInfOrNanReal(dnorm)) {
-        //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
-        // }
+        /* On a reset, the direction cannot be not a number; it is a 
+	   scaled gradient step.  No need to check for this condition. */
   
 	lmP->bfgs = 1;
 	++lmP->sgrad;
@@ -154,9 +148,9 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
 	break;
 
       case LMVM_SCALED_GRADIENT:
-        // The scaled gradient step did not produce a new iterate;
-	// attempt to use the gradient direction.
-	// Need to make sure we are not using a different diagonal scaling
+        /* The scaled gradient step did not produce a new iterate;
+	   attempt to use the gradient direction.
+	   Need to make sure we are not using a different diagonal scaling */
 	ierr = MatLMVMSetDelta(lmP->M, 1.0); CHKERRQ(ierr);
 	ierr = MatLMVMReset(lmP->M); CHKERRQ(ierr);
 	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient); CHKERRQ(ierr);
@@ -169,20 +163,20 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
       }
       ierr = VecScale(lmP->D, -1.0); CHKERRQ(ierr);
         
-      // Perform the linesearch
+      /*  Perform the linesearch */
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step, &ls_status); CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
       
     }
 
     if ((int)ls_status < 0) {
-      // Failed to find an improving point
+      /*  Failed to find an improving point */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution); CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient); CHKERRQ(ierr);
       step = 0.0;
     }
-    // Check for termination
+    /*  Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
     iter++;
     ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason); CHKERRQ(ierr);
@@ -205,7 +199,7 @@ static PetscErrorCode TaoSetUp_LMVM(TaoSolver tao)
   if (!lmP->Xold) {ierr = VecDuplicate(tao->solution,&lmP->Xold); CHKERRQ(ierr);  }
   if (!lmP->Gold) {ierr = VecDuplicate(tao->solution,&lmP->Gold); CHKERRQ(ierr);  }
   
-  // Create matrix for the limited memory approximation
+  /*  Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n); CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N); CHKERRQ(ierr);
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&lmP->M); CHKERRQ(ierr);

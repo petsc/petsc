@@ -22,10 +22,10 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
 
   PetscFunctionBegin;
   
-  // Project initial point onto bounds
+  /*  Project initial point onto bounds */
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
-  // Check convergence criteria
+  /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient); CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(blmP->unprojected_gradient,tao->solution, tao->XL,tao->XU,tao->gradient); CHKERRQ(ierr);
 
@@ -40,7 +40,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
     PetscFunctionReturn(0);
   }
 
-  // Set initial scaling for the function
+  /* Set initial scaling for the function */
   if (f != 0.0) {
     delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
   }
@@ -49,23 +49,23 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
   }
   ierr = MatLMVMSetDelta(blmP->M,delta); CHKERRQ(ierr);
 
-  // Set counter for gradient/reset steps
+  /* Set counter for gradient/reset steps */
   blmP->grad = 0;
   blmP->reset = 0;
 
-  // Have not converged; continue with Newton method
+  /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
     
-    // Compute direction
+    /* Compute direction */
     ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient); CHKERRQ(ierr);
     ierr = MatLMVMSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection); CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient); CHKERRQ(ierr);
 
-    // Check for success (descent direction)
+    /* Check for success (descent direction) */
     ierr = VecDot(blmP->unprojected_gradient, tao->gradient, &gdx); CHKERRQ(ierr);
     if (gdx <= 0) {
-      // Step is not descent or solve was not successful
-      // Use steepest descent direction (scaled)
+      /* Step is not descent or solve was not successful
+	 Use steepest descent direction (scaled) */
       ++blmP->grad;
 
       if (f != 0.0) {
@@ -81,7 +81,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
     } 
     ierr = VecScale(tao->stepdirection,-1.0); CHKERRQ(ierr);
 
-    // Perform the linesearch
+    /* Perform the linesearch */
     fold = f;
     ierr = VecCopy(tao->solution, blmP->Xold); CHKERRQ(ierr);
     ierr = VecCopy(blmP->unprojected_gradient, blmP->Gold); CHKERRQ(ierr);
@@ -90,8 +90,8 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
     ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
     if (ls_status<0) {
-      // Linesearch failed
-      // Reset factors and use scaled (projected) gradient step
+      /* Linesearch failed
+	 Reset factors and use scaled (projected) gradient step */
       ++blmP->reset;
 
       f = fold;
@@ -110,19 +110,18 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
       ierr = MatLMVMSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection); CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0); CHKERRQ(ierr);
 
-      // This may be incorrect; linesearch has values fo stepmax and stepmin
-      // that should be reset.
+      /* This may be incorrect; linesearch has values fo stepmax and stepmin
+	 that should be reset. */
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
       if ((int) ls_status < 0) {
-        // Linesearch failed
-        // Probably stop here
+
       }
     }
 
-    // Check for termination
+    /* Check for termination */
     ierr = VecBoundGradientProjection(blmP->unprojected_gradient, tao->solution, tao->XL, tao->XU, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
 
@@ -170,7 +169,7 @@ static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
       ierr = VecSet(tao->XU,TAO_INFINITY); CHKERRQ(ierr);
   }
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
-  // Create matrix for the limited memory approximation
+  /* Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n); CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N); CHKERRQ(ierr);
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&blmP->M); CHKERRQ(ierr);

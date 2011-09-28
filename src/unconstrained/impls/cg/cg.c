@@ -32,7 +32,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
       ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n"); CHKERRQ(ierr);
     }
 
-    // Check convergence criteria
+    /*  Check convergence criteria */
     ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
@@ -45,12 +45,12 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
     }
 
     
-    // Set initial direction to -gradient
+    /*  Set initial direction to -gradient */
     ierr = VecCopy(tao->gradient, tao->stepdirection); CHKERRQ(ierr);
     ierr = VecScale(tao->stepdirection, -1.0); CHKERRQ(ierr);
     gnorm2 = gnorm*gnorm;
     
-    // Set initial scaling for the function
+    /*  Set initial scaling for the function */
     if (f != 0.0) {
 	delta = 2.0*PetscAbsScalar(f) / gnorm2;
 	delta = PetscMax(delta,cgP->delta_min);
@@ -60,12 +60,12 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	delta = PetscMax(delta,cgP->delta_min);
 	delta = PetscMin(delta,cgP->delta_max);
     }
-    // Set counter for gradient and reset steps
+    /*  Set counter for gradient and reset steps */
     cgP->ngradsteps = 0;
     cgP->nresetsteps = 0;
     
     while (1) {
-	// Save the current gradient information
+	/*  Save the current gradient information */
 	f_old = f;
 	gnorm2_old = gnorm2;
 	ierr = VecCopy(tao->solution, cgP->X_old); CHKERRQ(ierr);
@@ -87,13 +87,13 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    ierr = VecScale(tao->stepdirection, -1.0); CHKERRQ(ierr);
 	}
 	
-	// Search direction for improving point
+	/*  Search direction for improving point */
 	ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
 	ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 	if (ls_status < 0) {
-	    // Linesearch failed
-	    // Reset factors and use scaled gradient step
+	    /*  Linesearch failed */
+	    /*  Reset factors and use scaled gradient step */
 	    ++cgP->nresetsteps;
 	    f = f_old;
 	    gnorm2 = gnorm2_old;
@@ -118,8 +118,8 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 	    
 	    if (ls_status < 0) {
-		// Linesearch failed again
-		// switch to unscaled gradient
+		/*  Linesearch failed again */
+		/*  switch to unscaled gradient */
 		f = f_old;
 		gnorm2 = gnorm2_old;
 		ierr = VecCopy(cgP->X_old, tao->solution); CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 		ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
 		ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 		if (ls_status < 0) {
-		    // Line search failed for last time -- give up
+		    /*  Line search failed for last time -- give up */
 		    f = f_old;
 		    gnorm2 = gnorm2_old;
 		    ierr = VecCopy(cgP->X_old, tao->solution); CHKERRQ(ierr);
@@ -142,13 +142,13 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    }
 	}
 	
-	// Check for bad value
+	/*  Check for bad value */
 	ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
 	if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	    SETERRQ(PETSC_COMM_SELF,1,"User-provided compute function generated Inf or NaN");
 	}
 	
-	// Check for termination
+	/*  Check for termination */
 	gnorm2 =gnorm * gnorm;
 	iter++;
 	ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
@@ -156,13 +156,13 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    break;
 	}
 
-	// Check for restart condition
+	/*  Check for restart condition */
 	ierr = VecDot(tao->gradient, cgP->G_old, &ginner); CHKERRQ(ierr);
 	if (PetscAbsScalar(ginner) >= cgP->eta * gnorm2) {
-	    // Gradients far from orthognal; use steepest descent direction
+	    /*  Gradients far from orthognal; use steepest descent direction */
 	    beta = 0.0;
 	} else {
-	    // Gradients close to orthogonal; use conjugate gradient formula
+	    /*  Gradients close to orthogonal; use conjugate gradient formula */
 	    switch (cgP->cg_type) {
 		case CG_FletcherReeves:
 		    beta = gnorm2 / gnorm2_old;
@@ -194,10 +194,10 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    }
 	}
 	
-	// Compute the direction d=-g + beta*d
+	/*  Compute the direction d=-g + beta*d */
 	ierr = VecAXPBY(tao->stepdirection, -1.0, beta, tao->gradient); CHKERRQ(ierr);
 	
-	// update initial steplength choice
+	/*  update initial steplength choice */
 	delta = 1.0;
 	delta = PetscMax(delta, cgP->delta_min);
 	delta = PetscMin(delta, cgP->delta_max);
@@ -306,10 +306,10 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
     tao->fatol = 1e-4;
     tao->frtol = 1e-4;
 
-    // Note: nondefault values should be used for nonlinear conjugate gradient 
-    // method.  In particular, gtol should be less that 0.5; the value used in 
-    // Nocedal and Wright is 0.10.  We use the default values for the 
-    // linesearch because it seems to work better.
+    /*  Note: nondefault values should be used for nonlinear conjugate gradient  */
+    /*  method.  In particular, gtol should be less that 0.5; the value used in  */
+    /*  Nocedal and Wright is 0.10.  We use the default values for the  */
+    /*  linesearch because it seems to work better. */
     ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
     ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
     ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);

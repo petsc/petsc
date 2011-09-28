@@ -517,7 +517,7 @@ PetscErrorCode StateMatPrecMult(PC PC_shell, Vec X, Vec Y)
   user = (AppCtx*)ptr;
 
   if (user->dsg_formed) {
-    ierr = MatSOR(user->DSG,X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
+    ierr = MatSOR(user->DSG,X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
   }
   else {
     printf("DSG not formed"); abort();

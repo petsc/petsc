@@ -31,15 +31,6 @@ iter =  29, Function value 2384.48, Residual: 0.000783954
 iter =  30, Function value 2384.48, Residual: 3.57255e-05 
 iter =  31, Function value 2384.48, Residual: 2.86654e-05 
 iter =  32, Function value 2384.48, Residual: 6.61489e-06 
-TaoSolver: 1 MPI processes
-  type: tao_pounders
-  convergence tolerances: fatol=0,   frtol=0
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=6.61489e-06
-  Objective value=2384.48
-  total number of iterations=32,                          (max: 2000)
-  total number of function evaluations=36,                  max: 4000
-  Solution converged:    ||g(X)||/|f(X)| <= grtol
    4575.7085175608745        1815.2985516599067     
    4575.7085175608745        432.14155282911435     
    4575.7085175608745        227.38749989609389     
@@ -73,3 +64,12 @@ TaoSolver: 1 MPI processes
    2384.4769937794936       3.57254937280110179E-005
    2384.4769937794936       2.86654033919270675E-005
    2384.4769937794936       6.61488565780198004E-006
+TaoSolver: 1 MPI processes
+  type: tao_pounders
+  convergence tolerances: fatol=0,   frtol=0
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  Residual in Function/Gradient:=6.61489e-06
+  Objective value=2384.48
+  total number of iterations=32,                          (max: 2000)
+  total number of function evaluations=36,                  max: 4000
+  Solution converged:    ||g(X)||/|f(X)| <= grtol

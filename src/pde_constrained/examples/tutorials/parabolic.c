@@ -21,13 +21,13 @@
 T*/
 
 typedef struct {
-  PetscInt n; // Number of variables
-  PetscInt m; // Number of constraints per time step
-  PetscInt mx; // grid points in each direction
-  PetscInt nt; // Number of time steps; as of now, must be divisible by 8
-  PetscInt ndata; // Number of data points per sample
-  PetscInt ns; // Number of samples
-  PetscInt *sample_times; // Times of samples
+  PetscInt n; /*  Number of variables */
+  PetscInt m; /*  Number of constraints per time step */
+  PetscInt mx; /*  grid points in each direction */
+  PetscInt nt; /*  Number of time steps; as of now, must be divisible by 8 */
+  PetscInt ndata; /*  Number of data points per sample */
+  PetscInt ns; /*  Number of samples */
+  PetscInt *sample_times; /*  Times of samples */
   IS s_is;
   IS d_is;
   VecScatter state_scatter;
@@ -38,10 +38,10 @@ typedef struct {
   Mat Js,Jd,JsBlockPrec,JsInv,JsBlock;
   PetscBool jformed,dsg_formed;
 
-  PetscReal alpha; // Regularization parameter
-  PetscReal beta; // Weight attributed to ||u||^2 in regularization functional
-  PetscReal noise; // Amount of noise to add to data
-  PetscReal ht; // Time step
+  PetscReal alpha; /*  Regularization parameter */
+  PetscReal beta; /*  Weight attributed to ||u||^2 in regularization functional */
+  PetscReal noise; /*  Amount of noise to add to data */
+  PetscReal ht; /*  Time step */
 
   Mat Qblock,QblockT;
   Mat L,LT;
@@ -50,26 +50,26 @@ typedef struct {
   Mat Av,Avwork,AvT;
   Mat DSG;
   Vec q;
-  Vec ur; // reference
+  Vec ur; /*  reference */
 
   Vec d;
   Vec dwork;
   Vec *di;
 
-  Vec y; // state variables
+  Vec y; /*  state variables */
   Vec ywork;
 
   Vec ytrue;
   Vec *yi,*yiwork;
 
-  Vec u; // design variables
+  Vec u; /*  design variables */
   Vec uwork;
 
   Vec utrue;
  
   Vec js_diag;
   
-  Vec c; // constraint vector
+  Vec c; /*  constraint vector */
   Vec cwork;
   
   Vec lwork;
@@ -160,8 +160,8 @@ int main(int argc, char **argv)
   user.told = 1e-4;
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
 
-  user.m = user.mx*user.mx*user.mx; // number of constraints per time step
-  user.n = user.m*(user.nt+1); // number of variables
+  user.m = user.mx*user.mx*user.mx; /*  number of constraints per time step */
+  user.n = user.m*(user.nt+1); /*  number of variables */
   user.ht = (PetscReal)1/user.nt;
 
   ierr = VecCreate(PETSC_COMM_WORLD,&user.u); CHKERRQ(ierr);
@@ -625,7 +625,7 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   user = (AppCtx*)ptr;
 
   if (user->dsg_formed) {
-    ierr = MatSOR(user->DSG,X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
+    ierr = MatSOR(user->DSG,X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
   }
   else {
     printf("DSG not formed"); abort();
@@ -881,7 +881,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt m,n,i,j,k,linear_index,istart,iend,iblock,lo,hi,lo2,hi2;
-  //PetscInt nnz[user->mx * user->mx * user->mx + 3 * user->mx * user->mx * (user->mx-1)];
   Vec XX,YY,ZZ,XXwork,YYwork,ZZwork,UTwork,yi,di,bc;
   PetscReal x[user->mx],y[user->mx],z[user->mx];
   PetscReal h,stime;
@@ -1025,7 +1024,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
 
   /* Generate arithmetic averaging matrix Av */
-  //ierr = MatDuplicate(user->Grad,MAT_DO_NOT_COPY_VALUES,&user->Av);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Av); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Av,PETSC_DECIDE,PETSC_DECIDE,m,n); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Av); CHKERRQ(ierr);
@@ -1236,7 +1234,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); // Note: user->utrue
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /*  Note: user->utrue */
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
 
@@ -1264,7 +1262,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->u); // Note: user->u
+  ierr = VecAXPY(user->uwork,-1.0,user->u); /*  Note: user->u */
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
 

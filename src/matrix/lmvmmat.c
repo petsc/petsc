@@ -47,7 +47,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
 
     PetscFunctionBegin;
 
-    // create data structure and populate with default values
+    /*  create data structure and populate with default values */
     info = PetscMalloc(sizeof(MatLMVMCtx),(void**)&ctx); CHKERRQ(info);
     ctx->lm=5;
     ctx->eps=0.0;
@@ -68,7 +68,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->delta_min = 1e-7;
     ctx->delta_max = 100.0;
 
-    // Begin configuration
+    /*  Begin configuration */
     PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm, 0);
     PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu, 0);
     PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu, 0);
@@ -85,7 +85,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min, 0);
     PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max, 0);
 
-    // Complete configuration
+    /*  Complete configuration */
     ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
 
 
@@ -111,7 +111,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
                        CHKERRQ(info);
 
 
-    // Finish initializations
+    /*  Finish initializations */
     ctx->lmnow = 0;
     ctx->iter = 0;
     ctx->nupdates = 0;
@@ -161,7 +161,6 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 
     info = VecCopy(b,x); CHKERRQ(info);
     for (ll = 0; ll < shell->lmnow; ++ll) {
-    //for (ll = 0; ll <= shell->lmnow; ++ll) { // ***
 	info = VecDot(x,shell->S[ll],&sq); CHKERRQ(info);
 	shell->beta[ll] = sq * shell->rho[ll];
 	info = VecAXPY(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(info);
@@ -172,7 +171,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 	info = MatSolve(shell->H0,x,shell->U); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
 	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
-	    // Accept Hessian solve
+	    /*  Accept Hessian solve */
 	    info = VecCopy(shell->U,x); CHKERRQ(info);
 	    scaled = PETSC_TRUE;
 	}
@@ -182,7 +181,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 	info = VecPointwiseMult(shell->U,x,shell->scale); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
 	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
-	    // Accept scaling
+	    /*  Accept scaling */
 	    info = VecCopy(shell->U,x); CHKERRQ(info);	
 	    scaled = PETSC_TRUE;
 	}
@@ -204,7 +203,6 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     } 
 
     for (ll = shell->lmnow-1; ll >= 0; --ll) {
-    //for (ll = shell->lmnow; ll >= 0; --ll) { // ***
 	info = VecDot(x,shell->Y[ll],&yq); CHKERRQ(info);
 	info = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
 	CHKERRQ(info);
@@ -314,7 +312,7 @@ extern PetscErrorCode MatLMVMReset(Mat M)
     }
     ctx->rho[0] = 1.0;
     
-    // Set the scaling and diagonal scaling matrix
+    /*  Set the scaling and diagonal scaling matrix */
     switch(ctx->scaleType) {
       case MatLMVM_Scale_None:
 	ctx->sigma = 1.0;
@@ -389,26 +387,26 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
       PetscObjectReference((PetscObject)ctx->Y[0]);
       ctx->rho[0] = 1.0 / rhotemp;
 
-      // Compute the scaling
+      /*  Compute the scaling */
       switch(ctx->scaleType) {
       case MatLMVM_Scale_None:
         break;
 
       case MatLMVM_Scale_Scalar:
-        // Compute s^T s 
+        /*  Compute s^T s  */
 	  ierr = VecDot(ctx->Xprev,ctx->Xprev,&s0temp); CHKERRQ(ierr);
 
-	// Scalar is positive; safeguards are not required.
+	/*  Scalar is positive; safeguards are not required. */
 
-        // Save information for scalar scaling
+        /*  Save information for scalar scaling */
         ctx->yy_history[(ctx->nupdates - 1) % ctx->scalar_history] = y0temp;
         ctx->ys_history[(ctx->nupdates - 1) % ctx->scalar_history] = rhotemp;
         ctx->ss_history[(ctx->nupdates - 1) % ctx->scalar_history] = s0temp;
 
-        // Compute summations for scalar scaling
-        yy_sum = 0;	// No safeguard required; y^T y > 0
-        ys_sum = 0;	// No safeguard required; y^T s > 0
-        ss_sum = 0;	// No safeguard required; s^T s > 0
+        /*  Compute summations for scalar scaling */
+        yy_sum = 0;	/*  No safeguard required; y^T y > 0 */
+        ys_sum = 0;	/*  No safeguard required; y^T s > 0 */
+        ss_sum = 0;	/*  No safeguard required; s^T s > 0 */
         for (i = 0; i < PetscMin(ctx->nupdates, ctx->scalar_history); ++i) {
           yy_sum += ctx->yy_history[i];
           ys_sum += ctx->ys_history[i];
@@ -416,7 +414,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         }
 
         if (0.0 == ctx->s_alpha) {
-	  // Safeguard ys_sum 
+	  /*  Safeguard ys_sum  */
 	  if (0.0 == ys_sum) {
             ys_sum = TAO_ZERO_SAFEGUARD;
           }
@@ -424,7 +422,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           sigmanew = ss_sum / ys_sum;
         }
         else if (1.0 == ctx->s_alpha) {
-	  // Safeguard yy_sum 
+	  /*  Safeguard yy_sum  */
 	  if (0.0 == yy_sum) {
             yy_sum = TAO_ZERO_SAFEGUARD;
           }
@@ -434,7 +432,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         else {
 	  denom = 2*ctx->s_alpha*yy_sum;
 
-          // Safeguard denom
+          /*  Safeguard denom */
 	  if (0.0 == denom) {
             denom = TAO_ZERO_SAFEGUARD;
           }
@@ -473,27 +471,27 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         break;
 
       case MatLMVM_Scale_Broyden:
-        // Original version
-        // Combine DFP and BFGS
+        /*  Original version */
+        /*  Combine DFP and BFGS */
 
-	// This code appears to be numerically unstable.  We use the
-	// original version because this was used to generate all of
-	// the data and because it may be the least unstable of the
-	// bunch.
+	/*  This code appears to be numerically unstable.  We use the */
+	/*  original version because this was used to generate all of */
+	/*  the data and because it may be the least unstable of the */
+	/*  bunch. */
 
-        // P = Q = inv(D);
+        /*  P = Q = inv(D); */
         ierr = VecCopy(ctx->D,ctx->P); CHKERRQ(ierr);
 	ierr = VecReciprocal(ctx->P); CHKERRQ(ierr);
 	ierr = VecCopy(ctx->P,ctx->Q); CHKERRQ(ierr);
 
-        // V = y*y
+        /*  V = y*y */
 	ierr = VecPointwiseMult(ctx->V,ctx->Gprev,ctx->Gprev); CHKERRQ(ierr);
 
-        // W = inv(D)*s
+        /*  W = inv(D)*s */
 	ierr = VecPointwiseMult(ctx->W,ctx->Xprev,ctx->P); CHKERRQ(ierr);
 	ierr = VecDot(ctx->W,ctx->Xprev,&sDs); CHKERRQ(ierr);
 
-        // Safeguard rhotemp and sDs
+        /*  Safeguard rhotemp and sDs */
         if (0.0 == rhotemp) {
           rhotemp = TAO_ZERO_SAFEGUARD;
         }
@@ -503,22 +501,22 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         }
 
         if (1.0 != ctx->phi) {
-          // BFGS portion of the update
-          // U = (inv(D)*s)*(inv(D)*s)
+          /*  BFGS portion of the update */
+          /*  U = (inv(D)*s)*(inv(D)*s) */
           ierr = VecPointwiseMult(ctx->U,ctx->W,ctx->W); CHKERRQ(ierr);
 
 
-          // Assemble
+          /*  Assemble */
 	  ierr = VecAXPY(ctx->P,1.0/rhotemp,ctx->V); CHKERRQ(ierr);
 	  ierr = VecAXPY(ctx->P,-1.0/sDs,ctx->U); CHKERRQ(ierr);
         }
 
         if (0.0 != ctx->phi) {
-          // DFP portion of the update
-          // U = inv(D)*s*y
+          /*  DFP portion of the update */
+          /*  U = inv(D)*s*y */
           ierr = VecPointwiseMult(ctx->U, ctx->W, ctx->Gprev); CHKERRQ(ierr);
 
-          // Assemble
+          /*  Assemble */
 	  ierr = VecAXPY(ctx->Q,1.0/rhotemp + sDs/(rhotemp*rhotemp), ctx->V); CHKERRQ(ierr);
 	  ierr = VecAXPY(ctx->Q,-2.0/rhotemp,ctx->U); CHKERRQ(ierr);
         }
@@ -530,26 +528,26 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	    ierr = VecCopy(ctx->Q,ctx->U); CHKERRQ(ierr);
         }
         else {
-          // Broyden update U=(1-phi)*P + phi*Q
+          /*  Broyden update U=(1-phi)*P + phi*Q */
 	    ierr = VecCopy(ctx->Q,ctx->U);CHKERRQ(ierr);
 	    ierr = VecAXPBY(ctx->U,1.0-ctx->phi, ctx->phi, ctx->P); CHKERRQ(ierr);
         }
 
-	// Obtain inverse and ensure positive definite
+	/*  Obtain inverse and ensure positive definite */
 	ierr = VecReciprocal(ctx->U); CHKERRQ(ierr);
 	ierr = VecAbs(ctx->U); CHKERRQ(ierr);
 
-        // Checking the diagonal scaling for not a number and infinity
-	// should not be necessary for the Broyden update
-        // info = U->Dot(U, &sDs); CHKERRQ(info);
-        // if (sDs != sDs) {
-        //   // not a number
-        //   info = U->SetToConstant(TAO_ZERO_SAFEGUARD); CHKERRQ(info);
-        // }
-        // else if ((sDs - sDs) != 0.0)) {
-        //   // infinity
-        //   info = U->SetToConstant(TAO_INF_SAFEGUARD); CHKERRQ(info);
-        // }
+        /*  Checking the diagonal scaling for not a number and infinity */
+	/*  should not be necessary for the Broyden update */
+        /*  info = U->Dot(U, &sDs); CHKERRQ(info); */
+        /*  if (sDs != sDs) { */
+        /*    // not a number */
+        /*    info = U->SetToConstant(TAO_ZERO_SAFEGUARD); CHKERRQ(info); */
+        /*  } */
+        /*  else if ((sDs - sDs) != 0.0)) { */
+        /*    // infinity */
+        /*    info = U->SetToConstant(TAO_INF_SAFEGUARD); CHKERRQ(info); */
+        /*  } */
 
 	switch(ctx->rScaleType) {
 	case MatLMVM_Rescale_None:
@@ -558,18 +556,18 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         case MatLMVM_Rescale_Scalar:
         case MatLMVM_Rescale_GL:
 	  if (ctx->rScaleType == MatLMVM_Rescale_GL) {
-	    // Gilbert and Lemarachal use the old diagonal
+	    /*  Gilbert and Lemarachal use the old diagonal */
             ierr = VecCopy(ctx->D,ctx->P); CHKERRQ(ierr);
           }
           else {
-	    // The default version uses the current diagonal
+	    /*  The default version uses the current diagonal */
 	      ierr = VecCopy(ctx->U,ctx->P); CHKERRQ(ierr);
           }
 
-          // Compute s^T s 
+          /*  Compute s^T s  */
 	  ierr = VecDot(ctx->Xprev,ctx->Xprev,&s0temp); CHKERRQ(ierr);
 
-          // Save information for special cases of scalar rescaling
+          /*  Save information for special cases of scalar rescaling */
           ctx->yy_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = y0temp;
           ctx->ys_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = rhotemp;
           ctx->ss_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = s0temp;
@@ -588,10 +586,10 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	      ierr = VecCopy(ctx->P,ctx->Q); CHKERRQ(ierr);
 	      ierr = VecReciprocal(ctx->Q); CHKERRQ(ierr);
 
-              // Compute summations for scalar scaling
-              yy_sum = 0;	// No safeguard required
-              ys_sum = 0;	// No safeguard required
-              ss_sum = 0;	// No safeguard required
+              /*  Compute summations for scalar scaling */
+              yy_sum = 0;	/*  No safeguard required */
+              ys_sum = 0;	/*  No safeguard required */
+              ss_sum = 0;	/*  No safeguard required */
               for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 		ierr = VecPointwiseMult(ctx->V,ctx->Y[i],ctx->P); CHKERRQ(ierr);
 		ierr = VecDot(ctx->V,ctx->Y[i],&yDy); CHKERRQ(ierr);
@@ -606,7 +604,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	  }
           else if (0.0 == ctx->r_beta) {
             if (1 == PetscMin(ctx->nupdates, ctx->rescale_history)) {
-              // Compute summations for scalar scaling
+              /*  Compute summations for scalar scaling */
               ierr = VecPointwiseDivide(ctx->W,ctx->S[0],ctx->P); CHKERRQ(ierr);
 
 	      ierr = VecDot(ctx->W, ctx->Y[0], &ys_sum); CHKERRQ(ierr);
@@ -617,10 +615,10 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
               ierr = VecCopy(ctx->Q, ctx->P); CHKERRQ(ierr);
 	      ierr = VecReciprocal(ctx->Q); CHKERRQ(ierr);
 
-              // Compute summations for scalar scaling
-              yy_sum = 0;	// No safeguard required
-              ys_sum = 0;	// No safeguard required
-              ss_sum = 0;	// No safeguard required
+              /*  Compute summations for scalar scaling */
+              yy_sum = 0;	/*  No safeguard required */
+              ys_sum = 0;	/*  No safeguard required */
+              ss_sum = 0;	/*  No safeguard required */
               for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
                 ierr = VecPointwiseMult(ctx->W, ctx->S[i], ctx->Q); CHKERRQ(ierr);
 		ierr = VecDot(ctx->W, ctx->Y[i], &yDs); CHKERRQ(ierr);
@@ -634,10 +632,10 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             }
           }
           else if (1.0 == ctx->r_beta) {
-            // Compute summations for scalar scaling
-            yy_sum = 0;	// No safeguard required
-            ys_sum = 0;	// No safeguard required
-            ss_sum = 0;	// No safeguard required
+            /*  Compute summations for scalar scaling */
+            yy_sum = 0;	/*  No safeguard required */
+            ys_sum = 0;	/*  No safeguard required */
+            ss_sum = 0;	/*  No safeguard required */
             for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 	      ierr = VecPointwiseMult(ctx->V, ctx->Y[i], ctx->P); CHKERRQ(ierr);
 	      ierr = VecDot(ctx->V, ctx->S[i], &yDs); CHKERRQ(ierr);
@@ -655,10 +653,10 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	    ierr = VecPow(ctx->P, ctx->r_beta); CHKERRQ(ierr);
 	    ierr = VecPointwiseDivide(ctx->Q, ctx->P, ctx->Q); CHKERRQ(ierr);
 
-            // Compute summations for scalar scaling
-            yy_sum = 0;	// No safeguard required
-            ys_sum = 0;	// No safeguard required
-            ss_sum = 0;	// No safeguard required
+            /*  Compute summations for scalar scaling */
+            yy_sum = 0;	/*  No safeguard required */
+            ys_sum = 0;	/*  No safeguard required */
+            ss_sum = 0;	/*  No safeguard required */
             for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 	      ierr = VecPointwiseMult(ctx->V, ctx->P, ctx->Y[i]); CHKERRQ(ierr);
 	      ierr = VecPointwiseMult(ctx->W, ctx->Q, ctx->S[i]); CHKERRQ(ierr);
@@ -674,7 +672,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           }
 
           if (0.0 == ctx->r_alpha) {
-	    // Safeguard ys_sum 
+	    /*  Safeguard ys_sum  */
 	    if (0.0 == ys_sum) {
               ys_sum = TAO_ZERO_SAFEGUARD;
             }
@@ -682,7 +680,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             sigmanew = ss_sum / ys_sum;
           }
           else if (1.0 == ctx->r_alpha) {
-	    // Safeguard yy_sum 
+	    /*  Safeguard yy_sum  */
 	    if (0.0 == yy_sum) {
               ys_sum = TAO_ZERO_SAFEGUARD;
             }
@@ -692,7 +690,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           else {
 	    denom = 2*ctx->r_alpha*yy_sum;
 
-            // Safeguard denom
+            /*  Safeguard denom */
 	    if (0.0 == denom) {
               denom = TAO_ZERO_SAFEGUARD;
             }
@@ -702,25 +700,25 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
                              4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
           }
 
-	  // If Q has small values, then Q^(r_beta - 1)
-          // can have very large values.  Hence, ys_sum
-          // and ss_sum can be infinity.  In this case,
-	  // sigmanew can either be not-a-number or infinity.
+	  /*  If Q has small values, then Q^(r_beta - 1) */
+          /*  can have very large values.  Hence, ys_sum */
+          /*  and ss_sum can be infinity.  In this case, */
+	  /*  sigmanew can either be not-a-number or infinity. */
 
           if (PetscIsInfOrNanReal(sigmanew)) {
-            // sigmanew is not-a-number; skip rescaling
+            /*  sigmanew is not-a-number; skip rescaling */
           }
           else if (!sigmanew) {
-	    // sigmanew is zero; this is a bad case; skip rescaling
+	    /*  sigmanew is zero; this is a bad case; skip rescaling */
           }
           else {
-	    // sigmanew is positive
+	    /*  sigmanew is positive */
 	    ierr = VecScale(ctx->U, sigmanew); CHKERRQ(ierr);
           }
 	  break;
 	}
 
-        // Modify for previous information
+        /*  Modify for previous information */
 	switch(ctx->limitType) {
 	case MatLMVM_Limit_Average:
 	  if (1.0 == ctx->mu) {
@@ -733,9 +731,9 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
  
         case MatLMVM_Limit_Relative:
 	  if (ctx->mu) {
-	    // P = (1-mu) * D
+	    /*  P = (1-mu) * D */
 	    ierr = VecAXPBY(ctx->P, 1.0-ctx->mu, 0.0, ctx->D); CHKERRQ(ierr);
-	    // Q = (1+mu) * D
+	    /*  Q = (1+mu) * D */
 	    ierr = VecAXPBY(ctx->Q, 1.0+ctx->mu, 0.0, ctx->D); CHKERRQ(ierr);
 	    ierr = VecMedian(ctx->P, ctx->U, ctx->Q, ctx->D); CHKERRQ(ierr);
           }
@@ -876,12 +874,9 @@ extern PetscErrorCode MatLMVMSetPrev(Mat M, Vec x, Vec g)
   if (ctx->nupdates == 0) {
     ierr = MatLMVMUpdate(M,x,g); CHKERRQ(ierr);
   } else {
-    //ierr = VecCopy(x,ctx->S[0]); CHKERRQ(ierr);
-    //ierr = VecCopy(g,ctx->Y[0]); CHKERRQ(ierr);
-    //ierr = VecDot(x,g,&ctx->rho[0]); CHKERRQ(ierr);
     ierr = VecCopy(x,ctx->Xprev); CHKERRQ(ierr);
     ierr = VecCopy(g,ctx->Gprev); CHKERRQ(ierr);
-    // TODO scaling specific terms
+    /*  TODO scaling specific terms */
   }
   PetscFunctionReturn(0);
   
@@ -906,8 +901,6 @@ extern PetscErrorCode MatLMVMRefine(Mat coarse, Mat op, Vec fineX, Vec fineG)
 	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
 
-    // TODO
-
     PetscFunctionReturn(0);
 }
 
@@ -929,7 +922,7 @@ extern PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     
 
-    // Perform allocations
+    /*  Perform allocations */
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->S); CHKERRQ(ierr);
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->D); CHKERRQ(ierr);

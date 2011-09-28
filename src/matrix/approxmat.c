@@ -27,7 +27,7 @@ extern PetscErrorCode MatCreateAPPROX(MPI_Comm comm, PetscInt n, PetscInt N, Mat
 
   PetscFunctionBegin;
 
-  // create data structure and populate with default values
+  /*  create data structure and populate with default values */
   info = PetscMalloc(sizeof(MatApproxCtx),(void**)&ctx); CHKERRQ(info);
   ctx->lm=5;
 
@@ -35,7 +35,7 @@ extern PetscErrorCode MatCreateAPPROX(MPI_Comm comm, PetscInt n, PetscInt N, Mat
   info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho); 
   CHKERRQ(info);
 
-  // Finish initializations
+  /*  Finish initializations */
   ctx->lmnow = 0;
   ctx->iter = 0;
   ctx->nupdates = 0;
@@ -268,7 +268,7 @@ extern PetscErrorCode MatApproxAllocateVectors(Mat m, Vec v)
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     
 
-    // Perform allocations
+    /*  Perform allocations */
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->S); CHKERRQ(ierr);
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->Bs); CHKERRQ(ierr);

@@ -28,17 +28,17 @@ typedef struct {
   PetscReal omega5;        /* factor used for trust-region update */
 
   /*
-  // if   step < nu1  		(very bad step)
-  //   radius = omega1 * min(norm(d), radius)
-  // elif step < nu2		(bad step)
-  //   radius = omega2 * min(norm(d), radius)
-  // elif step < nu3		(okay step)
-  //   radius = omega3 * radius;
-  // elif step < nu4		(good step)
-  //   radius = max(omega4 * norm(d), radius)
-  // else 			(very good step)
-  //   radius = max(omega5 * norm(d), radius)
-  // fi
+     if   step < nu1  		(very bad step)
+       radius = omega1 * min(norm(d), radius)
+     elif step < nu2		(bad step)
+       radius = omega2 * min(norm(d), radius)
+     elif step < nu3		(okay step)
+       radius = omega3 * radius;
+     elif step < nu4		(good step)
+       radius = max(omega4 * norm(d), radius)
+     else 			(very good step)
+       radius = max(omega5 * norm(d), radius)
+     fi
   */
 
   /* Parameters when updating the trust-region radius based on reduction */
@@ -54,17 +54,17 @@ typedef struct {
   PetscReal alpha5;        /* factor used for trust-region update */
 
   /* kappa = ared / pred
-  // if   kappa < eta1 		(very bad step)
-  //   radius = alpha1 * min(norm(d), radius)
-  // elif kappa < eta2		(bad step)
-  //   radius = alpha2 * min(norm(d), radius)
-  // elif kappa < eta3		(okay step)
-  //   radius = alpha3 * radius;
-  // elif kappa < eta4		(good step)
-  //   radius = max(alpha4 * norm(d), radius)
-  // else 			(very good step)
-  //   radius = max(alpha5 * norm(d), radius)
-  // fi
+     if   kappa < eta1 		(very bad step)
+       radius = alpha1 * min(norm(d), radius)
+     elif kappa < eta2		(bad step)
+       radius = alpha2 * min(norm(d), radius)
+     elif kappa < eta3		(okay step)
+       radius = alpha3 * radius;
+     elif kappa < eta4		(good step)
+       radius = max(alpha4 * norm(d), radius)
+     else 			(very good step)
+       radius = max(alpha5 * norm(d), radius)
+     fi
   */
  
   /* Parameters when updating the trust-region radius based on interpolation */
@@ -79,20 +79,20 @@ typedef struct {
   PetscReal theta;		/* factor used for interpolation */
 
   /* kappa = ared / pred 
-  // if   kappa >= 1.0 - mu1	(very good step)
-  //   choose tau in [gamma3, gamma4]
-  //   radius = max(tau * norm(d), radius)
-  // elif kappa >= 1.0 - mu2    (good step)
-  //   choose tau in [gamma2, gamma3]
-  //   if (tau >= 1.0)
-  //     radius = max(tau * norm(d), radius)
-  //   else
-  //     radius = tau * min(norm(d), radius)
-  //   fi
-  // else 			(bad step)
-  //   choose tau in [gamma1, 1.0]
-  //   radius = tau * min(norm(d), radius)
-  // fi
+     if   kappa >= 1.0 - mu1	(very good step)
+       choose tau in [gamma3, gamma4]
+       radius = max(tau * norm(d), radius)
+     elif kappa >= 1.0 - mu2    (good step)
+       choose tau in [gamma2, gamma3]
+       if (tau >= 1.0)
+         radius = max(tau * norm(d), radius)
+       else
+         radius = tau * min(norm(d), radius)
+       fi
+     else 			(bad step)
+       choose tau in [gamma1, 1.0]
+       radius = tau * min(norm(d), radius)
+     fi
   */
  
   /* Parameters when initializing trust-region radius based on interpolation */

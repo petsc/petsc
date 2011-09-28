@@ -45,19 +45,19 @@
 #define taogettype_                        taogettype
 #endif
 
-static int OBJ=0;       // objective routine index
-static int GRAD=1;      // gradient routine index
-static int OBJGRAD=2;   // objective and gradient routine
-static int HESS=3;      // hessian routine index
-static int SEPOBJ=4;    // separable objective routine index
-static int JAC=5;       // jacobian routine index
-static int JACSTATE=6;  // jacobian state routine index
-static int JACDESIGN=7; // jacobian design routine index
+static int OBJ=0;       /*  objective routine index */
+static int GRAD=1;      /*  gradient routine index */
+static int OBJGRAD=2;   /*  objective and gradient routine */
+static int HESS=3;      /*  hessian routine index */
+static int SEPOBJ=4;    /*  separable objective routine index */
+static int JAC=5;       /*  jacobian routine index */
+static int JACSTATE=6;  /*  jacobian state routine index */
+static int JACDESIGN=7; /*  jacobian design routine index */
 static int BOUNDS=8;
-static int MON=9;       // monitor routine index
-static int MONCTX=10;       // monitor routine index
-static int MONDESTROY=11; // monitor destroy index
-static int CONVTEST=12;  //
+static int MON=9;       /*  monitor routine index */
+static int MONCTX=10;       /*  monitor routine index */
+static int MONDESTROY=11; /*  monitor destroy index */
+static int CONVTEST=12;  /*  */
 static int CONSTRAINTS=13;
 static int NFUNCS=14;
 

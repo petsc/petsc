@@ -221,17 +221,8 @@ PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
   ierr = PetscFree(taodmlevel->ttype);CHKERRQ(ierr);
   if (taodmlevel->dm)      {ierr = DMDestroy(&taodmlevel->dm);CHKERRQ(ierr);}
   if (taodmlevel->x)       {ierr = VecDestroy(&taodmlevel->x);CHKERRQ(ierr);}
-  //if (taodmlevel->b)       {ierr = VecDestroy(&taodmlevel->b);CHKERRQ(ierr);}
-  //if (taodmlevel->r)       {ierr = VecDestroy(&taodmlevel->r);CHKERRQ(ierr);}
-  //if (taodmlevel->work1)   {ierr = VecDestroy(&taodmlevel->work1);CHKERRQ(ierr);}
-  //if (taodmlevel->w)       {ierr = VecDestroy(&taodmlevel->w);CHKERRQ(ierr);}
-  //if (taodmlevel->work2)   {ierr = VecDestroy(&taodmlevel->work2);CHKERRQ(ierr);}
-  //if (taodmlevel->lwork1)  {ierr = VecDestroy(&taodmlevel->lwork1);CHKERRQ(ierr);}
   if (taodmlevel->hessian_pre)         {ierr = MatDestroy(&taodmlevel->hessian_pre);CHKERRQ(ierr);}
   if (taodmlevel->hessian)         {ierr = MatDestroy(&taodmlevel->hessian);CHKERRQ(ierr);}
-  //if (taodmlevel->R)    {ierr = MatDestroy(&taodmlevel->R);CHKERRQ(ierr);}
-  //if (taodmlevel->fdcoloring){ierr = MatFDColoringDestroy(taodmlevel->fdcoloring);CHKERRQ(ierr);}
-  //if (taodmlevel->tao)      {ierr = PetscObjectDestroy((PetscObject)taodmlevel->tao);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(&taodmlevel); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
@@ -295,8 +286,6 @@ PetscErrorCode  TaoDMSetDM(TaoDM *taodm, DM dm)
   /* Clean up work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
     ierr = DMCreateGlobalVector(taodm[i]->dm,&taodm[i]->x);CHKERRQ(ierr);
-    //ierr = VecDuplicate(taodm[i]->x,&taodm[i]->b);CHKERRQ(ierr);
-    //ierr = VecDuplicate(taodm[i]->x,&taodm[i]->r);CHKERRQ(ierr);
   }
 
   /* Create interpolation/restriction between levels */
@@ -369,9 +358,6 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
     }
   }
   
-  /*ierr = VecView(taodm[nlevels-1]->x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);*/
-  
-  //ierr = (*TaoDMGetFine(taodm)->solve)(taodm,nlevels-1);CHKERRQ(ierr);
   if (vecmonitor) {
     ierr = VecView(taodm[nlevels-1]->x,PETSC_VIEWER_DRAW_(((PetscObject)(taodm[nlevels-1]))->comm));CHKERRQ(ierr);
   }
@@ -549,9 +535,6 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
     for (i=0; i<nlevels; i++) {
       ierr = KSPCreate(taodm[i]->comm,&taodm[i]->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)taodm[i]->ksp,PETSC_NULL,nlevels-i);CHKERRQ(ierr);
-      //ierr = KSPSetOptionsPrefix(taodm[i]->ksp,taodm[i]->prefix);CHKERRQ(ierr);
-      //ierr = TaoDMSetUpLevel(taodm,taodm[i]->ksp,i+1);CHKERRQ(ierr);
-      //ierr = KSPSetFromOptions(taodm[i]->ksp);CHKERRQ(ierr);
 
       } 
     }
@@ -1019,7 +1002,6 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
 {
   PetscErrorCode ierr;
   PetscInt i,nlevels = taodm[0]->nlevels;
-  //  PetscBool monitor,monitorAll;
 
   PetscFunctionBegin;
   /* Create Solver for each level */
@@ -1055,7 +1037,6 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
 
     ierr = TaoSolverSetOptionsPrefix(taodm[i]->tao,((PetscObject)(taodm[i]))->prefix); CHKERRQ(ierr);
     ierr = TaoSolverSetFromOptions(taodm[i]->tao); CHKERRQ(ierr);
-    //ierr = TaoDMSetUpLevel(taodm,taodm[i]->ksp,i+1);CHKERRQ(ierr);
     
   }
 

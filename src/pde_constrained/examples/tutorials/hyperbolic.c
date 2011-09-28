@@ -21,11 +21,11 @@
 T*/
 
 typedef struct {
-  PetscInt n; // Number of variables
-  PetscInt m; // Number of constraints
-  PetscInt mx; // grid points in each direction
-  PetscInt nt; // Number of time steps
-  PetscInt ndata; // Number of data points per sample
+  PetscInt n; /*  Number of variables */
+  PetscInt m; /*  Number of constraints */
+  PetscInt mx; /*  grid points in each direction */
+  PetscInt nt; /*  Number of time steps */
+  PetscInt ndata; /*  Number of data points per sample */
   IS s_is;
   IS d_is;
   VecScatter state_scatter;
@@ -36,38 +36,38 @@ typedef struct {
   Mat Js,Jd,JsBlockPrec,JsInv,JsBlock;
   PetscBool jformed,c_formed;
 
-  PetscReal alpha; // Regularization parameter
+  PetscReal alpha; /*  Regularization parameter */
   PetscReal gamma;
-  PetscReal ht; // Time step
-  PetscReal T; // Final time
+  PetscReal ht; /*  Time step */
+  PetscReal T; /*  Final time */
   Mat Q,QT;
   Mat L,LT;
   Mat Div,Divwork,Divxy[2];
   Mat Grad,Gradxy[2];
   Mat M;
   Mat *C,*Cwork;
-  //Mat Hs,Hd,Hsd;
+  /* Mat Hs,Hd,Hsd; */
   Vec q;
-  Vec ur; // reference
+  Vec ur; /*  reference */
 
   Vec d;
   Vec dwork;
 
-  Vec y; // state variables
+  Vec y; /*  state variables */
   Vec ywork;
-  //Vec ysave;
+  /* Vec ysave; */
   Vec ytrue;
   Vec *yi,*yiwork,*ziwork;
   Vec *uxi,*uyi,*uxiwork,*uyiwork,*ui,*uiwork;
 
-  Vec u; // design variables
+  Vec u; /*  design variables */
   Vec uwork,vwork;
-  //Vec usave;
+  /* Vec usave; */
   Vec utrue;
  
   Vec js_diag;
   
-  Vec c; // constraint vector
+  Vec c; /*  constraint vector */
   Vec cwork;
   
   Vec lwork;
@@ -110,9 +110,9 @@ PetscErrorCode StateMatBlockPrecMult(PC,Vec,Vec);
 PetscErrorCode DesignMatMult(Mat,Vec,Vec);
 PetscErrorCode DesignMatMultTranspose(Mat,Vec,Vec);
 
-PetscErrorCode Scatter_yi(Vec,Vec*,VecScatter*,PetscInt); // y to y1,y2,...,y_nt
+PetscErrorCode Scatter_yi(Vec,Vec*,VecScatter*,PetscInt); /*  y to y1,y2,...,y_nt */
 PetscErrorCode Gather_yi(Vec,Vec*,VecScatter*,PetscInt); 
-PetscErrorCode Scatter_uxi_uyi(Vec,Vec*,VecScatter*,Vec*,VecScatter*,PetscInt); // u to ux_1,uy_1,ux_2,uy_2,...,u
+PetscErrorCode Scatter_uxi_uyi(Vec,Vec*,VecScatter*,Vec*,VecScatter*,PetscInt); /*  u to ux_1,uy_1,ux_2,uy_2,...,u */
 PetscErrorCode Gather_uxi_uyi(Vec,Vec*,VecScatter*,Vec*,VecScatter*,PetscInt);
 
 static  char help[]="";
@@ -155,9 +155,9 @@ int main(int argc, char **argv)
   user.told = 1e-4;
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
 
-  user.m = user.mx*user.mx*user.nt; // number of constraints
-  user.n = user.mx*user.mx*3*user.nt; // number of variables
-  user.ht = user.T/user.nt; // Time step
+  user.m = user.mx*user.mx*user.nt; /*  number of constraints */
+  user.n = user.mx*user.mx*3*user.nt; /*  number of variables */
+  user.ht = user.T/user.nt; /*  Time step */
   user.gamma = user.T*user.ht / (user.mx*user.mx);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&user.u); CHKERRQ(ierr);
@@ -596,9 +596,7 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
 
   i = user->block_index;
   if (user->c_formed) {
-    //ierr = MatSOR(user->C,X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
     ierr = MatSOR(user->C[i],X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
-    //VecCopy(X,Y);
   }
   else {
     printf("C not formed"); abort();
@@ -1125,7 +1123,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = VecScale(bc,1.0/(h*h*sum)); CHKERRQ(ierr);
 
   /* Create scatter from y to y_1,y_2,...,y_nt */
-  // TODO: Reorder for better parallelism. (This will require reordering Q and L as well.)
+  /*  TODO: Reorder for better parallelism. (This will require reordering Q and L as well.) */
   ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->yi_scatter);
   ierr = VecCreate(PETSC_COMM_WORLD,&yi); CHKERRQ(ierr);
   ierr = VecSetSizes(yi,PETSC_DECIDE,user->mx*user->mx); CHKERRQ(ierr);
@@ -1143,7 +1141,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   }
 
   /* Create scatter from u to ux_1,uy_1,ux_2,uy_2,...,ux_nt,uy_nt */
-  // TODO: reorder for better parallelism
+  /*  TODO: reorder for better parallelism */
   ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->uxi_scatter); CHKERRQ(ierr);
   ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->uyi_scatter); CHKERRQ(ierr);
   ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->ux_scatter); CHKERRQ(ierr);
@@ -1259,15 +1257,10 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork); CHKERRQ(ierr);
 
   ierr = VecDuplicate(user->y,&user->ywork); CHKERRQ(ierr);
-  //ierr = VecDuplicate(user->y,&user->ysave); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->uwork); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->vwork); CHKERRQ(ierr);
-  //ierr = VecDuplicate(user->u,&user->usave); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->js_diag); CHKERRQ(ierr);
-  //ierr = VecDuplicate(user->u,&user->c); CHKERRQ(ierr);
-  //ierr = VecDuplicate(user->y,&user->c); CHKERRQ(ierr);
   ierr = VecDuplicate(user->c,&user->cwork); CHKERRQ(ierr);
-  //ierr = VecDuplicate(user->d,&user->dwork); CHKERRQ(ierr);
 
   /* Create matrix-free shell user->Js for computing A*x */
   ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,user->m,user->m,user,&user->Js); CHKERRQ(ierr);
@@ -1301,7 +1294,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
 
   /* Build matrices for SOR preconditioner */
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt); CHKERRQ(ierr);
-  ierr = MatShift(user->Divxy[0],0.0); CHKERRQ(ierr); // Force C[i] and Divxy[0] to share same nonzero pattern
+  ierr = MatShift(user->Divxy[0],0.0); CHKERRQ(ierr); /*  Force C[i] and Divxy[0] to share same nonzero pattern */
   ierr = MatAXPY(user->Divxy[0],0.0,user->Divxy[1],DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = PetscMalloc(5*n*sizeof(PetscReal),&user->C);
   ierr = PetscMalloc(2*n*sizeof(PetscReal),&user->Cwork);
@@ -1320,9 +1313,9 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = KSPCreate(PETSC_COMM_WORLD,&user->solver); CHKERRQ(ierr);
   ierr = KSPSetType(user->solver,KSPGMRES); CHKERRQ(ierr);
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE); CHKERRQ(ierr); // TODO: why is true slower?
+  ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE); CHKERRQ(ierr); /*  TODO: why is true slower? */
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500); CHKERRQ(ierr);
-  //ierr = KSPSetTolerances(user->solver,1e-8,1e-16,1e3,500); CHKERRQ(ierr);
+  /* ierr = KSPSetTolerances(user->solver,1e-8,1e-16,1e3,500); CHKERRQ(ierr); */
   user->solve_type = -1;
   ierr = KSPGetPC(user->solver,&user->prec); CHKERRQ(ierr);
   ierr = PCSetType(user->prec,PCSHELL); CHKERRQ(ierr);
@@ -1331,28 +1324,19 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = PCShellSetApplyTranspose(user->prec,StateMatBlockPrecMultTranspose); CHKERRQ(ierr);
   ierr = PCShellSetContext(user->prec,user); CHKERRQ(ierr);
 
-  //ierr = KSPSetNormType(user->solver,KSP_NORM_UNPRECONDITIONED); CHKERRQ(ierr);
-  //ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
-
   /* Compute true state function yt given ut */
   ierr = VecCreate(PETSC_COMM_WORLD,&user->ytrue); CHKERRQ(ierr);
   ierr = VecSetSizes(user->ytrue,PETSC_DECIDE,n*user->nt); CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->ytrue); CHKERRQ(ierr);
   user->c_formed = PETSC_TRUE; 
   ierr = KSPSetTolerances(user->solver,1e-8,1e-20,1e3,500); CHKERRQ(ierr);
-  //ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
-  ierr = VecCopy(user->utrue,user->u); // Set u=utrue temporarily for StateMatInv
-  ierr = VecSet(user->ytrue,0.0); CHKERRQ(ierr); // Initial guess
+  ierr = VecCopy(user->utrue,user->u); /*  Set u=utrue temporarily for StateMatInv */
+  ierr = VecSet(user->ytrue,0.0); CHKERRQ(ierr); /*  Initial guess */
   ierr = StateMatInvMult(user->Js,user->q,user->ytrue); CHKERRQ(ierr);
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500); CHKERRQ(ierr);
-  //ierr = KSPSetTolerances(user->solver,1e-8,1e-16,1e3,500); CHKERRQ(ierr);
-  //ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
-  ierr = VecCopy(user->ur,user->u); // Reset u=ur
+  ierr = VecCopy(user->ur,user->u); /*  Reset u=ur */
 
   /* Initial guess y0 for state given u0 */
-  //ierr = VecCreate(PETSC_COMM_WORLD,&user->y); CHKERRQ(ierr);
-  //ierr = VecSetSizes(user->y,PETSC_DECIDE,user->m); CHKERRQ(ierr);
-  //ierr = VecSetFromOptions(user->y); CHKERRQ(ierr);
   ierr = StateMatInvMult(user->Js,user->q,user->y); CHKERRQ(ierr);
 
   /* Data discretization */

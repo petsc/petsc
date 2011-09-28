@@ -41,9 +41,8 @@ typedef struct {
 
 static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
-//static PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
 PetscErrorCode FormSeparableFunction(TaoSolver,Vec,Vec,void*);
-//PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure *,void*);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -351,7 +350,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       xt=l;
       limit=lsize;
       boundary=user->left;
-    } else {  // if (j==3)
+    } else {  /* if (j==3) */
       yt=b;
       xt=r;
       limit=rsize;
@@ -378,7 +377,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
 	xt=xt+hx;
-      } else { // if (j==2 || j==3)
+      } else { /* if (j==2 || j==3) */
 	yt=yt+hy;
       }
       

@@ -61,7 +61,6 @@ int main(int argc, char **argv)
 
   ierr = TaoSetJacobianStateRoutine(tao, Js, Js, FormJacobianState, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSetJacobianDesignRoutine(tao, Jd, Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
-  //ierr = TaoSetHessianRoutine(tao, H, H, FormHessian,  (void *)&user); CHKERRQ(ierr);
   ierr = TaoRSQNSetStateIS(tao,user.ais); CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 

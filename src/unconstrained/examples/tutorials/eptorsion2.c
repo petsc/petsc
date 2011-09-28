@@ -142,10 +142,9 @@ int main(int argc, char **argv)
     ierr = TaoSolve(tao);  CHKERRQ(ierr);
 
     /* Get information on termination */
-    //ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);
     ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
     if (reason <= 0){
-	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");//Iterations: %D, f: %4.2e, residual: %4.2e\n", iter,ff,gnorm); 
+	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");
 	CHKERRQ(ierr); 
     }  
 

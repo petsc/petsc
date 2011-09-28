@@ -11,33 +11,33 @@ typedef struct {
   PetscInt m,n;
   Vec *Xhist;
   Vec *Fhist;
-    PetscReal *Fres; //(nfmax)
-    PetscReal *RES; //npxm
-    PetscReal *work; //(n)
-    PetscReal *work2; //(n)
-    PetscReal *work3; //(n)
-    PetscReal *xmin; //(n)
-    PetscReal *mwork; //(m)
-    PetscReal *Disp; //nxn
-    PetscReal *Fdiff;//nxm
-    PetscReal *H; /* model hessians */   //mxnxn
-    PetscReal *Hres;  //nxn
-    PetscReal *Gres;  //n
-    PetscReal *Gdel; //mxn
-    PetscReal *Hdel; //mxnxn
-    PetscReal *Gpoints; //nxn
-    PetscReal *C; //m
-    PetscReal *Xsubproblem; //n
-    PetscInt *indices; /* 1,2,3...m */
-    PetscInt minindex;
-    PetscInt nmodelpoints;
-    PetscInt *model_indices; //n
-    PetscInt *interp_indices; //n
-    PetscBLASInt *iwork; //n
-    PetscInt nHist;
+  PetscReal *Fres; /* (nfmax) */
+  PetscReal *RES; /* npxm */
+  PetscReal *work; /* (n) */
+  PetscReal *work2; /* (n) */
+  PetscReal *work3; /* (n) */
+  PetscReal *xmin; /* (n) */
+  PetscReal *mwork; /* (m) */
+  PetscReal *Disp; /* nxn */
+  PetscReal *Fdiff;/* nxm */
+  PetscReal *H; /* model hessians (mxnxn) */
+  PetscReal *Hres;  /* nxn */
+  PetscReal *Gres;  /* n */
+  PetscReal *Gdel; /* mxn */
+  PetscReal *Hdel; /* mxnxn */
+  PetscReal *Gpoints; /* nxn */
+  PetscReal *C; /* m */
+  PetscReal *Xsubproblem; /* n */
+  PetscInt *indices; /* 1,2,3...m */
+  PetscInt minindex;
+  PetscInt nmodelpoints;
+  PetscInt *model_indices; /* n */
+  PetscInt *interp_indices; /* n */
+  PetscBLASInt *iwork; /* n */
+  PetscInt nHist;
   VecScatter scatterf,scatterx; 
   Vec localf, localx, localfmin, localxmin;
-    Vec workxvec;
+  Vec workxvec;
   PetscMPIInt mpisize;
 
   PetscReal delta; /* Trust region radius (>0) */
@@ -53,24 +53,24 @@ typedef struct {
   PetscReal eta1;   /* parameter 2 for accepting point (eta0 < eta1 < 1)*/
   PetscReal gqt_rtol;   /* parameter used by gqt */
   PetscInt gqt_maxits; /* parameter used by gqt */
-    /* QR factorization data */
-    PetscInt q_is_I;
-    PetscReal *Q; //npmax x npmax
-    PetscReal *Q_tmp; //npmax x npmax
-    PetscReal *tau; //scalar factors of H(i)
-    PetscReal *tau_tmp; //scalar factors of H(i)
-    PetscReal *npmaxwork; //work vector of length npmax
-    PetscBLASInt *npmaxiwork; //integer work vector of length npmax
-    /* morepoints and getquadnlsmfq */
-    PetscReal *L;   //n*(n+1)/2 x npmax
-    PetscReal *L_tmp;   //n*(n+1)/2 x npmax
-    PetscReal *L_save;   //n*(n+1)/2 x npmax
-    PetscReal *Z;   //npmax x npmax-(n+1)
-    PetscReal *M;   //npmax x n+1
-    PetscReal *N;   //npmax x n*(n+1)/2 
-    PetscReal *alpha; // n+1
-    PetscReal *beta; // r(n+1)/2
-    PetscReal *omega; //npmax - np - 1
+  /* QR factorization data */
+  PetscInt q_is_I;
+  PetscReal *Q; /* npmax x npmax */
+  PetscReal *Q_tmp; /* npmax x npmax */
+  PetscReal *tau; /* scalar factors of H(i) */
+  PetscReal *tau_tmp; /* scalar factors of H(i) */
+  PetscReal *npmaxwork; /* work vector of length npmax */
+  PetscBLASInt *npmaxiwork; /* integer work vector of length npmax */
+  /* morepoints and getquadnlsmfq */
+  PetscReal *L;   /* n*(n+1)/2 x npmax */
+  PetscReal *L_tmp;   /* n*(n+1)/2 x npmax */
+  PetscReal *L_save;   /* n*(n+1)/2 x npmax */
+  PetscReal *Z;   /* npmax x npmax-(n+1) */
+  PetscReal *M;   /* npmax x n+1 */
+  PetscReal *N;   /* npmax x n*(n+1)/2  */
+  PetscReal *alpha; /* n+1 */
+  PetscReal *beta; /*  r(n+1)/2 */
+  PetscReal *omega; /* npmax - np - 1 */
 
 
     

@@ -39,10 +39,10 @@ char dfonames[][64] = {
 typedef struct {
     PetscInt n;
     PetscInt m;
-    PetscInt nprob; // problem number (1 == Linear, Full Rank, etc.)
+    PetscInt nprob; /* problem number (1 == Linear, Full Rank, etc.) */
     PetscInt nfev;
     PetscReal factor;
-    PetscInt nrun; // run number (
+    PetscInt nrun; /* run number  */
     double delta;
     PetscReal fevals[NFMAX][RUNMAX];
 } AppCtx;    
@@ -125,10 +125,6 @@ PetscErrorCode FormStartingPoint(Vec X, AppCtx *ctx) {
     dfoxs_(&ctx->n,x,&ctx->nprob,&ctx->factor);
     ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
     ctx->nfev = 0;
-    //ierr = VecNorm(X,NORM_INFINITY,&ctx->delta);
-    //ctx->delta = PetscMax(ctx->delta,0.01);
-    //snprintf(str,32,"%G",ctx->delta);
-    //ierr = PetscOptionsSetValue("-tao_pounders_delta",str); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 

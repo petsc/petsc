@@ -29,7 +29,7 @@
 
 #include "taosolver.h"
 #include "petscda.h"
-#include <math.h>   //exp()
+#include <math.h>   /* exp() */
 
 static char help[] = 
 "Solves a nonlinear system in parallel with OT.\n\
@@ -297,7 +297,6 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  //  info = DAGetLocalVector(user->da,&(user->localX)); CHKERRQ(info);
 
   info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
   info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
@@ -391,7 +390,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
 {
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
   Mat     jac=*JJ;
-  Vec     localX=user->localX; // local vector
+  Vec     localX=user->localX; /* local vector */
   PetscErrorCode     info;
   PetscInt i, j, row, mx, my, col[5];
   PetscInt     xs, ys, xm, ym, gxs, gys, gxm, gym;
@@ -408,7 +407,6 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  //  info = DAGetLocalVector(user->da,&(user->localX)); CHKERRQ(info);
 
   info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
   info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);

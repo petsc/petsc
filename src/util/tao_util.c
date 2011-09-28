@@ -24,8 +24,8 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
   }
   else if (0.0 == p) {
     for (i = 0; i < n; ++i){
-      // Not-a-number left alone
-      // Infinity set to one 
+      /*  Not-a-number left alone
+	  Infinity set to one  */
       if (v1[i] == v1[i]) {
         v1[i] = 1.0;
       }
@@ -171,7 +171,7 @@ PetscErrorCode VecCompare(Vec V1,Vec V2, PetscBool *flg){
 #define __FUNCT__ "Fischer"
 inline static PetscReal Fischer(PetscReal a, PetscReal b)
 {
-   // Method suggested by Bob Vanderbei
+  /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
      return sqrt(a*a + b*b) - (a + b);
    }
@@ -248,7 +248,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
 #define __FUNCT__ "SFischer"
 inline static PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
-   // Method suggested by Bob Vanderbei
+  /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
      return sqrt(a*a + b*b + 2.0*c*c) - (a + b);
    }

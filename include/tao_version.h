@@ -10,7 +10,7 @@
     docs/tex/manual/manual_tex.tex
 */
 #define TAO_VERSION_NUMBER "TAO Version 2.0-beta"
-#define TAO_VERSION_RELEASE  0 // 1 if official release
+#define TAO_VERSION_RELEASE  0 /*  1 if official release */
 #define TAO_VERSION_MAJOR    2
 #define TAO_VERSION_MINOR    0
 #define TAO_VERSION_SUBMINOR 0

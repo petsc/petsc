@@ -49,7 +49,6 @@ typedef struct {
   Vec         localX, localV;           /* ghosted local vector */
   DM          dm;                       /* distributed array data structure */
   Mat         H;
-//  Vec         X;                        /* to test matrix-free submatrices */
 } AppCtx;
 
 /* -------- User-defined Routines --------- */
@@ -931,7 +930,6 @@ PetscErrorCode MatrixFreeHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStr
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  //user->X = x;
   ierr = FormHessian(tao,x,&user->H,&user->H,flg,ptr); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

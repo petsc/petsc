@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
     ierr = MatLMVMSolve(lmvm_mat,v[41],y); CHKERRQ(ierr);
 
     ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-//    ierr = MatView(lmvm_mat,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     ierr = MatDestroy(&lmvm_mat); CHKERRQ(ierr);
     
     for (i=0;i<50;i++) {

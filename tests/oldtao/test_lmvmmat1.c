@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
 	delete tv[i];
     }
     delete y;
-//    ierr = PetscFree(&v);  CHKERRQ(ierr);
     TaoFinalize();
     PetscFinalize();
     return 0;

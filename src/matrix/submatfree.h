@@ -6,7 +6,6 @@ typedef struct{
   Mat A;
   Vec VC; /* Work vector in the column space */
   Vec VR; /* Work vector in the row space */
-  //  IS Row, Col;
   IS RowComplement, ColComplement;
 
 } _p_MatSubMatFreeCtx;

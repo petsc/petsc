@@ -22,23 +22,7 @@ extern PetscErrorCode TaoCreate_POUNDER(TaoSolver);
 extern PetscErrorCode TaoCreate_FD(TaoSolver);
 
 extern PetscErrorCode TaoCreate_LCL(TaoSolver);
-//extern PetscErrorCode TaoCreate_LM(TaoSolver);
-/*
 
-extern PetscErrorCode TaoCreate_BNLS(TaoSolver);
-extern PetscErrorCode TaoCreate_QPIP(TaoSolver);
-
-extern PetscErrorCode TaoCreate_NLSQ(TaoSolver);
-extern PetscErrorCode TaoCreate_BLM(TaoSolver);
-extern PetscErrorCode TaoCreate_SSILS(TaoSolver);
-extern PetscErrorCode TaoCreate_SSFLS(TaoSolver);
-extern PetscErrorCode TaoCreate_ASILS(TaoSolver);
-extern PetscErrorCode TaoCreate_ASFLS(TaoSolver);
-extern PetscErrorCode TaoCreate_ISILS(TaoSolver);
-extern PetscErrorCode TaoCreate_KT(TaoSolver);
-extern PetscErrorCode TaoCreate_RSCS(TaoSolver);
-extern PetscErrorCode TaoCreate_ICP(TaoSolver);
-*/
 EXTERN_C_END
 
 /* 
@@ -110,21 +94,6 @@ PetscErrorCode TaoRegisterAll(const char path[])
 
   ierr = TaoRegisterDynamic("tao_lcl",path,"TaoCreate_LCL",TaoCreate_LCL); CHKERRQ(ierr);
   ierr = TaoRegisterDynamic("tao_fd_test",path,"TaoCreate_FD",TaoCreate_FD); CHKERRQ(ierr);
-  //  ierr = TaoRegisterDynamic("tao_lm",path,"TaoCreate_LM",TaoCreate_LM); CHKERRQ(ierr);
-/*
-  ierr = TaoRegisterDynamic("tao_bnls",path,"TaoCreate_BNLS",TaoCreate_BNLS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_nm",path,"TaoCreate_NM",TaoCreate_NM); CHKERRQ(ierr);
-
-  ierr = TaoRegisterDynamic("tao_ssils",path,"TaoCreate_SSILS",TaoCreate_SSILS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_ssfls",path,"TaoCreate_SSFLS",TaoCreate_SSFLS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_asils",path,"TaoCreate_ASILS",TaoCreate_ASILS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_asfls",path,"TaoCreate_ASFLS",TaoCreate_ASFLS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_isils",path,"TaoCreate_ISILS",TaoCreate_ISILS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_kt",path,"TaoCreate_KT",TaoCreate_KT); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_rscs",path,"TaoCreate_RSCS",TaoCreate_RSCS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_icp",path,"TaoCreate_ICP",TaoCreate_ICP); CHKERRQ(ierr);
-
-*/
 
   
   PetscFunctionReturn(0);

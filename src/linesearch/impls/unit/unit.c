@@ -62,17 +62,12 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
   PetscErrorCode   info;
   PetscReal ftry;
   PetscReal startf = *f;
-  //  Vec XL,XU; 
 
   PetscFunctionBegin;
   
-  // Take unit step (newx = startx + 1.0*step_direction)
+  /* Take unit step (newx = startx + 1.0*step_direction) */
   info = VecAXPY(x,1.0,step_direction);CHKERRQ(info);
 
-  // info = TaoGetVariableBounds(tao,&XL,&XU); CHKERRQ(info);
-  //  if (XL && XU){
-  //    info = X->Median(XL,X,XU);CHKERRQ(info);
-  //  }
   info = TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g); CHKERRQ(info);
   info = PetscInfo1(ls,"Tao Apply Unit Step: %4.4e\n",1.0);
          CHKERRQ(info);
