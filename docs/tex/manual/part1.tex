@@ -163,21 +163,21 @@ the user is responsible for calling \texttt{PetscFinalize()}.
 
 The primary commands for solving an unconstrained optimization problem
 using TAO are shown in Figure \ref{fig:tao_commands}.
-\findex{TaoSolverCreate()} \findex{TaoSolverSetObjectiveAndGradientRoutine()}
-\findex{TaoSolverSetRoutine()} \findex{TaoSolverSolve()}
-\findex{TaoSolverDestroy()} \findex{TaoSolverSetInitialVector()}
+\findex{TaoCreate()} \findex{TaoSetObjectiveAndGradientRoutine()}
+\findex{TaoSetRoutine()} \findex{TaoSolve()}
+\findex{TaoDestroy()} \findex{TaoSetInitialVector()}
 
 \begin{figure}[H]
 \begin{verbatim}
-   TaoSolverCreate(MPI_Comm comm, TaoSolver *tao); 
-   TaoSolverSetType(TaoSolver tao, TaoSolverType type);
-   TaoSolverSetInitialVector(TaoSolver tao, Vec x);
-   TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, 
+   TaoCreate(MPI_Comm comm, TaoSolver *tao); 
+   TaoSetType(TaoSolver tao, TaoSolverType type);
+   TaoSetInitialVector(TaoSolver tao, Vec x);
+   TaoSetObjectiveAndGradientRoutine(TaoSolver tao, 
         int (*FormFGradient)(TaoSolver,Vec,PetscReal*,Vec,void*), void *user);
-   TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre,
+   TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre,
         int (*FormHessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), void *user);
-   TaoSolverSolve(TaoSolver tao);
-   TaoSolverDestroy(TaoSolver tao);
+   TaoSolve(TaoSolver tao);
+   TaoDestroy(TaoSolver tao);
 \end{verbatim}
 \caption{Commands for solving an unconstrained optimization problem
 \label{fig:tao_commands}}
@@ -195,7 +195,7 @@ Details of these commands are presented in
 Chapter~\ref{chapter:tao_solver}.
 
 Note that the solver algorithm selected through the function 
-\texttt{TaoSolverSetType()} can be overridden
+\texttt{TaoSetType()} can be overridden
 at runtime by using an options database.  Through this
 database, the user not only can select a minimization method (e.g.,
 limited-memory variable metric, conjugate gradient, Newton with line
@@ -328,7 +328,7 @@ are:
 \begin{verbatim}
    ierr = MatCreate(MPI_Comm comm,Mat *H);
    ierr = VecCreate(MPI_Comm comm,Vec *x);
-   ierr = TaoSolverCreate(MPI_Comm comm,TaoSolver *tao); 
+   ierr = TaoCreate(MPI_Comm comm,TaoSolver *tao); 
 \end{verbatim}
 \noindent
 The creation routines are collective over all processors in the
@@ -422,8 +422,8 @@ error detection within a sample program. The error occurred on line
 routine \texttt{MatMult()} and was caused by failure to assemble the 
 matrix in the Hessian evaluation routine.
 The \texttt{MatMult()} routine was called from
-the \texttt{TaoSolverSolve\_NLS()} routine, which was in turn called on line 
-154 of \texttt{TaoSolverSolve\_()}, called from the \texttt{main()} routine 
+the \texttt{TaoSolve\_NLS()} routine, which was in turn called on line 
+154 of \texttt{TaoSolve\_()}, called from the \texttt{main()} routine 
 in the program \texttt{rosenbrock1.c}.  The PETSc users
 manual provides further details regarding error checking, including
 information about the Fortran interface.
@@ -446,8 +446,8 @@ information about the Fortran interface.
 [0]PETSC ERROR: Configure options --with-shared-libraries --with-dynamic-loading --with-mpi-dir=/usr/local
 [0]PETSC ERROR: ------------------------------------------------------------------------
 [0]PETSC ERROR: MatMult() line 2110 in petsc-dev/src/mat/interface/matrix.c
-[0]PETSC ERROR: TaoSolverSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
-[0]PETSC ERROR: TaoSolverSolve() line 154 in src/interface/taosolver.c
+[0]PETSC ERROR: TaoSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
+[0]PETSC ERROR: TaoSolve() line 154 in src/interface/taosolver.c
 [0]PETSC ERROR: main() line 94 in src/unconstrained/examples/tutorials/rosenbrock1.c
 application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
 \end{verbatim}

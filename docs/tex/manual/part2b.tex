@@ -693,7 +693,7 @@ it evaluates the function, gradient, and Hessian only once.
 In this algorithm all of the variables are free variables.
 This method also requires the solution of systems of linear equations,
 whose solver can be accessed and modified 
-with the command {\tt TaoSolverGetKSP()}.
+with the command {\tt TaoGetKSP()}.
 
 \subsection{Limited Memory Variable Metric Method}
 
@@ -895,10 +895,10 @@ performed.
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
 squares problem minimizes $\half \| F(X) \|_2$.
 The nonlinear equations $F$ should be specified with the function
-{\tt TaoSolverSetSeparableObjectiveFunction()}.
+{\tt TaoSetSeparableObjectiveFunction()}.
 Most solvers also require the Jacobian of this function.  
 The routine that evaluates this matrix should be set
-using the command {\tt TaoSolverSetJacobianRoutine()}.
+using the command {\tt TaoSetJacobianRoutine()}.
 
 Using the constraint data provided by the user, the nonlinear
 least squares solver formulates a minimization problem, and

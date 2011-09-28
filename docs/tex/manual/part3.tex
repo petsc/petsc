@@ -28,12 +28,12 @@ is a pointer to a structure defined by the user.
 Within this routine, the solver
 can be queried for the solution vector, gradient vector,
 or other statistic at the current iteration through routines such as
-{\tt TaoSolverGetSolutionStatus()} and  {\tt TaoSolverGetTolerances()}.
+{\tt TaoGetSolutionStatus()} and  {\tt TaoGetTolerances()}.
 
 To use this convergence test within a TAO solver, use
-the command \findex{TaoSolverSetConvergenceTest()}
+the command \findex{TaoSetConvergenceTest()}
 \begin{verbatim}
-      PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver tao,
+      PetscErrorCode TaoSetConvergenceTest(TaoSolver tao,
                                 PetscErrorCode (*conv)(TaoSolver,void*),
                                 void *cctx);
 \end{verbatim}
@@ -45,7 +45,7 @@ The convergence routine receives the TAO solver and this private data
 structure. 
 The termination flag can be set using the routine
 \begin{verbatim}
-   PetscErrorCode TaoSolverSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
+   PetscErrorCode TaoSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
 \end{verbatim}
 \noindent
 
@@ -58,7 +58,7 @@ Many solvers in TAO require a line search.  While these solvers always
 offer a default line search, alternative line searches can also be used
 using the function
 \begin{verbatim}
-  PetscErrorCode TaoSolverSetDefaultLineSearchType(TaoSolver, LineSearchType);
+  PetscErrorCode TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
 \end{verbatim}
 command line option  {\tt -tao\_ls\_type}.  Available line searches 
 include Mor\'{e}-Thuente\cite{more:92}, Armijo, gpcg, and unit.
