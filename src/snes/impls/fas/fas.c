@@ -184,19 +184,12 @@ PetscErrorCode SNESReset_FAS(SNES snes)
 
   PetscFunctionBegin;
   /* destroy local data created in SNESSetup_FAS */
-  if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
-  if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
-  if (fas->interpolate == fas->restrct) {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    fas->restrct = PETSC_NULL;
-  } else {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
-  }
-  if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
+#if 0
   /* recurse -- reset should destroy the structures -- destroy should destroy the structures recursively */
+#endif
   if (fas->next) ierr = SNESReset_FAS(fas->next);CHKERRQ(ierr);
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+#if 0
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -210,7 +203,18 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
   PetscFunctionBegin;
   /* recursively resets and then destroys */
   ierr = SNESReset_FAS(snes);CHKERRQ(ierr);
-  if (fas->next) ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
+  if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
+  if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
+  if (fas->interpolate == fas->restrct) {
+    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
+    fas->restrct = PETSC_NULL;
+  } else {
+    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
+    if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
+  }
+  if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
+  if (snes->work)        ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
+  if (fas->next)         ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   ierr = PetscFree(fas);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -224,21 +228,21 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+  if (!snes->work || snes->nwork != 2)ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   /* gets the solver ready for solution */
   if (snes->dm) {
     /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
     if (fas->next) {
       /* for now -- assume the DM and the evaluation functions have been set externally */
-        if (!fas->next->dm) {
-          ierr = DMCoarsen(snes->dm, ((PetscObject)fas->next)->comm, &fas->next->dm);CHKERRQ(ierr);
-          ierr = SNESSetDM(fas->next, fas->next->dm);CHKERRQ(ierr);
-        }
-        /* set the interpolation and restriction from the DM */
-        if (!fas->interpolate) {
-          ierr = DMGetInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
-          fas->restrct = fas->interpolate;
-        }
+      if (!fas->next->dm) {
+        ierr = DMCoarsen(snes->dm, ((PetscObject)fas->next)->comm, &fas->next->dm);CHKERRQ(ierr);
+        ierr = SNESSetDM(fas->next, fas->next->dm);CHKERRQ(ierr);
+      }
+      /* set the interpolation and restriction from the DM */
+      if (!fas->interpolate) {
+        ierr = DMGetInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
+        fas->restrct = fas->interpolate;
+      }
     }
     /* set the DMs of the pre and post-smoothers here */
     if (fas->upsmooth)  SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);
@@ -246,7 +250,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   }
   if (fas->next) {
     /* gotta set up the solution vector for this to work */
-    ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);
+    if (!fas->next->vec_sol)ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
   /* got to set them all up at once */
