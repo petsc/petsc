@@ -332,46 +332,51 @@ runex5_4:
 	   else echo ${PWD} ; echo "Possible problem with with ex5_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_4.tmp
 
+#COMPOSABLE SOLVER DEMOS: OPTIONS
+CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0
+N_SMOOTHS = 3
+N_RESTART = 10
+
 runex5_5_ngmres:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0  > ex5_5_ngmres.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp || echo "Possible problem with ex5_5_ngmres, diffs above \n========================================="; \
-	   ${RM} -f ex5_5_ngmres.tmp
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART}
+
 runex5_5_ngmres_richardson:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -npc_snes_ls quadratic -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_type nrichardson -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_richardson.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp || echo "Possible problem with ex5_5_ngmres_richardson, diffs above \n========================================="; \
-	   ${RM} -f ex5_5_ngmres_richardson.tmp
-runex5_5_richardson:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -npc_snes_max_it 2 \
-	-snes_type nrichardson -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
-	-par 6.0  > ex5_5_richardson.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_richardson.out ex5_5_richardson.tmp || echo "Possible problem with ex5_5_richardson, diffs above \n========================================="; \
-	   ${RM} -f ex5_5_richardson.tmp
-runex5_5_qn:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
-	-snes_type qn -snes_qn_m 100 -snes_monitor_short -snes_max_it 1000 \
-	-par 6.0  > ex5_5_qn.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_qn.out ex5_5_qn.tmp || echo "Possible problem with ex5_5_qn, diffs above \n========================================="; \
-	   ${RM} -f ex5_5_qn.tmp
-runex5_5_ls:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
-	-snes_type ls -snes_monitor_short -snes_max_it 1000 \
-	-par 6.0
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS}
+
 runex5_5_ncg:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_ls quadratic  \
-	-snes_type ncg -npc_snes_max_it 2 -snes_monitor_short -snes_max_it 10000 \
-	-par 6.0
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ls_type quadratic
+
+runex5_5_ncg_richardson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS}
+
+runex5_5_richardson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson
+
+runex5_5_richardson_ngs:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
+
+runex5_5_ngmres_ngs:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
+
+runex5_5_qn:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_m ${N_RESTART}
+
+runex5_5_ls:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls
+
 runex5_5_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -da_grid_x 21 -da_grid_y 21   \
-	-snes_type fas -snes_fas_coarse_smoother_type ls -snes_fas_monitor -snes_fas_levels 2 -snes_monitor_short -snes_max_it 10000 \
-	-par 6.0
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type fas -snes_fas_up_it ${N_SMOOTHS} -snes_fas_down_it ${N_SMOOTHS}  \
+	-snes_fas_smoother_type nrichardson -snes_fas_levels 3
 
 runex5_5_ngmres_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -da_grid_x 21 -da_grid_y 21   \
-	-snes_type ngmres -snes_monitor_short -snes_max_it 10000 \
-        -npc_snes_type fas -npc_snes_max_it 1 -npc_snes_fas_coarse_smoother_type ls -npc_snes_fas_monitor -npc_snes_fas_levels 2 \
-	-par 6.0
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} \
+	-npc_snes_max_it 1 -npc_snes_type fas -npc_snes_fas_up_it ${N_SMOOTHS} -npc_snes_fas_down_it ${N_SMOOTHS} \
+	-npc_snes_fas_smoother_type nrichardson -npc_snes_fas_levels 3
+
+runex5_5_ncg_fas:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg  \
+	-npc_snes_max_it 1 -npc_snes_type fas -npc_snes_fas_up_it ${N_SMOOTHS} -npc_snes_fas_down_it ${N_SMOOTHS} \
+	-npc_snes_fas_smoother_type nrichardson -npc_snes_fas_levels 3
 
 runex5_6:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \

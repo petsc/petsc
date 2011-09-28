@@ -353,13 +353,14 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool               flg,mf,mf_operator;
+  PetscBool               flg,mf,mf_operator,pcset;
   PetscInt                i,indx,lag,mf_version,grids;
   MatStructure            matflag;
   const char              *deft = SNESLS;
   const char              *convtests[] = {"default","skip"};
   SNESKSPEW               *kctx = NULL;
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
+  const char              *optionsprefix;
   PetscViewer             monviewer;
   PetscErrorCode          ierr;
 
@@ -507,6 +508,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,matflag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
+
+  /* if someone has set the SNES PC type, create it. */
+  ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(optionsprefix, "-npc_snes_type", &pcset);CHKERRQ(ierr);
+  if (pcset && (!snes->pc)) {
+    ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
+  }
 
   if (snes->pc) {
     ierr = SNESSetOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
