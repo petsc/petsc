@@ -1261,7 +1261,7 @@ PetscErrorCode TaoSetConvergenceTest(TaoSolver tao, PetscErrorCode (*conv)(TaoSo
 +  tao - the TaoSolver solver context
 .  mymonitor - monitoring routine
 -  mctx - [optional] user-defined context for private data for the 
-          monitor routine (may be TAO_NULL)
+          monitor routine (may be PETSC_NULL)
 
    Calling sequence of mymonitor:
 $     int mymonitor(TaoSolver tao,void *mctx)
@@ -2271,7 +2271,7 @@ indicating distance from optimality.
    TAO returns the values set by the solvers in the routine TaoMonitor().
 
    Note:
-   If any of the output arguments are set to TAO_NULL, no value will be 
+   If any of the output arguments are set to PETSC_NULL, no value will be 
    returned.
 
 

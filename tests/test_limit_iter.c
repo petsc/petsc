@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   PetscReal zero=0.0;
   Vec        x;                     /* solution vector */
   Mat        H;
-  TaoSolver  tao;                   /* TAO_SOLVER solver context */
+  TaoSolver  tao;                   /* TaoSolver solver context */
   PetscBool  flg;
   int        size,rank;                  /* number of processes running */
   TaoSolverTerminationReason reason;

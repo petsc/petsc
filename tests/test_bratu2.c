@@ -87,7 +87,7 @@ int main( int argc, char **argv )
   Vec      x,f;                 /* solution, residual vectors */
   Mat      J;                   /* Jacobian matrix */
   PetscBool flg;               /* flag - 1 indicates matrix-free version */
-  TaoSolver tao;               /* TAO_SOLVER solver context */
+  TaoSolver tao;               /* TaoSolver solver context */
   ISLocalToGlobalMapping isltog;
   PetscInt      nloc, *ltog;         /* indexing variables */
   PetscReal   bratu_lambda_max = 6.81, bratu_lambda_min = 0.; /* parameter bound */

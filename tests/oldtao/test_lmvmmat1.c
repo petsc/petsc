@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     TaoLMVMMat *lmvm_mat;
     TaoVecPetsc *tv[50];
     TaoVec *y;
-    TAO_SOLVER tao;
+    TaoSolver tao;
     TAO_APPLICATION app;
 
     PetscInitialize(&argc, &argv, 0, 0);

@@ -10,7 +10,7 @@ PetscErrorCode MyFuncGrad(TAO_APPLICATION myapp, Vec X, PetscReal *f, Vec G, voi
 
 int main(int argc, char *argv[])
 { 
-    TAO_SOLVER tao;
+    TaoSolver tao;
     TAO_APPLICATION app;
     Vec x,g,s,w;
     TaoVec *X, *G, *S, *W;

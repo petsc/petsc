@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
   DM              dm;
   PetscBool       flg;
   AppCtx          user;                    /* user-defined work context */
-  TaoDM           *taodm;                     /* TAO_SOLVER solver context */
+  TaoDM           *taodm;                     /* TaoSolver solver context */
   //TaoSolverTerminationReason reason;
 
     /* Initialize TAO */
@@ -84,10 +84,10 @@ int main(int argc, char **argv) {
   user.ecc = 0.1;
   user.b = 10.0;
   user.mx = user.my = 11;
-  ierr = PetscOptionsGetReal(TAO_NULL, "-ecc", &user.ecc, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(TAO_NULL, "-b", &user.b, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(TAO_NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(TAO_NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL, "-ecc", &user.ecc, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL, "-b", &user.b, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
 
   PetscPrintf(MPI_COMM_WORLD,"\n---- Journal Bearing Problem -----\n\n");
 

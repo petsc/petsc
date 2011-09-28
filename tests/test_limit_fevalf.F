@@ -158,7 +158,7 @@
 !  FormFunctionGradient - Evaluates the function f(X) and gradient G(X)
 !
 !  Input Parameters:
-!  tao - the TAO_SOLVER context
+!  tao - the TaoSolver context
 !  X   - input vector
 !  dummy - not used
 !
@@ -225,7 +225,7 @@
 !  FormHessian - Evaluates Hessian matrix.
 !
 !  Input Parameters:
-!  tao     - the TAO_SOLVER context
+!  tao     - the TaoSolver context
 !  X       - input vector
 !  dummy   - optional user-defined context, as set by SNESSetHessian()
 !            (not used here)

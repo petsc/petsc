@@ -84,7 +84,7 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
    backtracks until the (nonmonotone) Armijo conditions are satisfied.
 
    Input Parameters:
-+  tao - TAO_SOLVER context
++  tao - TaoSolver context
 .  X - current iterate (on output X contains new iterate, X + step*S)
 .  S - search direction
 .  f - merit function evaluated at X
@@ -329,7 +329,7 @@ PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   ierr = PetscNewLog(ls,TAOLINESEARCH_ARMIJO_CTX, &armP);CHKERRQ(ierr);
 
-  armP->memory = TAO_NULL;
+  armP->memory = PETSC_NULL;
   armP->alpha = 1.0;
   armP->beta = 0.5;
   armP->beta_inf = 0.5;

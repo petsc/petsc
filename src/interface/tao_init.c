@@ -17,8 +17,8 @@ static char** tao_executablePtr = &tao_executable;
 +  argc - [optional] count of number of command line arguments
 .  args - [optional] the command line arguments
 .  file - [optional] PETSc database file, defaults to ~username/.petscrc
-          (use TAO_NULL for default)
--  help - [optional] Help message to print, use TAO_NULL for no message
+          (use PETSC_NULL for default)
+-  help - [optional] Help message to print, use PETSC_NULL for no message
 
    Note:
    TaoInitialize() should always be called near the beginning of your 

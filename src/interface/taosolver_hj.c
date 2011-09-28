@@ -13,7 +13,7 @@
 .  Hpre - Matrix that will be used operated on by preconditioner, can be same as H
 .  hess - Hessian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Hessian evaluation routine (may be TAO_NULL)
+         Hessian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of hess:
 $    hess (TaoSolver tao,Vec x,Mat *H,Mat *Hpre,MatStructure *flag,void *ctx);
@@ -337,7 +337,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 .  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be TAO_NULL)
+         Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
@@ -551,7 +551,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
 .  J - Matrix used for the jacobian
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be TAO_NULL)
+         Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);

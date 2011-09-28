@@ -73,7 +73,7 @@ int main( int argc, char **argv )
   Vec        xl,xu;                  /* bounds vectors */
   PetscReal d1000 = 1000;
   PetscBool   flg;              /* A return variable when checking for user options */
-  TaoSolver tao;                /* TAO_SOLVER solver context */
+  TaoSolver tao;                /* TaoSolver solver context */
 
   TaoSolverTerminationReason reason;
   AppCtx     user;               /* user-defined work context */
@@ -89,10 +89,10 @@ int main( int argc, char **argv )
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(TAO_NULL,"-mx",&user.nx,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(TAO_NULL,"-my",&user.ny,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(TAO_NULL,"-ecc",&user.ecc,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(TAO_NULL,"-b",&user.b,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.nx,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.ny,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg); CHKERRQ(ierr);
 
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");
@@ -217,8 +217,8 @@ PetscErrorCode ComputeB(AppCtx* user)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
   
 
   /* Compute the linear term in the objective function */  
@@ -270,8 +270,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
   
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);
@@ -376,8 +376,8 @@ PetscErrorCode FormGradient(TaoLineSearch ls, Vec X, Vec G,void *ptr)
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
   
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);
@@ -478,8 +478,8 @@ PetscErrorCode FormFunctionGTS(TaoLineSearch ls, Vec X, Vec Step, PetscReal *fcn
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
   
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(user->G,&g); CHKERRQ(ierr);
@@ -584,8 +584,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
   
   ierr = MatAssembled(hes,&assembled); CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(hes);  CHKERRQ(ierr);}

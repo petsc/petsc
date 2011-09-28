@@ -59,8 +59,8 @@ typedef struct {
 /* User provided Routines */
 int InitializeData(AppCtx *user);
 int FormStartingPoint(Vec);
-int EvaluateConstraints(TAO_SOLVER, Vec, Vec, void *);
-int EvaluateJacobian(TAO_SOLVER, Vec, Mat*, void *);
+int EvaluateConstraints(TaoSolver, Vec, Vec, void *);
+int EvaluateJacobian(TaoSolver, Vec, Mat*, void *);
 
 
 /*--------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   int        info;               /* used to check for functions returning nonzeros */
   Vec        x, r;               /* solution, function */
   Mat        J;                  /* Jacobian matrix */ 
-  TAO_SOLVER tao;                /* TAO_SOLVER solver context */
+  TaoSolver tao;                /* TaoSolver solver context */
   TAO_APPLICATION taoapp;        /* The PETSc application */
   int        iter,i;               /* iteration information */
   double     ff;
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
 
 
   /* Set the function and Jacobian routines. */
-  info = TaoSetPetscFunction(taoapp,x,TAO_NULL,TAO_NULL); CHKERRQ(info);
+  info = TaoSetPetscFunction(taoapp,x,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
   info = TaoSetPetscJacobian(taoapp, J, EvaluateJacobian, (void*)&user);  CHKERRQ(info);
   info = TaoSetPetscConstraintsFunction(taoapp, r, EvaluateConstraints, (void*)&user); CHKERRQ(info);
 
@@ -157,7 +157,7 @@ int main(int argc,char **argv)
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateConstraints"
-int EvaluateConstraints(TAO_SOLVER tao, Vec X, Vec R, void *ptr)
+int EvaluateConstraints(TaoSolver tao, Vec X, Vec R, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
   int i;
@@ -191,7 +191,7 @@ int EvaluateConstraints(TAO_SOLVER tao, Vec X, Vec R, void *ptr)
 /* J[i][j] = dr[i]/dt[j] */
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateJacobian"
-int EvaluateJacobian(TAO_SOLVER tao, Vec X, Mat *J, void *ptr)
+int EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
   int i,info;
