@@ -1413,9 +1413,9 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
 -  nthreads - number of threads
 
    Notes:
-    If this routine is not called then the vector uses the default maximum number of threads (PetscMaxThreads).
+    This routine must be called before any vector operations are done.
 
-   Level: Beginner
+   Level: intermediate
 
    Concepts: vectors^setting number of threads
 
@@ -1591,7 +1591,7 @@ EXTERN_C_END
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
--  n - the vector length 
+.  n - the vector length 
 -  nthreads - number of threads.
 
    Output Parameter:
