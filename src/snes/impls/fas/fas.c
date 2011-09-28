@@ -33,6 +33,9 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   snes->ops->solve          = SNESSolve_FAS;
   snes->ops->reset          = SNESReset_FAS;
 
+  snes->usesksp             = PETSC_FALSE;
+  snes->usespc              = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
   snes->data                = (void*) fas;
   fas->level                = 0;
