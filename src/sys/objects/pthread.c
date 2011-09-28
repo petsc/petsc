@@ -32,7 +32,7 @@
 #include <valgrind/valgrind.h>
 #endif
 
-#if defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 PetscBool    PetscUseThreadPool    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscMaxThreads = 2;

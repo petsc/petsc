@@ -934,7 +934,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
-#if defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
   if (PetscThreadFinalize) {
     /* thread pool case */
     ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
