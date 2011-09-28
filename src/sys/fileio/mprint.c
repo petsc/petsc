@@ -828,15 +828,27 @@ PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
 {
   char              *newformat,*nformat,*oresult;
   char              formatbuf[8*1024],testbuf[8*1024];
+  static char       currentformat[8*1024];
   size_t            oldLength;
   PetscErrorCode    ierr;
   char              *result;
-  PetscBool         same;
+  PetscBool         same,cr;
+  static PetscBool  current = PETSC_FALSE;
   size_t            len;
   int               found;
   va_list           cArgp;
 
   PetscFunctionBegin;
+  if (!current) {
+    ierr    = PetscStrcpy(currentformat,format);CHKERRQ(ierr);
+    current = PETSC_TRUE;
+  } else {
+    ierr    = PetscStrcat(currentformat,format);CHKERRQ(ierr);
+  }
+  ierr = PetscStrendswith(format,"\n",&cr);CHKERRQ(ierr);
+  if (!cr) PetscFunctionReturn(0);
+  current = PETSC_FALSE;
+
   va_copy(cArgp,Argp);
   ierr = PetscTokenFind(OriginalRun,&result);CHKERRQ(ierr);
   if (!result) {
@@ -844,7 +856,7 @@ PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
     exit(0);
   }
 
-  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
+  ierr = PetscStrlen(currentformat, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
     oldLength = 8*1024-1;
@@ -852,7 +864,7 @@ PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
     oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
     ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
   }
-  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
+  ierr = PetscFormatConvert(currentformat,newformat,oldLength);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(testbuf,8*1024,newformat,&len,Argp);CHKERRQ(ierr);
   testbuf[len-1] = 0; /* remove \n at end of line */
   ierr = PetscStrcmp(result,testbuf,&same);CHKERRQ(ierr);

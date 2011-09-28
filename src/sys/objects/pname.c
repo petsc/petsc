@@ -62,8 +62,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   }
   ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes",size);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size);CHKERRQ(ierr);
   if (obj->type_name) {
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
   } else {
