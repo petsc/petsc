@@ -1203,7 +1203,7 @@ int compare (const void *a, const void *b)
    . a_data[nloc*a_data_sz(in)]
    . a_dim - dimention
    . a_data_cols - number of colums in data (rows is infered from 
-   . a_useSA - do smoothed aggregation, otherwise do geometric
+   . a_method - do smoothed aggregation (2), plane agg (1) or geometric (0)
    . a_level - 0 for finest, +L-1 for coarsest
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
@@ -1219,7 +1219,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    const PetscReal a_data[],
                                    const PetscInt a_dim,
                                    const PetscInt a_data_cols,
-                                   const PetscBool a_useSA,
+                                   const PetscInt a_method,
                                    const PetscInt a_level,
 				   PetscInt *a_bs,
                                    Mat *a_P_out,
@@ -1234,7 +1234,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
   IS             rankIS, permIS, llist_1, selected_1, selected_2;
-  const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_useSA ? a_data_cols : bs_in);
+  const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_method!=0 ? a_data_cols : bs_in);
   const PetscScalar *vals;
   PetscReal       vfilter;
   PetscInt       *d_nnz;
@@ -1321,7 +1321,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
 
   /* square matrix - SA */  
-  if( a_useSA ){
+  if( a_method != 0 ){
     Mat Gmat2;
     ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     CHKERRQ(ierr);
@@ -1425,9 +1425,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-  ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, a_useSA, &selected_1, &llist_1 );
+  ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, (PetscBool)(a_method != 0), &selected_1, &llist_1 );
   CHKERRQ(ierr);
-  if( a_useSA ) {
+  if( a_method != 0 ) {
     ierr = MatDestroy( &AuxMat );  CHKERRQ(ierr); 
   }
 #if defined PETSC_USE_LOG
@@ -1469,7 +1469,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
 
   /* switch for SA or GAMG */
-  if( !a_useSA ) {
+  if( a_method == 0 ) {
     PetscReal *coords; assert(a_dim==a_data_cols); PetscInt nnodes;
     PetscInt  *crsGID;
     Mat        Gmat2;
@@ -1619,13 +1619,16 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
  
     /* smooth P0 */
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
-#endif 
-    { /* eigen estimate 'emax' - this is also use for cheb smoother */
+    if( a_method == 2 ) {
+      Mat tMat; 
+      Vec diag;    
       KSP eksp; 
       Vec bb, xx; 
       PC pc;
+
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
+#endif 
       ierr = MatGetVecs( a_Amat, &bb, 0 );         CHKERRQ(ierr);
       ierr = MatGetVecs( a_Amat, &xx, 0 );         CHKERRQ(ierr);
       {
@@ -1654,12 +1657,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
-    }
-
-    /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
-    if( PETSC_TRUE ) {
-      Mat tMat; 
-      Vec diag;
+    
+      /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
       ierr = MatMatMult( a_Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat );   CHKERRQ(ierr);
       ierr = MatGetVecs( a_Amat, &diag, 0 );    CHKERRQ(ierr);
       ierr = MatGetDiagonal( a_Amat, diag );    CHKERRQ(ierr); /* effectively PCJACOBI */
@@ -1670,12 +1669,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
       ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       Prol = tMat;
-    }
 #if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif
-    *a_emax = emax; /* estimate for cheb smoother */
-
+      *a_emax = emax; /* estimate for cheb smoother */
+    }
     *a_bs = a_data_cols;
   }
   *a_P_out = Prol;  /* out */

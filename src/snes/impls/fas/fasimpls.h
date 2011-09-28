@@ -2,6 +2,7 @@
 #define _SNES_FASIMPLS
 
 #include <private/snesimpl.h>
+#include <private/dmimpl.h>
 
 typedef struct {
 
@@ -11,8 +12,8 @@ typedef struct {
 
 
   /* smoothing objects */
-  SNES           presmooth;                    /* the SNES for presmoothing */
-  SNES           postsmooth;                   /* the SNES for postsmoothing */
+  SNES           upsmooth;                     /* the SNES for presmoothing */
+  SNES           downsmooth;                   /* the SNES for postsmoothing */
 
   /* coarse grid correction objects */
   SNES           next;                         /* the SNES instance for the next level in the hierarchy */
@@ -20,8 +21,10 @@ typedef struct {
   Mat            restrct;                      /* restriction operator */
   Vec            rscale;                       /* the pointwise scaling of the restriction operator */
 
-  /* method specific */
-  PetscInt cycles;
+  /* method parameters */
+  PetscInt       n_cycles;                     /* number of cycles on this level */
+  PetscInt       max_up_it;                    /* number of pre-smooths */
+  PetscInt       max_down_it;                  /* number of post-smooth cycles */
 
 } SNES_FAS;
 

@@ -249,7 +249,7 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void);
 #endif
 
@@ -548,7 +548,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = PetscOptionsCheckInitial_Private_Pthread();
 #endif
   /*

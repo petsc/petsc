@@ -99,13 +99,16 @@ public:
   */
   void setNumPoints(rank_type rank, index_type numPoints) {
     index_type r, s;
+    /* This will sort rank in reverse order */
     for(r = 0; r < numRanks; ++r) {
       if (rank >= ranks[r]) break;
     }
     assert(r < numRanks);
     if (rank != ranks[r]) {
       assert(ranks[numRanks-1] == -1);
+      pointsOffset[numRanks] = pointsOffset[numRanks-1];
       for(s = numRanks; s > r; --s) {
+        ranks[s]        = ranks[s-1];
         pointsOffset[s] = pointsOffset[s-1];
       }
     }

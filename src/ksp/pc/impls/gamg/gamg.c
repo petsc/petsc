@@ -1,8 +1,8 @@
 /*
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
-#include <../src/ksp/pc/impls/gamg/gamg.h>
-#include "private/matimpl.h"          /*I "petscmat.h" I*/
+#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
+#include "private/matimpl.h"
 
 #if defined PETSC_USE_LOG
 PetscLogEvent gamg_setup_events[NUM_SET];
@@ -23,7 +23,7 @@ typedef struct gamg_TAG {
   PetscInt       m_data_rows;
   PetscInt       m_data_cols;
   PetscInt       m_count;
-  PetscBool      m_useSA;
+  PetscInt       m_method; /* 0: geomg; 1: plane agg 'pl'; 2: smoothed agg (sa) */
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
   char           m_type[64];
 } PC_GAMG;
@@ -54,11 +54,11 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   pc_gamg->m_data_rows = 1; 
-  if(a_coords == 0) pc_gamg->m_useSA = PETSC_TRUE; /* use SA if no data */
-  if( !pc_gamg->m_useSA ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
+  if(a_coords == 0) pc_gamg->m_method = 2; /* use SA if no data */
+  if( pc_gamg->m_method==0 ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
   else{ /* SA: null space vectors */
     if(a_coords != 0 && bs==1 ) pc_gamg->m_data_cols = 1; /* scalar w/ coords and SA (not needed) */
-    else if(a_coords != 0) pc_gamg->m_data_cols = (a_ndm==2 ? 3 : 6); /* elasticity */
+    else if(a_coords != 0 ) pc_gamg->m_data_cols = (a_ndm==2 ? 3 : 6); /* elasticity */
     else pc_gamg->m_data_cols = bs; /* no data, force SA with constant null space vectors */
     pc_gamg->m_data_rows = bs; 
   }
@@ -72,7 +72,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   for(kk=0;kk<arrsz;kk++)pc_gamg->m_data[kk] = -999.;
   pc_gamg->m_data[arrsz] = -99.;
   /* copy data in - column oriented */
-  if( pc_gamg->m_useSA ) {
+  if( pc_gamg->m_method != 0 ) {
     const PetscInt M = Iend - my0;
     for(kk=0;kk<nloc;kk++){
       PetscReal *data = &pc_gamg->m_data[kk*bs];
@@ -360,11 +360,11 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate( wcomm, &dest_crd );
     ierr = VecSetSizes( dest_crd, data_sz*ncrs_new, PETSC_DECIDE ); CHKERRQ(ierr);
-    ierr = VecSetFromOptions( dest_crd ); CHKERRQ(ierr); /*funny vector-get global options?*/
+    ierr = VecSetFromOptions( dest_crd ); CHKERRQ(ierr); /* this is needed! */
     /*
-      There are 'a_ndata_rows*a_ndata_cols' data items per node, (one can think of the vectors of having 
-      a block size of ...).  Note, ISs are expanded into equation space by 'a_cbs'.
-    */
+     There are 'a_ndata_rows*a_ndata_cols' data items per node, (one can think of the vectors of having 
+     a block size of ...).  Note, ISs are expanded into equation space by 'a_cbs'.
+     */
     ierr = PetscMalloc( (ncrs0*data_sz)*sizeof(PetscInt), &tidx ); CHKERRQ(ierr); 
     ierr = ISGetIndices( isnum, &idx ); CHKERRQ(ierr);
     for(ii=0,jj=0; ii<ncrs0 ; ii++) {
@@ -376,8 +376,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     CHKERRQ(ierr);
     ierr = PetscFree( tidx );  CHKERRQ(ierr);
     /*
-      Create a vector to contain the original vertex information for each element
-    */
+     Create a vector to contain the original vertex information for each element
+     */
     ierr = VecCreateSeq( PETSC_COMM_SELF, data_sz*ncrs0, &src_crd ); CHKERRQ(ierr);
     for( jj=0; jj<a_ndata_cols ; jj++ ) {
       for( ii=0 ; ii<ncrs0 ; ii++) {
@@ -571,7 +571,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
-    ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_useSA,
+    ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_method,
                               level, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
@@ -583,7 +583,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #if defined PETSC_USE_LOG
       ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
-      ierr = partitionLevel( Aarr[level], pc_gamg->m_useSA ? bs : 1, pc_gamg->m_data_cols, bs,
+      ierr = partitionLevel( Aarr[level], (pc_gamg->m_method != 0) ? bs : 1, pc_gamg->m_data_cols, bs,
                              &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1] );
       CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
@@ -942,15 +942,16 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   ierr = PetscOptionsHead("GAMG options"); CHKERRQ(ierr);
   {
     ierr = PetscOptionsString("-pc_gamg_type",
-                              "Solver type: smoothed aggregation ('sa') or geometric multigrid (default)",
+                              "Solver type: plane aggregation ('pa'), smoothed aggregation ('sa') or geometric multigrid (default)",
                               "PCGAMGSetSolverType",
                               pc_gamg->m_type,
                               pc_gamg->m_type, 
                               64, 
                               &flag ); 
     CHKERRQ(ierr);
-    pc_gamg->m_useSA = (PetscBool)(flag && strcmp(pc_gamg->m_type,"sa") == 0);
-    
+    if (flag && strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
+    else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
+    else pc_gamg->m_method = 0;
     /* this global! */
     ierr = PetscOptionsBool("-pc_gamg_avoid_repartitioning",
                             "Do not repartion coarse grids (false)",

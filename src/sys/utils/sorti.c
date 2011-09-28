@@ -253,7 +253,7 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *I,PetscInt *J,
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt I[],PetscInt J[], PetscInt K[])
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *I,PetscInt *J, PetscInt *K)
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -451,7 +451,7 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt *I[], PetscInt *J[]) 
+PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **I, PetscInt **J) 
 {
   PetscErrorCode ierr;
   PetscInt n_, *I_ = *I, *J_= *J, ak, bk, k;

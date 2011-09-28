@@ -2219,7 +2219,7 @@ extern PetscErrorCode  PetscSortRealWithPermutation(PetscInt,const PetscReal[],P
 extern PetscErrorCode  PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 extern PetscErrorCode  PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
 extern PetscErrorCode  PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
-extern PetscErrorCode  PetscMergeIntArrayPair(PetscInt,const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],PetscInt*,PetscInt*[],PetscInt*[]);
+extern PetscErrorCode  PetscMergeIntArrayPair(PetscInt,const PetscInt*,const PetscInt*,PetscInt,const PetscInt*,const PetscInt*,PetscInt*,PetscInt**,PetscInt**);
 
 extern PetscErrorCode  PetscSetDisplay(void);
 extern PetscErrorCode  PetscGetDisplay(char[],size_t);
