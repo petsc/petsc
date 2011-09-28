@@ -272,6 +272,10 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   /* number of levels -- only process on the finest level */
   if (fas->levels - 1 == fas->level) {
     ierr = PetscOptionsInt("-snes_fas_levels", "Number of Levels", "SNESFASSetLevels", levels, &levels, &flg);CHKERRQ(ierr);
+    if (!flg && snes->dm) {
+      ierr = DMGetRefineLevel(snes->dm,&levels);CHKERRQ(ierr);
+      levels++;
+    }
     ierr = SNESFASSetLevels(snes, levels, PETSC_NULL);CHKERRQ(ierr);
   }
 
