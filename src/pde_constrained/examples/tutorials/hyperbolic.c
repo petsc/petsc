@@ -596,8 +596,8 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
 
   i = user->block_index;
   if (user->c_formed) {
-    //ierr = MatSOR(user->C,X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
-    ierr = MatSOR(user->C[i],X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
+    //ierr = MatSOR(user->C,X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
+    ierr = MatSOR(user->C[i],X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
     //VecCopy(X,Y);
   }
   else {
@@ -621,7 +621,7 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
 
   i = user->block_index;
   if (user->c_formed) {
-    ierr = MatSOR(user->C[i],X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
+    ierr = MatSOR(user->C[i],X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
   }
   else {
     printf("C not formed"); abort();
