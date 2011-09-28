@@ -237,6 +237,8 @@ allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
+cmakegen:
+	-@${PYTHON} config/cmakegen.py
 #
 # These are here for the target allci and allco, and etags
 #
