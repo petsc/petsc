@@ -1801,6 +1801,35 @@ PetscErrorCode  TSStep(TS ts)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSEvaluateStep"
+/*@
+   TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
+
+   Collective
+
+   Input Arguments:
+
+   Output Arguments:
+
+   Level: advanced
+
+.seealso:
+@*/
+PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidType(ts,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  if (!ts->ops->evaluatestep) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->evaluatestep)(ts,order,X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+extern PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X);
+
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve"
 /*@
