@@ -8,7 +8,7 @@ SOURCEH  = nls.h
 OBJSC    = nls.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/unconstrained/impls/nls/
 
 include ${TAO_DIR}/conf/tao_base

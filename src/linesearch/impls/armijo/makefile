@@ -9,7 +9,7 @@ SOURCEH  = armijo.h
 OBJSC    = armijo.o
 OBJSF    = 
 LIBBASE  = libtaolinesearch
-MANSEC   = linesearch
+MANSEC   = 
 LOCDIR   = src/linesearch/impls/armijo/
 
 include ${TAO_DIR}/conf/tao_base

@@ -8,7 +8,7 @@ SOURCEH  = sqpcon.h
 OBJSC    = sqpcon.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/pde_constrained/impls/sqpcon/
 
 include ${TAO_DIR}/conf/tao_base

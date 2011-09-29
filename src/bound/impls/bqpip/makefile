@@ -8,7 +8,7 @@ SOURCEH  = bqpip.h
 OBJSC    = bqpip.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/bound/impls/bqpip/
 
 include ${TAO_DIR}/conf/tao_base

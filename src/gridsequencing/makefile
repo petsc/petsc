@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = taodm.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taodm
+MANSEC   = 
 LOCDIR   = src/gridsequencing/
 
 include ${TAO_DIR}/conf/tao_base

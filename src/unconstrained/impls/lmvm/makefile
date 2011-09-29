@@ -8,7 +8,7 @@ SOURCEH  = lmvm.h
 OBJSC    = lmvm.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/unconstrained/impls/lmvm/
 
 include ${TAO_DIR}/conf/tao_base

@@ -8,7 +8,7 @@ SOURCEH  =
 OBJSC    = pounder.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/unconstrained/impls/pounder/
 
 include ${TAO_DIR}/conf/tao_base

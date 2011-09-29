@@ -8,7 +8,7 @@ SOURCEH  = ntr.h
 OBJSC    = ntr.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/unconstrained/impls/ntr/
 
 include ${TAO_DIR}/conf/tao_base
