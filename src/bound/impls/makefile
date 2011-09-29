@@ -1,5 +1,3 @@
-# $Id$ 
-
 ALL: lib
 
 DIRS     = blmvm  gpcg bqpip tron

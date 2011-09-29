@@ -1,5 +1,3 @@
-/*$Id$*/
-
 /*
   Include "tao.h" so we can use TAO solvers with PETSc support.  
   Include "petscdm.h" so that we can use distributed arrays (DMs) for managing

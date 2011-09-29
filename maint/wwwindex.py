@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id$ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manpages, ordering the indices into sections based

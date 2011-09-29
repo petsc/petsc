@@ -1,9 +1,7 @@
-/*$Id$*/
-
 #ifndef __TAO_GPCG_H
 #define __TAO_GPCG_H
-#include "private/taosolver_impl.h"
-#include "taolinesearch.h"
+#include "private/taosolver_impl.h" 
+#include "taolinesearch.h"          
 #include "tao_util.h"
 
 typedef struct{

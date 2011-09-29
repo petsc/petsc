@@ -1,9 +1,6 @@
 update manual
   add pounders section
 
-Allow separable objective function
-jacobian in leastsquares
-
 Check fortran stubs 
 
 Check documentation

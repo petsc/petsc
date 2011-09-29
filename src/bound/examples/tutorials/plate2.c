@@ -1,6 +1,5 @@
-/*$Id$*/
-#include "petscdm.h"
-#include "taosolver.h"
+#include "petscdm.h"   /*I "petscdm.h" I*/
+#include "taosolver.h" /*I "taosolver.h" I*/
 
 static  char help[] = 
 "This example demonstrates use of the TAO package to \n\

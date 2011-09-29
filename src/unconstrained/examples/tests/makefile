@@ -1,5 +1,3 @@
-# $Id$ 
-
 ALL: 
 
 CFLAGS	        =

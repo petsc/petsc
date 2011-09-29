@@ -1,5 +1,3 @@
-# $Id$ 
-
 TAO_DIR=/home/sarich/software/tao
 PETSC_ARCH=linux-gnu-cxx-debug
 
