@@ -151,7 +151,7 @@ static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 }
 
 /* ------------------------------------------------------------ */
-/*MC
+/*C
       FD_TEST - Test hand-coded Hessian against finite difference Hessian
 
    Options Database:
@@ -161,7 +161,7 @@ static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 
 .seealso:  TaoCreate(), TaoSetType()
 
-M*/
+*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoCreate_FD"

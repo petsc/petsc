@@ -2086,7 +2086,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverRegister"
 /*MC
-   TaoSolverRegister- Adds a method to the TAO package for unconstrained minimization.
+   TaoSolverRegister - Adds a method to the TAO package for unconstrained minimization.
 
    Synopsis:
    TaoSolverRegister(char *name_solver,char *path,char *name_Create,int (*routine_Create)(TaoSolver))
