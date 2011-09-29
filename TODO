@@ -1,24 +1,16 @@
-options
-  -help option
-    display more options
-    not every iteration!
-
 update manual
   add pounders section
 
 Allow separable objective function
-
-Check fortran stubs 
 jacobian in leastsquares
 
-One Library (libtaosolver)
+Check fortran stubs 
 
 Check documentation
   header /*I 
   Examples
   html
 
-add web pages to repository, not distribution
 
 
 Examples/tests
@@ -37,11 +29,11 @@ Test compilers
   intel
   gnu-4.6
   cray
+
   
 automatic testing, coverage
 Buildbot
-
-
+add web pages to repository, not distribution
 Levenberg-Marquardt
 POUNDer
 

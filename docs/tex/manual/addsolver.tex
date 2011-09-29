@@ -382,7 +382,7 @@ Once a new solver is completely implemented, TAO needs to know the name of
 your solver and what function to use to create the solver.  This can be done
 with the routine
 \begin{verbatim}
-  TaoRegister(const char *name, 
+  TaoSolverRegister(const char *name, 
                   const char *path,
                   const char *cname, 
                   PetscErrorCode (*create) (TaoSolver));
