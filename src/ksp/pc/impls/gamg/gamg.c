@@ -23,7 +23,7 @@ typedef struct gamg_TAG {
   PetscInt       m_data_rows;
   PetscInt       m_data_cols;
   PetscInt       m_count;
-  PetscInt       m_method; /* 0: geomg; 1: plane agg 'pa'; 2: smoothed agg 'sa' */
+  PetscInt       m_method; /* 0: geomg; 1: plain agg 'pa'; 2: smoothed agg 'sa' */
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
   char           m_type[64];
 } PC_GAMG;
@@ -557,9 +557,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
 #ifdef VERBOSE
-  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%ld, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
-	      mype,__FUNCT__,0,(long long int)N,(int)pc_gamg->m_data_rows,(int)pc_gamg->m_data_cols,
-	      (int)(info.nz_used/(PetscReal)N),(int)npe);
+  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
+	      (int)(info.nz_used/(PetscReal)N),npe);
 #endif
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
@@ -593,12 +593,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
 #ifdef VERBOSE
       PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-		  mype,__FUNCT__,(int)level1,(int)N,(int)pc_gamg->m_data_cols,
-		  (int)(info.nz_used/(PetscReal)N),(int)nactivepe);
+		  mype,__FUNCT__,(int)level1,N,pc_gamg->m_data_cols,
+		  (int)(info.nz_used/(PetscReal)N),nactivepe);
 #endif
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method should gaurrentee this does not happen! */
-
+ 
 #ifdef VERBOSE 
       if( PETSC_TRUE ){
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;

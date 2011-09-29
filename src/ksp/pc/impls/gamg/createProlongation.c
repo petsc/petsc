@@ -1183,7 +1183,6 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
   PetscFunctionReturn(0);
 }
 
-
 /* Private context for the GAMG preconditioner */
 typedef struct{
   PetscInt       m_lid;      /* local vertex index */
@@ -1203,7 +1202,7 @@ int compare (const void *a, const void *b)
    . a_data[nloc*a_data_sz(in)]
    . a_dim - dimention
    . a_data_cols - number of colums in data (rows is infered from 
-   . a_method - do smoothed aggregation (2), plane agg (1) or geometric (0)
+   . a_method - flag for: smoothed aggregation (2), plain agg (1) or geometric (0)
    . a_level - 0 for finest, +L-1 for coarsest
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
