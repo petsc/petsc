@@ -1414,12 +1414,13 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   ierr = PetscFree(vs->arrindex);CHKERRQ(ierr);
   ierr = PetscFree(vs->nelem);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
-  /*  vecs_created--; */
+  
+  vecs_created--;
   /* Free the kernel data structure on the destruction of the last vector */
-  /*  if(vecs_created == 0) {
+  if(vecs_created == 0) {
     ierr = PetscFree(kerneldatap);CHKERRQ(ierr);
     ierr = PetscFree(pdata);CHKERRQ(ierr);
-   } */
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1591,8 +1592,8 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   if(vecs_created == 0) {
     ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
     ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
-    vecs_created++;
   }
+  vecs_created++;
 
   if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
