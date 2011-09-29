@@ -1402,6 +1402,20 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecSetFromOptions_SeqPThread"
+PetscErrorCode VecSetFromOptions_SeqPThread(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  PetscInt       nthreads=0;
+  PetscFunctionBegin;
+  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecSeqPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecSeqPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSeqPThreadSetNThreads"
@@ -1436,7 +1450,9 @@ PetscErrorCode VecSeqPThreadSetNThreads(Vec v,PetscInt nthreads)
   s->nthreads = nthreads;
 
   /* Set array portion for each thread */
-  ierr = PetscMalloc2(nthreads,PetscInt,&s->arrindex,nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
+  if(!s->arrindex) {
+    ierr = PetscMalloc2(nthreads,PetscInt,&s->arrindex,nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
+  }
   s->arrindex[0] = 0;
   for (i=0; i<nthreads; i++) {
     s->arrindex[i] = iIndex;
@@ -1494,7 +1510,7 @@ static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
 	    0,
 	    0,
             VecResetArray_Seq,
-            0,
+            VecSetFromOptions_SeqPThread,
             VecMaxPointwiseDivide_Seq,
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
