@@ -33,6 +33,9 @@ make tao_manual
 echo "Building manpages..."
 make tao_allmanpages
 
+echo "Creating html from source files..."
+make tao_htmlpages
+
 echo "Building tarball $BUILDDIR/tao-$VERSION.tar.gz"
 cd $BUILDDIR
 tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION --exclude="sqpcon"

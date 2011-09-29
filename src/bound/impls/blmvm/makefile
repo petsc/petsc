@@ -10,7 +10,7 @@ SOURCEH  = blmvm.h
 OBJSC    = blmvm.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = taosolver
+MANSEC   = 
 LOCDIR   = src/bound/impls/blmvm/
 
 include ${TAO_DIR}/conf/tao_base
