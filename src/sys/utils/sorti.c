@@ -209,7 +209,7 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *I,PetscInt *J, PetscInt *K, PetscInt right)
+static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J, PetscInt *K, PetscInt right)
 {
   PetscErrorCode ierr;
   PetscInt       i,vl,last,tmp;
@@ -217,19 +217,19 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *I,PetscInt *J,
   PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
-      if (I[0] > I[1]) SWAP3(I[0],I[1],J[0],J[1],K[0],K[1],tmp);
+      if (L[0] > L[1]) SWAP3(L[0],L[1],J[0],J[1],K[0],K[1],tmp);
     }
     PetscFunctionReturn(0);
   }
-  SWAP3(I[0],I[right/2],J[0],J[right/2],K[0],K[right/2],tmp);
-  vl   = I[0];
+  SWAP3(L[0],L[right/2],J[0],J[right/2],K[0],K[right/2],tmp);
+  vl   = L[0];
   last = 0;
   for (i=1; i<=right; i++) {
-    if (I[i] < vl) {last++; SWAP3(I[last],I[i],J[last],J[i],K[last],K[i],tmp);}
+    if (L[i] < vl) {last++; SWAP3(L[last],L[i],J[last],J[i],K[last],K[i],tmp);}
   }
-  SWAP3(I[0],I[last],J[0],J[last],K[0],K[last],tmp);
-  ierr = PetscSortIntWithArrayPair_Private(I,J,K,last-1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArrayPair_Private(I+last+1,J+last+1,K+last+1,right-(last+1));CHKERRQ(ierr);
+  SWAP3(L[0],L[last],J[0],J[last],K[0],K[last],tmp);
+  ierr = PetscSortIntWithArrayPair_Private(L,J,K,last-1);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArrayPair_Private(L+last+1,J+last+1,K+last+1,right-(last+1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -253,7 +253,7 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *I,PetscInt *J,
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *I,PetscInt *J, PetscInt *K)
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, PetscInt *K)
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -261,16 +261,16 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *I,PetscInt *J, Pe
   PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
-      ik = I[k];
+      ik = L[k];
       for (j=k+1; j<n; j++) {
-	if (ik > I[j]) {
-	  SWAP3(I[k],I[j],J[k],J[j],K[k],K[j],tmp);
-	  ik = I[k];
+	if (ik > L[j]) {
+	  SWAP3(L[k],L[j],J[k],J[j],K[k],K[j],tmp);
+	  ik = L[k];
 	}
       }
     }
   } else {
-    ierr = PetscSortIntWithArrayPair_Private(I,J,K,n-1);CHKERRQ(ierr);
+    ierr = PetscSortIntWithArrayPair_Private(L,J,K,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -451,16 +451,16 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **I, PetscInt **J) 
+PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J) 
 {
   PetscErrorCode ierr;
-  PetscInt n_, *I_ = *I, *J_= *J, ak, bk, k;
+  PetscInt n_, *L_ = *L, *J_= *J, ak, bk, k;
 
   n_ = an + bn;
   *n = n_;
-  if(!I_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), I); CHKERRQ(ierr);
-    I_ = *I;
+  if(!L_) {
+    ierr = PetscMalloc(n_*sizeof(PetscInt), L); CHKERRQ(ierr);
+    L_ = *L;
   }
   if(!J_){
     ierr = PetscMalloc(n_*sizeof(PetscInt), &J_); CHKERRQ(ierr);
@@ -469,25 +469,25 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   k = ak = bk = 0;
   while(ak < an && bk < bn) {
     if(aI[ak] <= bI[bk]) {
-      I_[k] = aI[ak]; 
+      L_[k] = aI[ak]; 
       J_[k] = aJ[ak];
       ++ak;
       ++k;
     }
     else {
-      I_[k] = bI[bk]; 
+      L_[k] = bI[bk]; 
       J_[k] = bJ[bk];
       ++bk;
       ++k;
     }
   }
   if(ak < an) {
-    ierr = PetscMemcpy(I_+k,aI+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
+    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
     ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
     k += (an-ak);
   }
   if(bk < bn) {
-    ierr = PetscMemcpy(I_+k,bI+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
+    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
     ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
     k += (bn-bk);
   }

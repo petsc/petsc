@@ -2211,7 +2211,7 @@ extern PetscErrorCode  PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 extern PetscErrorCode  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
-extern PetscErrorCode  PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
+extern PetscErrorCode  PetscSortIntWithArrayPair(PetscInt,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
 extern PetscErrorCode  PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
 extern PetscErrorCode  PetscSortReal(PetscInt,PetscReal[]);
