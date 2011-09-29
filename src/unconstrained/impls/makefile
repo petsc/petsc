@@ -1,5 +1,3 @@
-# $Id$ 
-
 ALL: lib
 
 DIRS     = lmvm nls neldermead cg ntl ntr pounder

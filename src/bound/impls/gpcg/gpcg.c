@@ -1,6 +1,5 @@
-/*$Id$*/
 #include "private/kspimpl.h"
-#include "gpcg.h"        /*I "tao_solver.h" I*/
+#include "gpcg.h"        /*I "gpcg.h" I*/
 
 
 #define GPCG_KSP_NASH  0

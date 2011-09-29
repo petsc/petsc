@@ -1,4 +1,3 @@
-/*$Id$*/
 #include "taolinesearch.h"
 #include "src/matrix/lmvmmat.h"
 #include "blmvm.h"

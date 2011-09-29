@@ -1,5 +1,3 @@
-! "$Id$";
-!
 !  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options] 
 !
 !  Description:  This example demonstrates use of the TAO package to solve a

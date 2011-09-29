@@ -1,5 +1,3 @@
-# $Id$ 
-
 ALL: lib
 
 DIRS     = lcl

@@ -1,6 +1,6 @@
 #define TAOSOLVER_DLL
 
-#include "include/private/taosolver_impl.h"
+#include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 
 EXTERN_C_BEGIN
