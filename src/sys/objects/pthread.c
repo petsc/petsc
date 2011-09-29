@@ -1094,7 +1094,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
       break;
 #endif
     }
-    ierr = PetscThreadInitialize(PetscMaxThreads);CHKERRQ(ierr);
   } else {
     /* need to define these in the case on 'no threads' or 'thread create/destroy'
      could take any of the above versions 
