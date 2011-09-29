@@ -136,5 +136,5 @@ petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
 petsc-dist/config/BuildSystem/BitKeeper
 petsc-dist/config/BuildSystem/ChangeSet
-petsc-dist/src/dm/mesh/examples/tutorials/illinois
-petsc-dist/src/dm/mesh/examples/tutorials/data
+petsc-dist/src/dm/impls/mesh/examples/tutorials/illinois
+petsc-dist/src/dm/impls/mesh/examples/tutorials/data
