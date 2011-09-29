@@ -65,6 +65,17 @@ void* DoCoreAffinity(void)
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "VecSeqPThreadCheckNThreads"
+PETSC_STATIC_INLINE PetscErrorCode VecSeqPThreadCheckNThreads(Vec v)
+{
+  Vec_SeqPthread *vs = (Vec_SeqPthread*)v->data;
+
+  PetscFunctionBegin;
+  if(!vs->nthreads) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecSeqPThreadSetNThreads() must be called before doing any vector operations");
+  PetscFunctionReturn(0);
+}
+
 void* VecDot_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
@@ -97,6 +108,8 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
 
@@ -157,6 +170,7 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
   PetscInt          *nx = x->nelem;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
 
   if (alpha == 0.0) {
     ierr = VecSet_SeqPThread(xin,alpha);CHKERRQ(ierr);
@@ -213,6 +227,8 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
@@ -279,6 +295,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
 
   if (alpha == 0.0) {
     ierr = VecCopy(xin,yin);CHKERRQ(ierr);
@@ -364,6 +381,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(win);CHKERRQ(ierr);
 
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -441,6 +459,8 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
   PetscScalar       *xa;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   if(type == NORM_1_AND_2) {
     ierr = VecNorm_SeqPThread(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_SeqPThread(xin,NORM_2,z+1);CHKERRQ(ierr);
@@ -796,6 +816,8 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   PetscBool         S;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr   = VecGetArray(xin,&xa);CHKERRQ(ierr);
   for (i=0; i<PetscMaxThreads; i++) {
     S = (PetscBool)(i<R);
@@ -857,6 +879,8 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
   PetscReal         max;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   if (!xin->map->n) {
     max = PETSC_MIN_REAL;
@@ -928,6 +952,8 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
   PetscReal         min;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   if (!xin->map->n) {
     min = PETSC_MAX_REAL;
@@ -995,6 +1021,7 @@ PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(win);CHKERRQ(ierr);
 
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -1046,6 +1073,8 @@ PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(win);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
   ierr = VecGetArray(win,&wa);CHKERRQ(ierr);
@@ -1095,6 +1124,8 @@ PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   if (xin != yin) {
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -1143,6 +1174,8 @@ PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
   PetscScalar       *xa;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
 
   for (i=0; i<x->nthreads; i++) {
@@ -1187,6 +1220,8 @@ PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
   PetscInt          i;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   if (xin != yin) {
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -1291,6 +1326,7 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
   PetscScalar       *xa;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
 
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   for (i=0; i<x->nthreads; i++) {
@@ -1340,6 +1376,8 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
   PetscScalar       *xa;
 
   PetscFunctionBegin;
+  ierr = VecSeqPThreadCheckNThreads(xin);CHKERRQ(ierr);
+
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
 
   for (i=0; i<x->nthreads; i++) {
@@ -1541,6 +1579,7 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
+  s->nthreads        = 0;
 
   /* If this is the first vector being created then also create the common Kernel data structure */
   if(vecs_created == 0) {
