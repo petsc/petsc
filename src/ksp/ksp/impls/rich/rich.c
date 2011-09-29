@@ -174,7 +174,11 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
+    if (richardsonP->selfscale) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: using self-scale best computed damping factor\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
+    }
   } else {
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }

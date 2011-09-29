@@ -32,6 +32,15 @@ T*/
 
        Linear:
              -snes_rtol 1.e-12 -snes_monitor  -ksp_type cg -ksp_monitor -ksp_rtol 1.e-12 -pc_type none
+
+    Multigrid
+       Linear:
+          1 level:
+            -snes_rtol 1.e-12 -snes_monitor  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor 
+            -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor -ksp_rtol 1.e-12  -ksp_monitor_true_residual
+          n levels: 
+            -da_refine <1> -pc_mg_galerkin
+
 */
 
 /* 

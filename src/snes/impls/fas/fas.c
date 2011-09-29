@@ -326,6 +326,9 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     }
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->upsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->upsmooth, pre_type);CHKERRQ(ierr);
+    if (snes->ops->computefunction) {
+      ierr = SNESSetFunction(fas->upsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    }
   }
   if (fas->upsmooth) ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
   if (!fas->downsmooth && fas->level != 0) {
@@ -336,6 +339,9 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr); 
     ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
+    if (snes->ops->computefunction) {
+      ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    }
   }
   if (fas->downsmooth) ierr = SNESSetTolerances(fas->downsmooth, 0.0, 0.0, 0.0, fas->max_down_it, 1000);CHKERRQ(ierr);
 
