@@ -1183,7 +1183,6 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
   PetscFunctionReturn(0);
 }
 
-
 /* Private context for the GAMG preconditioner */
 typedef struct{
   PetscInt       m_lid;      /* local vertex index */
@@ -1203,7 +1202,7 @@ int compare (const void *a, const void *b)
    . a_data[nloc*a_data_sz(in)]
    . a_dim - dimention
    . a_data_cols - number of colums in data (rows is infered from 
-   . a_method - do smoothed aggregation (2), plane agg (1) or geometric (0)
+   . a_method - flag for: smoothed aggregation (2), plain agg (1) or geometric (0)
    . a_level - 0 for finest, +L-1 for coarsest
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
@@ -1245,8 +1244,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( a_Amat, &Istart, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs_in; my0 = Istart/bs_in; assert((Iend-Istart)%bs_in==0);
+
 #if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(gamg_setup_events[SET3],0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_MAT],0,0,0,0);CHKERRQ(ierr);
 #endif
 
   /* count nnz, there is sparcity in here so this might not be enough! */
@@ -1288,7 +1289,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatDiagonalScale( Gmat, diag, diag );CHKERRQ(ierr);
     ierr = VecDestroy( &diag );           CHKERRQ(ierr);
   }
-  
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_MAT],0,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_FILTER],0,0,0,0);CHKERRQ(ierr);
+#endif
+
   /* filter Gmat */
   vfilter = 0.05;
   for(jj=0;jj<a_level;jj++) vfilter *= .01; /* very fast decay for SA */
@@ -1319,7 +1324,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
 #endif
   }
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_FILTER],0,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_SQR],0,0,0,0);CHKERRQ(ierr);
+#endif
   /* square matrix - SA */  
   if( a_method != 0 ){
     Mat Gmat2;
@@ -1338,7 +1346,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       assert( Bmat->compressedrow.use );
     }
   }
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_SQR],0,0,0,0);   CHKERRQ(ierr);
+#endif
   /* force compressed row storage for B matrix */
   if (npe > 1) {
     Mat_MPIAIJ *mpimat = (Mat_MPIAIJ*)Gmat->data;
@@ -1382,7 +1392,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
     }
     /* randomize */
-    srand(1); /* make determenant */
+    srand(1); /* make deterministic */
     if( PETSC_TRUE ) {
       PetscBool *bIndexSet;
       ierr = PetscMalloc( nloc*sizeof(PetscBool), &bIndexSet ); CHKERRQ(ierr);
@@ -1418,7 +1428,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
 #if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(gamg_setup_events[SET3],0,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH],0,0,0,0);   CHKERRQ(ierr);
 #endif
   /* SELECT COARSE POINTS */
 #if defined PETSC_USE_LOG
@@ -1674,8 +1684,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #endif
       *a_emax = emax; /* estimate for cheb smoother */
     }
+    else {
+      *a_emax = -1.0; /* no estimate */
+    }
     *a_bs = a_data_cols;
-  }
+  } /* aggregation method */
   *a_P_out = Prol;  /* out */
 
   ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);

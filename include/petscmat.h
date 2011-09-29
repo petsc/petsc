@@ -1616,6 +1616,7 @@ extern PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(M
 extern PetscErrorCode  MatNullSpaceDestroy(MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 extern PetscErrorCode  MatSetNullSpace(Mat,MatNullSpace);
+extern PetscErrorCode  MatSetNearNullSpace(Mat,MatNullSpace);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
 extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
 

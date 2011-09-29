@@ -257,7 +257,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->useZeroBase    = PETSC_TRUE;
   options->inputFileType  = PCICE;
   options->outputFileType = PCICE;
-  ierr = PetscStrcpy(options->baseFilename, "data/ex1_2d");CHKERRQ(ierr);
+  ierr = PetscStrcpy(options->baseFilename, "src/dm/impls/mesh/examples/tutorials/data/ex1_2d");CHKERRQ(ierr);
   options->output         = PETSC_FALSE;
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
@@ -303,7 +303,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  DM              mesh;
+  DM             mesh;
   Options        options;
   PetscErrorCode ierr;
 

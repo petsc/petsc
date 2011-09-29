@@ -2243,7 +2243,7 @@ PetscErrorCode  PetscPLAPACKInitializePackage(MPI_Comm comm)
       Plapack_nb_alg = 0;
       ierr = PetscOptionsInt("-mat_plapack_nb_alg","algorithmic block size","None",Plapack_nb_alg,&Plapack_nb_alg,PETSC_NULL);CHKERRQ(ierr);
       if (Plapack_nb_alg) {
-        ierr = pla_Environ_set_nb_alg (PLA_OP_ALL_ALG,Plapack_nb_alg);CHKERRQ(ierr);
+        ierr = PLA_Environ_set_nb_alg (PLA_OP_ALL_ALG,Plapack_nb_alg);CHKERRQ(ierr);
       }
     PetscOptionsEnd(); 
 

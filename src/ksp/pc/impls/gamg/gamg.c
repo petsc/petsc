@@ -23,7 +23,7 @@ typedef struct gamg_TAG {
   PetscInt       m_data_rows;
   PetscInt       m_data_cols;
   PetscInt       m_count;
-  PetscInt       m_method; /* 0: geomg; 1: plane agg 'pl'; 2: smoothed agg (sa) */
+  PetscInt       m_method; /* 0: geomg; 1: plain agg 'pa'; 2: smoothed agg 'sa' */
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
   char           m_type[64];
 } PC_GAMG;
@@ -53,8 +53,8 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   nloc = (Iend-my0)/bs; 
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
-  pc_gamg->m_data_rows = 1; 
-  if(a_coords == 0) pc_gamg->m_method = 2; /* use SA if no data */
+  pc_gamg->m_data_rows = 1;
+  if(a_coords==0 && pc_gamg->m_method==0) pc_gamg->m_method = 2; /* use SA if no coords */
   if( pc_gamg->m_method==0 ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
   else{ /* SA: null space vectors */
     if(a_coords != 0 && bs==1 ) pc_gamg->m_data_cols = 1; /* scalar w/ coords and SA (not needed) */
@@ -557,9 +557,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
 #ifdef VERBOSE
-  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%ld, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
-	      mype,__FUNCT__,0,(long long int)N,(int)pc_gamg->m_data_rows,(int)pc_gamg->m_data_cols,
-	      (int)(info.nz_used/(PetscReal)N),(int)npe);
+  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
+	      (int)(info.nz_used/(PetscReal)N),npe);
 #endif
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
@@ -593,12 +593,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
 #ifdef VERBOSE
       PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-		  mype,__FUNCT__,(int)level1,(int)N,(int)pc_gamg->m_data_cols,
-		  (int)(info.nz_used/(PetscReal)N),(int)nactivepe);
+		  mype,__FUNCT__,(int)level1,N,pc_gamg->m_data_cols,
+		  (int)(info.nz_used/(PetscReal)N),nactivepe);
 #endif
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method should gaurrentee this does not happen! */
-
+ 
 #ifdef VERBOSE 
       if( PETSC_TRUE ){
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
@@ -949,9 +949,11 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                               64, 
                               &flag ); 
     CHKERRQ(ierr);
+
     if (flag && strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
     else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
     else pc_gamg->m_method = 0;
+
     /* this global! */
     ierr = PetscOptionsBool("-pc_gamg_avoid_repartitioning",
                             "Do not repartion coarse grids (false)",
@@ -1065,16 +1067,19 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   if( count++ == 0 ) {
     PetscClassIdRegister("GAMG Setup",&cookie);
     PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_events[SET1]);
-    PetscLogEventRegister(" make graph", cookie, &gamg_setup_events[SET3]);
-    PetscLogEventRegister(" MIS/Agg", cookie, &gamg_setup_events[SET4]);
+    PetscLogEventRegister("  Graph", cookie, &gamg_setup_events[GRAPH]);
+    PetscLogEventRegister("    G.Mat", cookie, &gamg_setup_events[GRAPH_MAT]);
+    PetscLogEventRegister("    G.Filter", cookie, &gamg_setup_events[GRAPH_FILTER]);
+    PetscLogEventRegister("    G.Square", cookie, &gamg_setup_events[GRAPH_SQR]);
+    PetscLogEventRegister("  MIS/Agg", cookie, &gamg_setup_events[SET4]);
     PetscLogEventRegister("  geo: growSupp", cookie, &gamg_setup_events[SET5]);
     PetscLogEventRegister("  geo: triangle", cookie, &gamg_setup_events[SET6]);
-    PetscLogEventRegister("   search & set", cookie, &gamg_setup_events[FIND_V]);
+    PetscLogEventRegister("    search&set", cookie, &gamg_setup_events[FIND_V]);
     PetscLogEventRegister("  SA: init", cookie, &gamg_setup_events[SET7]);
     /* PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_events[SET8]); */
     PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_events[SET9]);
     PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
-    PetscLogEventRegister(" PL repartition", cookie, &gamg_setup_events[SET12]);
+    PetscLogEventRegister("  PL repartition", cookie, &gamg_setup_events[SET12]);
     /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_events[SET13]); */
     /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_events[SET10]); */
     /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_events[SET11]); */
