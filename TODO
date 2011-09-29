@@ -1,5 +1,4 @@
 options
-  -tao_max_funcs ->
   -tao_max_its -> -tao_max_it
   -tao_ls_maxfev -> -tao_ls_max_funcs
   -help option

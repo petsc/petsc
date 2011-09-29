@@ -1207,7 +1207,7 @@ PetscErrorCode TaoCreate_NLS(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NLS;
   tao->ops->destroy = TaoDestroy_NLS;
 
-  tao->max_its = 50;
+  tao->max_it = 50;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)nlsP;

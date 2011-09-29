@@ -83,7 +83,7 @@ struct _p_TaoSolver {
     PetscReal fc;
     
 
-    PetscInt  max_its;
+    PetscInt  max_it;
     PetscInt  max_funcs;
     PetscInt  max_constraints;
     PetscInt  nfuncs;

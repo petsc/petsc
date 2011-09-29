@@ -94,7 +94,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->state_is = PETSC_NULL;
     tao->design_is = PETSC_NULL;
 
-    tao->max_its     = 10000;
+    tao->max_it     = 10000;
     tao->max_funcs   = 10000;
     tao->fatol       = 1e-8;
     tao->frtol       = 1e-8;
@@ -385,8 +385,8 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr); 
 	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
-	ierr = PetscOptionsInt("-tao_max_its","Stop if iteration number exceeds",
-			    "TaoSetMaximumIterations",tao->max_its,&tao->max_its,
+	ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds",
+			    "TaoSetMaximumIterations",tao->max_it,&tao->max_it,
 			    &flg);CHKERRQ(ierr);
 	ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg); CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg); CHKERRQ(ierr);
@@ -546,7 +546,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 
 	ierr = PetscViewerASCIIPrintf(viewer,"total number of iterations=%D,          ",
 				      tao->niter);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIPrintf(viewer,"              (max: %D)\n",tao->max_its);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer,"              (max: %D)\n",tao->max_it);CHKERRQ(ierr);
 
 	if (tao->nfuncs>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D,",
@@ -879,7 +879,7 @@ PetscErrorCode TaoGetMaximumFunctionEvaluations(TaoSolver tao,PetscInt *nfcn)
 -  maxits - the maximum number of iterates (>=0)
 
    Options Database Keys: 
-.    -tao_max_its <its> - sets the maximum number of iterations
+.    -tao_max_it <its> - sets the maximum number of iterations
 
    Level: intermediate
 
@@ -892,7 +892,7 @@ PetscErrorCode TaoSetMaximumIterations(TaoSolver tao,PetscInt maxits)
   PetscInt zero=0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  tao->max_its = PetscMax(zero,maxits);
+  tao->max_it = PetscMax(zero,maxits);
   PetscFunctionReturn(0);
 }
 
@@ -920,7 +920,7 @@ PetscErrorCode TaoGetMaximumIterations(TaoSolver tao,PetscInt *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  *maxits = tao->max_its;
+  *maxits = tao->max_it;
   PetscFunctionReturn(0);
 }
 
@@ -1773,8 +1773,8 @@ PetscErrorCode TaoDefaultConvergenceTest(TaoSolver tao,void *dummy)
   } else if (trradius < steptol && niter > 0){
     ierr = PetscInfo2(tao,"Trust region/step size too small: %G < %G\n", trradius,steptol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_STEPTOL;
-  } else if (niter > tao->max_its) {
-    ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_its); CHKERRQ(ierr);
+  } else if (niter > tao->max_it) {
+    ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_it); CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXITS;
   } else {
     reason = TAO_CONTINUE_ITERATING;
@@ -2213,7 +2213,7 @@ $  TAO_CONVERGED_USER (8)            User defined
 
 $  TAO_DIVERGED_MAXITS (-2)          its > maxits
 $  TAO_DIVERGED_NAN (-4)             Numerical problems
-$  TAO_DIVERGED_MAXFCN (-5)          fevals > maxfevals
+$  TAO_DIVERGED_MAXFCN (-5)          fevals > max_funcsals
 $  TAO_DIVERGED_LS_FAILURE (-6)      line search failure
 $  TAO_DIVERGED_TR_REDUCTION (-7)    trust region failure
 $  TAO_DIVERGED_USER(-8)             (user defined)
@@ -2229,7 +2229,7 @@ $  TAO_CONTINUE_ITERATING (0)
 .  its - current iterate number
 .  maxits - maximum number of iterates
 .  fevals - number of function evaluations
--  maxfevals - maximum number of function evaluations
+-  max_funcsals - maximum number of function evaluations
 
    Level: intermediate
 

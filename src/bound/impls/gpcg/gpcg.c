@@ -419,7 +419,7 @@ PetscErrorCode TaoCreate_GPCG(TaoSolver tao)
   ierr = PetscNewLog(tao, TAO_GPCG, &gpcg); CHKERRQ(ierr);
   tao->data = (void*)gpcg;
 
-  tao->max_its = 500;
+  tao->max_it = 500;
   tao->max_funcs = 100000;
   tao->fatol = 1e-12;
   tao->frtol = 1e-12;

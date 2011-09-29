@@ -519,7 +519,7 @@ PetscErrorCode TaoCreate_LCL(TaoSolver tao)
   tao->data = (void*)lclP;
 
 
-  tao->max_its=200;
+  tao->max_it=200;
   tao->fatol=1e-8;
   tao->frtol=1e-8;
   tao->catol=1e-4;

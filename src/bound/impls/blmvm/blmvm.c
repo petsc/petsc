@@ -290,7 +290,7 @@ PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
 
   ierr = PetscNewLog(tao, TAO_BLMVM, &blmP); CHKERRQ(ierr);
   tao->data = (void*)blmP;
-  tao->max_its = 2000;
+  tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 1e-4;
   tao->frtol = 1e-4;

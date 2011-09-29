@@ -1033,7 +1033,7 @@ PetscErrorCode TaoCreate_NTL(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NTL;
   tao->ops->destroy = TaoDestroy_NTL;
   
-  tao->max_its = 50;
+  tao->max_it = 50;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)tl;

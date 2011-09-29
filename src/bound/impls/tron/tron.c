@@ -617,7 +617,7 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
 
   ierr = PetscNewLog(tao,TAO_TRON,&tron); CHKERRQ(ierr);
 
-  tao->max_its = 50;
+  tao->max_it = 50;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)tron;

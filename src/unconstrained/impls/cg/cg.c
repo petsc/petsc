@@ -301,7 +301,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
     tao->ops->setfromoptions = TaoSetFromOptions_CG;
     tao->ops->destroy = TaoDestroy_CG;
     
-    tao->max_its = 2000;
+    tao->max_it = 2000;
     tao->max_funcs = 4000;
     tao->fatol = 1e-4;
     tao->frtol = 1e-4;

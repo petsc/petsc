@@ -48,7 +48,7 @@ struct _p_TaoLineSearch {
     PetscReal step;
     PetscReal initstep;
 
-    PetscInt maxfev;
+    PetscInt max_funcs;
     PetscInt nfeval;
     PetscInt ngeval;
     PetscInt nfgeval;

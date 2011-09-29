@@ -537,7 +537,7 @@ PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_BQPIP;
   tao->ops->computedual = TaoComputeDual_BQPIP;
 
-  tao->max_its=100;
+  tao->max_it=100;
   tao->max_funcs = 500;
   tao->fatol=1e-12;
   tao->frtol=1e-12;

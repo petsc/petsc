@@ -300,7 +300,7 @@ PetscErrorCode TaoCreate_LMVM(TaoSolver tao)
   lmP->Gold = 0;
 
   tao->data = (void*)lmP;
-  tao->max_its = 2000;
+  tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 1e-4;
   tao->frtol = 1e-4;

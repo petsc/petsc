@@ -70,7 +70,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
       info = (*ls->ops->view)(ls,viewer);CHKERRQ(info);
       info = PetscViewerASCIIPopTab(viewer);CHKERRQ(info);
     }
-    info = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->maxfev);CHKERRQ(info);
+    info = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->max_funcs);CHKERRQ(info);
     info = PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(info); 
     info = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D\n",ls->nfeval);CHKERRQ(info);
     info = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D\n",ls->ngeval);CHKERRQ(info);
@@ -139,7 +139,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 			      comm,TaoLineSearchDestroy, TaoLineSearchView);
      CHKERRQ(info);
      ls->bounded = 0;
-     ls->maxfev=30;
+     ls->max_funcs=30;
      ls->ftol = 0.0001;
      ls->gtol = 0.9;
      ls->rtol = 1.0e-10;
@@ -292,16 +292,16 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 
   reason will be set to one of:
 
-+ TAOLINESEARCH_FAILED_MAXFCN - maximum number of function evaluation reached
++ TAOLINESEARCH_HALTED_MAXFCN - maximum number of function evaluation reached
 . TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
 . TAOLINESEARCH_FAILED_INFORNAN - function evaluation gives Inf or Nan value
 . TAOLINESEARCH_FAILED_BADPARAMETER - negative value set as parameter
-. TAOLINESEARCH_FAILED_UPPERBOUND - step is at upper bound
-. TAOLINESEARCH_FAILED_LOWERBOUND - step is at lower bound
-. TAOLINESEARCH_FAILED_RTOL - range of uncertainty is smaller than given tolerance
+. TAOLINESEARCH_HALTED_UPPERBOUND - step is at upper bound
+. TAOLINESEARCH_HALTED_LOWERBOUND - step is at lower bound
+. TAOLINESEARCH_HALTED_RTOL - range of uncertainty is smaller than given tolerance
 
-. TAOLINESEARCH_FAILED_USER - user can set this reason to stop line search
-. TAOLINESEARCH_FAILED_OTHER - any other reason
+. TAOLINESEARCH_HALTED_USER - user can set this reason to stop line search
+. TAOLINESEARCH_HALTED_OTHER - any other reason
 
 + TAOLINESEARCH_SUCCESS - successful line search
 
@@ -382,8 +382,8 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
        ierr = PetscInfo2(ls,"Bad Line Search Parameter: stepmin (%G) > stepmax (%G)\n",ls->stepmin,ls->stepmax); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
-     if (ls->maxfev < 0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: maxfev (%D) < 0\n",ls->maxfev); CHKERRQ(ierr);
+     if (ls->max_funcs < 0) {
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: max_funcs (%D) < 0\n",ls->max_funcs); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (PetscIsInfOrNanReal(*f)) {
@@ -468,7 +468,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
      if (ls->ops->destroy) {
 	 ierr = (*(ls)->ops->destroy)(ls); CHKERRQ(ierr);
      }
-     ls->maxfev=30;
+     ls->max_funcs=30;
      ls->ftol = 0.0001;
      ls->gtol = 0.9;
      ls->rtol = 1.0e-10;
@@ -508,7 +508,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
 . -tao_ls_rtol <tol> - relative tolerance for acceptable step
 . -tao_ls_stepmin <step> - minimum steplength allowed
 . -tao_ls_stepmax <step> - maximum steplength allowed
-. -tao_ls_maxfev <n> - maximum number of function evaluations allowed
+. -tao_ls_max_funcs <n> - maximum number of function evaluations allowed
 - -tao_ls_view - display line-search results to standard output
 
   Level: developer
@@ -539,8 +539,8 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
        ierr = TaoLineSearchSetType(ls,default_type);
      }
 
-     ierr = PetscOptionsInt("-tao_ls_maxfev","max function evals in line search",
-			  "",ls->maxfev,&ls->maxfev,0);CHKERRQ(ierr);
+     ierr = PetscOptionsInt("-tao_ls_max_funcs","max function evals in line search",
+			  "",ls->max_funcs,&ls->max_funcs,0);CHKERRQ(ierr);
      ierr = PetscOptionsReal("-tao_ls_ftol","tol for sufficient decrease","",
 			   ls->ftol,&ls->ftol,0);CHKERRQ(ierr);
      ierr = PetscOptionsReal("-tao_ls_gtol","tol for curvature condition","",
@@ -1104,16 +1104,16 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
 
   reason will be set to one of:
 
-+ TAOLINESEARCH_FAILED_MAXFCN - maximum number of function evaluation reached
-. TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
-. TAOLINESEARCH_FAILED_INFORNAN - function evaluation gives Inf or Nan value
++ TAOLINESEARCH_FAILED_INFORNAN - function evaluation gives Inf or Nan value
 . TAOLINESEARCH_FAILED_BADPARAMETER - negative value set as parameter
-. TAOLINESEARCH_FAILED_UPPERBOUND - step is at upper bound
-. TAOLINESEARCH_FAILED_LOWERBOUND - step is at lower bound
-. TAOLINESEARCH_FAILED_RTOL - range of uncertainty is smaller than given tolerance
+. TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
+. TAOLINESEARCH_HALTED_MAXFCN - maximum number of function evaluation reached
+. TAOLINESEARCH_HALTED_UPPERBOUND - step is at upper bound
+. TAOLINESEARCH_HALTED_LOWERBOUND - step is at lower bound
+. TAOLINESEARCH_HALTED_RTOL - range of uncertainty is smaller than given tolerance
 
-. TAOLINESEARCH_FAILED_USER - user can set this reason to stop line search
-. TAOLINESEARCH_FAILED_OTHER - any other reason
+. TAOLINESEARCH_HALTED_USER - user can set this reason to stop line search
+. TAOLINESEARCH_HALTED_OTHER - any other reason
 
 + TAOLINESEARCH_SUCCESS - successful line search
 

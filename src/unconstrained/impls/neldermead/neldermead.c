@@ -250,7 +250,7 @@ PetscErrorCode TaoCreate_NM(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NM;
   tao->ops->destroy = TaoDestroy_NM;
 
-  tao->max_its = 2000;
+  tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 1e-8;
   tao->frtol = 1e-8;
