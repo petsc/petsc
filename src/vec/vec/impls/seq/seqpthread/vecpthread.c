@@ -38,6 +38,7 @@ typedef struct {
   PetscReal     localmin;
   PetscRandom   rand;
   const PetscScalar*  amult;   /* multipliers */
+  PetscInt      istart;
 } Kernel_Data;
 
 static Kernel_Data *kerneldatap;
@@ -1249,7 +1250,7 @@ void* VecMAXPY_Kernel(void* arg)
   }
   Kernel_Data       *data = (Kernel_Data*)arg;
   PetscErrorCode    ierr;
-  PetscInt          n = data->n,nv=data->nvec,j,j_rem;
+  PetscInt          n = data->n,nv=data->nvec,istart=data->istart,j,j_rem;
   const PetscScalar *alpha=data->amult,*yy0,*yy1,*yy2,*yy3;
   PetscScalar       *xx = data->x,alpha0,alpha1,alpha2,alpha3;
   Vec*              y = (Vec*)data->yvec;
@@ -1263,6 +1264,7 @@ void* VecMAXPY_Kernel(void* arg)
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[2],&yy2);CHKERRQP(ierr);
+    yy0 += istart; yy1 += istart; yy2 += istart;
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
@@ -1276,6 +1278,7 @@ void* VecMAXPY_Kernel(void* arg)
   case 2: 
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    yy0 += istart; yy1 += istart;
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha +=2;
@@ -1286,6 +1289,7 @@ void* VecMAXPY_Kernel(void* arg)
     break;
   case 1: 
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    yy0 += istart; yy1 += istart;
     alpha0 = *alpha++; 
     PetscAXPY(xx,alpha0,yy0,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQP(ierr);
@@ -1297,6 +1301,7 @@ void* VecMAXPY_Kernel(void* arg)
     ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[2],&yy2);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[3],&yy3);CHKERRQP(ierr);
+    yy0 += istart; yy1 += istart; yy2 += istart; yy3 += istart;
     alpha0 = alpha[0];
     alpha1 = alpha[1];
     alpha2 = alpha[2];
@@ -1330,12 +1335,13 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
 
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   for (i=0; i<x->nthreads; i++) {
-    kerneldatap[i].x     = xa + ix[i];
-    kerneldatap[i].yvec  = yy;
-    kerneldatap[i].amult = &alpha[0];
-    kerneldatap[i].n     = nx[i];
-    kerneldatap[i].nvec  = nv;
-    pdata[i]             = &kerneldatap[i];
+    kerneldatap[i].x      = xa + ix[i];
+    kerneldatap[i].yvec   = yy;
+    kerneldatap[i].amult  = &alpha[0];
+    kerneldatap[i].n      = nx[i];
+    kerneldatap[i].nvec   = nv;
+    kerneldatap[i].istart = ix[i];
+    pdata[i]              = &kerneldatap[i];
   }
   ierr = MainJob(VecMAXPY_Kernel,(void**)pdata,x->nthreads);
 
