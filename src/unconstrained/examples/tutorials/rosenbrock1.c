@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X). 
 
     Input Parameters:
-.   taoapp  - the TAO_APPLICATION context
+.   tao  - the TaoSolver context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoSetFunctionGradient()
     
@@ -166,7 +166,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void
    FormHessian - Evaluates Hessian matrix.
 
    Input Parameters:
-.  taoapp   - the TAO_APPLICATION context
+.  tao   - the TaoSolver context
 .  x     - input vector
 .  ptr   - optional user-defined context, as set by TaoSetHessian()
 

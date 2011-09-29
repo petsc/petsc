@@ -216,9 +216,9 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    FormFunctionGradient - Evaluates the function and corresponding gradient.
     
    Input Parameters:
-   taoapp - the TAO_APPLICATION context
+   tao - the TaoSolver context
    X   - the input vector 
-   ptr - optional user-defined context, as set by TaoSetFunction()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
 
    Output Parameters:
    f   - the newly evaluated function

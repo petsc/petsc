@@ -22,17 +22,6 @@ The command line options are:\n\
   -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
  \n";
 
-/*T
-   Concepts: TAO - Solving a bound constrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoApplicationCreate();  TaoAppDestroy();
-   Routines: TaoAppSetObjectiveAndGradientRoutine(); TaoAppSetHessianRoutine();
-   Routines: TaoAppSetInitialSolutionVec(); TaoAppSetHessianMat();
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoSetOptions(); TaoApplyGetKSP()
-   Routines: TaoSolveApplication(); TaoGetTerminationReason();
-   Processors: n
-T*/
 
 /* 
    User-defined application context - contains data needed by the 

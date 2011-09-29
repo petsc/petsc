@@ -14,17 +14,6 @@ The command line options are:\n\
   -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
   -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise \n\n";
 
-/*T
-   Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoApplicationCreate(); TaoAppDestroy();
-   Routines: TaoAppSetObjectiveAndGradientRoutine(); TaoAppSetInitialSolutionVec();
-   Routines: TaoAppSetHessianMat(); TaoSetHessianRoutine();
-   Routines: TaoSetFromOptions(); TaoAppGetKSP();
-   Routines: TaoSolve(); TaoView();
-   Processors: 1
-T*/
 
 /* 
    User-defined application context - contains data needed by the 
@@ -103,12 +92,6 @@ int main( int argc, char **argv )
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
-  /* Limit the number of iterations in the KSP linear solver */
-/*  ierr = TaoAppGetKSP(minsurfapp,&ksp); CHKERRQ(ierr);
-  if (ksp) {                                            
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my);
-    CHKERRQ(ierr);
-    }*/
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);

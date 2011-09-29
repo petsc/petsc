@@ -87,7 +87,6 @@
       CHKERRQ(ierr)
 !  Set routines for function, gradient, and hessian evaluation 
 
-!     TaoAppSetObjectiveAndGradientRoutine is shortened to 31 chars to comply with some compilers
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
      &      FormFunction,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)

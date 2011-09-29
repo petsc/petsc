@@ -102,7 +102,7 @@ int main(int argc, char **argv)
    FormFunction - Evaluates the function, f(X).
 
    Input Parameters:
-.  taoapp - the TAO_APPLICATION context
+.  tao - the TAO_APPLICATION context
 .  X   - the input vector 
 .  ptr - optional user-defined context, as set by TaoSetFunction()
 
@@ -124,7 +124,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
     FormGradient - Evaluates the gradient, G(X).              
 
     Input Parameters:
-.   taoapp  - the TAO_APPLICATION context
+.   tao  - the TAO_APPLICATION context
 .   X    - input vector
 .   ptr  - optional user-defined context
     

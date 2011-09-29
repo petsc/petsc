@@ -7,17 +7,6 @@
 !
 !  The C version of this code is rosenbrock1.c
 !
-!/*T
-!  Concepts: TAO - Solving an unconstrained minimization problem
-!  Routines: TaoInitialize(); TaoFinalize(); TaoSetOptions();
-!  Routines: TaoApplicationCreate();
-!  Routines: TaoCreate(); TaoAppSetObjectiveAndGradientRoutine(); 
-!  Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-!  Routines: TaoAppSetInitialSolutionVec(); 
-!  Routines: TaoSolveApplication(); TaoDestroy(); TaoAppDestroy();
-!  Routines: TaoView(); TaoGetTerminationReason();                              
-!  Processors: 1
-!T*/ 
 !
 
 ! ---------------------------------------------------------------------- 
@@ -98,7 +87,6 @@
       CHKMEMQ
 !  Set routines for function, gradient, and hessian evaluation 
 
-!     TaoAppSetObjectiveAndGradientRoutine is shortened to 31 chars to comply with some compilers
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &      FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)

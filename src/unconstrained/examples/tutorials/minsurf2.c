@@ -216,9 +216,9 @@ PetscErrorCode FormGradient(TaoSolver tao, Vec X, Vec G,void *userCtx){
 /*  FormFunctionGradient - Evaluates the function and corresponding gradient.
 
     Input Parameters:
-.   taoapp     - the TAO_APPLICATION context
+.   tao     - the TaoSolver context
 .   XX      - input vector
-.   userCtx - optional user-defined context, as set by TaoSetFunctionGradient()
+.   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
     
     Output Parameters:
 .   fcn     - the newly evaluated function
@@ -409,9 +409,9 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
    FormHessian - Evaluates Hessian matrix.
 
    Input Parameters:
-.  taoapp  - the TAO_APPLICATION context
+.  tao  - the TaoSolver context
 .  x    - input vector
-.  ptr  - optional user-defined context, as set by TaoSetHessian()
+.  ptr  - optional user-defined context, as set by TaoSetHessianRoutine()
 
    Output Parameters:
 .  H    - Hessian matrix

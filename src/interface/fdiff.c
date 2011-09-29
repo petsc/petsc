@@ -23,18 +23,18 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 /*@C
   TaoDefaultComputeGradient - computes the gradient using finite differences.
  
-  Collective on TAO_APPLICATION
+  Collective on TaoSolver
 
   Input Parameters:
-+ taoapp - the TAO_APPLICATION context
++ tao - the TaoSolver context
 . X - compute gradient at this point
-- ctx - the TAO_APPLICATION structure, cast to (void*)
+- dummy - not used
 
   Output Parameters:
 . G - Gradient Vector
 
    Options Database Key:
-+  -tao_fd_gradient - Activates TaoAppDefaultComputeGradient()
++  -tao_fd_gradient - Activates TaoDefaultComputeGradient()
 -  -tao_fd_delta <delta> - change in x used to calculate finite differences
 
 
@@ -52,11 +52,11 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 
 
    Note:
-   The gradient evaluation must be set using the routine TaoAppSetGradientRoutine().
+   The gradient evaluation must be set using the routine TaoSetGradientRoutine().
 
-.keywords: TAO_APPLICATION, finite differences, Hessian
+.keywords: finite differences, Hessian
 
-.seealso: TaoAppDefaultComputeGradient(),  TaoAppSetGradientRoutine()
+.seealso: TaoSetGradientRoutine()
 
 @*/
 PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy) 
@@ -102,7 +102,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
    Input Parameters:
 +  tao - the TaoSolver context 
 .  V - compute Hessian at this point
--  ctx - the TAO_APPLICATION structure, cast to (void*)
+-  dummy - not used
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
@@ -110,7 +110,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 -  flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Key:
-+  -tao_fd - Activates TaoAppDefaultComputeHessian()
++  -tao_fd - Activates TaoDefaultComputeHessian()
 -  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
 
    Level: intermediate
@@ -123,16 +123,16 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
    correctness of a user-provided Hessian.
 
    Note:
-   The gradient evaluation must be set using the routine TaoAppSetGradientRoutine().
+   The gradient evaluation must be set using the routine TaoSetGradientRoutine().
 
-.keywords: TAO_APPLICATION, finite differences, Hessian
+.keywords: finite differences, Hessian
 
-.seealso: TaoAppSetHessianRoutine(), TaoAppDefaultComputeHessianColor(), SNESDefaultComputeJacobian(),
-          TaoAppSetGradientRoutine(), TaoAppDefaultComputeGradient()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESDefaultComputeJacobian(),
+          TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
 @*/
 PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
-			     MatStructure *flag,void *ctx){
+			     MatStructure *flag,void *dummy){
   PetscErrorCode       ierr;
   MPI_Comm             comm;
   Vec                  G;
@@ -172,6 +172,7 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
    Input Parameters:
 +  tao - the TaoSolver context
 .  V - compute Hessian at this point
+-  ctx - the PetscColoring object
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
@@ -187,10 +188,10 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
    Note:
    The gradient evaluation must be set using the routine TaoSetPetscGradient().
 
- .keywords: TAO_APPLICATION, finite differences, Hessian, coloring, sparse
+ .keywords: finite differences, Hessian, coloring, sparse
 
-.seealso: TaoAppSetHessianRoutine(), TaoAppDefaultComputeHessian(),SNESDefaultComputeJacobianColor(), 
-          TaoAppSetGradientRoutine(), TaoAppSetColoring()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESDefaultComputeJacobianColor(), 
+          TaoSetGradientRoutine()
 
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH,Mat *BB,MatStructure *flag,void *ctx){

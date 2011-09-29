@@ -41,17 +41,6 @@ The command line options include:\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction.\n\n";
 
-/* T
-   Concepts: TAO - Solving a system of nonlinear equations, nonlinear least squares;
-   Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoPetscApplicationCreate(); TaoApplicationDestroy();
-   Routines: TaoSetPetscFunctionGradient(); 
-   Routines: TaoSetPetscJacobian(); TaoSetPetscConstraintsFunction();
-   Routines: TaoSetPetscInitialVector(); TaoSetAplication();
-   Routines: TaoSetFromOptions(); TaoSolve(); TaoView();
-   Processors: n
-T*/
 
 
 
