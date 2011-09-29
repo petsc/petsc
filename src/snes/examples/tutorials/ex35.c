@@ -8,6 +8,32 @@ static char help[] = "-Laplacian u = b as a  \n\n";
    Processors: n
 T*/
 
+/*
+
+    The linear and nonlinear versions of these should give almost identical results on this problem
+
+    Richardson
+      Nonlinear:
+        -snes_rtol 1.e-12 -snes_monitor -snes_type nrichardson -snes_ls_monitor
+
+      Linear:
+        -snes_rtol 1.e-12 -snes_monitor -ksp_rtol 1.e-12  -ksp_monitor -ksp_type richardson -pc_type none -ksp_richardson_self_scale -info
+
+    GMRES
+      Nonlinear:
+       -snes_rtol 1.e-12 -snes_monitor  -snes_type ngmres
+
+      Linear:
+       -snes_rtol 1.e-12 -snes_monitor  -ksp_type gmres -ksp_monitor -ksp_rtol 1.e-12 -pc_type none
+
+    CG
+       Nonlinear:
+            -snes_rtol 1.e-12 -snes_monitor  -snes_type ncg -snes_ls_monitor
+
+       Linear:
+             -snes_rtol 1.e-12 -snes_monitor  -ksp_type cg -ksp_monitor -ksp_rtol 1.e-12 -pc_type none
+*/
+
 /* 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -18,8 +44,9 @@ T*/
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,void*);
+extern PetscErrorCode FormMatrix(DM,Mat);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
@@ -33,6 +60,7 @@ int main(int argc,char **argv)
   PetscErrorCode         ierr;
   DM                     da;
   PetscBool              use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
+  Mat                    J;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -70,11 +98,11 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(b,PETSC_NULL);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set local function evaluation routine
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
+  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = FormMatrix(da,J);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,J);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,0);CHKERRQ(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -94,6 +122,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -105,63 +134,44 @@ int main(int argc,char **argv)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
-/* 
-   FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
-
-
- */
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,void *user)
+#define __FUNCT__ "FormFunction"
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j;
-  PetscReal      hx,hy,hxdhy,hydhx;
-  PetscScalar    u,uxx,uyy;
+  Mat            J = (Mat)ctx;
 
   PetscFunctionBegin;
-
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
-  /*
-     Compute function over the locally owned part of the grid
-  */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i];
-      } else {
-        u       = x[j][i];
-        uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
-        uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
-        f[j][i] = uxx + uyy;
-      }
-    }
-  }
-  ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = MatMult(J,x,F);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
-/*
-   FormJacobianLocal - Evaluates Jacobian matrix on local process patch
-*/
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,void *user)
+#define __FUNCT__ "FormJacobian"
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void*ctx)
+{
+  PetscFunctionBegin;
+  /* Jacobian is already computed and constant */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormMatrix"
+PetscErrorCode FormMatrix(DM da,Mat jac)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j;
-  MatStencil     col[5],row;
+  PetscInt       i,j,nrows = 0;
+  MatStencil     col[5],row,*rows;
   PetscScalar    v[5],hx,hy,hxdhy,hydhx;
+  DMDALocalInfo  info;
 
   PetscFunctionBegin;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  hx     = 1.0/(PetscReal)(info.mx-1);
+  hy     = 1.0/(PetscReal)(info.my-1);
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
 
-
+  ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
   /* 
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
@@ -173,13 +183,15 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,voi
       - We can set matrix entries either using either
         MatSetValuesLocal() or MatSetValues(), as discussed above.
   */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
+  for (j=info.ys; j<info.ys+info.ym; j++) {
+    for (i=info.xs; i<info.xs+info.xm; i++) {
       row.j = j; row.i = i;
       /* boundary points */
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        v[0] = 1.0;
+      if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
+        v[0] = 2.0*(hydhx + hxdhy);
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        rows[nrows].i = i;
+        rows[nrows++].j = j;
       } else {
       /* interior grid points */
         v[0] = -hxdhy;                                           col[0].j = j - 1; col[0].i = i;
@@ -198,6 +210,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,voi
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatZeroRowsColumnsStencil(jac,nrows,rows,2.0*(hydhx + hxdhy),PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
@@ -205,6 +219,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,voi
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 
 /* ------------------------------------------------------------------- */

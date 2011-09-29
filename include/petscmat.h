@@ -574,6 +574,7 @@ extern PetscErrorCode  MatZeroEntries(Mat);
 extern PetscErrorCode  MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],PetscScalar,Vec,Vec);
+extern PetscErrorCode  MatZeroRowsColumnsStencil(Mat,PetscInt,const MatStencil[],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumns(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumnsIS(Mat,IS,PetscScalar,Vec,Vec);
 

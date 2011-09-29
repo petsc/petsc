@@ -75,12 +75,12 @@ J*/
 #define PCPFMG            "pfmg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
-#define PCSACUSP          "sacusp"
+#define PCSVD             "svd"
+#define PCGAMG            "gamg"
+#define PCSACUSP          "sacusp"        /* these four run on NVIDIA GPUs using CUSP */
 #define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
-#define PCSVD             "svd"
 #define PCAINVCUSP        "ainvcusp"
-#define PCGAMG            "gamg"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;
