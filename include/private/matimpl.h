@@ -287,7 +287,8 @@ struct _p_Mat {
   MatInfo                info;             /* matrix information */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
-  MatNullSpace           nullsp;
+  MatNullSpace           nullsp;           /* null space (operator is singular) */
+  MatNullSpace           nearnullsp;       /* near null space to be used by multigrid methods */
   PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
   PetscBool              symmetric,hermitian,structurally_symmetric,spd;
