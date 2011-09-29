@@ -7344,7 +7344,7 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
 @*/
 PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 {
@@ -7358,6 +7358,42 @@ PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   if (mat->nullsp) { ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr); }
   mat->nullsp = nullsp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetNearNullSpace"
+/*@
+   MatSetNearNullSpace - attaches a null space to a matrix.
+        This null space will be used to provide near null space vectors to a multigrid preconditioner built from this matrix.
+
+   Logically Collective on Mat and MatNullSpace
+
+   Input Parameters:
++  mat - the matrix
+-  nullsp - the null space object
+
+   Level: developer
+
+   Notes:
+      Overwrites any previous near null space that may have been attached
+
+   Concepts: null space^attaching to matrix
+
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace()
+@*/
+PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (mat->nearnullsp) { ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr); }
+  mat->nearnullsp = nullsp;
   PetscFunctionReturn(0);
 }
 
