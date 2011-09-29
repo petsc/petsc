@@ -371,12 +371,7 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	  }
 	}
 
-	if (tao->ops->setfromoptions) {
-	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
-	}
-
-
-	ierr = PetscOptionsName("-tao_view","view TAO_SOLVER info after each minimization has completed","TaoView",&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsName("-tao_view","view TaoSolver info after each minimization has completed","TaoView",&flg);CHKERRQ(ierr);
 	if (flg) tao->viewtao = PETSC_TRUE;
 	ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
@@ -451,7 +446,13 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	ierr = PetscOptionsName("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",&flg);CHKERRQ(ierr);
 	if (flg) {
 	  ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-	} 
+	}
+
+	if (tao->ops->setfromoptions) {
+	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
+	}
+
+ 
     }    
     ierr = PetscOptionsEnd(); CHKERRQ(ierr);
     PetscFunctionReturn(0);

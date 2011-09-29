@@ -323,7 +323,6 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchTerminationReason *reason)
 {
      PetscErrorCode ierr;
-     PetscBool flg;
      PetscViewer viewer;
      PetscInt low1,low2,low3,high1,high2,high3;
      char filename[PETSC_MAX_PATH_LEN];
@@ -413,9 +412,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
        *steplength=ls->step;
      }
 
-
-     ierr = PetscOptionsGetString(((PetscObject)ls)->prefix,"-tao_ls_view",filename,PETSC_MAX_PATH_LEN,&flg); CHKERRQ(ierr);
-     if (flg && !PetscPreLoadingOn) {
+     if (ls->viewls && !PetscPreLoadingOn) {
 	 ierr = PetscViewerASCIIOpen(((PetscObject)ls)->comm,filename,&viewer); CHKERRQ(ierr);
 	 ierr = TaoLineSearchView(ls,viewer); CHKERRQ(ierr);
 	 ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
@@ -551,6 +548,8 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 			   ls->stepmin,&ls->stepmin,0);CHKERRQ(ierr);
      ierr = PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",
 			   ls->stepmax,&ls->stepmax,0);CHKERRQ(ierr);
+     ierr = PetscOptionsName("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",&flg);CHKERRQ(ierr);
+     if (flg) ls->viewls = PETSC_TRUE;
 
 
      if (ls->ops->setfromoptions) {
