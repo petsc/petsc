@@ -300,56 +300,54 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
   PetscInt       status;
 
   PetscFunctionBegin;
-  if(PetscUseThreadPool) {
 #if defined(PETSC_HAVE_MEMALIGN)
-    size_t Val1 = (size_t)CACHE_LINE_SIZE;
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)memalign(Val1,Val2);
-    arrcond1 = (char*)memalign(Val1,Val2);
-    arrcond2 = (char*)memalign(Val1,Val2);
-    arrstart = (char*)memalign(Val1,Val2);
-    arrready = (char*)memalign(Val1,Val2);
+  size_t Val1 = (size_t)CACHE_LINE_SIZE;
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)memalign(Val1,Val2);
+  arrcond1 = (char*)memalign(Val1,Val2);
+  arrcond2 = (char*)memalign(Val1,Val2);
+  arrstart = (char*)memalign(Val1,Val2);
+  arrready = (char*)memalign(Val1,Val2);
 #else
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)malloc(Val2);
-    arrcond1 = (char*)malloc(Val2);
-    arrcond2 = (char*)malloc(Val2);
-    arrstart = (char*)malloc(Val2);
-    arrready = (char*)malloc(Val2);
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)malloc(Val2);
+  arrcond1 = (char*)malloc(Val2);
+  arrcond2 = (char*)malloc(Val2);
+  arrstart = (char*)malloc(Val2);
+  arrready = (char*)malloc(Val2);
 #endif
-    job_tree.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
-    job_tree.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_tree.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_tree.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    job_tree.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    /* initialize job structure */
-    for(i=0; i<PetscMaxThreads; i++) {
-      job_tree.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
-      job_tree.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
-      job_tree.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
-      job_tree.arrThreadStarted[i]  = (PetscBool*)(arrstart+CACHE_LINE_SIZE*i);
-      job_tree.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
-    }
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_mutex_init(job_tree.mutexarray[i],NULL);
-      ierr = pthread_cond_init(job_tree.cond1array[i],NULL);
-      ierr = pthread_cond_init(job_tree.cond2array[i],NULL);
-      *(job_tree.arrThreadStarted[i])  = PETSC_FALSE;
-      *(job_tree.arrThreadReady[i])    = PETSC_FALSE;
-    }
-    job_tree.pfunc = NULL;
-    job_tree.pdata = (void**)malloc(N*sizeof(void*));
-    job_tree.startJob = PETSC_FALSE;
-    job_tree.eJobStat = JobInitiated;
-    pVal = (int*)malloc(N*sizeof(int));
-    /* allocate memory in the heap for the thread structure */
-    PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    /* create threads */
-    for(i=0; i<N; i++) {
-      pVal[i] = i;
-      status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      /* should check status */
-    }
+  job_tree.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
+  job_tree.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_tree.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_tree.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
+  job_tree.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
+  /* initialize job structure */
+  for(i=0; i<PetscMaxThreads; i++) {
+    job_tree.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
+    job_tree.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
+    job_tree.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
+    job_tree.arrThreadStarted[i]  = (PetscBool*)(arrstart+CACHE_LINE_SIZE*i);
+    job_tree.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
+  }
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_mutex_init(job_tree.mutexarray[i],NULL);
+    ierr = pthread_cond_init(job_tree.cond1array[i],NULL);
+    ierr = pthread_cond_init(job_tree.cond2array[i],NULL);
+    *(job_tree.arrThreadStarted[i])  = PETSC_FALSE;
+    *(job_tree.arrThreadReady[i])    = PETSC_FALSE;
+  }
+  job_tree.pfunc = NULL;
+  job_tree.pdata = (void**)malloc(N*sizeof(void*));
+  job_tree.startJob = PETSC_FALSE;
+  job_tree.eJobStat = JobInitiated;
+  pVal = (int*)malloc(N*sizeof(int));
+  /* allocate memory in the heap for the thread structure */
+  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+  /* create threads */
+  for(i=0; i<N; i++) {
+    pVal[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    /* should check status */
   }
   PetscFunctionReturn(0);
 }
@@ -479,52 +477,50 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
   PetscInt i,status;
 
   PetscFunctionBegin;
-  if(PetscUseThreadPool) {
 #if defined(PETSC_HAVE_MEMALIGN)
-    size_t Val1 = (size_t)CACHE_LINE_SIZE;
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)memalign(Val1,Val2);
-    arrcond1 = (char*)memalign(Val1,Val2);
-    arrcond2 = (char*)memalign(Val1,Val2);
-    arrstart = (char*)memalign(Val1,Val2);
-    arrready = (char*)memalign(Val1,Val2);
+  size_t Val1 = (size_t)CACHE_LINE_SIZE;
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)memalign(Val1,Val2);
+  arrcond1 = (char*)memalign(Val1,Val2);
+  arrcond2 = (char*)memalign(Val1,Val2);
+  arrstart = (char*)memalign(Val1,Val2);
+  arrready = (char*)memalign(Val1,Val2);
 #else
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)malloc(Val2);
-    arrcond1 = (char*)malloc(Val2);
-    arrcond2 = (char*)malloc(Val2);
-    arrstart = (char*)malloc(Val2);
-    arrready = (char*)malloc(Val2);
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)malloc(Val2);
+  arrcond1 = (char*)malloc(Val2);
+  arrcond2 = (char*)malloc(Val2);
+  arrstart = (char*)malloc(Val2);
+  arrready = (char*)malloc(Val2);
 #endif
-
-    job_main.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
-    job_main.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_main.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_main.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    /* initialize job structure */
-    for(i=0; i<PetscMaxThreads; i++) {
-      job_main.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
-      job_main.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
-      job_main.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
-      job_main.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
-    }
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_mutex_init(job_main.mutexarray[i],NULL);
-      ierr = pthread_cond_init(job_main.cond1array[i],NULL);
-      ierr = pthread_cond_init(job_main.cond2array[i],NULL);
-      *(job_main.arrThreadReady[i])    = PETSC_FALSE;
-    }
-    job_main.pfunc = NULL;
-    job_main.pdata = (void**)malloc(N*sizeof(void*));
-    pVal = (int*)malloc(N*sizeof(int));
-    /* allocate memory in the heap for the thread structure */
-    PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    /* create threads */
-    for(i=0; i<N; i++) {
-      pVal[i] = i;
-      status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      /* error check */
-    }
+  
+  job_main.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
+  job_main.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_main.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_main.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
+  /* initialize job structure */
+  for(i=0; i<PetscMaxThreads; i++) {
+    job_main.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
+    job_main.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
+    job_main.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
+    job_main.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
+  }
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_mutex_init(job_main.mutexarray[i],NULL);
+    ierr = pthread_cond_init(job_main.cond1array[i],NULL);
+    ierr = pthread_cond_init(job_main.cond2array[i],NULL);
+    *(job_main.arrThreadReady[i])    = PETSC_FALSE;
+  }
+  job_main.pfunc = NULL;
+  job_main.pdata = (void**)malloc(N*sizeof(void*));
+  pVal = (int*)malloc(N*sizeof(int));
+  /* allocate memory in the heap for the thread structure */
+  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+  /* create threads */
+  for(i=0; i<N; i++) {
+    pVal[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    /* error check */
   }
   PetscFunctionReturn(0);
 }
@@ -709,57 +705,55 @@ PetscErrorCode PetscThreadInitialize_Chain(PetscInt N)
   PetscInt i,status;
 
   PetscFunctionBegin;
-  if(PetscUseThreadPool) {
 #if defined(PETSC_HAVE_MEMALIGN)
-    size_t Val1 = (size_t)CACHE_LINE_SIZE;
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)memalign(Val1,Val2);
-    arrcond1 = (char*)memalign(Val1,Val2);
-    arrcond2 = (char*)memalign(Val1,Val2);
-    arrstart = (char*)memalign(Val1,Val2);
-    arrready = (char*)memalign(Val1,Val2);
+  size_t Val1 = (size_t)CACHE_LINE_SIZE;
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)memalign(Val1,Val2);
+  arrcond1 = (char*)memalign(Val1,Val2);
+  arrcond2 = (char*)memalign(Val1,Val2);
+  arrstart = (char*)memalign(Val1,Val2);
+  arrready = (char*)memalign(Val1,Val2);
 #else
-    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
-    arrmutex = (char*)malloc(Val2);
-    arrcond1 = (char*)malloc(Val2);
-    arrcond2 = (char*)malloc(Val2);
-    arrstart = (char*)malloc(Val2);
-    arrready = (char*)malloc(Val2);
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+  arrmutex = (char*)malloc(Val2);
+  arrcond1 = (char*)malloc(Val2);
+  arrcond2 = (char*)malloc(Val2);
+  arrstart = (char*)malloc(Val2);
+  arrready = (char*)malloc(Val2);
 #endif
-
-    job_chain.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
-    job_chain.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_chain.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-    job_chain.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    job_chain.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    /* initialize job structure */
-    for(i=0; i<PetscMaxThreads; i++) {
-      job_chain.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
-      job_chain.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
-      job_chain.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
-      job_chain.arrThreadStarted[i]  = (PetscBool*)(arrstart+CACHE_LINE_SIZE*i);
-      job_chain.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
-    }
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_mutex_init(job_chain.mutexarray[i],NULL);
-      ierr = pthread_cond_init(job_chain.cond1array[i],NULL);
-      ierr = pthread_cond_init(job_chain.cond2array[i],NULL);
-      *(job_chain.arrThreadStarted[i])  = PETSC_FALSE;
-      *(job_chain.arrThreadReady[i])    = PETSC_FALSE;
-    }
-    job_chain.pfunc = NULL;
-    job_chain.pdata = (void**)malloc(N*sizeof(void*));
-    job_chain.startJob = PETSC_FALSE;
-    job_chain.eJobStat = JobInitiated;
-    pVal = (int*)malloc(N*sizeof(int));
-    /* allocate memory in the heap for the thread structure */
-    PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    /* create threads */
-    for(i=0; i<N; i++) {
-      pVal[i] = i;
-      status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      /* should check error */
-    }
+  
+  job_chain.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
+  job_chain.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_chain.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
+  job_chain.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
+  job_chain.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
+  /* initialize job structure */
+  for(i=0; i<PetscMaxThreads; i++) {
+    job_chain.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
+    job_chain.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
+    job_chain.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
+    job_chain.arrThreadStarted[i]  = (PetscBool*)(arrstart+CACHE_LINE_SIZE*i);
+    job_chain.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
+  }
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_mutex_init(job_chain.mutexarray[i],NULL);
+    ierr = pthread_cond_init(job_chain.cond1array[i],NULL);
+    ierr = pthread_cond_init(job_chain.cond2array[i],NULL);
+    *(job_chain.arrThreadStarted[i])  = PETSC_FALSE;
+    *(job_chain.arrThreadReady[i])    = PETSC_FALSE;
+  }
+  job_chain.pfunc = NULL;
+  job_chain.pdata = (void**)malloc(N*sizeof(void*));
+  job_chain.startJob = PETSC_FALSE;
+  job_chain.eJobStat = JobInitiated;
+  pVal = (int*)malloc(N*sizeof(int));
+  /* allocate memory in the heap for the thread structure */
+  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+  /* create threads */
+  for(i=0; i<N; i++) {
+    pVal[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    /* should check error */
   }
   PetscFunctionReturn(0);
 }
