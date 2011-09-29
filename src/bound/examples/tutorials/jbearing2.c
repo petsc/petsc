@@ -74,7 +74,7 @@ int main( int argc, char **argv )
   Vec        xl,xu;                  /* bounds vectors */
   PetscReal d1000 = 1000;
   PetscBool   flg;              /* A return variable when checking for user options */
-  TaoSolver tao;                /* TAO_SOLVER solver context */
+  TaoSolver tao;                /* TaoSolver solver context */
 
   TaoSolverTerminationReason reason;
   KSP        ksp;

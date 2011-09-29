@@ -46,7 +46,7 @@
       Vec              x             ! solution vector
       Vec              xl, xu        ! lower and upper bounds vectorsp
       PetscInt         m             ! number of local elements in vector
-      TaoSolver        tao           ! TAO_SOLVER solver context
+      TaoSolver        tao           ! TaoSolver solver context
       Mat              H             ! Hessian matrix
       ISLocalToGlobalMapping isltog  ! local to global mapping object
       PetscBool        flg

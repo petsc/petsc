@@ -75,7 +75,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec        x, f;               /* solution, function */
-  TaoSolver  tao;                /* TAO_SOLVER solver context */
+  TaoSolver  tao;                /* TaoSolver solver context */
   AppCtx     user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */

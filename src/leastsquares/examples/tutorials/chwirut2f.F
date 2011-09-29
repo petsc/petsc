@@ -120,7 +120,7 @@
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
 !
 !  Input Parameters:
-!  tao - the TAO_SOLVER context
+!  tao - the TaoSolver context
 !  X   - input vector
 !  dummy - not used
 !

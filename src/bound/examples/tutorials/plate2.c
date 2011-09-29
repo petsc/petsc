@@ -71,7 +71,7 @@ int main( int argc, char **argv )
   PetscInt   m, N;                 /* number of local and global elements in vectors */
   Vec        x,xl,xu;               /* solution vector  and bounds*/
   PetscBool   flg;                /* A return variable when checking for user options */
-  TaoSolver  tao;                  /* TAO_SOLVER solver context */
+  TaoSolver  tao;                  /* TaoSolver solver context */
   ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
   TaoSolverTerminationReason reason;
   Mat         H_shell;                  /* to test matrix-free submatrices */

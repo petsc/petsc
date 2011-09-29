@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec        x, f;               /* solution, function */
   Mat        J;                  /* Jacobian matrix */ 
-  TaoSolver  tao;                /* TAO_SOLVER solver context */
+  TaoSolver  tao;                /* TaoSolver solver context */
   PetscInt   i;               /* iteration information */
   PetscReal  hist[100],resid[100];
   PetscInt   nhist;

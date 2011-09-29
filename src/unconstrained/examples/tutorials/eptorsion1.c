@@ -85,7 +85,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscInt      my=10;               /* discretization in y-direction */
   Vec         x;                   /* solution, gradient vectors */
   PetscBool   flg;                 /* A return value when checking for use options */
-  TaoSolver   tao;                 /* TAO_SOLVER solver context */
+  TaoSolver   tao;                 /* TaoSolver solver context */
   Mat         H;                   /* Hessian matrix */
   TaoSolverTerminationReason reason;        
   KSP         ksp;                 /* PETSc Krylov subspace solver */

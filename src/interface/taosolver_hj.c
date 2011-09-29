@@ -104,10 +104,10 @@ PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCo
    TaoComputeHessian - Computes the Hessian matrix that has been
    set with TaoSetHessian().
 
-   Collective on TAO_SOLVER and Mat
+   Collective on TaoSolver and Mat
 
    Input Parameters:
-+  solver - the TAO_SOLVER solver context
++  solver - the TaoSolver solver context
 -  xx - input vector
 
    Output Parameters:
@@ -125,7 +125,7 @@ PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCo
 
    Level: developer
 
-.keywords: TAO_SOLVER, compute, Hessian, matrix
+.keywords: TaoSolver, compute, Hessian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
 
@@ -161,10 +161,10 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
    TaoComputeJacobian - Computes the Jacobian matrix that has been
    set with TaoSetJacobianRoutine().
 
-   Collective on TAO_SOLVER and Mat
+   Collective on TaoSolver and Mat
 
    Input Parameters:
-+  solver - the TAO_SOLVER solver context
++  solver - the TaoSolver solver context
 -  xx - input vector
 
    Output Parameters:
@@ -182,7 +182,7 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
 
    Level: developer
 
-.keywords: TAO_SOLVER, compute, Jacobian, matrix
+.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobian()
 
@@ -218,10 +218,10 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
    set with TaoSetJacobianStateRoutine().
 
-   Collective on TAO_SOLVER and Mat
+   Collective on TaoSolver and Mat
 
    Input Parameters:
-+  solver - the TAO_SOLVER solver context
++  solver - the TaoSolver solver context
 -  xx - input vector
 
    Output Parameters:
@@ -239,7 +239,7 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
 
    Level: developer
 
-.keywords: TAO_SOLVER, compute, Jacobian, matrix
+.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
@@ -275,10 +275,10 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
    TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
    set with TaoSetJacobianDesignRoutine().
 
-   Collective on TAO_SOLVER and Mat
+   Collective on TaoSolver and Mat
 
    Input Parameters:
-+  solver - the TAO_SOLVER solver context
++  solver - the TaoSolver solver context
 -  xx - input vector
 
    Output Parameters:
@@ -294,7 +294,7 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
 
    Level: developer
 
-.keywords: TAO_SOLVER, compute, Jacobian, matrix
+.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetDesignDesignIS()
 

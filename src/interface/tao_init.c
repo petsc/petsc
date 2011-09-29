@@ -26,7 +26,7 @@ static char** tao_executablePtr = &tao_executable;
 
    Level: beginner
 
-.keywords: TAO_SOLVER, initialize
+.keywords: TaoSolver, initialize
 
 .seealso: TaoInitializeFortran(), TaoFinalize(), PetscInitialize()
 @*/
