@@ -1,6 +1,6 @@
 <HTML>
 <HEAD>
-<TITLE>TAO Optimization Solver Manual Pages</TITLE>
+<TITLE>TAO Line Search Manual Pages</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
@@ -8,9 +8,9 @@
 </H2>
 
 The Toolkit for Advance Optimization provides an
-interface to create solvers, customize
+interface to create line searches, customize
 them to a particular application, and apply them to a problem.
-Many of the options for TAO can also be set at runtime.
+Many of the options for TAO Line Searches can also be set at runtime.
 <P>
 
 

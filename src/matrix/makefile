@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lmvmmat.c adamat.c submatfree.c approxmat.c
+SOURCEC  = lmvmmat.c adamat.c submatfree.c
 SOURCEF  = 
-SOURCEH  = lmvmmat.h adamat.h submatfree.h approxmat.h
-OBJSC    =  lmvmmat.o adamat.o submatfree.o approxmat.o
+SOURCEH  = lmvmmat.h adamat.h submatfree.h
+OBJSC    =  lmvmmat.o adamat.o submatfree.o
 OBJSF    = 
-LIBBASE  = libtao
-MANSEC   = 
+LIBBASE  = libtaosolver
+MANSEC   = taosolver
 LOCDIR   = src/matrix/
 
 include ${TAO_DIR}/conf/tao_base
