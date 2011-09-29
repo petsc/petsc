@@ -32,7 +32,7 @@ PetscErrorCode TaoInitializePackage(const char path[])
   ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID); CHKERRQ(ierr);
   
   /* Tell PETSc what solvers are available */
-  ierr = TaoRegisterAll(path); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterAll(path); CHKERRQ(ierr);
 
   /* Tell PETSc what events are associated with TaoSolver */
   ierr = PetscLogEventRegister("TaoSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve); CHKERRQ(ierr);

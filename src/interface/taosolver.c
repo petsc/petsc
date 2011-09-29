@@ -2,7 +2,7 @@
 
 #include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
 
-PetscBool TaoRegisterAllCalled = PETSC_FALSE;
+PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;
 
 PetscClassId TAOSOLVER_CLASSID;
@@ -352,8 +352,8 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
     {
 							
 
-	if (!TaoRegisterAllCalled) {
-	    ierr = TaoRegisterAll(PETSC_NULL); CHKERRQ(ierr);
+	if (!TaoSolverRegisterAllCalled) {
+	    ierr = TaoSolverRegisterAll(PETSC_NULL); CHKERRQ(ierr);
 	}
 	if (((PetscObject)tao)->type_name) {
 	    default_type = ((PetscObject)tao)->type_name;
@@ -2084,12 +2084,12 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
     
 }
 #undef __FUNCT__
-#define __FUNCT__ "TaoRegister"
+#define __FUNCT__ "TaoSolverRegister"
 /*MC
-   TaoRegister- Adds a method to the TAO package for unconstrained minimization.
+   TaoSolverRegister- Adds a method to the TAO package for unconstrained minimization.
 
    Synopsis:
-   TaoRegister(char *name_solver,char *path,char *name_Create,int (*routine_Create)(TaoSolver))
+   TaoSolverRegister(char *name_solver,char *path,char *name_Create,int (*routine_Create)(TaoSolver))
 
    Not collective
 
@@ -2100,7 +2100,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 -  func - routine to Create method context
 
    Notes:
-   TaoRegister() may be called multiple times to add several user-defined solvers.
+   TaoSolverRegister() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (func)
    is ignored.
@@ -2111,7 +2111,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 
    Sample usage:
 .vb
-   TaoRegister("my_solver","/home/username/mylibraries/${PETSC_ARCH}/mylib.a",
+   TaoSolverRegister("my_solver","/home/username/mylibraries/${PETSC_ARCH}/mylib.a",
                 "MySolverCreate",MySolverCreate);
 .ve
 
@@ -2122,9 +2122,9 @@ $     -tao_method my_solver
 
    Level: advanced
 
-.seealso: TaoRegisterAll(), TaoRegisterDestroy()
+.seealso: TaoSolverRegisterAll(), TaoSolverRegisterDestroy()
 M*/
-PetscErrorCode TaoRegister(const char sname[], const char path[], const char cname[], PetscErrorCode (*func)(TaoSolver))
+PetscErrorCode TaoSolverRegister(const char sname[], const char path[], const char cname[], PetscErrorCode (*func)(TaoSolver))
 {
     char fullname[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
@@ -2136,23 +2136,23 @@ PetscErrorCode TaoRegister(const char sname[], const char path[], const char cna
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoRegisterDestroy"
+#define __FUNCT__ "TaoSolverRegisterDestroy"
 /*@C
-   TaoRegisterDestroy - Frees the list of minimization solvers that were
-   registered by TaoRegisterDynamic().
+   TaoSolverRegisterDestroy - Frees the list of minimization solvers that were
+   registered by TaoSolverRegisterDynamic().
 
    Not Collective
 
    Level: advanced
 
-.seealso: TaoRegisterAll(), TaoRegister()
+.seealso: TaoSolverRegisterAll(), TaoSolverRegister()
 @*/
-PetscErrorCode TaoRegisterDestroy(void)
+PetscErrorCode TaoSolverRegisterDestroy(void)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
     ierr = PetscFListDestroy(&TaoSolverList); CHKERRQ(ierr);
-    TaoRegisterAllCalled = PETSC_FALSE;
+    TaoSolverRegisterAllCalled = PETSC_FALSE;
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__

@@ -57,9 +57,9 @@ extern PetscErrorCode TaoFinalize_DynamicLibraries();
 extern PetscErrorCode TaoInitializePackage(const char []);
 
 #if defined PETSC_USE_DYNAMIC_LIBRARIES
-#define TaoRegisterDynamic(a,b,c,d) TaoRegister(a,b,c,0)
+#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,0)
 #else
-#define TaoRegisterDynamic(a,b,c,d) TaoRegister(a,b,c,d)
+#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,d)
 #endif
 extern PetscErrorCode TaoCreate(MPI_Comm,TaoSolver*);
 extern PetscErrorCode TaoSetFromOptions(TaoSolver);
@@ -75,9 +75,9 @@ extern PetscErrorCode TaoView(TaoSolver, PetscViewer);
 
 extern PetscErrorCode TaoSolve(TaoSolver);
 
-extern PetscErrorCode TaoRegister(const char [], const char[], const char[],  PetscErrorCode (*)(TaoSolver));
-extern PetscErrorCode TaoRegisterAll(const char[]);
-extern PetscErrorCode TaoRegisterDestroy(void);
+extern PetscErrorCode TaoSolverRegister(const char [], const char[], const char[],  PetscErrorCode (*)(TaoSolver));
+extern PetscErrorCode TaoSolverRegisterAll(const char[]);
+extern PetscErrorCode TaoSolverRegisterDestroy(void);
 
 extern PetscErrorCode TaoGetTerminationReason(TaoSolver,TaoSolverTerminationReason*);
 extern PetscErrorCode TaoGetSolutionStatus(TaoSolver, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoSolverTerminationReason*);

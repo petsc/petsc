@@ -53,47 +53,47 @@ const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted +
 						   
 
 
-extern PetscBool TaoRegisterAllCalled;
+extern PetscBool TaoSolverRegisterAllCalled;
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoRegisterAll"
+#define __FUNCT__ "TaoSolverRegisterAll"
 /*@C
-  TaoRegisterAll - Registersall of the minimization methods in the TAO
+  TaoSolverRegisterAll - Registersall of the minimization methods in the TAO
   package.
 
   Not Collective
 
   Level: developer
 
-.seealso TaoRegisterDynamic(), TaoRegisterDestroy()
+.seealso TaoSolverRegisterDynamic(), TaoSolverRegisterDestroy()
 @*/
-PetscErrorCode TaoRegisterAll(const char path[])
+PetscErrorCode TaoSolverRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  TaoRegisterAllCalled = PETSC_TRUE;
+  TaoSolverRegisterAllCalled = PETSC_TRUE;
   
-  ierr = TaoRegisterDynamic("tao_lmvm",path,"TaoCreate_LMVM",TaoCreate_LMVM); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_nls",path,"TaoCreate_NLS",TaoCreate_NLS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_ntr",path,"TaoCreate_NTR",TaoCreate_NTR); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_ntl",path,"TaoCreate_NTL",TaoCreate_NTL); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_cg",path,"TaoCreate_CG",TaoCreate_CG); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_tron",path,"TaoCreate_TRON",TaoCreate_TRON); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_lmvm",path,"TaoCreate_LMVM",TaoCreate_LMVM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_nls",path,"TaoCreate_NLS",TaoCreate_NLS); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_ntr",path,"TaoCreate_NTR",TaoCreate_NTR); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_ntl",path,"TaoCreate_NTL",TaoCreate_NTL); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_cg",path,"TaoCreate_CG",TaoCreate_CG); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_tron",path,"TaoCreate_TRON",TaoCreate_TRON); CHKERRQ(ierr);
 
-  ierr = TaoRegisterDynamic("tao_blmvm",path,"TaoCreate_BLMVM",TaoCreate_BLMVM); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_bqpip",path,"TaoCreate_BQPIP",TaoCreate_BQPIP); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_blmvm",path,"TaoCreate_BLMVM",TaoCreate_BLMVM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_bqpip",path,"TaoCreate_BQPIP",TaoCreate_BQPIP); CHKERRQ(ierr);
 
-  ierr = TaoRegisterDynamic("tao_gpcg",path,"TaoCreate_GPCG",TaoCreate_GPCG); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_nm",path,"TaoCreate_NM",TaoCreate_NM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_gpcg",path,"TaoCreate_GPCG",TaoCreate_GPCG); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoCreate_NM",TaoCreate_NM); CHKERRQ(ierr);
 
-  ierr = TaoRegisterDynamic("tao_pounders",path,"TaoCreate_POUNDERS",TaoCreate_POUNDERS); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_pounder",path,"TaoCreate_POUNDER",TaoCreate_POUNDER); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_pounders",path,"TaoCreate_POUNDERS",TaoCreate_POUNDERS); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_pounder",path,"TaoCreate_POUNDER",TaoCreate_POUNDER); CHKERRQ(ierr);
 
 
 
-  ierr = TaoRegisterDynamic("tao_lcl",path,"TaoCreate_LCL",TaoCreate_LCL); CHKERRQ(ierr);
-  ierr = TaoRegisterDynamic("tao_fd_test",path,"TaoCreate_FD",TaoCreate_FD); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_lcl",path,"TaoCreate_LCL",TaoCreate_LCL); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_fd_test",path,"TaoCreate_FD",TaoCreate_FD); CHKERRQ(ierr);
 
   
   PetscFunctionReturn(0);
