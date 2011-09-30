@@ -139,6 +139,7 @@ tao_allmanpages: tao_deletemanpages
 
 	-${OMAKE} ACTION=tao_manpages_buildcite tree
 	-${OMAKE} ACTION=tao_manpages tree
+	-${OMAKE} ACTION=tao_manexamples tree LOC=${LOC}
 	-maint/wwwindex.py ${TAO_DIR}
 
 tao_htmlpages: 

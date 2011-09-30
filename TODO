@@ -1,17 +1,29 @@
+Describe new features
+  no more application object
+  pde-constrained
+  pounders
+  c, single, quad
+  drop-in line searches
+  conform more to petsc
+    no separate tao objects
+    option names
+
+  
 update manual
   add pounders section
 
+Get rid of approx mat
 Check fortran stubs 
 
 Check documentation
-  header /*I 
-  Examples
-  html
 
-
+take out of distribution:
+  taodm
+  pounder
+  levenberg-marquardt unless fixed
+  sqpcon
 
 Examples/tests
-  add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
   remake output
 
 Test on arches
@@ -26,13 +38,14 @@ Test compilers
   intel
   gnu-4.6
   cray
-
+  microsoft
   
 automatic testing, coverage
 Buildbot
 add web pages to repository, not distribution
 Levenberg-Marquardt
 POUNDer
+add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 make install to put libs/headers in separate location
 
