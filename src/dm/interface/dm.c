@@ -156,6 +156,10 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
     ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
   }
+
+  if ((*dm)->ctx && (*dm)->ctxdestroy) {
+    ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
   ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
@@ -960,6 +964,29 @@ PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 
   PetscFunctionBegin;
   ierr = (*dmc->ops->getaggregates)(dmc, dmf, rest);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetApplicationContextDestroy"
+/*@C
+    DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the DM is destroyed
+
+    Not Collective
+
+    Input Parameters:
++   dm - the DM object 
+-   destroy - the destroy function
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
+
+C@*/
+PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(void**))
+{
+  PetscFunctionBegin;
+  dm->ctxdestroy = destroy;
   PetscFunctionReturn(0);
 }
 

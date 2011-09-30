@@ -50,6 +50,7 @@ struct _p_DM {
   Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   
   Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; 
   void                   *ctx;    /* a user context */  
+  PetscErrorCode         (*ctxdestroy)(void**);
   Vec                    x;       /* location at which the functions/Jacobian are computed */  
   MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */   
   VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */

@@ -38,8 +38,16 @@ T*/
           1 level:
             -snes_rtol 1.e-12 -snes_monitor  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor 
             -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor -ksp_rtol 1.e-12  -ksp_monitor_true_residual
+
           n levels: 
-            -da_refine <1> -pc_mg_galerkin
+            -da_refine n
+
+       Nonlinear:
+         1 level: 
+           -snes_rtol 1.e-12 -snes_monitor  -snes_type fas -fas_levels_snes_monitor
+
+          n levels:
+            -da_refine n  -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly 
 
 */
 
@@ -54,8 +62,8 @@ T*/
    User-defined routines
 */
 extern PetscErrorCode FormMatrix(DM,Mat);
-extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode MyDMComputeFunction(DM,Vec,Vec);
+extern PetscErrorCode MyDMComputeJacobian(DM,Vec,Mat,Mat,MatStructure*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
@@ -69,7 +77,6 @@ int main(int argc,char **argv)
   PetscErrorCode         ierr;
   DM                     da;
   PetscBool              use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
-  Mat                    J;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -107,10 +114,8 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(b,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = FormMatrix(da,J);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,0);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,MyDMComputeFunction);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,MyDMComputeJacobian);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,7 +136,6 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -143,23 +147,33 @@ int main(int argc,char **argv)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec x,Vec F,void *ctx)
+#define __FUNCT__ "MyDMComputeFunction"
+PetscErrorCode MyDMComputeFunction(DM dm,Vec x,Vec F)
 {
   PetscErrorCode ierr;
-  Mat            J = (Mat)ctx;
+  Mat            J;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
+  if (!J) {
+    ierr = DMGetMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)J,"DM",(PetscObject)PETSC_NULL);CHKERRQ(ierr);
+    ierr = FormMatrix(dm,J);CHKERRQ(ierr);
+    ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);
+    ierr = DMSetApplicationContextDestroy(dm,(PetscErrorCode (*)(void**))MatDestroy);CHKERRQ(ierr);
+  }
   ierr = MatMult(J,x,F);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void*ctx)
+#define __FUNCT__ "MyDMComputeJacobian"
+PetscErrorCode MyDMComputeJacobian(DM dm,Vec x,Mat J,Mat Jp,MatStructure *str)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  /* Jacobian is already computed and constant */
+  ierr = FormMatrix(dm,Jp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

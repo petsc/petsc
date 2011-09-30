@@ -224,11 +224,19 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
 #define __FUNCT__ "SNESSetUp_FAS"
 PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
-  SNES_FAS   *fas = (SNES_FAS *) snes->data;
+  SNES_FAS       *fas = (SNES_FAS *) snes->data,*tmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!snes->work || snes->nwork != 2)ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+  /* should call the SNESSetFromOptions() only when approriate */
+  tmp = fas;
+  while (tmp) {
+    if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);}
+    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);}
+    tmp = tmp->next ? (SNES_FAS*) tmp->next->data : 0;
+  }
+
+  if (!snes->work || snes->nwork != 2) {ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);} /* work vectors used for intergrid transfers */
   /* gets the solver ready for solution */
   if (snes->dm) {
     /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
@@ -319,7 +327,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->upsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->upsmooth,prefix);CHKERRQ(ierr);
-    if (fas->level != 0) {
+    if (fas->level || (fas->levels == 1)) {
       ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_");CHKERRQ(ierr);
     } else {
       ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_coarse_");CHKERRQ(ierr);
@@ -330,7 +338,10 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
       ierr = SNESSetFunction(fas->upsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
     }
   }
-  if (fas->upsmooth) ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
+  if (fas->upsmooth) {
+    ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
+  }
+
   if (!fas->downsmooth && fas->level != 0) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
@@ -343,7 +354,9 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
       ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
     }
   }
-  if (fas->downsmooth) ierr = SNESSetTolerances(fas->downsmooth, 0.0, 0.0, 0.0, fas->max_down_it, 1000);CHKERRQ(ierr);
+  if (fas->downsmooth) {
+    ierr = SNESSetTolerances(fas->downsmooth, 0.0, 0.0, 0.0, fas->max_down_it, 1000);CHKERRQ(ierr);
+  }
 
   if (monflg) {
     if (fas->upsmooth)   ierr = SNESMonitorSet(fas->upsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -351,7 +364,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   }
 
   /* recursive option setting for the smoothers */
-  if (fas->next)ierr = SNESSetFromOptions_FAS(fas->next);CHKERRQ(ierr);
+  if (fas->next) {ierr = SNESSetFromOptions_FAS(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
