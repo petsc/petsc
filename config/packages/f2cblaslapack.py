@@ -47,8 +47,8 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    precision = self.defaultPrecision
-    if precision == '__float128': precision = 'quad'
+    make_target = 'single double'
+    if self.defaultPrecision == '__float128': make_target += ' quad'
 
     libdir = self.libDir
     confdir = self.confDir
@@ -92,7 +92,7 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+precision, timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
