@@ -371,14 +371,19 @@ public:
         this->flexRemotePoints[t].push_back(c);
       }
     } else {
+      // Could speed this up using a sort after all the insertion
       const index_type r = this->getRankIndex(t);
-      index_type       i;
+      index_type       i, j;
 
+      // Could speed up this search with bisection
       for(i = this->pointsOffset[r]; i < this->pointsOffset[r+1]; ++i) {
         if (s <= this->points[i] || this->points[i] < 0) break;
       }
       assert(i < this->pointsOffset[r+1] && s != this->points[i]);
-      for(index_type j = this->pointsOffset[r+1]-1; j > i; --j) {
+      for(index_type j = i+1; j < this->pointsOffset[r+1]; ++j) {
+        if (this->points[j] < 0) break;
+      }
+      for(; j > i; --j) {
         this->points[j]       = this->points[j-1];
         this->remotePoints[j] = this->remotePoints[j-1];
       }

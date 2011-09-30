@@ -24,9 +24,14 @@ extern PetscErrorCode PetscFListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
-extern PetscBool  PetscUseThreadPool;
+
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern int* ThreadCoreAffinity;
 extern PetscErrorCode (*PetscThreadFinalize)(void);
+extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
+extern PetscMPIInt PetscMaxThreads;
+#endif
+
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
 
@@ -840,6 +845,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       ierr = cudaSetDevice(device);CHKERRQ(ierr);
     }
   }
+#endif
+
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+  if(PetscThreadInitialize)
+    ierr = (*PetscThreadInitialize)(PetscMaxThreads);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_AMS)

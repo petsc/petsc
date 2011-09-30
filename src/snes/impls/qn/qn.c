@@ -195,10 +195,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecNorm(f, NORM_2, &fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->iter = i+1;
     snes->norm = fnorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,fnorm,i+1);
-    ierr = SNESMonitor(snes,i+1,fnorm);CHKERRQ(ierr);  
+    SNESLogConvHistory(snes,snes->norm,snes->iter);
+    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* set parameter for default relative tolerance convergence test */
     ierr = (*snes->ops->converged)(snes,i+1,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);

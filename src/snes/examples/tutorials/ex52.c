@@ -1,7 +1,7 @@
 static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
- - Fix header generation with a vector field
+ - Fix tests that need different header generation for a vector field
  - Redo setup/cleanup in PyLith
  - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
  - Code up Jacobian (looks like original code)
@@ -36,6 +36,8 @@ typedef struct {
   PetscBool     batch;             /* The flag for batch assembly */
   PetscBool     gpu;               /* The flag for GPU integration */
   OpType        op;                /* The type of PDE operator (should use FFC/Ignition here) */
+  PetscBool     showResidual, showJacobian;
+  PetscLogEvent createMeshEvent, residualEvent, residualBatchEvent, jacobianEvent, jacobianBatchEvent, integrateBatchCPUEvent, integrateBatchGPUEvent, integrateGPUOnlyEvent;
   /* GPU partitioning */
   PetscInt      numBatches;        /* The number of cell batches per kernel */
   /* Element quadrature */
@@ -74,6 +76,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->gpu             = PETSC_FALSE;
   options->numBatches      = 1;
   options->op              = LAPLACIAN;
+  options->showResidual    = PETSC_TRUE;
+  options->showJacobian    = PETSC_TRUE;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -92,7 +96,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   op = options->op;
   ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,PETSC_NULL);CHKERRQ(ierr);
   options->op = (OpType) op;
+  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex52.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+
+  ierr = PetscLogEventRegister("CreateMesh",    DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Residual",      SNES_CLASSID, &options->residualEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ResidualBatch", SNES_CLASSID, &options->residualBatchEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Jacobian",      SNES_CLASSID, &options->jacobianEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("JacobianBatch", SNES_CLASSID, &options->jacobianBatchEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("IntegBatchCPU", SNES_CLASSID, &options->integrateBatchCPUEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("IntegBatchGPU", SNES_CLASSID, &options->integrateBatchGPUEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("IntegGPUOnly",  SNES_CLASSID, &options->integrateGPUOnlyEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -107,6 +122,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = PETSC_NULL;
@@ -126,6 +142,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -270,6 +287,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -341,6 +359,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
     if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -369,6 +388,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim*numBasisComps,PetscScalar,&fieldGrad,numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -452,10 +472,11 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
     if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscInt debug);
+extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
 
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
   f1[0] = gradU[0];
@@ -471,6 +492,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for(PetscInt e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
@@ -520,6 +542,8 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
       }
     }
   }
+  ierr = PetscLogFlops((((2+(2+2*dim)*dim)*Nb+2*dim)*Nq + (2+2*dim)*dim*Nq*Nb)*Ne);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -543,6 +567,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for(PetscInt e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
@@ -603,6 +628,8 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
       }
     }
   }
+  ierr = PetscLogFlops((((2+(2+2*dim)*dim)*Ncomp*Nb+(2+2)*dim*Ncomp)*Nq + (2+2*dim)*dim*Nq*Ncomp*Nb)*Ne);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -631,6 +658,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->residualBatchEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   //ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
@@ -656,7 +684,10 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt numBatches = user->numBatches;
   PetscInt numChunks  = numCells / (numBatches*batchSize);
   if (user->gpu) {
-    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, u, invJ, detJ, elemVec, user->debug);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
+    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
   } else {
     switch(user->op) {
     case LAPLACIAN:
@@ -685,16 +716,15 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*numBasisFuncs*numBasisComps], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
-
-  ierr = PetscLogFlops(0);CHKERRQ(ierr);
-  //ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
   ierr = PetscFree3(coords,v0,J);CHKERRQ(ierr);
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for(int p = 0; p < user->numProcs; ++p) {
-    if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  if (user->showResidual) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
+    for(int p = 0; p < user->numProcs; ++p) {
+      if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
   }
+  ierr = PetscLogEventEnd(user->residualBatchEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -720,6 +750,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -775,6 +806,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, AppCtx *user)
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -800,6 +832,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -855,6 +888,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, AppCtx *user)
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -880,6 +914,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, AppCtx *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->jacobianBatchEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -935,6 +970,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, AppCtx *user)
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->jacobianBatchEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
