@@ -4,12 +4,13 @@ CFLAGS		 =
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR		 = src/unconstrained/examples/tutorials/
+LOCDIR		 = src/leastsquares/examples/tutorials/
 MANSEC		 = LeastSquares
 EXAMPLESC        = chwirut1.c chwirut2.c
 EXAMPLESCH       =
 EXAMPLESF        = chwirut1f.F chwirut2f.F
 EXAMPLESFH       = chwirut2f.h
+TUTORIALS        = chwirut1.c chwirut2.c chwirut1f.F chwirut2f.F
 DOCS		 = 
 DIRS		 = 
 

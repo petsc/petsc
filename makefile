@@ -134,8 +134,9 @@ tao_deletemanpages:
 
 tao_allmanpages: tao_deletemanpages
 	@mkdir -p ${TAO_DIR}/docs/manpages/taosolver
-	@mkdir -p ${TAO_DIR}/docs/manpages/taodm
 	@mkdir -p ${TAO_DIR}/docs/manpages/taolinesearch
+	@mkdir -p ${TAO_DIR}/docs/manpages/pdeconstrained
+
 
 	-${OMAKE} ACTION=tao_manpages_buildcite tree
 	-${OMAKE} ACTION=tao_manpages tree

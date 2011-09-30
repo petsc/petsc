@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = impls examples
-LOCDIR   = src/leastsqaures/
+LOCDIR   = src/leastsquares/
 
 include ${TAO_DIR}/conf/tao_base
 

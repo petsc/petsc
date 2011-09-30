@@ -7,7 +7,7 @@
 <H2> TAO Examples for Nonlinear Least Squares
 </H2>
 
-The Toolkit for Advanced Optimization includes several solvers for 
+The Toolkit for Advanced Optimization includes the POUNDerS solver for 
 nonlinear least squares.  Several example problems have
 been provided for assistance.
 
