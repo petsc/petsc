@@ -165,7 +165,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   x_A           = snes->vec_sol_update;
   r_A           = snes->work[0];
   d             = snes->work[1];
-  r             = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
