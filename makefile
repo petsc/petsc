@@ -132,15 +132,14 @@ tao_deletemanpages:
 	${RM} -f ${TAO_DIR}/docs/manpages/*/*.html \
                  ${TAO_DIR}/docs/manpages/manpages.cit 
 
-tao_allmanpages: tao_deletemanpages
+tao_allmanpages: tao_htmlpages tao_deletemanpages
 	@mkdir -p ${TAO_DIR}/docs/manpages/taosolver
 	@mkdir -p ${TAO_DIR}/docs/manpages/taolinesearch
-	@mkdir -p ${TAO_DIR}/docs/manpages/pdeconstrained
 
 
 	-${OMAKE} ACTION=tao_manpages_buildcite tree
 	-${OMAKE} ACTION=tao_manpages tree
-	-${OMAKE} ACTION=tao_manexamples tree LOC=${LOC}
+	-${OMAKE} ACTION=tao_manexamples tree LOC=${TAO_DIR}
 	-maint/wwwindex.py ${TAO_DIR}
 
 tao_htmlpages: 
