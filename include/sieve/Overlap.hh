@@ -233,9 +233,11 @@ public:
   template<typename Labeling>
   void relabel(Labeling& relabeling, Overlap& newLabel) {
     this->copy(&newLabel);
-    for(index_type i = 0; i < pointsOffset[numRanks]; ++i) {
-      newLabel.points[i]       = relabeling.restrictPoint(points[i])[0];
-      newLabel.remotePoints[i] = relabeling.restrictPoint(remotePoints[i])[0];
+    if (numRanks) {
+      for(index_type i = 0; i < pointsOffset[numRanks]; ++i) {
+        newLabel.points[i]       = relabeling.restrictPoint(points[i])[0];
+        newLabel.remotePoints[i] = relabeling.restrictPoint(remotePoints[i])[0];
+      }
     }
   }
   void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
