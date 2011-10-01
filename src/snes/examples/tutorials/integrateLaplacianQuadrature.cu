@@ -202,7 +202,8 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElementBatchGPU"
 PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, const PetscScalar coefficients[],
-                                        const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscInt debug) {
+                                        const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                        PetscLogEvent event, PetscInt debug) {
   #include "ex52_inline.h"
   const int dim    = 2;
   const int N_b    = numBasisFunctions_0;   // The number of basis functions
@@ -235,18 +236,41 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   ierr = calculateGrid(Ne, Ncb*Nbc, x, y, z);CHKERRQ(ierr);
   dim3 grid(x, y, z);
   dim3 block(Nbc*N_comp, 1, 1);
+  cudaEvent_t start, stop;
+  float msElapsedTime;
 
-  if (debug) {
+  ierr = cudaEventCreate(&start);CHKERRQ(ierr);
+  ierr = cudaEventCreate(&stop);CHKERRQ(ierr);
+  //if (debug) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n",
                        grid.x, grid.y, grid.z, block.x, block.y, block.z, Ncb);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF, " N_t: %d, N_cb: %d\n", N_t, Ncb);
-  }
+  //}
+  ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
   integrateElasticityQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec);
+  ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
+  ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
+  ierr = cudaEventElapsedTime(&msElapsedTime, start, stop);CHKERRQ(ierr);
+  ierr = cudaEventDestroy(start);CHKERRQ(ierr);
+  ierr = cudaEventDestroy(stop);CHKERRQ(ierr);
   // Marshalling
   ierr = cudaMemcpy(elemVec, d_elemVec, Ne*N_bt * sizeof(float), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   ierr = cudaFree(d_coefficients);CHKERRQ(ierr);
   ierr = cudaFree(d_jacobianInverses);CHKERRQ(ierr);
   ierr = cudaFree(d_jacobianDeterminants);CHKERRQ(ierr);
   ierr = cudaFree(d_elemVec);CHKERRQ(ierr);
+  {
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog = PETSC_NULL;
+    int               stage;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+    ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+    /* Log performance info */
+    eventLog->eventInfo[event].count++;
+    eventLog->eventInfo[event].time  += msElapsedTime*1.0e-3;
+    eventLog->eventInfo[event].flops += (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne;
+  }
   PetscFunctionReturn(0);
 }

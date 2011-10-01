@@ -90,6 +90,11 @@ session_*
 *.xc*
 *.vim
 CTAGS
+ETAGS
+GPATH
+GRTAGS
+GSYMS
+GTAGS
 CMakeLists.txt
 src/snes/examples/tutorials/ex52\.h
 src/snes/examples/tutorials/ex52_inline\.h

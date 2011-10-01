@@ -8,13 +8,11 @@ if __name__ == '__main__':
     '--download-f-blas-lapack=1',
     '--download-mpich=1',
     '--with-cc=gcc',
-    '--with-cxx=g++',
-    '--with-clanguage=C++',
-    '--with-scalar-type=real',
+    '--with-clanguage=c',
     '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
     '--with-python=1',
     '--with-debugging=0',
-    '--PETSC_ARCH=arch-linux-gxx-real-opt'
+    '--PETSC_ARCH=arch-gcc-real-O'
     ]
   configure.petsc_configure(configure_options)

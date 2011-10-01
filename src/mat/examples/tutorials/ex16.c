@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscInt             row,ncols,j,nrows,nnz=0;
   const PetscInt       *cols;
   const PetscScalar    *vals;
-  PetscReal            norm;
+  PetscReal            norm,percent;
   PetscMPIInt          rank;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -60,7 +60,9 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
  
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n [%d] Matrix local size %d,%d; nnz %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnz,100*PetscReal(nnz)/(m*n),nrows);
+  percent=(PetscReal)nnz*100/(m*n);
+  //percent = percent*100/(m*n);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n [%d] Matrix local size %d,%d; nnz %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnz,percent,nrows);
   
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();

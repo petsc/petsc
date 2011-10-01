@@ -165,7 +165,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   x_A           = snes->vec_sol_update;
   r_A           = snes->work[0];
   d             = snes->work[1];
-  r             = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -387,11 +386,14 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 	Q(ivec, i) = qentry;
       }
     }
-    
-    SNESLogConvHistory(snes, r_norm, k);
-    ierr = SNESMonitor(snes, k, r_norm);CHKERRQ(ierr);
 
-    snes->iter =k;
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->iter = k;
+    snes->norm = r_norm;
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    SNESLogConvHistory(snes, snes->norm, snes->iter);
+    ierr = SNESMonitor(snes, snes->iter, snes->norm);CHKERRQ(ierr);
+
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,r_norm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   }

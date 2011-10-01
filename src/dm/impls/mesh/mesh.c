@@ -1727,9 +1727,14 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
-    const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->heightStratum(stratumValue);
-    if (start) *start = *stratum->begin();
-    if (end)   *end   = *stratum->rbegin()+1;
+    if (mesh->getLabel("height")->size()) {
+      const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->heightStratum(stratumValue);
+      if (start) *start = *stratum->begin();
+      if (end)   *end   = *stratum->rbegin()+1;
+    } else {
+      if (start) *start = 0;
+      if (end)   *end   = 0;
+    }
   }
   PetscFunctionReturn(0);
 }

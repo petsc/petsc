@@ -75,12 +75,12 @@ J*/
 #define PCPFMG            "pfmg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
-#define PCSACUSP          "sacusp"
+#define PCSVD             "svd"
+#define PCGAMG            "gamg"
+#define PCSACUSP          "sacusp"        /* these four run on NVIDIA GPUs using CUSP */
 #define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
-#define PCSVD             "svd"
 #define PCAINVCUSP        "ainvcusp"
-#define PCGAMG            "gamg"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;
@@ -439,6 +439,12 @@ extern PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt max
 extern PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 extern PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 extern PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
+
+extern PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
+extern PetscErrorCode PCGAMGAvoidRepartitioning(PC,PetscBool);
+extern PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
+extern PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
+
 
 PETSC_EXTERN_CXX_END
 

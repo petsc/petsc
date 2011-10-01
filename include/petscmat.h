@@ -574,6 +574,7 @@ extern PetscErrorCode  MatZeroEntries(Mat);
 extern PetscErrorCode  MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],PetscScalar,Vec,Vec);
+extern PetscErrorCode  MatZeroRowsColumnsStencil(Mat,PetscInt,const MatStencil[],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumns(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumnsIS(Mat,IS,PetscScalar,Vec,Vec);
 
@@ -1615,6 +1616,7 @@ extern PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(M
 extern PetscErrorCode  MatNullSpaceDestroy(MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 extern PetscErrorCode  MatSetNullSpace(Mat,MatNullSpace);
+extern PetscErrorCode  MatSetNearNullSpace(Mat,MatNullSpace);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
 extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
 
@@ -1788,9 +1790,9 @@ extern  PetscErrorCode MatIJGetImageSize(Mat, PetscInt *);
 
 extern  PetscErrorCode MatIJBinRenumber(Mat, Mat*);
 
-extern  PetscErrorCode MatIJMap(Mat, MatIJIndexType, PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[], MatIJIndexType,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
-extern  PetscErrorCode MatIJBin(Mat, MatIJIndexType, PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
-extern  PetscErrorCode MatIJBinMap(Mat,Mat, MatIJIndexType,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],MatIJIndexType,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
+extern  PetscErrorCode MatIJMap(Mat, MatIJIndexType, PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*, MatIJIndexType,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
+extern  PetscErrorCode MatIJBin(Mat, MatIJIndexType, PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
+extern  PetscErrorCode MatIJBinMap(Mat,Mat, MatIJIndexType,PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,MatIJIndexType,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
 
 PETSC_EXTERN_CXX_END
 #endif

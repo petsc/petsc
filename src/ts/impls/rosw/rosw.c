@@ -25,6 +25,7 @@ struct _RosWTableau {
   PetscInt s;                   /* Number of stages */
   PetscReal *A;                 /* Propagation table, strictly lower triangular */
   PetscReal *Gamma;             /* Stage table, lower triangular with nonzero diagonal */
+  PetscBool *GammaZeroDiag;     /* Diagonal entries that are zero in stage table Gamma, vector indicating explicit statages */
   PetscReal *b;                 /* Step completion table */
   PetscReal *bembed;            /* Step completion table for embedded method of order one less */
   PetscReal *ASum;              /* Row sum of A */
@@ -51,6 +52,7 @@ typedef struct {
   PetscScalar *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
   PetscReal   shift;
   PetscReal   stage_time;
+  PetscReal   stage_explicit;     /* Flag indicates that the current stage is explicit */
   PetscBool   recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
   PetscBool   step_taken;         /* ts->vec_sol has been advanced to the end of the current time step */
 } TS_RosW;
@@ -197,7 +199,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
     RosWTableau t = &link->tab;
     RosWTableauList = link->next;
     ierr = PetscFree5(t->A,t->Gamma,t->b,t->ASum,t->GammaSum);CHKERRQ(ierr);
-    ierr = PetscFree3(t->At,t->bt,t->GammaInv);CHKERRQ(ierr);
+    ierr = PetscFree4(t->At,t->bt,t->GammaInv,t->GammaZeroDiag);CHKERRQ(ierr);
     ierr = PetscFree2(t->bembed,t->bembedt);CHKERRQ(ierr);
     ierr = PetscFree(t->name);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -302,7 +304,7 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   t->order = order;
   t->s = s;
   ierr = PetscMalloc5(s*s,PetscReal,&t->A,s*s,PetscReal,&t->Gamma,s,PetscReal,&t->b,s,PetscReal,&t->ASum,s,PetscReal,&t->GammaSum);CHKERRQ(ierr);
-  ierr = PetscMalloc3(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv);CHKERRQ(ierr);
+  ierr = PetscMalloc4(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
@@ -320,6 +322,15 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   }
   ierr = PetscMalloc(s*s*sizeof(PetscScalar),&GammaInv);CHKERRQ(ierr); /* Need to use Scalar for inverse, then convert back to Real */
   for (i=0; i<s*s; i++) GammaInv[i] = Gamma[i];
+  for (i=0; i<s; i++) {
+    if (Gamma[i*s+i] == 0.0) {
+      GammaInv[i*s+i] = 1.0;
+      t->GammaZeroDiag[i] = PETSC_TRUE;
+    } else {
+      t->GammaZeroDiag[i] = PETSC_FALSE;
+    }
+  }
+
   switch (s) {
   case 1: GammaInv[0] = 1./GammaInv[0]; break;
   case 2: ierr = Kernel_A_gets_inverse_A_2(GammaInv,0);CHKERRQ(ierr); break;
@@ -419,6 +430,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   RosWTableau     tab  = ros->tableau;
   const PetscInt  s    = tab->s;
   const PetscReal *At  = tab->At,*Gamma = tab->Gamma,*ASum = tab->ASum,*GammaInv = tab->GammaInv;
+  const PetscBool *GammaZeroDiag = tab->GammaZeroDiag;
   PetscScalar     *w   = ros->work;
   Vec             *Y   = ros->Y,Zdot = ros->Zdot,Zstage = ros->Zstage;
   SNES            snes;
@@ -438,7 +450,13 @@ static PetscErrorCode TSStep_RosW(TS ts)
     const PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
       ros->stage_time = ts->ptime + h*ASum[i];
-      ros->shift = 1./(h*Gamma[i*s+i]);
+      if (GammaZeroDiag[i]) {
+        ros->stage_explicit = PETSC_TRUE;
+        ros->shift = 1./h;
+      } else {
+        ros->stage_explicit = PETSC_FALSE;
+        ros->shift = 1./(h*Gamma[i*s+i]);
+      }
 
       ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
       ierr = VecMAXPY(Zstage,i,&At[i*s+0],Y);CHKERRQ(ierr);
@@ -543,7 +561,11 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecWAXPY(ros->Ydot,ros->shift,X,ros->Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
+  if (ros->stage_explicit) {
+    ierr = VecAXPBY(ros->Ydot,ros->shift,0.0,X);CHKERRQ(ierr);       /* Ydot = shift*X*/
+  } else {
+    ierr = VecWAXPY(ros->Ydot,ros->shift,X,ros->Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
+  }
   ierr = VecWAXPY(ros->Ystage,1.0,X,ros->Zstage);CHKERRQ(ierr);    /* Ystage = X + Zstage */
   ierr = TSComputeIFunction(ts,ros->stage_time,ros->Ystage,ros->Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

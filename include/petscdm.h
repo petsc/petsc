@@ -137,6 +137,7 @@ extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode   DMSetVecType(DM,const VecType);
 extern PetscErrorCode   DMSetApplicationContext(DM,void*);
+extern PetscErrorCode   DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 extern PetscErrorCode   DMGetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 extern PetscErrorCode   DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));

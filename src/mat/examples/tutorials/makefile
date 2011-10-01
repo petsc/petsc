@@ -55,7 +55,7 @@ ex13: ex13.o  chkopts
 	${RM} ex13.o
 
 ex14: ex14.o  chkopts
-	-${CLINKER}  -o ex14 ex14.o ${PETSC_MAT_LIB}
+	-${CLINKER}  -o ex14 ex14.o ${PETSC_DM_LIB}
 	${RM} ex14.o
 
 ex15: ex15.o  chkopts
@@ -109,9 +109,9 @@ runex11:
 runex13: 
 	-@${MPIEXEC}  ./ex13 
 
-N=1
+NP=1
 runex14: 
-	-@${MPIEXEC}  -n $N ./ex14 ${ARGS}
+	-@${MPIEXEC}  -n ${NP} ./ex14 ${ARGS}
 
 runex15: 
 	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \

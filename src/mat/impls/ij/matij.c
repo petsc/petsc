@@ -4,7 +4,7 @@
 #include <../src/mat/impls/ij/petsckhash.h>
 
 /*MC
- MATIJ: MATIJ = "ij".
+ MATIJ - MATIJ = "ij".
           A matrix class encoding a PseudoGraph -- a directed graph that admits multiple edges between its vertices.
           The underlying pseudograph, and therefore the matrix, can be interpreted as a multiset-valued or array-valued
           map from vertices to vertices: each vertex v is mapped to the multiset or array of the vertices that terminate
@@ -128,7 +128,7 @@ static PetscErrorCode MatIJLocalizeImage_Private(Mat);
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatIJMap"
-PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const PetscInt inidxi[], const PetscInt inidxj[], const PetscScalar inval[], MatIJIndexType outtype, PetscInt *outsize, PetscInt *outidxi[], PetscInt *outidxj[], PetscScalar *outval[], PetscInt *outsizes[]) 
+PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const PetscInt *inidxi, const PetscInt *inidxj, const PetscScalar *inval, MatIJIndexType outtype, PetscInt *outsize, PetscInt **outidxi, PetscInt **outidxj, PetscScalar **outval, PetscInt **outsizes) 
 {
   PetscErrorCode ierr;
   Mat_IJ *pg = (Mat_IJ*)A->data;
@@ -241,7 +241,7 @@ PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatIJBin"
-PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const PetscInt inidxi[], const PetscInt inidxj[], const PetscScalar inval[], PetscInt *outsize, PetscInt *outidxi[], PetscInt *outidxj[], PetscScalar *outval[], PetscInt *binsizes[]) 
+PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const PetscInt *inidxi, const PetscInt *inidxj, const PetscScalar *inval, PetscInt *outsize, PetscInt **outidxi, PetscInt **outidxj, PetscScalar **outval, PetscInt **binsizes) 
 {
   PetscErrorCode ierr;
   Mat_IJ *pg = (Mat_IJ*)A->data;
@@ -398,7 +398,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatIJBinMap"
-PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize, const PetscInt inidxi[], const PetscInt inidxj[], const PetscScalar inval[], MatIJIndexType outtype, PetscInt *outsize, PetscInt *outidxi[], PetscInt *outidxj[], PetscScalar *outval[], PetscInt *binsizes[]) 
+PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize, const PetscInt *inidxi, const PetscInt *inidxj, const PetscScalar *inval, MatIJIndexType outtype, PetscInt *outsize, PetscInt **outidxi, PetscInt **outidxj, PetscScalar **outval, PetscInt **binsizes) 
 {
   PetscErrorCode ierr;
   Mat_IJ *pga = (Mat_IJ*)A->data;

@@ -40,7 +40,6 @@ PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
     work *= work;
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
-    ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_SeqCUSP(xin,NORM_1,&work);CHKERRQ(ierr);

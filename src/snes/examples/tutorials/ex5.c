@@ -76,16 +76,18 @@ extern PetscErrorCode NonlinearGS(SNES,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES                   snes;                 /* nonlinear solver */
-  SNES                   psnes;                /* nonlinear Gauss-Seidel approximate solver */
-  Vec                    x;                    /* solution vector */
-  AppCtx                 user;                 /* user-defined work context */
-  PetscInt               its;                  /* iterations for convergence */
+  SNES                   snes;                         /* nonlinear solver */
+  SNES                   psnes;                        /* nonlinear Gauss-Seidel approximate solver */
+  Vec                    x;                            /* solution vector */
+  AppCtx                 user;                         /* user-defined work context */
+  PetscInt               its;                          /* iterations for convergence */
   PetscErrorCode         ierr;
-  PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal              bratu_lambda_max = 6.81;
+  PetscReal              bratu_lambda_min = 0.;
   PetscBool              flg = PETSC_FALSE;
   DM                     da;
   PetscBool              matlab_function = PETSC_FALSE;
+  PetscBool              use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -104,10 +106,14 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
-  ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
-  ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
+
+  if (use_ngs) {
+    ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
+    ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
+    ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -116,8 +122,9 @@ int main(int argc,char **argv)
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = SNESShellSetContext(psnes,da);CHKERRQ(ierr);
-
+  if (use_ngs) {
+    ierr = SNESShellSetContext(psnes,da);CHKERRQ(ierr);
+  }
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
@@ -271,7 +278,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i];
+        f[j][i] = 2.0*(hydhx+hxdhy)*x[j][i];
       } else {
         u       = x[j][i];
         uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
@@ -321,7 +328,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       row.j = j; row.i = i;
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        v[0] = 1.0;
+        v[0] =  2.0*(hydhx + hxdhy);
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
       /* interior grid points */
