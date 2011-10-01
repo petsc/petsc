@@ -427,14 +427,15 @@ x = x + I(x^c - Rx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FASCycle_Private"
-PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X, Vec F) {
+PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X) {
 
   PetscErrorCode ierr;
-  Vec X_c, Xo_c, F_c, B_c;
+  Vec X_c, Xo_c, F_c, B_c,F;
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscInt i;
 
   PetscFunctionBegin;
+  F = snes->vec_func;
   /* pre-smooth -- just update using the pre-smoother */
   if (fas->upsmooth) {
     ierr = SNESSolve(fas->upsmooth, B, X);CHKERRQ(ierr);
@@ -465,7 +466,9 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X, Vec F) {
       ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
 
       /* recurse to the next level */
-      ierr = FASCycle_Private(fas->next, B_c, X_c, F_c);CHKERRQ(ierr);
+      fas->next->vec_rhs = B_c;
+      ierr = FASCycle_Private(fas->next, B_c, X_c);CHKERRQ(ierr);
+      fas->next->vec_rhs = PETSC_NULL;
 
       /* correct as x <- x + I(x^c - Rx)*/
       ierr = VecAXPY(X_c, -1.0, Xo_c);CHKERRQ(ierr);
@@ -537,14 +540,14 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
   PetscInt i, maxits;
-  Vec X, F, B;
+  Vec X, B,F;
   PetscReal fnorm;
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
   X = snes->vec_sol;
-  F = snes->vec_func;
   B = snes->vec_rhs;
+  F = snes->vec_func;
 
   /*norm setup */
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -574,7 +577,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = FASCycle_Private(snes, B, X, F);CHKERRQ(ierr);
+    ierr = FASCycle_Private(snes, B, X);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
