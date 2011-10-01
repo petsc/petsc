@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zlsf.c  zlsparamsf.c
+SOURCEC  = 
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =

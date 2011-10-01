@@ -305,7 +305,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 .  snes - the SNES context
 
    Options Database Keys:
-+  -snes_type <type> - ls, tr, umls, umtr, test
++  -snes_type <type> - ls, tr, ngmres, ncg, richardson, qn, vi, fas
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
 .  -snes_atol <abstol> - absolute tolerance of residual norm
@@ -353,7 +353,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool               flg,mf,mf_operator,pcset;
+  PetscBool               flg,set,mf,mf_operator,pcset;
   PetscInt                i,indx,lag,mf_version,grids;
   MatStructure            matflag;
   const char              *deft = SNESLS;
@@ -489,6 +489,16 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     if (!flg && mf_operator) mf = PETSC_TRUE;
     mf_version = 1;
     ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",mf_version,&mf_version,0);CHKERRQ(ierr);
+
+    /* line search options */
+    ierr = PetscOptionsReal("-snes_ls_alpha","Constant function norm must decrease by","None",snes->ls_alpha,&snes->ls_alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",snes->maxstep,&snes->maxstep,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_steptol","Minimum lambda allowed","None",snes->steptol,&snes->steptol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",snes->damping,&snes->damping,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",snes->ls_monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+    if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
+    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
 
     for(i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
@@ -1094,6 +1104,27 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->conv_hist_reset   = PETSC_TRUE;
   snes->reason            = SNES_CONVERGED_ITERATING;
 
+  /* initialize the line search options */
+  snes->ls_type           = SNES_LS_BASIC;
+  snes->damping           = 1.0;
+  snes->maxstep           = 1e8;
+  snes->steptol           = 1e-12;
+  snes->ls_alpha          = 1e-4;
+  snes->ls_monitor        = PETSC_NULL;
+
+  snes->ops->linesearch   = PETSC_NULL;
+  snes->precheck          = PETSC_NULL;
+  snes->ops->precheckstep = PETSC_NULL;
+  snes->postcheck         = PETSC_NULL;
+  snes->ops->postcheckstep= PETSC_NULL;
+
+  snes->ops->linesearchquadratic = PETSC_NULL;
+  snes->ops->linesearchcubic     = PETSC_NULL;
+  snes->ops->linesearchno        = PETSC_NULL;
+  snes->ops->linesearchnonorms   = PETSC_NULL;
+  snes->ops->linesearchexact     = PETSC_NULL;
+  snes->ops->linesearchtest      = PETSC_NULL;
+
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
 
@@ -1101,7 +1132,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   ierr = PetscNewLog(snes,SNESKSPEW,&kctx);CHKERRQ(ierr);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
-  kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 
+  kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but
                              this was too large for some test cases */
   kctx->rtol_last   = 0.0;
   kctx->rtol_max    = .9;
@@ -1116,10 +1147,10 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFunction"
 /*@C
-   SNESSetFunction - Sets the function evaluation routine and function 
+   SNESSetFunction - Sets the function evaluation routine and function
    vector for use by the SNES routines in solving systems of nonlinear
    equations.
 
@@ -1129,7 +1160,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 +  snes - the SNES context
 .  r - vector to store function value
 .  func - function evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
@@ -1232,11 +1263,11 @@ PetscErrorCode  SNESGetRhs(SNES snes,Vec *rhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESComputeFunction"
 /*@
    SNESComputeFunction - Calls the function that has been set with
-                         SNESSetFunction().  
+                         SNESSetFunction().
 
    Collective on SNES
 
@@ -1737,9 +1768,10 @@ PetscErrorCode  SNESDestroy(SNES *snes)
     ierr = PetscFree((*snes)->conv_hist);CHKERRQ(ierr);
     ierr = PetscFree((*snes)->conv_hist_its);CHKERRQ(ierr);
   }
+  ierr = PetscViewerDestroy(&(*snes)->ls_monitor);CHKERRQ(ierr);
   ierr = SNESMonitorCancel((*snes));CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+ PetscFunctionReturn(0);
 }
 
 /* ----------- Routines to set solver parameters ---------- */
