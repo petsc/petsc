@@ -4,7 +4,7 @@
 #include <../src/mat/impls/ij/petsckhash.h>
 
 /*MC
- MATIJ: MATIJ = "ij".
+ MATIJ - MATIJ = "ij".
           A matrix class encoding a PseudoGraph -- a directed graph that admits multiple edges between its vertices.
           The underlying pseudograph, and therefore the matrix, can be interpreted as a multiset-valued or array-valued
           map from vertices to vertices: each vertex v is mapped to the multiset or array of the vertices that terminate
