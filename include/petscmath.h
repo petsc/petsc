@@ -184,7 +184,7 @@ extern  PetscScalar  PETSC_i;
    Level: beginner
 
 
-.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
 M*/
 #define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
@@ -205,10 +205,32 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
 M*/
 #define PetscMax(a,b)   (((a)<(b)) ?  (b) : (a))
+
+/*MC
+   PetscClipInterval - Returns a number clipped to be within an interval
+
+   Synopsis:
+   type clip PetscClipInterval(type x,type a,type b)
+
+   Not Collective
+
+   Input Parameter:
++  x - value to use if within interval (a,b)
+.  a - lower end of interval
+-  b - upper end of interval
+
+   Notes: type can be integer or floating point value
+
+   Level: beginner
+
+.seealso: PetscMin(), PetscMax(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
+#define PetscClipInterval(x,a,b)   (PetscMax((a),PetscMin((x),(b))))
 
 /*MC
    PetscAbsInt - Returns the absolute value of an integer
