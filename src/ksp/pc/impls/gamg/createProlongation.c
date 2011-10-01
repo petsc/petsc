@@ -1204,6 +1204,7 @@ int compare (const void *a, const void *b)
    . a_data_cols - number of colums in data (rows is infered from 
    . a_method - flag for: smoothed aggregation (2), plain agg (1) or geometric (0)
    . a_level - 0 for finest, +L-1 for coarsest
+   . a_threshold - Relative threshold to use for dropping edges in aggregation graph
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
   Output Parameter:
@@ -1220,6 +1221,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    const PetscInt a_data_cols,
                                    const PetscInt a_method,
                                    const PetscInt a_level,
+                                   const PetscReal a_threshold,
 				   PetscInt *a_bs,
                                    Mat *a_P_out,
                                    PetscReal **a_data_out,
@@ -1295,8 +1297,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #endif
 
   /* filter Gmat */
-  vfilter = 0.05;
-  for(jj=0;jj<a_level;jj++) vfilter *= .01; /* very fast decay for SA */
+  vfilter = a_threshold;
+  /* for(jj=0;jj<a_level;jj++) vfilter *= .01; very fast decay for SA */
 
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
   {

@@ -16,6 +16,8 @@ static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 
 /* Private context for the GAMG preconditioner */
 static PetscBool s_avoid_repart = PETSC_FALSE;
+static PetscInt s_min_eq_proc = 600;
+static PetscReal s_threshold = 0.001;
 typedef struct gamg_TAG {
   PetscInt       m_dim;
   PetscInt       m_Nlevels;
@@ -148,7 +150,6 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
 
-static PetscInt s_min_eq_proc = 600;
 #define TOP_GRID_LIM 2*s_min_eq_proc /* this will happen anyway */
 
 #undef __FUNCT__
@@ -572,7 +573,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
     ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_method,
-                              level, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
+                              level, s_threshold, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
@@ -598,7 +599,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #endif
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method should gaurrentee this does not happen! */
- 
+
 #ifdef VERBOSE 
       if( PETSC_TRUE ){
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
@@ -885,6 +886,50 @@ PetscErrorCode PCGAMGAvoidRepartitioning_GAMG(PC pc, PetscBool n)
 EXTERN_C_END
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetThreshold"
+/*@
+   PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
+
+   Not collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_gamg_threshold
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal n)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetThreshold_C",(PC,PetscReal),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetThreshold_GAMG"
+PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
+{
+  /* PC_MG           *mg = (PC_MG*)pc->data; */
+  /* PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx; */
+  
+  PetscFunctionBegin;
+  s_threshold = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCGAMGSetSolverType"
 /*@
    PCGAMGSetSolverType - Set solution method.
@@ -896,7 +941,7 @@ EXTERN_C_END
 
 
    Options Database Key:
-.  -pc_gamg_avoid_repartitioning
+.  -pc_gamg_type
 
    Level: intermediate
 
@@ -954,7 +999,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
     else pc_gamg->m_method = 0;
 
-    /* this global! */
+    /* common (static) variable */
     ierr = PetscOptionsBool("-pc_gamg_avoid_repartitioning",
                             "Do not repartion coarse grids (false)",
                             "PCGAMGAvoidRepartitioning",
@@ -963,13 +1008,22 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                             &flag); 
     CHKERRQ(ierr);
     
-    /* this global! */
+    /* common (static) variable */
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit",
                            "Limit (goal) on number of equations per process on coarse grids",
                            "PCGAMGSetProcEqLim",
                            s_min_eq_proc,
                            &s_min_eq_proc, 
                            &flag ); 
+    CHKERRQ(ierr);
+
+    /* common (static) variable */
+    ierr = PetscOptionsReal("-pc_gamg_threshold",
+                            "Relative threshold to use for dropping edges in aggregation graph",
+                            "PCGAMGSetThreshold",
+                            s_threshold,
+                            &s_threshold, 
+                            &flag ); 
     CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -1054,6 +1108,12 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCGAMGAvoidRepartitioning_C",
 					    "PCGAMGAvoidRepartitioning_GAMG",
 					    PCGAMGAvoidRepartitioning_GAMG);
+  CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
+					    "PCGAMGSetThreshold_C",
+					    "PCGAMGSetThreshold_GAMG",
+					    PCGAMGSetThreshold_GAMG);
   CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,

@@ -1253,7 +1253,7 @@ runex92:
 	-@touch ex92_1.tmp;\
 	  for ov in ${OVERLAP}; do \
             for bs in ${BS}; do \
-	      ${MPIEXEC} -n 1  ./ex92 -ov $$ov -mat_block_size $$bs >> ex92_1.tmp 2>&1; \
+	      ${MPIEXEC} -n 1 ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_submat >> ex92_1.tmp 2>&1; \
 	    done; \
 	  done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
@@ -1266,12 +1266,38 @@ runex92_2:
 	for np in ${NPROCS}; do \
 	  for ov in ${OVERLAP}; do \
             for bs in ${BS}; do \
-	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs >> ex92_1.tmp 2>&1; \
+	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_submat >> ex92_1.tmp 2>&1; \
 	    done; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with with ex92_2, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	${RM} -f ex92_1.tmp
+
+runex92_3:
+	-@touch ex92_1.tmp;\
+	for np in ${NPROCS}; do \
+	  for ov in ${OVERLAP}; do \
+            for bs in ${BS}; do \
+	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_allcols >> ex92_1.tmp 2>&1; \
+	    done; \
+	  done; \
+	done; \
+	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_3, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	${RM} -f ex92_1.tmp
+
+runex92_4:
+	-@touch ex92_1.tmp;\
+	for np in ${NPROCS}; do \
+	  for ov in ${OVERLAP}; do \
+            for bs in ${BS}; do \
+	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs -test_submat -test_allcols >> ex92_1.tmp 2>&1; \
+	    done; \
+	  done; \
+	done; \
+	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_4, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 runex93:
@@ -1641,12 +1667,13 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
-                                 ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 ex92.rm \
+                                 ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
-                                 ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm ex137.PETSc runex137 ex137.rm \
+                                 ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
+                                 ex137.PETSc runex137 ex137.rm \
                                  ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm 
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \

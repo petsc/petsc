@@ -31,12 +31,14 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
+    if not self.compilers.FortranDefineCompilerOption:
+      raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
     g.write('IMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
-    g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n') 
+    g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
     orderingsc = '-Dmetis -Dparmetis -Dpord'
     orderingsf = self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis '+self.compilers.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
@@ -49,10 +51,7 @@ class Configure(PETSc.package.NewPackage):
       orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'scotch '+self.compilers.FortranDefineCompilerOption+'ptscotch'
 
     g.write('ORDERINGSC = '+orderingsc+'\n')
-    if self.compilers.FortranDefineCompilerOption:
-      g.write('ORDERINGSF = '+orderingsf+'\n')
-    else:
-      raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
+    g.write('ORDERINGSF = '+orderingsf+'\n')
     g.write('LORDERINGS  = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
     g.write('IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('IORDERINGSF = $(ISCOTCH)\n')

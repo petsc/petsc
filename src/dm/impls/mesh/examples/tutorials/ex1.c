@@ -248,72 +248,78 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 {
   typedef ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> Retriever;
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscInt       dim = options->dim;
+  MPI_Comm       comm   = ((PetscObject) mesh)->comm;
+  PetscInt       dim    = options->dim;
+  PetscInt       bctype = 0;
+  PetscInt       debug  = options->debug;
+  PetscInt       numCells, numBC, bc;
+  char           bndfilename[2048];
+  FILE          *fp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim != 3) {SETERRQ(((PetscObject) mesh)->comm, PETSC_ERR_ARG_WRONG, "Boundary can only be extracted for 3D meshes");};
+  if (dim != 3) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Boundary can only be extracted for 3D meshes");};
   ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
-  if (m->commRank() == 0) {
-    const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-    char     bndfilename[2048];
-    PetscInt bctype = 0;
-    PetscInt numCells;
-    PetscInt numbc, bc;
+  ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
+  ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(bndfilename, ".bnd");CHKERRQ(ierr);
+  ierr = PetscFOpen(comm, bndfilename, "r", &fp);
+  if (ierr == PETSC_ERR_FILE_OPEN) {
+    PetscFunctionReturn(0);
+  } else {CHKERRQ(ierr);}
+  ierr = PetscPrintf(comm, "Creating mesh boundary on CPU 0\n");CHKERRQ(ierr);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
 
-    ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "Creating mesh boundary on CPU 0\n");CHKERRQ(ierr);
-    ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
-    ierr = PetscStrcat(bndfilename, ".bnd");CHKERRQ(ierr);
-    std::ifstream in(bndfilename);
+  if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numBC);CHKERRQ(!ierr);}
+  ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  for(bc = 0; bc < numBC; ++bc) {
+    char     bdName[2048];
+    size_t   len;
+    PetscInt numFaces = 0, f;
 
-    in >> numbc;
-    for(bc = 0; bc < numbc; ++bc) {
-      PetscInt numFaces, f;
-      std::string bndname;
+    if (!m->commRank()) {ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);}
+    ierr = PetscStrlen(bdName, &len);CHKERRQ(ierr);
+    ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+    const Obj<PETSC_MESH_TYPE::label_type>& label = m->createLabel(bdName);
 
-      in >> bndname;
-      const Obj<PETSC_MESH_TYPE::label_type>& label = m->createLabel(bndname.c_str());
+    if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numFaces);CHKERRQ(!ierr);}
 
-      if (in) {
-        in >> numFaces;
+    for(f = 0; f < numFaces; ++f) {
+      Retriever visitor(1);
+      PetscInt  numCorners, c;
 
-        for(f = 0; f < numFaces; ++f) {
-          Retriever visitor(1);
-          PetscInt  numCorners, c;
+      ierr = fscanf(fp, "%d", &numCorners);CHKERRQ(!ierr);
+      PetscInt face[numCorners];
 
-          in >> numCorners;
-          PetscInt face[numCorners];
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    Face %d with %d corners\n", f, numCorners);CHKERRQ(ierr);}
+      for(c = 0; c < numCorners; ++c) {
+        ierr = fscanf(fp, " %d", &face[c]);CHKERRQ(!ierr);
 
-          ierr = PetscPrintf(PETSC_COMM_SELF, "    Face %d with %d corners\n", f, numCorners);CHKERRQ(ierr);
-          for(c = 0; c < numCorners; ++c) {
-            in >> face[c];
+        // Must transform from vertex numbering to sieve point numbering
+        face[c] += numCells;
+        // Output vertex coordinates
+        const double *coords   = coordinates->restrictPoint(face[c]);
+        const int     fiberDim = coordinates->getFiberDimension(face[c]);
 
-            // Must transform from vertex numbering to sieve point numbering
-            face[c] += numCells;
-            // Output vertex coordinates
-            const double *coords   = coordinates->restrictPoint(face[c]);
-            const int     fiberDim = coordinates->getFiberDimension(face[c]);
-
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      (");CHKERRQ(ierr);
-            for(PetscInt d = 0; d < fiberDim; ++d) {
-              ierr = PetscPrintf(PETSC_COMM_SELF, "%g ", coords[d]);CHKERRQ(ierr);
-            }
-            ierr = PetscPrintf(PETSC_COMM_SELF, ")\n");CHKERRQ(ierr);
+        if (debug) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      (");CHKERRQ(ierr);
+          for(PetscInt d = 0; d < fiberDim; ++d) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g ", coords[d]);CHKERRQ(ierr);
           }
-          m->getSieve()->nJoin(&face[0], &face[numCorners], dim-1, visitor);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      found %d faces using join\n", visitor.getSize());CHKERRQ(ierr);
-          if (visitor.getSize() != 1) {
-            SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
-          }
-          m->setValue(label, visitor.getPoints()[0], bctype);
-          visitor.clear();
+          ierr = PetscPrintf(PETSC_COMM_SELF, ") %d\n", face[c]);CHKERRQ(ierr);
         }
       }
-      label->view(bndname.c_str());
+      m->getSieve()->nJoin(&face[0], &face[numCorners], dim-1, visitor);
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "      found %d faces %d using join\n", visitor.getSize(), visitor.getPoints()[0]);CHKERRQ(ierr);}
+      if (visitor.getSize() != 1) {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
+      }
+      m->setValue(label, visitor.getPoints()[0], bctype);
+      visitor.clear();
     }
-    in.close();
+    label->view((const char *) bdName);
   }
+  ierr = PetscFClose(comm, fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
