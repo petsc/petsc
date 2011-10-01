@@ -279,6 +279,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 
     if (!m->commRank()) {ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);}
     ierr = PetscStrlen(bdName, &len);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&len, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
     const Obj<PETSC_MESH_TYPE::label_type>& label = m->createLabel(bdName);
 
