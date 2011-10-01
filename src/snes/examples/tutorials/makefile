@@ -368,13 +368,12 @@ runex5_5_ls:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls
 
 runex5_5_fas:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type fas -snes_fas_up_it ${N_SMOOTHS} -snes_fas_down_it ${N_SMOOTHS}  \
-	-snes_fas_smoother_type nrichardson -snes_fas_levels 3
+	-@./ex5 -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -snes_type fas -fas_levels_snes_monitor \
+              -fas_coarse_ksp_type richardson -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor  -da_refine 6
 
 runex5_5_ngmres_fas:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} \
-	-npc_snes_max_it 1 -npc_snes_type fas -npc_snes_fas_up_it ${N_SMOOTHS} -npc_snes_fas_down_it ${N_SMOOTHS} \
-	-npc_snes_fas_smoother_type nrichardson -npc_snes_fas_levels 3
+	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -npc_snes_type fas -npc_fas_levels_snes_monitor -np_snes_monitor -npc_fas_coarse_snes_monitor \
+             -npc_fas_coarse_ksp_type richardson -npc_fas_coarse_ksp_monitor_true_residual -npc_fas_coarse_snes_monitor  -da_refine 6
 
 runex5_5_ncg_fas:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg  \
