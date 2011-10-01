@@ -232,7 +232,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   tmp = fas;
   while (tmp) {
     if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);}
-    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);}
+    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->downsmooth);}
     tmp = tmp->next ? (SNES_FAS*) tmp->next->data : 0;
   }
 
@@ -451,15 +451,10 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X, Vec F) {
       /* inject the solution to coarse */
       ierr = MatRestrict(fas->restrct, X, Xo_c);CHKERRQ(ierr);
       ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
-      if (B) {
-        ierr = VecAYPX(F, -1.0, B);CHKERRQ(ierr); /* F = B - F (defect) */
-      } else {
-        ierr = VecScale(F, -1.0);CHKERRQ(ierr);
-      }
-
+      ierr = VecScale(F, -1.0);CHKERRQ(ierr);
+ 
       /* restrict the defect */
       ierr = MatRestrict(fas->restrct, F, B_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(B_c,  fas->rscale, B_c);CHKERRQ(ierr);
 
       /* solve the coarse problem corresponding to F^c(x^c) = b^c = Rb + F^c(Rx) - RF(x) */
       fas->next->vec_rhs = PETSC_NULL;                                           /*unset the RHS to evaluate function instead of residual*/
