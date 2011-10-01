@@ -75,6 +75,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscViewer    monviewer;
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNES           snes;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -93,6 +94,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
 
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -126,6 +129,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       }
       ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
+
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
@@ -1192,6 +1198,8 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
@@ -1806,17 +1814,21 @@ PetscErrorCode  TSStep(TS ts)
 /*@
    TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
 
-   Collective
+   Collective on TS
 
    Input Arguments:
++  ts - time stepping context
+.  order - desired order of accuracy
+-  done - whether the step was evaluated at this order (pass PETSC_NULL to generate an error if not available)
 
    Output Arguments:
+.  X - state at the end of the current step
 
    Level: advanced
 
-.seealso:
+.seealso: TSStep(), TSAdapt
 @*/
-PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X)
+PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
   PetscErrorCode ierr;
 
@@ -1824,11 +1836,10 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidType(ts,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  if (!ts->ops->evaluatestep) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
-  ierr = (*ts->ops->evaluatestep)(ts,order,X);CHKERRQ(ierr);
+  if (!ts->ops->evaluatestep) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->evaluatestep)(ts,order,X,done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-extern PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve"
@@ -2842,8 +2853,103 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
   PetscValidPointer(adapt,2);
   if (!ts->adapt) {
     ierr = TSAdaptCreate(((PetscObject)ts)->comm,&ts->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(ts,ts->adapt);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
   }
   *adapt = ts->adapt;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetTolerances"
+/*@
+   TSSetTolerances - Set tolerances for local truncation error when using adaptive controller
+
+   Logically Collective
+
+   Input Arguments:
++  ts - time integration context
+.  atol - scalar absolute tolerances, PETSC_DECIDE to leave current value
+.  vatol - vector of absolute tolerances or PETSC_NULL, used in preference to atol if present
+.  rtol - scalar relative tolerances, PETSC_DECIDE to leave current value
+-  vrtol - vector of relative tolerances or PETSC_NULL, used in preference to atol if present
+
+   Level: beginner
+
+.seealso: TS, TSAdapt, TSVecNormWRMS()
+@*/
+PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec vrtol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (atol != PETSC_DECIDE) ts->atol = atol;
+  if (vatol) {
+    ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
+    ts->vatol = vatol;
+  }
+  if (rtol != PETSC_DECIDE) ts->rtol = rtol;
+  if (vrtol) {
+    ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
+    ts->vrtol = vrtol;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorNormWRMS"
+/*@
+   TSErrorNormWRMS - compute a weighted norm of the difference between a vector and the current state
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  Y - state vector to be compared to ts->vec_sol
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 is considered small
+
+   Level: developer
+
+.seealso: TSSetTolerances()
+@*/
+PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
+{
+  PetscErrorCode ierr;
+  PetscInt i,n,N;
+  const PetscScalar *x,*y;
+  Vec X;
+  PetscReal sum,gsum;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
+  PetscValidPointer(norm,3);
+  X = ts->vec_sol;
+  PetscCheckSameTypeAndComm(X,1,Y,2);
+  if (X == Y) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+
+  /* This is simple to implement, just not done yet */
+  if (ts->vatol || ts->vrtol) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"No support for vector scaling yet");
+
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  sum = 0.;
+  for (i=0; i<n; i++) {
+    PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+    sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+  }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+
+  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  *norm = PetscSqrtReal(gsum / N);
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   PetscFunctionReturn(0);
 }
 

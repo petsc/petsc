@@ -48,10 +48,11 @@ typedef struct {
   Vec         Ystage;           /* Work vector for the state value at each stage */
   Vec         Zdot;             /* Ydot = Zdot + shift*Y */
   Vec         Zstage;           /* Y = Zstage + Y */
-  PetscScalar *work;            /* Scalar work */
+  PetscScalar *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
   PetscReal   shift;
   PetscReal   stage_time;
   PetscBool   recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
+  PetscBool   step_taken;         /* ts->vec_sol has been advanced to the end of the current time step */
 } TS_RosW;
 
 /*MC
@@ -130,16 +131,18 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal
       A[2][2] = {{0,0}, {1.,0}},
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
-      b[2] = {0.5,0.5};
-    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,PETSC_NULL);CHKERRQ(ierr);
+      b[2] = {0.5,0.5},
+      b1[2] = {1.0,0.0};
+    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,b1);CHKERRQ(ierr);
   }
   {
     const PetscReal g = 1. - 1./PetscSqrtReal(2.0);
     const PetscReal
       A[2][2] = {{0,0}, {1.,0}},
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
-      b[2] = {0.5,0.5};
-    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,PETSC_NULL);CHKERRQ(ierr);
+      b[2] = {0.5,0.5},
+      b1[2] = {1.0,0.0};
+    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,b1);CHKERRQ(ierr);
   }
   {
     const PetscReal g = 7.8867513459481287e-01;
@@ -357,55 +360,127 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSEvaluateStep_RosW"
+/*
+ The step completion formula is
+
+ x1 = x0 + b^T Y
+
+ where Y is the multi-vector of stages corrections. This function can be called before or after ts->vec_sol has been
+ updated. Suppose we have a completion formula b and an embedded formula be of different order. We can write
+
+ x1e = x0 + be^T Y
+     = x1 - b^T Y + be^T Y
+     = x1 + (be - b)^T Y
+
+ so we can evaluate the method of different order even after the step has been optimistically completed.
+*/
+static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *done)
+{
+  TS_RosW        *ros = (TS_RosW*)ts->data;
+  RosWTableau    tab  = ros->tableau;
+  PetscScalar    *w = ros->work;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (order == tab->order) {
+    if (ros->step_taken) {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
+    else {
+      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+      ierr = VecMAXPY(X,tab->s,tab->bt,ros->Y);CHKERRQ(ierr);
+    }
+    if (done) *done = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else if (order == tab->order-1) {
+    if (!tab->bembedt) goto unavailable;
+    if (ros->step_taken) {
+      for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i] - tab->bt[i];
+      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+      ierr = VecMAXPY(X,tab->s,tab->bembedt,ros->Y);CHKERRQ(ierr);
+    }
+    if (done) *done = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+  unavailable:
+  if (done) *done = PETSC_FALSE;
+  else SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_SUP,"Rosenbrock-W '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_RosW"
 static PetscErrorCode TSStep_RosW(TS ts)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
   RosWTableau     tab  = ros->tableau;
   const PetscInt  s    = tab->s;
-  const PetscReal *At  = tab->At,*Gamma = tab->Gamma,*bt = tab->bt,*ASum = tab->ASum,*GammaInv = tab->GammaInv;
+  const PetscReal *At  = tab->At,*Gamma = tab->Gamma,*ASum = tab->ASum,*GammaInv = tab->GammaInv;
   PetscScalar     *w   = ros->work;
   Vec             *Y   = ros->Y,Zdot = ros->Zdot,Zstage = ros->Zstage;
   SNES            snes;
-  PetscInt        i,j,its,lits;
+  TSAdapt         adapt;
+  PetscInt        i,j,its,lits,reject,next_scheme;
   PetscReal       next_time_step;
-  PetscReal       h,t;
+  PetscBool       accept;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   next_time_step = ts->time_step;
-  h = ts->time_step;
-  t = ts->ptime;
+  accept = PETSC_TRUE;
+  ros->step_taken = PETSC_FALSE;
 
-  for (i=0; i<s; i++) {
-    ros->stage_time = t + h*ASum[i];
-    ros->shift = 1./(h*Gamma[i*s+i]);
+  for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
+    const PetscReal h = ts->time_step;
+    for (i=0; i<s; i++) {
+      ros->stage_time = ts->ptime + h*ASum[i];
+      ros->shift = 1./(h*Gamma[i*s+i]);
 
-    ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
-    ierr = VecMAXPY(Zstage,i,&At[i*s+0],Y);CHKERRQ(ierr);
+      ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
+      ierr = VecMAXPY(Zstage,i,&At[i*s+0],Y);CHKERRQ(ierr);
 
-    for (j=0; j<i; j++) w[j] = 1./h * GammaInv[i*s+j];
-    ierr = VecZeroEntries(Zdot);CHKERRQ(ierr);
-    ierr = VecMAXPY(Zdot,i,w,Y);CHKERRQ(ierr);
+      for (j=0; j<i; j++) w[j] = 1./h * GammaInv[i*s+j];
+      ierr = VecZeroEntries(Zdot);CHKERRQ(ierr);
+      ierr = VecMAXPY(Zdot,i,w,Y);CHKERRQ(ierr);
 
-    /* Initial guess taken from last stage */
-    ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
+      /* Initial guess taken from last stage */
+      ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
 
-    if (!ros->recompute_jacobian && !i) {
-      ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+      if (!ros->recompute_jacobian && !i) {
+        ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+      }
+
+      ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
+      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+      ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+      ts->nonlinear_its += its; ts->linear_its += lits;
     }
+    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+    ros->step_taken = PETSC_TRUE;
 
-    ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += its; ts->linear_its += lits;
+    /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,0.0,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
+    if (accept) {
+      /* ignore next_scheme for now */
+      ts->ptime += ts->time_step;
+      ts->time_step = next_time_step;
+      ts->steps++;
+      break;
+    } else {                    /* Roll back the current step */
+      for (i=0; i<s; i++) w[i] = -tab->bt[i];
+      ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
+      ts->time_step = next_time_step;
+      ros->step_taken = PETSC_FALSE;
+    }
   }
-  ierr = VecMAXPY(ts->vec_sol,s,bt,Y);CHKERRQ(ierr);
 
-  ts->ptime += ts->time_step;
-  ts->time_step = next_time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -804,6 +879,7 @@ PetscErrorCode  TSCreate_RosW(TS ts)
   ts->ops->setup          = TSSetUp_RosW;
   ts->ops->step           = TSStep_RosW;
   ts->ops->interpolate    = TSInterpolate_RosW;
+  ts->ops->evaluatestep   = TSEvaluateStep_RosW;
   ts->ops->setfromoptions = TSSetFromOptions_RosW;
   ts->ops->snesfunction   = SNESTSFormFunction_RosW;
   ts->ops->snesjacobian   = SNESTSFormJacobian_RosW;

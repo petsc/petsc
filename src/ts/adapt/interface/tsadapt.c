@@ -181,7 +181,65 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   PetscValidHeaderSpecific(*adapt,TSADAPT_CLASSID,1);
   if (--((PetscObject)(*adapt))->refct > 0) {*adapt = 0; PetscFunctionReturn(0);}
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
+  ierr = PetscViewerDestroy(&(*adapt)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptSetMonitor"
+/*@
+   TSAdaptSetMonitor - Monitor the choices made by the adaptive controller
+
+   Collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (flg) {
+    if (!adapt->monitor) {ierr = PetscViewerASCIIOpen(((PetscObject)adapt)->comm,"stdout",&adapt->monitor);CHKERRQ(ierr);}
+  } else {
+    ierr = PetscViewerDestroy(&adapt->monitor);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptSetStepLimits"
+/*@
+   TSAdaptSetStepLimits - Set minimum and maximum step sizes to be considered by the controller
+
+   Logically Collective
+
+   Input Arguments:
++  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
+.  hmin - minimum time step
+-  hmax - maximum time step
+
+   Options Database Keys:
++  -ts_adapt_dt_min - minimum time step
+-  -ts_adapt_dt_max - maximum time step
+
+   Level: intermediate
+
+.seealso: TSAdapt
+@*/
+PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
+{
+
+  PetscFunctionBegin;
+  if (hmin != PETSC_DECIDE) adapt->dt_min = hmin;
+  if (hmax != PETSC_DECIDE) adapt->dt_max = hmax;
   PetscFunctionReturn(0);
 }
 
@@ -211,7 +269,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;
-  PetscBool      flg;
+  PetscBool      set,flg;
 
   PetscFunctionBegin;
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
@@ -223,6 +281,10 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
+  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -284,7 +346,8 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
     if (adapt->candidates.inuse_set) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set the inuse method twice, maybe forgot to call TSAdaptCandidatesClear()");
     adapt->candidates.inuse_set = PETSC_TRUE;
   }
-  c = !adapt->candidates.order[0] + adapt->candidates.n;
+  /* first slot if this is the current scheme, otherwise the next available slot */
+  c = inuse ? 0 : !adapt->candidates.inuse_set + adapt->candidates.n;
   adapt->candidates.name[c]         = name;
   adapt->candidates.order[c]        = order;
   adapt->candidates.stageorder[c]   = stageorder;
@@ -310,6 +373,10 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
 .  next_h - step size to use for the next step
 -  accept - PETSC_TRUE to accept the current step, PETSC_FALSE to repeat the current step with the new step size
 
+   Note:
+   The input value of parameter accept is retained from the last time step, so it will be PETSC_FALSE if the step is
+   being retried after an initial rejection.
+
    Level: developer
 
 .seealso: TSAdapt, TSAdaptCandidatesClear(), TSAdaptCandidateAdd()
@@ -327,6 +394,14 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   if (adapt->candidates.n < 1) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"%D candidates have been registered",adapt->candidates.n);
   if (!adapt->candidates.inuse_set) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
   ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept);CHKERRQ(ierr);
+  if (*next_sc < 0 || adapt->candidates.n <= *next_sc) SETERRQ2(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",*next_sc,adapt->candidates.n-1);
+  if (!(*next_h > 0.)) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %G must be positive",*next_h);
+
+  if (adapt->monitor) {
+    ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %s  family='%s' scheme=%D:'%s' dt=%G\n",((PetscObject)adapt)->type_name,accept?"accepted":"rejected",((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],*next_h);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -359,6 +434,10 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   PetscFunctionBegin;
   *inadapt = 0;
   ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,0,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
+
+  adapt->dt_min = 1e-20;
+  adapt->dt_max = 1e50;
+
   *inadapt = adapt;
   PetscFunctionReturn(0);
 }

@@ -97,7 +97,7 @@ extern PetscErrorCode   TSMonitorSolutionDestroy(void**);
 extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 
 extern PetscErrorCode   TSStep(TS);
-extern PetscErrorCode   TSEvaluateStep(TS,PetscInt,Vec);
+extern PetscErrorCode   TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 extern PetscErrorCode   TSGetNonlinearSolveIterations(TS,PetscInt*);
@@ -137,6 +137,8 @@ extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
 extern PetscErrorCode   TSSetRetainStages(TS,PetscBool);
 extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
+extern PetscErrorCode   TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
+extern PetscErrorCode   TSErrorNormWRMS(TS,Vec,PetscReal*);
 
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
@@ -329,6 +331,8 @@ extern PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,Pe
 extern PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 extern PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 extern PetscErrorCode TSAdaptDestroy(TSAdapt*);
+extern PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
+extern PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
