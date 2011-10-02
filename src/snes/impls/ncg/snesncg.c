@@ -180,7 +180,7 @@ PetscErrorCode SNESLineSearchExactLinear_NCG(SNES snes,void *lsctx,Vec X,Vec F,V
   ierr = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
   ierr = VecDot(Y, W, &ptAp);CHKERRQ(ierr);
   alpha = alpha / ptAp;
-  ierr = PetscPrintf(((PetscObject)snes)->comm, "alpha: %g\n", alpha);CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm, "alpha: %G\n", PetscRealPart(alpha));CHKERRQ(ierr);
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
