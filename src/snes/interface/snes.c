@@ -497,9 +497,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",snes->damping,&snes->damping,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",snes->ls_monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
-    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
-
+    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)snes->ls_type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
+    }
     for(i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
     }
@@ -1105,7 +1106,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->reason            = SNES_CONVERGED_ITERATING;
 
   /* initialize the line search options */
-  snes->ls_type           = SNES_LS_BASIC;
+  snes->ls_type           = SNES_LS_TEST;
   snes->damping           = 1.0;
   snes->maxstep           = 1e8;
   snes->steptol           = 1e-12;
