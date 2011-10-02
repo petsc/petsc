@@ -2375,6 +2375,7 @@ E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 extern PetscErrorCode  PetscBinarySeek(int,off_t,PetscBinarySeekType,off_t*);
 extern PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
+extern PetscErrorCode  PetscByteSwap(void *,PetscDataType,PetscInt);
 
 extern PetscErrorCode  PetscSetDebugTerminal(const char[]);
 extern PetscErrorCode  PetscSetDebugger(const char[],PetscBool );

@@ -85,6 +85,8 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->rhsjacobian.time   = -1e20;
   t->ijacobian.time     = -1e20;
 
+  t->atol             = 1e-4;
+  t->rtol             = 1e-4;
   t->exact_final_time = PETSC_DECIDE;
 
   *ts = t;

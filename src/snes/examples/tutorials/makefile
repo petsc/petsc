@@ -10,7 +10,7 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex4tu.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
-                ex10.c ex12.c ex14.c ex18.c ex19.c ex19tu.c ex20.c ex21.c ex22.c \
+                ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex19tu.c ex20.c ex21.c ex22.c \
                 ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c \
                 ex32.c ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c ex49.c \
                 ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
@@ -488,6 +488,10 @@ runex14_2:
 	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex14_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex14_2.tmp
+runex15:
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 4 > ex15_1.tmp 2>&1; \
+	   ${DIFF} output/ex15_1.out ex15_1.tmp || echo "Possible problem with with ex15_1, diffs above \n========================================="; \
+	   ${RM} -f ex15_1.tmp
 runex50:
 	-@${MPIEXEC} -n 2 ./ex50 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -522,7 +526,7 @@ runex19_2:
 	   if (${DIFF} output/ex19_1.out ex19_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex19_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_2.tmp
-runex19_3: #test pc_redundant
+prunex19_3: #test pc_redundant
 	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex19_3, diffs above \n========================================="; fi; \
@@ -891,7 +895,8 @@ testx11ex50: ex50.PETSc
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5_ngmres_richardson runex5_5_ngmres runex5_5_richardson runex5_5_qn runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
-                                 ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 \
+                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm \
+                                 ex19.PETSc runex19 runex19_2 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 \

@@ -1,5 +1,7 @@
 #if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(TS_HIDE)
 #define TS_HIDE type(TS)
+#define TSADAPT_HIDE type(TSAdapt)
 #elif !defined(TS_HIDE)
 #define TS_HIDE TS
+#define TSADAPT_HIDE TSAdapt
 #endif
