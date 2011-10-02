@@ -8,6 +8,7 @@ static PetscClassId TSADAPT_CLASSID;
 
 EXTERN_C_BEGIN
 PetscErrorCode  TSAdaptCreate_Basic(TSAdapt);
+PetscErrorCode  TSAdaptCreate_CFL(TSAdapt);
 EXTERN_C_END
 
 #undef __FUNCT__
@@ -47,6 +48,7 @@ PetscErrorCode  TSAdaptRegisterAll(const char path[])
 
   PetscFunctionBegin;
   ierr = TSAdaptRegisterDynamic(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegisterDynamic(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +326,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 .  name - name of the candidate scheme to add
 .  order - order of the candidate scheme
 .  stageorder - stage order of the candidate scheme
-.  leadingerror - leading error coefficient of the candidate scheme
+.  ccfl - stability coefficient relative to explicit Euler, used for CFL constraints
 .  cost - relative measure of the amount of work required for the candidate scheme
 -  inuse - indicates that this scheme is the one currently in use, this flag can only be set for one scheme
 
@@ -335,7 +337,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 
 .seealso: TSAdaptCandidatesClear(), TSAdaptChoose()
 @*/
-PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt order,PetscInt stageorder,PetscReal leadingerror,PetscReal cost,PetscBool inuse)
+PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt order,PetscInt stageorder,PetscReal ccfl,PetscReal cost,PetscBool inuse)
 {
   PetscInt c;
 
@@ -351,9 +353,45 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
   adapt->candidates.name[c]         = name;
   adapt->candidates.order[c]        = order;
   adapt->candidates.stageorder[c]   = stageorder;
-  adapt->candidates.leadingerror[c] = leadingerror;
+  adapt->candidates.ccfl[c]         = ccfl;
   adapt->candidates.cost[c]         = cost;
   adapt->candidates.n++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptCandidatesGet"
+/*@C
+   TSAdaptCandidatesGet - Get the list of candidate orders of accuracy and cost
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - time step adaptivity context
+
+   Output Arguments:
++  n - number of candidate schemes, always at least 1
+.  order - the order of each candidate scheme
+.  stageorder - the stage order of each candidate scheme
+.  ccfl - the CFL coefficient of each scheme
+-  cost - the relative cost of each scheme
+
+   Level: developer
+
+   Note:
+   The current scheme is always returned in the first slot
+
+.seealso: TSAdaptCandidatesClear(), TSAdaptCandidateAdd(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **order,const PetscInt **stageorder,const PetscReal **ccfl,const PetscReal **cost)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (n) *n = adapt->candidates.n;
+  if (order) *order = adapt->candidates.order;
+  if (stageorder) *stageorder = adapt->candidates.stageorder;
+  if (ccfl) *ccfl = adapt->candidates.ccfl;
+  if (cost) *cost = adapt->candidates.cost;
   PetscFunctionReturn(0);
 }
 

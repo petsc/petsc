@@ -115,6 +115,7 @@ struct _p_TS {
 
   PetscReal atol,rtol;          /* Relative and absolute tolerance for local truncation error */
   Vec       vatol,vrtol;        /* Relative and absolute tolerance in vector form */
+  PetscReal cfltime,cfltime_local;
 
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
@@ -137,7 +138,7 @@ struct _p_TSAdapt {
     const char *name[16];        /* name of the scheme */
     PetscInt   order[16];        /* classical order of each scheme */
     PetscInt   stageorder[16];   /* stage order of each scheme */
-    PetscReal  leadingerror[16]; /* relative measure of the leading error coefficient for each scheme, sometimes used to evaluate benefit of higher order method */
+    PetscReal  ccfl[16];         /* stability limit relative to explicit Euler */
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
   PetscReal   dt_min,dt_max;

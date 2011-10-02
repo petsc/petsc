@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = basic
+DIRS     = basic cfl
 LOCDIR   = src/ts/adapt/impls/
 MANSEC   = TS
 

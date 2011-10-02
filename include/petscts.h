@@ -139,6 +139,8 @@ extern PetscErrorCode   TSSetRetainStages(TS,PetscBool);
 extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
 extern PetscErrorCode   TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 extern PetscErrorCode   TSErrorNormWRMS(TS,Vec,PetscReal*);
+extern PetscErrorCode   TSSetCFLTimeLocal(TS,PetscReal);
+extern PetscErrorCode   TSGetCFLTime(TS,PetscReal*);
 
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
@@ -267,6 +269,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 E*/
 #define TSAdaptType  char*
 #define TSADAPTBASIC "basic"
+#define TSADAPTCFL   "cfl"
 
 /*MC
    TSAdaptRegisterDynamic - adds a TSAdapt implementation

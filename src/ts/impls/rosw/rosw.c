@@ -34,6 +34,7 @@ struct _RosWTableau {
   PetscReal *bt;                /* Step completion table in transformed variables */
   PetscReal *bembedt;           /* Step completion table of order one less in transformed variables */
   PetscReal *GammaInv;          /* Inverse of Gamma, used for transformed variables */
+  PetscReal  ccfl;              /* Placeholder for CFL coefficient relative to forward Euler */
 };
 typedef struct _RosWTableauLink *RosWTableauLink;
 struct _RosWTableauLink {
@@ -365,6 +366,8 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
       }
     }
   }
+  t->ccfl = 1.0;                /* Fix this */
+
   link->next = RosWTableauList;
   RosWTableauList = link;
   PetscFunctionReturn(0);
@@ -483,7 +486,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,0.0,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
       /* ignore next_scheme for now */

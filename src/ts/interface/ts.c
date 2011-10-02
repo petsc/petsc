@@ -2954,6 +2954,63 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetCFLTimeLocal"
+/*@
+   TSSetCFLTimeLocal - Set the local CFL constraint relative to forward Euler
+
+   Logically Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  cfltime - maximum stable time step if using forward Euler (value can be different on each process)
+
+   Note:
+   After calling this function, the global CFL time can be obtained by calling TSGetCFLTime()
+
+   Level: intermediate
+
+.seealso: TSGetCFLTime(), TSADAPTCFL
+@*/
+PetscErrorCode TSSetCFLTimeLocal(TS ts,PetscReal cfltime)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->cfltime_local = cfltime;
+  ts->cfltime = -1.;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetCFLTime"
+/*@
+   TSGetCFLTime - Get the maximum stable time step according to CFL criteria applied to forward Euler
+
+   Collective on TS
+
+   Input Arguments:
+.  ts - time stepping context
+
+   Output Arguments:
+.  cfltime - maximum stable time step for forward Euler
+
+   Level: advanced
+
+.seealso: TSSetCFLTimeLocal()
+@*/
+PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ts->cfltime < 0) {
+    ierr = MPI_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  }
+  *cfltime = ts->cfltime;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSVISetVariableBounds"
 /*@
    TSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu
