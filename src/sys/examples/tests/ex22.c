@@ -2,7 +2,6 @@
       Tests the PetscByteSwap()
 */
 #include <petscsys.h>
-extern PetscErrorCode PetscByteSwap(void *,PetscDataType,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
