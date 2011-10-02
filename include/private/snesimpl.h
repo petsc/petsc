@@ -7,21 +7,34 @@
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
-  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); 
+  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
-  PetscErrorCode (*computescaling)(Vec,Vec,void*);       
+  PetscErrorCode (*computescaling)(Vec,Vec,void*);
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
   PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
   PetscErrorCode (*convergeddestroy)(void*);
-  PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
-  PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
+  PetscErrorCode (*setup)(SNES);                                /* routine to set up the nonlinear solver */
+  PetscErrorCode (*solve)(SNES);                                /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES,PetscViewer);
-  PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
+  PetscErrorCode (*setfromoptions)(SNES);                       /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES,void**);
   PetscErrorCode (*userdestroy)(void**);
+  /* the line search to use */
+  PetscErrorCode (*linesearch)         (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  /* optional functions for pre and postcheck on a linesearch */
+  PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
+  PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* step-checking routine */
+  /* other options for the line-search.  May be re-set by SNESCreate_XXX for particular solvers */
+  PetscErrorCode (*linesearchquadratic)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode (*linesearchcubic)    (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode (*linesearchno)       (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode (*linesearchnonorms)  (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode (*linesearchexact)    (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode (*linesearchtest)     (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+
 };
 
 /*
@@ -36,7 +49,7 @@ struct _p_SNES {
   PetscBool usespc;
 
   /*  ------------------------ User-provided stuff -------------------------------*/
-  void  *user;		          /* user-defined context */
+  void  *user;                   /* user-defined context */
 
   Vec  vec_rhs;                  /* If non-null, solve F(x) = rhs */
   Vec  vec_sol;                  /* pointer to solution */
@@ -56,15 +69,21 @@ struct _p_SNES {
   Vec  scaling;                  /* scaling vector */
   void *scaP;                    /* scaling context */
 
+  void *precheck;                /* user-defined step-checking context (optional) */
+  void *postcheck;               /* user-defined step-checking context (optional) */
+  void *lsP;                     /* user-defined line-search context (optional)   */
+
+  PetscReal precheck_picard_angle; /* For use with SNESLineSearchPreCheckPicard */
+
   /* ------------------------Time stepping hooks-----------------------------------*/
 
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
   PetscErrorCode      (*monitor[MAXSNESMONITORS])(SNES,PetscInt,PetscReal,void*); /* monitor routine */
-  PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void**);          /* monitor context destroy routine */
-  void                *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
-  PetscInt            numbermonitors;                                     /* number of monitors */
-  void                *cnvP;	                                            /* convergence context */
+  PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void**);                 /* monitor context destroy routine */
+  void                *monitorcontext[MAXSNESMONITORS];                           /* monitor context */
+  PetscInt            numbermonitors;                                             /* number of monitors */
+  void                *cnvP;                                                      /* convergence context */
   SNESConvergedReason reason;
   PetscBool           errorifnotconverged;
 
@@ -80,15 +99,24 @@ struct _p_SNES {
   PetscInt    nfuncs;             /* number of function evaluations */
   PetscInt    iter;               /* global iteration number */
   PetscInt    linear_its;         /* total number of linear solver iterations */
-  PetscReal   norm;            /* residual norm of current iterate */
-  PetscReal   rtol;            /* relative tolerance */
-  PetscReal   abstol;            /* absolute tolerance */
-  PetscReal   xtol;            /* relative tolerance in solution */
-  PetscReal   deltatol;        /* trust region convergence tolerance */
-  PetscBool   printreason;     /* print reason for convergence/divergence after each solve */
-  PetscInt    lagpreconditioner; /* SNESSetLagPreconditioner() */
-  PetscInt    lagjacobian;       /* SNESSetLagJacobian() */
-  PetscInt    gridsequence;      /* number of grid sequence steps to take; defaults to zero */
+  PetscReal   norm;               /* residual norm of current iterate */
+  PetscReal   rtol;               /* relative tolerance */
+  PetscReal   abstol;             /* absolute tolerance */
+  PetscReal   xtol;               /* relative tolerance in solution */
+  PetscReal   deltatol;           /* trust region convergence tolerance */
+  PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
+  PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
+  PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
+  PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
+
+  /* line search parameters */
+  SNESLineSearchType ls_type;     /* the line search type */ 
+  PetscReal   damping;            /* line search damping */
+  PetscReal   maxstep;            /* line search maximum step size */
+  PetscReal   steptol;            /* step convergence tolerance */
+  PetscReal   ls_alpha;           /* line search sufficient reduction */
+  PetscViewer ls_monitor;         /* monitor for the line search */
+
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;

@@ -2,7 +2,6 @@
 #include <private/snesimpl.h>
 
 typedef struct {
-  PetscReal lambda;   /* The default step length for the update */
   Vec * dX;           /* The change in X */
   Vec * dF;           /* The change in F */
   PetscInt m;         /* the number of kept previous steps */
@@ -61,63 +60,6 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 
   PetscFunctionReturn(0);
 }
-
-
-#undef __FUNCT__
-#define __FUNCT__ "QNLineSearchQuadratic"
-PetscErrorCode QNLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
-{
-  PetscInt       i;
-  PetscReal      alphas[3] = {0.0, 0.5, 1.0};
-  PetscReal      norms[3];
-  PetscReal      alpha,a,b;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  norms[0]  = fnorm;
-  /* Calculate trial solutions */
-  for(i=1; i < 3; ++i) {
-    /* Calculate X^{n+1} = (1 - \alpha) X^n + \alpha Y */
-    ierr = VecCopy(X, W);CHKERRQ(ierr);
-    ierr = VecAXPBY(W, alphas[i], 1 - alphas[i], Y);CHKERRQ(ierr);
-    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
-  }
-  for(i = 0; i < 3; ++i) {
-    norms[i] = PetscSqr(norms[i]);
-  }
-  /* Fit a quadratic:
-       If we have x_{0,1,2} = 0, x_1, x_2 which generate norms y_{0,1,2}
-       a = (x_1 y_2 - x_2 y_1 + (x_2 - x_1) y_0)/(x^2_2 x_1 - x_2 x^2_1)
-       b = (x^2_1 y_2 - x^2_2 y_1 + (x^2_2 - x^2_1) y_0)/(x_2 x^2_1 - x^2_2 x_1)
-       c = y_0
-       x_min = -b/2a
-
-       If we let x_{0,1,2} = 0, 0.5, 1.0
-       a = 2 y_2 - 4 y_1 + 2 y_0
-       b =  -y_2 + 4 y_1 - 3 y_0
-       c =   y_0
-  */
-  a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/(PetscSqr(alphas[2])*alphas[1] - alphas[2]*PetscSqr(alphas[1]));
-  b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/(alphas[2]*PetscSqr(alphas[1]) - PetscSqr(alphas[2])*alphas[1]);
-  /* Check for positive a (concave up) */
-  if (a >= 0.0) {
-    alpha = -b/(2.0*a);
-    alpha = PetscMin(alpha, alphas[2]);
-    alpha = PetscMax(alpha, alphas[0]);
-  } else {
-    alpha = 1.0;
-  }
-  ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-  if (alpha != 1.0) {
-    ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
-  } else {
-    *gnorm = PetscSqrtReal(norms[2]); 
-  }
-  *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_QN"
@@ -189,9 +131,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = LBGFSApplyJinv_Private(snes, i, f, y);CHKERRQ(ierr);
 
     /* line search for lambda */
-    ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
-    ierr = QNLineSearchQuadratic(snes, PETSC_NULL, x, f, y, fnorm, xnorm, 0, w,&xnorm, &fnorm, &ls_OK);CHKERRQ(ierr);
-    ierr = SNESComputeFunction(snes, x, f);CHKERRQ(ierr);
+    ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+    ierr = (*snes->ops->linesearch)(snes, PETSC_NULL, x, f, y, fnorm, xnorm, 0, w,&xnorm, &fnorm, &ls_OK);CHKERRQ(ierr);
     ierr = VecNorm(f, NORM_2, &fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -282,7 +223,6 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   qn = (QNContext *)snes->data;
 
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ls_damping", "Damping parameter", "SNES", qn->lambda, &qn->lambda, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m", "Number of past states saved for L-Broyden methods", "SNES", qn->m, &qn->m, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -335,9 +275,13 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   ierr = PetscNewLog(snes, QNContext, &qn);CHKERRQ(ierr);
   snes->data = (void *) qn;
   qn->m = 100;
-  qn->lambda = 1.;
   qn->dX = PETSC_NULL;
   qn->dF = PETSC_NULL;
+
+  snes->ops->linesearch = SNESLineSearchQuadratic;
+  snes->ops->linesearchquadratic = SNESLineSearchQuadratic;
+  snes->ops->linesearchno        = SNESLineSearchNo;
+  snes->ops->linesearchnonorms   = SNESLineSearchNoNorms;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

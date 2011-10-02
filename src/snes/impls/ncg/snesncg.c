@@ -24,11 +24,9 @@ PetscErrorCode SNESReset_NCG(SNES snes)
 PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscErrorCode   ierr;
-  SNES_NCG *neP = (SNES_NCG*)snes->data;
 
   PetscFunctionBegin;
   ierr = SNESReset_NCG(snes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&neP->monitor);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -53,28 +51,6 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetMonitor_NCG"
-PetscErrorCode  SNESLineSearchSetMonitor_NCG(SNES snes,PetscBool  flg)
-{
-  SNES_NCG *neP = (SNES_NCG*)snes->data;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  if (flg && !neP->monitor) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,"stdout",&neP->monitor);CHKERRQ(ierr);
-  } else if (!flg && neP->monitor) {
-    ierr = PetscViewerDestroy(&neP->monitor);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-PetscErrorCode SNESLineSearchNoNorms_NCG(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode SNESLineSearchNo_NCG(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode SNESLineSearchQuadratic_NCG(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
 /*
   SNESSetFromOptions_NCG - Sets various parameters for the SNESLS method.
 
@@ -87,34 +63,10 @@ PetscErrorCode SNESLineSearchQuadratic_NCG(SNES,void*,Vec,Vec,Vec,PetscReal,Pets
 #define __FUNCT__ "SNESSetFromOptions_NCG"
 static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
 {
-  SNES_NCG   *ls = (SNES_NCG *)snes->data;
-  SNESLineSearchType indx;
-  PetscBool          flg,set;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-snes_ls","NCG line search type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)ls->type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ls->type = indx;
-      switch (indx) {
-      case SNES_LS_BASIC:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNo_NCG,PETSC_NULL);CHKERRQ(ierr);
-        break;
-      case SNES_LS_BASIC_NONORMS:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_NCG,PETSC_NULL);CHKERRQ(ierr);
-        break;
-      case SNES_LS_QUADRATIC:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NCG,PETSC_NULL);CHKERRQ(ierr);
-        break;
-      case SNES_LS_CUBIC:
-        SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for cubic search");
-        break;
-      }
-    }
-    ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",ls->damping,&ls->damping,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-    if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -132,14 +84,13 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
 #define __FUNCT__ "SNESView_NCG"
 static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
-  SNES_NCG *ls = (SNES_NCG *)snes->data;
   PetscBool        iascii;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  line search type variant: %s\n", SNESLineSearchTypeName(ls->type));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  line search type variant: %s\n", SNESLineSearchTypeName(snes->ls_type));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -149,10 +100,9 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 PetscErrorCode SNESLineSearchNo_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode   ierr;
-  SNES_NCG *neP = (SNES_NCG *) snes->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPY(X, neP->damping, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(X, snes->damping, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
@@ -164,10 +114,9 @@ PetscErrorCode SNESLineSearchNo_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pets
 PetscErrorCode SNESLineSearchNoNorms_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode   ierr;
-  SNES_NCG *neP = (SNES_NCG *) snes->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPY(X, neP->damping, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(X, snes->damping, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -181,7 +130,6 @@ PetscErrorCode SNESLineSearchQuadratic_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec
   PetscReal        norms[3];
   PetscReal        alpha,a,b;
   PetscErrorCode   ierr;
-  SNES_NCG *neP = (SNES_NCG *) snes->data;
 
   PetscFunctionBegin;
   norms[0]  = fnorm;
@@ -215,20 +163,52 @@ PetscErrorCode SNESLineSearchQuadratic_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec
   } else {
     alpha = 1.0;
   }
-  if (neP->monitor) {
-    ierr = PetscViewerASCIIAddTab(neP->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(neP->monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", sqrt(norms[0]),sqrt(norms[1]),sqrt(norms[2]),alpha);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(neP->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  if (snes->ls_monitor) {
+    ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", sqrt(norms[0]),sqrt(norms[1]),sqrt(norms[2]),alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
   if (alpha != 1.0) {
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
   } else {
-    *gnorm = PetscSqrtReal(norms[2]); 
+    *gnorm = PetscSqrtReal(norms[2]);
   }
   if (alpha == 0.0) *flag = PETSC_FALSE;
   else              *flag = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchExactLinear_NCG"
+PetscErrorCode SNESLineSearchExactLinear_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+{
+  PetscScalar      alpha, ptAp;
+  PetscErrorCode   ierr;
+  /* SNES_NCG *ncg =  (SNES_NCG *) snes->data; */
+  MatStructure     flg = DIFFERENT_NONZERO_PATTERN;
+
+  PetscFunctionBegin;
+  /*
+
+   The exact step size for linear CG is just:
+
+   alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy)
+
+   */
+
+  ierr = SNESComputeJacobian(snes, X, &snes->jacobian, PETSC_NULL, &flg);CHKERRQ(ierr);
+  ierr = VecDot(F, F, &alpha);CHKERRQ(ierr);
+  ierr = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
+  ierr = VecDot(Y, W, &ptAp);CHKERRQ(ierr);
+  alpha = alpha / ptAp;
+  ierr = PetscPrintf(((PetscObject)snes)->comm, "alpha: %g\n", alpha);CHKERRQ(ierr);
+  ierr = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+  ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -247,7 +227,6 @@ PetscErrorCode SNESLineSearchQuadratic_NCG(SNES snes,void *lsctx,Vec X,Vec F,Vec
 #define __FUNCT__ "SNESSolve_NCG"
 PetscErrorCode SNESSolve_NCG(SNES snes)
 {
-  SNES_NCG            *neP = (SNES_NCG *) snes->data;
   Vec                 X, dX, lX, F, W, B;
   PetscReal           fnorm, dummyNorm;
   PetscScalar         dXdot, dXdot_old;
@@ -314,7 +293,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   ierr = VecDot(lX, lX, &dXdot);CHKERRQ(ierr);
   for(i = 1; i < maxits; i++) {
     lsSuccess = PETSC_TRUE;
-    ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, lX, fnorm, 0.0, 0, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, lX, fnorm, 0.0, 0, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -377,45 +356,6 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-typedef PetscErrorCode (*FCN1)(SNES,Vec,Vec,void*,PetscBool *);                 /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetPreCheck_NCG"
-PetscErrorCode  SNESLineSearchSetPreCheck_NCG(SNES snes, FCN1 func, void *checkctx)
-{
-  PetscFunctionBegin;
-  ((SNES_NCG *)(snes->data))->precheckstep = func;
-  ((SNES_NCG *)(snes->data))->precheck     = checkctx;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSet_NCG"
-PetscErrorCode  SNESLineSearchSet_NCG(SNES snes, FCN2 func, void *lsctx)
-{
-  PetscFunctionBegin;
-  ((SNES_NCG *)(snes->data))->LineSearch = func;
-  ((SNES_NCG *)(snes->data))->lsP        = lsctx;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-typedef PetscErrorCode (*FCN3)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetPostCheck_NCG"
-PetscErrorCode  SNESLineSearchSetPostCheck_NCG(SNES snes, FCN3 func, void *checkctx)
-{
-  PetscFunctionBegin;
-  ((SNES_NCG *)(snes->data))->postcheckstep = func;
-  ((SNES_NCG *)(snes->data))->postcheck     = checkctx;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 /*MC
   SNESNCG - Nonlinear Conjugate-Gradient method for the solution of general nonlinear systems.
 
@@ -437,8 +377,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_NCG"
 PetscErrorCode  SNESCreate_NCG(SNES snes)
 {
-  SNES_NCG *neP;
   PetscErrorCode   ierr;
+  SNES_NCG * neP;
 
   PetscFunctionBegin;
   snes->ops->destroy         = SNESDestroy_NCG;
@@ -453,21 +393,16 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
-  neP->maxstep       = 1.e8;
-  neP->steptol       = 1.e-12;
-  neP->type          = SNES_LS_QUADRATIC;
-  neP->damping       = 1.0;
-  neP->LineSearch    = SNESLineSearchQuadratic_NCG;
-  neP->lsP           = PETSC_NULL;
-  neP->postcheckstep = PETSC_NULL;
-  neP->postcheck     = PETSC_NULL;
-  neP->precheckstep  = PETSC_NULL;
-  neP->precheck      = PETSC_NULL;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_NCG",SNESLineSearchSetMonitor_NCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_NCG",SNESLineSearchSet_NCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_NCG",SNESLineSearchSetPostCheck_NCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_NCG",SNESLineSearchSetPreCheck_NCG);CHKERRQ(ierr);
+  snes->ops->linesearch             = SNESLineSearchQuadratic_NCG;
+  snes->ops->linesearchquadratic    = SNESLineSearchQuadratic_NCG;
+  snes->ops->linesearchno           = SNESLineSearchNo_NCG;
+  snes->ops->linesearchnonorms      = SNESLineSearchNoNorms_NCG;
+  snes->ops->linesearchtest         = SNESLineSearchExactLinear_NCG;
+  snes->lsP                = PETSC_NULL;
+  snes->ops->postcheckstep = PETSC_NULL;
+  snes->postcheck          = PETSC_NULL;
+  snes->ops->precheckstep  = PETSC_NULL;
+  snes->precheck           = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
