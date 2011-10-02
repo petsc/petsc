@@ -108,6 +108,39 @@ M*/
 .seealso: TSROSW
 M*/
 
+/*MC
+     TSROSWRODAS3 - Four stage third order L-stable Rosenbrock scheme
+
+     By default, the Jacobian is only recomputed once per step.
+
+     Both the third order and embedded second order methods are stiffly accurate and L-stable.
+
+     References:
+     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWSANDU3
+M*/
+
+/*MC
+     TSROSWSANDU3 - Three stage third order L-stable Rosenbrock scheme
+
+     By default, the Jacobian is only recomputed once per step.
+
+     The third order method is L-stable, but not stiffly accurate.
+     The second order embedded method is strongly A-stable with R(infty) = 0.5.
+     The internal stages are L-stable.
+     This method is called ROS3 in the paper.
+
+     References:
+     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWRODAS3
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
 /*@C
@@ -174,6 +207,34 @@ PetscErrorCode TSRosWRegisterAll(void)
       b[4] = {2.4212380706095346e-01,-1.2232505839045147e+00,1.5452602553351020e+00,4.3586652150845900e-01},
       b2[4] = {3.7810903145819369e-01,-9.6042292212423178e-02,5.0000000000000000e-01,2.1793326075422950e-01};
     ierr = TSRosWRegister(TSROSWRA34PW2,3,4,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal g = 0.5;
+    const PetscReal
+      A[4][4] = {{0,0,0,0},
+                 {0,0,0,0},
+                 {1.,0,0,0},
+                 {0.75,-0.25,0.5,0}},
+      Gamma[4][4] = {{g,0,0,0},
+                     {1.,g,0,0},
+                     {-0.25,-0.25,g,0},
+                     {1./12,1./12,-2./3,g}},
+      b[4] = {5./6,-1./6,-1./6,0.5},
+      b2[4] = {0.75,-0.25,0.5,0};
+    ierr = TSRosWRegister(TSROSWRODAS3,3,4,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal g = 0.43586652150845899941601945119356;
+    const PetscReal
+      A[3][3] = {{0,0,0},
+                 {g,0,0},
+                 {g,0,0}},
+      Gamma[3][3] = {{g,0,0},
+                     {-0.19294655696029095575009695436041,g,0},
+                     {0,1.74927148125794685173529749738960,g}},
+      b[3] = {-0.75457412385404315829818998646589,1.94100407061964420292840123379419,-0.18642994676560104463021124732829},
+      b2[3] = {-1.53358745784149585370766523913002,2.81745131148625772213931745457622,-0.28386385364476186843165221544619};
+    ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

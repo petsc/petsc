@@ -572,6 +572,8 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 #define TSROSW2P      "2p"
 #define TSROSWRA3PW   "ra3pw"
 #define TSROSWRA34PW2 "ra34pw2"
+#define TSROSWRODAS3  "rodas3"
+#define TSROSWSANDU3  "sandu3"
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 extern PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
