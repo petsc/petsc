@@ -362,7 +362,7 @@ runex5_5_ngmres_ngs:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
 
 runex5_5_qn:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_m ${N_RESTART}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls basic -snes_ls_damping 0.1 -snes_ls_monitor -snes_qn_m ${N_RESTART}
 
 runex5_5_ls:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls

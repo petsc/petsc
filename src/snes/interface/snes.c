@@ -497,9 +497,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",snes->damping,&snes->damping,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",snes->ls_monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
-    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
-
+    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)snes->ls_type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
+    }
     flg = snes->ops->precheckstep == SNESLineSearchPreCheckPicard ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_ls_precheck_picard","Use a correction that sometimes improves convergence of Picard iteration","SNESLineSearchPreCheckPicard",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {

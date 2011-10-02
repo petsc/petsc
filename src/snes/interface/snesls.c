@@ -71,8 +71,7 @@ PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Ve
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetType"
 /*@C
-   SNESLineSearchSetType - Sets the line search routine to be used
-   by the method SNESLS.
+   SNESLineSearchSetType - Sets the line search type to be  used by the method SNES solver.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -123,15 +122,14 @@ PetscErrorCode  SNESLineSearchSetType(SNES snes,SNESLineSearchType type)
     break;
   }
   if (!snes->ops->linesearch) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Line search type %s unsupported for SNES type.", SNESLineSearchTypeName(type));;
-  } else {
-    snes->ls_type = type;
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Line search type %s unsupported for SNES type", SNESLineSearchTypeName(type));;
   }
+  snes->ls_type = type;
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetParams"
 /*@
    SNESLineSearchSetParams - Sets the parameters associated with the line search
@@ -428,7 +426,7 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES
 
 .seealso: SNESLineSearchSet(), SNESLineSearchSetPostCheck(), SNESSetUpdate()
 @*/
-PetscErrorCode  SNESLineSearchSetMonitor(SNES snes,PetscBool  flg)
+PetscErrorCode  SNESLineSearchSetMonitor(SNES snes,PetscBool flg)
 {
 
   PetscErrorCode ierr;
@@ -441,90 +439,158 @@ PetscErrorCode  SNESLineSearchSetMonitor(SNES snes,PetscBool  flg)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchNo"
 
-PetscErrorCode SNESLineSearchNo(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+/*@C
+   SNESLineSearchNo - This routine is not a line search at all;
+   it simply uses the full Newton step.  Thus, this routine is intended
+   to serve as a template and is not recommended for general use.
+
+   Logically Collective on SNES and Vec
+
+   Input Parameters:
++  snes - nonlinear context
+.  lsctx - optional context for line search (not used here)
+.  x - current iterate
+.  f - residual evaluated at x
+.  y - search direction
+.  fnorm - 2-norm of f
+-  xnorm - norm of x if known, otherwise 0
+
+   Output Parameters:
++  g - residual evaluated at new iterate y
+.  w - new iterate
+.  gnorm - 2-norm of g
+.  ynorm - 2-norm of search length
+-  flag - PETSC_TRUE on success, PETSC_FALSE on failure
+
+   Options Database Key:
+.  -snes_ls basic - Activates SNESLineSearchNo()
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, line search, cubic
+
+.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
+          SNESLineSearchSet(), SNESLineSearchNoNorms()
+@*/
+PetscErrorCode  SNESLineSearchNo(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
+  PetscBool      changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
+
   PetscFunctionBegin;
-  ierr = VecAXPY(X, snes->damping, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
+  *flag = PETSC_TRUE; 
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
+  ierr = VecWAXPY(w,-snes->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  if (snes->ops->postcheckstep) {
+   ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  }
+  if (changed_y) {
+    ierr = VecWAXPY(w,-snes->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  }
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  if (!snes->domainerror) {
+    ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
+    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  }
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchNoNorms"
 
-PetscErrorCode SNESLineSearchNoNorms(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+/*@C
+   SNESLineSearchNoNorms - This routine is not a line search at 
+   all; it simply uses the full Newton step. This version does not
+   even compute the norm of the function or search direction; this
+   is intended only when you know the full step is fine and are
+   not checking for convergence of the nonlinear iteration (for
+   example, you are running always for a fixed number of Newton steps).
+
+   Logically Collective on SNES and Vec
+
+   Input Parameters:
++  snes - nonlinear context
+.  lsctx - optional context for line search (not used here)
+.  x - current iterate
+.  f - residual evaluated at x
+.  y - search direction 
+.  fnorm - 2-norm of f
+-  xnorm - norm of x if known, otherwise 0
+
+   Output Parameters:
++  g - residual evaluated at new iterate y
+.  w - new iterate
+.  gnorm - not changed
+.  ynorm - not changed
+-  flag - set to PETSC_TRUE indicating a successful line search
+
+   Options Database Key:
+.  -snes_ls basicnonorms - Activates SNESLineSearchNoNorms()
+
+   Notes:
+   SNESLineSearchNoNorms() must be used in conjunction with
+   either the options
+$     -snes_no_convergence_test -snes_max_it <its>
+   or alternatively a user-defined custom test set via
+   SNESSetConvergenceTest(); or a -snes_max_it of 1, 
+   otherwise, the SNES solver will generate an error.
+
+   During the final iteration this will not evaluate the function at
+   the solution point. This is to save a function evaluation while
+   using pseudo-timestepping.
+
+   The residual norms printed by monitoring routines such as
+   SNESMonitorDefault() (as activated via -snes_monitor) will not be 
+   correct, since they are not computed.
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, line search, cubic
+
+.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
+          SNESLineSearchSet(), SNESLineSearchNo()
+@*/
+PetscErrorCode  SNESLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
+  PetscBool      changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
+
   PetscFunctionBegin;
-  ierr = VecAXPY(X, snes->damping, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
+  *flag = PETSC_TRUE; 
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = VecWAXPY(w,-snes->damping,y,x);CHKERRQ(ierr);            /* w <- x - y      */
+  if (snes->ops->postcheckstep) {
+   ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  }
+  if (changed_y) {
+    ierr = VecWAXPY(w,-snes->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  }
+  
+  /* don't evaluate function the last time through */
+  if (snes->iter < snes->max_its-1) {
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchQuadratic"
-
-PetscErrorCode SNESLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
-{
-  PetscInt         i;
-  PetscReal        alphas[3] = {0.0, 0.5, 1.0};
-  PetscReal        norms[3];
-  PetscReal        alpha,a,b;
-  PetscErrorCode   ierr;
+PetscErrorCode  SNESLineSearchQuadratic(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
   PetscFunctionBegin;
-  norms[0]  = fnorm;
-  for(i=1; i < 3; ++i) {
-    ierr = VecWAXPY(W, alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
-    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
-  }
-  for(i = 0; i < 3; ++i) {
-    norms[i] = PetscSqr(norms[i]);
-  }
-  /* Fit a quadratic:
-       If we have x_{0,1,2} = 0, x_1, x_2 which generate norms y_{0,1,2}
-       a = (x_1 y_2 - x_2 y_1 + (x_2 - x_1) y_0)/(x^2_2 x_1 - x_2 x^2_1)
-       b = (x^2_1 y_2 - x^2_2 y_1 + (x^2_2 - x^2_1) y_0)/(x_2 x^2_1 - x^2_2 x_1)
-       c = y_0
-       x_min = -b/2a
-
-       If we let x_{0,1,2} = 0, 0.5, 1.0
-       a = 2 y_2 - 4 y_1 + 2 y_0
-       b =  -y_2 + 4 y_1 - 3 y_0
-       c =   y_0
-  */
-  a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/(PetscSqr(alphas[2])*alphas[1] - alphas[2]*PetscSqr(alphas[1]));
-  b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/(alphas[2]*PetscSqr(alphas[1]) - PetscSqr(alphas[2])*alphas[1]);
-  /* Check for positive a (concave up) */
-  if (a >= 0.0) {
-    alpha = -b/(2.0*a);
-    alpha = PetscMin(alpha, alphas[2]);
-    alpha = PetscMax(alpha, alphas[0]);
-  } else {
-    alpha = 1.0;
-  }
-  if (snes->ls_monitor) {
-    ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", sqrt(norms[0]),sqrt(norms[1]),sqrt(norms[2]),alpha);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  }
-  ierr = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
-  if (alpha != 1.0) {
-    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
-  } else {
-    *gnorm = PetscSqrtReal(norms[2]);
-  }
-  if (alpha == 0.0) *flag = PETSC_FALSE;
-  else              *flag = PETSC_TRUE;
+  SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "SNESLineSearchQuadratic for general nonlinear solvers not yet implemented");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchCubic"
+PetscErrorCode  SNESLineSearchCubic(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
+  PetscFunctionBegin;
+  SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "SNESLineSearchCubic for general nonlinear solvers not yet implemented");
   PetscFunctionReturn(0);
 }

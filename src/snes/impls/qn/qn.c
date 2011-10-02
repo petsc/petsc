@@ -1,4 +1,3 @@
-
 #include <private/snesimpl.h>
 
 typedef struct {
@@ -56,8 +55,6 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     beta[k] = rho[k]*t;
     ierr = VecAXPY(z, (alpha[k] - beta[k]), dX[k]);
   }
-  ierr = VecScale(z, 1.0);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -69,15 +66,15 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscErrorCode ierr;
   QNContext * qn = (QNContext*) snes->data;
 
-  Vec x, xold;
-  Vec f, fold;
-  Vec w, y;
+  Vec X, Xold;
+  Vec F, Fold, G;
+  Vec W, Y;
 
   PetscInt i, k;
 
-  PetscReal fnorm, xnorm;
+  PetscReal fnorm, xnorm = 0, ynorm, gnorm;
   PetscInt m = qn->m;
-  PetscBool ls_OK;
+  PetscBool lssucceed;
 
   PetscScalar rhosc;
   
@@ -88,12 +85,13 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* basically just a regular newton's method except for the application of the jacobian */
   PetscFunctionBegin;
 
-  x = snes->vec_sol;
-  xold = snes->vec_sol_update; /* dX_k */
-  w = snes->work[1];
-  f = snes->vec_func;
-  fold = snes->work[0];
-  y = snes->work[2];
+  X		= snes->vec_sol;	/* solution vector */
+  F		= snes->vec_func;	/* residual vector */
+  Y		= snes->work[0];	/* work vectors */
+  G		= snes->work[1];
+  W		= snes->work[2];
+  Xold          = snes->work[3];
+  Fold          = snes->work[4];
 
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -101,12 +99,12 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-  ierr = VecNorm(f, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -119,8 +117,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
-  ierr = VecCopy(f, fold);CHKERRQ(ierr);
-  ierr = VecCopy(x, xold);CHKERRQ(ierr);
+  ierr = VecCopy(F, Fold);CHKERRQ(ierr);
+  ierr = VecCopy(X, Xold);CHKERRQ(ierr);
   for(i = 0; i < snes->max_its; i++) {
     /* general purpose update */
     if (snes->ops->update) {
@@ -128,13 +126,33 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
 
     /* apply the current iteration of the approximate jacobian */
-    ierr = LBGFSApplyJinv_Private(snes, i, f, y);CHKERRQ(ierr);
+    ierr = LBGFSApplyJinv_Private(snes, i, F, Y);CHKERRQ(ierr);
 
     /* line search for lambda */
-    ierr = VecScale(y,-1.0);CHKERRQ(ierr);
-    ierr = (*snes->ops->linesearch)(snes, PETSC_NULL, x, f, y, fnorm, xnorm, 0, w,&xnorm, &fnorm, &ls_OK);CHKERRQ(ierr);
-    ierr = VecNorm(f, NORM_2, &fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
+    ynorm = 1; gnorm = fnorm;
+    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
+    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+    if (!lssucceed) {
+      if (++snes->numFailures >= snes->maxFailures) {
+         snes->reason = SNES_DIVERGED_LINE_SEARCH;
+        /* PetscBool  ismin;
+         ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
+        if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
+         */
+        break;
+      }
+    }
+    /* Update function and solution vectors */
+    fnorm = gnorm;
+    ierr = VecCopy(G,F);CHKERRQ(ierr);
+    ierr = VecCopy(W,X);CHKERRQ(ierr);
+
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
@@ -147,14 +165,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     /* set the differences */
     k = i % m;
-    ierr = VecCopy(f, dF[k]);CHKERRQ(ierr);
-    ierr = VecAXPY(dF[k], -1.0, fold);CHKERRQ(ierr);
-    ierr = VecCopy(x, dX[k]);CHKERRQ(ierr);
-    ierr = VecAXPY(dX[k], -1.0, xold);CHKERRQ(ierr);
+    ierr = VecCopy(F, dF[k]);CHKERRQ(ierr);
+    ierr = VecAXPY(dF[k], -1.0, Fold);CHKERRQ(ierr);
+    ierr = VecCopy(X, dX[k]);CHKERRQ(ierr);
+    ierr = VecAXPY(dX[k], -1.0, Xold);CHKERRQ(ierr);
     ierr = VecDot(dX[k], dF[k], &rhosc);CHKERRQ(ierr);
     rho[k] = 1. / rhosc;
-    ierr = VecCopy(f, fold);CHKERRQ(ierr);
-    ierr = VecCopy(x, xold);CHKERRQ(ierr);
+    ierr = VecCopy(F, Fold);CHKERRQ(ierr);
+    ierr = VecCopy(X, Xold);CHKERRQ(ierr);
   }
   if (i == snes->max_its) {
     ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", snes->max_its);CHKERRQ(ierr);
@@ -174,7 +192,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dX);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dF);CHKERRQ(ierr);
   ierr = PetscMalloc3(qn->m, PetscScalar, &qn->alpha, qn->m, PetscScalar, &qn->beta, qn->m, PetscScalar, &qn->rho);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes,5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +208,7 @@ static PetscErrorCode SNESReset_QN(SNES snes)
     if (qn->dX) {
       ierr = VecDestroyVecs(qn->m, &qn->dX);CHKERRQ(ierr);
     }
-    if (qn->dF) {      
+    if (qn->dF) {
       ierr = VecDestroyVecs(qn->m, &qn->dF);CHKERRQ(ierr);
     }
     ierr = PetscFree3(qn->alpha, qn->beta, qn->rho);CHKERRQ(ierr);
@@ -235,7 +253,6 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
       Options Database:
 
 +     -snes_qn_m - Number of past states saved for the L-Broyden methods.
-+     -snes_ls_damping - The damping parameter on the update to x.
 
       Notes: This implements the L-BFGS algorithm for the solution of F(x) = 0 using previous change in F(x) and x to
       form the approximate inverse Jacobian using a series of multiplicative rank-one updates.  This will eventually be
@@ -278,10 +295,13 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   qn->dX = PETSC_NULL;
   qn->dF = PETSC_NULL;
 
-  snes->ops->linesearch = SNESLineSearchQuadratic;
+  snes->ops->linesearchcubic     = SNESLineSearchCubic;
   snes->ops->linesearchquadratic = SNESLineSearchQuadratic;
   snes->ops->linesearchno        = SNESLineSearchNo;
   snes->ops->linesearchnonorms   = SNESLineSearchNoNorms;
+
+  ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
