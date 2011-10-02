@@ -1106,7 +1106,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->reason            = SNES_CONVERGED_ITERATING;
 
   /* initialize the line search options */
-  snes->ls_type           = SNES_LS_TEST;
+  snes->ls_type           = SNES_LS_BASIC;
   snes->damping           = 1.0;
   snes->maxstep           = 1e8;
   snes->steptol           = 1e-12;
