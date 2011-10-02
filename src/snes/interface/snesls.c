@@ -15,7 +15,7 @@ const char *SNESLineSearchTypeName(SNESLineSearchType type)
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
-.  lsctx - optional user-defined context for use by line search 
+.  lsctx - optional user-defined context for use by line search
 -  func - pointer to int function
 
    Logically Collective on SNES
@@ -71,7 +71,7 @@ PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Ve
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetType"
 /*@C
-   SNESLineSearchSet - Sets the line search routine to be used
+   SNESLineSearchSetType - Sets the line search routine to be used
    by the method SNESLS.
 
    Input Parameters:
@@ -80,39 +80,12 @@ PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Ve
    Logically Collective on SNES
 
    Available Types:
-+  cubic - default line search
-.  quadratic - quadratic line search
-.  basic - the full Newton step (actually not a line search)
-.  basicnonorms - the full Newton step (calculating no norms; faster in parallel)
-.  exact - exact line search
--  test  - test line search dependent on method (such as the linear step length used for nonlinear CG)
-
-    Options Database Keys:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
-.   -snes_ls_maxstep <maxstep> - Sets maximum step the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
--   -snes_ls_minlambda <minlambda> - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
-
-   Calling sequence of func:
-.vb
-   func (SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag)
-.ve
-
-    Input parameters for func:
-+   snes - nonlinear context
-.   lsctx - optional user-defined context for line search
-.   x - current iterate
-.   f - residual evaluated at x
-.   y - search direction
-.   fnorm - 2-norm of f
--   xnorm - 2-norm of f
-
-    Output parameters for func:
-+   g - residual evaluated at new iterate y
-.   w - new iterate
-.   gnorm - 2-norm of g
-.   ynorm - 2-norm of search length
--   flag - set to PETSC_TRUE if the line search succeeds; PETSC_FALSE on failure.
++  SNES_LS_CUBIC - cubic - default line search
+.  SNES_LS_QUADRATIC - quadratic - quadratic line search
+.  SNES_LS_NO - basic - the full Newton step (actually not a line search)
+.  SNES_LS_NONORMS - basicnonorms - the full Newton step (calculating no norms; faster in parallel)
+.  SNES_LS_EXACT - exact - exact line search
+-  SNES_LS_TEST - test  - test line search dependent on method (such as the linear step length used for nonlinear CG)
 
     Level: advanced
 
@@ -187,8 +160,6 @@ PetscErrorCode  SNESLineSearchSetType(SNES snes,SNESLineSearchType type)
 @*/
 PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(snes,alpha,2);
   PetscValidLogicalCollectiveReal(snes,maxstep,3);
@@ -196,7 +167,6 @@ PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxs
   if (alpha   >= 0.0) snes->ls_alpha       = alpha;
   if (maxstep >= 0.0) snes->maxstep        = maxstep;
   if (steptol >= 0.0) snes->steptol        = steptol;
-
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +184,7 @@ PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxs
    Output Parameters:
 +  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|
 .  maxstep - The maximum norm of the update vector
--  minlambda - lambda is not allowed to be smaller than minlambda/( max_i y[i]/x[i]) 
+-  steptol - The step length constant is not allowed to be smaller than steptol/( max_i y[i]/x[i])
 
    Level: intermediate
 
