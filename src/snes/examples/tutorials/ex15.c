@@ -57,6 +57,7 @@ typedef struct {
   PassiveReal lambda;         /* Bratu parameter */
   PassiveReal p;              /* Exponent in p-Laplacian */
   PassiveReal epsilon;        /* Regularization */
+  PassiveReal source;         /* Source term */
   PetscInt    jtype;          /* What type of Jacobian to assemble */
 } AppCtx;
 
@@ -67,6 +68,18 @@ static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 static PetscErrorCode MySNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+typedef struct _n_PreCheck *PreCheck;
+struct _n_PreCheck {
+  MPI_Comm comm;
+  PetscReal angle;
+  Vec Ylast;
+  PetscViewer monitor;
+};
+PetscErrorCode PreCheckCreate(MPI_Comm,PreCheck*);
+PetscErrorCode PreCheckDestroy(PreCheck*);
+PetscErrorCode PreCheckFunction(SNES,Vec,Vec,void*,PetscBool*);
+PetscErrorCode PreCheckSetFromOptions(PreCheck);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -83,6 +96,9 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring = 0;
   ISColoring             iscoloring;
   DM                     da,dastar;            /* distributed array data structure */
+  PreCheck               precheck = PETSC_NULL; /* precheck context for version in this file */
+  PetscInt               use_precheck;   /* 0=none, 1=version in this file, 2=SNES-provided version */
+  PetscReal              precheck_angle; /* When manually setting the SNES-provided precheck function */
   PetscErrorCode         ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,14 +110,20 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.lambda = 6.0; user.p = 2.0; user.epsilon = 1e-5; user.jtype = 4; alloc_star = PETSC_FALSE;
+  user.lambda = 6.0; user.p = 2.0; user.epsilon = 1e-5; user.source = 0.1; user.jtype = 4; alloc_star = PETSC_FALSE;
+  use_precheck = 0; precheck_angle = 10.;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"p-Bratu options",__FILE__);CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-lambda","Bratu parameter","",user.lambda,&user.lambda,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-p","Exponent `p' in p-Laplacian","",user.p,&user.p,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-epsilon","Strain-regularization in p-Laplacian","",user.epsilon,&user.epsilon,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-source","Constant source term","",user.source,&user.source,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-jtype","Jacobian type, 1=plain, 2=first term 3=star 4=full","",user.jtype,&user.jtype,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-precheck","Use a pre-check correction intended for use with Picard iteration 1=this version, 2=library","",use_precheck,&use_precheck,NULL);CHKERRQ(ierr);
+    if (use_precheck == 2) {    /* Using library version, get the angle */
+      ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck_angle,&precheck_angle,PETSC_NULL);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (user.lambda > bratu_lambda_max || user.lambda < bratu_lambda_min) {
@@ -179,6 +201,15 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
+  /* Set up the precheck context if requested */
+  if (use_precheck == 1) {      /* Use the precheck routines in this file */
+    ierr = PreCheckCreate(PETSC_COMM_WORLD,&precheck);CHKERRQ(ierr);
+    ierr = PreCheckSetFromOptions(precheck);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(snes,PreCheckFunction,precheck);CHKERRQ(ierr);
+  } else if (use_precheck == 2) { /* Use the version provided by the library */
+    ierr = SNESLineSearchSetPreCheck(snes,SNESLineSearchPreCheckPicard,&precheck_angle);CHKERRQ(ierr);
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
      Note: The user should initialize the vector, x, with the initial guess
@@ -213,6 +244,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDestroy(&dastar);CHKERRQ(ierr);
+  ierr = PreCheckDestroy(&precheck);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -280,7 +312,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
           const PetscReal
             xx = 2*(PetscReal)i/(Mx-1) - 1,
             yy = 2*(PetscReal)j/(My-1) - 1;
-          x[j][i] = (1 - xx*xx) * (1-yy*yy);
+          x[j][i] = (1 - xx*xx) * (1-yy*yy) * xx * yy;
         }
       }
     }
@@ -313,13 +345,14 @@ static inline PetscScalar deta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
  */
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscReal      hx,hy,dhx,dhy,sc;
+  PetscReal      hx,hy,dhx,dhy,sc,source;
   PetscInt       i,j;
 
   PetscFunctionBegin;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
+  source = hx*hy*user->source;
   dhx    = 1/hx;
   dhy    = 1/hy;
   /*
@@ -350,7 +383,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
         * uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx
         * uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy
         **/
-        f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
+        f[j][i] = uxx + uyy - sc*PetscExpScalar(u) - source;
       }
     }
   }
@@ -544,5 +577,106 @@ static PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/***********************************************************
+ * PreCheck implementation
+ ***********************************************************/
+#undef __FUNCT__
+#define __FUNCT__ "PreCheckSetFromOptions"
+PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
+{
+  PetscErrorCode ierr;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(precheck->comm,PETSC_NULL,"PreCheck Options","none");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck->angle,&precheck->angle,PETSC_NULL);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-precheck_monitor","Monitor choices made by precheck routine","",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(precheck->comm,"stdout",&precheck->monitor);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PreCheckFunction"
+/*
+  Compare the direction of the current and previous step, modify the current step accordingly
+*/
+PetscErrorCode PreCheckFunction(SNES snes,Vec X,Vec Y,void *ctx,PetscBool *changed)
+{
+  PetscErrorCode ierr;
+  PreCheck       precheck = (PreCheck)ctx;
+  Vec            Ylast;
+  PetscScalar    dot;
+  PetscInt       iter;
+  PetscReal      ynorm,ylastnorm,theta,angle_radians;
+
+  PetscFunctionBegin;
+  if (!precheck->Ylast) {ierr = VecDuplicate(Y,&precheck->Ylast);CHKERRQ(ierr);}
+  Ylast = precheck->Ylast;
+  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  if (iter < 1) {
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecDot(Y,Ylast,&dot);CHKERRQ(ierr);
+  ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
+  /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
+  theta = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  angle_radians = precheck->angle * PETSC_PI / 180.;
+  if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
+    /* Modify the step Y */
+    PetscReal alpha,ydiffnorm;
+    ierr = VecAXPY(Ylast,-1.0,Y);CHKERRQ(ierr);
+    ierr = VecNorm(Ylast,NORM_2,&ydiffnorm);CHKERRQ(ierr);
+    alpha = ylastnorm / ydiffnorm;
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    ierr = VecScale(Y,alpha);CHKERRQ(ierr);
+    if (precheck->monitor) {
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,precheck->angle,alpha);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_FALSE;
+    if (precheck->monitor) {
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,precheck->angle);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PreCheckDestroy"
+PetscErrorCode PreCheckDestroy(PreCheck *precheck)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*precheck) PetscFunctionReturn(0);
+  ierr = VecDestroy(&(*precheck)->Ylast);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*precheck)->monitor);CHKERRQ(ierr);
+  ierr = PetscFree(*precheck);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PreCheckCreate"
+PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof(struct _n_PreCheck),precheck);CHKERRQ(ierr);
+  ierr = PetscMemzero(*precheck,sizeof(struct _n_PreCheck));CHKERRQ(ierr);
+  (*precheck)->comm = comm;
+  (*precheck)->angle = 10.;     /* only active if angle is less than 10 degrees */
   PetscFunctionReturn(0);
 }

@@ -1187,6 +1187,88 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchPreCheckPicard"
+/*@C
+   SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
+
+   Logically Collective
+
+   Input Arguments:
++  snes - nonlinear solver
+.  X - base state for this step
+.  Y - initial correction
+-  ctx - context, should be a pointer to PetscReal containing the angle in degrees below which to activate the correction
+
+   Output Arguments:
++  Y - correction, possibly modifide
+-  changed - flag indicating that Y was modified
+
+   Options Database Key:
++  -snes_ls_precheck_picard - activate this routine
+-  -snes_ls_precheck_picard_angle - angle
+
+   Level: advanced
+
+   Notes:
+   This function should be passed to SNESLineSearchSetPreCheck()
+
+   The justification for this method involves the linear convergence of a Picard iteration
+   so the Picard linearization should be provided in place of the "Jacobian". This correction
+   is generally not useful when using a Newton linearization.
+
+   Reference:
+   Hindmarsh and Payne (1996) Time step limits for stable solutions of the ice sheet equation, Annals of Glaciology.
+
+.seealso: SNESLineSearchSetPreCheck()
+@*/
+PetscErrorCode SNESLineSearchPreCheckPicard(SNES snes,Vec X,Vec Y,void *ctx,PetscBool *changed)
+{
+  PetscErrorCode ierr;
+  PetscReal      angle = *(PetscReal*)ctx;
+  Vec            Ylast;
+  PetscScalar    dot;
+  PetscInt       iter;
+  PetscReal      ynorm,ylastnorm,theta,angle_radians;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)snes,"SNESLineSearchPreCheckPicard_Ylast",(PetscObject*)&Ylast);CHKERRQ(ierr);
+  if (!Ylast) {
+    ierr = VecDuplicate(Y,&Ylast);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)snes,"SNESLineSearchPreCheckPicard_Ylast",(PetscObject)Ylast);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)Ylast);CHKERRQ(ierr);
+  }
+  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  if (iter < 2) {
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecDot(Y,Ylast,&dot);CHKERRQ(ierr);
+  ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
+  /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
+  theta = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  angle_radians = angle * PETSC_PI / 180.;
+  if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
+    /* Modify the step Y */
+    PetscReal alpha,ydiffnorm;
+    ierr = VecAXPY(Ylast,-1.0,Y);CHKERRQ(ierr);
+    ierr = VecNorm(Ylast,NORM_2,&ydiffnorm);CHKERRQ(ierr);
+    alpha = ylastnorm / ydiffnorm;
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    ierr = VecScale(Y,alpha);CHKERRQ(ierr);
+    ierr = PetscInfo3(snes,"Angle %G degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,angle,alpha);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo2(snes,"Angle %G degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,angle);CHKERRQ(ierr);
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetFromOptions_LS - Sets various parameters for the SNESLS method.
@@ -1229,6 +1311,17 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
       case SNES_LS_CUBIC:
         ierr = SNESLineSearchSet(snes,SNESLineSearchCubic,PETSC_NULL);CHKERRQ(ierr);
         break;
+      }
+    }
+    flg = ls->precheckstep == SNESLineSearchPreCheckPicard ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscOptionsBool("-snes_ls_precheck_picard","Use a correction that sometimes improves convergence of Picard iteration","SNESLineSearchPreCheckPicard",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      if (flg) {
+        ls->precheck_picard_angle = 10.;     /* only active if angle is less than 10 degrees */
+        ierr = PetscOptionsReal("-snes_ls_precheck_picard_angle","Maximum angle at which to activate the correction","none",ls->precheck_picard_angle,&ls->precheck_picard_angle,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSetPreCheck(snes,SNESLineSearchPreCheckPicard,&ls->precheck_picard_angle);CHKERRQ(ierr);
+      } else {
+        ierr = SNESLineSearchSetPreCheck(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

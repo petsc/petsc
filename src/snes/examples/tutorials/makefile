@@ -492,6 +492,10 @@ runex15:
 	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 4 > ex15_1.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15_1.tmp || echo "Possible problem with with ex15_1, diffs above \n========================================="; \
 	   ${RM} -f ex15_1.tmp
+runex15_2:
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -precheck 1 > ex15_2.tmp 2>&1; \
+	   ${DIFF} output/ex15_2.out ex15_2.tmp || echo "Possible problem with with ex15_2, diffs above \n========================================="; \
+	   ${RM} -f ex15_2.tmp
 runex50:
 	-@${MPIEXEC} -n 2 ./ex50 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \

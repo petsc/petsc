@@ -386,6 +386,7 @@ extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,PetscReal,
 
 extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
+extern PetscErrorCode  SNESLineSearchPreCheckPicard(SNES,Vec,Vec,void*,PetscBool*);
 extern PetscErrorCode  SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode  SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );

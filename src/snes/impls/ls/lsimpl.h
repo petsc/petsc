@@ -20,6 +20,7 @@ typedef struct {
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
   PetscViewer              monitor;
   PetscReal                damping;
+  PetscReal                precheck_picard_angle;
 } SNES_LS;
 
 #endif
