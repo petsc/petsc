@@ -218,9 +218,6 @@ PetscErrorCode  SNESLineSearchSetType_NCG(SNES snes, SNESLineSearchType type)
 }
 EXTERN_C_END
 
-
-
-
 /*
   SNESSolve_NCG - Solves a nonlinear system with the Nonlinear Conjugate Gradient method.
 
@@ -408,12 +405,6 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
-  snes->ops->linesearchquadratic    = SNESLineSearchQuadratic_NCG;
-  snes->lsP                = PETSC_NULL;
-  snes->ops->postcheckstep = PETSC_NULL;
-  snes->postcheck          = PETSC_NULL;
-  snes->ops->precheckstep  = PETSC_NULL;
-  snes->precheck           = PETSC_NULL;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 

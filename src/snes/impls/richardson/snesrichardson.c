@@ -290,6 +290,33 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 }
 
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_NRichardson"
+PetscErrorCode  SNESLineSearchSetType_NRichardson(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo_NRichardson,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_NRichardson,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NRichardson,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*MC
   SNESNRICHARDSON - Richardson nonlinear solver that uses successive substitutions, also sometimes known as Picard iteration.
 
@@ -313,6 +340,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_NRichardson"
 PetscErrorCode  SNESCreate_NRichardson(SNES snes)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   snes->ops->destroy	     = SNESDestroy_NRichardson;
   snes->ops->setup	     = SNESSetUp_NRichardson;
@@ -324,15 +352,8 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
 
-  snes->ops->linesearch         = SNESLineSearchQuadratic_NRichardson;
-  snes->ops->linesearchno       = SNESLineSearchNo_NRichardson;
-  snes->ops->linesearchnonorms  = SNESLineSearchNoNorms_NRichardson;
-  snes->ops->linesearchquadratic= SNESLineSearchQuadratic_NRichardson;
-  snes->ops->linesearchcubic    = PETSC_NULL;
-  snes->ops->postcheckstep      = PETSC_NULL;
-  snes->postcheck               = PETSC_NULL;
-  snes->ops->precheckstep       = PETSC_NULL;
-  snes->precheck                = PETSC_NULL;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -2467,6 +2467,37 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_VI"
+PetscErrorCode  SNESLineSearchSetType_VI(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo_VI,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_VI,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_VI,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_CUBIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_VI,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESVI - Various solvers for variational inequalities based on Newton's method
@@ -2509,18 +2540,12 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   snes->ls_alpha             = 1.e-4;
   snes->maxstep              = 1.e8;
   snes->steptol              = 1.e-12;
-  snes->ops->linesearch          = SNESLineSearchCubic_VI;
-  snes->ops->linesearchcubic     = SNESLineSearchCubic_VI;
-  snes->ops->linesearchquadratic = SNESLineSearchQuadratic_VI;
-  snes->ops->linesearchno        = SNESLineSearchNo_VI;
-  snes->ops->linesearchnonorms   = SNESLineSearchNoNorms_VI;
-  snes->lsP                  = PETSC_NULL;
-  snes->ops->postcheckstep   = PETSC_NULL;
-  snes->postcheck            = PETSC_NULL;
-  snes->ops->precheckstep    = PETSC_NULL;
-  snes->precheck             = PETSC_NULL;
   vi->const_tol              =  2.2204460492503131e-16;
   vi->checkredundancy        = PETSC_NULL;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VI);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -857,12 +857,6 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   snes->usespc                       = PETSC_FALSE;
   ierr                               = PetscNewLog(snes,SNES_LS,&neP);CHKERRQ(ierr);
   snes->data                         = (void*)neP;
-  snes->ops->linesearchno            = SNESLineSearchNo;
-  snes->lsP                          = PETSC_NULL;
-  snes->ops->postcheckstep           = PETSC_NULL;
-  snes->postcheck                    = PETSC_NULL;
-  snes->ops->precheckstep            = PETSC_NULL;
-  snes->precheck                     = PETSC_NULL;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_LS",SNESLineSearchSetType_LS);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

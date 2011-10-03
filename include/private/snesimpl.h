@@ -26,15 +26,7 @@ struct _SNESOps {
   PetscErrorCode (*linesearch)         (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
   /* optional functions for pre and postcheck on a linesearch */
   PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
-  PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* step-checking routine */
-  /* other options for the line-search.  May be re-set by SNESCreate_XXX for particular solvers */
-  PetscErrorCode (*linesearchquadratic)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  PetscErrorCode (*linesearchcubic)    (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  PetscErrorCode (*linesearchno)       (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  PetscErrorCode (*linesearchnonorms)  (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  PetscErrorCode (*linesearchexact)    (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  PetscErrorCode (*linesearchtest)     (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-
+  PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *);  /* step-checking routine */
 };
 
 /*

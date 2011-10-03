@@ -40,7 +40,9 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     k = (it - i - 1) % l;
     ierr = VecDot(dX[k], z, &t);CHKERRQ(ierr);
     alpha[k] = t*rho[k];
+    /*
     ierr = PetscPrintf(PETSC_COMM_WORLD, "%d, alpha %g\n", k, alpha[k]);CHKERRQ(ierr);
+     */
     ierr = VecAXPY(z, -alpha[k], dF[k]);CHKERRQ(ierr);
   }
 
@@ -53,7 +55,9 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     ierr = VecDot(dF[k], z, &t);CHKERRQ(ierr);
     beta[k] = rho[k]*t;
     ierr = VecAXPY(z, (alpha[k] - beta[k]), dX[k]);
+    /*
     ierr = PetscPrintf(PETSC_COMM_WORLD, "%d, alpha - beta %g\n", k, alpha[k] - beta[k]);CHKERRQ(ierr);
+     */
   }
   PetscFunctionReturn(0);
 }
@@ -303,6 +307,34 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_QN"
+PetscErrorCode  SNESLineSearchSetType_QN(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_QN,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
@@ -352,13 +384,9 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   qn->dX = PETSC_NULL;
   qn->dF = PETSC_NULL;
 
-  snes->ops->linesearchcubic     = SNESLineSearchCubic;
-  snes->ops->linesearchquadratic = SNESLineSearchQuadratic_QN;
-  snes->ops->linesearchno        = SNESLineSearchNo;
-  snes->ops->linesearchnonorms   = SNESLineSearchNoNorms;
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_QN",SNESLineSearchSetType_QN);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
-
+  
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

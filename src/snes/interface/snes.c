@@ -1131,13 +1131,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->postcheck         = PETSC_NULL;
   snes->ops->postcheckstep= PETSC_NULL;
 
-  snes->ops->linesearchquadratic = PETSC_NULL;
-  snes->ops->linesearchcubic     = PETSC_NULL;
-  snes->ops->linesearchno        = PETSC_NULL;
-  snes->ops->linesearchnonorms   = PETSC_NULL;
-  snes->ops->linesearchexact     = PETSC_NULL;
-  snes->ops->linesearchtest      = PETSC_NULL;
-
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
 
