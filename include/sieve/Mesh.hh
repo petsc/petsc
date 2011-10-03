@@ -1802,8 +1802,12 @@ namespace ALE {
     void setupCoordinates(const Obj<real_section_type>& coordinates) {
       const Obj<label_sequence>& vertices = this->depthStratum(0);
 
-      coordinates->setChart(typename real_section_type::chart_type(*std::min_element(vertices->begin(), vertices->end()),
-                                                                   *std::max_element(vertices->begin(), vertices->end())+1));
+      if (vertices->size() > 0) {
+        coordinates->setChart(typename real_section_type::chart_type(*std::min_element(vertices->begin(), vertices->end()),
+                                                                     *std::max_element(vertices->begin(), vertices->end())+1));
+      } else {
+        coordinates->setChart(typename real_section_type::chart_type(0, 0));
+      }
     };
     point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1

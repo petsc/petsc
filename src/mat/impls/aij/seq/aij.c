@@ -4186,7 +4186,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJFromTriple"
 /*@C
-     MatCreateSeqAIJWithTriples - Creates an sequential AIJ matrix using matrix elements (in COO format)
+     MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.
 
       Collective on MPI_Comm
@@ -4228,10 +4228,11 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat,PetscInt nz,PetscBool idx)
 {
   PetscErrorCode ierr;
-  PetscInt       ii, nnz[m], one = 1,row,col;
+  PetscInt       ii, *nnz, one = 1,row,col;
 
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(m*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
   ierr = PetscMemzero(nnz,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (ii = 0; ii < nz; ii++){
     nnz[i[ii]] += 1;
@@ -4253,6 +4254,7 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   }
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

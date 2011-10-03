@@ -274,11 +274,13 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
   ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   for(bc = 0; bc < numBC; ++bc) {
     char     bdName[2048];
-    size_t   len;
+    size_t   len      = 0;
     PetscInt numFaces = 0, f;
 
-    if (!m->commRank()) {ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);}
-    ierr = PetscStrlen(bdName, &len);CHKERRQ(ierr);
+    if (!m->commRank()) {
+      ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);
+      ierr = PetscStrlen(bdName, &len);CHKERRQ(ierr);
+    }
     ierr = MPI_Bcast(&len, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
     const Obj<PETSC_MESH_TYPE::label_type>& label = m->createLabel(bdName);
