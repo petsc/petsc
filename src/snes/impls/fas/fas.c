@@ -232,8 +232,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   /* should call the SNESSetFromOptions() only when approriate */
   tmp = fas;
   while (tmp) {
-    if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);}
-    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->downsmooth);}
+    if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);CHKERRQ(ierr);}
+    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->downsmooth);CHKERRQ(ierr);}
     tmp = tmp->next ? (SNES_FAS*) tmp->next->data : 0;
   }
 
@@ -254,12 +254,12 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       }
     }
     /* set the DMs of the pre and post-smoothers here */
-    if (fas->upsmooth)  SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);
-    if (fas->downsmooth)SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);
+    if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
+      if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
   }
   if (fas->next) {
     /* gotta set up the solution vector for this to work */
-    if (!fas->next->vec_sol)ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);
+    if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
   /* got to set them all up at once */
