@@ -253,6 +253,10 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 extern PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void);
 #endif
 
+#if defined(PETSC_HAVE_CUDA)
+#include <cublas.h>
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
@@ -547,6 +551,30 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    struct cudaDeviceProp prop;
+    int devCount;
+    int device;
+
+    ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+    for(device = 0; device < devCount; ++device) {
+      ierr = cudaGetDeviceProperties(&prop, device);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
+    }
+  }
+  {
+    int device;
+
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
+    if (flg1) {
+      ierr = cudaSetDevice(device);CHKERRQ(ierr);
+    }
+  }
+#endif
+
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = PetscOptionsCheckInitial_Private_Pthread();
