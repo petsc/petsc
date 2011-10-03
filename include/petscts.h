@@ -568,15 +568,15 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
 #if defined(PETSC_HAVE_ROSW)
 #define TSRosWType char*
-#define TSROSW2M      "2m"
-#define TSROSW2P      "2p"
-#define TSROSWRA3PW   "ra3pw"
-#define TSROSWRA34PW2 "ra34pw2"
-#define TSROSWRODAS3  "rodas3"
-#define TSROSWSANDU3  "sandu3"
-#define TSROSWASSP3P3S1C "ASSP3P3S1C"
-#define TSROSWLASSP3P4S2C "LASSP3P4S2C"
-#define TSROSWLLSSP3P3S2C "LLSSP3P3S2C"
+#define TSROSW2M          "2m"
+#define TSROSW2P          "2p"
+#define TSROSWRA3PW       "ra3pw"
+#define TSROSWRA34PW2     "ra34pw2"
+#define TSROSWRODAS3      "rodas3"
+#define TSROSWSANDU3      "sandu3"
+#define TSROSWASSP3P3S1C  "assp3p3s1c"
+#define TSROSWLASSP3P4S2C "lassp3p4s2c"
+#define TSROSWLLSSP3P3S2C "llssp3p3s2c"
 
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
