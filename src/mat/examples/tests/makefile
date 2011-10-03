@@ -1257,7 +1257,7 @@ runex92:
 	    done; \
 	  done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
-	else echo ${PWD} ; echo "Possible problem with with ex92_1: ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_1: ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_submat, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 NPROCS    = 3 4
@@ -1271,7 +1271,7 @@ runex92_2:
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
-	else echo ${PWD} ; echo "Possible problem with with ex92_2, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_2, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_submat, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 runex92_3:
@@ -1284,7 +1284,7 @@ runex92_3:
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
-	else echo ${PWD} ; echo "Possible problem with with ex92_3, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_3, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_allcols, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 runex92_4:
@@ -1297,7 +1297,7 @@ runex92_4:
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
-	else echo ${PWD} ; echo "Possible problem with with ex92_4, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_4, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_submat -test_allcols, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 runex93:
