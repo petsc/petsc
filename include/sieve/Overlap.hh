@@ -382,7 +382,7 @@ public:
         if (s <= this->points[i] || this->points[i] < 0) break;
       }
       assert(i < this->pointsOffset[r+1] && s != this->points[i]);
-      for(index_type j = i+1; j < this->pointsOffset[r+1]; ++j) {
+      for(j = PetscMin(i+1, this->pointsOffset[r+1]-1); j < this->pointsOffset[r+1]; ++j) {
         if (this->points[j] < 0) break;
       }
       for(; j > i; --j) {
