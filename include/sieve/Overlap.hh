@@ -107,12 +107,12 @@ public:
     if (rank != ranks[r]) {
       assert(ranks[numRanks-1] == -1);
       pointsOffset[numRanks] = pointsOffset[numRanks-1];
-      for(s = numRanks; s > r; --s) {
+      for(s = numRanks-1; s > r; --s) {
         ranks[s]        = ranks[s-1];
         pointsOffset[s] = pointsOffset[s-1];
       }
+      ranks[r] = rank;
     }
-    ranks[r] = rank;
     for(s = r+1; s <= numRanks; ++s) {
       pointsOffset[s] += numPoints;
     }
