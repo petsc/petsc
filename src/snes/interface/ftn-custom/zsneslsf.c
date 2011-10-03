@@ -10,31 +10,6 @@
 #define sneslinesearchnonorms_           SNESLINESEARCHNONORMS
 #define sneslinesearchsetprecheck_       SNESLINESEARCHSETPRECHECK
 #define snessetupdate_                   SNESSETUPDATE
-#define sneslinesearchgetparams_         SNESLINESEARCHGETPARAMS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
-#define sneslinesearchset_               sneslinesearchset
-#define sneslinesearchcubic_             sneslinesearchcubic     
-#define sneslinesearchquadratic_         sneslinesearchquadratic    
-#define sneslinesearchno_                sneslinesearchno    
-#define sneslinesearchnonorms_           sneslinesearchnonorms    
-#define sneslinesearchsetprecheck_       sneslinesearchsetprecheck
-#define snessetupdate_                   snessetupdate
-#define sneslinesearchgetparams_         sneslinesearchgetparams
-#endif
-
-#include <private/fortranimpl.h>
-#include <petscsnes.h>
-
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define sneslinesearchsetpostcheck_      SNESLINESEARCHSETPOSTCHECK
-#define sneslinesearchset_               SNESLINESEARCHSET
-#define sneslinesearchcubic_             SNESLINESEARCHCUBIC
-#define sneslinesearchquadratic_         SNESLINESEARCHQUADRATIC
-#define sneslinesearchno_                SNESLINESEARCHNO
-#define sneslinesearchnonorms_           SNESLINESEARCHNONORMS
-#define sneslinesearchsetprecheck_       SNESLINESEARCHSETPRECHECK
-#define snessetupdate_                   SNESSETUPDATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
 #define sneslinesearchset_               sneslinesearchset
