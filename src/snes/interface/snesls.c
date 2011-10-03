@@ -70,7 +70,7 @@ PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Ve
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetType"
-/*@C
+/*@
    SNESLineSearchSetType - Sets the line search type to be  used by the method SNES solver.
 
    Input Parameters:
