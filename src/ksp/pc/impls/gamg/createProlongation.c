@@ -952,7 +952,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
       PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
       do{
         if( flid < nFineLoc ) {  /* could be a ghost */
-          PetscInt bestTID = -1; PetscScalar best_alpha = 1.e10; 
+          PetscInt bestTID = -1; PetscReal best_alpha = 1.e10; 
           const PetscInt fgid = flid + myFine0;
           /* compute shape function for gid */
           const PetscReal fcoord[3] = { a_coords[flid], a_coords[a_nnodes + flid], 1.0 };
@@ -968,16 +968,16 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
               clids[tt] = cid2; /* store for interp */
             }
 
-            for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
+            for(tt=0;tt<3;tt++) alpha[tt] = (PetscScalar)fcoord[tt];
 
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
             LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
             {
-              PetscBool have=PETSC_TRUE;  PetscScalar lowest=1.e10;
+              PetscBool have=PETSC_TRUE;  PetscReal lowest=1.e10;
               for( tt = 0, idx = 0 ; tt < 3 ; tt++ ) {
-                if( alpha[tt] > 1.0+EPS || alpha[tt] < -EPS ) have = PETSC_FALSE;
-                if( alpha[tt] < lowest ){
-                  lowest = alpha[tt];
+                if( PetscRealPart(alpha[tt]) > (1.0+EPS) || PetscRealPart(alpha[tt]) < -EPS ) have = PETSC_FALSE;
+                if( PetscRealPart(alpha[tt]) < lowest ){
+                  lowest = PetscRealPart(alpha[tt]);
                   idx = tt;
                 }
               }
@@ -999,10 +999,10 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
               /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
               LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
               {
-                PetscBool have=PETSC_TRUE;  PetscScalar worst=0.0, v;
+                PetscBool have=PETSC_TRUE;  PetscReal worst=0.0, v;
                 for(tt=0; tt<3 && have ;tt++) {
-                  if(alpha[tt] > 1.0+EPS || alpha[tt] < -EPS ) have=PETSC_FALSE;
-                  if( (v=PetscAbs(alpha[tt]-0.5)) > worst ) worst = v;
+                  if( PetscRealPart(alpha[tt]) > 1.0+EPS || PetscRealPart(alpha[tt]) < -EPS ) have=PETSC_FALSE;
+                  if( (v=PetscAbs(PetscRealPart(alpha[tt])-0.5)) > worst ) worst = v;
                 }
                 if( worst < best_alpha ) {
                   best_alpha = worst; bestTID = tid;
@@ -1027,8 +1027,8 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
 
           /* put in row of P */
           for(idx=0;idx<3;idx++){
-            PetscReal shp = alpha[idx];
-            if( PetscAbs(shp) > 1.e-6 ) {
+            PetscScalar shp = alpha[idx];
+            if( PetscAbs(PetscRealPart(shp)) > 1.e-6 ) {
               PetscInt cgid = a_crsGID[clids[idx]];
               PetscInt jj = cgid*a_bs, ii = fgid*a_bs; /* need to gloalize */
               for(tt=0 ; tt < a_bs ; tt++, ii++, jj++ ){

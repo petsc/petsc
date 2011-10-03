@@ -141,6 +141,51 @@ M*/
 .seealso: TSROSW, TSROSWRODAS3
 M*/
 
+/*MC
+     TSROSWASSP3P3S1C - A-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+
+     By default, the Jacobian is only recomputed once per step.
+
+     A-stable SPP explicit order 3, 3 stages, CFL 1 (eff = 1/3)
+
+     References:
+     Emil Constantinescu
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWLASSP3P4S2C, TSROSWLLSSP3P3S2C, SSP
+M*/
+
+/*MC
+     TSROSWLASSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+
+     By default, the Jacobian is only recomputed once per step.
+
+     L-stable (A-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
+
+     References:
+     Emil Constantinescu
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLLSSP3P3S2C, TSSSP
+M*/
+
+/*MC
+     TSROSWLLSSP3P3S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+
+     By default, the Jacobian is only recomputed once per step.
+
+     L-stable (L-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
+
+     References:
+     Emil Constantinescu
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSSSP
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
 /*@C

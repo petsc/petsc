@@ -58,7 +58,7 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_Chebychev(KSP ksp,PetscReal a
       /* Estimate with a fixed number of iterations */
       ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
 
       if (a >= 0) cheb->tform[0] = a;
       if (b >= 0) cheb->tform[1] = b;
