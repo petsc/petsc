@@ -110,12 +110,13 @@ struct _p_SNES {
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
 
   /* line search parameters */
-  SNESLineSearchType ls_type;     /* the line search type */ 
+  SNESLineSearchType ls_type;     /* the present line search type */
   PetscReal   damping;            /* line search damping */
   PetscReal   maxstep;            /* line search maximum step size */
   PetscReal   steptol;            /* step convergence tolerance */
   PetscReal   ls_alpha;           /* line search sufficient reduction */
   PetscViewer ls_monitor;         /* monitor for the line search */
+
 
   /* ------------------------ Default work-area management ---------------------- */
 

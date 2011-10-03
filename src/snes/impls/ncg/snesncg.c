@@ -188,6 +188,39 @@ PetscErrorCode SNESLineSearchExactLinear_NCG(SNES snes,void *lsctx,Vec X,Vec F,V
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_NCG"
+PetscErrorCode  SNESLineSearchSetType_NCG(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NCG,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_TEST:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchExactLinear_NCG,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
+
+
 /*
   SNESSolve_NCG - Solves a nonlinear system with the Nonlinear Conjugate Gradient method.
 
@@ -376,16 +409,12 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   snes->ops->linesearchquadratic    = SNESLineSearchQuadratic_NCG;
-  snes->ops->linesearchcubic        = SNESLineSearchCubic;
-  snes->ops->linesearchno           = SNESLineSearchNo;
-  snes->ops->linesearchnonorms      = SNESLineSearchNoNorms;
-  snes->ops->linesearchtest         = SNESLineSearchExactLinear_NCG;
   snes->lsP                = PETSC_NULL;
   snes->ops->postcheckstep = PETSC_NULL;
   snes->postcheck          = PETSC_NULL;
   snes->ops->precheckstep  = PETSC_NULL;
   snes->precheck           = PETSC_NULL;
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

@@ -98,33 +98,7 @@ PetscErrorCode  SNESLineSearchSetType(SNES snes,SNESLineSearchType type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch (type) {
-  case SNES_LS_BASIC:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchno,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_BASIC_NONORMS:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchnonorms,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchquadratic,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_CUBIC:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchcubic,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_EXACT:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchexact,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_TEST:
-    ierr = SNESLineSearchSet(snes,snes->ops->linesearchtest,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type.");
-    break;
-  }
-  if (!snes->ops->linesearch) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Line search type %s unsupported for SNES type", SNESLineSearchTypeName(type));;
-  }
-  snes->ls_type = type;
+  ierr = PetscTryMethod(snes,"SNESLineSearchSetType_C",(SNES,SNESLineSearchType),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

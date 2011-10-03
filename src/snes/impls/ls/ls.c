@@ -491,6 +491,37 @@ PetscErrorCode  SNESLineSearchQuadratic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec
 }
 
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_LS"
+PetscErrorCode  SNESLineSearchSetType_LS(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_LS,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_CUBIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_LS,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type.");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
 /*  -------------------------------------------------------------------- 
 
      This file implements a truncated Newton method with a line search,
@@ -784,10 +815,6 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  SNESLineSearchSetParams_LS(SNES,PetscReal,PetscReal,PetscReal);
-EXTERN_C_END
-
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESLS - Newton based nonlinear solver that uses a line search
@@ -831,16 +858,12 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   ierr                               = PetscNewLog(snes,SNES_LS,&neP);CHKERRQ(ierr);
   snes->data                         = (void*)neP;
   snes->ops->linesearchno            = SNESLineSearchNo;
-  snes->ops->linesearchnonorms       = SNESLineSearchNoNorms;
-  snes->ops->linesearchquadratic     = SNESLineSearchQuadratic_LS;
-  snes->ops->linesearchcubic         = SNESLineSearchCubic_LS;
-  snes->ops->linesearchexact         = PETSC_NULL;
-  snes->ops->linesearchtest          = PETSC_NULL;
   snes->lsP                          = PETSC_NULL;
   snes->ops->postcheckstep           = PETSC_NULL;
   snes->postcheck                    = PETSC_NULL;
   snes->ops->precheckstep            = PETSC_NULL;
   snes->precheck                     = PETSC_NULL;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_LS",SNESLineSearchSetType_LS);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
