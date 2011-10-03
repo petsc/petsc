@@ -362,6 +362,8 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   PetscScalar       *bb;
 
   PetscFunctionBegin;
+  if (A->rmap->N != A->cmap->N) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Only handles square matrices");
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only handles matrices with identical column and row ownership");
   /*  first count number of contributors to each processor */
   ierr  = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -454,7 +456,15 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   }
 
   /* actually zap the local rows */
-  ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+  if (diag) {
+    Mat_SeqDense *ll = (Mat_SeqDense*)l->A->data;
+    PetscInt      m = ll->lda, i;
+ 
+    for (i=0; i<slen; i++) {
+      ll->v[lrows[i] + m*(A->cmap->rstart + lrows[i])] = diag;
+    }
+  }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */

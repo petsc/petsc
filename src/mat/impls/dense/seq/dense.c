@@ -1394,11 +1394,18 @@ PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
 {
   PetscErrorCode    ierr;
   Mat_SeqDense      *l = (Mat_SeqDense*)A->data;
-  PetscInt          n = A->cmap->n,i,j;
+  PetscInt          m = l->lda, n = A->cmap->n, i,j;
   PetscScalar       *slot,*bb;
   const PetscScalar *xx;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)  
+  for (i=0; i<N; i++) {
+    if (rows[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row requested to be zeroed");
+    if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested to be zeroed greater than or equal number of rows %D",rows[i],A->rmap->n);
+  }
+#endif
+
   /* fix right hand side if needed */
   if (x && b) {
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
@@ -1412,11 +1419,12 @@ PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
 
   for (i=0; i<N; i++) {
     slot = l->v + rows[i];
-    for (j=0; j<n; j++) { *slot = 0.0; slot += n;}
+    for (j=0; j<n; j++) { *slot = 0.0; slot += m;}
   }
   if (diag != 0.0) {
+    if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for square matrices");
     for (i=0; i<N; i++) { 
-      slot = l->v + (n+1)*rows[i];
+      slot = l->v + (m+1)*rows[i];
       *slot = diag;
     }
   }
