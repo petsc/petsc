@@ -574,9 +574,9 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 #define TSROSWRA34PW2 "ra34pw2"
 #define TSROSWRODAS3  "rodas3"
 #define TSROSWSANDU3  "sandu3"
-#define TSROSWASSP3P3S1C "ssp333"
-#define TSROSWLASSP3P4S2C "ssp342A"
-#define TSROSWLLSSP3P3S2C "ssp342B"
+#define TSROSWASSP3P3S1C "ASSP3P3S1C"
+#define TSROSWLASSP3P4S2C "LASSP3P4S2C"
+#define TSROSWLLSSP3P3S2C "LLSSP3P3S2C"
 
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
