@@ -9,6 +9,7 @@
 #define sneslinesearchno_                SNESLINESEARCHNO
 #define sneslinesearchnonorms_           SNESLINESEARCHNONORMS
 #define sneslinesearchsetprecheck_       SNESLINESEARCHSETPRECHECK
+#define sneslinesearchgetparams_         SNESLINESEARCHGETPARAMS
 #define snessetupdate_                   SNESSETUPDATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
@@ -18,6 +19,7 @@
 #define sneslinesearchno_                sneslinesearchno    
 #define sneslinesearchnonorms_           sneslinesearchnonorms    
 #define sneslinesearchsetprecheck_       sneslinesearchsetprecheck
+#define sneslinesearchgetparams_         sneslinesearchgetparams
 #define snessetupdate_                   snessetupdate
 #endif
 
