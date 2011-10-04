@@ -22,29 +22,6 @@ extern int*         ThreadCoreAffinity;
 /* Global function pointer */
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
-/* Common data for all kernels */
-typedef struct {
-  PetscScalar   *x,*y,*w;
-  PetscInt      n;
-  PetscScalar   result;
-  PetscScalar   alpha;
-  NormType      typeUse;
-  Vec*          yvec;
-  PetscInt      nvec;
-  PetscScalar*  results;
-  PetscInt      gind;
-  PetscInt      localind;
-  PetscReal     localmax;
-  PetscReal     localmin;
-  PetscRandom   rand;
-  const PetscScalar*  amult;   /* multipliers */
-  PetscInt      istart;
-} Kernel_Data;
-
-static Kernel_Data *kerneldatap;
-static Kernel_Data **pdata;
-static PetscInt    vecs_created=0;
-
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
 #define CHKERRQP(ierr) if (ierr) return (void*)(long int)ierr
