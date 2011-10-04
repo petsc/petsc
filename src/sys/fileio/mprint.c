@@ -849,7 +849,13 @@ PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
   if (!cr) PetscFunctionReturn(0);
   current = PETSC_FALSE;
 
+#if defined(PETSC_HAVE_VA_COPY)
   va_copy(cArgp,Argp);
+#elif defined(PETSC_HAVE__VA_COPY)
+  _va_copy(cArgp,Argp);
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Reguires va_copy() which is missing on your system");
+#endif
   ierr = PetscTokenFind(OriginalRun,&result);CHKERRQ(ierr);
   if (!result) {
     printf("Fewer lines in original, than in regression test\n");
