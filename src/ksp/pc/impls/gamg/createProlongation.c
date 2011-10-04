@@ -1482,9 +1482,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
   /* switch for SA or GAMG */
   if( a_method == 0 ) {
-    PetscReal *coords; assert(a_dim==a_data_cols); PetscInt nnodes;
+    PetscReal *coords; 
+    PetscInt nnodes;
     PetscInt  *crsGID;
     Mat        Gmat2;
+
+    assert(a_dim==a_data_cols); 
     /* grow ghost data for better coarse grid cover of fine grid */
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
