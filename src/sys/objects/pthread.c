@@ -37,7 +37,7 @@ PetscBool    PetscUseThreadPool    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
-#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+#if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
 pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
 #endif
 PetscErrorCode ithreaderr = 0;
@@ -88,7 +88,7 @@ typedef struct {
 sjob_chain job_chain;
 
 /* true thread pool data structure */
-#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+#if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
 typedef struct {
   pthread_mutex_t mutex;
   pthread_cond_t cond;
@@ -426,7 +426,7 @@ void* PetscThreadFunc_Main(void* arg) {
   int ThreadId = *pId;
 
 #if defined(PETSC_HAVE_CPU_SET_T)
-    iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
 #endif
 
   ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
@@ -820,7 +820,7 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
   return ijoberr;
 }
 
-#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+#if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
 /* 
   ----------------------------
      'True' Thread Functions 
@@ -828,11 +828,11 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
 */
 void* PetscThreadFunc_True(void* arg) {
   int ierr,iVal;
-  int* pId = (int*)arg;
-  int ThreadId = *pId;
   PetscErrorCode iterr;
 
 #if defined(PETSC_HAVE_CPU_SET_T)
+  int* pId      = (int*)arg;
+  int  ThreadId = *pId; 
   iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
 #endif
   ierr = pthread_mutex_lock(&job_true.mutex);
@@ -889,7 +889,6 @@ void* PetscThreadFunc_True(void* arg) {
 #define __FUNCT__ "PetscThreadInitialize_True"
 PetscErrorCode PetscThreadInitialize_True(PetscInt N)
 {
-  PetscErrorCode ierr;
   PetscInt i,status;
 
   PetscFunctionBegin;
@@ -1074,12 +1073,12 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
       MainJob               = &MainJob_Chain;
       PetscInfo(PETSC_NULL,"Using chain thread pool\n");
       break;
-#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+#if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
     default:
       PetscThreadFunc       = &PetscThreadFunc_True;
       PetscThreadInitialize = &PetscThreadInitialize_True;
       PetscThreadFinalize   = &PetscThreadFinalize_True;
-      MainWait              = &MainWait_True;no
+      MainWait              = &MainWait_True;
       MainJob               = &MainJob_True;
       PetscInfo(PETSC_NULL,"Using true thread pool\n");
       break;

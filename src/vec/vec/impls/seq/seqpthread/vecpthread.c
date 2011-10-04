@@ -6,7 +6,7 @@
 #endif
 #include <sched.h>
 #include <petscconf.h>
-#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/dvecimpl.h>                          /*I  "petscvec.h" I*/
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <petscblaslapack.h>
 #include <private/petscaxpy.h>
@@ -1402,7 +1402,7 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
 PetscErrorCode VecDestroy_SeqPThread(Vec v)
 {
   Vec_SeqPthread        *vs = (Vec_SeqPthread*)v->data;
-  PetscErrorCode ierr;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
@@ -1411,10 +1411,9 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree(vs->arrindex);CHKERRQ(ierr);
-  ierr = PetscFree(vs->nelem);CHKERRQ(ierr);
+  ierr = PetscFree2(vs->arrindex,vs->nelem);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
-  
+
   vecs_created--;
   /* Free the kernel data structure on the destruction of the last vector */
   if(vecs_created == 0) {
@@ -1495,9 +1494,7 @@ PetscErrorCode VecSeqPThreadSetNThreads(Vec v,PetscInt nthreads)
   s->nthreads = nthreads;
 
   /* Set array portion for each thread */
-  if(!s->arrindex) {
-    ierr = PetscMalloc2(nthreads,PetscInt,&s->arrindex,nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
-  }
+  ierr = PetscMalloc2(nthreads,PetscInt,&s->arrindex,nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
   s->arrindex[0] = 0;
   for (i=0; i<nthreads; i++) {
     s->arrindex[i] = iIndex;
@@ -1587,6 +1584,7 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
   s->nthreads        = 0;
+  s->arrindex        = 0;
 
   /* If this is the first vector being created then also create the common Kernel data structure */
   if(vecs_created == 0) {
