@@ -22,12 +22,12 @@
 T*/
 
 typedef struct {
-  PetscInt n; // Number of variables
-  PetscInt m; // Number of constraints
-  PetscInt mx; // grid points in each direction
-  PetscInt ns; // Number of data samples (1<=ns<=8)
-               // Currently only ns=1 is supported
-  PetscInt ndata; // Number of data points per sample
+  PetscInt n; /* Number of variables */
+  PetscInt m; /* Number of constraints */
+  PetscInt mx; /* grid points in each direction */
+  PetscInt ns; /* Number of data samples (1<=ns<=8) 
+		  Currently only ns=1 is supported */
+  PetscInt ndata; /* Number of data points per sample */
   IS s_is;
   IS d_is;
   VecScatter state_scatter;
@@ -36,35 +36,35 @@ typedef struct {
   Mat Js,Jd,JsPrec,JsInv;
   PetscBool jformed,dsg_formed;
 
-  PetscReal alpha; // Regularization parameter
-  PetscReal beta; // Weight attributed to ||u||^2 in regularization functional
-  PetscReal noise; // Amount of noise to add to data
+  PetscReal alpha; /* Regularization parameter */
+  PetscReal beta; /* Weight attributed to ||u||^2 in regularization functional */
+  PetscReal noise; /* Amount of noise to add to data */
   Mat Q,QT;
   Mat L,LT;
   Mat Div,Divwork;
   Mat Grad;
   Mat Av,Avwork,AvT;
   Mat DSG;
-  //Mat Hs,Hd,Hsd;
+
   Vec q;
-  Vec ur; // reference
+  Vec ur; /* reference */
 
   Vec d;
   Vec dwork;
 
-  Vec y; // state variables
+  Vec y; /* state variables */
   Vec ywork;
-  //Vec ysave;
+
   Vec ytrue;
 
-  Vec u; // design variables
+  Vec u; /* design variables */
   Vec uwork;
-  //Vec usave;
+
   Vec utrue;
  
   Vec js_diag;
   
-  Vec c; // constraint vector
+  Vec c; /* constraint vector */
   Vec cwork;
   
   Vec lwork;
@@ -152,8 +152,8 @@ int main(int argc, char **argv)
   user.told = 1e-4;
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
 
-  user.m = user.mx*user.mx*user.mx; // number of constraints
-  user.n = 2*user.m; // number of variables
+  user.m = user.mx*user.mx*user.mx; /* number of constraints */
+  user.n = 2*user.m; /* number of variables */
 
   ierr = VecCreate(PETSC_COMM_WORLD,&user.u); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user.y); CHKERRQ(ierr);
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = VecDestroy(&x0); CHKERRQ(ierr);
-  //ierr = VecDestroy(&c); CHKERRQ(ierr);
+
   ierr = EllipticDestroy(&user); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
@@ -310,7 +310,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   ierr = MatMult(user->Q,user->y,user->dwork); CHKERRQ(ierr);
   ierr = VecAXPY(user->dwork,-1.0,user->d); CHKERRQ(ierr);
-  //ierr = MatMultTranspose(user->Q,user->dwork,user->ywork); CHKERRQ(ierr);
+
   ierr = MatMult(user->QT,user->dwork,user->ywork); CHKERRQ(ierr);
   
   ierr = VecWAXPY(user->uwork,-1.0,user->ur,user->u); CHKERRQ(ierr);
@@ -615,7 +615,7 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
 #define __FUNCT__ "FormConstraints"
 PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
 {
-  // C=Ay - q      A = Div * Sigma * Av - hx*hx*hx*ones(n,n)
+   /* C=Ay - q      A = Div * Sigma * Av - hx*hx*hx*ones(n,n) */
    PetscErrorCode ierr;
    PetscReal sum;
    AppCtx *user = (AppCtx*)ptr;
@@ -673,7 +673,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt m,n,i,j,k,l,linear_index,is,js,ks,ls,istart,iend,iblock;
-  //PetscInt nnz[user->mx * user->mx * user->mx + 3 * user->mx * user->mx * (user->mx-1)];
   Vec XX,YY,ZZ,XXwork,YYwork,ZZwork,UTwork;
   PetscReal *x,*y,*z;
   PetscReal h,meanut;
@@ -1028,7 +1027,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); // Note: user->utrue
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /* Note: user->utrue */
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
 
@@ -1054,7 +1053,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->u); // Note: user->u
+  ierr = VecAXPY(user->uwork,-1.0,user->u); /* Note: user->u */
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
  

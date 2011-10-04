@@ -241,12 +241,12 @@ PetscErrorCode TaoSetUp(TaoSolver tao)
 
   Collective on TaoSolver
 
-  Input Parameter
+  Input Parameter:
 . tao - the TaoSolver context
 
   Level: beginner
 
-.seealse: TaoCreate(), TaoSolve()
+.seealso: TaoCreate(), TaoSolve()
 @*/
 PetscErrorCode TaoDestroy(TaoSolver *tao)
 {
@@ -307,24 +307,33 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
 
   Options Database Keys:
 + -tao_method <type> - The algorithm that TAO uses (tao_lmvm, tao_nls, etc.)
-. -tao_fatol <fatol>
-. -tao_frtol <frtol>
-. -tao_gatol <gatol>
-. -tao_grtol <grtol>
-. -tao_gttol <gttol>
-. -tao_monitor
-. -tao_smonitor
-. -tao_cmonitor
-. -tao_vecmonitor
-. -tao_vecmonitor_update
-. -tao_view
-. -tao_converged_reason
-- -tao_fdgrad
-
+. -tao_fatol <fatol> - absolute error tolerance in function value
+. -tao_frtol <frtol> - relative error tolerance in function value
+. -tao_gatol <gatol> - absolute error tolerance for ||gradient||
+. -tao_grtol <grtol> - relative error tolerance for ||gradient||
+. -tao_gttol <gttol> - reduction of ||gradient|| relative to initial gradient
+. -tao_max_it <max> - sets maximum number of iterations
+. -tao_max_funcs <max> - sets maximum number of function evaluations
+. -tao_fmin <fmin> - stop if function value reaches fmin
+. -tao_steptol <tol> - stop if trust region radius less than <tol>
+. -tao_trust0 <t> - initial trust region radius
+. -tao_monitor - prints function value and residual at each iteration
+. -tao_smonitor - same as tao_monitor, but truncates very small values
+. -tao_cmonitor - prints function value, residual, and constraint norm at each iteration
+. -tao_view_solution - prints solution vector at each iteration
+. -tao_view_separableobjective - prints separable objective vector at each iteration
+. -tao_view_gradient - prints gradient vector at each iteration
+. -tao_draw_solution - graphically view solution vector at each iteration
+. -tao_draw_step - graphically view step vector at each iteration
+. -tao_draw_gradient - graphically view gradient at each iteration
+. -tao_fd_gradient - use gradient computed with finite differences
+. -tao_cancelmonitors - cancels all monitors (except those set with command line)
+. -tao_view - prints information about the TaoSolver after solving
+- -tao_converged_reason - prints the reason TAO stopped iterating
 
   Notes:
   To see all options, run your program with the -help option or consult the 
-  user's manual
+  user's manual. Should be called after TaoCreate() but before TaoSolve()
 
   Level: beginner
 @*/
@@ -379,7 +388,7 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr); 
-	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
+	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
 	ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds",
 			    "TaoSetMaximumIterations",tao->max_it,&tao->max_it,
 			    &flg);CHKERRQ(ierr);
@@ -447,11 +456,14 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	if (flg) {
 	  ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 	}
+	ierr = PetscOptionsName("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",&flg); CHKERRQ(ierr);
+	if (flg) {
+	  ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,PETSC_NULL); CHKERRQ(ierr);
+	}
 
 	if (tao->ops->setfromoptions) {
 	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
 	}
-
  
     }    
     ierr = PetscOptionsEnd(); CHKERRQ(ierr);

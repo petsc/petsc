@@ -197,7 +197,7 @@ PetscErrorCode TaoComputeConstraints(TaoSolver tao, Vec X, Vec C)
 - ctx - [optional] user-defined context for private data for the constraints computation (may be PETSC_NULL)
  
   Calling sequence of func:
-$      func (TaoSolver tao, Vec x, Vec c);
+$      func (TaoSolver tao, Vec x, Vec c, void *ctx);
 
 + tao - the TaoSolver
 . x   - point to evaluate constraints
