@@ -504,24 +504,24 @@ static inline khint_t __ac_X31_hash_string(const char *s)
 
 
 #if PETSC_SIZEOF_INT == 8
-KHASH_MAP_INIT_INT64(I,PetscInt);
+KHASH_MAP_INIT_INT64(IHASH,PetscInt);
 #elif PETSC_SIZEOF_INT == 4
-KHASH_MAP_INIT_INT(I,PetscInt);
+KHASH_MAP_INIT_INT(IHASH,PetscInt);
 #else
 #error This value of PETSC_SIZEOF_INT is not supported by petsckhash.
 #endif
 
-typedef khash_t(I) *PetscIHash;
+typedef khash_t(IHASH) *PetscIHash;
 
 typedef khiter_t   PetscIHashIter;
 
-#define PetscIHashCreate(ht) ((ht) = kh_init(I))
+#define PetscIHashCreate(ht) ((ht) = kh_init(IHASH))
 
-#define PetscIHashClear(ht)    (kh_clear(I,(ht)))
+#define PetscIHashClear(ht)    (kh_clear(IHASH,(ht)))
 
-#define PetscIHashDestroy(ht) if((ht)){kh_destroy(I,(ht));(ht)=0;}
+#define PetscIHashDestroy(ht) if((ht)){kh_destroy(IHASH,(ht));(ht)=0;}
 
-#define PetscIHashResize(ht,n) (kh_resize(I,(ht),(n)))
+#define PetscIHashResize(ht,n) (kh_resize(IHASH,(ht),(n)))
 
 #define PetscIHashSize(ht,n)     ((n)=kh_size((ht)))
 
@@ -538,7 +538,7 @@ typedef khiter_t   PetscIHashIter;
 {                                                                       \
  khiter_t _11_hi;                                                       \
  khint_t  _11_hr;                                                       \
- _11_hi = kh_put(I,(ht),(i),&_11_hr);                                   \
+ _11_hi = kh_put(IHASH,(ht),(i),&_11_hr);                                   \
  kh_val((ht),_11_hi) = (ii);                                            \
 }
 /*
@@ -589,7 +589,7 @@ typedef khiter_t   PetscIHashIter;
 #define PetscIHashMap(ht,i,ii)  \
 {                                          \
   khiter_t _9_hi;                          \
-  _9_hi = kh_get(I,(ht),(i));              \
+  _9_hi = kh_get(IHASH,(ht),(i));              \
   if(_9_hi != kh_end((ht)))                \
     (ii) = kh_val((ht),_9_hi);             \
   else                                     \
