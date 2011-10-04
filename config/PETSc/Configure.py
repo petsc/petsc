@@ -213,6 +213,8 @@ class Configure(config.base.Configure):
 #-----------------------------------------------------------------------------------------------------
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
       self.addDefine('USE_SOCKET_VIEWER','1')
+      if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
+        self.addDefine('HAVE_SO_REUSEADDR','1')      
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
