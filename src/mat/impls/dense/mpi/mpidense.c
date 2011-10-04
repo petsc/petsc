@@ -457,7 +457,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
 
   /* actually zap the local rows */
   ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
-  if (diag) {
+  if (diag != 0.0) {
     Mat_SeqDense *ll = (Mat_SeqDense*)l->A->data;
     PetscInt      m = ll->lda, i;
  
