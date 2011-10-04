@@ -84,17 +84,17 @@
       CHKERRQ(ierr)
       call TaoSetType(tao,"tao_lmvm",ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
+
 !  Set routines for function, gradient, and hessian evaluation 
 
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &      FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
+
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
+
 
 
 !  Optional: Set initial guess

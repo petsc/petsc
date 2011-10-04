@@ -96,6 +96,8 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
   PetscInt lo, hi;
   PetscErrorCode ierr;
+  PetscBool flag;
+  IS is_state, is_design;
   PetscFunctionBegin;
   /* Check for state/design IS */
   if (!tao->state_is) {
@@ -120,7 +122,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   ierr = VecGetSize(tao->constraints, &lclP->m); CHKERRQ(ierr);
 
 
-  IS is_state, is_design;
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->U); CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->V); CHKERRQ(ierr);
   ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
@@ -168,7 +169,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   ierr = ISDestroy(&is_design); CHKERRQ(ierr); 
 
 
-  PetscBool flag;
   lclP->phase2_niter = 1;
   ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,&flag); CHKERRQ(ierr);
   lclP->verbose = PETSC_FALSE;

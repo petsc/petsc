@@ -51,21 +51,21 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS RowMask, IS ColMask, Mat *J)
   ierr =ISCreateComplement(ColMask,ctx->VC,&ctx->ColComplement);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,mloc,nloc,m,n,ctx,J);CHKERRQ(ierr);
 
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatMult_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatDestroy_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatView_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)())MatDiagonalSet_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)())MatShift_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)())MatEqual_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_SCALE,(void(*)())MatScale_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)())MatTranspose_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatGetDiagonal_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)())MatGetSubMatrices_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_NORM,(void(*)())MatNorm_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)())MatDuplicate_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)())MatGetSubMatrix_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_ROW_MAX,(void(*)())MatDuplicate_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)(void))MatDiagonalSet_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)(void))MatShift_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)(void))MatEqual_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_ROW_MAX,(void(*)(void))MatDuplicate_SMF);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent(mat,*J); CHKERRQ(ierr);
 

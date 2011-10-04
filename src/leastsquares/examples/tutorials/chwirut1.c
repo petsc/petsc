@@ -165,8 +165,6 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
-  PetscReal tmp;
-  ierr = VecNorm(F,NORM_2,&tmp); CHKERRQ(ierr);
 
   PetscLogFlops(6*NOBSERVATIONS);
   PetscFunctionReturn(0);

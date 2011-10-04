@@ -605,7 +605,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 		    ierr = PetscViewerASCIIPrintf(viewer," Steptol -- step size small\n"); CHKERRQ(ierr);
 		    break;
 		case TAO_CONVERGED_MINF:
-		    ierr = PetscViewerASCIIPrintf(viewer," Minf -- grad F < grad F_min\n"); CHKERRQ(ierr);
+		    ierr = PetscViewerASCIIPrintf(viewer," Minf --  f < fmin\n"); CHKERRQ(ierr);
 		    break;
 		case TAO_CONVERGED_USER:
 		    ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n"); CHKERRQ(ierr);
@@ -1910,7 +1910,6 @@ PetscErrorCode TaoGetOptionsPrefix(TaoSolver tao, const char *p[])
 @*/
 PetscErrorCode TaoSetDefaultKSPType(TaoSolver tao, KSPType ktype)
 {
-  PetscFunctionBegin;
   const char *prefix=0;
   char *option=0;
   size_t n1,n2;
@@ -1950,7 +1949,6 @@ PetscErrorCode TaoSetDefaultKSPType(TaoSolver tao, KSPType ktype)
 @*/
 PetscErrorCode TaoSetDefaultLineSearchType(TaoSolver tao, TaoLineSearchType lstype)
 {
-  PetscFunctionBegin;
   const char *prefix=0;
   char *option=0;
   size_t n1,n2;
