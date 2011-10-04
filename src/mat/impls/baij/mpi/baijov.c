@@ -647,9 +647,9 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 
 #if defined (PETSC_USE_CTABLE)
   PetscInt       tt;
-  PetscTable     *rmap,*cmap,rmap_i,cmap_i;
+  PetscTable     *rmap,*cmap,rmap_i,cmap_i=PETSC_NULL;
 #else
-  PetscInt       **cmap,*cmap_i,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
+  PetscInt       **cmap,*cmap_i=PETSC_NULL,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
 #endif
 
   PetscFunctionBegin;

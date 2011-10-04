@@ -809,9 +809,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscInt       **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
   PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax;
 #if defined (PETSC_USE_CTABLE)
-  PetscTable     *cmap,cmap_i,*rmap,rmap_i;
+  PetscTable     *cmap,cmap_i=PETSC_NULL,*rmap,rmap_i;
 #else
-  PetscInt       **cmap,*cmap_i,**rmap,*rmap_i;
+  PetscInt       **cmap,*cmap_i=PETSC_NULL,**rmap,*rmap_i;
 #endif
   const PetscInt *irow_i;
   PetscInt       ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
