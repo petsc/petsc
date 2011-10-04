@@ -16,7 +16,7 @@
    Notes: keys are between 1 and N inclusive
 
 */
-PetscErrorCode  PetscTableCreate(PetscInt n,PetscInt maxkey,PetscTable *rta)
+PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rta)
 {
   PetscTable     ta;
   PetscErrorCode ierr;
