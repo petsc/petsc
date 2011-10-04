@@ -366,7 +366,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
 
   ierr = Scatter_i(user->y,user->yi,user->yi_scatter,user->nt); CHKERRQ(ierr);
-  for (j=0; i<user->ns; j++){
+  for (j=0; j<user->ns; j++){
     i = user->sample_times[j];
     ierr = MatMult(user->Qblock,user->yi[i],user->di[j]); CHKERRQ(ierr);
   }
