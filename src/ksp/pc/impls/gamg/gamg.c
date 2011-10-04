@@ -256,7 +256,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       const PetscScalar *vals; 
       const PetscInt *idx;
       PetscInt *d_nnz;
-      
+      static int llev = 0;
+
       ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
       for ( Ii = Istart0, jj = 0 ; Ii < Iend0 ; Ii += a_cbs, jj++ ) {
         ierr = MatGetRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
@@ -285,7 +286,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-      static int llev = 0;
       if( llev++ == -1 ) {
 	PetscViewer viewer; char fname[32];
 	sprintf(fname,"part_mat_%d.mat",llev);
@@ -1072,6 +1072,9 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   PC_GAMG         *pc_gamg;
   PC_MG           *mg;
   PetscClassId     cookie;
+#if defined PETSC_USE_LOG
+  static int count = 0;
+#endif
 
   PetscFunctionBegin;
   /* PCGAMG is an inherited class of PCMG. Initialize pc as PCMG */
@@ -1123,7 +1126,6 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   CHKERRQ(ierr);
 
 #if defined PETSC_USE_LOG
-  static int count = 0;
   if( count++ == 0 ) {
     PetscClassIdRegister("GAMG Setup",&cookie);
     PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_events[SET1]);
