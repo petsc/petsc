@@ -1856,11 +1856,11 @@ PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal
   /* Now construct the new MatIJ. */
   ierr = MatCreate(((PetscObject)A)->comm, &C);                          CHKERRQ(ierr);
   ierr = MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N); CHKERRQ(ierr);
-  ierr = MatSetType(C, MATIJ);                                         CHKERRQ(ierr);
-  ierr = MatIJSetEdges(C,count,ixidx,iyidx);                           CHKERRQ(ierr);
+  ierr = MatSetType(C, MATIJ);                                           CHKERRQ(ierr);
+  ierr = MatIJSetEdges(C,count,ixidx,iyidx);                             CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY);                        CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY);                          CHKERRQ(ierr);
-  ierr = PetscFree2(ixidx,iyidx);                                        CHKERRQ(ierr);
+  ierr = PetscFree2(ixidx,iyidx);                                        CHKERRQ(ierr); 
 
   *CC = C;
   PetscFunctionReturn(0);
@@ -1872,7 +1872,7 @@ PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMatMult_IJ_IJ"
-PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *_C) 
+PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
 {
   PetscErrorCode ierr;
   Mat At,C;
@@ -1911,7 +1911,7 @@ PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Ma
   ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &At);                CHKERRQ(ierr);
   ierr = MatMatMultTranspose(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
   ierr = MatDestroy(&At);                                         CHKERRQ(ierr);
-  *_C = C;
+  *CC = C;
   PetscFunctionReturn(0);
 }
 
