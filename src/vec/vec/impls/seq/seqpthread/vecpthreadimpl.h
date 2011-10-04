@@ -35,5 +35,21 @@ Kernel_Data *kerneldatap;
 Kernel_Data **pdata;
 PetscInt    vecs_created=0;
 
+extern void* VecDot_Kernel(void*);
+extern void* VecScale_Kernel(void*);
+extern void* VecAXPY_Kernel(void*);
+extern void* VecAYPX_Kernel(void*);
+extern void* VecWAXPY_Kernel(void*);
+extern void* VecNorm_Kernel(void*);
+extern void* VecMDot_Kernel(void*);
+extern void* VecMax_Kernel(void*);
+extern void* VecMin_Kernel(void*);
+extern void* VecPointwiseMult_Kernel(void*);
+extern void* VecPointwiseDivide_Kernel(void*);
+extern void* VecSwap_Kernel(void*);
+extern void* VecSetRandom_Kernel(void*);
+extern void* VecCopy_Kernel(void*);
+extern void* VecMAXPY_Kernel(void*);
+extern void* VecSet_Kernel(void*);
 
 #endif
