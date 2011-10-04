@@ -1102,5 +1102,10 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 
   PetscFunctionReturn(0);
 }
+#else
+int PetscPthread_dummy()
+{
+  return 0;
+}
 
 #endif
