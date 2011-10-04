@@ -7,6 +7,7 @@
 #include <private/snesimpl.h>
 
 typedef struct {
+  int dummy;
 } SNES_NRichardson;
 
 #endif

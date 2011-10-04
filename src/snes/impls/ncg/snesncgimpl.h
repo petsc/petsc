@@ -8,6 +8,7 @@
 
 typedef struct {
   /* Line Search Parameters */
+  int dummy;
 } SNES_NCG;
 
 #endif
