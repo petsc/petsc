@@ -55,20 +55,18 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 
   /* explicit least squares minimization solve */
   ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
-		      msize,PetscScalar,&ngmres->beta,
-		      msize,PetscScalar,&ngmres->xi,
-		      msize,PetscReal,&ngmres->r_norms,
-		      hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
+                      msize,PetscScalar,&ngmres->beta,
+                      msize,PetscScalar,&ngmres->xi,
+                      msize,PetscReal,  &ngmres->r_norms,
+                      hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
   ngmres->nrhs = 1;
   ngmres->lda = msize;
   ngmres->ldb = msize;
   ierr = PetscMalloc(msize*sizeof(PetscScalar),&ngmres->s);CHKERRQ(ierr);
-  
-  ierr = PetscMemzero(ngmres->h,hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->q,hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->xi,msize*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
-  
   ngmres->lwork = 12*msize;
 #if PETSC_USE_COMPLEX
   ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);
@@ -88,19 +86,19 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
   PetscErrorCode ierr;
   PetscBool      debug;
-  
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngmres_m", "Number of directions", "SNES", ngmres->msize, &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngmres_restart", "Maximum iterations before restart.", "SNES", ngmres->k_rmax, &ngmres->k_rmax, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ngmres_monitor", "Monitor actions of NGMRES", "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsInt("-snes_ngmres_m",        "Number of directions",               "SNES", ngmres->msize,  &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_restart",  "Maximum iterations before restart.", "SNES", ngmres->k_rmax, &ngmres->k_rmax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_monitor", "Monitor actions of NGMRES",          "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
   if (debug) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_ngmres_gammaA", "Residual selection constant", "SNES", ngmres->gammaA, &ngmres->gammaA, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngmres_gammaC", "Residual restart constant", "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_gammaA",   "Residual selection constant",   "SNES", ngmres->gammaA, &ngmres->gammaA, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_gammaC", "  Residual restart constant",     "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngmres_deltaB", "Difference residual selection constant", "SNES", ngmres->deltaB, &ngmres->deltaB, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_deltaB",   "Difference residual selection constant", "SNES", ngmres->deltaB, &ngmres->deltaB, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((ngmres->gammaA > ngmres->gammaC) && (ngmres->gammaC > 2.)) ngmres->gammaC = ngmres->gammaA;
   PetscFunctionReturn(0);
@@ -130,7 +128,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES        *ngmres = (SNES_NGMRES *) snes->data;
-  
   /* present solution, residual, and preconditioned residual */
   Vec                 x, r, b, d;
   Vec                 x_A, r_A;
@@ -141,7 +138,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   /* coefficients and RHS to the minimization problem */
   PetscScalar         *beta = ngmres->beta;
-  PetscScalar         *xi = ngmres->xi;
+  PetscScalar         *xi   = ngmres->xi;
   PetscReal           r_norm, r_A_norm;
   PetscReal           nu;
   PetscScalar         alph_total = 0.;
@@ -204,7 +201,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   k_restart = 1;
   l = 1;
   for (k=1; k<snes->max_its; k++) {
-
     /* select which vector of the stored subspace will be updated */
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
@@ -216,8 +212,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr = SNESSolve(snes->pc, b, x);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-	snes->reason = SNES_DIVERGED_INNER;
-	PetscFunctionReturn(0);
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
       }
     }
 
@@ -226,23 +222,23 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecNorm(r, NORM_2, &r_norm);CHKERRQ(ierr);
     /* nu = (r, r) */
     ngmres->r_norms[ivec] = r_norm;
-    nu = r_norm*r_norm;    
+    nu = r_norm*r_norm;
     if (r_min_norm > r_norm) r_min_norm = r_norm;  /* the minimum norm is now of r^M */
 
     /* construct the right hand side and xi factors */
     for (i = 0; i < l; i++) {
       ierr = VecDot(rdot[i], r, &xi[i]);CHKERRQ(ierr);
-      beta[i] = nu - xi[i]; 
+      beta[i] = nu - xi[i];
     }
 
     /* construct h */
     for (j = 0; j < l; j++) {
       for (i = 0; i < l; i++) {
-	H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
+        H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
       }
     }
 #ifdef PETSC_MISSING_LAPACK_GELSS
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine."); 
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
 #else
     ngmres->m = PetscBLASIntCast(l);
     ngmres->n = PetscBLASIntCast(l);
@@ -250,33 +246,33 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ngmres->rcond = -1.;
 #ifdef PETSC_USE_COMPLEX
     LAPACKgelss_(&ngmres->m,
-		 &ngmres->n,
-		 &ngmres->nrhs,
-		 ngmres->h,
-		 &ngmres->lda,
-		 ngmres->beta,
-		 &ngmres->ldb,
-		 ngmres->s,
-		 &ngmres->rcond,
-		 &ngmres->rank,
-		 ngmres->work,
-		 &ngmres->lwork,
-		 ngmres->rwork,
-		 &ngmres->info);
+                 &ngmres->n,
+                 &ngmres->nrhs,
+                 ngmres->h,
+                 &ngmres->lda,
+                 ngmres->beta,
+                 &ngmres->ldb,
+                 ngmres->s,
+                 &ngmres->rcond,
+                 &ngmres->rank,
+                 ngmres->work,
+                 &ngmres->lwork,
+                 ngmres->rwork,
+                 &ngmres->info);
 #else
     LAPACKgelss_(&ngmres->m,
-		 &ngmres->n,
-		 &ngmres->nrhs,
-		 ngmres->h,
-		 &ngmres->lda,
-		 ngmres->beta,
-		 &ngmres->ldb,
-		 ngmres->s,
-		 &ngmres->rcond,
-		 &ngmres->rank,
-		 ngmres->work,
-		 &ngmres->lwork,
-		 &ngmres->info);
+                 &ngmres->n,
+                 &ngmres->nrhs,
+                 ngmres->h,
+                 &ngmres->lda,
+                 ngmres->beta,
+                 &ngmres->ldb,
+                 ngmres->s,
+                 &ngmres->rcond,
+                 &ngmres->rank,
+                 ngmres->work,
+                 &ngmres->lwork,
+                 &ngmres->info);
 #endif
     if (ngmres->info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
     if (ngmres->info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
@@ -302,16 +298,16 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     if (r_A_norm >= ngmres->gammaA*r_min_norm) {
       selectA = PETSC_FALSE;
     }
-    
+
     /* Criterion B -- the choice of x^A isn't too close to some other choice */
-    ierr=VecCopy(x_A,d);CHKERRQ(ierr);   
-    ierr=VecAXPY(d,-1,x);CHKERRQ(ierr);   
-    ierr=VecNorm(d,NORM_2,&d_norm);CHKERRQ(ierr);     
+    ierr=VecCopy(x_A,d);CHKERRQ(ierr);
+    ierr=VecAXPY(d,-1,x);CHKERRQ(ierr);
+    ierr=VecNorm(d,NORM_2,&d_norm);CHKERRQ(ierr);
     d_min_norm = -1.0;
     for(i=0;i<l;i++) {
-      ierr=VecCopy(x_A,d);CHKERRQ(ierr);   
-      ierr=VecAXPY(d,-1,xdot[i]);CHKERRQ(ierr);   
-      ierr=VecNorm(d,NORM_2,&d_cur_norm);CHKERRQ(ierr);        
+      ierr=VecCopy(x_A,d);CHKERRQ(ierr);
+      ierr=VecAXPY(d,-1,xdot[i]);CHKERRQ(ierr);
+      ierr=VecNorm(d,NORM_2,&d_cur_norm);CHKERRQ(ierr);
       if((d_cur_norm < d_min_norm) || (d_min_norm < 0.0)) d_min_norm = d_cur_norm;
     }
     if (ngmres->epsilonB*d_norm<d_min_norm || sqrt(r_norm)<ngmres->deltaB*sqrt(r_min_norm)) {
@@ -322,7 +318,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     if (selectA) {
       if (ngmres->monitor) {
-	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_A, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_A, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
       }
       /* copy it over */
       r_norm = r_A_norm;
@@ -331,36 +327,35 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr = VecCopy(x_A, x);CHKERRQ(ierr);
     } else {
       if (ngmres->monitor) {
-	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_M, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_M, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
       }
     }
 
     selectRestart = PETSC_FALSE;
-    
+
     /* maximum iteration criterion */
     if (k_restart > ngmres->k_rmax) {
       selectRestart = PETSC_TRUE;
     }
 
     /* difference stagnation restart */
-    if 	((ngmres->epsilonB*d_norm > d_min_norm) && (sqrt(r_A_norm) > ngmres->deltaB*sqrt(r_min_norm))) {
+    if((ngmres->epsilonB*d_norm > d_min_norm) && (sqrt(r_A_norm) > ngmres->deltaB*sqrt(r_min_norm))) {
       if (ngmres->monitor) {
-	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", ngmres->epsilonB*d_norm, d_min_norm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", ngmres->epsilonB*d_norm, d_min_norm);CHKERRQ(ierr);
       }
       selectRestart = PETSC_TRUE;
     }
-    
     /* residual stagnation restart */
     if (sqrt(r_A_norm) > ngmres->gammaC*sqrt(r_min_norm)) {
       if (ngmres->monitor) {
-	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", sqrt(r_A_norm), ngmres->gammaC*sqrt(r_min_norm));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", sqrt(r_A_norm), ngmres->gammaC*sqrt(r_min_norm));CHKERRQ(ierr);
       }
       selectRestart = PETSC_TRUE;
     }
 
     if (selectRestart) {
       if (ngmres->monitor){
-	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %d\n", k_restart);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %d\n", k_restart);CHKERRQ(ierr);
       }
       k_restart = 1;
       l = 1;
@@ -381,9 +376,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ngmres->r_norms[ivec] = r_norm;
       if (r_min_norm > r_norm) r_min_norm = r_norm;  /* the minimum norm is now of r^A */
       for (i = 0; i < l; i++) {
-	ierr = VecDot(r, rdot[i], &qentry);CHKERRQ(ierr);
-	Q(i, ivec) = qentry;
-	Q(ivec, i) = qentry;
+        ierr = VecDot(r, rdot[i], &qentry);CHKERRQ(ierr);
+        Q(i, ivec) = qentry;
+        Q(ivec, i) = qentry;
       }
     }
 
@@ -409,7 +404,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
    "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
    SIAM Journal on Scientific Computing, 21(5), 2000.
 
-   This is also the same as the algorithm called Anderson acceleration introduced in "D. G. Anderson. Iterative procedures for nonlinear integral equations. 
+   This is also the same as the algorithm called Anderson acceleration introduced in "D. G. Anderson. Iterative procedures for nonlinear integral equations.
    J. Assoc. Comput. Mach., 12:547–560, 1965."
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
