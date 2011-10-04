@@ -1323,6 +1323,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 
 #ifdef PETSC_HAVE_TXPETSCGPU
   if (aij->inode.use)  A->ops->mult    = MatMult_SeqAIJCUSP_Inode;
+  else                 A->ops->mult    = MatMult_SeqAIJCUSP;
 #endif // PETSC_HAVE_TXPETSCGPU
 
   PetscFunctionReturn(0);
@@ -1612,9 +1613,10 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 
     
     if (GPU_TRI_SOLVE_ALGORITHM!="none") {    
-      Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
+      Mat_SeqAIJCUSPTriFactors *cuspTriFactors;
       /* NEXT, set the pointers to the triangular factors */
       B->spptr = new Mat_SeqAIJCUSPTriFactors;
+      cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
       cuspTriFactors->loTriFactorPtr = 0;
       cuspTriFactors->upTriFactorPtr = 0;
       
