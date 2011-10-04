@@ -74,7 +74,6 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
   ierr = VecGetOwnershipRange(X,&low,&high); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);
   for (i=0;i<N;i++) {
-    printf("i=%d\n",i);
       ierr = VecSetValue(X,i,h,ADD_VALUES); CHKERRQ(ierr);
       ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
       ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
