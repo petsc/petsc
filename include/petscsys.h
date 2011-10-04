@@ -213,14 +213,19 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
+#if defined(PETSC_HAVE___INT64)
+typedef __int64 Petsc64bitInt;
+#else
+typedef long long Petsc64bitInt;
+#endif
 #if defined(PETSC_USE_64BIT_INDICES)
-typedef long long PetscInt;
+typedef Petsc64bitInt PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
-typedef long long Petsc64bitInt;
+
 
 /*EC
 
