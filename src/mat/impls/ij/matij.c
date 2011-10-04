@@ -1763,7 +1763,7 @@ PetscErrorCode MatTranspose_IJ(Mat A, MatReuse reuse, Mat *B)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMatMultTranspose_IJ_IJ"
-PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *_C) 
+PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
 {
   PetscErrorCode ierr;
   Mat C;
@@ -1862,7 +1862,7 @@ PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal
   ierr = MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY);                          CHKERRQ(ierr);
   ierr = PetscFree2(ixidx,iyidx);                                        CHKERRQ(ierr);
 
-  *_C = C;
+  *CC = C;
   PetscFunctionReturn(0);
 }
 
