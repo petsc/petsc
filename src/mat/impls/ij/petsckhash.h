@@ -535,6 +535,8 @@ typedef khiter_t   PetscIHashIter;
 #define PetscIHashAtEnd(ht,hi) ((hi) == kh_end((ht)))
 
 #define PetscIHashIterDeref(ht,hi,i,ii) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi)),(ii) = kh_val((ht),(hi))); else ((i) = -1, (ii) = -1);
+#define PetscIHashIterDerefSupport(ht,hi,i) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
+#define PetscIHashIterDerefImage(ht,hi,ii) if(kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
 
 #define PetscIHashAdd(ht,i,ii)                                          \
 {                                                                       \
@@ -550,10 +552,10 @@ typedef khiter_t   PetscIHashIter;
 #define PetscIHashGetSupport(ht,n,arr)                                  \
 {                                                                       \
   PetscIHashIter _12_hi;                                                \
-  PetscInt _12_i, _12_ii;                                               \
+  PetscInt _12_i;                                                       \
   PetscIHashBegin((ht),_12_hi);                                         \
   while(!PetscIHashAtEnd((ht),_12_hi)) {                                \
-    PetscIHashIterDeref((ht),_12_hi,_12_i,_12_ii);                      \
+    PetscIHashIterDerefSupport((ht),_12_hi,_12_i);                      \
     (arr)[(n)++] = _12_i;                                               \
     PetscIHashNext((ht),_12_hi);                                        \
   }                                                                     \
@@ -562,10 +564,10 @@ typedef khiter_t   PetscIHashIter;
 #define PetscIHashGetImage(ht,n,arr)                                  \
 {                                                                       \
   PetscIHashIter _12_hi;                                                \
-  PetscInt _12_i, _12_ii;                                               \
+  PetscInt _12_ii;                                                      \
   PetscIHashBegin((ht),_12_hi);                                         \
   while(!PetscIHashAtEnd((ht),_12_hi)){                                 \
-    PetscIHashIterDeref((ht),_12_hi,_12_i,_12_ii);                      \
+    PetscIHashIterDerefImage((ht),_12_hi,_12_ii);                       \
     (arr)[(n)++] = _12_ii;                                              \
     PetscIHashNext((ht),_12_hi);                                        \
   }                                                                     \
