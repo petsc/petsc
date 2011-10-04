@@ -111,6 +111,8 @@ typedef unsigned long khint32_t;
 
 #if ULONG_MAX == ULLONG_MAX
 typedef unsigned long khint64_t;
+#elif defined(_MSC_VER)
+typedef unsigned _int64 long khint64_t;
 #else
 typedef unsigned long long khint64_t;
 #endif
