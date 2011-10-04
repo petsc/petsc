@@ -145,6 +145,8 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
+    aij->idiagvalid  = PETSC_FALSE;
+    aij->ibdiagvalid = PETSC_FALSE;
   }
   ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -854,6 +856,8 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -867,6 +871,8 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -879,6 +885,8 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   ierr = PetscMemzero(a->a,(a->i[A->rmap->n])*sizeof(PetscScalar));CHKERRQ(ierr);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2083,6 +2091,8 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr); 
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2308,6 +2318,8 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionBegin;
   BLASscal_(&bnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2681,6 +2693,8 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
+    y->idiagvalid  = PETSC_FALSE;
+    y->ibdiagvalid = PETSC_FALSE;
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
