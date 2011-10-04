@@ -491,11 +491,6 @@ static inline khint_t __ac_X31_hash_string(const char *s)
 #define KHASH_MAP_INIT_INT64(name, khval_t)								\
 	KHASH_INIT(name, khint64_t, khval_t, 1, kh_int64_hash_func, kh_int64_hash_equal)
 
-typedef const char *kh_cstr_t;
-/*! @function
-  @abstract     Instantiate a hash map containing const char* keys
-  @param  name  Name of the hash table [symbol]
- */
 #define KHASH_SET_INIT_STR(name)										\
 	KHASH_INIT(name, kh_cstr_t, char, 0, kh_str_hash_func, kh_str_hash_equal)
 
@@ -508,10 +503,12 @@ typedef const char *kh_cstr_t;
 	KHASH_INIT(name, kh_cstr_t, khval_t, 1, kh_str_hash_func, kh_str_hash_equal)
 
 
-#if PETSC_SIZEOF_INT == 4
-KHASH_MAP_INIT_INT(I,PetscInt);
-#elif PETSC_SIZEOF_INT == 8
+#if PETSC_SIZEOF_INT == 8
 KHASH_MAP_INIT_INT64(I,PetscInt);
+#elif PETSC_SIZEOF_INT == 4
+KHASH_MAP_INIT_INT(I,PetscInt);
+#else
+#error This value of PETSC_SIZEOF_INT is not supported by petsckhash.
 #endif
 
 typedef khash_t(I) *PetscIHash;
