@@ -107,7 +107,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
-  Mat_SeqAIJ    *matA_2, *matB_2, *matA_1, *matB_1=0;
+  Mat_SeqAIJ    *matA_1, *matB_1=0;
   MPI_Comm       wcomm = ((PetscObject)a_Gmat_2)->comm;
   PetscMPIInt    mype;
   PetscInt       nghosts_2,nghosts_1,lid,*ii,n,*idx,j,ix,Iend,my0;
@@ -135,8 +135,6 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     }
     /* grab matrix objects */
     mpimat_2 = (Mat_MPIAIJ*)a_Gmat_2->data;
-    matA_2 = (Mat_SeqAIJ*)mpimat_2->A->data;
-    matB_2 = (Mat_SeqAIJ*)mpimat_2->B->data;
     mpimat_1 = (Mat_MPIAIJ*)a_Gmat_1->data;
     matA_1 = (Mat_SeqAIJ*)mpimat_1->A->data;
     matB_1 = (Mat_SeqAIJ*)mpimat_1->B->data;
@@ -158,7 +156,6 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     ierr = PetscFree( gids );  CHKERRQ(ierr);
     ierr = PetscFree( real_gids );  CHKERRQ(ierr);
   } else {
-    matA_2 = (Mat_SeqAIJ*)a_Gmat_2->data;
     matA_1 = (Mat_SeqAIJ*)a_Gmat_1->data;
     nghosts_2 = nghosts_1 = 0;
   }
@@ -628,7 +625,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
                          )
 {
   PetscErrorCode ierr;
-  PetscInt  Istart,Iend,nFineLoc,myFine0,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone,nSelected;
+  PetscInt  Istart,Iend,nFineLoc,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone,nSelected;
   MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
@@ -638,7 +635,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );    CHKERRQ(ierr);
-  nFineLoc = (Iend-Istart)/a_bs; myFine0 = Istart/a_bs; assert((Iend-Istart)%a_bs==0);
+  nFineLoc = (Iend-Istart)/a_bs; assert((Iend-Istart)%a_bs==0);
   
   ierr = ISGetLocalSize( a_selected, &nSelected );        CHKERRQ(ierr);
   ierr = ISGetIndices( a_selected, &selected_idx );       CHKERRQ(ierr);

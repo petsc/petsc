@@ -289,7 +289,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     ierr = VecScale(lX, -1.0);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(X, lX);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc, snes->vec_rhs, lX);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc, B, lX);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     ierr = VecAXPY(lX, -1.0, X);CHKERRQ(ierr);
     if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
@@ -342,7 +342,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc, snes->vec_rhs, dX);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
         snes->reason = SNES_DIVERGED_INNER;
