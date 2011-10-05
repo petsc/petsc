@@ -258,7 +258,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim != 3) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Boundary can only be extracted for 3D meshes");};
+  if (dim != 3) {PetscFunctionReturn(0);};
   ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
   ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
