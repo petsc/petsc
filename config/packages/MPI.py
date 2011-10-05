@@ -152,7 +152,7 @@ class Configure(config.package.Package):
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
       return
     if self.framework.argDB['with-batch']:
-      self.mpiexec = 'Not_appropriate_for_batch_systems'
+      self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
       return
     mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
