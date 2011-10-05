@@ -1,5 +1,5 @@
 classifiers = """
-License :: Public Domain
+License :: OSI Approved :: BSD License
 Operating System :: POSIX
 Intended Audience :: Developers
 Intended Audience :: Science/Research
@@ -23,7 +23,7 @@ metadata = {
     'author_email'     : 'dalcinl@gmail.com',
     'classifiers'      : [c for c in classifiers.split('\n') if c],
     'keywords'         : [k for k in keywords.split('\n')    if k],
-    'license'          : 'Public Domain',
+    'license'          : 'BSD',
     'platforms'        : ['POSIX'],
     'maintainer'       : 'Lisandro Dalcin',
     'maintainer_email' : 'dalcinl@gmail.com',
