@@ -1,0 +1,5 @@
+#define SNESNRICHARDSON  "nrichardson"
+#define SNESQN           "qn"
+#define SNESSHELL        "shell"
+#define SNESNCG          "ncg"
+#define SNESFAS          "fas"

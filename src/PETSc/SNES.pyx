@@ -5,11 +5,15 @@ class SNESType(object):
     TR      = S_(SNESTR)
     PYTHON  = S_(SNESPYTHON)
     TEST    = S_(SNESTEST)
-    PICARD  = S_(SNESPICARD)
+    NRICHARDSON = S_(SNESNRICHARDSON)
     KSPONLY = S_(SNESKSPONLY)
     VI      = S_(SNESVI)
     NGMRES  = S_(SNESNGMRES)
+    QN      = S_(SNESQN)
+    SHELL   = S_(SNESSHELL)
+    NCG     = S_(SNESNCG)
     SORQN   = S_(SNESSORQN)
+    FAS     = S_(SNESFAS)
 
 class SNESConvergedReason(object):
     # iterating

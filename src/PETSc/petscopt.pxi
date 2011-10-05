@@ -23,7 +23,7 @@ cdef extern from * nogil:
     ctypedef struct _p_PetscToken
     ctypedef _p_PetscToken* PetscToken
     int PetscTokenCreate(char[],char,PetscToken*)
-    int PetscTokenDestroy(PetscToken)
+    int PetscTokenDestroy(PetscToken*)
     int PetscTokenFind(PetscToken,char*[])
 
 #
@@ -143,7 +143,7 @@ cdef tokenize(options):
           tokens.append(bytes2str(p))
           CHKERR( PetscTokenFind(t, <char**>&p) )
   finally:
-      CHKERR( PetscTokenDestroy(t) )
+      CHKERR( PetscTokenDestroy(&t) )
   return tokens
 
 cdef gettok(tokens):

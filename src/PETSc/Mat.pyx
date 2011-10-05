@@ -856,7 +856,7 @@ cdef class Mat(Object):
     # matrix-vector product
 
     def setNullSpace(self, NullSpace nsp not None):
-        CHKERR( MatNullSpaceAttach(self.mat, nsp.nsp) )
+        CHKERR( MatSetNullSpace(self.mat, nsp.nsp) )
 
     def mult(self, Vec x not None, Vec y not None):
         CHKERR( MatMult(self.mat, x.vec, y.vec) )

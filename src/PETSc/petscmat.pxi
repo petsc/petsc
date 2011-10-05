@@ -314,7 +314,7 @@ cdef extern from * nogil:
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceRemove(PetscNullSpace,PetscVec,PetscVec*)
-    int MatNullSpaceAttach(PetscMat,PetscNullSpace)
+    int MatSetNullSpace(PetscMat,PetscNullSpace)
     int MatNullSpaceTest(PetscNullSpace,PetscMat)
 
     ctypedef int MatNullSpaceFunction(PetscNullSpace,
