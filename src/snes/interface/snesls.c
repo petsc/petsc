@@ -636,13 +636,14 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: lambda = %g, f dot y = %g, f dot y = %g\n", PetscRealPart(lambda), PetscRealPart(fnrm), PetscRealPart(fnrm_old));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
-    /* convergence in the step tolerance */
-    if (fabs(PetscRealPart((lambda - lambda_old) / lambda)) < 1e-6) break;
-
     /* compute the new F dot Y */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
+
+    /* convergence in the step tolerance */
+    if (fabs(PetscRealPart((lambda - lambda_old) / lambda)) < snes->steptol) break;
+
   }
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (PetscRealPart(lambda) <= snes->steptol) {
