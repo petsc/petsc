@@ -603,7 +603,7 @@ lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot
 #define __FUNCT__ "SNESLineSearchSecant"
 PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
   PetscErrorCode ierr;
-  PetscScalar    lambda = 0.1;
+  PetscScalar    lambda = snes->steptol;
   PetscScalar    lambda_old = 0.0;
   PetscScalar    lambda_update;
   PetscScalar    fnrm;
@@ -614,6 +614,9 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
   ierr = VecDot(F, Y, &fnrm_old);
   *flag = PETSC_TRUE;
   for (i = 0; i < 10; i++) {
+    /* convergence in the step tolerance */
+    if (fabs(PetscRealPart((lambda - lambda_old) / lambda)) < snes->steptol) break;
+
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
@@ -636,14 +639,6 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: lambda = %g, f dot y = %g, f dot y = %g\n", PetscRealPart(lambda), PetscRealPart(fnrm), PetscRealPart(fnrm_old));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
-    /* compute the new F dot Y */
-    ierr = VecCopy(X, W);CHKERRQ(ierr);
-    ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
-    ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
-
-    /* convergence in the step tolerance */
-    if (fabs(PetscRealPart((lambda - lambda_old) / lambda)) < snes->steptol) break;
-
   }
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (PetscRealPart(lambda) <= snes->steptol) {
