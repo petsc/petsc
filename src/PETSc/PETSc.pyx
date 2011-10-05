@@ -166,10 +166,7 @@ cdef extern from "Python.h":
     int Py_IsInitialized() nogil
 
 cdef extern from * nogil:
-    PetscEHF *PetscTBEH
-    PetscEHF *PetscPyEH
-    int PetscPushErrorHandlerPython()
-    int PetscPopErrorHandlerPython()
+    PetscEHF *PetscTBEH "PetscTraceBackErrorHandler"
 
 cdef object tracebacklist = []
 
@@ -224,8 +221,6 @@ cdef int PetscPythonErrorHandler(
         return traceback(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
     else:
         return PetscTBEH(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
-
-PetscPyEH = PetscPythonErrorHandler
 
 # --------------------------------------------------------------------
 
@@ -297,8 +292,8 @@ cdef void finalize() nogil:
     # manage PETSc finalization
     if not (<int>PetscInitializeCalled): return
     if (<int>PetscFinalizeCalled): return
-    # deinstall custom error handler
-    ierr = PetscPopErrorHandlerPython()
+    # deinstall Python error handler
+    ierr = PetscPopErrorHandler()
     if ierr != 0:
         fprintf(stderr, "PetscPopErrorHandler() failed "
                 "[error code: %d]\n", ierr)
@@ -320,8 +315,8 @@ cdef int initialize(object args, object comm) except -1:
     PETSC_COMM_WORLD = def_Comm(comm, PETSC_COMM_WORLD)
     # initialize PETSc
     CHKERR( PetscInitialize(&PyPetsc_Argc, &PyPetsc_Argv, NULL, NULL) )
-    # install custom error handler
-    CHKERR( PetscPushErrorHandlerPython() )
+    # install Python error handler
+    CHKERR( PetscPushErrorHandler(PetscPythonErrorHandler, NULL) )
     # register finalization function
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"

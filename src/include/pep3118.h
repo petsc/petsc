@@ -91,7 +91,8 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
   return 0;
 }
 
-static void PyPetscBuffer_Release(Py_buffer *view)
+PETSC_STATIC_INLINE
+void PyPetscBuffer_Release(Py_buffer *view)
 {
   #if PY_VERSION_HEX < 0x02070000
   if (view->internal) PyMem_Free(view->internal);

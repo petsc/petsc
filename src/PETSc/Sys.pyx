@@ -137,7 +137,8 @@ cdef class Sys:
     @classmethod
     def pushErrorHandler(cls, errhandler):
         if errhandler == "python":
-            CHKERR( PetscPushErrorHandlerPython() )
+            CHKERR( PetscPushErrorHandler(
+                    PetscPythonErrorHandler, NULL) )
         elif errhandler == "debugger":
             CHKERR( PetscPushErrorHandler(
                     PetscAttachDebuggerErrorHandler, NULL) )

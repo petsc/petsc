@@ -121,17 +121,6 @@ cdef inline type subtype_DM(PetscDM dm):
     cdef PetscBool match = PETSC_FALSE
     # -- DA --
     CHKERR( PetscTypeCompare(obj, b"da", &match) )
-    if match == PETSC_FALSE:
-        if (PETSC_VERSION_MAJOR == 3 and
-            PETSC_VERSION_MINOR == 1): # petsc-3.1
-            CHKERR( PetscTypeCompare(obj, b"da1d", &match) )
-            if match == PETSC_FALSE:
-                CHKERR( PetscTypeCompare(obj, b"da2d", &match) )
-                if match == PETSC_FALSE:
-                    CHKERR( PetscTypeCompare(obj, b"da3d", &match) )
-        if (PETSC_VERSION_MAJOR == 3 and
-            PETSC_VERSION_MINOR == 0): # petsc-3.0
-            CHKERR( PetscTypeCompare(obj, b"DA", &match) )
     if match == PETSC_TRUE: klass = DA
     # --------
     return klass

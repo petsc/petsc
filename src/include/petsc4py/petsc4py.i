@@ -95,37 +95,6 @@ Py##Pkg##_ChkErrQ($1); %set_output(VOID_Object);
 /* Numeric Types                                                    */
 /* ---------------------------------------------------------------- */
 
-%header %{
-#if PETSC_VERSION_(3,1,0)
-#  if defined(PETSC_USE_SCALAR_SINGLE)
-#    define PETSC_USE_REAL_SINGLE 1
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#    define PETSC_USE_REAL_LONG_DOUBLE 1
-#  else
-#    define PETSC_USE_REAL_DOUBLE 1
-#  endif
-#  if defined(PETSC_USE_COMPLEX)
-#    define PETSC_USE_SCALAR_COMPLEX 1
-#  else
-#    define PETSC_USE_SCALAR_REAL 1
-#  endif
-#endif
-#if PETSC_VERSION_(3,0,0)
-#    if defined(PETSC_USE_SINGLE)
-#        define PETSC_USE_REAL_SINGLE 1
-#    elif defined(PETSC_USE_LONG_DOUBLE)
-#        define PETSC_USE_REAL_LONG_DOUBLE 1
-#    else
-#        define PETSC_USE_REAL_DOUBLE 1
-#    endif
-#  if defined(PETSC_USE_COMPLEX)
-#    define PETSC_USE_SCALAR_COMPLEX 1
-#  else
-#    define PETSC_USE_SCALAR_REAL 1
-#  endif
-#endif
-%}
-
 %define SWIG_TYPECHECK_PETSC_INT      SWIG_TYPECHECK_INT32   %enddef
 %define SWIG_TYPECHECK_PETSC_REAL     SWIG_TYPECHECK_DOUBLE  %enddef
 %define SWIG_TYPECHECK_PETSC_COMPLEX  SWIG_TYPECHECK_CPLXDBL %enddef

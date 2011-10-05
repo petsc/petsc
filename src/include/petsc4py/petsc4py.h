@@ -5,13 +5,7 @@
 #define PETSC4PY_H
 
 #include <Python.h>
-
 #include <petsc.h>
-#if PETSC_VERSION_(3,0,0)
-#include <petscts.h>
-#include <petscda.h>
-#endif
-
 #include "petsc4py.PETSc_api.h"
 
 static int import_petsc4py(void) {
