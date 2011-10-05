@@ -31,10 +31,6 @@ typedef struct {
   PetscInt      istart;
 } Kernel_Data;
 
-Kernel_Data *kerneldatap;
-Kernel_Data **pdata;
-PetscInt    vecs_created=0;
-
 extern PetscErrorCode VecNorm_SeqPThread(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecDot_SeqPThread(Vec,Vec,PetscScalar*);
 extern PetscErrorCode VecScale_SeqPThread(Vec,PetscScalar);
@@ -51,5 +47,10 @@ extern PetscErrorCode VecAYPX_SeqPThread(Vec,PetscScalar,Vec);
 extern PetscErrorCode VecWAXPY_SeqPThread(Vec,PetscScalar,Vec,Vec);
 extern PetscErrorCode VecMAXPY_SeqPThread(Vec,PetscInt,const PetscScalar[],Vec*);
 extern PetscErrorCode VecSet_SeqPThread(Vec,PetscScalar);
+extern PetscErrorCode VecSetFromOptions_SeqPThread(Vec);
+
+EXTERN_C_BEGIN
+extern PetscErrorCode VecCreate_SeqPThread(Vec);
+EXTERN_C_END
 
 #endif

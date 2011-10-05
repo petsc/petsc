@@ -19,6 +19,11 @@ extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 extern int*         ThreadCoreAffinity;
 
+PetscInt vecs_created=0;
+Kernel_Data *kerneldatap;
+Kernel_Data **pdata;
+
+
 /* Global function pointer */
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
@@ -1598,23 +1603,6 @@ PetscErrorCode VecCreate_SeqPThread(Vec V)
   s    = (Vec_SeqPthread*)V->data;
   s->array_allocated = (PetscScalar*)array;
 
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_PThread"
-PetscErrorCode VecCreate_PThread(Vec v)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = VecSetType(v,VECSEQPTHREAD);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)v)->comm,PETSC_ERR_SUP,"No parallel thread vector yet");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

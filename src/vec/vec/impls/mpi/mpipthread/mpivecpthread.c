@@ -2,6 +2,12 @@
 #include <../src/vec/vec/impls/mpi/mpipthread/mpivecpthreadimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscblaslapack.h>
 
+extern PetscMPIInt  PetscMaxThreads;
+
+extern PetscInt     vecs_created;
+extern Kernel_Data  *kerneldatap;
+extern Kernel_Data  **pdata;
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPIPThread"
 PetscErrorCode VecDot_MPIPThread(Vec xin,Vec yin,PetscScalar *z)
@@ -74,14 +80,8 @@ PetscErrorCode VecNorm_MPIPThread(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-/*
-       These two functions are the MPI reduction operation used for max and min with index
-   The call below to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the 
-   MPI operator Vec[Max,Min]_Local_Op.
-*/
-
-MPI_Op VecMax_Local_Op = 0;
-MPI_Op VecMin_Local_Op = 0;
+extern MPI_Op VecMax_Local_Op;
+extern MPI_Op VecMin_Local_Op;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMax_MPIPThread"
@@ -138,9 +138,11 @@ PetscErrorCode VecMin_MPIPThread(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecCreate_MPIPThread_Private(Vec,PetscBool,PetscInt,const PetscScalar []);
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_MPIPThread"
-static PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
+PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
   Vec_MPIPthread *vw,*w = (Vec_MPIPthread *)win->data;
@@ -150,9 +152,11 @@ static PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
-  ierr = VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
+  ierr = VecCreate_MPIPThread_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPIPthread *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
+  if(!w->arrindex) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must set the number of threads for the first vector before duplicating it");
+  ierr = VecSeqPThreadSetNThreads(*v,w->nthreads);CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
@@ -192,6 +196,7 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
+  ierr = PetscFree2(x->arrindex,x->nelem);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
@@ -256,7 +261,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPIPThread, /* 1 */
             0,
             0,
             VecResetArray_MPI,
-            0,
+            VecSetFromOptions_SeqPThread,
             VecMaxPointwiseDivide_Seq,
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
@@ -291,6 +296,8 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
+  s->nthreads        = 0;
+  s->arrindex        = 0;
   if (alloc && !array) {
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
@@ -298,6 +305,12 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
     ierr               = PetscMemzero(s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array_allocated = s->array;
   }
+
+  if(!vecs_created) {
+    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
+    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
+  }
+  vecs_created++;
 
   /* By default parallel vectors do not have local representation */
   s->localrep    = 0;
@@ -338,6 +351,25 @@ PetscErrorCode  VecCreate_MPIPThread(Vec vv)
 
   PetscFunctionBegin;
   ierr = VecCreate_MPIPThread_Private(vv,PETSC_TRUE,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_PThread"
+PetscErrorCode VecCreate_PThread(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecCreate_SeqPThread(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreate_MPIPThread(v);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
