@@ -260,6 +260,9 @@ class TestTSAlpha(BaseTestTSNonlinearRHS, BaseTestTSNonlinearI,
 
 PETSC_VERSION = PETSc.Sys.getVersion()
 
+if PETSC_VERSION < (3, 3, 0):
+    TestTSCN.testFDColorI = lambda *args: None
+    TestTSCN.testFDColorRHS = lambda *args: None
 if PETSC_VERSION < (3, 2, 0):
     del BaseTestTSNonlinearRHS.testResetAndSolveRHS
     del BaseTestTSNonlinearI.testResetAndSolveI
