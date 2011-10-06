@@ -510,7 +510,7 @@ KHASH_MAP_INIT_INT64(IHASH,PetscInt);
 #elif PETSC_SIZEOF_INT == 4
 KHASH_MAP_INIT_INT(IHASH,PetscInt);
 #else
-#error This value of PETSC_SIZEOF_INT is not supported by petsckhash.
+#error "This value of PETSC_SIZEOF_INT is not supported by petsckhash."
 #endif
 
 typedef khash_t(IHASH) *PetscIHash;
