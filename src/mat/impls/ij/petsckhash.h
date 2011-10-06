@@ -506,9 +506,9 @@ static inline khint_t __ac_X31_hash_string(const char *s)
 
 
 #if PETSC_SIZEOF_INT == 8
-KHASH_MAP_INIT_INT64(IHASH,PetscInt);
+KHASH_MAP_INIT_INT64(IHASH,PetscInt)
 #elif PETSC_SIZEOF_INT == 4
-KHASH_MAP_INIT_INT(IHASH,PetscInt);
+KHASH_MAP_INIT_INT(IHASH,PetscInt)
 #else
 #error "This value of PETSC_SIZEOF_INT is not supported by petsckhash."
 #endif
