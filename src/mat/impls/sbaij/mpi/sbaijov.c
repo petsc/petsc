@@ -22,7 +22,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   PetscBT        table;
   PetscInt       *ai,brow,nz,nis,l,nmax,nstages_local,nstages,max_no,pos;
   const PetscInt *idx;
-  PetscBool      flg,*allcolumns;
+  PetscBool      flg,*allcolumns,*allrows;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(is_max*sizeof(IS),&is_new);CHKERRQ(ierr);
@@ -45,14 +45,17 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
 
   /* Create is_row */
   ierr = PetscMalloc(is_max*sizeof(IS **),&is_row);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,Mbs,0,1,&is_row[0]);CHKERRQ(ierr); /* globle rows!!! */
-  for (i=1; i<is_max; i++) is_row[i] = is_row[0]; /* reuse is_row[0] */
+  ierr = ISCreateStride(PETSC_COMM_SELF,Mbs,0,1,&is_row[0]);CHKERRQ(ierr); 
+  for (i=1; i<is_max; i++) {
+    is_row[i]  = is_row[0]; /* reuse is_row[0] */
+    allrows[i] = PETSC_TRUE;
+  }
   
   /* Allocate memory to hold all the submatrices - Modified from MatGetSubMatrices_MPIBAIJ() */
   ierr = PetscMalloc((is_max+1)*sizeof(Mat),&submats);CHKERRQ(ierr);
 
   /* Check for special case: each processor gets entire matrix columns */
-  ierr = PetscMalloc((is_max+1)*sizeof(PetscBool),&allcolumns);CHKERRQ(ierr);
+  ierr = PetscMalloc2(is_max+1,PetscBool,&allcolumns,is_max+1,PetscBool,&allrows);CHKERRQ(ierr);
   for (i=0; i<is_max; i++) {
     ierr = ISIdentity(is_new[i],&flg);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_new[i],&isz);CHKERRQ(ierr);
@@ -79,7 +82,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       else                   max_no = is_max-pos;
      
       c->ijonly = PETSC_TRUE; 
-      ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,allcolumns+pos,submats+pos);CHKERRQ(ierr);
+      ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,allcolumns+pos,allrows+pos,submats+pos);CHKERRQ(ierr);
       pos += max_no;
     }
    
@@ -121,7 +124,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       ierr = MatDestroy(&submats[i]);CHKERRQ(ierr);
     }
   } 
-  ierr = PetscFree(allcolumns);CHKERRQ(ierr);
+  ierr = PetscFree2(allcolumns,allrows);CHKERRQ(ierr);
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(submats);CHKERRQ(ierr);
   ierr = ISDestroy(&is_row[0]);CHKERRQ(ierr);
