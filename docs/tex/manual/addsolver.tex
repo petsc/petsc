@@ -288,7 +288,7 @@ function without any name-mangling from the C++ compiler (if used).
 Another routine needed by most solvers destroys the data structures
 creates by earlier routines.  For the nonlinear conjugate gradient
 method discussed earlier, the following routine destroys the two
-work vectors and the {\tt TAO\_CG} structure. Any 
+work vectors and the {\tt TAO\_CG} structure.
 \begin{verbatim}
 PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
 {
@@ -309,7 +309,8 @@ PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
 This routine is called from within the {\tt TaoDestroy()} routine.
 Only destroy algorithm-specific data objects here, any objects indexed by 
 TAO ({\tt tao->linesearch},{\tt tao->ksp}, {\tt tao->gradient}, etc.)
-will be destroyed by TAO after this algorithm-specific destroy routine.
+will be destroyed by TAO immediately after this algorithm-specific destroy 
+routine.
 
 
 \subsection{SetUp Routine}
