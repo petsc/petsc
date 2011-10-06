@@ -217,6 +217,9 @@ cdef extern from * nogil:
     int MatZeroRowsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
+    int MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowMax(PetscMat,PetscVec,PetscInt[])
     int MatGetRowMaxAbs(PetscMat,PetscVec,PetscInt[])

@@ -768,6 +768,18 @@ cdef class Mat(Object):
             rows = iarray_i(rows, &ni, &i)
             CHKERR( MatZeroRowsLocal(self.mat, ni, i, sval, xvec, bvec) )
 
+    def zeroRowsColumns(self, rows, diag=1, Vec x=None, Vec b=None):
+        cdef PetscInt ni=0, *i=NULL
+        cdef PetscScalar sval = asScalar(diag)
+        cdef PetscVec xvec=NULL, bvec=NULL
+        if x is not None: xvec = x.vec
+        if b is not None: bvec = b.vec
+        if isinstance(rows, IS):
+            CHKERR( MatZeroRowsColumnsIS(self.mat, (<IS>rows).iset, sval, xvec, bvec) )
+        else:
+            rows = iarray_i(rows, &ni, &i)
+            CHKERR( MatZeroRowsColumns(self.mat, ni, i, sval, xvec, bvec) )
+
     def storeValues(self):
         CHKERR( MatStoreValues(self.mat) )
 
