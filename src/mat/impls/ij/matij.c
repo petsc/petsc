@@ -1956,7 +1956,7 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   else {
     PetscIHashBegin(pg->hsupp,it);
   }
-  while(0) {
+  while(1) {
     if(pg->hsupp) {
       if(PetscIHashAtEnd(pg->hsupp,it)) break;
       else {
