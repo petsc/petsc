@@ -182,11 +182,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   lclP->told = 1e-4;
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->told,&lclP->told,&flag); CHKERRQ(ierr);
 
-  if (!tao->jacobian_state_inv) {
-    ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-  }
-
 
   PetscFunctionReturn(0);
 }
@@ -531,6 +526,10 @@ PetscErrorCode TaoCreate_LCL(TaoSolver tao)
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
 
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao); CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+
+
   
   PetscFunctionReturn(0);
 

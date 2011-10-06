@@ -436,7 +436,7 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
 +  tao - the TaoSolver context
 .  J - Matrix used for the jacobian
 .  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  Only used if Jinv is PETSC_NULL
-.  Jinv - [optional but recommended] Matrix used to apply the inverse of the state jacobian. Use PETSC_NULL to default to PETSc KSP solvers to apply the inverse.
+.  Jinv - [optional] Matrix used to apply the inverse of the state jacobian. Use PETSC_NULL to default to PETSc KSP solvers to apply the inverse.
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
          Jacobian evaluation routine (may be PETSC_NULL)
@@ -456,7 +456,7 @@ $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
 
    Notes:
    Because of the structure of the jacobian matrix, 
-   It is usually much more efficient for a pde-constrained application to provide 
+   It may be more efficient for a pde-constrained application to provide 
    its own Jinv matrix.
 
    The function jac() takes Mat * as the matrix arguments rather than Mat.  
