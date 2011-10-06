@@ -129,6 +129,27 @@ static PetscErrorCode MatZeroRowsLocalIS_Compat(Mat mat,IS is,PetscScalar diag,V
   PetscFunctionReturn(0);
 }
 #define MatZeroRowsLocalIS MatZeroRowsLocalIS_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsColumns"
+static PetscErrorCode MatZeroRowsColumns_Compat(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define MatZeroRowsColumns MatZeroRowsColumns_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsColumnsIS"
+static PetscErrorCode MatZeroRowsColumnsIS_Compat(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define MatZeroRowsColumnsIS MatZeroRowsColumnsIS_Compat
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
