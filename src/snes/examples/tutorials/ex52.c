@@ -476,7 +476,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
+extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
 
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
   f1[0] = gradU[0];
@@ -685,7 +685,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt numChunks  = numCells / (numBatches*batchSize);
   if (user->gpu) {
     ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
-    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
     ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
   } else {

@@ -20,18 +20,20 @@ __device__ float2 elasticity(float u[], float2 gradU[], int comp) {
   return f1;
 }
 
-// Number of spatial dimensions:        2
-// N_b    Number of basis functions:    3
-// N_q    Number of quadrature points:  1
-// N_{bs} Number of block cells         LCM(N_b, N_q)  = 3
-// N_{bl} Number of blocks              1
-// N_t    Number of threads:            N_{bl} * N_{bs} = 3
-// N_{cbc} Number of concurrent basis      cells:   N_{bl} * N_q = 1
-// N_{cqc} Number of concurrent quadrature cells:   N_{bl} * N_b = 3
-// N_{sbc} Number of serial     basis      cells:   N_{bs} / N_q = 3
-// N_{sqc} Number of serial     quadrature cells:   N_{bs} / N_b = 1
-// N_{cb} Number of cell batches:
-// N_c    Number of total cells:        N_{cb}*N_{t} = 3
+// dim     Number of spatial dimensions:          2
+// N_b     Number of basis functions:             generated
+// N_q     Number of quadrature points:           generated
+// N_{bs}  Number of block cells                  LCM(N_b, N_q)
+// N_{bl}  Number of concurrent blocks            generated
+// N_t     Number of threads:                     N_{bl} * N_{bs}
+// N_{cbc} Number of concurrent basis      cells: N_{bl} * N_q
+// N_{cqc} Number of concurrent quadrature cells: N_{bl} * N_b
+// N_{sbc} Number of serial     basis      cells: N_{bs} / N_q
+// N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b
+// N_{cb}  Number of serial cell batches:         input
+// N_c     Number of total cells:                 N_{cb}*N_{t}
+const int N_bl = 1;
+
 __global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
   #include "ex52_inline.h"
   const int        dim     = 2;
@@ -40,7 +42,6 @@ __global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, flo
   const int        N_bt    = N_b*N_comp;            // The total number of scalar basis functions
   const int        N_q     = numQuadraturePoints_0; // The number of quadrature points
   const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not process simultaneously
-  const int        N_bl    = 1;                     // The number of concurrent blocks
   const int        N_t     = N_bs*N_bl;             // The number of threads, N_bs * N_bl
   const int        N_c     = N_cb * (N_t/N_comp);
   const int        N_sbc   = N_bs / (N_q * N_comp);
@@ -201,7 +202,24 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElementBatchGPU"
-PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, const PetscScalar coefficients[],
+/*
+  IntegrateElementBatchGPU - Produces element vectors from input element solution and geometric information via quadrature
+
+  Input Parameters:
++ Ne - The total number of cells, Ncb * Nbc
+. Ncb - The number of serial cell batches
+. Nbc - The number of cells per batch
+. Nbl - The number of concurrent cells blocks per thread block
+. coefficients - An array of the solution vector for each cell
+. jacobianInverses - An array of the inverse Jacobian for each cell
+. jacobianDeterminants - An array of the Jacobian determinant for each cell
+. event - A PetscEvent, used to log flops
+- debug - A flag for debugging information
+
+  Output Parameter:
+. elemVec - An array of the element vectors for each cell
+*/
+PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                         PetscLogEvent event, PetscInt debug) {
   #include "ex52_inline.h"
@@ -211,7 +229,6 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   const int N_bt   = N_b*N_comp;            // The total number of scalar basis functions
   const int N_q    = numQuadraturePoints_0; // The number of quadrature points
   const int N_bs   = N_bt*N_q;              // The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously
-  const int N_bl   = 1;                     // The number of concurrent blocks
   const int N_t    = N_bs*N_bl;             // The number of threads, N_bs * N_bl
 
   float *d_coefficients;
@@ -222,6 +239,7 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
 
   PetscFunctionBegin;
   assert(Nbc*N_comp == N_t);
+  assert(Nbl == N_bl);
   // Marshalling
   ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(float));CHKERRQ(ierr);
   ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(float));CHKERRQ(ierr);
