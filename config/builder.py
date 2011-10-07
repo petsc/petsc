@@ -108,6 +108,9 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 2'},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 4'},
                                                                ],
+                        'src/snes/examples/tutorials/ex56':   [{'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 src/snes/examples/tutorials/ex56.h'}],
+
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
