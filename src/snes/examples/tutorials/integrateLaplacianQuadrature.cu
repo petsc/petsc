@@ -32,7 +32,7 @@ __device__ float2 elasticity(float u[], float2 gradU[], int comp) {
 // N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b
 // N_{cb}  Number of serial cell batches:         input
 // N_c     Number of total cells:                 N_{cb}*N_{t}
-const int N_bl = 1;
+const int N_bl = 2;
 
 __global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
   #include "ex52_inline.h"
@@ -41,18 +41,19 @@ __global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, flo
   const int        N_comp  = numBasisComponents_0;  // The number of basis function components
   const int        N_bt    = N_b*N_comp;            // The total number of scalar basis functions
   const int        N_q     = numQuadraturePoints_0; // The number of quadrature points
-  const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not process simultaneously
+  const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously
   const int        N_t     = N_bs*N_bl;             // The number of threads, N_bs * N_bl
   const int        N_c     = N_cb * (N_t/N_comp);
   const int        N_sbc   = N_bs / (N_q * N_comp);
   const int        N_sqc   = N_bs / N_bt;
   /* Calculated indices */
   const int        tidx    = threadIdx.x + blockDim.x*threadIdx.y;
-  const int        bidx    = tidx % N_bt;          // Basis function mapped to this thread
-  const int        cidx    = tidx % N_comp;        // Basis component mapped to this thread
-  const int        qidx    = tidx % N_q;           // Quadrature point mapped to this thread
-  const int        blbidx  = tidx % (N_bl * N_q);  // Cell mapped to this thread in the basis phase
-  const int        blqidx  = tidx % (N_bl * N_b);  // Cell mapped to this thread in the quadrature phase
+  const int        blidx   = tidx / N_bs;            // Block number for this thread
+  const int        bidx    = tidx % N_bt;            // Basis function mapped to this thread
+  const int        cidx    = tidx % N_comp;          // Basis component mapped to this thread
+  const int        qidx    = tidx % N_q;             // Quadrature point mapped to this thread
+  const int        blbidx  = tidx % N_q + blidx*N_q; // Cell mapped to this thread in the basis phase
+  const int        blqidx  = tidx % N_b + blidx*N_b; // Cell mapped to this thread in the quadrature phase
   const int        gidx    = blockIdx.y*gridDim.x + blockIdx.x;
   const int        Goffset = gidx*N_c;
   const int        Coffset = gidx*N_c*N_bt;

@@ -679,7 +679,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   }
   // Conforming batches
   PetscInt blockSize  = numBasisFuncs*numQuadPoints;
-  PetscInt numBlocks  = 1;
+  PetscInt numBlocks  = 2;
   PetscInt batchSize  = numBlocks * blockSize;
   PetscInt numBatches = user->numBatches;
   PetscInt numChunks  = numCells / (numBatches*batchSize);
