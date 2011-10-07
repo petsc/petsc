@@ -325,6 +325,9 @@ PetscErrorCode  SNESLineSearchSetType_QN(SNES snes, SNESLineSearchType type)
   case SNES_LS_QUADRATIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_QN,PETSC_NULL);CHKERRQ(ierr);
     break;
+  case SNES_LS_SECANT:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
     break;

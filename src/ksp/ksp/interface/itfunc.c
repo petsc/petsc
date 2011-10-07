@@ -330,21 +330,20 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
 
-  if (b && x) {
-    if (x == b) {
-      ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
-      inXisinB = PETSC_TRUE;
-    }
-    ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-    ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
-    ksp->vec_rhs = b;
-    ksp->vec_sol = x;
+  if (x == b) {
+    if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
+    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+    inXisinB = PETSC_TRUE;
   }
+  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
+  ksp->vec_rhs = b;
+  ksp->vec_sol = x;
 
   flag1 = flag2 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flag1,PETSC_NULL);CHKERRQ(ierr);

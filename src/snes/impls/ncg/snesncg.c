@@ -209,6 +209,9 @@ PetscErrorCode  SNESLineSearchSetType_NCG(SNES snes, SNESLineSearchType type)
   case SNES_LS_TEST:
     ierr = SNESLineSearchSet(snes,SNESLineSearchExactLinear_NCG,PETSC_NULL);CHKERRQ(ierr);
     break;
+  case SNES_LS_SECANT:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
     break;
@@ -402,6 +405,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
+  snes->ls_alpha             = 1e-8;
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;

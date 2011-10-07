@@ -1266,12 +1266,12 @@ runex92_2:
 	for np in ${NPROCS}; do \
 	  for ov in ${OVERLAP}; do \
             for bs in ${BS}; do \
-	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_submat >> ex92_1.tmp 2>&1; \
+	      ${MPIEXEC} -n $$np ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_submat >> ex92_1.tmp 2>&1; \
 	    done; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
-	else echo ${PWD} ; echo "Possible problem with with ex92_2, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_submat, diffs above \n========================================="; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex92_2, -n $$np ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_submat, diffs above \n========================================="; fi; \
 	${RM} -f ex92_1.tmp
 
 runex92_3:

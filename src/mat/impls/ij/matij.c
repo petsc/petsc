@@ -728,16 +728,18 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
 
   if(len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Negative edge array length: %D", len);
   
-  if(!ixidx && len != A->rmap->n){ 
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty source array %D must equal the local row size %D", len, A->rmap->n);
+  if(!ixidx){
+    if(len != A->rmap->n) 
+      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty source array %D must equal the local row size %D", len, A->rmap->n);
     ierr = PetscMalloc(len*sizeof(PetscInt), &iixidx); CHKERRQ(ierr);
     for(k = 0; k < len; ++k) {
       iixidx[k] = A->rmap->rstart + k;
     }
     ixidx = iixidx;
   }
-  if(!iyidx && len != A->cmap->n){ 
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty target array %D must equal the local column size %D", len, A->cmap->n);
+  if(!iyidx) {
+    if(len != A->cmap->n)
+      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty target array %D must equal the local column size %D", len, A->cmap->n);
     for(k = 0; k < len; ++k) {
       iiyidx[k] = A->cmap->rstart + k;
     }
@@ -1956,7 +1958,7 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   else {
     PetscIHashBegin(pg->hsupp,it);
   }
-  while(0) {
+  while(1) {
     if(pg->hsupp) {
       if(PetscIHashAtEnd(pg->hsupp,it)) break;
       else {

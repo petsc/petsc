@@ -117,18 +117,17 @@ int main(int argc,char **args)
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       sz = (PetscInt)((0.5+0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
     
-      if (rank == vid){
-        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
-      } 
-    
       for (j=0; j<sz; j++) {
         ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
         idx[j*bs] = bs*(PetscInt)(PetscRealPart(rval)*Mbs); 
         for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
       }
-
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
+      if (rank == vid){
+        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
+        ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      }
     } else { /* Test all rows and colums */
       sz = M;
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is1+i);CHKERRQ(ierr);

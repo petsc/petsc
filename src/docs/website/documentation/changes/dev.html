@@ -105,6 +105,10 @@
             <p><u><b>PC:</b></u></p>
             <p><u><b>KSP:</b></u></p>
             <p><u><b>SNES:</b></u></p>
+            <ul>
+              <li>Added SNESLineSearchSetType()</li>
+              <li>Removed newton solver specific SNESLineSearchCubic() and SNESLineSearchQuadratic() from petscsnes.h</li>
+            </ul>
             <p><u><b>TS:</b></u></p>
             <p><u><b>DM/DA:</b></u></p>
             <p><u><b>DMMG:</b></u></p>
@@ -113,6 +117,9 @@
             <p><u><b>AO:</b></u></p>
             <p><u><b>Sieve:</b></u></p>
             <p><u><b>Fortran:</b></u></p>
+            <ul>
+              <li>SNES line search type should be set by name with SNESLineSearchSetType rather than with SNESLineSearchSet</li>
+            </ul>
             <p><u><b><a href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
           </td>
         </tr>
