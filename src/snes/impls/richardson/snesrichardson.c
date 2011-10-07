@@ -20,7 +20,7 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_NRichardson"
 PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
@@ -42,7 +42,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 
    Application Interface Routine: SNESSetUp()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_NRichardson"
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
@@ -61,7 +61,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NRichardson"
 static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 {
@@ -81,7 +81,7 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 
   Application Interface Routine: SNESView()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESView_NRichardson"
 static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 {
@@ -167,10 +167,10 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
 
   Application Interface Routine: SNESSolve()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_NRichardson"
 PetscErrorCode SNESSolve_NRichardson(SNES snes)
-{ 
+{
   Vec                 X, Y, F, W, G;
   PetscReal           fnorm;
   PetscInt            maxits, i;
@@ -287,7 +287,7 @@ PetscErrorCode  SNESLineSearchSetType_NRichardson(SNES snes, SNESLineSearchType 
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NRichardson,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_SECANT:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
@@ -307,34 +307,35 @@ EXTERN_C_END
 +   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
 -   -snes_ls <basic,basicnormnorms,quadratic>
 
-  Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda (F(x^n) - b) 
-            where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search. 
-         If an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetPC()) then the inner solver is called an initial solution x^n and the 
-            nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n} where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver. 
+  Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
+            (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
+            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetPC()) then the inner
+            solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}
+            where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver.
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESNQN
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NRichardson"
 PetscErrorCode  SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  snes->ops->destroy	     = SNESDestroy_NRichardson;
-  snes->ops->setup	     = SNESSetUp_NRichardson;
+  snes->ops->destroy         = SNESDestroy_NRichardson;
+  snes->ops->setup           = SNESSetUp_NRichardson;
   snes->ops->setfromoptions  = SNESSetFromOptions_NRichardson;
   snes->ops->view            = SNESView_NRichardson;
-  snes->ops->solve	     = SNESSolve_NRichardson;
+  snes->ops->solve           = SNESSolve_NRichardson;
   snes->ops->reset           = SNESReset_NRichardson;
 
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

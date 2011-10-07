@@ -108,6 +108,7 @@ struct _p_SNES {
   PetscReal   steptol;            /* step convergence tolerance */
   PetscReal   ls_alpha;           /* line search sufficient reduction */
   PetscViewer ls_monitor;         /* monitor for the line search */
+  PetscInt    ls_its;             /* number of iterates taken for iterative line searches */
 
 
   /* ------------------------ Default work-area management ---------------------- */

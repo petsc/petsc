@@ -405,12 +405,13 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
-  snes->ls_alpha             = 1e-8;
+  snes->ls_alpha             = 1e-4;
+  snes->steptol              = 1e-6;
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
