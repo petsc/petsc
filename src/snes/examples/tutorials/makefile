@@ -336,7 +336,7 @@ runex5_4:
 	   ${RM} -f ex5_4.tmp
 
 #COMPOSABLE SOLVER DEMOS: OPTIONS
-CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0
+CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0 -snes_view
 N_SMOOTHS = 3
 N_RESTART = 10
 
