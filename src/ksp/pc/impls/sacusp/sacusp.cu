@@ -201,6 +201,15 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 /* -------------------------------------------------------------------------- */
 
 
+/*MC
+     PCSACUSP  - A smoothed agglomeration algorithm that runs on the Nvidia GPU.
+
+
+    http://research.nvidia.com/sites/default/files/publications/nvr-2011-002.pdf
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
