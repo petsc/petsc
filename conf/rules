@@ -3,6 +3,7 @@
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir:
+	-@${PETSC_DIR}/bin/petscnagupgrade.py
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
