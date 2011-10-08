@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscScalar    value[3];
   const PCType   pcname;
   const KSPType  kspname;
-  PetscReal      norm;
+  PetscReal      norm,tol=1.e-14;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -69,7 +69,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);
+  }
 
   /* Free data structures */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

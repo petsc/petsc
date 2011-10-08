@@ -63,66 +63,6 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchQuadratic_QN"
-PetscErrorCode  SNESLineSearchQuadratic_QN(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag)
-{
-  PetscInt         i;
-  PetscReal        alphas[3] = {0.0, 0.5, 1.0};
-  PetscReal        norms[3];
-  PetscReal        alpha,a,b;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  norms[0]  = fnorm;
-  for(i=1; i < 3; ++i) {
-    ierr = VecWAXPY(W, alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
-    ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
-    ierr = VecNorm(G, NORM_2, &norms[i]);CHKERRQ(ierr);
-  }
-  for(i = 0; i < 3; ++i) {
-    norms[i] = PetscSqr(norms[i]);
-  }
-  /* Fit a quadratic:
-       If we have x_{0,1,2} = 0, x_1, x_2 which generate norms y_{0,1,2}
-       a = (x_1 y_2 - x_2 y_1 + (x_2 - x_1) y_0)/(x^2_2 x_1 - x_2 x^2_1)
-       b = (x^2_1 y_2 - x^2_2 y_1 + (x^2_2 - x^2_1) y_0)/(x_2 x^2_1 - x^2_2 x_1)
-       c = y_0
-       x_min = -b/2a
-
-       If we let x_{0,1,2} = 0, 0.5, 1.0
-       a = 2 y_2 - 4 y_1 + 2 y_0
-       b =  -y_2 + 4 y_1 - 3 y_0
-       c =   y_0
-  */
-  a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/(PetscSqr(alphas[2])*alphas[1] - alphas[2]*PetscSqr(alphas[1]));
-  b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/(alphas[2]*PetscSqr(alphas[1]) - PetscSqr(alphas[2])*alphas[1]);
-  /* Check for positive a (concave up) */
-  if (a >= 0.0) {
-    alpha = -b/(2.0*a);
-    alpha = PetscMin(alpha, alphas[2]);
-    alpha = PetscMax(alpha, alphas[0]);
-  } else {
-    alpha = 1.0;
-  }
-  if (snes->ls_monitor) {
-    ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", sqrt(norms[0]),sqrt(norms[1]),sqrt(norms[2]),alpha);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  }
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
-  if (alpha != 1.0) {
-    ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
-    ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
-  } else {
-    *gnorm = PetscSqrtReal(norms[2]);
-  }
-  if (alpha == 0.0) *flag = PETSC_FALSE;
-  else              *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_QN"
 static PetscErrorCode SNESSolve_QN(SNES snes)
 {
@@ -323,7 +263,7 @@ PetscErrorCode  SNESLineSearchSetType_QN(SNES snes, SNESLineSearchType type)
     ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_QN,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_SECANT:
     ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
@@ -351,10 +291,10 @@ EXTERN_C_END
       generalized to implement several limited-memory Broyden methods.
 
       References:
-      
+
       L-Broyden Methods: a generalization of the L-BFGS method to the limited memory Broyden family, M. B. Reed,
       International Journal of Computer Mathematics, vol. 86, 2009.
-      
+
 
       Level: beginner
 
@@ -362,13 +302,13 @@ EXTERN_C_END
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_QN"
 PetscErrorCode  SNESCreate_QN(SNES snes)
 {
-  
+
   PetscErrorCode ierr;
-  QNContext * qn;  
+  QNContext * qn;
 
   PetscFunctionBegin;
   snes->ops->setup           = SNESSetUp_QN;
@@ -389,7 +329,7 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_QN",SNESLineSearchSetType_QN);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

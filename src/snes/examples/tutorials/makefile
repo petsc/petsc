@@ -336,7 +336,7 @@ runex5_4:
 	   ${RM} -f ex5_4.tmp
 
 #COMPOSABLE SOLVER DEMOS: OPTIONS
-CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0
+CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0 -snes_view
 N_SMOOTHS = 3
 N_RESTART = 10
 
@@ -347,22 +347,22 @@ runex5_5_ngmres_richardson:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS}
 
 runex5_5_ncg:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ls_type quadratic
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg
 
 runex5_5_ncg_richardson:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ls secant -npc_snes_type nrichardson -npc_snes_max_it 2
 
 runex5_5_richardson:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson
 
 runex5_5_richardson_ngs:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson -snes_ls secant -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
 
 runex5_5_ngmres_ngs:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
 
 runex5_5_qn:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls quadratic -snes_ls_monitor -snes_qn_m 30
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls secant -snes_qn_m ${N_RESTART}
 
 runex5_5_ls:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls
