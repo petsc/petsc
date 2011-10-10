@@ -250,7 +250,6 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
   ALE::Obj<PETSC_MESH_TYPE> m;
   MPI_Comm       comm   = ((PetscObject) mesh)->comm;
   PetscInt       dim    = options->dim;
-  PetscInt       bctype = 0;
   PetscInt       debug  = options->debug;
   PetscInt       numCells, numBC, bc;
   char           bndfilename[2048];
@@ -273,8 +272,10 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
   if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numBC);CHKERRQ(!ierr);}
   ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   for(bc = 0; bc < numBC; ++bc) {
+    Obj<PETSC_MESH_TYPE::label_type> label;
     char     bdName[2048];
     size_t   len      = 0;
+    PetscInt bcType   = 0;
     PetscInt numFaces = 0, f;
 
     if (!m->commRank()) {
@@ -283,9 +284,13 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
     }
     ierr = MPI_Bcast(&len, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
-    const Obj<PETSC_MESH_TYPE::label_type>& label = m->createLabel(bdName);
+    if (m->hasLabel(bdName)) {
+      label = m->getLabel(bdName);
+    } else {
+      label = m->createLabel(bdName);
+    }
 
-    if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numFaces);CHKERRQ(!ierr);}
+    if (!m->commRank()) {ierr = fscanf(fp, "%d %d\n", &bcType, &numFaces);CHKERRQ(!ierr);}
 
     for(f = 0; f < numFaces; ++f) {
       Retriever visitor(1);
@@ -317,7 +322,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
       if (visitor.getSize() != 1) {
         SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
       }
-      m->setValue(label, visitor.getPoints()[0], bctype);
+      m->setValue(label, visitor.getPoints()[0], bcType);
       visitor.clear();
     }
     label->view((const char *) bdName);

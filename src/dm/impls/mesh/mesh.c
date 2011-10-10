@@ -1741,7 +1741,7 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateSection"
-PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const char bcName[], PetscInt bcValue, PetscSection *section) {
+PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const char bcName[], PetscInt numBCValues, PetscInt bcValues[], PetscSection *section) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt       pStart = 0, pEnd = 0, maxConstraints = 0;
   PetscErrorCode ierr;
@@ -1758,13 +1758,15 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const
   }
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   if (bcName) {
-    const Obj<PETSC_MESH_TYPE::label_sequence>& boundary = mesh->getLabelStratum(bcName, bcValue);
+    for(PetscInt bc = 0; bc < numBCValues; ++bc) {
+      const Obj<PETSC_MESH_TYPE::label_sequence>& boundary = mesh->getLabelStratum(bcName, bcValues[bc]);
 
-    for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-      const int n = numDof[mesh->depth(*e_iter)];
+      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+        const int n = numDof[mesh->depth(*e_iter)];
 
-      maxConstraints = PetscMax(maxConstraints, n);
-      ierr = PetscSectionSetConstraintDof(*section, *e_iter, n);CHKERRQ(ierr);
+        maxConstraints = PetscMax(maxConstraints, n);
+        ierr = PetscSectionSetConstraintDof(*section, *e_iter, n);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
