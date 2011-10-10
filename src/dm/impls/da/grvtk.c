@@ -200,7 +200,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
         if (!rank) {
           if (r) {
-            PetscInt nn;
+            PetscMPIInt nn;
             ierr = MPI_Recv(array,nnodes*3,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
             ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
             if (nn != nnodes*3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
@@ -245,7 +245,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
       if (!rank) {
         if (r) {
-          PetscInt nn;
+          PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
