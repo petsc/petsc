@@ -49,7 +49,7 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ f
   Mat            *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
   Mat            A_loc,B_seq;
   Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt       brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+  //PetscInt       brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */ // not being used!!!
   PetscInt       *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
   PetscInt       abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
   MatReuse       reuse; 
