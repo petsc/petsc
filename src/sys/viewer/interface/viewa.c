@@ -1,6 +1,35 @@
 
 #include <private/viewerimpl.h>  /*I "petscsys.h" I*/  
 
+const char *const PetscViewerFormats[] = {
+  "DEFAULT",
+  "ASCII_MATLAB",
+  "ASCII_MATHEMATICA",
+  "ASCII_MATLAB",
+  "ASCII_MATHEMATICA",
+  "ASCII_IMPL",
+  "ASCII_INFO",
+  "ASCII_INFO_DETAIL",
+  "ASCII_COMMON",
+  "ASCII_SYMMODU",
+  "ASCII_INDEX",
+  "ASCII_DENSE",
+  "ASCII_MATRIXMARKET",
+  "ASCII_VTK",
+  "ASCII_VTK_CELL",
+  "ASCII_VTK_COORDS",
+  "ASCII_PCICE",
+  "ASCII_PYTHON",
+  "ASCII_FACTOR_INFO",
+  "DRAW_BASIC",
+  "DRAW_LG",
+  "DRAW_CONTOUR",
+  "DRAW_PORTS",
+  "VTK_VTS",
+  "NATIVE",
+  "NOFORMAT"
+};
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFormat" 
 /*@C
