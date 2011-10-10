@@ -6,7 +6,7 @@
 /*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
 
-   Not Collective
+   Not Collective unless object has not been named yet
 
    Input Parameters:
 +  obj - the Petsc variable

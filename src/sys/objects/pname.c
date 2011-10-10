@@ -76,7 +76,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 /*@C
    PetscObjectName - Gives an object a name if it does not have one
 
-   Not Collective
+   Collective
 
    Input Parameters:
 .  obj - the Petsc variable
