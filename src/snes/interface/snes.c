@@ -2757,7 +2757,18 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       }
       ierr = PetscViewerASCIISubtractTab(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
-    
+
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view_solution_vtk",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewer viewer;
+      ierr = PetscViewerCreate(((PetscObject)snes)->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+      ierr = VecView(snes->vec_sol,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+
     if (snes->errorifnotconverged && snes->reason < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
     if (grid <  snes->gridsequence) {
       DM  fine;
