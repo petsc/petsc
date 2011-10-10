@@ -1,7 +1,13 @@
 static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
- - Fix tests that need different header generation for a vector field
+ - Debug elasticity with multiple batches
+ - Automate testing of different:
+   - elements, batches, blocks, operators
+ - Process log_summary with Python (use existing tools)
+ - Put results in PyTables
+
+PYLITH:
  - Redo setup/cleanup in PyLith
  - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
  - Code up Jacobian (looks like original code)
@@ -10,7 +16,6 @@ static char help[] = "Testbed for FEM operations on the GPU\n\n";
 MUST CHECK WITH:
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
- - Different number of blocks (have to change it in the CUDA, so need a #define)
 #endif
 
 #include<petscdmmesh.h>
@@ -40,6 +45,7 @@ typedef struct {
   PetscLogEvent createMeshEvent, residualEvent, residualBatchEvent, jacobianEvent, jacobianBatchEvent, integrateBatchCPUEvent, integrateBatchGPUEvent, integrateGPUOnlyEvent;
   /* GPU partitioning */
   PetscInt      numBatches;        /* The number of cell batches per kernel */
+  PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Element quadrature */
   PetscQuadrature q;
 } AppCtx;
@@ -75,6 +81,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->batch           = PETSC_FALSE;
   options->gpu             = PETSC_FALSE;
   options->numBatches      = 1;
+  options->numBlocks       = 1;
   options->op              = LAPLACIAN;
   options->showResidual    = PETSC_TRUE;
   options->showJacobian    = PETSC_TRUE;
@@ -93,6 +100,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsBool("-batch", "Use the batch assembly method", "ex52.c", options->batch, &options->batch, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
   op = options->op;
   ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,PETSC_NULL);CHKERRQ(ierr);
   options->op = (OpType) op;
@@ -679,7 +687,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   }
   // Conforming batches
   PetscInt blockSize  = numBasisFuncs*numQuadPoints;
-  PetscInt numBlocks  = 2;
+  PetscInt numBlocks  = user->numBlocks;
   PetscInt batchSize  = numBlocks * blockSize;
   PetscInt numBatches = user->numBatches;
   PetscInt numChunks  = numCells / (numBatches*batchSize);
