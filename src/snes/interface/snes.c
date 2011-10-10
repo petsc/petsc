@@ -495,6 +495,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",snes->maxstep,&snes->maxstep,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_steptol","Minimum lambda allowed","None",snes->steptol,&snes->steptol,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",snes->damping,&snes->damping,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_ls_it"      ,"Line search iterations","SNES",snes->ls_its,&snes->ls_its,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",snes->ls_monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)snes->ls_type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
@@ -1119,6 +1120,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   /* initialize the line search options */
   snes->ls_type           = SNES_LS_BASIC;
+  snes->ls_its            = 1;
   snes->damping           = 1.0;
   snes->maxstep           = 1e8;
   snes->steptol           = 1e-12;

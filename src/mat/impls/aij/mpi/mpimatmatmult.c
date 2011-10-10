@@ -99,9 +99,11 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
-  PetscInt           start,end;
   Mat_MatMatMultMPI  *mult;
   PetscContainer     container;
+  Mat                AB,*seq;
+  Mat_MPIAIJ         *a=(Mat_MPIAIJ*)A->data;
+  PetscInt           *idx,i,start,ncols,nzA,nzB,*cmap,imark;
 
   PetscFunctionBegin;
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
@@ -109,32 +111,55 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
+  /* get isrowb: nonzero col of A */ 
+  start = A->cmap->rstart;
+  cmap  = a->garray;
+  nzA   = a->A->cmap->n; 
+  nzB   = a->B->cmap->n;
+  ierr  = PetscMalloc((nzA+nzB)*sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ncols = 0;
+  for (i=0; i<nzB; i++) {  /* row < local row index */
+    if (cmap[i] < start) idx[ncols++] = cmap[i];
+    else break;
+  }
+  imark = i;
+  for (i=0; i<nzA; i++) idx[ncols++] = start + i;  /* local rows */
+  for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,&mult->isrowb);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,B->cmap->N,0,1,&mult->iscolb);CHKERRQ(ierr);
+
+  /*  get isrowa: all local rows of A */
+  ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap->n,A->rmap->rstart,1,&mult->isrowa);CHKERRQ(ierr);
+
+  /* Below should go to MatMatMultNumeric_MPIAIJ_MPIAIJ() - How to generate C there? */
   /* create a seq matrix B_seq = submatrix of B by taking rows of B that equal to nonzero col of A */
-  ierr = MatGetBrowsOfAcols(A,B,MAT_INITIAL_MATRIX,&mult->isrowb,&mult->iscolb,&mult->brstart,&mult->B_seq);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_INITIAL_MATRIX,&seq);CHKERRQ(ierr);
+  mult->B_seq = *seq;
+  ierr = PetscFree(seq);CHKERRQ(ierr);
 
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
-  start = A->rmap->rstart; end = A->rmap->rend;
-  ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&mult->isrowa);CHKERRQ(ierr);
-  ierr = MatMPIAIJGetLocalMatCondensed(A,MAT_INITIAL_MATRIX,&mult->isrowa,&mult->isrowb,&mult->A_loc);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_INITIAL_MATRIX,&seq);CHKERRQ(ierr); 
+  mult->A_loc = *seq;
+  ierr = PetscFree(seq);CHKERRQ(ierr);
 
   /* compute C_seq = A_seq * B_seq */
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_INITIAL_MATRIX,fill,&mult->C_seq);CHKERRQ(ierr);
-
+ 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr);
+  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_INITIAL_MATRIX,&AB);CHKERRQ(ierr);
 
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)AB,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  mult->destroy   = (*C)->ops->destroy;
-  mult->duplicate = (*C)->ops->duplicate;
-  (*C)->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
-  (*C)->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
-
+  mult->destroy      = AB->ops->destroy;
+  mult->duplicate    = AB->ops->duplicate;
+  AB->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
+  AB->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
+  *C                 = AB;
   PetscFunctionReturn(0);
 }
 

@@ -205,6 +205,15 @@ def move_configure_log(framework):
   return
 
 def petsc_configure(configure_options): 
+  try:
+    petscdir = os.environ['PETSC_DIR']
+    sys.path.append(os.path.join(petscdir,'bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)  
+  except:
+    pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='  

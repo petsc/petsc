@@ -1,11 +1,11 @@
 #include <petscsys.h>
 #include <assert.h>
 
-__device__ float2 laplacian(float u[], float2 gradU[], int comp) {
+__device__ float2 f1_laplacian(float u[], float2 gradU[], int comp) {
   return gradU[comp];
 }
 
-__device__ float2 elasticity(float u[], float2 gradU[], int comp) {
+__device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
   float2 f1;
 
   switch(comp) {
@@ -32,27 +32,27 @@ __device__ float2 elasticity(float u[], float2 gradU[], int comp) {
 // N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b
 // N_{cb}  Number of serial cell batches:         input
 // N_c     Number of total cells:                 N_{cb}*N_{t}
-const int N_bl = 1;
 
-__global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
+__global__ void integrateElementQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
   #include "ex52_inline.h"
   const int        dim     = 2;
   const int        N_b     = numBasisFunctions_0;   // The number of basis functions
   const int        N_comp  = numBasisComponents_0;  // The number of basis function components
   const int        N_bt    = N_b*N_comp;            // The total number of scalar basis functions
   const int        N_q     = numQuadraturePoints_0; // The number of quadrature points
-  const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not process simultaneously
+  const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously
   const int        N_t     = N_bs*N_bl;             // The number of threads, N_bs * N_bl
   const int        N_c     = N_cb * (N_t/N_comp);
   const int        N_sbc   = N_bs / (N_q * N_comp);
   const int        N_sqc   = N_bs / N_bt;
   /* Calculated indices */
   const int        tidx    = threadIdx.x + blockDim.x*threadIdx.y;
-  const int        bidx    = tidx % N_bt;          // Basis function mapped to this thread
-  const int        cidx    = tidx % N_comp;        // Basis component mapped to this thread
-  const int        qidx    = tidx % N_q;           // Quadrature point mapped to this thread
-  const int        blbidx  = tidx % (N_bl * N_q);  // Cell mapped to this thread in the basis phase
-  const int        blqidx  = tidx % (N_bl * N_b);  // Cell mapped to this thread in the quadrature phase
+  const int        blidx   = tidx / N_bs;            // Block number for this thread
+  const int        bidx    = tidx % N_bt;            // Basis function mapped to this thread
+  const int        cidx    = tidx % N_comp;          // Basis component mapped to this thread
+  const int        qidx    = tidx % N_q;             // Quadrature point mapped to this thread
+  const int        blbidx  = tidx % N_q + blidx*N_q; // Cell mapped to this thread in the basis phase
+  const int        blqidx  = tidx % N_b + blidx*N_b; // Cell mapped to this thread in the quadrature phase
   const int        gidx    = blockIdx.y*gridDim.x + blockIdx.x;
   const int        Goffset = gidx*N_c;
   const int        Coffset = gidx*N_c*N_bt;
@@ -123,8 +123,7 @@ __global__ void integrateElasticityQuadrature(int N_cb, float *coefficients, flo
         }
       }
       /* Process values at quadrature points */
-      f_1[fidx] = laplacian(u, gradU, cidx);
-      //f_1[fidx] = elasticity(u, gradU, cidx);
+      f_1[fidx] = f1_func(u, gradU, cidx);
       f_1[fidx].x *= detJ[cell]*w;
       f_1[fidx].y *= detJ[cell]*w;
     }
@@ -238,8 +237,8 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  assert(Nbc*N_comp == N_t);
   assert(Nbl == N_bl);
+  assert(Nbc*N_comp == N_t);
   // Marshalling
   ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(float));CHKERRQ(ierr);
   ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(float));CHKERRQ(ierr);
@@ -265,7 +264,7 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
     ierr = PetscPrintf(PETSC_COMM_SELF, " N_t: %d, N_cb: %d\n", N_t, Ncb);
   //}
   ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
-  integrateElasticityQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec);
+  integrateElementQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec);
   ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
   ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
   ierr = cudaEventElapsedTime(&msElapsedTime, start, stop);CHKERRQ(ierr);

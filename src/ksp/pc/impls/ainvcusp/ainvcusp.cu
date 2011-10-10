@@ -315,6 +315,15 @@ static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
 
 /* -------------------------------------------------------------------------- */
 
+/*MC
+     PCAINVCUSP  - A sparse approximate inverse precondition that runs on the Nvidia GPU.
+
+
+   http://docs.cusp-library.googlecode.com/hg/classcusp_1_1precond_1_1bridson__ainv.html
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

@@ -17,8 +17,10 @@ generator.setup()
 dim        = int(sys.argv[1])
 order      = int(sys.argv[2])
 components = int(sys.argv[3])
-filename   = sys.argv[4]
+numBlocks  = int(sys.argv[4])
+operator   = sys.argv[5]
+filename   = sys.argv[6]
 element    = Lagrange(default_simplex(dim), order)
 element.numComponents = components
 elements   = [element]
-generator.run(elements, filename)
+generator.run(elements, numBlocks, operator, filename)

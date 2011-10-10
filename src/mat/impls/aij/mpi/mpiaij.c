@@ -5010,19 +5010,18 @@ PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 
    Output Parameter:
 +    rowb, colb - index sets of rows and columns of B to extract 
-.    brstart - row index of B_seq from which next B->rmap->n rows are taken from B's local rows
 -    B_seq - the sequential matrix generated
 
     Level: developer
 
 @*/
-PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
+PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,Mat *B_seq) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          *idx,i,start,ncols,nzA,nzB,*cmap,imark;
   IS                isrowb,iscolb;
-  Mat               *bseq;
+  Mat               *bseq=PETSC_NULL;
  
   PetscFunctionBegin;
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
@@ -5045,7 +5044,6 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
     for (i=0; i<nzA; i++) idx[ncols++] = start + i;  /* local rows */
     for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,&isrowb);CHKERRQ(ierr);
-    *brstart = imark;
     ierr = ISCreateStride(PETSC_COMM_SELF,B->cmap->N,0,1,&iscolb);CHKERRQ(ierr);
   } else {
     if (!rowb || !colb) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS rowb and colb must be provided for MAT_REUSE_MATRIX");
