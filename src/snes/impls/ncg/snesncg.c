@@ -169,7 +169,7 @@ PetscErrorCode SNESLineSearchExactLinear_NCG(SNES snes,void *lsctx,Vec X,Vec F,V
   PetscFunctionBegin;
   /*
 
-   The exact step size for linear CG is just:
+   The exact step size for unpreconditioned linear CG is just:
 
    alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy)
 
@@ -204,7 +204,7 @@ PetscErrorCode  SNESLineSearchSetType_NCG(SNES snes, SNESLineSearchType type)
     ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NCG,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_TEST:
     ierr = SNESLineSearchSet(snes,SNESLineSearchExactLinear_NCG,PETSC_NULL);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       PetscFunctionReturn(0);
     }
   }
-  ierr = VecDot(lX, lX, &dXdot);CHKERRQ(ierr);
+  ierr = VecDot(lX, F, &dXdot);CHKERRQ(ierr);
   for(i = 1; i < maxits; i++) {
     lsSuccess = PETSC_TRUE;
     ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, lX, fnorm, 0.0, G, W, &dummyNorm, &gnorm, &lsSuccess);CHKERRQ(ierr);
@@ -354,9 +354,9 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecAXPY(dX,-1.0,X);CHKERRQ(ierr);
     }
 
-    /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
+    /* compute the conjugate direction lX = dX + beta*lX with beta = ((F, dX) / (F_old, dX_old) (Fletcher-Reeves update)*/
     dXdot_old = dXdot;
-    ierr = VecDot(dX, dX, &dXdot);CHKERRQ(ierr);
+    ierr = VecDot(dX, F, &dXdot);CHKERRQ(ierr);
 #if 0
     if (1)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "beta %e = %e / %e \n", dXdot / dXdot_old, dXdot, dXdot_old);CHKERRQ(ierr);
@@ -411,7 +411,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
