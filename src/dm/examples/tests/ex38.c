@@ -8,11 +8,11 @@ static char help[] = "Tests DMGlobalToLocal() for 3d DA with stencil width of 2.
 int main(int argc,char **argv)
 {
   PetscInt         N = 3,M=2,P=4,dof=1,rstart,rend,i;
-  PetscInt         stencil_width=1,st;
+  PetscInt         stencil_width=2;
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  DMDABoundaryType bx = DMDA_BOUNDARY_PERIODIC,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
-  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
   Vec              global,local;
 
@@ -25,8 +25,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr); 
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
-  stencil_type = (DMDAStencilType) st;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",(PetscInt*)&stencil_type,PETSC_NULL);CHKERRQ(ierr); 
 
   ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
 
