@@ -76,13 +76,14 @@ def check(args):
   else:
     examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5.c')]
   # Fortran test
-  if hasattr(maker.configInfo.compilers, 'FC'):
-    if maker.configInfo.fortrancpp.fortranDatatypes:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
-    elif maker.configInfo.compilers.fortranIsF90:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
-    else:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
+  if not len(args.files):
+    if hasattr(maker.configInfo.compilers, 'FC'):
+      if maker.configInfo.fortrancpp.fortranDatatypes:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
+      elif maker.configInfo.compilers.fortranIsF90:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
+      else:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
     if isinstance(ex, list):
       exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
