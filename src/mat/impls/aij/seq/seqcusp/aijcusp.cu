@@ -1570,19 +1570,6 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 }*/
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt *,const PetscScalar*);
-extern PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatAXPY_SeqAIJCUSP"
-PetscErrorCode MatAXPY_SeqAIJCUSP(Mat Y,PetscScalar a,Mat X,MatStructure str)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
-  Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  PetscFunctionReturn(0);
-}
-
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 
@@ -1599,7 +1586,6 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   b = (Mat_SeqAIJ*)B->data;
   B->ops->mult    = MatMult_SeqAIJCUSP;
   B->ops->multadd = MatMultAdd_SeqAIJCUSP;
-  B->ops->axpy    = MatAXPY_SeqAIJCUSP;
 
   if (B->factortype==MAT_FACTOR_NONE) {
     /* you cannot check the inode.use flag here since the matrix was just created.*/
@@ -1708,7 +1694,6 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   aij->inode.use  = PETSC_FALSE;
   B->ops->mult    = MatMult_SeqAIJCUSP;
   B->ops->multadd = MatMultAdd_SeqAIJCUSP;
-  B->ops->axpy    = MatAXPY_SeqAIJCUSP;
   B->spptr        = new Mat_SeqAIJCUSP;
   ((Mat_SeqAIJCUSP *)B->spptr)->mat = 0;
   ((Mat_SeqAIJCUSP *)B->spptr)->tempvec = 0;
