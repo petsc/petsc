@@ -594,6 +594,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   PetscInt       numDof_2[4] = {1, 0, 0, 0};
   PetscInt      *numDof;
   const char    *bcLabel = PETSC_NULL;
+  PetscInt       markers[1] = {1};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -613,7 +614,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   if (user->bcType == DIRICHLET) {
     bcLabel = "marker";
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

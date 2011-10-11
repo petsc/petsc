@@ -13,6 +13,7 @@ extern PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
 extern PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 extern PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 extern PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
+extern PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -51,6 +52,7 @@ PetscErrorCode  PetscViewerRegisterAll(const char *path)
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscViewerRegisterDynamic(PETSCVIEWERAMS,        path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 
 #endif
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERVTK,        path,"PetscViewerCreate_VTK",        PetscViewerCreate_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

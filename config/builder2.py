@@ -27,6 +27,37 @@ def build(args):
   maker.cleanup()
   return 0
 
+def buildExample(args):
+  '''Build and link an example'''
+  import shutil
+
+  maker = builder.PETScMaker()
+  maker.setup()
+  examples = []
+  for f in args.files:
+    if f[0] == '[':
+      examples.append(map(os.path.abspath, f[1:-1].split(',')))
+    else:
+      examples.append(os.path.abspath(f))
+  for ex in examples:
+    if isinstance(ex, list):
+      exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
+      exampleDir  = os.path.dirname(ex[0])
+    else:
+      exampleName = os.path.splitext(os.path.basename(ex))[0]
+      exampleDir  = os.path.dirname(ex)
+    objDir        = maker.getObjDir(exampleName)
+    if os.path.isdir(objDir): shutil.rmtree(objDir)
+    os.mkdir(objDir)
+    executable  = os.path.join(objDir, exampleName)
+    objects = maker.buildFile(ex, objDir)
+    if not len(objects):
+      print 'EXAMPLE BUILD FAILED (check make.log for details)'
+      return 1
+    maker.link(executable, objects, maker.configInfo.languages.clanguage)
+  maker.cleanup()
+  return 0
+
 def check(args):
   '''Check that build is functional'''
   import shutil
@@ -68,31 +99,27 @@ def check(args):
       if not builder.regressionRequirements[paramKey].issubset(packageNames):
         raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
     params = builder.regressionParameters.get(paramKey, {})
-    if isinstance(params, list):
-      if 'setup' in params[0]:
-        print params[0]['setup']
-        os.system('python '+params[0]['setup'])
-    else:
-      if 'setup' in params:
-        print params['setup']
-    objects = maker.buildFile(ex, objDir)
-    if not len(objects):
-      print 'TEST FAILED (check make.log for details)'
-      return 1
-    maker.link(executable, objects, maker.configInfo.languages.clanguage)
-    if isinstance(params, list):
-      for testnum, param in enumerate(params):
-        if not 'args' in param: param['args'] = ''
-        param['args'] += extraArgs
-        if maker.runTest(exampleDir, executable, testnum, **param):
-          print 'TEST FAILED (check make.log for details)'
+    if not isinstance(params, list):
+      params = [params]
+    # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
+    rebuildTest = True
+    for testnum, param in enumerate(params):
+      if 'setup' in param:
+        print param['setup']
+        os.system('python '+param['setup'])
+        rebuildTest = True
+      if rebuildTest:
+        objects = maker.buildFile(ex, objDir)
+        if not len(objects):
+          print 'TEST BUILD FAILED (check make.log for details)'
           return 1
-    else:
-      if not 'args' in params: params['args'] = ''
-      params['args'] += extraArgs
-      if maker.runTest(exampleDir, executable, 1, **params):
-        print 'TEST FAILED (check make.log for details)'
+        maker.link(executable, objects, maker.configInfo.languages.clanguage)
+      if not 'args' in param: param['args'] = ''
+      param['args'] += extraArgs
+      if maker.runTest(exampleDir, executable, testnum, **param):
+        print 'TEST RUN FAILED (check make.log for details)'
         return 1
+      rebuildTest = False
     if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
   print 'All tests pass'
   maker.cleanup()
@@ -141,6 +168,9 @@ parser_build = subparsers.add_parser('build', help='Compile all out of date sour
 parser_build.add_argument('files', nargs='*', help='Extra files to incorporate into the build')
 parser_build.add_argument('--parallel', action='store_true', default=False, help='Execute the build in parallel')
 parser_build.set_defaults(func=build)
+parser_check = subparsers.add_parser('buildExample', help='Compile and link an example')
+parser_check.add_argument('files', nargs='+', help='The example files')
+parser_check.set_defaults(func=buildExample)
 parser_check = subparsers.add_parser('check', help='Check that build is functional')
 parser_check.add_argument('files', nargs='*', help='Extra examples to test')
 parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')

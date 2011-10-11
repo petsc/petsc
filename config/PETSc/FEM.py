@@ -298,6 +298,23 @@ class QuadratureGenerator(script.Script):
                    self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'const float'+str(dim), static = False, packSize = dim)])
     return code
 
+  def getPhysicsRoutines(self, operator):
+    '''Should eventually generate the entire evaluation at quadrature points. Now it just defines a name'''
+    from Cxx import Define
+    f1 = Define()
+    f1.identifier = 'f1_func'
+    f1.replacementText = 'f1_'+operator
+    return [f1]
+
+  def getComputationLayoutStructs(self, numBlocks):
+    '''Right now, this is used for GPU data layout'''
+    from Cxx import Declarator
+    N_bl = Declarator()
+    N_bl.identifier  = 'N_bl'
+    N_bl.type        = self.Cxx.typeMap['const int']
+    N_bl.initializer = self.Cxx.getInteger(numBlocks)
+    return [self.Cxx.getDecl(N_bl, 'Number of concurrent blocks')]
+
   def getQuadratureBlock(self, num):
     from Cxx import CompoundStatement
     cmpd = CompoundStatement()
@@ -741,7 +758,7 @@ class QuadratureGenerator(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, elements, inline = False):
+  def getElementSource(self, elements, numBlocks = 1, operator = None, inline = False):
     from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module', debugSection = 'codegen')
@@ -760,6 +777,8 @@ class QuadratureGenerator(script.Script):
         if inline:
           defns.extend(self.getQuadratureStructsInline(2*len(quadrature.pts)-1, quadrature, n))
           defns.extend(self.getBasisStructsInline(name, element, quadrature, n))
+          defns.extend(self.getPhysicsRoutines(operator))
+          defns.extend(self.getComputationLayoutStructs(numBlocks))
         else:
           defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
           defns.extend(self.getBasisStructs(name, element, quadrature, n))
@@ -798,7 +817,7 @@ class QuadratureGenerator(script.Script):
         print e
     return
 
-  def run(self, elements, filename = ''):
+  def run(self, elements, numBlocks, operator, filename = ''):
     import os
     if elements is None:
       from FIAT.reference_element import default_simplex
@@ -807,7 +826,7 @@ class QuadratureGenerator(script.Script):
       elements =[lagrange(default_simplex(2), order)]
       self.logPrint('Making a P'+str(order)+' Lagrange element on a triangle')
     self.outputElementSource(self.getElementSource(elements), filename)
-    self.outputElementSource(self.getElementSource(elements, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
     return
 
 if __name__ == '__main__':

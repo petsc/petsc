@@ -110,6 +110,7 @@ extern PetscErrorCode DMView_DA_Private(DM);
 extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
+extern PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
 
 extern PetscLogEvent  DMDA_LocalADFunction;
 

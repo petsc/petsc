@@ -247,7 +247,7 @@ static const char *PetscErrorStrings[] = {
   /*81 */ "Detected zero pivot in Cholesky factorization:\nsee http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#ZeroPivot",
           "  ",
           "  ",
-          "Overflow in integer operation:\see http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#64-bit-indices",
+          "Overflow in integer operation:\nsee http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#64-bit-indices",
   /*85 */ "Null argument, when expecting valid pointer",
   /*86 */ "Unknown type. Check for miss-spelling or missing external package needed for type:\nsee http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#external",
   /*87 */ "Not used",

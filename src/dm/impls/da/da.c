@@ -599,7 +599,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
 PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N,P;
+  PetscInt       M,N,P,i;
   DM             da2;
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
@@ -688,6 +688,11 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
+  }
+  for (i=0; i<da->bs; i++) {
+    const char *fieldname;
+    ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da2,i,fieldname);CHKERRQ(ierr);
   }
   *daref = da2;
   PetscFunctionReturn(0);
