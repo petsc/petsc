@@ -197,7 +197,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   PetscReal step=1.0,f, descent,con2;
   PetscReal cnorm, mnorm;
   PetscReal adec,r2,rGL_U,rWU;
-  
+  PetscBool set,pset,flag,pflag,symmetric;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
@@ -225,11 +225,25 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   /* Evaluate Lagrangian function and gradient */
   /* p0 */
   ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
   if (tao->jacobian_state_inv) {
-    ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+    if (symmetric) {
+      ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr); } else {
+      ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+    }
   } else {
     ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, lclP->statematflag); CHKERRQ(ierr);
-    ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    if (symmetric) {
+      ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    }
   }
     
   ierr = VecCopy(lclP->lamda,lclP->lamda0); CHKERRQ(ierr);
@@ -273,6 +287,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     
     /* Solve r = A\con */
     ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+    
     if (tao->jacobian_state_inv) {
       ierr = MatMult(tao->jacobian_state_inv, tao->constraints, lclP->r); CHKERRQ(ierr);
     } else {
@@ -285,7 +300,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     ierr = VecSet(lclP->s, 0.0); CHKERRQ(ierr);
 
     /* Make sure the Newton direction is a descent direction for the merit function */
-    ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    if (symmetric)  {
+      ierr = MatMult(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    } else {
+      ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    }
     
     ierr = VecDot(lclP->r,lclP->WU,&descent); CHKERRQ(ierr);
     if (descent <= 0) {
@@ -372,12 +391,26 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* Compute multipliers */
       /* p1 */
       ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
+      
       if (tao->jacobian_state_inv) {
-	ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	}
       } else {
-	ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = KSPSolve(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	}
       }
-
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g1); CHKERRQ(ierr);
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V); CHKERRQ(ierr);
     
@@ -399,7 +432,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Recover the full space direction */ 
       ierr = MatMult(tao->jacobian_design,lclP->s,lclP->WU); CHKERRQ(ierr);
-      ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      //ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       if (tao->jacobian_state_inv) {
 	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r); CHKERRQ(ierr);
       } else {
@@ -440,10 +473,26 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 	ierr = VecAXPY(lclP->lamda,-lclP->rho,tao->constraints); CHKERRQ(ierr);
       }
 
+      ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
+
+      
       if (tao->jacobian_state_inv) {
-	ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	}
       } else {
-	ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	}
       }
 	
     
@@ -543,6 +592,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
 {
   TaoSolver tao = (TaoSolver)ptr;
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
+  PetscBool set,pset,flag,pflag,symmetric;
   PetscReal cdotl;
   PetscErrorCode ierr;
 
@@ -554,7 +604,12 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
     ierr = TaoComputeJacobianDesign(tao,X, &tao->jacobian_design); CHKERRQ(ierr);
   }
   ierr = TaoComputeConstraints(tao,X, tao->constraints); CHKERRQ(ierr);
-
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
 
   ierr = VecDot(lclP->lamda0, tao->constraints, &cdotl); CHKERRQ(ierr);
   lclP->lgn = *f - cdotl;
@@ -562,7 +617,11 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   /* Gradient of Lagrangian GL = G - J' * lamda */
   /*      WU = A' * WL
           WV = B' * WL */
-  ierr = MatMultTranspose(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  if (symmetric) {
+    ierr = MatMult(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  }
   ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda0,lclP->GL_V); CHKERRQ(ierr);
   ierr = VecScale(lclP->GL_U,-1.0); CHKERRQ(ierr);
   ierr = VecScale(lclP->GL_V,-1.0); CHKERRQ(ierr);
@@ -583,6 +642,7 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   TaoSolver tao = (TaoSolver)ptr;
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
   PetscReal con2;
+  PetscBool flag,pflag,set,pset,symmetric;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -594,7 +654,19 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   /* Gradient of Aug. Lagrangian GAugL = GL + rho * J' c */
   /*      WU = A' * c
           WV = B' * c */
-  ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
+  if (symmetric) {
+    ierr = MatMult(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr); 
+  } else {
+    ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr);
+  }
+
   ierr = MatMultTranspose(tao->jacobian_design,tao->constraints,lclP->GAugL_V); CHKERRQ(ierr);
   ierr = VecAYPX(lclP->GAugL_U,lclP->rho,lclP->GL_U); CHKERRQ(ierr);
   ierr = VecAYPX(lclP->GAugL_V,lclP->rho,lclP->GL_V); CHKERRQ(ierr);
