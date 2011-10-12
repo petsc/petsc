@@ -4264,6 +4264,62 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMergeSymbolic"
+PetscErrorCode  MatMergeSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,N,i,rstart,nnz,*dnz,*onz;
+  PetscInt       *indx;
+
+  PetscFunctionBegin;
+  /* This routine will ONLY return MPIAIJ type matrix */
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  if (n == PETSC_DECIDE){ 
+    ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+  } 
+  ierr = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  rstart -= m;
+
+  ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+  for (i=0;i<m;i++) {
+    ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,PETSC_NULL);CHKERRQ(ierr);
+  }
+  
+  ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMergeNumeric"
+PetscErrorCode  MatMergeNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,N,i,rstart,nnz,Ii;
+  PetscInt       *indx;
+  PetscScalar    *values;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(outmat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0;i<m;i++) {
+    ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    Ii    = i + rstart;
+    ierr = MatSetValues(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&inmat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMerge"
 /*@
       MatMerge - Creates a single large PETSc matrix by concatinating sequential
@@ -4288,49 +4344,14 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 PetscErrorCode  MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
-  PetscInt       m,N,i,rstart,nnz,Ii,*dnz,*onz;
-  PetscInt       *indx;
-  PetscScalar    *values;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX){ 
-    /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
-    if (n == PETSC_DECIDE){ 
-      ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
-    } 
-    ierr = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    rstart -= m;
-
-    ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
-    for (i=0;i<m;i++) {
-      ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
-      ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,PETSC_NULL);CHKERRQ(ierr);
-    }
-    /* This routine will ONLY return MPIAIJ type matrix */
-    ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
-    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  
-  } else if (scall == MAT_REUSE_MATRIX){
-    ierr = MatGetOwnershipRange(*outmat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
-  }
-
-  for (i=0;i<m;i++) {
-    ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-    Ii    = i + rstart;
-    ierr = MatSetValues(*outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(&inmat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMergeSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
+  } 
+  ierr = MatMergeNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
