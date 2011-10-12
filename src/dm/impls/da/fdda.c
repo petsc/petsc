@@ -708,7 +708,13 @@ PetscErrorCode  DMGetMatrix_DA(DM da, const MatType mtype,Mat *J)
       SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
     }
-  } 
+  } else {
+    ISLocalToGlobalMapping ltog,ltogb;
+    ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
+  }
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
   ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"DM",(PetscObject)da);CHKERRQ(ierr);
