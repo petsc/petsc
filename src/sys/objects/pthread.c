@@ -151,6 +151,8 @@ PetscErrorCode PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThread
 {
   PetscErrorCode    ierr;
   PetscInt i;
+
+  PetscFunctionBegin;
   for(i=0; i<iTotThreads; i++) {
     ierr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
   }
@@ -170,6 +172,17 @@ PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+PETSC_STATIC_INLINE void PetscPthreadSetAffinity(PetscInt icorr)
+{
+  cpu_set_t mset;
+  int ncorr = get_nprocs();
+
+  CPU_ZERO(&mset);
+  CPU_SET(icorr%ncorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+}
+#endif
 
 /*
   'Tree' Thread Pool Functions 
@@ -180,8 +193,8 @@ void* PetscThreadFunc_Tree(void* arg) {
   int* pId = (int*)arg;
   int ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
-#if defined(PETSC_HAVE_CPU_SET_T)
-  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
 
   if((Mary*ThreadId+1)>(PetscMaxThreads-1)) {
@@ -425,8 +438,8 @@ void* PetscThreadFunc_Main(void* arg) {
   int* pId = (int*)arg;
   int ThreadId = *pId;
 
-#if defined(PETSC_HAVE_CPU_SET_T)
-  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
 
   ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
@@ -602,8 +615,8 @@ void* PetscThreadFunc_Chain(void* arg) {
   int SubWorker = ThreadId + 1;
   PetscBool PeeOn;
 
-#if defined(PETSC_HAVE_CPU_SET_T)
-  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
   if(ThreadId==(PetscMaxThreads-1)) {
     PeeOn = PETSC_TRUE;
@@ -830,10 +843,10 @@ void* PetscThreadFunc_True(void* arg) {
   int ierr,iVal;
   PetscErrorCode iterr;
 
-#if defined(PETSC_HAVE_CPU_SET_T)
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   int* pId      = (int*)arg;
   int  ThreadId = *pId; 
-  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
   ierr = pthread_mutex_lock(&job_true.mutex);
   job_true.iNumReadyThreads++;
@@ -981,19 +994,6 @@ PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void** data,PetscInt n) {
   return ijoberr;
 }
 
-#if defined(PETSC_HAVE_CPU_SET_T)
-PETSC_STATIC_INLINE PetscErrorCode PetscPthreadSchedSetAffinity(PetscInt icorr)
-{
-  cpu_set_t mset;
-  int ncorr = get_nprocs();
-
-  CPU_ZERO(&mset);
-  CPU_SET(icorr%ncorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-  return 0;
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private_Pthread"
 PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
@@ -1012,13 +1012,14 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   if(flg1) {
     PetscInt icorr;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CPU_SET_T)
-    ierr = PetscPthreadSetAffinity(icorr);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+    PetscPthreadSetAffinity(icorr);
 #endif
   }
 
-#if defined(PETSC_HAVE_CPU_SET_T)
-  PetscInt N_CORES = get_nprocs();
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  PetscInt N_CORES;
+  N_CORES = get_nprocs();
   ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
   char tstr[9];
   char tbuf[2];
