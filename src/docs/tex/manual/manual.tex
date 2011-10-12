@@ -55,7 +55,12 @@ hyperbaseurl
 % used in part1.tex.
 \def\shortintro{false}
 
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\rhead{PETSc 3.2 \today}
+
 \begin{document}
+
 %\pagestyle{empty}
 %\begin{figure*}[hbt]
 %\centerline{\includegraphics{titlepage1}}
@@ -97,7 +102,7 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 
 
 \cleardoublepage
-\pagestyle{plain}
+%\pagestyle{plain}
 
 \vspace{1in}
 \date{\today}

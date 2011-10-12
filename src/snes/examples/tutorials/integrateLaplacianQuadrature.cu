@@ -31,7 +31,7 @@ __device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
 // N_{sbc} Number of serial     basis      cells: N_{bs} / N_q
 // N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b
 // N_{cb}  Number of serial cell batches:         input
-// N_c     Number of total cells:                 N_{cb}*N_{t}
+// N_c     Number of total cells:                 N_{cb}*N_{t}/N_comp
 
 __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
   #include "ex52_inline.h"
@@ -42,7 +42,8 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
   const int        N_q     = numQuadraturePoints_0; // The number of quadrature points
   const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously
   const int        N_t     = N_bs*N_bl;             // The number of threads, N_bs * N_bl
-  const int        N_c     = N_cb * (N_t/N_comp);
+  const int        N_bc    = N_t/N_comp;            // The number of cells per batch (N_b*N_q*N_bl)
+  const int        N_c     = N_cb * N_bc;
   const int        N_sbc   = N_bs / (N_q * N_comp);
   const int        N_sqc   = N_bs / N_bt;
   /* Calculated indices */
@@ -83,15 +84,15 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
 
   for(int batch = 0; batch < N_cb; ++batch) {
     /* Load geometry */
-    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_t+tidx];
+    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];
     for(int n = 0; n < dim*dim; ++n) {
       const int offset = n*N_t;
-      invJ[offset+tidx] = jacobianInverses[(Goffset+batch*N_t)*dim*dim+offset+tidx];
+      invJ[offset+tidx] = jacobianInverses[(Goffset+batch*N_bc)*dim*dim+offset+tidx];
     }
     /* Load coefficients u_i for this cell */
     for(int n = 0; n < N_bt; ++n) {
       const int offset = n*N_t;
-      u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_bt+offset+tidx];
+      u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_b+offset+tidx];
     }
 
     /* Map coefficients to values at quadrature points */
@@ -163,6 +164,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
       }
       // Check that u_i is being used correctly
       //e_i = u_i[cell*N_bt+bidx];
+      //e_i = detJ[cell];
       //e_i = coefficients[Coffset+(batch*N_sbc+c)*N_t+tidx];
       //e_i = Coffset+(batch*N_sbc+c)*N_t+tidx;
       //e_i = cell*N_bt+bidx;

@@ -1569,7 +1569,7 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
   PetscFunctionReturn(0);
 }*/
 
-PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
+extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt *,const PetscScalar*);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 

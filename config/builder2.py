@@ -52,7 +52,7 @@ def buildExample(args):
     executable  = os.path.join(objDir, exampleName)
     objects = maker.buildFile(ex, objDir)
     if not len(objects):
-      print 'EXAMPLE BUILD FAILED (check make.log for details)'
+      print('EXAMPLE BUILD FAILED (check make.log for details)')
       return 1
     maker.link(executable, objects, maker.configInfo.languages.clanguage)
   maker.cleanup()
@@ -76,13 +76,14 @@ def check(args):
   else:
     examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5.c')]
   # Fortran test
-  if hasattr(maker.configInfo.compilers, 'FC'):
-    if maker.configInfo.fortrancpp.fortranDatatypes:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
-    elif maker.configInfo.compilers.fortranIsF90:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
-    else:
-      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
+  if not len(args.files):
+    if hasattr(maker.configInfo.compilers, 'FC'):
+      if maker.configInfo.fortrancpp.fortranDatatypes:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
+      elif maker.configInfo.compilers.fortranIsF90:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
+      else:
+        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
     if isinstance(ex, list):
       exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
@@ -105,23 +106,23 @@ def check(args):
     rebuildTest = True
     for testnum, param in enumerate(params):
       if 'setup' in param:
-        print param['setup']
+        print(param['setup'])
         os.system('python '+param['setup'])
         rebuildTest = True
       if rebuildTest:
         objects = maker.buildFile(ex, objDir)
         if not len(objects):
-          print 'TEST BUILD FAILED (check make.log for details)'
+          print('TEST BUILD FAILED (check make.log for details)')
           return 1
         maker.link(executable, objects, maker.configInfo.languages.clanguage)
       if not 'args' in param: param['args'] = ''
       param['args'] += extraArgs
       if maker.runTest(exampleDir, executable, testnum, **param):
-        print 'TEST RUN FAILED (check make.log for details)'
+        print('TEST RUN FAILED (check make.log for details)')
         return 1
       rebuildTest = False
     if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
-  print 'All tests pass'
+  print('All tests pass')
   maker.cleanup()
   return 0
 
@@ -150,7 +151,7 @@ def stubs(args):
   maker = builder.PETScMaker()
   maker.setup()
   for language in args.languages:
-    print language
+    print(language)
     getattr(maker, 'build'+language.capitalize()+'Stubs')()
   maker.cleanup()
   return 0
