@@ -95,6 +95,8 @@ extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolutionCreate(TS,PetscViewer,void**);
 extern PetscErrorCode   TSMonitorSolutionDestroy(void**);
 extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode   TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode   TSMonitorSolutionVTKDestroy(void*);
 
 extern PetscErrorCode   TSStep(TS);
 extern PetscErrorCode   TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
