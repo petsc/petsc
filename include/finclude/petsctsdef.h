@@ -49,7 +49,7 @@
 #define TSARKIMEX4  '4'
 #define TSARKIMEX5  '5'
 
-#if defined(PETSC_HAVE_ROSW)
+#define TSROSWType character*(80)
 #define TSROSW2M          '2m'
 #define TSROSW2P          '2p'
 #define TSROSWRA3PW       'ra3pw'
@@ -59,6 +59,5 @@
 #define TSROSWASSP3P3S1C  'assp3p3s1c'
 #define TSROSWLASSP3P4S2C 'lassp3p4s2c'
 #define TSROSWLLSSP3P3S2C 'llssp3p3s2c'
-#endif
 
 #endif
