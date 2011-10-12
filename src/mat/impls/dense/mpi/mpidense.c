@@ -252,6 +252,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
   /* Free work space */
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol_local,&icol);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
   *B = newmat;
   PetscFunctionReturn(0);
 }
