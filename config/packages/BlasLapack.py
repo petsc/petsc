@@ -171,7 +171,7 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-f-blas-lapack']:
       self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
-      self.downloadname     = 'fblaslapack'
+      self.downloadname     = 'f-blas-lapack'
       self.downloadfilename = 'fblaslapack'
 
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
