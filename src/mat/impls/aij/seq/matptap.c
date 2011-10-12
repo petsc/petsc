@@ -165,16 +165,14 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   PetscInt       *ci=c->i,*cj=c->j,*cjj;
   PetscInt       am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
-  PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
+  PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow,apcol;
   MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
-
-  apj      = (PetscInt *)(apa + cn);
-  apjdense = apj + cn;
+  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apj,cn,PetscInt,&apjdense);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -211,14 +209,16 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       cjj    = cj + ci[crow];
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
-      for (k=0;nextap<apnzj;k++) {
+      apcol = apj[nextap];
+      for (k=0; nextap<apnzj; k++) {
 #if defined(PETSC_USE_DEBUG)  
         if (k >= ci[crow+1] - ci[crow]) {
           SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
         }
 #endif
-        if (cjj[k]==apj[nextap]) {
-          caj[k] += (*pA)*apa[apj[nextap++]];
+        if (cjj[k] == apcol) {
+          caj[k] += (*pA)*apa[apcol];
+          apcol   = apj[++nextap];
         }
       }
       ierr = PetscLogFlops(2.0*apnzj);CHKERRQ(ierr);
@@ -227,14 +227,15 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
     /* Zero the current row info for A*P */
     for (j=0;j<apnzj;j++) {
-      apa[apj[j]]      = 0.;
-      apjdense[apj[j]] = 0;
+      apcol = apj[j];
+      apa[apcol]      = 0.;
+      apjdense[apcol] = 0;
     }
   }
 
   /* Assemble the final matrix and clean up */
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(apa);CHKERRQ(ierr);
+  ierr = PetscFree3(apa,apj,apjdense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
