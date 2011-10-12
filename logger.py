@@ -126,7 +126,7 @@ class Logger(args.ArgumentProcessor):
               os.rename(self.logName, self.logName+'.bkp')
               Logger.defaultLog = file(self.logName, 'w')
             except OSError:
-              print 'WARNING: Cannot backup log file, appending instead.'
+              sys.stdout.write('WARNING: Cannot backup log file, appending instead.\n')
               Logger.defaultLog = file(self.logName, 'a')
         else:
           Logger.defaultLog = file(self.logName, 'w')
