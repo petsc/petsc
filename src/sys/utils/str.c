@@ -675,8 +675,8 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Not Collective
 
    Input Parameters:
-+  a - pointer to string
--  b - string to find
++  haystack - string to search
+-  needle - string to find
 
    Output Parameter:
 .  tmp - location of occurance, is a PETSC_NULL if the string is not found
@@ -686,10 +686,10 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Level: intermediate
 
 @*/
-PetscErrorCode  PetscStrstr(const char a[],const char b[],char *tmp[])
+PetscErrorCode  PetscStrstr(const char haystack[],const char needle[],char *tmp[])
 {
   PetscFunctionBegin;
-  *tmp = (char *)strstr(a,b);
+  *tmp = (char *)strstr(haystack,needle);
   PetscFunctionReturn(0);
 }
 

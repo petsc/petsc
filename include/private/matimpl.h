@@ -1005,5 +1005,6 @@ extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtrans
 extern PetscLogEvent  MATMFFD_Mult;
 extern PetscLogEvent  MAT_GetMultiProcBlock;
 extern PetscLogEvent  MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+extern PetscLogEvent  MAT_Merge;
 
 #endif

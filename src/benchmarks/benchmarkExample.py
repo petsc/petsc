@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os
+import os,sys
 from benchmarkBatch import generateBatchScript
 
 class PETSc(object):
@@ -78,25 +78,23 @@ class PETScExample(object):
         print out
     return
 
-def processSummary(moduleName, times, events):
+def processSummary(moduleName, defaultStage, eventNames, times, events):
   '''Process the Python log summary into plot data'''
   m = __import__(moduleName)
   reload(m)
   # Total Time
   times.append(m.Time[0])
-  # Common events
-  #   VecMAXPY and VecMDot essentially give KSPGMRESOrthog
-  #   Add the time and flop rate
-  for name in ['VecMDot', 'VecMAXPY', 'KSPGMRESOrthog', 'MatMult']:
-    if not name in events:
-      events[name] = []
-    events[name].append((m.Solve.event[name].Time[0], m.Solve.event[name].Flops[0]/(m.Solve.event[name].Time[0] * 1e6)))
   # Particular events
-  for name in ['VecCUSPCopyTo', 'VecCUSPCopyFrom', 'MatCUSPCopyTo']:
-    if name in m.Solve.event:
+  for name in eventNames:
+    if name.find(':') >= 0:
+      stageName, name = name.split(':', 1)
+      stage = getattr(m, stageName)
+    else:
+      stage = getattr(m, defaultStage)
+    if name in stage.event:
       if not name in events:
         events[name] = []
-      events[name].append((m.Solve.event[name].Time[0], m.Solve.event[name].Flops[0]/(m.Solve.event[name].Time[0] * 1e6)))
+      events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
   return
 
 def plotSummaryLine(library, num, sizes, times, events):
@@ -188,19 +186,46 @@ def plotSummaryBar(library, num, sizes, times, events):
   return
 
 if __name__ == '__main__':
-  library = 'SNES'
-  num     = 19
-  ex      = PETScExample(library, num, pc_type='none', dmmg_nlevels=1, log_summary='summary.dat', log_summary_python='summary.py', mat_no_inode=None, preload='off')
-  sizes   = {}
-  times   = {}
-  events  = {}
-  for name, vecType, matType, opts in [('CPU', 'seq', 'seqaij', {}), ('GPU', 'seqcusp', 'seqaijcusp', {'cusp_synchronize': None})]:
+  import argparse
+
+  parser = argparse.ArgumentParser(description     = 'PETSc Benchmarking',
+                                   epilog          = 'This script runs src/<library>/examples/tutorials/ex<num>, For more information, visit http://www.mcs.anl.gov/petsc',
+                                   formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--library', default='SNES',             help='The PETSc library used in this example')
+  parser.add_argument('--num',     type = int, default='5',    help='The example number')
+  parser.add_argument('--module',  default='summary',          help='The module for timing output')
+  parser.add_argument('--scaling',                             help='Run parallel scaling test')
+  parser.add_argument('--size',    nargs='+',  default=['10'], help='Grid size (implementation dependent)')
+  parser.add_argument('--comp',    type = int, default='1',    help='Number of field components')
+  parser.add_argument('runs',      nargs='*',                  help='Run descriptions: <name>=<args>')
+  parser.add_argument('--stage',   default='Main_Stage',       help='The default logging stage')
+  parser.add_argument('--events',  nargs='+',                  help='Events to process')
+  parser.add_argument('--batch',   action='store_true', default=False, help='Generate batch files for the runs instead')
+
+  # Options for ex19: pc_type='none', dmmg_nlevels=1, mat_no_inode=None
+
+  args = parser.parse_args()
+  print(args)
+  ex     = PETScExample(args.library, args.num, log_summary='summary.dat', log_summary_python = None if args.batch else args.module+'.py', preload='off')
+  sizes  = {}
+  times  = {}
+  events = {}
+  for run in args.runs:
+    name, stropts = run.split('=', 1)
+    opts = dict([t if len(t) == 2 else (t[0], None) for t in [arg.split('=', 1) for arg in stropts.split(' ')]])
     sizes[name]  = []
     times[name]  = []
     events[name] = {}
-    #for n in [10, 20, 50, 100, 150, 200]:
-    for n in [10, 20]:
-      ex.run(da_grid_x=n, da_grid_y=n, da_vec_type=vecType, da_mat_type=matType, **opts)
-      sizes[name].append(n*n * 4)
-      processSummary('summary', times[name], events[name])
-  plotSummaryLine(library, num, sizes, times, events)
+    # DMDA implementation
+    #   Need a good way to get the DMDA info
+    for n in map(int, args.size):
+      print(name,opts)
+      ex.run(da_grid_x=n, da_grid_y=n, **opts)
+      sizes[name].append(n*n * args.comp)
+      processSummary('summary', args.stage, args.events, times[name], events[name])
+  print sizes
+  print times
+  print events
+  sys.exit(0)
+  if not args.batch: plotSummaryLine(args.library, args.num, sizes, times, events)
+# --num 19 --comp 4 --size 10 20 50 100 --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --stage Solve CPU='da_vec_type=seq da_mat_type=seqaij' GPU='da_vec_type=seqcusp da_mat_type=seqaijcusp cusp_synchronize'

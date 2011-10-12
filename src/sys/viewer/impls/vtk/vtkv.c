@@ -182,7 +182,7 @@ $    FILE_MODE_APPEND - open existing file for binary output (not currently supp
           VecView(), MatView(), VecLoad(), MatLoad(),
           PetscFileMode, PetscViewer
 @*/
-PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *vtk)
+PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *vtk)
 {
   PetscErrorCode ierr;
 

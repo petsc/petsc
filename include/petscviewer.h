@@ -284,6 +284,7 @@ extern PetscErrorCode  PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 
 typedef PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer);
 extern PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscObject);
+extern PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*
      These are all the default viewers that do not have 

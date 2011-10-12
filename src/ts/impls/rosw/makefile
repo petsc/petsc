@@ -1,5 +1,3 @@
-#requirespackage 'PETSC_HAVE_ROSW'
-
 ALL: lib
 
 CFLAGS   =
