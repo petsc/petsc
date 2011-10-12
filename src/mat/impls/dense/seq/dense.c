@@ -1354,6 +1354,7 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscBool  flg)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_NEW_DIAGONALS:
+  case MAT_KEEP_NONZERO_PATTERN:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SYMMETRIC:
