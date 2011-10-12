@@ -1349,7 +1349,10 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 .    -snes_compare_explicit - Compare the computed Jacobian to the finite difference Jacobian and output the differences
 .    -snes_compare_explicit_draw  - Compare the computed Jacobian to the finite difference Jacobian and draw the result
 .    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
--    -snes_compare_operator  - Make the comparison options above use the operator instead of the preconditioning matrix
+.    -snes_compare_operator  - Make the comparison options above use the operator instead of the preconditioning matrix
+.    -snes_compare_coloring - Compute the finite differece Jacobian using coloring and display differences
+.    -snes_compare_coloring_draw - Compute the finite differece Jacobian using coloring and draw differences
+-    -snes_compare_coloring_contour - Compute the finite differece Jacobian using coloring and show contours of matrices and differences
 
    Notes: 
    Most users should not need to explicitly call this routine, as it 
@@ -1471,6 +1474,61 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       ierr = PetscViewerDestroy(&vdraw);CHKERRQ(ierr);
       ierr = MatDestroy(&Bexp_mine);CHKERRQ(ierr);
       ierr = MatDestroy(&FDexp);CHKERRQ(ierr);
+    }
+  }
+  {
+    PetscBool flag = PETSC_FALSE,flag_draw = PETSC_FALSE,flag_contour = PETSC_FALSE;
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring",&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw",&flag_draw,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw_contour",&flag_contour,PETSC_NULL);CHKERRQ(ierr);
+    if (flag || flag_draw || flag_contour) {
+      Mat Bfd;
+      MatStructure mstruct;
+      PetscViewer vdraw,vstdout;
+      ISColoring iscoloring;
+      MatFDColoring matfdcoloring;
+      PetscErrorCode (*func)(SNES,Vec,Vec,void*);
+      void *funcctx;
+      PetscReal norm1,normmax;
+
+      ierr = MatDuplicate(*B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
+      ierr = MatGetColoring(Bfd,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(Bfd,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+
+      /* This method of getting the function is currently unreliable since it doesn't work for DM local functions. */
+      ierr = SNESGetFunction(snes,PETSC_NULL,&func,&funcctx);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))func,funcctx);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)matfdcoloring,((PetscObject)snes)->prefix);CHKERRQ(ierr);
+      ierr = PetscObjectAppendOptionsPrefix((PetscObject)matfdcoloring,"coloring_");CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringApply(Bfd,matfdcoloring,X,&mstruct,snes);CHKERRQ(ierr);
+      ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)snes)->comm,&vstdout);CHKERRQ(ierr);
+      if (flag_draw || flag_contour) {
+        ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,0,"Colored Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
+        if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
+      } else vdraw = PETSC_NULL;
+      ierr = PetscViewerASCIIPrintf(vstdout,"Explicit preconditioning Jacobian\n");CHKERRQ(ierr);
+      if (flag) {ierr = MatView(*B,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {ierr = MatView(*B,vdraw);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(vstdout,"Colored Finite difference Jacobian\n");CHKERRQ(ierr);
+      if (flag) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {ierr = MatView(Bfd,vdraw);CHKERRQ(ierr);}
+      ierr = MatAYPX(Bfd,-1.0,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(Bfd,NORM_1,&norm1);CHKERRQ(ierr);
+      ierr = MatNorm(Bfd,NORM_MAX,&normmax);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vstdout,"User-provided matrix minus finite difference Jacobian, norm1=%G normmax=%G\n",norm1,normmax);CHKERRQ(ierr);
+      if (flag) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {              /* Always use contour for the difference */
+        ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+        ierr = MatView(Bfd,vdraw);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);
+      }
+      if (flag_contour) {ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);}
+      ierr = PetscViewerDestroy(&vdraw);CHKERRQ(ierr);
+      ierr = MatDestroy(&Bfd);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
