@@ -341,7 +341,7 @@ runex25:
 	   ${RM} -f ex25_1.tmp
 
 runex26:
-	-@${MPIEXEC} -n 1 ./ex26 -da_grid_x 20 -da_grid_y 20 -lidvelocity 100 -grashof 1e3 -ts_max_steps 100 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type rosw -ts_rosw_type ra3pw -ts_monitor -ts_monitor_solution_vtk 'foo-%03D.vts' -snes_mf > ex26_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex26 -da_grid_x 20 -da_grid_y 20 -lidvelocity 100 -grashof 1e3 -ts_max_steps 100 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type rosw -ts_rosw_type ra3pw -ts_monitor -ts_monitor_solution_vtk 'foo-%03D.vts' > ex26_1.tmp 2>&1; \
 	   ${DIFF} output/ex26_1.out ex26_1.tmp || echo "Possible problem with ex26_1, diffs above \n=========================================";  \
 	   ${RM} -f ex26_1.tmp
 
