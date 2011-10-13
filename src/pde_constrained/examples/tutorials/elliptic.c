@@ -846,6 +846,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatAssemblyEnd(user->Grad,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
 
+
   /* Generate arithmetic averaging matrix Av */
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Av); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Av,PETSC_DECIDE,PETSC_DECIDE,m,n); CHKERRQ(ierr);
@@ -913,7 +914,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
       j = i - m;
       ierr = MatSetValues(user->L,1,&i,1,&j,&sqrt_beta,INSERT_VALUES); CHKERRQ(ierr);
     }
-    }
+  }
 
   ierr = MatAssemblyBegin(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -922,7 +923,40 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* Generate Div matrix */
   if (!user->use_ptap) {
-    ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);
+    /* Generate Div matrix */
+    ierr = MatCreate(PETSC_COMM_WORLD,&user->Div); CHKERRQ(ierr);
+    ierr = MatSetSizes(user->Div,PETSC_DECIDE,PETSC_DECIDE,n,m); CHKERRQ(ierr);
+    ierr = MatSetFromOptions(user->Div); CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(user->Div,4,PETSC_NULL,4,PETSC_NULL); CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(user->Div,6,PETSC_NULL); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);
+
+    for (i=istart; i<iend; i++){
+      if (i<m/3){
+	iblock = i / (user->mx-1);
+	j = iblock*user->mx + (i % (user->mx-1));
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES); CHKERRQ(ierr);
+	j = j+1;
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES); CHKERRQ(ierr);
+      }
+      if (i>=m/3 && i<2*m/3){
+	iblock = (i-m/3) / (user->mx*(user->mx-1));
+	j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES); CHKERRQ(ierr);
+	j = j + user->mx;
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES); CHKERRQ(ierr);
+      }
+      if (i>=2*m/3){
+	j = i-2*m/3;
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES); CHKERRQ(ierr);
+	j = j + user->mx*user->mx;
+	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES); CHKERRQ(ierr);
+      }
+    }
+
+    ierr = MatAssemblyBegin(user->Div,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(user->Div,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
     ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork); CHKERRQ(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_WORLD,&user->Diag); CHKERRQ(ierr);
@@ -1011,7 +1045,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     for (i=0;i<user->m;i++) {
       user->ones[i]=v;
     }
-    ierr = MatCreate(PETSC_COMM_WORLD,&user->Ones); CHKERRQ(ierr);
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user->m,1,user->ones,&user->Ones); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
