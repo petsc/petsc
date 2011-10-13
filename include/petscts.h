@@ -40,9 +40,7 @@ J*/
 #define TSGL              "gl"
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
-#if defined(PETSC_HAVE_ROSW)
 #define TSROSW            "rosw"
-#endif
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -95,6 +93,8 @@ extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolutionCreate(TS,PetscViewer,void**);
 extern PetscErrorCode   TSMonitorSolutionDestroy(void**);
 extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode   TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode   TSMonitorSolutionVTKDestroy(void*);
 
 extern PetscErrorCode   TSStep(TS);
 extern PetscErrorCode   TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
@@ -566,7 +566,6 @@ extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
 extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
-#if defined(PETSC_HAVE_ROSW)
 #define TSRosWType char*
 #define TSROSW2M          "2m"
 #define TSROSW2P          "2p"
@@ -587,7 +586,6 @@ extern PetscErrorCode TSRosWFinalizePackage(void);
 extern PetscErrorCode TSRosWInitializePackage(const char path[]);
 extern PetscErrorCode TSRosWRegisterDestroy(void);
 extern PetscErrorCode TSRosWRegisterAll(void);
-#endif
 
 /*
        PETSc interface to Sundials

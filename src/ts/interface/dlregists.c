@@ -50,9 +50,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
   /* Inialize subpackages */
   ierr = TSGLInitializePackage(path);CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage(path);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ROSW)
   ierr = TSRosWInitializePackage(path);CHKERRQ(ierr);
-#endif
   ierr = TSAdaptInitializePackage(path);CHKERRQ(ierr);
   ierr = TSGLAdaptInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */

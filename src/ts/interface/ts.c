@@ -129,6 +129,23 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       }
       ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      const char *ptr,*ptr2;
+      char *filetemplate;
+      if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+      /* Do some cursory validation of the input. */
+      ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
+      if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+      for (ptr++ ; ptr && *ptr; ptr++) {
+        ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
+        if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
+        if (ptr2) break;
+      }
+      ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
+    }
 
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
@@ -2811,6 +2828,7 @@ PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
+.  x - current state
 -  viewer - binary viewer
 
    Level: intermediate
@@ -2819,13 +2837,81 @@ PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec x,void *viewer)
 {
   PetscErrorCode       ierr;
-  PetscViewer          viewer = (PetscViewer)dummy;
+  PetscViewer          v = (PetscViewer)viewer;
 
   PetscFunctionBegin;
+  ierr = VecView(x,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionVTK"
+/*@C
+   TSMonitorSolutionVTK - Monitors progress of the TS solvers by VecView() for the solution at each timestep.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  x - current state
+-  filenametemplate - string containing a format specifier for the integer time step (e.g. %03D)
+
+   Level: intermediate
+
+   Notes:
+   The VTK format does not allow writing multiple time steps in the same file, therefore a different file will be written for each time step.
+   These are named according to the file name template.
+
+   This function is normally passed as an argument to TSMonitorSet() along with TSMonitorSolutionVTKDestroy().
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec x,void *filenametemplate)
+{
+  PetscErrorCode ierr;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
+
+  PetscFunctionBegin;
+  ierr = PetscSNPrintf(filename,sizeof filename,(const char*)filenametemplate,step);CHKERRQ(ierr);
+  ierr = PetscViewerVTKOpen(((PetscObject)ts)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionVTKDestroy"
+/*@C
+   TSMonitorSolutionVTKDestroy - Destroy context for monitoring
+
+   Collective on TS
+
+   Input Parameters:
+.  filenametemplate - string containing a format specifier for the integer time step (e.g. %03D)
+
+   Level: intermediate
+
+   Note:
+   This function is normally passed to TSMonitorSet() along with TSMonitorSolutionVTK().
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorSolutionVTK()
+@*/
+PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*(char**)filenametemplate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2834,15 +2920,17 @@ PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec 
 /*@
    TSGetAdapt - Get the adaptive controller context for the current method
 
-   Not Collective
+   Collective on TS if controller has not been created yet
 
    Input Arguments:
+.  ts - time stepping context
 
    Output Arguments:
+.  adapt - adaptive controller
 
    Level: intermediate
 
-.seealso:
+.seealso: TSAdapt, TSAdaptSetType(), TSAdaptChoose()
 @*/
 PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 {

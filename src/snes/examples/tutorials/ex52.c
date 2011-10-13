@@ -1,7 +1,6 @@
 static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
- - Debug elasticity with multiple batches
  - Automate testing of different:
    - elements, batches, blocks, operators
  - Process log_summary with Python (use existing tools)

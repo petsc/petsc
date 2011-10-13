@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c
+                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -128,6 +128,10 @@ ex24: ex24.o chkopts
 ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_TS_LIB}
 	${RM} ex25.o
+
+ex26: ex26.o chkopts
+	-${CLINKER} -o ex26 ex26.o ${PETSC_TS_LIB}
+	${RM} ex26.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -335,6 +339,11 @@ runex25:
 	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo "Possible problem with ex25_1, diffs above \n=========================================";  \
 	   ${RM} -f ex25_1.tmp
+
+runex26:
+	-@${MPIEXEC} -n 1 ./ex26 -da_grid_x 20 -da_grid_y 20 -lidvelocity 100 -grashof 1e3 -ts_max_steps 100 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type rosw -ts_rosw_type ra3pw -ts_monitor -ts_monitor_solution_vtk 'foo-%03D.vts' > ex26_1.tmp 2>&1; \
+	   ${DIFF} output/ex26_1.out ex26_1.tmp || echo "Possible problem with ex26_1, diffs above \n=========================================";  \
+	   ${RM} -f ex26_1.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \

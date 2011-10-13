@@ -20,9 +20,9 @@ static PetscBool TSRosWPackageInitialized;
 
 typedef struct _RosWTableau *RosWTableau;
 struct _RosWTableau {
-  char *name;
-  PetscInt order;               /* Classical approximation order of the method */
-  PetscInt s;                   /* Number of stages */
+  char      *name;
+  PetscInt  order;              /* Classical approximation order of the method */
+  PetscInt  s;                  /* Number of stages */
   PetscReal *A;                 /* Propagation table, strictly lower triangular */
   PetscReal *Gamma;             /* Stage table, lower triangular with nonzero diagonal */
   PetscBool *GammaZeroDiag;     /* Diagonal entries that are zero in stage table Gamma, vector indicating explicit statages */
@@ -34,7 +34,7 @@ struct _RosWTableau {
   PetscReal *bt;                /* Step completion table in transformed variables */
   PetscReal *bembedt;           /* Step completion table of order one less in transformed variables */
   PetscReal *GammaInv;          /* Inverse of Gamma, used for transformed variables */
-  PetscReal  ccfl;              /* Placeholder for CFL coefficient relative to forward Euler */
+  PetscReal ccfl;               /* Placeholder for CFL coefficient relative to forward Euler */
 };
 typedef struct _RosWTableauLink *RosWTableauLink;
 struct _RosWTableauLink {
@@ -593,7 +593,8 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *
     if (ros->step_taken) {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     else {
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-      ierr = VecMAXPY(X,tab->s,tab->bt,ros->Y);CHKERRQ(ierr);
+      for (i=0; i<tab->s; i++) w[i] = tab->bt[i];
+      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -605,7 +606,8 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *
       ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-      ierr = VecMAXPY(X,tab->s,tab->bembedt,ros->Y);CHKERRQ(ierr);
+      for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i];
+      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -653,7 +655,8 @@ static PetscErrorCode TSStep_RosW(TS ts)
       }
 
       ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
-      ierr = VecMAXPY(Zstage,i,&At[i*s+0],Y);CHKERRQ(ierr);
+      for (j=0; j<i; j++) w[j] = At[i*s+j];
+      ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
 
       for (j=0; j<i; j++) w[j] = 1./h * GammaInv[i*s+j];
       ierr = VecZeroEntries(Zdot);CHKERRQ(ierr);

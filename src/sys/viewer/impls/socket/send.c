@@ -173,7 +173,6 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   PetscErrorCode     ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
-  int                optval = 1; /* Turn on the option */
 
   PetscFunctionBegin;
   ierr = PetscGetHostName(myname,MAXHOSTNAME);CHKERRQ(ierr);
@@ -188,7 +187,10 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
 #if defined(PETSC_HAVE_SO_REUSEADDR)
-  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+  {
+    int optval = 1; /* Turn on the option */
+    ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+  }
 #endif
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {

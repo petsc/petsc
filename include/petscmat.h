@@ -599,6 +599,8 @@ extern PetscErrorCode  MatGetSeqNonzeroStructure(Mat,Mat*);
 extern PetscErrorCode  MatDestroySeqNonzeroStructure(Mat*); 
 
 extern PetscErrorCode  MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+extern PetscErrorCode  MatMergeSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
+extern PetscErrorCode  MatMergeNumeric(MPI_Comm,Mat,PetscInt,Mat);
 extern PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat,Mat); 
