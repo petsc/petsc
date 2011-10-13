@@ -227,7 +227,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
   ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
-  symmetric = (set && pset && flag && pflag);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
   if (tao->jacobian_state_inv) {
     if (symmetric) {
       ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr); } else {
@@ -391,7 +395,10 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
       ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
-      symmetric = (set && pset && flag && pflag);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
       
       if (tao->jacobian_state_inv) {
 	if (symmetric) {
@@ -474,7 +481,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
       ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
-      symmetric =  (set && pset && flag && pflag);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
+
       
       if (tao->jacobian_state_inv) {
 	if (symmetric) {
@@ -603,8 +614,10 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   ierr = TaoComputeConstraints(tao,X, tao->constraints); CHKERRQ(ierr);
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
   ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
-  symmetric =  (set && pset && flag && pflag);
-  
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
 
   ierr = VecDot(lclP->lamda0, tao->constraints, &cdotl); CHKERRQ(ierr);
   lclP->lgn = *f - cdotl;
@@ -651,7 +664,11 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
           WV = B' * c */
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
   ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
-  symmetric =  (set && pset && flag && pflag);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
   if (symmetric) {
     ierr = MatMult(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr); 
   } else {
