@@ -298,13 +298,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUSP_BOTH;
-    }
-#endif
-  } else {
+  if (!x->petscnative){
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
