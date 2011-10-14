@@ -276,6 +276,7 @@ int main(int argc,char **args)
 #endif
 
   /* 2nd solve */
+#if defined(TwoSolve)
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin ); CHKERRQ(ierr);
 
@@ -298,6 +299,8 @@ int main(int argc,char **args)
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
+#endif
+
 #endif
   
   if( PETSC_TRUE ) {

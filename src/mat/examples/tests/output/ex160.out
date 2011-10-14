@@ -1,7 +1,0 @@
-#PETSc Option Table entries:
--malloc
--malloc_debug
--malloc_dump
--options_left
-#End of PETSc Option Table entries
-There are no unused options.

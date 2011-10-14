@@ -5,18 +5,16 @@
   4 KSP Residual norm 0.0231247 
   5 KSP Residual norm 0.0027912 
   6 KSP Residual norm < 1.e-11
-Norm of error < 1.e-12, Iterations 6
+  Residual norms for s2_ solve.
   0 KSP Residual norm 4.86341 
   1 KSP Residual norm 0.34437 
   2 KSP Residual norm 0.0222537 
   3 KSP Residual norm 0.000517559 
   4 KSP Residual norm 2.18157e-06 
-Norm of error 3.13807e-06, Iterations 4
   0 KSP Residual norm < 1.e-11
-Norm of error < 1.e-12, Iterations 0
+  Residual norms for s2_ solve.
   0 KSP Residual norm 4.49655 
   1 KSP Residual norm 0.362629 
   2 KSP Residual norm 0.0285572 
   3 KSP Residual norm 0.000207309 
   4 KSP Residual norm 5.00173e-06 
-Norm of error 5.34447e-06, Iterations 4
