@@ -1,3 +1,10 @@
+tao_fd_gradient
+complimentarity
+check for PetscOptionsName, use PetscOptionsBool
+chwirut1f
+fd - plate2_fd_test, eptorsion2_fd_test
+view ksp its
+
 Describe new features
   no more application object
   pde-constrained
@@ -12,10 +19,11 @@ Describe new features
 update manual
   add pounders section
 
-Get rid of approx mat
 Check fortran stubs 
 
 Check documentation
+
+Links in examples are wrong?
 
 take out of distribution:
   taodm
@@ -27,11 +35,11 @@ Examples/tests
   remake output
 
 Test on arches
-  Visual Studio
+  Visual Studio -- ps3
   BG
-  Franklin
-  Mac
-  Solaris
+  CRAY - Franklin
+  Mac - petsc-mini
+  Solaris - ngage
   Fusion
 
 Test compilers
