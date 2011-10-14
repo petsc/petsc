@@ -14,12 +14,12 @@ extern PetscBool   TaoInitializeCalled;
 
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
-extern void petscinitialize_(CHAR,int,int*);
+extern void PETSC_STDCALL petscinitialize_(CHAR,int,int*);
 #else
-extern void petscinitialize_(CHAR,int*,int);
+extern void PETSC_STDCALL petscinitialize_(CHAR,int*,int);
 #endif
 
-void taoinitialize_(CHAR filename PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL taoinitialize_(CHAR filename PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   *ierr = 1;
   if (TaoInitializeCalled) {*ierr = 0; return;}

@@ -3,7 +3,7 @@ NOADIC    = true
 
 # Build the entire manual as well as the intro part
 # manual.dvi: abstract.tex acknowl.tex manual_tex.tex part1.tex part2.tex routines.red
-manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex
+manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex
 # First build the manual
 	cp ../sty/*.sty .
 	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
@@ -26,19 +26,19 @@ manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.te
 
 
 manual.pdf: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex \
-            part3.tex manual_tex.dvi
+            part3.tex manual_tex.dvi license.tex
 	dvipdfm manual_tex
 	-@cp manual_tex.pdf ../../tao_manual.pdf
 
 
-manual_tex.dvi: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex
+manual_tex.dvi: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex
 	-@rm manual.dvi
 	-@make manual.dvi
 
 
 #
 # This is the split version; some users prefer this
-splitmanual.html: manual.tex abstract.tex acknowl.tex  part0.tex part1.tex part2.tex part3.tex
+splitmanual.html: manual.tex abstract.tex acknowl.tex  part0.tex part1.tex part2.tex part3.tex license.tex
 	-@rm -f www.cit latex.err
 	-@cat ../../manpages/manpages.cit | sed 's#+man+..#+man+../manpages#g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \

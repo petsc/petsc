@@ -26,7 +26,7 @@
       PetscBool       flg     
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
-      PetscReal      zero
+      PetscReal      zero,minf
       TaoSolverTerminationReason reason
       
 
@@ -37,6 +37,7 @@
       external FormFunctionGradient,FormHessian
 
       zero = 0.0d0
+      minf = 0.3d0
       i2 = 2
       i1 = 1
 
@@ -82,17 +83,15 @@
       CHKERRQ(ierr)
       call TaoSetType(tao,"tao_lmvm",ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
 !  Set routines for function, gradient, and hessian evaluation 
 
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &      FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
+
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      CHKMEMQ
 
 
 !  Optional: Set initial guess
@@ -100,7 +99,7 @@
       call TaoSetInitialVector(tao, x, ierr)
       CHKERRQ(ierr)
 
-      call TaoSetFunctionLowerBound(tao,0.3,ierr)
+      call TaoSetFunctionLowerBound(tao,minf,ierr)
       CHKERRQ(ierr)
 
 !  Check for TAO command line options

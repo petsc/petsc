@@ -43,10 +43,13 @@ class Example:
 
         
     def runCommand(self,version=2):
-        mpiexec = findPetscVariable('MPIEXEC')
-        if mpiexec is None:
-            mpiexec = "mpiexec"
-        c = [mpiexec,"-np","%s" %self.nprocs]
+        if "single" in self.tags:
+            c=[]
+        else:
+            mpiexec = findPetscVariable('MPIEXEC')
+            if mpiexec is None:
+                mpiexec = "mpiexec"
+            c = [mpiexec,"-np","%s" %self.nprocs]
         c.extend( [os.path.join('.',self.executableName())])
         c.extend(self.options)
         c.extend(['-tao_method','tao_'+self.method])
@@ -255,5 +258,5 @@ class TaoExamples(ExampleList):
         # PDE-constrained
         self.add(Example(example="elliptic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","elliptic","single","c"],name="elliptic",section="pde_constrained"))
         self.add(Example(example="elliptic",nprocs=2,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","elliptic","multiprocessor","c"],name="elliptic2",section="pde_constrained" ))
-        #self.add(Example(example="parabolic",nprocs=1,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","parabolic","single","c"],name="parabolic",section="pde_constrained"))
-        self.add(Example(example="hyperbolic",nprocs=1,options="-nt 1 -mx 2 -tao_cmonitor",method="lcl",tags=["pde","hyperbolic","single","c"],name="hyperbolic",section="pde_constrained"))
+        self.add(Example(example="parabolic",nprocs=1,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","parabolic","single","c"],name="parabolic",section="pde_constrained"))
+        self.add(Example(example="hyperbolic",nprocs=1,options="-tao_cmonitor -tao_max_it 10",method="lcl",tags=["pde","hyperbolic","single","c"],name="hyperbolic",section="pde_constrained"))

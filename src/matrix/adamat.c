@@ -70,20 +70,20 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 
   info = MatCreateShell(comm,nloc,nloc,n,n,ctx,J);CHKERRQ(info);
 
-  info = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatMult_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatDestroy_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatView_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)())MatDiagonalSet_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)())MatShift_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)())MatEqual_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)())MatScale_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)())MatTranspose_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatGetDiagonal_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)())MatGetSubMatrices_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_NORM,(void(*)())MatNorm_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)())MatDuplicate_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)())MatGetSubMatrix_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)(void))MatDiagonalSet_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)(void))MatShift_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)(void))MatEqual_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_ADA);CHKERRQ(info);
 
   info = PetscLogObjectParent(*J,ctx->W); CHKERRQ(info);
   info = PetscLogObjectParent(mat,*J); CHKERRQ(info);

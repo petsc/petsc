@@ -130,6 +130,10 @@ int main(int argc, char **argv)
   IS is_allstate,is_alldesign;
   PetscInt lo,hi,hi2,lo2;
   PetscBool flag;
+  PetscInt ntests = 1;
+  PetscLogDouble v1,v2;
+  PetscInt i;
+  int stages[1];
   
 
   PetscInitialize(&argc, &argv, (char*)0,help);
@@ -224,11 +228,7 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  PetscInt ntests = 1;
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag); CHKERRQ(ierr);
-  PetscLogDouble v1,v2;
-  PetscInt i;
-  int stages[1];
   ierr = PetscLogStageRegister("Trials",&stages[0]); CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]); CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
@@ -316,7 +316,6 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  CHKMEMQ;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   ierr = MatMult(user->Q,user->y,user->dwork); CHKERRQ(ierr);
   ierr = VecAXPY(user->dwork,-1.0,user->d); CHKERRQ(ierr);
@@ -333,8 +332,6 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
   ierr = VecAXPY(user->ywork,0.5*user->alpha,user->lwork); CHKERRQ(ierr);
 		      
   ierr = Gather(G,user->ywork,user->state_scatter,user->uwork,user->design_scatter); CHKERRQ(ierr);
-
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

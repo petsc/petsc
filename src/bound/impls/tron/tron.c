@@ -145,7 +145,7 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
 #define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
-  TAO_TRON *tron = (TAO_TRON *)tao->data;;
+  TAO_TRON *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
   PetscInt iter=0;
 

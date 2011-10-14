@@ -131,6 +131,10 @@ int main(int argc, char **argv)
   IS is_allstate,is_alldesign;
   PetscInt lo,hi,hi2,lo2;
   PetscBool flag;
+  PetscInt ntests = 1;
+  PetscLogDouble v1,v2;
+  PetscInt i;
+  int stages[1];
   
 
   PetscInitialize(&argc, &argv, (char*)0,help);
@@ -227,11 +231,7 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
 
  /* SOLVE THE APPLICATION */
-  PetscInt ntests = 1;
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag); CHKERRQ(ierr);
-  PetscLogDouble v1,v2;
-  PetscInt i;
-  int stages[1];
   ierr = PetscLogStageRegister("Trials",&stages[0]); CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]); CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
@@ -366,7 +366,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
 
   ierr = Scatter_i(user->y,user->yi,user->yi_scatter,user->nt); CHKERRQ(ierr);
-  for (j=0; i<user->ns; j++){
+  for (j=0; j<user->ns; j++){
     i = user->sample_times[j];
     ierr = MatMult(user->Qblock,user->yi[i],user->di[j]); CHKERRQ(ierr);
   }
@@ -882,15 +882,45 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscErrorCode ierr;
   PetscInt m,n,i,j,k,linear_index,istart,iend,iblock,lo,hi,lo2,hi2;
   Vec XX,YY,ZZ,XXwork,YYwork,ZZwork,UTwork,yi,di,bc;
-  PetscReal x[user->mx],y[user->mx],z[user->mx];
+  PetscReal *x, *y, *z;
   PetscReal h,stime;
   PetscScalar hinv,neg_hinv,half = 0.5,sqrt_beta;
   PetscInt im,indx1,indx2,indy1,indy2,indz1,indz2,nx,ny,nz;
   PetscReal xri,yri,zri,xim,yim,zim,dx1,dx2,dy1,dy2,dz1,dz2,Dx,Dy,Dz;
   PetscScalar v,vx,vy,vz;
   IS is_from_y,is_to_yi,is_from_d,is_to_di;
+  /* Data locations */
+  PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,     
+			0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
+			0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,     
+			0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,     
+			0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,     
+			0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,     
+			0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,     
+			0.7574,     0.1143,     0.5900,     0.1065,     0.4260,     0.3294,     0.8276,     0.0756};
+  
+  PetscScalar yr[64] = {0.7345,     0.9120,     0.9288,     0.7528,     0.4463,     0.4985,     0.2497,     0.6256,     
+			0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,     
+			0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,     
+			0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,     
+			0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,     
+			0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,     
+			0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,     
+			0.1684,     0.4569,     0.6889,     0.8437,     0.3015,     0.2854,     0.8199,     0.2658};
+  
+  PetscScalar zr[64] = {0.7668,     0.8573,     0.2654,     0.2719,     0.1060,     0.1311,     0.6232,     0.2295,     
+			0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,     
+			0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,     
+			0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,     
+			0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,     
+			0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,     
+			0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,     
+			0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&x); CHKERRQ(ierr);
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&y); CHKERRQ(ierr);
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&z); CHKERRQ(ierr);
   user->jformed = PETSC_FALSE;
   user->dsg_formed = PETSC_FALSE;
 
@@ -1290,33 +1320,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatMPIAIJSetPreallocation(user->Qblock,8,PETSC_NULL,8,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Qblock,8,PETSC_NULL); CHKERRQ(ierr);
 
-  /* Data locations */
-  PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,     
-			0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
-			0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,     
-			0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,     
-			0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,     
-			0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,     
-			0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,     
-			0.7574,     0.1143,     0.5900,     0.1065,     0.4260,     0.3294,     0.8276,     0.0756};
-  
-  PetscScalar yr[64] = {0.7345,     0.9120,     0.9288,     0.7528,     0.4463,     0.4985,     0.2497,     0.6256,     
-			0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,     
-			0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,     
-			0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,     
-			0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,     
-			0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,     
-			0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,     
-			0.1684,     0.4569,     0.6889,     0.8437,     0.3015,     0.2854,     0.8199,     0.2658};
-  
-  PetscScalar zr[64] = {0.7668,     0.8573,     0.2654,     0.2719,     0.1060,     0.1311,     0.6232,     0.2295,     
-			0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,     
-			0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,     
-			0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,     
-			0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,     
-			0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,     
-			0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,     
-			0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
  
   for (i=0; i<user->mx; i++){
     x[i] = h*(i+0.5);
@@ -1425,6 +1428,9 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* Now that initial conditions have been set, let the user pass tolerance options to the KSP solver */
   ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
   user->solve_type = 3;
+  ierr = PetscFree(x); CHKERRQ(ierr);
+  ierr = PetscFree(y); CHKERRQ(ierr);
+  ierr = PetscFree(z); CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -1435,6 +1441,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 PetscErrorCode ParabolicDestroy(AppCtx *user)
 {
   PetscErrorCode ierr;
+  PetscInt i;
   PetscFunctionBegin;
   ierr = MatDestroy(&user->Qblock); CHKERRQ(ierr);
   ierr = MatDestroy(&user->QblockT); CHKERRQ(ierr);
@@ -1482,7 +1489,6 @@ PetscErrorCode ParabolicDestroy(AppCtx *user)
   ierr = ISDestroy(&user->d_is); CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user->state_scatter); CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user->design_scatter); CHKERRQ(ierr);
-  PetscInt i;
   for (i=0; i<user->nt; i++){
     ierr = VecScatterDestroy(&user->yi_scatter[i]); CHKERRQ(ierr);
   }

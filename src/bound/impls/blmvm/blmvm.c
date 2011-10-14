@@ -211,8 +211,6 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
-  PetscFunctionReturn(0);
 }
 
 
@@ -223,7 +221,6 @@ static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
 {
 
     
-    PetscFunctionBegin;
     TAO_BLMVM *lmP = (TAO_BLMVM *)tao->data;
     PetscBool isascii;
     PetscErrorCode ierr;

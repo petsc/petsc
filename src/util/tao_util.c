@@ -169,7 +169,7 @@ PetscErrorCode VecCompare(Vec V1,Vec V2, PetscBool *flg){
 
 #undef __FUNCT__
 #define __FUNCT__ "Fischer"
-inline static PetscReal Fischer(PetscReal a, PetscReal b)
+PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
@@ -246,7 +246,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
 
 #undef __FUNCT__
 #define __FUNCT__ "SFischer"
-inline static PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
+PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {

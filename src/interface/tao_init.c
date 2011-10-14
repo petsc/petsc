@@ -22,13 +22,12 @@ static char** tao_executablePtr = &tao_executable;
 
    Note:
    TaoInitialize() should always be called near the beginning of your 
-   program.  However, this command should come after PetscInitialize()
+   program.  This routine will call PetscInitialize() if it has not yet been
+   called.
 
    Level: beginner
 
-.keywords: TaoSolver, initialize
-
-.seealso: TaoInitializeFortran(), TaoFinalize(), PetscInitialize()
+.seealso: TaoFinalize(), PetscInitialize()
 @*/
 PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[], 
 			     const char help[])
@@ -60,14 +59,11 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
 #undef __FUNCT__
 #define __FUNCT__ "TaoFinalize"
 /*@
-   TaoFinalize - Checks for options at the end of the TAO program
-   and finalizes interfaces with other packages.
+   TaoFinalize - Finalizes interfaces with other packages.
 
    Collective on MPI_COMM_WORLD
 
    Level: beginner
-
-.keywords: finalize, exit, end
 
 .seealso: TaoInitialize(), PetscFinalize()
 @*/

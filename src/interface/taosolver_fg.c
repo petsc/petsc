@@ -181,6 +181,10 @@ PetscErrorCode TaoComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f
       PetscStackPush("TaoSolver user objective/gradient evaluation routine");
       CHKMEMQ;
       ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP); CHKERRQ(ierr);
+      if (tao->ops->computegradient == TaoDefaultComputeGradient) {
+	/* Overwrite gradient with finite difference gradient */
+	ierr = TaoDefaultComputeGradient(tao,X,G,tao->user_objgradP); CHKERRQ(ierr);
+      }
       CHKMEMQ;
       PetscStackPop;
       ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);

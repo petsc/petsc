@@ -458,7 +458,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   PetscBool valid;
   PetscReal mdec, rho, normxsp;
   PetscReal one=1.0,zero=0.0,ratio;
-  PetscBLASInt blasm,blasn,blasnpmax;
+  PetscBLASInt blasm,blasn,blasnpmax,blasn2;
   PetscErrorCode ierr;
   
   
@@ -586,7 +586,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   
   /* G = D(ModelIn,:) \ (F(ModelIn,1:m)-repmat(F(xkin,1:m),n,1)); */
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
-  PetscBLASInt blasn2 = blasn;
+  blasn2 = blasn;
   LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn2,&info);
   ierr = PetscInfo1(tao,"gesv returned %D\n",info); CHKERRQ(ierr);
 

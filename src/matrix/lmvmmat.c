@@ -346,7 +346,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
   PetscErrorCode ierr;
   PetscInt i;
   PetscBool same;
-  PetscReal yy_sum, ys_sum, ss_sum;
+  PetscReal yy_sum=0.0, ys_sum=0.0, ss_sum=0.0;
 
   PetscFunctionBegin;
 
@@ -825,7 +825,6 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 #define __FUNCT__ "MatLMVMGetRejects"
 extern PetscErrorCode MatLMVMGetRejects(Mat m, PetscInt *nrejects)
 {
-    PetscFunctionBegin;
     MatLMVMCtx *ctx;
     PetscErrorCode ierr;
     PetscBool same;

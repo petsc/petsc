@@ -96,6 +96,8 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
   PetscInt lo, hi;
   PetscErrorCode ierr;
+  PetscBool flag;
+  IS is_state, is_design;
   PetscFunctionBegin;
   /* Check for state/design IS */
   if (!tao->state_is) {
@@ -120,7 +122,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   ierr = VecGetSize(tao->constraints, &lclP->m); CHKERRQ(ierr);
 
 
-  IS is_state, is_design;
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->U); CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->V); CHKERRQ(ierr);
   ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
@@ -168,7 +169,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   ierr = ISDestroy(&is_design); CHKERRQ(ierr); 
 
 
-  PetscBool flag;
   lclP->phase2_niter = 1;
   ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,&flag); CHKERRQ(ierr);
   lclP->verbose = PETSC_FALSE;
@@ -182,11 +182,6 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   lclP->told = 1e-4;
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->told,&lclP->told,&flag); CHKERRQ(ierr);
 
-  if (!tao->jacobian_state_inv) {
-    ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-  }
-
 
   PetscFunctionReturn(0);
 }
@@ -196,13 +191,13 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 {
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
-  PetscInt iter=0,phase2_iter,nlocal;
+  PetscInt iter=0,phase2_iter,nlocal,its;
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal step=1.0,f, descent,con2;
   PetscReal cnorm, mnorm;
   PetscReal adec,r2,rGL_U,rWU;
-  
+  PetscBool set,pset,flag,pflag,symmetric;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
@@ -230,11 +225,25 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   /* Evaluate Lagrangian function and gradient */
   /* p0 */
   ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
   if (tao->jacobian_state_inv) {
-    ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+    if (symmetric) {
+      ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr); } else {
+      ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+    }
   } else {
     ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, lclP->statematflag); CHKERRQ(ierr);
-    ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    if (symmetric) {
+      ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+    }
   }
     
   ierr = VecCopy(lclP->lamda,lclP->lamda0); CHKERRQ(ierr);
@@ -278,11 +287,14 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     
     /* Solve r = A\con */
     ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+    
     if (tao->jacobian_state_inv) {
       ierr = MatMult(tao->jacobian_state_inv, tao->constraints, lclP->r); CHKERRQ(ierr);
     } else {
       ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, lclP->statematflag); CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tao->constraints,  lclP->r); CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+      tao->ksp_its += its;
     }
       
 
@@ -290,7 +302,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     ierr = VecSet(lclP->s, 0.0); CHKERRQ(ierr);
 
     /* Make sure the Newton direction is a descent direction for the merit function */
-    ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    if (symmetric)  {
+      ierr = MatMult(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    } else {
+      ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
+    }
     
     ierr = VecDot(lclP->r,lclP->WU,&descent); CHKERRQ(ierr);
     if (descent <= 0) {
@@ -377,12 +393,28 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* Compute multipliers */
       /* p1 */
       ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
+      
       if (tao->jacobian_state_inv) {
-	ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda); CHKERRQ(ierr);
+	}
       } else {
-	ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = KSPSolve(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda); CHKERRQ(ierr);
+	}
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its += its;
       }
-
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g1); CHKERRQ(ierr);
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V); CHKERRQ(ierr);
     
@@ -404,11 +436,13 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Recover the full space direction */ 
       ierr = MatMult(tao->jacobian_design,lclP->s,lclP->WU); CHKERRQ(ierr);
-      ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      //ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       if (tao->jacobian_state_inv) {
 	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r); CHKERRQ(ierr);
       } else {
 	ierr = KSPSolve(tao->ksp, lclP->WU, lclP->r); CHKERRQ(ierr);
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its += its;
       }
 
       /* We now minimize the augmented Lagrangian along the direction -r,s */
@@ -445,10 +479,28 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 	ierr = VecAXPY(lclP->lamda,-lclP->rho,tao->constraints); CHKERRQ(ierr);
       }
 
+      ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (set && pset && flag && pflag)
+	symmetric = PETSC_TRUE;
+      else
+	symmetric = PETSC_FALSE;
+
+      
       if (tao->jacobian_state_inv) {
-	ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
+	}
       } else {
-	ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	if (symmetric) {
+	  ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	} else {
+	  ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
+	}
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its += its;
       }
 	
     
@@ -531,6 +583,10 @@ PetscErrorCode TaoCreate_LCL(TaoSolver tao)
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
 
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao); CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+
+
   
   PetscFunctionReturn(0);
 
@@ -544,6 +600,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
 {
   TaoSolver tao = (TaoSolver)ptr;
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
+  PetscBool set,pset,flag,pflag,symmetric;
   PetscReal cdotl;
   PetscErrorCode ierr;
 
@@ -555,7 +612,12 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
     ierr = TaoComputeJacobianDesign(tao,X, &tao->jacobian_design); CHKERRQ(ierr);
   }
   ierr = TaoComputeConstraints(tao,X, tao->constraints); CHKERRQ(ierr);
-
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
 
   ierr = VecDot(lclP->lamda0, tao->constraints, &cdotl); CHKERRQ(ierr);
   lclP->lgn = *f - cdotl;
@@ -563,7 +625,11 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   /* Gradient of Lagrangian GL = G - J' * lamda */
   /*      WU = A' * WL
           WV = B' * WL */
-  ierr = MatMultTranspose(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  if (symmetric) {
+    ierr = MatMult(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(tao->jacobian_state,lclP->lamda0,lclP->GL_U); CHKERRQ(ierr);
+  }
   ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda0,lclP->GL_V); CHKERRQ(ierr);
   ierr = VecScale(lclP->GL_U,-1.0); CHKERRQ(ierr);
   ierr = VecScale(lclP->GL_V,-1.0); CHKERRQ(ierr);
@@ -584,6 +650,7 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   TaoSolver tao = (TaoSolver)ptr;
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
   PetscReal con2;
+  PetscBool flag,pflag,set,pset,symmetric;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -595,7 +662,19 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   /* Gradient of Aug. Lagrangian GAugL = GL + rho * J' c */
   /*      WU = A' * c
           WV = B' * c */
-  ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (set && pset && flag && pflag)
+    symmetric = PETSC_TRUE;
+  else
+    symmetric = PETSC_FALSE;
+
+  if (symmetric) {
+    ierr = MatMult(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr); 
+  } else {
+    ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->GAugL_U); CHKERRQ(ierr);
+  }
+
   ierr = MatMultTranspose(tao->jacobian_design,tao->constraints,lclP->GAugL_V); CHKERRQ(ierr);
   ierr = VecAYPX(lclP->GAugL_U,lclP->rho,lclP->GL_U); CHKERRQ(ierr);
   ierr = VecAYPX(lclP->GAugL_V,lclP->rho,lclP->GL_V); CHKERRQ(ierr);

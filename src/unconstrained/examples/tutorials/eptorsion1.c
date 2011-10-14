@@ -143,7 +143,7 @@ PetscErrorCode main(int argc,char **argv)
   if (flg) {
     ierr = MatCreateShell(PETSC_COMM_SELF,user.ndim,user.ndim,user.ndim,
                           user.ndim,(void*)&user,&H); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)())HessianProductMat); CHKERRQ
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)(void))HessianProductMat); CHKERRQ
 (ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
 
@@ -460,8 +460,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *
   PetscInt   i,j, ndim = user->ndim;
   PetscReal  *y, zero = 0.0, one = 1.0;
   Mat H=*HH;
-  *Hpre = H;
   PetscBool assembled;
+  *Hpre = H;
 
   /* Set location of vector */
   user->xvec = X;

@@ -95,7 +95,7 @@ struct _p_TaoSolver {
     PetscInt  njac;
     PetscInt  njac_state;
     PetscInt  njac_design;
- 
+    PetscInt  ksp_its;
 
     
     TaoLineSearch linesearch;
