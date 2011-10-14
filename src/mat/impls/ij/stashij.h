@@ -3,44 +3,14 @@
 
 /* Need PetscLayout */
 #include <private/vecimpl.h> /*I "petscvec.h" */
-/* Need khash */
-#include <../src/mat/impls/ij/petsckhash.h>
 
-/* Linked list of values in a bucket. */
-struct _IJNode {
-  PetscInt k;
-  struct _IJNode *next;
-};
-typedef struct _IJNode IJNode;
-
-/* Value (holds a linked list of nodes) in the bucket. */
-struct _IJVal {
-  PetscInt n;
-  IJNode *head, *tail;
-};
-typedef struct _IJVal IJVal;
-
-/* Key (a pair of integers). */
-struct _IJKey {
-  PetscInt i, j;
-};
-typedef struct _IJKey IJKey;
-
-/* Hash function: mix two integers into one. 
-   Shift by half the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest half part of PetscInt, this is a bijection.
- */
-#define IJKeyHash(key) ((((key).i) << (4*sizeof(PetscInt)))^((key).j))
-
-
-/* Compare two keys (integer pairs). */
-#define IJKeyEqual(k1,k2) (((k1).i==(k2).i)?((k1).j==(k2).j):0)
-
-KHASH_INIT(IJ,IJKey,IJVal,1,IJKeyHash,IJKeyEqual)
+/* Need PetscHash */
+#include <../src/sys/utils/hash.h>
 
 struct _StashSeqIJ {
-  PetscInt n;
-  PetscBool   multivalued;
-  khash_t(IJ) *h;
+  PetscInt      n;
+  PetscBool     multivalued;
+  PetscHashIJ   h;
 };
 typedef struct _StashSeqIJ *StashSeqIJ;
 
