@@ -566,6 +566,8 @@ extern PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,Vec*);
 
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);
 extern PetscErrorCode  VecNestGetSubVec(Vec,PetscInt,Vec*);
+extern PetscErrorCode  VecNestSetSubVecs(Vec,PetscInt,PetscInt*,Vec*);
+extern PetscErrorCode  VecNestSetSubVec(Vec,PetscInt,Vec);
 extern PetscErrorCode  VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
 extern PetscErrorCode  VecNestGetSize(Vec,PetscInt*);
 

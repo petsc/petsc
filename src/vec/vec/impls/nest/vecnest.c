@@ -870,6 +870,169 @@ PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecNestSetSubVec_Private"
+static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
+{
+  Vec_Nest       *bx = (Vec_Nest*)X->data;
+  PetscInt       i,offset=0,n=0,bs;
+  IS is;
+  PetscErrorCode ierr;
+  
+  /* check if idxm < bx->nb */
+  if (idxm >= bx->nb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",idxm,bx->nb);
+  
+  PetscFunctionBegin;
+  
+  ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);	/* destroy the existing vector */
+  ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);	/* duplicate the layout of given vector */
+  ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);	/* copy the contents of the given vector */
+  
+  /* check if we need to update the IS for the block */
+  offset = X->map->rstart;
+  for (i=0; i<idxm; i++) {
+    n=0;
+    ierr = VecGetLocalSize(bx->v[i],&n);CHKERRQ(ierr);
+    offset += n;
+  }
+  
+  /* get the local size and block size */
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+  
+  /* create the new IS */
+  ierr = ISCreateStride(((PetscObject)x)->comm,n,offset,1,&is);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(is,bs);CHKERRQ(ierr);
+  
+  PetscBool issame = PETSC_FALSE;
+  /* check if they are equal */
+  ierr = ISEqual(is,bx->is[idxm],&issame);CHKERRQ(ierr);
+  
+  if (!issame) {
+    /* The IS of given vector has a different layout compared to the existing block vector.
+     Destroy the existing reference and update the IS. */
+    ierr = ISDestroy(&bx->is[idxm]);CHKERRQ(ierr);
+    ierr = ISDuplicate(is,&bx->is[idxm]);CHKERRQ(ierr);
+    ierr = ISCopy(is,bx->is[idxm]);CHKERRQ(ierr);
+    
+    offset += n;
+    /* Since the current IS[idxm] changed, we need to update all the subsequent IS */
+    for (i=idxm+1; i<bx->nb; i++) {
+      /* get the local size and block size */
+      ierr = VecGetLocalSize(bx->v[i],&n);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(bx->v[i],&bs);CHKERRQ(ierr);
+      
+      /* destroy the old and create the new IS */
+      ierr = ISDestroy(&bx->is[i]);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)bx->v[i])->comm,n,offset,1,&bx->is[i]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(bx->is[i],bs);CHKERRQ(ierr);
+      
+      offset += n;
+    }
+    
+    PetscInt N=0;
+    n=0;
+    ierr = VecSize_Nest_Recursive(X,PETSC_TRUE,&N);CHKERRQ(ierr);
+    ierr = VecSize_Nest_Recursive(X,PETSC_FALSE,&n);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(X->map,N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(X->map,n);CHKERRQ(ierr);
+  }
+  
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecNestSetSubVec_Nest"
+PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecNestSetSubVec_Private(X,idxm,sx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecNestSetSubVec"
+/*@C
+   VecNestSetSubVec - Set a single component vector in a nest vector at specified index.
+ 
+   Not collective
+ 
+   Input Parameters:
+.  X  - nest vector
+.  idxm - index of the vector within the nest vector
+.  sx - vector at index idxm within the nest vector
+
+   Notes:
+ 
+   The new vector sx does not have to be of same size as X[idxm]. Arbitrary vector layouts are allowed.
+ 
+   Level: developer
+ 
+.seealso: VecNestSetSubVecs(), VecNestGetSubVec()
+ @*/
+PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(X,"VecNestSetSubVec_C",(Vec,PetscInt,Vec),(X,idxm,sx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecNestSetSubVecs_Nest"
+PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
+{
+  PetscInt i;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  for (i=0; i<N; i++) {
+    ierr = VecNestSetSubVec_Private(X,idxm[i],sx[i]);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecNestSetSubVecs"
+/*@C
+   VecNestSetSubVecs - Sets the component vectors at the specified indices in a nest vector.
+ 
+   Not collective
+ 
+   Input Parameters:
+.  X  - nest vector
+.  N - number of component vecs in sx
+.  idxm - indices of component vecs that are to be replaced
+.  sx - array of vectors
+ 
+   Notes:
+ 
+   The components in the vector array sx do not have to be of the same size as corresponding 
+   components in X. The user can also free the array "sx" after the call.
+ 
+   Level: developer
+ 
+.seealso: VecNestGetSize(), VecNestGetSubVec()
+ @*/
+PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(X,"VecNestSetSubVecs_C",(Vec,PetscInt,PetscInt*,Vec*),(X,N,idxm,sx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecNestGetSize_Nest"
@@ -1044,6 +1207,8 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   /* expose block api's */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestGetSubVec_C","VecNestGetSubVec_Nest",VecNestGetSubVec_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestGetSubVecs_C","VecNestGetSubVecs_Nest",VecNestGetSubVecs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestSetSubVec_C","VecNestSetSubVec_Nest",VecNestSetSubVec_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestSetSubVecs_C","VecNestSetSubVecs_Nest",VecNestSetSubVecs_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestGetSize_C","VecNestGetSize_Nest",VecNestGetSize_Nest);CHKERRQ(ierr);
 
   *Y = V;
