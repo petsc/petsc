@@ -182,6 +182,14 @@ ex40: ex40.o  chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_VEC_LIB}
 	${RM} -f ex40.o
 
+ex41: ex41.o  chkopts 
+	-${CLINKER} -o ex41 ex41.o ${PETSC_VEC_LIB}
+	${RM} -f ex41.o
+
+ex42: ex42.o  chkopts 
+	-${CLINKER} -o ex42 ex42.o ${PETSC_VEC_LIB}
+	${RM} -f ex42.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1  ./ex1 ; \
