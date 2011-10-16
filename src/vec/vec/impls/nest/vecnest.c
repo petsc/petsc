@@ -52,6 +52,11 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
     ierr = ISDestroy(&vs->is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vs->is);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(vs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
