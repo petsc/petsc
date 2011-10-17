@@ -45,6 +45,8 @@ protected:
   rank_type  *pointRanks;        // [numPointRanks]: Array of partner process ranks which share a given point (needs search and allocation)
   point_type *pointRemotePoints; // [numPointRanks]: Array of remote points linked to a given point (needs search and allocation)
 
+  index_type *insertOffset;      // [numRanks]: Offset into points array for fast assembly
+
   std::vector<rank_type> flexRanks;
   std::map<rank_type, std::vector<point_type> > flexPoints;
   std::map<rank_type, std::vector<point_type> > flexRemotePoints;
@@ -58,6 +60,8 @@ public:
     this->numPointRanks     = 0;
     this->pointRanks        = PETSC_NULL;
     this->pointRemotePoints = PETSC_NULL;
+
+    this->insertOffset      = PETSC_NULL;
   };
   ~Overlap() {
     PetscErrorCode ierr;
@@ -66,6 +70,8 @@ public:
     ierr = PetscFree(this->points);CHKERRXX(ierr);
     ierr = PetscFree(this->remotePoints);CHKERRXX(ierr);
     ierr = PetscFree2(this->pointRanks, this->pointRemotePoints);CHKERRXX(ierr);
+
+    ierr = PetscFree(this->insertOffset);CHKERRXX(ierr);
   };
   /* setNumRanks - Set the number of partner processes
 
@@ -195,8 +201,14 @@ public:
     assert(!flexRanks.size() && !flexPoints.size() && !flexRemotePoints.size());
     ierr = PetscMalloc((pointsOffset[numRanks]) * sizeof(point_type), &points);CHKERRXX(ierr);
     ierr = PetscMalloc((pointsOffset[numRanks]) * sizeof(point_type), &remotePoints);CHKERRXX(ierr);
+#if 0
     for(index_type i = 0; i < pointsOffset[numRanks]; ++i) {
       points[i] = remotePoints[i] = -1;
+    }
+#endif
+    ierr = PetscMalloc(numRanks * sizeof(index_type), &insertOffset);CHKERRXX(ierr);
+    for(index_type r = 0; r < numRanks; ++r) {
+      insertOffset[r] = pointsOffset[r];
     }
   };
   /* assemble - Complete preallocation phase (optimized method) or input phase (flexible method) */
@@ -208,6 +220,20 @@ public:
     } else {
       std::cout << "["<<this->commRank()<<"]ranks: " << ranks << " pointsOffset: " << pointsOffset << " flexRank size: " << flexRanks.size() << std::endl;
       throw ALE::Exception("Cannot assemble overlap in an invalid state");
+    }
+  };
+  /* assemble - Complete point insertion phase (optimized method) or do nothing (flexible method) */
+  void assemblePoints() {
+    if (this->insertOffset) {
+      for(index_type r = 0; r < numRanks; ++r) {
+        PetscErrorCode ierr;
+
+        if (insertOffset[r] != pointsOffset[r+1]) {
+          std::cout << "Should have point offset "<<pointsOffset[r+1]<<" for rank "<<this->ranks[r]<<", not "<<insertOffset[r]<<std::endl;
+          throw ALE::Exception("Cannot assemble overlap points in an invalid state");
+        }
+        ierr = PetscSortIntWithArray(pointsOffset[r+1]-pointsOffset[r], &points[pointsOffset[r]], &remotePoints[pointsOffset[r]]);CHKERRXX(ierr);
+      }
     }
   };
   void copy(Overlap *o) {
@@ -360,7 +386,7 @@ public:
       // Add point
       //   check uniqueness
       index_type p;
-      for(p = 0; p < this->flexPoints[t].size(); ++p) {
+      for(p = 0; p < (index_type) this->flexPoints[t].size(); ++p) {
         if (this->flexPoints[t][p] == s) {
           if ((c >= 0) && (this->flexRemotePoints[t][p] < 0)) {
             this->flexRemotePoints[t][p] = c;
@@ -368,7 +394,7 @@ public:
           break;
         }
       }
-      if (p >= this->flexPoints[t].size()) {
+      if (p >= (index_type) this->flexPoints[t].size()) {
         this->flexPoints[t].push_back(s);
         this->flexRemotePoints[t].push_back(c);
       }
@@ -377,6 +403,7 @@ public:
       const index_type r = this->getRankIndex(t);
       index_type       i, j;
 
+#if 0
       // Could speed up this search with bisection
       for(i = this->pointsOffset[r]; i < this->pointsOffset[r+1]; ++i) {
         if (s <= this->points[i] || this->points[i] < 0) break;
@@ -391,6 +418,11 @@ public:
       }
       this->points[i]       = s;
       this->remotePoints[i] = c;
+#else
+      i                     = this->insertOffset[r]++;
+      this->points[i]       = s;
+      this->remotePoints[i] = c;
+#endif
     }
   };
   void copy(SendOverlap *overlap) {
