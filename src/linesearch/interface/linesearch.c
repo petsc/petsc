@@ -548,9 +548,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 			   ls->stepmin,&ls->stepmin,0);CHKERRQ(ierr);
      ierr = PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",
 			   ls->stepmax,&ls->stepmax,0);CHKERRQ(ierr);
-     ierr = PetscOptionsName("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",&flg);CHKERRQ(ierr);
-     if (flg) ls->viewls = PETSC_TRUE;
-
+     ierr = PetscOptionsBool("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",PETSC_FALSE,&ls->viewls,PETSC_NULL);CHKERRQ(ierr);
 
      if (ls->ops->setfromoptions) {
        ierr = (*ls->ops->setfromoptions)(ls); CHKERRQ(ierr);
