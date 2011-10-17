@@ -1326,6 +1326,7 @@ PetscErrorCode preallocateOperatorNewOverlap(const ALE::Obj<Mesh>& mesh, const i
     }
   }
   nbrSendOverlap->assemble();
+  nbrSendOverlap->assemblePoints();
   if (debug) nbrSendOverlap->view("Modified Send Overlap");
   //   Let maxPoint be the first point not contained in adjGraph
   point_type maxPoint = std::max(*std::max_element(adjGraph->cap()->begin(),  adjGraph->cap()->end()),
@@ -1378,6 +1379,7 @@ PetscErrorCode preallocateOperatorNewOverlap(const ALE::Obj<Mesh>& mesh, const i
     }
   }
   nbrRecvOverlap->assemble();
+  nbrRecvOverlap->assemblePoints();
   if (debug) nbrRecvOverlap->view("Modified Recv Overlap");
   if (debug) adjGraph->view("Modified Adjacency Graph");
   // Update global order

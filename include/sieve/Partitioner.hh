@@ -628,6 +628,7 @@ namespace ALE {
           sendOverlap->addArrow(points[i], *p_iter, points[i]);
         }
       }
+      sendOverlap->assemblePoints();
       if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
       const typename RecvPartOverlap::capSequence::iterator rBegin = recvPartOverlap->capBegin();
       const typename RecvPartOverlap::capSequence::iterator rEnd   = recvPartOverlap->capEnd();
@@ -662,6 +663,7 @@ namespace ALE {
           }
         }
       }
+      recvOverlap->assemblePoints();
       if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
     }
     // Create a partition point overlap from a partition

@@ -700,6 +700,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     // Added to allow optimized versions
     void assemble() {};
+    void assemblePoints() {};
     // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
     Obj<typename traits::capSequence> cap() {
       return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
