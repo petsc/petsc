@@ -883,6 +883,8 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   PetscInt       i,offset=0,n=0,bs;
   IS is;
   PetscErrorCode ierr;
+  PetscBool      issame = PETSC_FALSE;
+  PetscInt       N=0;
   
   /* check if idxm < bx->nb */
   if (idxm >= bx->nb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",idxm,bx->nb);
@@ -909,7 +911,6 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   ierr = ISCreateStride(((PetscObject)x)->comm,n,offset,1,&is);CHKERRQ(ierr);
   ierr = ISSetBlockSize(is,bs);CHKERRQ(ierr);
   
-  PetscBool issame = PETSC_FALSE;
   /* check if they are equal */
   ierr = ISEqual(is,bx->is[idxm],&issame);CHKERRQ(ierr);
   
@@ -935,7 +936,6 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
       offset += n;
     }
     
-    PetscInt N=0;
     n=0;
     ierr = VecSize_Nest_Recursive(X,PETSC_TRUE,&N);CHKERRQ(ierr);
     ierr = VecSize_Nest_Recursive(X,PETSC_FALSE,&n);CHKERRQ(ierr);
