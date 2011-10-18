@@ -543,16 +543,22 @@ public:
       const index_type r = this->getRankIndex(s);
       index_type       i;
 
+#if 0
       for(i = this->pointsOffset[r]; i < this->pointsOffset[r+1]; ++i) {
         if (t <= this->points[i] || this->points[i] < 0) break;
       }
-      assert(i < this->pointsOffset[r+1] && s != this->points[i]);
+      assert(i < this->pointsOffset[r+1] && t != this->points[i]);
       for(index_type j = this->pointsOffset[r+1]-1; j > i; --j) {
         this->points[j]       = this->points[j-1];
         this->remotePoints[j] = this->remotePoints[j-1];
       }
       this->points[i]       = t;
       this->remotePoints[i] = c;
+#else
+      i                     = this->insertOffset[r]++;
+      this->points[i]       = t;
+      this->remotePoints[i] = c;
+#endif
     }
   };
   void copy(RecvOverlap *overlap) {
