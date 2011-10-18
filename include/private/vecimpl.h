@@ -307,6 +307,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
   } else {
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
+  if (a) *a = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -347,6 +348,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  if (a) *a = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
