@@ -69,10 +69,14 @@ class PETScMaker(script.Script):
 
    output,error,retcode = self.executeShellCommand([self.cmake.cmake, '--version'], checkCommand=noCheck, log=log)
    import re
-   m = re.match(r'cmake version (\d+).(\d+).(\d+)', output)
-   versiontuple = tuple(map(int, m.groups()))
-   if self.languages.clanguage == 'Cxx' and versiontuple < (2,8):
-       self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % '.'.join(map(str,versiontuple)))
+   m = re.match(r'cmake version (.+)$', output)
+   if not m:
+       self.logPrintBox('Could not parse CMake version: %s, falling back to legacy build' % output)
+       return False
+   from distutils.version import LooseVersion
+   version = LooseVersion(m.groups()[0])
+   if self.languages.clanguage == 'Cxx' and version < LooseVersion('2.8'):
+       self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % version.vstring)
        return False # no support for: set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)
 
    langlist = [('C','C')]
