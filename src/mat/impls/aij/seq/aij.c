@@ -3156,7 +3156,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatInvertBlockDiagonal_SeqAIJ,
        0,
        0,
-/*129*/0
+/*129*/0,
+       MatMatTransposeMult_SeqAIJ_SeqAIJ,  
+       MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ,  
+       MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ
 };
 
 EXTERN_C_BEGIN

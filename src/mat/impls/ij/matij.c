@@ -1763,8 +1763,8 @@ PetscErrorCode MatTranspose_IJ(Mat A, MatReuse reuse, Mat *B)
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "MatMatMultTranspose_IJ_IJ"
-PetscErrorCode MatMatMultTranspose_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
+#define __FUNCT__ "MatMatTransposeMult_IJ_IJ"
+PetscErrorCode MatMatTransposeMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
 {
   PetscErrorCode ierr;
   Mat C;
@@ -1910,7 +1910,7 @@ PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Ma
                                                                                                -
    */
   ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &At);                CHKERRQ(ierr);
-  ierr = MatMatMultTranspose(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
+  ierr = MatMatTransposeMult(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
   ierr = MatDestroy(&At);                                         CHKERRQ(ierr);
   *CC = C;
   PetscFunctionReturn(0);
@@ -1993,7 +1993,7 @@ PetscErrorCode MatDestroy_IJ(Mat A) {
   A->data = PETSC_NULL;
   
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMultTranspose_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatTransposeMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2023,8 +2023,8 @@ PetscErrorCode MatCreate_IJ(Mat A) {
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A, "MatMatMult_ij_ij_C", "MatMatMult_IJ_IJ", 
                                            MatMatMult_IJ_IJ);          CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A, "MatMatMultTranspose_ij_ij_C", "MatMatMultTranspose_IJ_IJ", 
-                                           MatMatMultTranspose_IJ_IJ); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A, "MatMatTransposeMult_ij_ij_C", "MatMatTransposeMult_IJ_IJ", 
+                                           MatMatTransposeMult_IJ_IJ); CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A, MATIJ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
