@@ -6,10 +6,12 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.functions        = ['cublasInit', 'cufftDestroy']
     self.includes         = ['cublas.h', 'cufft.h']
-    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a']]
+    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a'],
+                             ['cufft.lib','cublas.lib','cudart.lib']]
     self.double           = 0   # 1 means requires double precision 
     self.cxx              = 0
     self.requires32bitint = 0
+    self.worksonWindows   = 1
 
     self.CUDAVersion   = '3020' # Version 3.2
     self.CUSPVersion   = '200' #Version 0.2.0
@@ -43,6 +45,9 @@ class Configure(PETSc.package.NewPackage):
     import os
     yield ''
     yield os.path.join('/usr','local','cuda')
+    self.libdir           = os.path.join('lib','Win32')
+    self.altlibdir        = os.path.join('lib','x64')
+    yield(os.path.join('/cygdrive','c','Program Files','NVIDIA GPU Computing Toolkit','CUDA','v4.0'))
     return
   
   def checkSizeofVoidP(self):

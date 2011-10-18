@@ -733,8 +733,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashI
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJIterBegin"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi) {
-  PetscFunctionBegin;
   PetscErrorCode ierr;
+  PetscFunctionBegin;
   (*hi) = kh_begin((h)->ht);if(*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi)); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

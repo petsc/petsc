@@ -1686,22 +1686,22 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTranspose_SeqDense_SeqDense"
-PetscErrorCode MatMatMultTranspose_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMult_SeqDense_SeqDense"
+PetscErrorCode MatMatTransposeMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatMultTransposeSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatMatTransposeMultSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatMultTransposeNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
+  ierr = MatMatTransposeMultNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTransposeSymbolic_SeqDense_SeqDense"
-PetscErrorCode MatMatMultTransposeSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqDense_SeqDense"
+PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   PetscInt       m=A->cmap->n,n=B->cmap->n;
@@ -1719,8 +1719,8 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTransposeNumeric_SeqDense_SeqDense"
-PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatMatTransposeMultNumeric_SeqDense_SeqDense"
+PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
@@ -1976,9 +1976,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
 /*94*/ 0,
-       MatMatMultTranspose_SeqDense_SeqDense,  
-       MatMatMultTransposeSymbolic_SeqDense_SeqDense,  
-       MatMatMultTransposeNumeric_SeqDense_SeqDense, 
+       0,
+       0,
+       0,
        0,
 /*99*/ 0,
        0,
@@ -2006,7 +2006,14 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
 /*124*/0,
-       MatGetColumnNorms_SeqDense
+       MatGetColumnNorms_SeqDense,
+       0,
+       0,
+       0,
+/*129*/0,
+       MatMatTransposeMult_SeqDense_SeqDense,  
+       MatMatTransposeMultSymbolic_SeqDense_SeqDense,  
+       MatMatTransposeMultNumeric_SeqDense_SeqDense, 
 };
 
 #undef __FUNCT__  

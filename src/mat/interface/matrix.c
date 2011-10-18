@@ -21,6 +21,7 @@ PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
@@ -8554,7 +8555,71 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultTranspose"
 /*@
-   MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A^T*B.
+   MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A*B^T.
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the right matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if not known
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created if MAT_INITIAL_MATRIX and must be destroyed by the user with MatDestroy().
+
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+
+  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices.  C will be of type MATSEQAIJ.
+
+   Level: intermediate
+
+.seealso: MatMatMultTransposeSymbolic(), MatMatMultTransposeNumeric(), MatPtAP()
+@*/
+PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidType(B,2);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
+  if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (B->cmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, AN %D != BN %D",A->cmap->N,B->cmap->N);
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
+  if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
+
+  fA = A->ops->matmulttranspose;
+  if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for A of type %s",((PetscObject)A)->type_name);
+  fB = B->ops->matmulttranspose;
+  if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
+  if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matmulttranspose)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatTransposeMult"
+/*@
+   MatMatTransposeMult - Performs Matrix-Matrix Multiplication C=A^T*B.
 
    Neighbor-wise Collective on Mat
 
@@ -8580,9 +8645,9 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 
    Level: intermediate
 
-.seealso: MatMatMultTransposeSymbolic(), MatMatMultTransposeNumeric(), MatPtAP()
+.seealso: MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric(), MatPtAP()
 @*/
-PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -8604,16 +8669,15 @@ PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
-  fA = A->ops->matmulttranspose;
-  if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for A of type %s",((PetscObject)A)->type_name);
-  fB = B->ops->matmulttranspose;
-  if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
-  if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+  fA = A->ops->mattransposemult;
+  if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatTransposeMult not supported for A of type %s",((PetscObject)A)->type_name);
+  fB = B->ops->mattransposemult;
+  if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatTransposeMult not supported for B of type %s",((PetscObject)B)->type_name);
+  if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
 
-  ierr = PetscLogEventBegin(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
-  ierr = (*A->ops->matmulttranspose)(A,B,scall,fill,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
-  
+  ierr = PetscLogEventBegin(MAT_MatTransposeMult,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->mattransposemult)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatTransposeMult,A,B,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 } 
 
