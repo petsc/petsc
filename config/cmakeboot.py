@@ -66,6 +66,15 @@ class PETScMaker(script.Script):
  def cmakeboot(self, args, log):
    self.setup()
    options = deque()
+
+   output,error,retcode = self.executeShellCommand([self.cmake.cmake, '--version'], checkCommand=noCheck, log=log)
+   import re
+   m = re.match(r'cmake version (\d+).(\d+).(\d+)', output)
+   versiontuple = map(int, m.groups())
+   if self.languages.clanguage == 'Cxx' and versiontuple < (2,8):
+       self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % '.'.join(map(str,versiontuple)))
+       return False # no support for: set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)
+
    langlist = [('C','C')]
    if hasattr(self.compilers,'FC'):
      langlist.append(('FC','Fortran'))
