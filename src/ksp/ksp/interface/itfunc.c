@@ -296,7 +296,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
    Notes:
 
-   The operator is specified with PCSetOperators().
+   If one uses KSPSetDM() then x or b need not be passed. Use KSPGetSolution() to access the solution in this case. 
+
+   The operator is specified with KSPSetOperators().
 
    Call KSPGetConvergedReason() to determine if the solver converged or failed and 
    why. The number of iterations can be obtained from KSPGetIterationNumber().
@@ -330,20 +332,25 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  if (!b && !ksp->vec_rhs) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Must set right hand side");
 
-  if (x == b) {
+  if (x && x == b) {
     if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
     ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
     inXisinB = PETSC_TRUE;
   }
-  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
-  ksp->vec_rhs = b;
-  ksp->vec_sol = x;
+  if (b) {
+    ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+    ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
+    ksp->vec_rhs = b;
+  }
+  if (x) {
+    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+    ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
+    ksp->vec_sol = x;
+  }
 
   flag1 = flag2 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flag1,PETSC_NULL);CHKERRQ(ierr);

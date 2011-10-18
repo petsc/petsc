@@ -18,10 +18,22 @@ Subdomain with overlap
 Subdomain without overlap
 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 
   linear system matrix = precond matrix:
-  Matrix Object:   3 MPI processes  
+  Matrix Object:   3 MPI processes
     type: mpiaij
     rows=63, cols=63
     total: nonzeros=283, allocated nonzeros=441
     total number of mallocs used during MatSetValues calls =0
       not using I-node (on process 0) routines
+Subdomain with overlap
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 
+Subdomain without overlap
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 
+Subdomain with overlap
+14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 
+Subdomain without overlap
+21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 
+Subdomain with overlap
+35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 
+Subdomain without overlap
+42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 
 Infinity norm of the error: 9.417e-06
