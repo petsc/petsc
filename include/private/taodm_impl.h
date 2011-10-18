@@ -36,6 +36,7 @@ struct _p_TaoDM {
   PetscReal gatol;
   PetscReal grtol;
   PetscReal gttol;
+  PetscInt ksp_its;
   void *userfctx;
   void *usergctx;
   void *userhctx;

@@ -173,7 +173,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode ierr;
-  PetscInt iter=0;
+  PetscInt iter=0,its;
   PetscReal actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal xtHx;
   MatStructure structure;
@@ -281,6 +281,8 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub_pre); CHKERRQ(ierr);
 
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree); CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+      tao->ksp_its+=its;
 
       ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
       tao->ksp = PETSC_NULL;

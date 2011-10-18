@@ -105,7 +105,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 
   PetscInt i_max = 5;
   PetscInt j_max = 1;
-  PetscInt i, j, N, n;
+  PetscInt i, j, N, n, its;
 
   PetscFunctionBegin;
 
@@ -386,14 +386,20 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
       if (NTR_KSP_NASH == tr->ksp_type) {
 	ierr = KSPNASHSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its+=its;
 	ierr = KSPNASHGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       } else if (NTR_KSP_STCG == tr->ksp_type) {
 	ierr = KSPSTCGSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its+=its;
 	ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       } else { /* NTR_KSP_GLTR */
 	ierr = KSPGLTRSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	tao->ksp_its+=its;
 	ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       }
 
@@ -418,14 +424,20 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 	  if (NTR_KSP_NASH == tr->ksp_type) {
 	    ierr = KSPNASHSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	    tao->ksp_its+=its;
 	    ierr = KSPNASHGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  } else if (NTR_KSP_STCG == tr->ksp_type) {
 	    ierr = KSPSTCGSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	    tao->ksp_its+=its;
 	    ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  } else { /* NTR_KSP_GLTR */
 	    ierr = KSPGLTRSetRadius(tao->ksp,tao->trust); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
+	    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+	    tao->ksp_its+=its;
 	    ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  }
 

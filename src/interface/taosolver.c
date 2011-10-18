@@ -526,6 +526,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 	}
 	if (tao->ksp) {
 	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer,"KSP Solver"); CHKERRQ(ierr);
+	  ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_its); CHKERRQ(ierr);
 	}
 	  
 	ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%G,",tao->fatol);CHKERRQ(ierr);

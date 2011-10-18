@@ -474,6 +474,8 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       }
 	
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D); CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(tao->ksp,&kspits); CHKERRQ(ierr);
+      tao->ksp_its+=kspits;
 
       if (NLS_KSP_NASH == nlsP->ksp_type) {
 	ierr = KSPNASHGetNormD(tao->ksp,&norm_d); CHKERRQ(ierr);
@@ -510,6 +512,8 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
 	  }
 	
 	  ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D); CHKERRQ(ierr);
+	  ierr = KSPGetIterationNumber(tao->ksp,&kspits); CHKERRQ(ierr);
+	  tao->ksp_its+=kspits;
 	  if (NLS_KSP_NASH == nlsP->ksp_type) {
 	    ierr = KSPNASHGetNormD(tao->ksp,&norm_d); CHKERRQ(ierr);
 	  } else if (NLS_KSP_STCG == nlsP->ksp_type) {
@@ -527,6 +531,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     else {
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D); CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp, &kspits); CHKERRQ(ierr);
+      tao->ksp_its += kspits;
     }
     ierr = VecScale(nlsP->D, -1.0); CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason); CHKERRQ(ierr);

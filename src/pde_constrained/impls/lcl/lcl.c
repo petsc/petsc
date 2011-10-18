@@ -244,6 +244,8 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     } else {
       ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda); CHKERRQ(ierr);
     }
+    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+    tao->ksp_its += its;
   }
     
   ierr = VecCopy(lclP->lamda,lclP->lamda0); CHKERRQ(ierr);
