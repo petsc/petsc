@@ -178,7 +178,7 @@ tao_html:
 
 #
 #   Example usage for man pages; adds each example that uses a function to that functions
-# man page up to a limit of 10 examples.
+# man page up to a limit of 20 examples.
 #
 tao_manexamples:
 	-@base=`basename ${LOCDIR}`; \
@@ -194,7 +194,7 @@ tao_manexamples:
                 b=`ls ${LOC}/docs/manpages/*/$${j}.html | cut -f9` ; \
 		echo $$b; \
                 l=`grep tutorials $${b} | wc -l`; \
-                if [ $$l -le 10 ] ; then \
+                if [ $$l -le 20 ] ; then \
                   if [ $$l -eq 0 ] ; then \
                     echo "<P><H3><FONT COLOR=\"#CC3333\">Examples</FONT></H3>" >> $$b; \
                   fi; \

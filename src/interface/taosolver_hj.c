@@ -296,7 +296,7 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
 
 .keywords: TaoSolver, compute, Jacobian, matrix
 
-.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetDesignDesignIS()
+.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
 @*/
 PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
@@ -387,7 +387,7 @@ $      Jpre does not have the same nonzero structure.
 
    Level: beginner
 
-*/
+@*/
 PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
@@ -493,7 +493,7 @@ $      Jpre does not have the same nonzero structure.
 
    Level: beginner
 .seealse: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
-*/
+@*/
 PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
@@ -572,7 +572,7 @@ $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);
 
    Level: beginner
 .seealso: TaoComputeJacobianDesign(), TaoSetJacobianStateRoutine(), TaoSetStateDesignIS()
-*/
+@*/
 PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, void*), void *ctx)
 {
     PetscErrorCode ierr;
@@ -615,7 +615,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
    Level: intermediate
 
 .seealso: TaoSetJacobianStateRoutine(), TaoSetJacobianDesignRoutine()
-*/
+@*/
 PetscErrorCode TaoSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
 {
   PetscErrorCode ierr;
