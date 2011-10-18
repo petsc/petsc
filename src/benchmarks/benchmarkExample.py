@@ -226,6 +226,5 @@ if __name__ == '__main__':
   print sizes
   print times
   print events
-  sys.exit(0)
   if not args.batch: plotSummaryLine(args.library, args.num, sizes, times, events)
 # --num 19 --comp 4 --size 10 20 50 100 --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --stage Solve CPU='da_vec_type=seq da_mat_type=seqaij' GPU='da_vec_type=seqcusp da_mat_type=seqaijcusp cusp_synchronize'

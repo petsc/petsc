@@ -1,9 +1,9 @@
-#ifndef _PETSCKHASH_H
-#define _PETSCKHASH_H
+#ifndef _HASH_H
+#define _HASH_H
 
 /* 
  This code is adapted from the khash library, version 0.2.4. 
- It has been modified to fit into PETSc:
+ It has been modified to fit into PETSc.
  Original copyright notice follows. 
 */
 
@@ -101,8 +101,8 @@ int main() {
 #include <string.h>
 #include <limits.h>
 
-/* compiler-specific configuration */
 
+/* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu
 typedef unsigned int khint32_t;
 #elif ULONG_MAX == 0xffffffffu
@@ -124,8 +124,10 @@ typedef unsigned long long khint64_t;
 typedef khint32_t khint_t;
 typedef khint_t khiter_t;
 
+
+/* Will need to expand this list, if on-the-node hash table size grows beyond 2^32. */
 #define __ac_HASH_PRIME_SIZE 32
-static const khint32_t __ac_prime_list[__ac_HASH_PRIME_SIZE] =
+static const khint_t __ac_prime_list[__ac_HASH_PRIME_SIZE] =
 {
   0ul,          3ul,          11ul,         23ul,         53ul,
   97ul,         193ul,        389ul,        769ul,        1543ul,
@@ -504,85 +506,85 @@ static inline khint_t __ac_X31_hash_string(const char *s)
 #define KHASH_MAP_INIT_STR(name, khval_t)								\
 	KHASH_INIT(name, kh_cstr_t, khval_t, 1, kh_str_hash_func, kh_str_hash_equal)
 
-
+/* HASHI */
 #if PETSC_SIZEOF_INT == 8
-KHASH_MAP_INIT_INT64(IHASH,PetscInt)
+KHASH_MAP_INIT_INT64(HASHI,PetscInt);
 #elif PETSC_SIZEOF_INT == 4
-KHASH_MAP_INIT_INT(IHASH,PetscInt)
+KHASH_MAP_INIT_INT(HASHI,PetscInt);
 #else
 #error "This value of PETSC_SIZEOF_INT is not supported by petsckhash."
 #endif
 
-typedef khash_t(IHASH) *PetscIHash;
+typedef khash_t(HASHI) *PetscHashI;
 
-typedef khiter_t   PetscIHashIter;
+typedef khiter_t   PetscHashIIter;
 
-#define PetscIHashCreate(ht) ((ht) = kh_init(IHASH))
+#define PetscHashICreate(ht) ((ht) = kh_init(HASHI))
 
-#define PetscIHashClear(ht)    (kh_clear(IHASH,(ht)))
+#define PetscHashIClear(ht)    (kh_clear(HASHI,(ht)))
 
-#define PetscIHashDestroy(ht) if((ht)){kh_destroy(IHASH,(ht));(ht)=0;}
+#define PetscHashIDestroy(ht) if((ht)){kh_destroy(HASHI,(ht));(ht)=0;}
 
-#define PetscIHashResize(ht,n) (kh_resize(IHASH,(ht),(n)))
+#define PetscHashIResize(ht,n) (kh_resize(HASHI,(ht),(n)))
 
-#define PetscIHashSize(ht,n)     ((n)=kh_size((ht)))
+#define PetscHashISize(ht,n)     ((n)=kh_size((ht)))
 
-#define PetscIHashNext(ht,hi)  do{++(hi);} while(!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
+#define PetscHashIIterNext(ht,hi)  do{++(hi);} while(!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
 
-#define PetscIHashBegin(ht,hi) {(hi) = kh_begin((ht));if(!kh_exist((ht),(hi))){PetscIHashNext((ht),(hi));}}
+#define PetscHashIIterBegin(ht,hi) {(hi) = kh_begin((ht));if(!kh_exist((ht),(hi))){PetscHashIIterNext((ht),(hi));}}
 
 
-#define PetscIHashAtEnd(ht,hi) ((hi) == kh_end((ht)))
+#define PetscHashIIterAtEnd(ht,hi) ((hi) == kh_end((ht)))
 
-#define PetscIHashIterDeref(ht,hi,i,ii) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi)),(ii) = kh_val((ht),(hi))); else ((i) = -1, (ii) = -1);
-#define PetscIHashIterDerefSupport(ht,hi,i) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
-#define PetscIHashIterDerefImage(ht,hi,ii) if(kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
+#define PetscHashIIterGetKeyVal(ht,hi,i,ii) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi)),(ii) = kh_val((ht),(hi))); else ((i) = -1, (ii) = -1);
+#define PetscHashIIterGetKey(ht,hi,i) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
+#define PetscHashIIterGetVal(ht,hi,ii) if(kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
 
-#define PetscIHashAdd(ht,i,ii)                                          \
+#define PetscHashIAdd(ht,i,ii)                                          \
 {                                                                       \
  khiter_t _11_hi;                                                       \
  khint_t  _11_hr;                                                       \
- _11_hi = kh_put(IHASH,(ht),(i),&_11_hr);                                   \
+ _11_hi = kh_put(HASHI,(ht),(i),&_11_hr);                               \
  kh_val((ht),_11_hi) = (ii);                                            \
 }
 /*
   arr is the integer array to put the indices to, n is the offset into arr to start putting the indices at.
   n is updated as the indices are put into arr, so n must be an lvalue.
  */
-#define PetscIHashGetSupport(ht,n,arr)                                  \
+#define PetscHashIGetKeys(ht,n,arr)                                     \
 {                                                                       \
-  PetscIHashIter _12_hi;                                                \
+  PetscHashIIter _12_hi;                                                \
   PetscInt _12_i;                                                       \
-  PetscIHashBegin((ht),_12_hi);                                         \
-  while(!PetscIHashAtEnd((ht),_12_hi)) {                                \
-    PetscIHashIterDerefSupport((ht),_12_hi,_12_i);                      \
+  PetscHashIIterBegin((ht),_12_hi);                                     \
+  while(!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
+    PetscHashIIterGetKey((ht),_12_hi,_12_i);                            \
     (arr)[(n)++] = _12_i;                                               \
-    PetscIHashNext((ht),_12_hi);                                        \
+    PetscHashIIterNext((ht),_12_hi);                                    \
   }                                                                     \
 }
 
-#define PetscIHashGetImage(ht,n,arr)                                  \
+#define PetscHashIGetVals(ht,n,arr)                                    \
 {                                                                       \
-  PetscIHashIter _12_hi;                                                \
+  PetscHashIIter _12_hi;                                                \
   PetscInt _12_ii;                                                      \
-  PetscIHashBegin((ht),_12_hi);                                         \
-  while(!PetscIHashAtEnd((ht),_12_hi)){                                 \
-    PetscIHashIterDerefImage((ht),_12_hi,_12_ii);                       \
+  PetscHashIBegin((ht),_12_hi);                                         \
+  while(!PetscHashIIterAtEnd((ht),_12_hi)){                                 \
+    PetscHashIIterGetVal((ht),_12_hi,_12_ii);                           \
     (arr)[(n)++] = _12_ii;                                              \
-    PetscIHashNext((ht),_12_hi);                                        \
+    PetscHashIIterNext((ht),_12_hi);                                        \
   }                                                                     \
 }
 
-#define PetscIHashDuplicate(ht,hd)                                      \
+#define PetscHashIDuplicate(ht,hd)                                      \
 {                                                                       \
-  PetscIHashIter  _14_hi;                                                   \
+  PetscHashIIter  _14_hi;                                               \
   PetscInt   _14_i, _14_ii;                                             \
-  PetscIHashCreate((hd));                                               \
-  PetscIHashBegin((ht),_14_hi);                                         \
-  while(!PetscIHashAtEnd((ht),_14_hi)){                                 \
-    PetscIHashIterDeref((ht),_14_hi,_14_i,_14_ii);                      \
-    PetscIHashAdd((hd), _14_i,_14_ii);                                  \
-    PetscIHashNext((ht),_14_hi);                                        \
+  PetscHashICreate((hd));                                               \
+  PetscHashIIterBegin((ht),_14_hi);                                     \
+  while(!PetscHashIIterAtEnd((ht),_14_hi)){                             \
+    PetscHashIIterGetKeyVal((ht),_14_hi,_14_i,_14_ii);                  \
+    PetscHashIAdd((hd), _14_i,_14_ii);                                  \
+    PetscHashIIterNext((ht),_14_hi);                                    \
   }                                                                     \
 }
 
@@ -590,10 +592,10 @@ typedef khiter_t   PetscIHashIter;
  Locate index i in the hash table ht. If i is found in table, ii is its index, 
  between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1. 
  */
-#define PetscIHashMap(ht,i,ii)  \
+#define PetscHashIMap(ht,i,ii)  \
 {                                          \
   khiter_t _9_hi;                          \
-  _9_hi = kh_get(IHASH,(ht),(i));              \
+  _9_hi = kh_get(HASHI,(ht),(i));              \
   if(_9_hi != kh_end((ht)))                \
     (ii) = kh_val((ht),_9_hi);             \
   else                                     \
@@ -610,15 +612,335 @@ typedef khiter_t   PetscIHashIter;
   - if an integer is not found in table, it is replaced by -1; iilen == ilen
     upon completion.
  */
-#define PetscIHashMapArray(ht,ilen,iarr,iilen,iiarr)                   \
+#define PetscHashIMapArray(ht,ilen,iarr,iilen,iiarr)                   \
   do {                                                                 \
     PetscInt _10_i;                                                    \
     (iilen) = 0;                                                       \
     for(_10_i = 0, (iilen) = 0; _10_i < (ilen); ++_10_i) {             \
-      PetscIHashMap(ht,(iarr)[_10_i],(iiarr)[(iilen)]);                \
+      PetscHashIMap(ht,(iarr)[_10_i],(iiarr)[(iilen)]);                \
       if((iiarr)[(iilen)] != -1) ++(iilen);                            \
     }                                                                  \
 } while(0)
 
-#endif /* _PETSCKHASH_H */
+/* HASHIJ */
+/* Linked list of values in a bucket. */
+struct _IJNode {
+  PetscInt k;
+  struct _IJNode *next;
+};
+typedef struct _IJNode IJNode;
+
+/* Value (holds a linked list of nodes) in the bucket. */
+struct _IJVal {
+  PetscInt n;
+  IJNode *head, *tail;
+};
+typedef struct _IJVal IJVal;
+
+/* Key (a pair of integers). */
+struct _PetscHashIJKey {
+  PetscInt i, j;
+};
+typedef struct _PetscHashIJKey PetscHashIJKey;
+
+/* Hash function: mix two integers into one. 
+   Shift by half the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest half part of PetscInt, this is a bijection.
+   We should shift by (8/2)*sizeof(PetscInt): sizeof(PetscInt) is the number of bytes in PetscInt, with 8 bits per byte.
+ */
+#define IJKeyHash(key) ((((key).i) << (4*sizeof(PetscInt)))^((key).j))
+
+/* Compare two keys (integer pairs). */
+#define IJKeyEqual(k1,k2) (((k1).i==(k2).i)?((k1).j==(k2).j):0)
+
+KHASH_INIT(HASHIJ,PetscHashIJKey,IJVal,1,IJKeyHash,IJKeyEqual)
+
+struct _PetscHashIJ {
+  PetscBool multivalued;
+  PetscInt size;
+  khash_t(HASHIJ) *ht;
+};
+
+
+typedef struct _PetscHashIJ *PetscHashIJ;
+
+typedef khiter_t             PetscHashIJIter;
+
+typedef IJNode              *PetscHashIJValIter;
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJCreate"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h){
+  PetscErrorCode _15_ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(h,1);
+  _15_ierr = PetscNew(struct _PetscHashIJ, (h)); CHKERRQ(_15_ierr);
+  (*h)->ht = kh_init(HASHIJ);
+  (*h)->multivalued = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGetMultivalued"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetMultivalued(PetscHashIJ h, PetscBool *m) {
+  PetscFunctionBegin;
+  *m = (h)->multivalued;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJSetMultivalued"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSetMultivalued(PetscHashIJ h, PetscBool m) {
+  PetscFunctionBegin;
+  (h)->multivalued = m;
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJResize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJResize(PetscHashIJ h, PetscInt n){
+  PetscFunctionBegin;
+  (kh_resize(HASHIJ,(h)->ht,(n)));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKeySize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKeySize(PetscHashIJ h, PetscInt *n){
+  PetscFunctionBegin;
+  ((*n)=kh_size((h)->ht));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJSize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSize(PetscHashIJ h, PetscInt *m){
+  PetscFunctionBegin;
+  (*m)=h->size;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJIterNext"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJIter *hn)  {
+  PetscFunctionBegin;
+  *hn = hi;
+  do{++(*hn);} while(!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJIterBegin"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi) {
+  PetscFunctionBegin;
+  PetscErrorCode ierr;
+  (*hi) = kh_begin((h)->ht);if(*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi)); CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#define PetscHashIJIterAtEnd(h,hi) ((hi) == kh_end((h)->ht))
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGetKey"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetKey(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJKey *key) {
+  PetscFunctionBegin;
+  (*key) = kh_key((h)->ht,(hi));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGetValIter"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJValIter *vi) {
+  PetscFunctionBegin;
+  if(hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head); else ((*vi) = 0);
+  PetscFunctionReturn(0);
+}
+
+#define PetscHashIJValIterAtEnd(h, vi) ((vi) == 0)
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJValIterNext"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterNext(PetscHashIJ h, PetscHashIJValIter vi, PetscHashIJValIter *vn) {
+  PetscFunctionBegin;
+  ((*vn) = (vi)->next);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJValIterGetVal"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterGetVal(PetscHashIJ h, PetscHashIJValIter vi, PetscInt *v) {
+  PetscFunctionBegin;
+  ((*v) = (vi)->k);
+  PetscFunctionReturn(0);
+}
+
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJAdd"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i, PetscInt ii){
+  khiter_t _11_hi;
+  khint_t  _11_r;
+  IJNode   *_11_ijnode;
+  IJVal    *_11_ijval;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  _11_hi = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
+  _11_ijval = &(kh_val((h)->ht,_11_hi));
+  if(_11_r) {
+    _11_ijval->head = _11_ijval->tail = 0;
+    _11_ijval->n = 0;
+  }
+  if(!_11_r && !(h)->multivalued) {
+    _11_ijval->head->k = (ii);
+  }
+  else {
+    ierr = PetscNew(IJNode, &_11_ijnode); CHKERRQ(ierr);
+    _11_ijnode->k = (ii);
+    _11_ijval = &(kh_val((h)->ht,_11_hi));
+    if(!_11_ijval->tail) {
+      _11_ijval->tail = _11_ijnode;
+      _11_ijval->head = _11_ijnode;
+    }
+    else {
+      _11_ijval->tail->next = _11_ijnode;
+      _11_ijval->tail = _11_ijnode;
+    }
+    ++(_11_ijval->n);
+    ++((h)->size);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  arr is the key array to put the key to, and must be big enough to accommodate all keys.
+ */
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGetKeys"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJKey *arr) {
+  PetscHashIJIter _12_hi;
+  PetscHashIJKey _12_key;
+  PetscInt n;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  n = 0;
+  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
+  while(!PetscHashIJIterAtEnd((h),_12_hi)) {
+    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key); CHKERRQ(ierr);
+    (arr)[(n)++] = _12_key;
+    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  iarr,jarr,karr are integer arrays to put the indices into, and must be allocated to the right size.
+ */
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGetIndices"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt *iarr, PetscInt *jarr, PetscInt *karr){
+  PetscErrorCode ierr;
+  PetscHashIJIter _12_hi;
+  PetscHashIJValIter _12_vi;
+  PetscHashIJKey _12_key;
+  PetscInt n = 0;
+  PetscFunctionBegin;
+  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
+  while(!PetscHashIJIterAtEnd((h),_12_hi)) {
+    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);    CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_12_hi,&_12_vi); CHKERRQ(ierr);
+    while(!PetscHashIJValIterAtEnd((h),_12_vi)) {
+      (iarr)[(n)] = _12_key.i;
+      (jarr)[(n)] = _12_key.j;
+      ierr = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]); CHKERRQ(ierr);
+      ++(n);
+      ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi); CHKERRQ(ierr);
+    }
+    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJDuplicate"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHashIJ *hd) {
+  PetscHashIJIter  _14_hi;
+  PetscHashIJValIter _14_vi;
+  PetscHashIJKey   _14_key;
+  PetscInt         _14_val;
+  PetscErrorCode   ierr;
+  PetscFunctionBegin;
+  ierr = PetscHashIJCreate((hd)); CHKERRQ(ierr);
+  ierr = PetscHashIJIterBegin((h),&_14_hi); CHKERRQ(ierr);
+  while(!PetscHashIJIterAtEnd((h),_14_hi)){
+    ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key); CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi); CHKERRQ(ierr);
+    while(!PetscHashIJValIterAtEnd((h),_14_vi)) {
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterGetVal((h),_14_vi,&_14_val); CHKERRQ(ierr);
+      ierr = PetscHashIJAdd((*hd), _14_key,_14_val); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
+    }
+    ierr = PetscHashIJIterNext((h),_14_hi, &_14_hi); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJClearValues"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if((h) && (h)->ht) {
+    PetscHashIJIter _15_hi;
+    PetscHashIJValIter  _15_vi, _15_vid;
+    PetscErrorCode _15_ierr;
+    ierr = PetscHashIJIterBegin((h),&_15_hi); CHKERRQ(ierr);
+    while(!PetscHashIJIterAtEnd((h),_15_hi)) {
+      ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi); CHKERRQ(ierr);
+      while(!PetscHashIJValIterAtEnd((h),_15_vi)){ 
+        _15_vid = _15_vi;
+        ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi); CHKERRQ(ierr);
+        _15_vid->next = 0;
+        _15_ierr = PetscFree(_15_vid); CHKERRQ(_15_ierr);
+      }
+      ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJClear"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscHashIJClearValues((h)); CHKERRQ(ierr);
+  kh_clear(HASHIJ,(h)->ht);   
+  (h)->size = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__ 
+#define __FUNCT__ "PetscHashIJDestroy"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h){
+  PetscFunctionBegin;
+  PetscValidPointer(h,1);
+  if((*h)) {
+    PetscErrorCode _16_ierr;
+    PetscHashIJClearValues((*h));
+    if((*h)->ht) {
+      kh_destroy(HASHIJ,(*h)->ht);
+      (*h)->ht=0;
+    }
+    _16_ierr = PetscFree((*h)); CHKERRQ(_16_ierr);  
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
+#endif /* _KHASH_H */
 

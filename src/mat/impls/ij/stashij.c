@@ -2,7 +2,8 @@
 #include <../src/mat/impls/ij/stashij.h>
 /* Need sorting routines. */
 #include <petscsys.h>
-
+/* Need PetscHash */
+#include <../src/sys/utils/hash.h>
 
 
 #undef  __FUNCT__
@@ -12,7 +13,7 @@ PetscErrorCode StashSeqIJCreate_Private(StashSeqIJ *_stash) {
   StashSeqIJ stash;
   PetscFunctionBegin;
   ierr = PetscNew(struct _StashSeqIJ, &stash); CHKERRQ(ierr);
-  stash->h = kh_init(IJ);
+  ierr = PetscHashIJCreate(&(stash->h));       CHKERRQ(ierr);
   *_stash = stash;
   PetscFunctionReturn(0);
 }
@@ -29,9 +30,11 @@ PetscErrorCode StashSeqIJGetMultivalued_Private(StashSeqIJ stash, PetscBool *_mu
 #undef  __FUNCT__
 #define __FUNCT__ "StashSeqIJSetMultivalued_Private"
 PetscErrorCode StashSeqIJSetMultivalued_Private(StashSeqIJ stash, PetscBool multivalued) {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if(stash->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change multivaluedness of an non-empty Stash");
   stash->multivalued = multivalued;
+  ierr = PetscHashIJSetMultivalued(stash->h,multivalued); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -41,34 +44,14 @@ PetscErrorCode StashSeqIJSetMultivalued_Private(StashSeqIJ stash, PetscBool mult
 #undef  __FUNCT__
 #define __FUNCT__ "StashSeqIJExtend_Private"
 PetscErrorCode StashSeqIJExtend_Private(StashSeqIJ stash, PetscInt len, const PetscInt *ixidx, const PetscInt *iyidx) {
-  IJKey  key;
-  IJVal  *val;
-  IJNode *node;
-  PetscInt i,k = stash->n;
-  khint_t r;
-  khiter_t it;
+  PetscHashIJKey key;
+  PetscInt i;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   for(i = 0; i < len; ++i) {
-    key.i = ixidx[i]; 
+    key.i = ixidx[i];
     key.j = iyidx[i];
-    it = kh_put(IJ,stash->h,key,&r);
-    if(!r && !stash->multivalued) continue;
-    ierr = PetscNew(IJNode, &node); CHKERRQ(ierr);
-    node->k = k;
-    val = &(kh_val(stash->h,it));
-    if(!val->tail) {
-      val->tail = node;
-    }
-    else {
-      val->tail->next = node;
-      val->tail = node;
-    }
-    if(!val->head) {
-      val->head = node;
-    }
-    ++(val->n);
-    ++k;
+    ierr = PetscHashIJAdd(stash->h,key,stash->n); CHKERRQ(ierr);
     ++(stash->n);
   }
   PetscFunctionReturn(0);
@@ -80,11 +63,7 @@ PetscErrorCode StashSeqIJExtend_Private(StashSeqIJ stash, PetscInt len, const Pe
 #undef  __FUNCT__
 #define __FUNCT__ "StashSeqIJGetIndices_Private"
 PetscErrorCode StashSeqIJGetIndices_Private(StashSeqIJ stash, PetscInt *_len, PetscInt **_ixidx, PetscInt **_iyidx) {
-  PetscInt len, *ixidx = PETSC_NULL, *iyidx = PETSC_NULL, *kidx, i, start, end;
-  IJVal  *val;
-  IJNode *node;
-  IJKey  *key;
-  khiter_t it;
+  PetscInt len, *ixidx = PETSC_NULL, *iyidx = PETSC_NULL, *kidx, start, end;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
@@ -108,20 +87,7 @@ PetscErrorCode StashSeqIJGetIndices_Private(StashSeqIJ stash, PetscInt *_len, Pe
     iyidx = *_iyidx;
   }
   ierr = PetscMalloc(len*sizeof(PetscInt), &kidx); CHKERRQ(ierr);
-  i = 0;
-  for(it = kh_begin(stash->h); it != kh_end(stash->h); ++it) {
-    if(kh_exist(stash->h,it)) {
-      key = &(kh_key(stash->h,it));
-      val = &(kh_val(stash->h,it));
-      node = val->head;
-      while(node) {
-        ixidx[i] = key->i;
-        iyidx[i] = key->j;
-        kidx[i] = node->k;
-        node = node->next;
-      }
-    }
-  }
+  ierr = PetscHashIJGetIndices(stash->h,ixidx,iyidx,kidx); CHKERRQ(ierr);
   ierr = PetscSortIntWithArrayPair(len,ixidx,iyidx,kidx); CHKERRQ(ierr);
   start = 0;
   while (start < len) {
@@ -140,25 +106,9 @@ PetscErrorCode StashSeqIJGetIndices_Private(StashSeqIJ stash, PetscInt *_len, Pe
 #undef  __FUNCT__
 #define __FUNCT__ "StashSeqIJClear_Private"
 PetscErrorCode StashSeqIJClear_Private(StashSeqIJ stash) {
-  IJVal  val;
-  IJNode *tnode, *node;
-  khiter_t it;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  for(it = kh_begin(stash->h); it != kh_end(stash->h); ++it) {
-    if(kh_exist(stash->h,it)) {
-      val = kh_val(stash->h,it);
-      node = val.head;
-      while(node) {
-        tnode = node;
-        ierr = PetscFree(node); CHKERRQ(ierr);
-        node = tnode->next;
-      }
-      val.head = val.tail = 0;
-      val.n = 0;
-    }
-  }
-  kh_clear(IJ,stash->h);
+  ierr = PetscHashIJClear(stash->h); CHKERRQ(ierr);
   stash->n = 0;
   PetscFunctionReturn(0);
 }
@@ -170,7 +120,7 @@ PetscErrorCode StashSeqIJDestroy_Private(StashSeqIJ *_stash) {
   StashSeqIJ stash = *_stash;
   PetscFunctionBegin;
   ierr = StashSeqIJClear_Private(stash);     CHKERRQ(ierr);
-  kh_destroy(IJ,stash->h);
+  ierr = PetscHashIJDestroy(&(stash->h));    CHKERRQ(ierr);
   ierr = PetscFree(stash);                   CHKERRQ(ierr);
   *_stash = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -179,10 +129,13 @@ PetscErrorCode StashSeqIJDestroy_Private(StashSeqIJ *_stash) {
 #undef  __FUNCT__
 #define __FUNCT__ "StashSeqIJSetPreallocation_Private"
 PetscErrorCode StashSeqIJSetPreallocation_Private(StashSeqIJ stash, PetscInt size) {
+  PetscInt s;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(size < (PetscInt) kh_size(stash->h))
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", kh_size(stash->h), size);
-  kh_resize(IJ,stash->h,size);
+  ierr = PetscHashIJKeySize(stash->h,&s); CHKERRQ(ierr);
+  if(size < (PetscInt) s)
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", s, size);
+  ierr = PetscHashIJResize(stash->h,size); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,7 +448,6 @@ PetscErrorCode StashMPIIJAssemble_Private(StashMPIIJ stash) {
     ierr = PetscFree(send_statuses);                                  CHKERRQ(ierr);
   }
   ierr = PetscFree(sindices);                                         CHKERRQ(ierr);
-
 
   PetscFunctionReturn(0);
 }

@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 #include <private/matimpl.h>
 #include <../src/mat/impls/ij/stashij.h>
-#include <../src/mat/impls/ij/petsckhash.h>
+#include <../src/sys/utils/hash.h>
 
 /*MC
  MATIJ - MATIJ = "ij".
@@ -41,7 +41,7 @@ typedef struct {
   /* The following data structures are using for stashing. */
   StashMPIIJ stash;
   /* The following data structures are used for mapping. */
-  PetscIHash hsupp; /* local support in a hash table */
+  PetscHashI hsupp; /* local support in a hash table */
   PetscInt m,n;
   PetscInt *ij;      /* concatenated local images of ALL local input elements (i.e., all indices from the local ownership range), sorted within each image */
   PetscInt *ijlen;   /* image segment boundaries for each local input index */
@@ -74,8 +74,8 @@ typedef struct {
       else                                                              \
         (ii) = -1;                                                      \
     }                                                                   \
-    else  {                                                             \
-      PetscIHashMap(_13_ij->hsupp,i,ii);                                \
+    else  {                                                            \
+      PetscHashIMap(_13_ij->hsupp,i,ii);                                \
     }                                                                   \
   }                                                                     \
 
@@ -600,7 +600,7 @@ static PetscErrorCode MatIJClear_Private(Mat mat)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if(pg->hsupp) {
-    PetscIHashDestroy((pg->hsupp));   
+    PetscHashIDestroy((pg->hsupp));   
   }
   if(pg->image) {
     ierr = PetscFree(pg->image);  CHKERRQ(ierr);
@@ -764,7 +764,7 @@ static PetscErrorCode MatIJGetAssembledEdges_Private(Mat A, PetscInt *len, Petsc
   PetscErrorCode ierr;
   Mat_IJ   *pg = (Mat_IJ *)(A->data);
   PetscInt len_, *ixidx_ = PETSC_NULL,*iyidx_ = PETSC_NULL, k,i, ii;
-  PetscIHashIter hi;
+  PetscHashIIter hi;
   PetscBool isij;
   PetscFunctionBegin;
 
@@ -790,15 +790,14 @@ static PetscErrorCode MatIJGetAssembledEdges_Private(Mat A, PetscInt *len, Petsc
     iyidx_ = *iyidx;
   }
   if(pg->hsupp) {
-    /*for(PetscIHashBegin(pg->hsupp,hi); !PetscIHashAtEnd(pg->hsupp,hi); PetscIHashNext(pg->hsupp,hi)){*/
-    PetscIHashBegin(pg->hsupp,hi); 
-    while(!PetscIHashAtEnd(pg->hsupp,hi)){
-      PetscIHashIterDeref(pg->hsupp,hi,ii,i);
+    PetscHashIIterBegin(pg->hsupp,hi); 
+    while(!PetscHashIIterAtEnd(pg->hsupp,hi)){
+      PetscHashIIterGetKeyVal(pg->hsupp,hi,ii,i);
       for(k = pg->ijlen[i]; k < pg->ijlen[i+1]; ++k) {
         if(ixidx_) ixidx_[k] = ii;
         if(iyidx_) iyidx_[k] = pg->image[pg->ij[k]];
       }
-      PetscIHashNext(pg->hsupp,hi);
+      PetscHashIIterNext(pg->hsupp,hi);
     }
   }
   else {
@@ -952,7 +951,7 @@ static PetscErrorCode MatIJLocalizeImage_Private(Mat A)
   PetscErrorCode ierr;
   Mat_IJ *pg = (Mat_IJ *) A->data;
   PetscInt i,j,k,n,totalnij,*image;
-  PetscIHash himage;
+  PetscHashI himage;
   PetscFunctionBegin;
   if(pg->image) PetscFunctionReturn(0);
 
@@ -962,37 +961,37 @@ static PetscErrorCode MatIJLocalizeImage_Private(Mat A)
 
   /* (A) */
   /* Insert all of the ij into himage. */
-  PetscIHashCreate(himage);
+  PetscHashICreate(himage);
   for(i = 0; i < pg->m; ++i) {
     for(k = pg->ijlen[i]; pg->ijlen[i+1]; ++i) {
-      PetscIHashAdd(himage,pg->ij[k],0);
+      PetscHashIAdd(himage,pg->ij[k],0);
     }
   }
   /* (B) */
   /* Endow the image with a local numbering: retrieve and sort its elements. */
-  PetscIHashSize(himage,n);
+  PetscHashISize(himage,n);
   ierr = PetscMalloc(n*sizeof(PetscInt), &image); CHKERRQ(ierr);
-  PetscIHashGetSupport(himage,n,image);           CHKERRQ(ierr);
-  PetscIHashClear(himage);
+  PetscHashIGetKeys(himage,n,image);              
   ierr = PetscSortInt(n,image); CHKERRQ(ierr);
   /* (C) */
   /* 
    Convert ij to local numbering: insert image elements into an emptied and resized himage, mapping them to their local numbers.
    Then remap all of ij using himage. 
    */
-  PetscIHashResize(himage,n);
+  PetscHashIClear(himage);
+  PetscHashIResize(himage,n);
   for(j = 0; j < n; ++j) {
-    PetscIHashAdd(himage,image[j],j);
+    PetscHashIAdd(himage,image[j],j);
   }
   totalnij = 0;
-  PetscIHashMapArray(himage,pg->ijlen[pg->m],pg->ij,totalnij,pg->ij); CHKERRQ(ierr);
+  PetscHashIMapArray(himage,pg->ijlen[pg->m],pg->ij,totalnij,pg->ij); CHKERRQ(ierr);
   if(totalnij!=pg->ijlen[pg->m]) {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of image indices before %D and after %D localization do not match", pg->ijlen[pg->m],totalnij);
   }
   /* Store the newly computed image array. */
   pg->image = image;
   /* Clean up. */
-  PetscIHashDestroy(himage);
+  PetscHashIDestroy(himage);
   PetscFunctionReturn(0);
 }
 
@@ -1012,7 +1011,7 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
   Mat_IJ *pg = (Mat_IJ *) A->data;
   PetscInt start, end, totalnij;
   PetscInt i,j,minnij, maxnij, nij,m,*ij, *ijlen, *supp;
-  PetscIHash hsupp = PETSC_NULL;
+  PetscHashI hsupp = PETSC_NULL;
   PetscFunctionBegin;
 
   if(!len) {
@@ -1061,7 +1060,7 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
      We now record in supp only the unique ixidx indices, and in ij the iyidx indices in each of the image segments.
    */
   if(m < A->rmap->n) 
-    PetscIHashCreate(hsupp);
+    PetscHashICreate(hsupp);
   i = 0;
   j = 0;
   start = 0;
@@ -1070,7 +1069,7 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
     end = start+1;
     while (end < len && ixidx[end] == ixidx[start]) ++end;
     if(hsupp) {
-      PetscIHashAdd(hsupp,ixidx[start],i); CHKERRQ(ierr);
+      PetscHashIAdd(hsupp,ixidx[start],i); CHKERRQ(ierr);
     }
     ++i;
     /* the relevant portion of iy is already sorted. */
@@ -1180,7 +1179,7 @@ PetscErrorCode MatIJGetSupport(Mat A, PetscInt *len, PetscInt **supp)
     }
   }
   *len = 0;
-  PetscIHashGetSupport(pg->hsupp, *len, *supp);                CHKERRQ(ierr);
+  PetscHashIGetKeys(pg->hsupp, *len, *supp);                CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1369,7 +1368,7 @@ PetscErrorCode MatDuplicate_IJ(Mat A, MatDuplicateOption op, Mat *B)
   ierr = MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N); CHKERRQ(ierr);
   ierr = MatSetType(*B, MATIJ);                                           CHKERRQ(ierr);
   bij = (Mat_IJ*)((*B)->data);
-  if(aij->hsupp) PetscIHashDuplicate(aij->hsupp, bij->hsupp);             CHKERRQ(ierr);
+  if(aij->hsupp) PetscHashIDuplicate(aij->hsupp, bij->hsupp);             CHKERRQ(ierr);
   bij->m = aij->m;
   ierr = PetscMemcpy(bij->ijlen, aij->ijlen, sizeof(PetscInt)*(bij->m+1));     CHKERRQ(ierr);
   ierr = PetscMemcpy(bij->ij, aij->ij, sizeof(PetscInt)*(bij->ijlen[bij->m])); CHKERRQ(ierr);
@@ -1941,7 +1940,7 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   Mat_IJ *pg = (Mat_IJ*) A->data;
   PetscBool      isij, isascii;
   PetscInt indi, indj,i,j;
-  PetscIHashIter it;
+  PetscHashIIter it;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -1956,13 +1955,13 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
     i = A->rmap->rstart;
   }
   else {
-    PetscIHashBegin(pg->hsupp,it);
+    PetscHashIIterBegin(pg->hsupp,it);
   }
   while(1) {
     if(pg->hsupp) {
-      if(PetscIHashAtEnd(pg->hsupp,it)) break;
+      if(PetscHashIIterAtEnd(pg->hsupp,it)) break;
       else {
-        PetscIHashIterDeref(pg->hsupp,it,i,indi);
+        PetscHashIIterGetKeyVal(pg->hsupp,it,i,indi);
       }
     }
     else {
@@ -2006,6 +2005,11 @@ PetscErrorCode MatCreate_IJ(Mat A) {
   PetscFunctionBegin;
   ierr = PetscNewLog(A, Mat_IJ, &pg); CHKERRQ(ierr);
   A->data = (void*)pg;
+
+  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->rmap);         CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);         CHKERRQ(ierr);
 
   ierr = StashMPIIJCreate_Private(A->rmap, &(pg->stash));  CHKERRQ(ierr);
 

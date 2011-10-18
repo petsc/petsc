@@ -1477,11 +1477,16 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
     }
   }
   {
-    PetscBool flag = PETSC_FALSE,flag_draw = PETSC_FALSE,flag_contour = PETSC_FALSE;
-    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring",&flag,PETSC_NULL);CHKERRQ(ierr);
-    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw",&flag_draw,PETSC_NULL);CHKERRQ(ierr);
-    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw_contour",&flag_contour,PETSC_NULL);CHKERRQ(ierr);
-    if (flag || flag_draw || flag_contour) {
+    PetscBool flag = PETSC_FALSE,flag_display = PETSC_FALSE,flag_draw = PETSC_FALSE,flag_contour = PETSC_FALSE,flag_threshold = PETSC_FALSE;
+    PetscReal threshold_atol = PETSC_SQRT_MACHINE_EPSILON,threshold_rtol = 10*PETSC_SQRT_MACHINE_EPSILON;
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring",&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_display",&flag_display,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw",&flag_draw,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_draw_contour",&flag_contour,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_coloring_threshold",&flag_threshold,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_compare_coloring_threshold_rtol",&threshold_rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_compare_coloring_threshold_atol",&threshold_atol,PETSC_NULL);CHKERRQ(ierr);
+    if (flag || flag_display || flag_draw || flag_contour || flag_threshold) {
       Mat Bfd;
       MatStructure mstruct;
       PetscViewer vdraw,vstdout;
@@ -1489,7 +1494,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       MatFDColoring matfdcoloring;
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
       void *funcctx;
-      PetscReal norm1,normmax;
+      PetscReal norm1,norm2,normmax;
 
       ierr = MatDuplicate(*B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
       ierr = MatGetColoring(Bfd,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
@@ -1511,22 +1516,66 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
         if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
       } else vdraw = PETSC_NULL;
       ierr = PetscViewerASCIIPrintf(vstdout,"Explicit preconditioning Jacobian\n");CHKERRQ(ierr);
-      if (flag) {ierr = MatView(*B,vstdout);CHKERRQ(ierr);}
+      if (flag_display) {ierr = MatView(*B,vstdout);CHKERRQ(ierr);}
       if (vdraw) {ierr = MatView(*B,vdraw);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(vstdout,"Colored Finite difference Jacobian\n");CHKERRQ(ierr);
-      if (flag) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
+      if (flag_display) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
       if (vdraw) {ierr = MatView(Bfd,vdraw);CHKERRQ(ierr);}
       ierr = MatAYPX(Bfd,-1.0,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(Bfd,NORM_1,&norm1);CHKERRQ(ierr);
+      ierr = MatNorm(Bfd,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
       ierr = MatNorm(Bfd,NORM_MAX,&normmax);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(vstdout,"User-provided matrix minus finite difference Jacobian, norm1=%G normmax=%G\n",norm1,normmax);CHKERRQ(ierr);
-      if (flag) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(vstdout,"User-provided matrix minus finite difference Jacobian, norm1=%G normFrob=%G normmax=%G\n",norm1,norm2,normmax);CHKERRQ(ierr);
+      if (flag_display) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
       if (vdraw) {              /* Always use contour for the difference */
         ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
         ierr = MatView(Bfd,vdraw);CHKERRQ(ierr);
         ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);
       }
       if (flag_contour) {ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);}
+
+      if (flag_threshold) {
+        PetscInt bs,rstart,rend,i;
+        ierr = MatGetBlockSize(*B,&bs);CHKERRQ(ierr);
+        ierr = MatGetOwnershipRange(*B,&rstart,&rend);CHKERRQ(ierr);
+        for (i=rstart; i<rend; i++) {
+          const PetscScalar *ba,*ca;
+          const PetscInt *bj,*cj;
+          PetscInt bn,cn,j,maxentrycol = -1,maxdiffcol = -1,maxrdiffcol = -1;
+          PetscReal maxentry = 0,maxdiff = 0,maxrdiff = 0;
+          ierr = MatGetRow(*B,i,&bn,&bj,&ba);CHKERRQ(ierr);
+          ierr = MatGetRow(Bfd,i,&cn,&cj,&ca);CHKERRQ(ierr);
+          if (bn != cn) SETERRQ(((PetscObject)*A)->comm,PETSC_ERR_PLIB,"Unexpected different nonzero pattern in -snes_compare_coloring_threshold");
+          for (j=0; j<bn; j++) {
+            PetscReal rdiff = PetscAbsScalar(ca[j]) / (threshold_atol + threshold_rtol*PetscAbsScalar(ba[j]));
+            if (PetscAbsScalar(ba[j]) > PetscAbs(maxentry)) {
+              maxentrycol = bj[j];
+              maxentry = PetscRealPart(ba[j]);
+            }
+            if (PetscAbsScalar(ca[j]) > PetscAbs(maxdiff)) {
+              maxdiffcol = bj[j];
+              maxdiff = PetscRealPart(ca[j]);
+            }
+            if (rdiff > maxrdiff) {
+              maxrdiffcol = bj[j];
+              maxrdiff = rdiff;
+            }
+          }
+          if (maxrdiff > 1) {
+            ierr = PetscViewerASCIIPrintf(vstdout,"row %D (maxentry=%G at %D, maxdiff=%G at %D, maxrdiff=%G at %D):",i,maxentry,maxentrycol,maxdiff,maxdiffcol,maxrdiff,maxrdiffcol);CHKERRQ(ierr);
+            for (j=0; j<bn; j++) {
+              PetscReal rdiff;
+              rdiff = PetscAbsScalar(ca[j]) / (threshold_atol + threshold_rtol*PetscAbsScalar(ba[j]));
+              if (rdiff > 1) {
+                ierr = PetscViewerASCIIPrintf(vstdout," (%D,%G:%G)",bj[j],PetscRealPart(ba[j]),PetscRealPart(ca[j]));CHKERRQ(ierr);
+              }
+            }
+            ierr = PetscViewerASCIIPrintf(vstdout,"\n",i,maxentry,maxdiff,maxrdiff);CHKERRQ(ierr);
+          }
+          ierr = MatRestoreRow(*B,i,&bn,&bj,&ba);CHKERRQ(ierr);
+          ierr = MatRestoreRow(Bfd,i,&cn,&cj,&ca);CHKERRQ(ierr);
+        }
+      }
       ierr = PetscViewerDestroy(&vdraw);CHKERRQ(ierr);
       ierr = MatDestroy(&Bfd);CHKERRQ(ierr);
     }
