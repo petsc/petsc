@@ -6,6 +6,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--with-cc=win32fe cl',
+    '--with-cxx=win32fe cl',
     '--with-fc=0',
     '--with-mpi=0',
     '--download-f2cblaslapack=1',

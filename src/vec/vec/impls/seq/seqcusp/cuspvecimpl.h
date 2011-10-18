@@ -45,7 +45,6 @@ extern PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
 
-extern PetscBool  synchronizeCUSP;
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
 
 #define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
