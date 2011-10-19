@@ -2688,7 +2688,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianConstant"
 /*@C
-   TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
+   TSComputeIJacobianConstant - Reuses a Jacobian that is time-independent.
 
    Collective on TS
 
