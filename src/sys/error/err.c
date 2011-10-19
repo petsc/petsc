@@ -370,7 +370,7 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char* f
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
     const char *str;
-    if (eh->ctx) {
+    if (eh && eh->ctx) {
       std::ostringstream *msg; 
       msg = (std::ostringstream*) eh->ctx;
       str = msg->str().c_str();

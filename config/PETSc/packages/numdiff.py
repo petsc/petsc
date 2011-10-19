@@ -46,7 +46,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Numdiff (install manually): '+str(e))
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make &&  make install && make clean', timeout=2500, log = self.framework.log)
+        # TARGET_ARCH set by Intel compilers on windows can break this build
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make TARGET_ARCH="" &&  make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Numdiff (install manually): '+str(e))
       self.framework.actions.addArgument('Numdiff', 'Install', 'Installed Numdiff into '+self.installDir)
