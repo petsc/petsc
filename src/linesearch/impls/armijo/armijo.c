@@ -69,6 +69,9 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)"); CHKERRQ(ierr);
     }
+    if (ls->bounded) {
+      ierr = PetscViewerASCIIPrintf(pv," (projected)"); CHKERRQ(ierr);
+    }
     ierr=PetscViewerASCIIPrintf(pv,": alpha=%G beta=%G ",armP->alpha,armP->beta);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"sigma=%G ",armP->sigma);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"memsize=%D\n",armP->memorySize);CHKERRQ(ierr);
@@ -246,6 +249,9 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     /* Calculate iterate */
     ierr = VecCopy(x,armP->work); CHKERRQ(ierr);
     ierr = VecAXPY(armP->work,ls->step,s); CHKERRQ(ierr);
+    if (ls->bounded) {
+      ierr = VecMedian(ls->lower,armP->work,ls->upper,armP->work); CHKERRQ(ierr);
+    }
 
     /* Calculate function at new iterate */
     if (ls->hasobjective) {

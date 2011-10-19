@@ -1,6 +1,6 @@
 #ifndef __TAO_UTIL_H
 #define __TAO_UTIL_H
-#include "petscvec.h"
+#include "petscmat.h"
 
 PetscErrorCode VecPow(Vec Vec1, PetscReal p);
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian);
@@ -8,6 +8,8 @@ PetscErrorCode VecCompare(Vec, Vec, PetscBool *);
 PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
 PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
+PetscErrorCode D_Fischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
+PetscErrorCode D_SFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
 
 PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal*);

@@ -1,9 +1,8 @@
 tao_fd_gradient
 complimentarity
-check for PetscOptionsName, use PetscOptionsBool
 chwirut1f
 fd - plate2_fd_test, eptorsion2_fd_test
-view ksp its
+document tao_util.c
 
 Describe new features
   no more application object
