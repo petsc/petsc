@@ -99,7 +99,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   if (vec->map-> n < 0 && vec->map->N < 0) {
      ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
   if (flag) {
     ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
   }
@@ -209,7 +209,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
 
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);

@@ -152,7 +152,7 @@ PetscErrorCode MatCUSPUnravelOrderingAndCopyToGPU(Mat A)
     PetscInt int_value=0;
     PetscBool found;
     PetscInt block_size=1;
-    ierr = PetscOptionsGetInt(PETSC_NULL, "-gpu_LU_block_size", &int_value, &found); CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(((PetscObject)A)->prefix, "-gpu_LU_block_size", &int_value, &found); CHKERRQ(ierr);
     if(found == PETSC_TRUE) {
       if(int_value > 0)
 	block_size = int_value;
