@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: urlget.py,v 1.28 2001/06/13 15:39:23 bsmith Exp $ 
+# $Id: urlget.py,v 1.28 2001/06/13 15:39:23 bsmith Exp $
 #
 # change python1.5 to whatever is needed on your system to invoke python
 #
 #  Retrieves a single file specified as a url and stores it locally.
-# 
-#  Calling sequence: 
+#
+#  Calling sequence:
 #      urlget.py [-v] [-tmp tmpdir] [-] [http,ftp][://hostname][/]directoryname/file [local_filename]
 #
 #  Options:
@@ -48,11 +48,11 @@ def parseargs(search_arg,return_nargs,arg_list):
     except:
         # Argument not found in list, hence return flag = 0,return val = None
         return 0,None
-    
+
     if return_nargs == 0:
         arg_list.remove(search_arg)
         return 1,None
-    
+
     if index+1 == len(arg_list):
         error('Error! Option has no value!\nExpecting value with option: ' + search_arg)
     else:
@@ -70,11 +70,17 @@ def basename(filename):
 def uncompress(filename):
     ext = extension(filename)
     if ext == '.gz':
-        err = os.system('gunzip ' + filename)
-        if err != 0:
+        try:
+            import gzip
+            f_in  = gzip.open(filename, 'rb')
+            f_out = open(basename(filename), 'wb')
+            f_out.writelines(f_in)
+            f_out.close()
+            f_in.close()
+        except ImportError:
             error('Error unable to invoke gunzip on ' + filename)
     elif ext == '.Z':
-        err = os.system('uncompress ' + filename)        
+        err = os.system('uncompress ' + filename)
         if err != 0:
             error('Error unable to invoke uncompress on ' + filename)
 
@@ -84,11 +90,11 @@ def compressed(filename):
         return 1
     else:
         return 0
-    
+
 # Defines a meta class, whose member functions are common/required
 # by ftp/http object classes
 class url_object:
-    def gettime(): 
+    def gettime():
         error('Error Derived function should be implemented')
     def getfile(filename):
         error('Error Derived function should be implemented')
@@ -127,7 +133,7 @@ class ftp_object(url_object):
         self.buf   = self.buf + buf1
 
     def gettime(self):
-        
+
         self.buf       = ''
         self.ftp.retrlines('LIST ' +self.urlpath,self.readftplines)
         if self.buf == '':
@@ -154,7 +160,7 @@ class ftp_object(url_object):
                               split(hour),split(min),0,-1,-1,0))
         self.remotetime = newtime - timezone
         return self.remotetime
-    
+
     def writefile(self,buf):
         self.fp.write(buf)
 
@@ -199,7 +205,7 @@ class http_object(url_object):
 
         urltimesplit = urltimestamp.split()
         if len(urltimesplit) == 6 :      #Sun, 06 Nov 1994 08:49:37 GMT
-            day,month,year,time = urltimesplit[1:-1] 
+            day,month,year,time = urltimesplit[1:-1]
         elif len(urltimesplit) == 4 :    #Sunday, 06-Nov-94 08:49:37 GMT
             time           = urltimesplit[2]
             day,month,year = urltimesplits[1].split('-')
@@ -223,7 +229,7 @@ class http_object(url_object):
         fp = open(outfilename,'wb')
         fp.write(data)
         fp.close()
-        
+
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
@@ -245,7 +251,7 @@ class urlget:
                 self.cachefilename = basename(self.filename)
             else:
                 self.cachefilename = self.filename
-                
+
         if self.protocol == 'ftp':
             self.url_obj = ftp_object(self.machine,self.urlpath)
         elif self.protocol == 'http':
@@ -266,13 +272,13 @@ class urlget:
             while flag == 0:
                 print('%s exists. Would you like to replace it? (y/n)' % (self.filename,))
                 c = stdin.readline()[0]
-                if c == 'y': 
+                if c == 'y':
                     uselocalcopy = 0
                     flag = 1
                 elif c == 'n':
                     uselocalcopy = 1
                     flag = 1
-                    
+
         if uselocalcopy == 0 :
             self.url_obj.getfile(self.filename)
             os.utime(self.filename,(timestamp,timestamp))
@@ -280,7 +286,7 @@ class urlget:
                 uncompress(self.filename)
             os.chmod(self.cachefilename,500)
 
-    
+
 def main():
 
     # Parse for known options.
@@ -293,7 +299,7 @@ def main():
         sys.exit()
 
     arg_len = len(sys.argv)
-    if arg_len < 2: 
+    if arg_len < 2:
         print('Error! Insufficient arguments.')
         print('Usage: %s [-v] [-tmp tmpdir] [-]  url-filename [local-filename]' % (sys.argv[0],))
         sys.exit(1)
@@ -316,6 +322,5 @@ def main():
 
 # The classes in this file can also
 # be used in other python-programs by using 'import'
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
-
