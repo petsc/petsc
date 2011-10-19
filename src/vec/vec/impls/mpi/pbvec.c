@@ -451,7 +451,7 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
 #undef __FUNCT__  
 #define __FUNCT__ "VecMPISetGhost"
 /*@
-   VecMPIGhost - Sets the ghost points for an MPI ghost vector
+   VecMPISetGhost - Sets the ghost points for an MPI ghost vector
 
    Collective on Vec
 
