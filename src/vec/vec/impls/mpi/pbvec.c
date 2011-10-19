@@ -351,7 +351,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const 
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
-          VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
 
 @*/ 
 PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
@@ -436,7 +436,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
-          VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
 
 @*/ 
 PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
