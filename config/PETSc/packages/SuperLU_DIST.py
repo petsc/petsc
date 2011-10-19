@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     self.download   = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.0.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_2.5.a']]
+    self.liblist    = [['libsuperlu_dist_3.0.a']]
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
     #  in the method configureLibrary()
     self.requires32bitint = 0
@@ -29,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.5.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_3.0.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
