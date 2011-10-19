@@ -97,11 +97,24 @@ Unable to download package %s from: %s
         os.remove(localFile)
     try:
       if archiveZip.endswith(".bz2"):
-        config.base.Configure.executeShellCommand('cd '+root+'; bunzip2 '+archiveZip, log = self.log)
+        import bz2
+        f_in  = bz2.BZ2File(os.path.join(root, archiveZip), 'rb')
+        f_out = file(os.path.join(root, archive), 'wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
       elif archiveZip.endswith(".zip"):
+        # Use zipfile, but its more complicated
         config.base.Configure.executeShellCommand('cd '+root+'; unzip '+archiveZip, log = self.log)
       else:
-        config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
+        import gzip
+        f_in  = gzip.GZipFile(os.path.join(root, archiveZip), 'rb')
+        f_out = file(os.path.join(root, archive), 'wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
+    except ImportError, e:
+        raise RuntimeError('Could not import compressor for '+archiveZip+': '+str(e))
     except RuntimeError, e:
       filename   = os.path.basename(urlparse.urlparse(url)[2])
       if str(e).find("not in gzip format") > -1:
