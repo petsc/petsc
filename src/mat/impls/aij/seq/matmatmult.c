@@ -40,7 +40,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscReal          afill;
 
   PetscFunctionBegin;
-  /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
   ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
@@ -62,7 +61,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     aj   = a->j + ai[i];
     while (j){/* assume cols are almost in increasing order, starting from its end saves computation */
       j--;
-      brow = *(aj + j);
+      brow = *(aj + j); 
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
@@ -182,7 +181,6 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not done yet");
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
@@ -194,13 +192,109 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
 #define __FUNCT__ "MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  /*
   PetscErrorCode ierr;
-  Mat            At;
-  PetscInt       *ati,*atj;
-   */
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  PetscInt           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*ci,*cj,*acol,*bcol;
+  PetscInt           am=A->rmap->N,bm=B->rmap->N;
+  PetscInt           i,j,anzi,bnzj,cnzi,nlnk,*lnk,nspacedouble=0,ka,kb,index[1];
+  MatScalar          *ca;
+  PetscBT            lnkbt;
+  PetscReal          afill;
+  
   PetscFunctionBegin;
+  /* Allocate row pointer array ci  */
+  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+  
+  /* Create and initialize a linked list for C columns */
+  nlnk = bm+1;
+  ierr = PetscLLCreate(bm,bm,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+
+  /* Initial FreeSpace with size fill*(nnz(A)+nnz(B)) */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+
+  /* Determine symbolic info for each row of the product A*B^T: */
+  for (i=0; i<am; i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = 0;
+    acol = aj + ai[i];
+    for (j=0; j<bm; j++){
+      bnzj = bi[j+1] - bi[j];
+      bcol= bj + bi[j];
+      /* sparse inner-product A[i,:] * B[j,:]^T */
+      ka = 0; kb = 0; 
+      while (ka < anzi && kb < bnzj){
+        while (acol[ka] < bcol[kb] && ka < anzi){
+          ka++;
+        }
+        while (acol[ka] > bcol[kb] && kb < bnzj){
+          kb++;
+        }
+        if (acol[ka] == bcol[kb]){ /* add nonzero c(i,j) to lnk */
+          index[0] = j;
+          ierr = PetscLLAdd(1,index,bm,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+          cnzi++;
+          break;
+        }
+      }
+    }
+    
+    /* If free space is not available, make more free space */
+    /* Double the amount of total space in the list */
+    if (current_space->local_remaining<cnzi) {
+      ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      nspacedouble++;
+    }
+
+    /* Copy data into free space, then initialize lnk */
+    ierr = PetscLLClean(bm,bm,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
+    current_space->array           += cnzi;
+    current_space->local_used      += cnzi;
+    current_space->local_remaining -= cnzi;
  
+    ci[i+1] = ci[i] + cnzi;
+  }
+  
+
+  /* Column indices are in the list of free space. 
+     Allocate array cj, copy column indices to cj, and destroy list of free space */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
+    
+  /* Allocate space for ca */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  
+  /* put together the new symbolic matrix */
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bm,ci,cj,ca,C);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->free_a   = PETSC_TRUE;
+  c->free_ij  = PETSC_TRUE;
+  c->nonew    = 0;
+
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am]; 
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = nspacedouble;
+  (*C)->info.fill_ratio_given  = fill;               
+  (*C)->info.fill_ratio_needed = afill; 
+
+#if defined(PETSC_USE_INFO)
+  if (ci[am]) {
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMultTranspose(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -208,17 +302,31 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 #define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
-  /*
+#if defined(TMP)
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
   PetscInt       am=A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
+  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,k,cnzi,*ccol;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
-   */
+#endif
 
   PetscFunctionBegin;
+#if defined(TMP)
+  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  for (i=0; i<cm; i++) {
+    printf("C row %d\n",i);
+    cnzi = ci[i+1] - ci[i];
+    ccol = cj + ci[i];
+    for (j=0; j<cnzi; j++){
+      printf(" %d, ",ccol[j]);
+    }
+    printf("   cnzi %d\n",cnzi);
+  }
+#endif
+  SETERRQ(PETSC_COMM_SELF,0,"MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ Not done yet");
   PetscFunctionReturn(0);
 }
 
