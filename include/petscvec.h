@@ -508,6 +508,7 @@ extern PetscErrorCode  VecSetOperation(Vec,VecOperation,void(*)(void));
      Routines for dealing with ghosted vectors:
   vectors with ghost elements at the end of the array.
 */
+extern PetscErrorCode  VecMPISetGhost(Vec,PetscInt,const PetscInt[]);
 extern PetscErrorCode  VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
 extern PetscErrorCode  VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
 extern PetscErrorCode  VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  

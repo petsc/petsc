@@ -247,6 +247,11 @@ runex9_2:
 	   if (${DIFF} output/ex9_1.out ex9_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex9_2, diffs above \n========================================="; fi;\
 	   ${RM} -f ex9_2.tmp
+runex9_3:
+	-@${MPIEXEC} -n 2 ./ex9 -vecmpisetghost > ex9_3.tmp 2>&1;\
+	   if (${DIFF} output/ex9_1.out ex9_3.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex9_3, diffs above \n========================================="; fi;\
+	   ${RM} -f ex9_3.tmp
 runex9f:
 	-@${MPIEXEC} -n 2 ./ex9f > ex9f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \

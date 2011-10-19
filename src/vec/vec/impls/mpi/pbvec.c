@@ -448,6 +448,93 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecMPISetGhost"
+/*@
+   VecMPIGhost - Sets the ghost points for an MPI ghost vector
+
+   Collective on Vec
+
+   Input Parameters:
++  vv - the MPI vector
+.  nghost - number of local ghost points
+-  ghosts - global indices of ghost points
+
+ 
+   Notes:
+   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   of the vector.
+
+   This also automatically sets the ISLocalToGlobalMapping() for this vector.
+
+   You must call this AFTER you have set the type of the vector (with VecSetType()) and the size (with VecSetSizes()).
+
+   Level: advanced
+
+   Concepts: vectors^ghosted
+
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
+          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
+          VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
+
+@*/ 
+PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)vv,VECMPI,&flg);CHKERRQ(ierr);
+  /* if already fully existant VECMPI then basically destroy it and rebuild with ghosting */
+  if (flg) {
+    PetscInt               n,N;
+    Vec_MPI                *w;
+    PetscScalar            *larray;
+    IS                     from,to;
+    ISLocalToGlobalMapping ltog;
+    PetscInt               rstart,i,*indices;
+    MPI_Comm               comm = ((PetscObject)vv)->comm;
+
+    n = vv->map->n;
+    N = vv->map->N;
+    ierr = (*vv->ops->destroy)(vv);CHKERRQ(ierr);
+    ierr = VecSetSizes(vv,n,N);CHKERRQ(ierr);
+    ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,PETSC_NULL);CHKERRQ(ierr);
+    w    = (Vec_MPI *)(vv)->data;
+    /* Create local representation */
+    ierr = VecGetArray(vv,&larray);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(vv,w->localrep);CHKERRQ(ierr);
+    ierr = VecRestoreArray(vv,&larray);CHKERRQ(ierr);
+
+    /*
+     Create scatter context for scattering (updating) ghost values 
+     */
+    ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
+    ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(vv,w->localupdate);CHKERRQ(ierr);
+    ierr = ISDestroy(&to);CHKERRQ(ierr);
+    ierr = ISDestroy(&from);CHKERRQ(ierr);
+
+    /* set local to global mapping for ghosted vector */
+    ierr = PetscMalloc((n+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      indices[i] = rstart + i;
+    }
+    for (i=0; i<nghost; i++) {
+      indices[n+i] = ghosts[i];
+    }
+    ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(vv,ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr); 
+  } else if (vv->ops->create == VecCreate_MPI) SETERRQ(((PetscObject)vv)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
+  else if (!((PetscObject)vv)->type_name) SETERRQ(((PetscObject)vv)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
+  PetscFunctionReturn(0);
+}
+
 
 /* ------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
