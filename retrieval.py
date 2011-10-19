@@ -108,7 +108,7 @@ Unable to download package %s from: %s
         config.base.Configure.executeShellCommand('cd '+root+'; unzip '+archiveZip, log = self.log)
       else:
         import gzip
-        f_in  = gzip.GZipFile(os.path.join(root, archiveZip), 'rb')
+        f_in  = gzip.GzipFile(os.path.join(root, archiveZip), 'rb')
         f_out = file(os.path.join(root, archive), 'wb')
         f_out.writelines(f_in)
         f_out.close()
