@@ -1634,13 +1634,13 @@ PetscErrorCode CreateTaperSetOfPoints(PetscReal Xbegin,PetscReal Xend,PetscReal 
 
   PetscFunctionBegin;
   for(i=0;i<Ns;i++){
-    sum += pow(f,i);
+    sum += PetscPowScalar(f,i);
   }
 
   dX = (Xend-Xbegin)/sum;
   X[0] = Xbegin;
   for(i=1;i<N;i++){
-    X[i] = X[i-1] + dX*pow(f,i-1.0);
+    X[i] = X[i-1] + dX*PetscPowScalar(f,i-1);
   }
 
   PetscFunctionReturn(0);
