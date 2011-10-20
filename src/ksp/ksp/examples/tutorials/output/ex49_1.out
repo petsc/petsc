@@ -1,3 +1,4 @@
+  Residual norms for elas_ solve.
   0 KSP Residual norm 1.86112 
   1 KSP Residual norm 0.0374733 
   2 KSP Residual norm 0.0348124 
@@ -26,7 +27,7 @@
  25 KSP Residual norm 0.00094452 
  26 KSP Residual norm 0.000648584 
  27 KSP Residual norm 0.000366336 
- 28 KSP Residual norm 0.000350714 
+ 28 KSP Residual norm 0.000350713 
  29 KSP Residual norm 0.000345605 
  30 KSP Residual norm 0.000290812 
  31 KSP Residual norm 0.000251505 
@@ -37,9 +38,9 @@
  36 KSP Residual norm 0.000105863 
  37 KSP Residual norm 0.000102799 
  38 KSP Residual norm 0.00010024 
- 39 KSP Residual norm 9.38532e-05 
+ 39 KSP Residual norm 9.38531e-05 
  40 KSP Residual norm 7.37753e-05 
- 41 KSP Residual norm 5.55157e-05 
+ 41 KSP Residual norm 5.55156e-05 
  42 KSP Residual norm 5.39851e-05 
  43 KSP Residual norm 5.39266e-05 
  44 KSP Residual norm 5.15089e-05 

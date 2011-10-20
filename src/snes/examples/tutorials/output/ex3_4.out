@@ -15,4 +15,4 @@ Checking candidate step at iteration 3 with tolerance 1
 iter = 4,SNES Function norm 1.30878e-11
 Number of SNES iterations = 4
 
-Norm of error 1.26522e-12, Iterations 4
+Norm of error 1.26522e-12 Iterations 4
