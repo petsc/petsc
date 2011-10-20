@@ -8609,10 +8609,14 @@ PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   fB = B->ops->matmulttranspose;
   if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
   if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-
-  ierr = PetscLogEventBegin(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
-  ierr = (*A->ops->matmulttranspose)(A,B,scall,fill,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogEventBegin(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = (*A->ops->matmulttransposesymbolic)(A,B,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr); 
+  }
+  ierr = PetscLogEventBegin(MAT_MatMultTransposeNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*A->ops->matmulttransposenumeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultTransposeNumeric,A,B,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 } 
 
