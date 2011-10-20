@@ -254,6 +254,14 @@ class TaoExamples(ExampleList):
         self.add(Example(example="gtsf",nprocs=2,options="-tao_smonitor",method="nls",tags=["nls","eptorsion","multiprocessor","fortran","bound","gts"],name="gtsf"))
         self.add(Example(example="linesearch_fg",nprocs=1,options="-tao_smonitor",method="blmvm",tags=["jbearing","blmvm","single","c","unconstrained","linesearch_fg"],name="linesearch_fg"))
 
+        # Complementarity
+        self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor",method="ssils",tags=["complementarity","single","blackscholes","c"],name="blackscholes",section="complementarity"))
+        self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor",method="ssfls",tags=["complementarity","single","blackscholes","c"],name="blackscholes_2",section="complementarity"))
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_monitor -tao_view",method="ssils",tags=["complementarity","single","minsurf","c"],name="comp_minsurf1",section="complementarity"))
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_monitor -tao_view",method="ssfls",tags=["complementarity","single","minsurf","c"],name="comp_minsurf2",section="complementarity"))
+
+
+
 
         # PDE-constrained
         self.add(Example(example="elliptic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","elliptic","single","c"],name="elliptic",section="pde_constrained"))
