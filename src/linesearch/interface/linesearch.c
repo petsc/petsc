@@ -247,7 +247,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 
   Level: developer
 
-.seealse: TaoLineSearchCreate(), TaoLineSearchSolve()
+.seealso: TaoLineSearchCreate(), TaoLineSearchSolve()
 @*/
 PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 {
