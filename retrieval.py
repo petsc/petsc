@@ -113,6 +113,8 @@ Unable to download package %s from: %s
         f_out.writelines(f_in)
         f_out.close()
         f_in.close()
+    except IOError, e:
+      self.logPrint(localFile+' is not compressed. An internet filter is possibly responsible.')
     except ImportError, e:
         raise RuntimeError('Could not import compressor for '+archiveZip+': '+str(e))
     except RuntimeError, e:
