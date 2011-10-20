@@ -12,7 +12,13 @@
 #include <assert.h>
 #include <petscblaslapack.h>
 
-typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState;
+/* typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState; */
+/* use int instead of enum to facilitate passing them via Scatters */
+typedef int NState;
+static const NState NOT_DONE=-2;
+static const NState DELETED=-1;
+static const NState REMOVED=-3;
+
 #define  IS_SELECTED(s) (s!=DELETED && s!=NOT_DONE && s!=REMOVED)
 
 /* -------------------------------------------------------------------------- */
