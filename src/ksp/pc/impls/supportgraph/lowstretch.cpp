@@ -428,7 +428,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   PetscInt n,m,edgesLeft;
   //PetscErrorCode ierr;
   ShortestPathPriorityQueue pq;
-  PetscScalar radius;
+  PetscScalar radius = 0;
   PetscInt centerSize;
   std::vector<PetscInt> centerIdx;
   PQNode node;
@@ -703,7 +703,7 @@ PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& max
   //  maxCongestion;       /* maps each edge component to an upper bound on the
   //			    congestion through any of its edges */
 
-  const EdgeIndex edge_index_g = get(edge_index_t(),g);
+  //const EdgeIndex edge_index_g = get(edge_index_t(),g);
 
   PetscFunctionBegin;
 
@@ -795,7 +795,7 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
   const EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
   const EdgeKeep edge_keep_g = get(edge_keep_t(),g);
-  const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
+  //const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
   const VertexChildren vertex_children_g = get(vertex_children_t(),g);
   const VertexDepth vertex_depth_g = get(vertex_depth_t(),g);
   const PetscScalar rootDepth = get(vertex_depth_g,root);
@@ -943,7 +943,7 @@ PetscErrorCode AddBridges(Graph& g,
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
   const EdgeKeep edge_keep_g = get(edge_keep_t(),g);
   const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
-  const VertexChildren vertex_children_g = get(vertex_children_t(),g);
+  // const VertexChildren vertex_children_g = get(vertex_children_t(),g);
   const VertexDepth vertex_depth_g = get(vertex_depth_t(),g);
   PetscInt edgeIndex, eeIndex;
   Component *comp1, *comp2;
