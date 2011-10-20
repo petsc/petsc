@@ -60,11 +60,12 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 #endif
   PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
   PetscScalar    taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
-  PetscScalar    *PETSC_RESTRICT r0, *PETSC_RESTRICT rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT f0, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn, *PETSC_RESTRICT qn;
-  PetscScalar    *PETSC_RESTRICT b, *PETSC_RESTRICT un;
+  const PetscScalar *PETSC_RESTRICT r0, *PETSC_RESTRICT f0, *PETSC_RESTRICT qn, *PETSC_RESTRICT b, *PETSC_RESTRICT un;
+  PetscScalar    *PETSC_RESTRICT rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn;
   /* the rest do not have to keep n_1 values */
   PetscScalar    kappan, thetan, etan, gamman, betan, deltan;
-  PetscScalar    *PETSC_RESTRICT tn, *PETSC_RESTRICT sn;
+  const PetscScalar *PETSC_RESTRICT tn;
+  PetscScalar    *PETSC_RESTRICT sn;
   Vec            R0,Rn,Xn,F0,Vn,Zn,Qn,Tn,Sn,B,Un;
   Mat            A;
 
@@ -73,17 +74,17 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
-  Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);
-  B  = ksp->vec_rhs;ierr = VecGetArray(B,(PetscScalar**)&b);ierr = VecRestoreArray(B,(PetscScalar**)&b);CHKERRQ(ierr);
-  R0 = ksp->work[0];ierr = VecGetArray(R0,(PetscScalar**)&r0);CHKERRQ(ierr);ierr = VecRestoreArray(R0,(PetscScalar**)&r0);
-  Rn = ksp->work[1];ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);
-  Un = ksp->work[2];ierr = VecGetArray(Un_1,(PetscScalar**)&un_1);CHKERRQ(ierr);ierr = VecRestoreArray(Un_1,(PetscScalar**)&un_1);CHKERRQ(ierr);
-  F0 = ksp->work[3];ierr = VecGetArray(F0,(PetscScalar**)&f0);CHKERRQ(ierr);ierr = VecRestoreArray(F0,(PetscScalar**)&f0);CHKERRQ(ierr);
-  Vn = ksp->work[4];ierr = VecGetArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);
-  Zn = ksp->work[5];ierr = VecGetArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);
-  Qn = ksp->work[6];ierr = VecGetArray(Qn_1,(PetscScalar**)&qn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Qn_1,(PetscScalar**)&qn_1);CHKERRQ(ierr);
-  Tn = ksp->work[7];ierr = VecGetArray(Tn,(PetscScalar**)&tn);CHKERRQ(ierr);ierr = VecRestoreArray(Tn,(PetscScalar**)&tn);CHKERRQ(ierr);
-  Sn = ksp->work[8];ierr = VecGetArray(Sn,(PetscScalar**)&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,(PetscScalar**)&sn);CHKERRQ(ierr);
+  Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,PETSC_NULL);CHKERRQ(ierr);
+  B  = ksp->vec_rhs;ierr = VecGetArrayRead(B,(const PetscScalar**)&b);ierr = VecRestoreArrayRead(B,PETSC_NULL);CHKERRQ(ierr);
+  R0 = ksp->work[0];ierr = VecGetArrayRead(R0,(const PetscScalar**)&r0);CHKERRQ(ierr);ierr = VecRestoreArrayRead(R0,PETSC_NULL);CHKERRQ(ierr);
+  Rn = ksp->work[1];ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,PETSC_NULL);CHKERRQ(ierr);
+  Un = ksp->work[2];ierr = VecGetArrayRead(Un_1,(const PetscScalar**)&un_1);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Un_1,PETSC_NULL);CHKERRQ(ierr);
+  F0 = ksp->work[3];ierr = VecGetArrayRead(F0,(const PetscScalar**)&f0);CHKERRQ(ierr);ierr = VecRestoreArrayRead(F0,PETSC_NULL);CHKERRQ(ierr);
+  Vn = ksp->work[4];ierr = VecGetArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,PETSC_NULL);CHKERRQ(ierr);
+  Zn = ksp->work[5];ierr = VecGetArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,PETSC_NULL);CHKERRQ(ierr);
+  Qn = ksp->work[6];ierr = VecGetArrayRead(Qn_1,(const PetscScalar**)&qn_1);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Qn_1,PETSC_NULL);CHKERRQ(ierr);
+  Tn = ksp->work[7];ierr = VecGetArrayRead(Tn,(const PetscScalar**)&tn);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Tn,PETSC_NULL);CHKERRQ(ierr);
+  Sn = ksp->work[8];ierr = VecGetArrayRead(Sn,(const PetscScalar**)&sn);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Sn,PETSC_NULL);CHKERRQ(ierr);
 
   /* r0 = rn_1 = b - A*xn_1; */
   /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
@@ -230,6 +231,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       rnormin += PetscRealPart(PetscConj(rn[i])*rn[i]);
       xn[i]   += zn[i] + omegan*sn[i];
     }
+    ierr = PetscObjectStateIncrease((PetscObject)Xn);CHKERRQ(ierr);
     ierr = PetscLogFlops(7.0*N);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
