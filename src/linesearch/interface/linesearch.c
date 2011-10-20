@@ -158,6 +158,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
      ls->ops->apply=0;
      ls->ops->view=0;
      ls->ops->setfromoptions=0;
+     ls->ops->reset=0;
      ls->ops->destroy=0;
      ls->setupcalled=PETSC_FALSE;
      ls->usetaoroutines=PETSC_FALSE;
@@ -231,6 +232,33 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
      PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoLineSearchReset"
+/*@ 
+  TaoLineSearchReset - Some line searches may carry state information
+  from one Apply to the next.  This function resets this state information
+  if there are multiple calls to TaoSolve() 
+
+
+  Collective on TaoLineSearch
+
+  Input Parameter
+. ls - the TaoLineSearch context
+
+  Level: developer
+
+.seealse: TaoLineSearchCreate(), TaoLineSearchSolve()
+@*/
+PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
+{
+     PetscErrorCode ierr;
+     PetscFunctionBegin;
+     PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
+     if (ls->ops->reset) {
+       ierr= (*ls->ops->reset)(ls); CHKERRQ(ierr);
+     }
+     PetscFunctionReturn(0);
+}
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchDestroy"
 /*@ 

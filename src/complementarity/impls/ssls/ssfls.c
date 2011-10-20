@@ -85,7 +85,7 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
     ierr = VecDot(ssls->w,ssls->dpsi,&innerd); CHKERRQ(ierr);
 
     /* Make sure that we have a descent direction */
-    if (innerd <= -delta*pow(normd, rho)) {
+    if (innerd >= -delta*pow(normd, rho)) {
       ierr = PetscInfo(tao, "newton direction not descent\n"); CHKERRQ(ierr);
       ierr = VecCopy(ssls->dpsi,tao->stepdirection); CHKERRQ(ierr);
       ierr = VecDot(ssls->w,ssls->dpsi,&innerd); CHKERRQ(ierr);
@@ -114,6 +114,7 @@ PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
   PetscFunctionBegin;
   const char *armijo_type = TAOLINESEARCH_ARMIJO;
   ierr = PetscNewLog(tao,TAO_SSLS,&ssls); CHKERRQ(ierr);
+  tao->data = (void*)ssls;
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;
   tao->ops->view=TaoView_SSLS;
@@ -126,7 +127,9 @@ PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);
-  /* Set linesearch objective and objectivegradient routines in solve routine */
+  /* Linesearch objective and objectivegradient routines are
+     set in solve routine */
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
   
   tao->max_it = 2000;
   tao->max_funcs = 4000;

@@ -40,6 +40,7 @@ extern PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchDestroy(TaoLineSearch*);
 extern PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
 extern PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch,const char prefix[]);
+extern PetscErrorCode TaoLineSearchReset(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch,const char prefix[]);
 extern PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch,const char *prefix[]);
 extern PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);

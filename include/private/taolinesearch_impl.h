@@ -15,6 +15,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscReal*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);
     PetscErrorCode (*setfromoptions)(TaoLineSearch);
+    PetscErrorCode (*reset)(TaoLineSearch);
     PetscErrorCode (*destroy)(TaoLineSearch);
 };
 

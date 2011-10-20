@@ -114,7 +114,8 @@ PetscErrorCode TaoCreate_SSILS(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);
-  /* Set linesearch objective and objectivegradient routines in solve routine */
+  /* Note: linesearch objective and objectivegradient routines are set in solve routine */
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
   
   tao->max_it = 2000;
   tao->max_funcs = 4000;

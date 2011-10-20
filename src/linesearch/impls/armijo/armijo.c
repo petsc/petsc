@@ -33,6 +33,23 @@ static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TaoLineSearchReset_Armijo"
+static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
+{
+  TAOLINESEARCH_ARMIJO_CTX *armP = (TAOLINESEARCH_ARMIJO_CTX *)ls->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  if (armP->memory != PETSC_NULL) {
+    ierr = PetscFree(armP->memory); CHKERRQ(ierr);
+    armP->memory = PETSC_NULL;
+  }
+  armP->memorySetup = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TaoLineSearchSetFromOptions_Armijo"
 static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls)
 {
@@ -349,6 +366,7 @@ PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   ls->ops->apply=TaoLineSearchApply_Armijo;
   ls->ops->view = TaoLineSearchView_Armijo;
   ls->ops->destroy = TaoLineSearchDestroy_Armijo;
+  ls->ops->reset = TaoLineSearchReset_Armijo;
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Armijo;
 
   PetscFunctionReturn(0);

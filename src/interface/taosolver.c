@@ -159,6 +159,9 @@ PetscErrorCode TaoSolve(TaoSolver tao)
 
   ierr = TaoSetUp(tao);CHKERRQ(ierr);
   ierr = TaoResetStatistics(tao); CHKERRQ(ierr);
+  if (tao->linesearch) {
+    ierr = TaoLineSearchReset(tao->linesearch); CHKERRQ(ierr);
+  }
 
   ierr = PetscLogEventBegin(TaoSolver_Solve,tao,0,0,0); CHKERRQ(ierr);
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
@@ -219,10 +222,6 @@ PetscErrorCode TaoSetUp(TaoSolver tao)
 
   if (!tao->solution) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetInitialVector");
-  }
-  if (!tao->ops->computeobjective && !tao->ops->computeobjectiveandgradient &&
-      !tao->ops->computeseparableobjective) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetObjective or TaoSetObjectiveAndGradient");
   }
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   if (tao->ops->setup) {
