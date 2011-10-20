@@ -1301,7 +1301,7 @@ runex92_4:
 	${RM} -f ex92_1.tmp
 
 runex93:
-	-@${MPIEXEC} -n 1 ./ex93 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -options_left no > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex93_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp

@@ -193,6 +193,23 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
 PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+  Mat            Bt;
+  PetscInt       *bti,*btj;
+  
+  PetscFunctionBegin;
+   /* create symbolic Bt */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,PETSC_NULL,&Bt);CHKERRQ(ierr);
+
+  /* get symbolic C=A*Bt */
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
+
+  /* clean up */
+  ierr = MatDestroy(&Bt);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
+  
+#if defined(INEFFICIENT_ALGORITHM)
+  /* The algorithm below computes am*bm sparse inner-product - inefficient! It will be deleted later. */
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*ci,*cj,*acol,*bcol;
@@ -201,8 +218,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   MatScalar          *ca;
   PetscBT            lnkbt;
   PetscReal          afill;
-  
-  PetscFunctionBegin;
+
   /* Allocate row pointer array ci  */
   ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
   ci[0] = 0;
@@ -223,15 +239,13 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     for (j=0; j<bm; j++){
       bnzj = bi[j+1] - bi[j];
       bcol= bj + bi[j];
-      /* sparse inner-product A[i,:] * B[j,:]^T */
+      /* sparse inner-product c(i,j)=A[i,:]*B[j,:]^T */
       ka = 0; kb = 0; 
       while (ka < anzi && kb < bnzj){
-        while (acol[ka] < bcol[kb] && ka < anzi){
-          ka++;
-        }
-        while (acol[ka] > bcol[kb] && kb < bnzj){
-          kb++;
-        }
+        while (acol[ka] < bcol[kb] && ka < anzi) ka++; 
+        if (ka == anzi) break;
+        while (acol[ka] > bcol[kb] && kb < bnzj) kb++;
+        if (kb == bnzj) break;
         if (acol[ka] == bcol[kb]){ /* add nonzero c(i,j) to lnk */
           index[0] = j;
           ierr = PetscLLAdd(1,index,bm,nlnk,lnk,lnkbt);CHKERRQ(ierr);
@@ -295,6 +309,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
 #endif
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -302,31 +317,44 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 #define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
-#if defined(TMP)
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  PetscInt       am=A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,k,cnzi,*ccol;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,anzi,bnzj,nexta,nextb,*acol,*bcol,brow;
+  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
-  MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
-#endif
+  MatScalar      *aa=a->a,*ba=b->a,*ca=c->a;
 
   PetscFunctionBegin;
-#if defined(TMP)
-  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* clear old values in C */
+  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<cm; i++) {
-    printf("C row %d\n",i);
+    anzi = ai[i+1] - ai[i];
+    acol = aj + ai[i];
     cnzi = ci[i+1] - ci[i];
     ccol = cj + ci[i];
     for (j=0; j<cnzi; j++){
-      printf(" %d, ",ccol[j]);
+      brow = ccol[j];
+      bnzj = bi[brow+1] - bi[brow];
+      bcol = bj + bi[brow];
+      /* perform sparse inner-product c(i,j)=A[i,:]*B[j,:]^T */
+      nexta = 0; nextb = 0;
+      while (nexta<anzi && nextb<bnzj){
+        while (acol[nexta] < bcol[nextb] && nexta < anzi) nexta++;
+        if (nexta == anzi) break;
+        while (acol[nexta] > bcol[nextb] && nextb < bnzj) nextb++;
+        if (nextb == bnzj) break;
+        if (acol[nexta] == bcol[nextb]){ 
+          *(ca+ci[i]+j) += (*(aa+ai[i]+nexta))*(*(ba+bi[brow]+nextb));
+          nexta++; nextb++; 
+          flops += 2;
+        }
+      }
     }
-    printf("   cnzi %d\n",cnzi);
   }
-#endif
-  SETERRQ(PETSC_COMM_SELF,0,"MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ Not done yet");
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);   
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
