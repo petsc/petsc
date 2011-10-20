@@ -376,18 +376,18 @@ runex36:
 runex37:
 	-@for expl in 0 1; do \
             ${MPIEXEC} -n 1 ./ex37 -explicit_is $$expl > ex37_1.tmp 2>&1;\
-	    ${DIFF} output/ex37_1.out ex37_1.tmp || echo "Possible problem with ex37_1, diffs above \n========================================="; \
+	    ${DIFF} output/ex37_1.out ex37_1.tmp || echo  ${PWD} "\nPossible problem with ex37_1, diffs above \n========================================="; \
           done; ${RM} -f ex37_1.tmp
 
 runex37_2:
 	-@for expl in 0 1; do \
             ${MPIEXEC} -n 2 ./ex37 -explicit_is $$expl > ex37_2.tmp 2>&1;\
-	    ${DIFF} output/ex37_2.out ex37_2.tmp || echo "Possible problem with ex37_2, diffs above \n========================================="; \
+	    ${DIFF} output/ex37_2.out ex37_2.tmp || echo  ${PWD} "\nPossible problem with ex37_2, diffs above \n========================================="; \
           done; ${RM} -f ex37_2.tmp
 
 runex38:
 	-@${MPIEXEC} -n 3 ./ex38 > ex38_1.tmp 2>&1;\
-	   ${DIFF} output/ex38_1.out ex38_1.tmp || echo "Possible problem with ex38, diffs above \n========================================="; \
+	   ${DIFF} output/ex38_1.out ex38_1.tmp || echo  ${PWD} "\nPossible problem with ex38, diffs above \n========================================="; \
 	   ${RM} -f ex38_1.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
