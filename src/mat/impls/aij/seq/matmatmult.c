@@ -320,7 +320,7 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,anzi,bnzj,nexta,nextb,*acol,*bcol,brow,an=A->cmap->n;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,anzi,bnzj,nexta,nextb,*acol,*bcol,brow;
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
@@ -331,8 +331,8 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionBegin;
 #if defined(USE_ARRAY)
   /* allocate an array for implementing sparse inner-product */
-  ierr = PetscMalloc((an+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
-  ierr = PetscMemzero(spdot,(an+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((A->cmap->n+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
+  ierr = PetscMemzero(spdot,(A->cmap->n+1)*sizeof(MatScalar));CHKERRQ(ierr);
 #endif
 
   /* clear old values in C */
