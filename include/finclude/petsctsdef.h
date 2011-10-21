@@ -45,7 +45,7 @@
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX2D     '2d'
 #define TSARKIMEX2E     '2e'
-#define TSARKIMEXPR2    'prssp2'
+#define TSARKIMEXPRSSP2 'prssp2'
 #define TSARKIMEX3      '3'
 #define TSARKIMEXBPR3   'bpr3'
 #define TSARKIMEXARS443 'ars443'
