@@ -27,9 +27,16 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   ierr = TSErrorNormWRMS(ts,Y,&enorm);CHKERRQ(ierr);
   if (enorm > 1.) {
-    ierr = PetscInfo1(adapt,"Estimated scaled local truncation error %G, step should be rejected\n",enorm);CHKERRQ(ierr);
+    if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %G, accepting because step size %G is at minimum\n",enorm,h);CHKERRQ(ierr);
+      *accept = PETSC_TRUE;
+    } else {
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %G, rejecting step of size %G\n",enorm,h);CHKERRQ(ierr);
+      *accept = PETSC_FALSE;
+    }
   } else {
-    ierr = PetscInfo1(adapt,"Estimated scaled local truncation error %G, step accepted\n",enorm);CHKERRQ(ierr);
+    ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %G, accepting step of size %G\n",enorm,h);CHKERRQ(ierr);
+    *accept = PETSC_TRUE;
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
@@ -38,7 +45,6 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   *next_sc = 0;
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
-  *accept = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
