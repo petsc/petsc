@@ -11,8 +11,7 @@
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:
-!        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
-!                          use the file petsc/src/mat/examples/matbinary.ex
+!        -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices
 !
 
       PetscErrorCode  ierr
@@ -31,7 +30,6 @@
 
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      print *,f
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,     &
      &     fd,ierr)
 

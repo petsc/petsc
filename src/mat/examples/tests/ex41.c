@@ -1,8 +1,7 @@
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
-  -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
-                       use the file petsc/src/mat/examples/matbinary.ex\n\
+  -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 

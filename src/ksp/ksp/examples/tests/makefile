@@ -263,6 +263,7 @@ runex10:
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_1.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
                 -fc_ksp_view \
@@ -320,9 +321,9 @@ runex11_2:
 	   ${DIFF} output/ex11_2.out ex11_2.tmp || echo ${PWD} "\nPossible problem with with ex11_2, diffs above \n=========================================";\
 	   ${RM} -f ex11_2.tmp
 
-
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex12f:
-	-@${MPIEXEC} -n 1 ./ex12f  -f ../../../../mat/examples/matbinary.ex -options_left no > ex12f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex12f  -f ${DATAFILESPATH}/matrices/arco1 -options_left no > ex12f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex12f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex12f_1.tmp
@@ -331,8 +332,9 @@ runex13:
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex13_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex13_1.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex16f:
-	-@${MPIEXEC} -n 1 ./ex16f  -f ../../../../mat/examples/matbinary.ex -options_left no> ex16f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex16f   -f ${DATAFILESPATH}/matrices/arco1 -options_left no> ex16f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex16f_1.out ex16f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex16f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex16f_1.tmp
@@ -342,8 +344,9 @@ runex17:
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex17_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex17_1.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex18:
-	-@${MPIEXEC} -n 1 ./ex18 -ksp_gmres_cgs_refinement_type refine_always -f  ../../../../mat/examples/matbinary.ex
+	-@${MPIEXEC} -n 1 ./ex18 -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1  
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short \
 	-ksp_type gmres  > ex19_1.tmp 2>&1; \
@@ -467,6 +470,7 @@ runex29_2:
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex29_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex29_2.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex30:
 	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_drop_tolerance 0.0,0.0,4 -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
 	if (${DIFF} output/ex30.out ex30.tmp) then true; \
@@ -740,6 +744,7 @@ runex33_mumps_2:
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex33_mumps_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex33.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex34:
 	-@${MPIEXEC} -n 2 ./ex34 -f  ${DATAFILESPATH}/matrices/small -nodesize 2 > ex34.tmp 2>&1; \
 	if (${DIFF} output/ex34_1.out ex34.tmp) then true; \
@@ -766,7 +771,7 @@ runex35_inode:
 	if (${DIFF} output/ex35_3.out ex35.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex35_inode, diffs above \n========================================="; fi; \
 	   ${RM} -f ex35.tmp
-
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 1 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
@@ -795,8 +800,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm 
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
-TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm 
+TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm 
 TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
@@ -804,8 +809,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 ex37.rm
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
+                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 ex37.rm ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm  
+TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 
