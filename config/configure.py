@@ -287,10 +287,6 @@ def petsc_configure(configure_options):
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
-    import PETSc.packages
-    for i in framework.packages:
-      if hasattr(i,'postProcess'):
-        i.postProcess()
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()

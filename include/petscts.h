@@ -552,11 +552,14 @@ extern PetscErrorCode  TSGLGetAdapt(TS,TSGLAdapt*);
 extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 
 #define TSARKIMEXType char*
-#define TSARKIMEX2D "2d"
-#define TSARKIMEX2E "2e"
-#define TSARKIMEX3  "3"
-#define TSARKIMEX4  "4"
-#define TSARKIMEX5  "5"
+#define TSARKIMEX2D     "2d"
+#define TSARKIMEX2E     "2e"
+#define TSARKIMEXPRSSP2 "prssp2"
+#define TSARKIMEX3      "3"
+#define TSARKIMEXBPR3   "bpr3"
+#define TSARKIMEXARS443 "ars443"
+#define TSARKIMEX4      "4"
+#define TSARKIMEX5      "5"
 extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
 extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
 extern PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);

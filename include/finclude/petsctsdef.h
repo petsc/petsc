@@ -43,11 +43,14 @@
 #define TSGLADAPT_BOTH 'both'
 
 #define TSARKIMEXType character*(80)
-#define TSARKIMEX2D '2d'
-#define TSARKIMEX2E '2e'
-#define TSARKIMEX3  '3'
-#define TSARKIMEX4  '4'
-#define TSARKIMEX5  '5'
+#define TSARKIMEX2D     '2d'
+#define TSARKIMEX2E     '2e'
+#define TSARKIMEXPRSSP2 'prssp2'
+#define TSARKIMEX3      '3'
+#define TSARKIMEXBPR3   'bpr3'
+#define TSARKIMEXARS443 'ars443'
+#define TSARKIMEX4      '4'
+#define TSARKIMEX5      '5'
 
 #define TSROSWType character*(80)
 #define TSROSW2M          '2m'

@@ -787,6 +787,15 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_'+baseName.upper(), 1)
           return
 
+  def postProcessPackages(self):
+    postPackages=[]
+    for i in self.framework.packages:
+      if hasattr(i,'postProcess'): postPackages.append(i)
+    if postPackages:
+      # prometheus needs petsc conf files. so attempt to create them early
+      self.framework.cleanup()
+      for i in postPackages: i.postProcess()
+    return
 
   def configure(self):
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
@@ -826,6 +835,7 @@ class Configure(config.base.Configure):
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
+    self.postProcessPackages()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
     self.cmakeBoot()
