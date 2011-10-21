@@ -1,11 +1,11 @@
-Timestep 0: time = 0,2-norm error = 0, max norm error = 0
-Timestep 1: time = 10,2-norm error = 9.93544e-14, max norm error = 1.52767e-13
-Timestep 2: time = 20,2-norm error = 9.73233e-09, max norm error = 1.43306e-08
-Timestep 3: time = 30,2-norm error = 3.65611e-09, max norm error = 5.21282e-09
-Timestep 4: time = 40,2-norm error = 1.61846e-09, max norm error = 2.2975e-09
-Timestep 5: time = 50,2-norm error = 4.10592e-09, max norm error = 5.73923e-09
-Timestep 6: time = 60,2-norm error = 2.64425e-09, max norm error = 3.72043e-09
-Timestep 7: time = 70,2-norm error = 1.60164e-09, max norm error = 2.26255e-09
-Timestep 8: time = 80,2-norm error = 9.92256e-10, max norm error = 1.40463e-09
-Timestep 9: time = 90,2-norm error = 6.36151e-10, max norm error = 9.01537e-10
-Timestep 10: time = 100,2-norm error = 4.21529e-10, max norm error = 5.97382e-10
+Timestep 0: time = 0 2-norm error = 0  max norm error = 0
+Timestep 1: time = 10 2-norm error = 5.20211e-14  max norm error = 8.70415e-14
+Timestep 2: time = 20 2-norm error = 9.73238e-09  max norm error = 1.43307e-08
+Timestep 3: time = 30 2-norm error = 3.6562e-09  max norm error = 5.213e-09
+Timestep 4: time = 40 2-norm error = 1.61813e-09  max norm error = 2.29709e-09
+Timestep 5: time = 50 2-norm error = 4.10543e-09  max norm error = 5.73867e-09
+Timestep 6: time = 60 2-norm error = 2.64433e-09  max norm error = 3.72053e-09
+Timestep 7: time = 70 2-norm error = 1.60195e-09  max norm error = 2.26305e-09
+Timestep 8: time = 80 2-norm error = 9.92602e-10  max norm error = 1.40496e-09
+Timestep 9: time = 90 2-norm error = 6.36665e-10  max norm error = 9.02091e-10
+Timestep 10: time = 100 2-norm error = 4.22582e-10  max norm error = 5.98902e-10

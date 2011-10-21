@@ -1,7 +1,6 @@
 
 static char help[] = "Reads a matrix and vector from a file and writes to another. Input options:\n\
-  -fin <input_file> : file to load.  For an example of a 5X5 5-pt. stencil,\n\
-                      use the file matbinary.ex.\n\
+  -fin <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\
   -fout <output_file> : file for saving output matrix and vector\n\n";
 
 #include <petscmat.h>

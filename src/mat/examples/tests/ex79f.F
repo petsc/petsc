@@ -22,7 +22,9 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
+     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & 'ns-real-int32-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATMPIAIJ,ierr)

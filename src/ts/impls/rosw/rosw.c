@@ -627,7 +627,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   const PetscReal *At  = tab->At,*Gamma = tab->Gamma,*ASum = tab->ASum,*GammaInv = tab->GammaInv;
   const PetscBool *GammaZeroDiag = tab->GammaZeroDiag;
   PetscScalar     *w   = ros->work;
-  Vec             *Y   = ros->Y,Zdot = ros->Zdot,Zstage = ros->Zstage;
+  Vec             *Y   = ros->Y,Ydot = ros->Ydot,Zdot = ros->Zdot,Zstage = ros->Zstage;
   SNES            snes;
   TSAdapt         adapt;
   PetscInt        i,j,its,lits,reject,next_scheme;
@@ -664,14 +664,20 @@ static PetscErrorCode TSStep_RosW(TS ts)
       /* Initial guess taken from last stage */
       ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
 
-      if (!ros->recompute_jacobian && !i) {
-        ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+      if (!ros->stage_explicit) {
+        if (!ros->recompute_jacobian && !i) {
+          ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+        }
+        ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
+        ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+        ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+        ts->nonlinear_its += its; ts->linear_its += lits;
+      } else {
+        ierr = VecWAXPY(Ydot,1,ts->vec_sol,Zdot);CHKERRQ(ierr); /* Ydot = x0 + Zdot */ 
+        ierr = TSComputeIFunction(ts,ros->stage_time,ros->Ystage,Ydot,Zdot,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = VecWAXPY(ros->Ystage,1.0,Zdot,ros->Zstage);CHKERRQ(ierr);    /* Ystage = F + Zstage */
+        ts->linear_its += 1;
       }
-
-      ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
-      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-      ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-      ts->nonlinear_its += its; ts->linear_its += lits;
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
     ros->status = TS_STEP_PENDING;
@@ -757,11 +763,7 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ros->stage_explicit) {
-    ierr = VecAXPBY(ros->Ydot,ros->shift,0.0,X);CHKERRQ(ierr);       /* Ydot = shift*X*/
-  } else {
-    ierr = VecWAXPY(ros->Ydot,ros->shift,X,ros->Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
-  }
+  ierr = VecWAXPY(ros->Ydot,ros->shift,X,ros->Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
   ierr = VecWAXPY(ros->Ystage,1.0,X,ros->Zstage);CHKERRQ(ierr);    /* Ystage = X + Zstage */
   ierr = TSComputeIFunction(ts,ros->stage_time,ros->Ystage,ros->Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

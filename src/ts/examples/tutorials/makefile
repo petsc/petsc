@@ -149,7 +149,7 @@ runex1f:
 	   ${RM} -f ex1f_1.tmp
 
 runex2:
-	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 > ex2_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 -mymonitor > ex2_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex2_1.out ex2_1.tmp || echo  ${PWD} "\nPossible problem with ex2_1, diffs above \n========================================="; \
 	   ${RM} -f ex2_1.tmp
 

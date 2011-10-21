@@ -70,10 +70,13 @@
       call MatGetArrayF90(A,array,ierr) 
       call MatGetOwnershipRange(A,rstart,rend,ierr)
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
-      do 30 i=1,rend-rstart
-         write(6,100) (PetscRealPart(array(i,j)),j=1,n)
- 30   continue
- 100  format(2F6.2)
+!
+!   Fortran IO may not come out in the correct order since each process
+!   is individually doing IO
+!      do 30 i=1,rend-rstart
+!         write(6,100) (PetscRealPart(array(i,j)),j=1,n)
+! 30   continue
+! 100  format(2F6.2)
 
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
