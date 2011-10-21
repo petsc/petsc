@@ -65,12 +65,52 @@ M*/
 .seealso: TSARKIMEX
 M*/
 /*MC
+     TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
+
+     This method has three implicit stages.
+
+     References:
+     L. Pareschi, G. Russo, Implicit-Explicit Runge-Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005, pp. 129-155
+
+     This method is referred to as SSP2-(3,3,2) in http://arxiv.org/abs/1110.4375
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and three implicit stages.
 
      References:
      Kennedy and Carpenter 2003.
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEXARS443 - Third order ARK IMEX scheme.
+
+     This method has one explicit stage and four implicit stages.
+
+     References:
+     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151–167.
+
+     This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEXBPR3 - Third order ARK IMEX scheme.
+
+     This method has one explicit stage and four implicit stages.
+
+     References:
+     This method is referred to as ARK3 in http://arxiv.org/abs/1110.4375
 
      Level: advanced
 
@@ -144,6 +184,16 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       binterpt[3][2] = {{1,-0.5},{0,0},{0,0.5}};
     ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
+  {                             /* Optimal for linear implicit part */
+    const PetscReal
+      A[3][3] = {{0,0,0},
+                 {0.5,0,0},
+                 {0.5,0.5,0}},
+      At[3][3] = {{0.25,0,0},
+                  {0,0.25,0},
+                  {1./3,1./3,1./3}};
+    ierr = TSARKIMEXRegister(TSARKIMEXPRSSP2,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
   {
     const PetscReal
       A[4][4] = {{0,0,0,0},
@@ -159,6 +209,34 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                         {34259539580243./13192909600954.,-28141676662227./17317692491321.},
                         {584795268549./6622622206610.,   2508943948391./7218656332882.}};
     ierr = TSARKIMEXRegister(TSARKIMEX3,3,4,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[5][5] = {{0,0,0,0},
+                 {1./2,0,0,0,0},
+                 {11./18,1./18,0,0,0},
+                 {5./6,-5./6,.5,0,0},
+                 {1./4,7./4,3./4,-7./4,0}},
+      At[5][5] = {{0,0,0,0,0},
+                  {0,1./2,0,0,0},
+                  {0,1./6,1./2,0,0},
+                  {0,-1./2,1./2,1./2,0},
+                  {0,3./2,-3./2,1./2,1./2}};
+    ierr = TSARKIMEXRegister(TSARKIMEXARS443,3,5,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[5][5] = {{0,0,0,0},
+                 {1,0,0,0,0},
+                 {4./9,2./9,0,0,0},
+                 {1./4,0,3./4,0,0},
+                 {1./4,0,3./5,0,0}},
+      At[5][5] = {{0,0,0,0},
+                  {.5,.5,0,0,0},
+                  {5./18,-1./9,.5,0,0},
+                  {.5,0,0,.5,0},
+                  {.25,0,.75,-.5,.5}};
+    ierr = TSARKIMEXRegister(TSARKIMEXBPR3,3,5,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
