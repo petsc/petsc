@@ -1,3 +1,5 @@
+  type: mpi
+  type: mpi
 2
 2
 2
@@ -24,5 +26,3 @@ Process [1]
 Process [1]
 Process [2]
 Process [2]
-  type: mpi
-  type: mpi

@@ -394,8 +394,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G,2-norm error = %G, max norm error = %G\n",
-              step,time,en2s,enmax);CHKERRQ(ierr);
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G  max norm error = %G\n",step,time,en2s,enmax);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired

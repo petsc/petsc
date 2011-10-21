@@ -262,7 +262,7 @@
         istart = 0
       endif
       if (rank .eq. size-1) then
-        i = ctx(6)-1
+        i = INT(ctx(6)-1)
         A = 1.0 
         call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1
