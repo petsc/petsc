@@ -92,7 +92,7 @@ class Configure(config.package.Package):
           oldDir = os.getcwd()
           os.chdir(self.packageDir)
           p = StringIO.StringIO(testPatch)
-          patcher = PatchSet(p)
+          patcher = patch.PatchSet(p)
           p.close()
           patcher.apply()
           os.chdir(oldDir)
