@@ -221,8 +221,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
     return argDB
 
-  def cleanup(self):
-    '''Performs cleanup actions
+  def dumpConfFiles(self):
+    '''Performs:
        - Subtitute files
        - Output configure header
        - Log actions'''
@@ -248,6 +248,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputCHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
+    return
+
+  def cleanup(self):
     self.actions.output(self.log)
     self.tmpDir = None
     return
@@ -928,5 +931,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       child._configured = 1
     if self.argDB['with-batch']:
       self.configureBatch()
+    self.dumpConfFiles()
     self.cleanup()
     return 1
