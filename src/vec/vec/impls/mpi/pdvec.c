@@ -639,6 +639,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t             memspace;  /* memory dataspace identifier */
   hid_t             file_id;
   hid_t             group;
+  hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t            status;
   PetscInt          bs = xin->map->bs > 0 ? xin->map->bs : 1;
   hsize_t           i,dim;
@@ -699,10 +700,17 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
     status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
 
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    dset_id = H5Dcreate2(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
+#if defined(PETSC_USE_REAL_SINGLE)
+    scalartype = H5T_NATIVE_FLOAT;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#error "HDF5 output with 128 bit floats not supported."
 #else
-    dset_id = H5Dcreate(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+    scalartype = H5T_NATIVE_DOUBLE;
+#endif
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+    dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
+#else
+    dset_id = H5Dcreate(group, vecname, scalartype, filespace, H5P_DEFAULT);
 #endif
     if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
     status = H5Pclose(chunkspace);CHKERRQ(status);
@@ -773,7 +781,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
-  status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  status = H5Dwrite(dset_id, scalartype, memspace, filespace, plist_id, x);CHKERRQ(status);
   status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
   ierr = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 

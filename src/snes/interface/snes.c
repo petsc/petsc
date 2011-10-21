@@ -1950,6 +1950,9 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
 
    Level: intermediate
 
+   Notes:
+   Use SNESGetSolution() to extract the fine grid solution after grid sequencing.
+
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
 .seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian()
@@ -2805,7 +2808,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
 .keywords: SNES, nonlinear, solve
 
-.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian()
+.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetGridSequence(), SNESGetSolution()
 @*/
 PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 {
@@ -3037,7 +3040,7 @@ PetscErrorCode  SNESGetType(SNES snes,const SNESType *type)
 #define __FUNCT__ "SNESGetSolution"
 /*@
    SNESGetSolution - Returns the vector where the approximate solution is
-   stored.
+   stored. This is the fine grid solution when using SNESSetGridSequence().
 
    Not Collective, but Vec is parallel if SNES is parallel
 

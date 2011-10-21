@@ -336,49 +336,74 @@ runex5_4:
 	   ${RM} -f ex5_4.tmp
 
 #COMPOSABLE SOLVER DEMOS: OPTIONS
-CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 2 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 10000 -par 6.0 -snes_view
+CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 1 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 50 -par 6.0 -snes_view
 N_SMOOTHS = 3
 N_RESTART = 10
 
 runex5_5_ngmres:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} > ex5_5_ngmres.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ngmres.tmp
 
-runex5_5_ngmres_richardson:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS}
+runex5_5_ngmres_nrichardson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS} \
+        > ex5_5_ngmres_richardson.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_richardson, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ngmres_nrichardson.tmp
 
 runex5_5_ncg:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg \
+        > ex5_5_ncg.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ncg.out ex5_5_ncg.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ncg, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ncg.tmp
 
-runex5_5_ncg_richardson:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ls secant -npc_snes_type nrichardson -npc_snes_max_it 2
-
-runex5_5_richardson:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson
-
-runex5_5_richardson_ngs:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson -snes_ls secant -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
+runex5_5_nrichardson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type nrichardson \
+        > ex5_5_nrichardson.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_nrichardson.out ex5_5_nrichardson.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_nrichardson, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_nrichardson.tmp
 
 runex5_5_ngmres_ngs:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -use_ngs 1 -npc_snes_max_it ${N_SMOOTHS} \
+        > ex5_5_ngmres_ngs.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ngmres_ngs.out ex5_5_ngmres_ngs.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_ngs, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ngmres_ngs.tmp
 
 runex5_5_qn:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls secant -snes_qn_m ${N_RESTART}
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls secant -snes_qn_m ${N_RESTART} \
+        > ex5_5_qn.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_qn.out ex5_5_qn.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_qn, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_qn.tmp
 
 runex5_5_ls:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls \
+        > ex5_5_ls.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ls.out ex5_5_ls.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ls, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ls.tmp
 
 runex5_5_fas:
-	-@./ex5 -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -snes_type fas -fas_levels_snes_monitor \
-              -fas_coarse_ksp_type richardson -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor  -da_refine 6
+	-@./ex5 -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -snes_type fas \
+           -fas_coarse_ksp_type richardson -da_refine 6 \
+           > ex5_5_fas.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_fas.tmp
+
 
 runex5_5_ngmres_fas:
-	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -npc_snes_type fas -npc_fas_levels_snes_monitor -np_snes_monitor -npc_fas_coarse_snes_monitor \
-             -npc_fas_coarse_ksp_type richardson -npc_fas_coarse_ksp_monitor_true_residual -npc_fas_coarse_snes_monitor  -da_refine 6
-
-runex5_5_ncg_fas:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg  \
-	-npc_snes_max_it 1 -npc_snes_type fas -npc_snes_fas_up_it ${N_SMOOTHS} -npc_snes_fas_down_it ${N_SMOOTHS} \
-	-npc_snes_fas_smoother_type nrichardson -npc_snes_fas_levels 3
+	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly \
+        -snes_rtol 1.e-12 -snes_monitor -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 \
+           > ex5_5_ngmres_fas.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_fas, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ngmres_fas.tmp
 
 runex5_6:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
@@ -897,7 +922,11 @@ testx11ex50: ex50.PETSc
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5_ngmres_richardson runex5_5_ngmres runex5_5_richardson runex5_5_qn runex5_6 ex5.rm\
+                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
+                                 runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
+                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
+                                 runex5_5_fas runex5_5_ngmres_fas \
+                                 runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm \
                                  ex19.PETSc runex19 runex19_2 runex19_5 \

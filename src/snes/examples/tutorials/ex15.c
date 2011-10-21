@@ -30,8 +30,8 @@ The command line options include:\n\
 
     Program usage:  mpiexec -n <procs> ./pbratu [-help] [all PETSc options]
      e.g.,
-      ./pbratu -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
-      mpiexec -n 2 ./pbratu -fd_jacobian_ghosted -log_summary
+      ./ex15 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
+      mpiexec -n 2 ./ex15 -fd_jacobian_ghosted -log_summary
 
   ------------------------------------------------------------------------- */
 
@@ -622,7 +622,7 @@ PetscErrorCode PreCheckFunction(SNES snes,Vec X,Vec Y,void *ctx,PetscBool *chang
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
   if (iter < 1) {
     ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
-    *changed = PETSC_NULL;
+    *changed = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 

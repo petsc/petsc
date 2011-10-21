@@ -313,6 +313,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscFunctionReturn(0);
 }
 
+/* #define USE_ARRAY - for sparse dot product. Slower than !USE_ARRAY */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -322,22 +323,45 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,anzi,bnzj,nexta,nextb,*acol,*bcol,brow;
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
-  MatScalar      *aa=a->a,*ba=b->a,*ca=c->a;
+  MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
+#if defined(USE_ARRAY)
+  MatScalar *spdot;
+#endif
 
   PetscFunctionBegin;
+#if defined(USE_ARRAY)
+  /* allocate an array for implementing sparse inner-product */
+  ierr = PetscMalloc((A->cmap->n+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
+  ierr = PetscMemzero(spdot,(A->cmap->n+1)*sizeof(MatScalar));CHKERRQ(ierr);
+#endif
+
   /* clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<cm; i++) {
     anzi = ai[i+1] - ai[i];
     acol = aj + ai[i];
+    aval = aa + ai[i];
     cnzi = ci[i+1] - ci[i];
     ccol = cj + ci[i];
+    cval = ca + ci[i];
     for (j=0; j<cnzi; j++){
       brow = ccol[j];
       bnzj = bi[brow+1] - bi[brow];
       bcol = bj + bi[brow];
+      bval = ba + bi[brow];
+
       /* perform sparse inner-product c(i,j)=A[i,:]*B[j,:]^T */
+#if defined(USE_ARRAY)
+      /* put ba to spdot array */
+      for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = bval[nextb]; 
+      /* c(i,j)=A[i,:]*B[j,:]^T */
+      for (nexta=0; nexta<anzi; nexta++){
+        cval[j] += spdot[acol[nexta]]*aval[nexta]; 
+      }
+      /* zero spdot array */
+      for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = 0.0;
+#else
       nexta = 0; nextb = 0;
       while (nexta<anzi && nextb<bnzj){
         while (acol[nexta] < bcol[nextb] && nexta < anzi) nexta++;
@@ -345,16 +369,20 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
         while (acol[nexta] > bcol[nextb] && nextb < bnzj) nextb++;
         if (nextb == bnzj) break;
         if (acol[nexta] == bcol[nextb]){ 
-          *(ca+ci[i]+j) += (*(aa+ai[i]+nexta))*(*(ba+bi[brow]+nextb));
+          cval[j] += aval[nexta]*bval[nextb];
           nexta++; nextb++; 
           flops += 2;
         }
       }
+#endif
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);   
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+#if defined(USE_ARRAY)
+  ierr = PetscFree(spdot);
+#endif
   PetscFunctionReturn(0);
 }
 
