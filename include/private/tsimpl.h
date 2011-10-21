@@ -147,4 +147,9 @@ struct _p_TSAdapt {
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
+typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
+              TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
+              TS_STEP_COMPLETE    /* step accepted and ptime, steps, etc have been advanced */
+} TSStepStatus;
+
 #endif

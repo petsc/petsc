@@ -1843,6 +1843,10 @@ PetscErrorCode  TSStep(TS ts)
 
    Level: advanced
 
+   Notes:
+   This function cannot be called until all stages have been evaluated.
+   It is normally called by adaptive controllers before a step has been accepted and may also be called by the user after TSStep() has returned.
+
 .seealso: TSStep(), TSAdapt
 @*/
 PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X,PetscBool *done)

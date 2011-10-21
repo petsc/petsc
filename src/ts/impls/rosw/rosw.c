@@ -55,7 +55,7 @@ typedef struct {
   PetscReal   stage_time;
   PetscReal   stage_explicit;     /* Flag indicates that the current stage is explicit */
   PetscBool   recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
-  PetscBool   step_taken;         /* ts->vec_sol has been advanced to the end of the current time step */
+  TSStepStatus status;
 } TS_RosW;
 
 /*MC
@@ -590,23 +590,22 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *
 
   PetscFunctionBegin;
   if (order == tab->order) {
-    if (ros->step_taken) {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
-    else {
+    if (ros->status == TS_STEP_INCOMPLETE) { /* Use standard completion formula */
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (i=0; i<tab->s; i++) w[i] = tab->bt[i];
       ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
-    }
+    } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
     if (!tab->bembedt) goto unavailable;
-    if (ros->step_taken) {
-      for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i] - tab->bt[i];
-      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
-    } else {
+    if (ros->status == TS_STEP_INCOMPLETE) { /* Use embedded completion formula */
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i];
+      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
+    } else {                    /* Use rollback-and-recomplete formula (bembedt - bt) */
+      for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i] - tab->bt[i];
+      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
     }
     if (done) *done = PETSC_TRUE;
@@ -640,7 +639,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   next_time_step = ts->time_step;
   accept = PETSC_TRUE;
-  ros->step_taken = PETSC_FALSE;
+  ros->status = TS_STEP_INCOMPLETE;
 
   for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
     const PetscReal h = ts->time_step;
@@ -675,7 +674,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ts->nonlinear_its += its; ts->linear_its += lits;
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-    ros->step_taken = PETSC_TRUE;
+    ros->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
@@ -687,15 +686,15 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ts->ptime += ts->time_step;
       ts->time_step = next_time_step;
       ts->steps++;
+      ros->status = TS_STEP_COMPLETE;
       break;
     } else {                    /* Roll back the current step */
       for (i=0; i<s; i++) w[i] = -tab->bt[i];
       ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
       ts->time_step = next_time_step;
-      ros->step_taken = PETSC_FALSE;
+      ros->status = TS_STEP_INCOMPLETE;
     }
   }
-
   PetscFunctionReturn(0);
 }
 
