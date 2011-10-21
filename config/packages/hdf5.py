@@ -88,7 +88,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Patching HDF5; the stupid F90 test is broken for gfortran on the Mac')
         try:
-          import patch
+          import patch,StringIO
           oldDir = os.getcwd()
           os.chdir(self.packageDir)
           p = StringIO.StringIO(testPatch)
