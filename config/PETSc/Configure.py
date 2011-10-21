@@ -793,7 +793,7 @@ class Configure(config.base.Configure):
       if hasattr(i,'postProcess'): postPackages.append(i)
     if postPackages:
       # prometheus needs petsc conf files. so attempt to create them early
-      self.framework.cleanup()
+      self.framework.dumpConfFiles()
       for i in postPackages: i.postProcess()
     return
 
