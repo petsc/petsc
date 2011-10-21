@@ -9,7 +9,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptChoose_Basic"
-static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept)
+static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
   TSAdapt_Basic     *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode    ierr;
@@ -45,6 +45,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   *next_sc = 0;
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  *wlte = enorm;
   PetscFunctionReturn(0);
 }
 

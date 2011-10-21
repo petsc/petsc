@@ -422,6 +422,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
 PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept)
 {
   PetscErrorCode ierr;
+  PetscReal wlte = -1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -431,13 +432,17 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscValidIntPointer(accept,6);
   if (adapt->candidates.n < 1) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"%D candidates have been registered",adapt->candidates.n);
   if (!adapt->candidates.inuse_set) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
-  ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept);CHKERRQ(ierr);
+  ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept,&wlte);CHKERRQ(ierr);
   if (*next_sc < 0 || adapt->candidates.n <= *next_sc) SETERRQ2(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",*next_sc,adapt->candidates.n-1);
   if (!(*next_h > 0.)) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %G must be positive",*next_h);
 
   if (adapt->monitor) {
     ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %s  family='%s' scheme=%D:'%s' dt=%G\n",((PetscObject)adapt)->type_name,accept?"accepted":"rejected",((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],*next_h);CHKERRQ(ierr);
+    if (wlte < 0) {
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e family='%s' scheme=%D:'%s' dt=%-10g\n",((PetscObject)adapt)->type_name,ts->steps,*accept?"accepted":"rejected",(double)ts->ptime,h,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e wlte=%5.3g family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept?"accepted":"rejected",(double)ts->ptime,h,(double)wlte,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

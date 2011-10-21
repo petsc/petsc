@@ -123,7 +123,7 @@ struct _p_TS {
 };
 
 struct _TSAdaptOps {
-  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
+  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*);
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
   PetscErrorCode (*setfromoptions)(TSAdapt);
