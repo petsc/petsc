@@ -34,7 +34,7 @@ extern PetscErrorCode  PetscTableRemoveAll(PetscTable);
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data)
 {  
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = HASHT(ta,key);
+  PetscInt       ii = 0,hash = (PetscInt)HASHT(ta,key);
     
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -65,7 +65,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAdd(PetscTable ta,PetscInt key,Pet
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {  
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = HASHT(ta,key);
+  PetscInt       ii = 0,hash = (PetscInt)HASHT(ta,key);
   
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -107,7 +107,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,Pe
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Key <= 0");
   if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
 
-  hash  = HASHT(ta,key);
+  hash  = (PetscInt)HASHT(ta,key);
   while (ii++ < ta->tablesize) {
     if (!ta->keytable[hash]) break;
     else if (ta->keytable[hash] == key) { 
