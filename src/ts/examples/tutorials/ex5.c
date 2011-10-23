@@ -193,7 +193,7 @@ int main(int argc,char **argv)
        - Set timestepping duration info 
      Then set runtime options, which can override these defaults.
      For example,
-          -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+          -ts_max_steps <maxsteps> -ts_final_time <maxtime>
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

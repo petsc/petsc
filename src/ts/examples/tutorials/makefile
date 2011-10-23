@@ -222,44 +222,44 @@ runex9:
 	   ${DIFF} output/ex9_1.out ex9_1.tmp || echo  ${PWD} "\nPossible problem with ex9_1, diffs above \n========================================="; \
 	   ${RM} -f ex9_1.tmp
 runex9_2:
-	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1 > ex9_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_2.tmp 2>&1; \
 	   ${DIFF} output/ex9_2.out ex9_2.tmp || echo  ${PWD} "\nPossible problem with ex9_2, diffs above \n========================================="; \
 	   ${RM} -f ex9_2.tmp
 runex9_3:
-	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1 > ex9_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_3.tmp 2>&1; \
 	   ${DIFF} output/ex9_3.out ex9_3.tmp || echo  ${PWD} "\nPossible problem with ex9_3, diffs above \n========================================="; \
 	   ${RM} -f ex9_3.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_1.tmp 2>&1; \
 	   ${DIFF} output/ex10_1.out ex10_1.tmp || echo  ${PWD} "\nPossible problem with ex10_1, diffs above \n========================================="; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_2.tmp 2>&1; \
 	   ${DIFF} output/ex10_2.out ex10_2.tmp || echo  ${PWD} "\nPossible problem with ex10_2, diffs above \n========================================="; \
 	   ${RM} -f ex10_2.tmp
 
 runex10_3:
 	-@${MPIEXEC} -n 2 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian analytic -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_3.tmp 2>&1; \
 	   ${DIFF} output/ex10_3.out ex10_3.tmp || echo  ${PWD} "\nPossible problem with ex10_3, diffs above \n========================================="; \
 	   ${RM} -f ex10_3.tmp
 
 runex10_4:
 	-@${MPIEXEC} -n 2 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian analytic -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_4.tmp 2>&1; \
 	   ${DIFF} output/ex10_4.out ex10_4.tmp || echo  ${PWD} "\nPossible problem with ex10_4, diffs above \n========================================="; \
 	   ${RM} -f ex10_4.tmp
 
 runex12:
-	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex12_1.tmp 2>&1; \
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || echo  ${PWD} "\nPossible problem with ex12_1, diffs above \n========================================="; \
 	   ${RM} -f ex12_1.tmp
@@ -331,7 +331,7 @@ runex22f:
 	   ${RM} -f ex22f_1.tmp
 
 runex24:                        # This is not in the nightlies because the convergence details are numerically sensitive
-	-@${MPIEXEC} -n 1 ./ex24 -pc_type lu -ts_dt 1e-5 -ts_max_time 1e5 -n 50 -monitor_short > ex24_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex24 -pc_type lu -ts_dt 1e-5 -ts_final_time 1e5 -n 50 -monitor_short > ex24_1.tmp 2>&1; \
 	   ${DIFF} output/ex24_1.out ex24_1.tmp || echo  ${PWD} "\nPossible problem with ex24_1, diffs above \n=========================================";  \
 	   ${RM} -f ex24_1.tmp
 

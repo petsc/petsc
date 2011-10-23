@@ -13,11 +13,11 @@ Evolve the  heat equation:
 
 Evolve the  Allen-Cahn equation: 
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5
 
 Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5  -zoom .25,.45 -wait
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait
 
 
 */
@@ -28,8 +28,8 @@ Evolve the  Allen-Cahn equation: zoom in on part of the domain
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscReal kappa;PetscBool allencahn;} UserCtx;
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**);
+typedef struct {PetscReal kappa;PetscBool allencahn;PetscDrawViewPorts *ports;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -120,7 +120,8 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
 
-  ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
+  ctx.ports = PETSC_NULL;
+  ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -288,7 +289,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   int                       colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE};
   const char *const         legend[] = {"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"};
   PetscDrawAxis             axis;
-  static PetscDrawViewPorts *ports = 0;
+  PetscDrawViewPorts        *ports;
 
 
   PetscFunctionBegin;
@@ -305,9 +306,10 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  if (!ports) {
-    ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ports);CHKERRQ(ierr);
+  if (!ctx->ports) {
+    ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ctx->ports);CHKERRQ(ierr);
   }
+  ports = ctx->ports;
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
@@ -400,5 +402,17 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MyDestroy"
+PetscErrorCode  MyDestroy(void **ptr)
+{
+  UserCtx        *ctx = *(UserCtx**)ptr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawViewPortsDestroy(ctx->ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

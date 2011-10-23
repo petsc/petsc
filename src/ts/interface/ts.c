@@ -57,7 +57,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
-.  -ts_max_time time - maximum time to compute to
+.  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
 -  -ts_monitor_draw - plot information at each timestep
@@ -85,7 +85,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&ts->time_step,PETSC_NULL);CHKERRQ(ierr);
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
@@ -1438,7 +1438,7 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 
    Options Database Keys:
 .  -ts_max_steps <maxsteps> - Sets maxsteps
-.  -ts_max_time <maxtime> - Sets maxtime
+.  -ts_final_time <maxtime> - Sets maxtime
 
    Notes:
    The default maximum number of iterations is 5000. Default time is 5.0
