@@ -2,6 +2,7 @@
 #define __PETSC_HH
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#include <sstream>
 
 namespace PETSc {
   class Exception : public std::exception {

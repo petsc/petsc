@@ -2,7 +2,8 @@
 #define __PETSCLOG_HH
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
-#include<map>
+#include <map>
+#include <string>
 
 namespace PETSc {
   class LogStage {
