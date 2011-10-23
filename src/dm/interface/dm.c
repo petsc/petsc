@@ -1013,7 +1013,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetInitialGuess"
-/*@
+/*@C
     DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
 
     Logically Collective on DM
@@ -1026,7 +1026,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
-@*/
+C@*/
 PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 {
   PetscFunctionBegin;
@@ -1036,7 +1036,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetFunction"
-/*@
+/*@C
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
     Logically Collective on DM
@@ -1053,7 +1053,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
-@*/
+C@*/
 PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 {
   PetscFunctionBegin;
@@ -1066,7 +1066,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetJacobian"
-/*@
+/*@C
     DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
 
     Logically Collective on DM
@@ -1080,7 +1080,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
-@*/
+C@*/
 PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
