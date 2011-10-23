@@ -52,7 +52,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make; make install on Numdiff (install manually): '+str(e))
       self.framework.actions.addArgument('Numdiff', 'Install', 'Installed Numdiff into '+self.installDir)
     self.numdiff = os.path.join(self.installDir,'bin','numdiff')
-    self.addMakeMacro('DIFF ', self.numdiff)
+    self.addMakeMacro('DIFF ', self.numdiff + '  -a 1.e-6 -r 1.e-4 ')
     return self.installDir
 
   def configure(self):

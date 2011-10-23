@@ -319,11 +319,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscSetDisplay();CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-regress",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscVFPrintfRegressSetUp(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);
-  }
-
   /*
       Print the PETSc version information
   */

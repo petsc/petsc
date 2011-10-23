@@ -1657,8 +1657,6 @@ extern PetscErrorCode   PetscSNPrintfCount(char*,size_t,const char [],size_t*,..
 extern PetscErrorCode   PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
 extern PetscErrorCode   (*PetscVFPrintf)(FILE*,const char[],va_list);
 extern PetscErrorCode   PetscVFPrintfDefault(FILE*,const char[],va_list);
-extern PetscErrorCode   PetscVFPrintfRegress(FILE*,const char *,va_list);
-extern PetscErrorCode   PetscVFPrintfRegressSetUp(MPI_Comm,const char *);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode  PetscVFPrintf_Matlab(FILE*,const char[],va_list);

@@ -821,6 +821,8 @@ $
     is why when not using MPI_alltoallw() we always need to pack the input into the work array before sending
     and unpack upon receeving instead of using MPI datatypes to avoid the packing/unpacking).
 
+   Both ix and iy cannot be PETSC_NULL at the same time.
+
    Concepts: scatter^between vectors
    Concepts: gather^between vectors
 
