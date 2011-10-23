@@ -1,4 +1,4 @@
-/*   Concepts: DMMG/KSP solving a system of linear equations.
+/*   DMMG/KSP solving a system of linear equations.
      Poisson equation in 2D: 
 
      div(grad p) = f,  0 < x,y < 1
