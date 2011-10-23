@@ -28,9 +28,7 @@
 #define TSGL              'gl'
 #define TSSSP             'ssp'
 #define TSARKIMEX         'arkimex'
-#if defined(PETSC_HAVE_ROSW)
 #define TSROSW            'rosw'
-#endif
 
 #define TSSSPType character*(80)
 #define TSSSPRKS2  'rks2'
@@ -41,6 +39,11 @@
 #define TSGLADAPT_NONE 'none'
 #define TSGLADAPT_SIZE 'size'
 #define TSGLADAPT_BOTH 'both'
+
+#define TSAdaptType character*(80)
+#define TSADAPTBASIC 'basic'
+#define TSADAPTNONE  'none'
+#define TSADAPTCFL   'cfl'
 
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX2D     '2d'

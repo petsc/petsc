@@ -269,6 +269,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 E*/
 #define TSAdaptType  char*
 #define TSADAPTBASIC "basic"
+#define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
 
 /*MC

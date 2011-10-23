@@ -8,6 +8,7 @@ static PetscClassId TSADAPT_CLASSID;
 
 EXTERN_C_BEGIN
 PetscErrorCode  TSAdaptCreate_Basic(TSAdapt);
+PetscErrorCode  TSAdaptCreate_None(TSAdapt);
 PetscErrorCode  TSAdaptCreate_CFL(TSAdapt);
 EXTERN_C_END
 
@@ -48,6 +49,7 @@ PetscErrorCode  TSAdaptRegisterAll(const char path[])
 
   PetscFunctionBegin;
   ierr = TSAdaptRegisterDynamic(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegisterDynamic(TSADAPTNONE, path,"TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSAdaptRegisterDynamic(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
