@@ -489,6 +489,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
     h = ts->time_step; break;
   case TS_STEP_COMPLETE:
     h = ts->time_step_prev; break;
+  default: SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) { /* Use the standard completion formula (bt,b) */
@@ -642,6 +643,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
     h = ts->time_step_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
+  default: SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
