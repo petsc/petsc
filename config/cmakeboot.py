@@ -75,6 +75,9 @@ class PETScMaker(script.Script):
        return False
    from distutils.version import LooseVersion
    version = LooseVersion(m.groups()[0])
+   if version < LooseVersion('2.6.2'):
+       self.logPrintBox('CMake version %s < 2.6.2, falling back to legacy build' % version.vstring)
+       return False
    if self.languages.clanguage == 'Cxx' and version < LooseVersion('2.8'):
        self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % version.vstring)
        return False # no support for: set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)

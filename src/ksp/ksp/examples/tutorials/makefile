@@ -10,7 +10,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
                 ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
                 ex45.c ex46.c ex47.c ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
@@ -226,6 +226,10 @@ ex43: ex43.o chkopts
 ex44f: ex44f.o  chkopts
 	-${FLINKER} -o ex44f ex44f.o  ${PETSC_KSP_LIB}
 	${RM} ex44f.o
+
+ex45f: ex45f.o  chkopts
+	-${FLINKER} -o ex45f ex45f.o  ${PETSC_KSP_LIB}
+	${RM} ex45f.o
 
 ex45: ex45.o chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_KSP_LIB}
