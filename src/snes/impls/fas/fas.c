@@ -48,6 +48,7 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->next                 = PETSC_NULL;
   fas->interpolate          = PETSC_NULL;
   fas->restrct              = PETSC_NULL;
+  fas->inject               = PETSC_NULL;
 
   PetscFunctionReturn(0);
 }
@@ -157,6 +158,7 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetRScale"
 PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
@@ -173,6 +175,26 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
   fas->rscale = rscale;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASSetInjection"
+PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
+  SNES_FAS * fas =  (SNES_FAS *)snes->data;
+  PetscInt top_level = fas->level,i;
+
+  PetscFunctionBegin;
+  if (level > top_level)
+    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetInjection", level);
+  /* get to the correct level */
+  for (i = fas->level; i > level; i--) {
+    fas = (SNES_FAS *)fas->next->data;
+  }
+  if (fas->level != level)
+    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetInjection");
+  fas->inject = mat;
   PetscFunctionReturn(0);
 }
 
@@ -206,6 +228,9 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
   ierr = SNESReset_FAS(snes);CHKERRQ(ierr);
   if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
+  if (fas->inject) {
+    ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
+  }
   if (fas->interpolate == fas->restrct) {
     if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
     fas->restrct = PETSC_NULL;
@@ -227,6 +252,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS *) snes->data,*tmp;
   PetscErrorCode ierr;
+  VecScatter     injscatter;
 
   PetscFunctionBegin;
   /* should call the SNESSetFromOptions() only when approriate */
@@ -251,6 +277,12 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       if (!fas->interpolate) {
         ierr = DMGetInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
         fas->restrct = fas->interpolate;
+      }
+      /* set the injection from the DM */
+      if (!fas->inject) {
+        ierr = DMGetInjection(fas->next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
+        ierr = MatCreateScatter(((PetscObject)snes)->comm, injscatter, &fas->inject);CHKERRQ(ierr);
+        ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
       }
     }
     /* set the DMs of the pre and post-smoothers here */
@@ -450,11 +482,16 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X) {
       Xo_c = fas->next->work[0];
       F_c  = fas->next->vec_func;
       B_c  = fas->next->work[1];
-      /* inject the solution to coarse */
-      ierr = MatRestrict(fas->restrct, X, Xo_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
+
+      /* inject the solution */
+      if (fas->inject) {
+        ierr = MatRestrict(fas->inject, X, X_c);CHKERRQ(ierr);
+      } else {
+        ierr = MatRestrict(fas->restrct, X, X_c);CHKERRQ(ierr);
+        ierr = VecPointwiseMult(X_c, fas->rscale, X_c);CHKERRQ(ierr);
+      }
       ierr = VecScale(F, -1.0);CHKERRQ(ierr);
- 
+
       /* restrict the defect */
       ierr = MatRestrict(fas->restrct, F, B_c);CHKERRQ(ierr);
 
@@ -511,8 +548,12 @@ PetscErrorCode FASInitialGuess_Private(SNES snes, Vec B, Vec X) {
     X_c  = fas->next->vec_sol;
     B_c  = fas->next->work[0];
     /* inject the solution to coarse */
-    ierr = MatRestrict(fas->restrct, X, X_c);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(X_c, fas->rscale, X_c);CHKERRQ(ierr);
+    if (fas->inject) {
+      ierr = MatRestrict(fas->inject, X, X_c);CHKERRQ(ierr);
+    } else {
+      ierr = MatRestrict(fas->restrct, X, X_c);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(X_c, fas->rscale, X_c);CHKERRQ(ierr);
+    }
     if (B) {
       ierr = MatRestrict(fas->restrct, B, B_c);CHKERRQ(ierr);
       ierr = VecPointwiseMult(B_c, fas->rscale, B_c);CHKERRQ(ierr);

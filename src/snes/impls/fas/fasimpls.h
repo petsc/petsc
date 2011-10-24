@@ -18,6 +18,7 @@ typedef struct {
   /* coarse grid correction objects */
   SNES           next;                         /* the SNES instance for the next level in the hierarchy */
   Mat            interpolate;                  /* interpolation */
+  Mat            inject;                       /* injection operator (unscaled) */
   Mat            restrct;                      /* restriction operator */
   Vec            rscale;                       /* the pointwise scaling of the restriction operator */
 
