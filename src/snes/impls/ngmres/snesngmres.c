@@ -89,9 +89,9 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngmres_m",        "Number of directions",               "SNES", ngmres->msize,  &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngmres_restart",  "Maximum iterations before restart.", "SNES", ngmres->k_rmax, &ngmres->k_rmax, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ngmres_monitor", "Monitor actions of NGMRES",          "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_m",         "Number of directions",               "SNES", ngmres->msize,  &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_restart_it","Tolerance iterations before restart","SNES", ngmres->restart_it,  &ngmres->restart_it, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_monitor",  "Monitor actions of NGMRES",          "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
   if (debug) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
@@ -117,9 +117,8 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     cstr = SNESLineSearchTypeName(snes->ls_type);
-    ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Number of stored past updates: %d\n", ngmres->msize);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  Maximum iterations before total restart: %d\n", ngmres->k_rmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n", ngmres->gammaA, ngmres->gammaC);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n", ngmres->epsilonB, ngmres->deltaB);CHKERRQ(ierr);
   }
@@ -177,7 +176,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscReal           nu;
   PetscScalar         alph_total = 0.;
   PetscScalar         qentry;
-  PetscInt            i, j, k, k_restart, l, ivec;
+  PetscInt            i, j, k, k_restart, l, ivec, restart_count = 0;
 
   /* solution selection data */
   PetscBool           selectA, selectRestart;
@@ -389,11 +388,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     selectRestart = PETSC_FALSE;
 
-    /* maximum iteration criterion */
-    if (k_restart > ngmres->k_rmax) {
-      selectRestart = PETSC_TRUE;
-    }
-
     /* difference stagnation restart */
     if((ngmres->epsilonB*dnorm > dminnorm) && (sqrt(fAnorm) > ngmres->deltaB*sqrt(fminnorm))) {
       if (ngmres->monitor) {
@@ -409,10 +403,19 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       selectRestart = PETSC_TRUE;
     }
 
+    /* if the restart conditions persist for more than restart_it iterations, restart. */
     if (selectRestart) {
+      restart_count++;
+    } else {
+      restart_count = 0;
+    }
+
+    /* restart after restart conditions have persisted for a fixed number of iterations */
+    if (restart_count >= ngmres->restart_it) {
       if (ngmres->monitor){
         ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %d\n", k_restart);CHKERRQ(ierr);
       }
+      restart_count = 0;
       k_restart = 1;
       l = 1;
       /* q_{00} = nu */
@@ -489,11 +492,11 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data = (void*) ngmres;
   ngmres->msize = 10;
 
-  ngmres->gammaA   = 2.0;
-  ngmres->gammaC   = 2.0;
-  ngmres->deltaB   = 0.9;
-  ngmres->epsilonB = 0.1;
-  ngmres->k_rmax   = 200;
+  ngmres->restart_it = 2;
+  ngmres->gammaA     = 2.0;
+  ngmres->gammaC     = 2.0;
+  ngmres->deltaB     = 0.9;
+  ngmres->epsilonB   = 0.1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NGMRES",SNESLineSearchSetType_NGMRES);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

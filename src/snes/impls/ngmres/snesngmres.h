@@ -5,13 +5,14 @@
 
 /*  Data structure for the Nonlinear GMRES method.  */
 typedef struct {
- 
+
   /* Solver parameters and counters */
   PetscInt     msize;          /* maximum size of krylov space */
-  PetscInt     k_rmax;         /* maximum number of iterations before restart */
-  PetscViewer  monitor;        /* debugging output for NGMRES */
+  PetscInt     restart_it;     /* number of iterations the restart conditions persist before restart */
+  PetscViewer   monitor;        /* debugging output for NGMRES */
+
   /* History and subspace data */
-  Vec          *Fdot;          /* residual history -- length msize */ 
+  Vec          *Fdot;          /* residual history -- length msize */
   Vec          *Xdot;          /* solution history -- length msize */
   PetscReal    *fnorms;        /* the residual norm history  */
 
