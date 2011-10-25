@@ -15,14 +15,14 @@ speciallib:
 	-@${OMAKE}  matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 specialfastlib: speciallib
 
-matlabcodes: sread sopen sclose swrite
+matlabcodes: sread sopen sclose swrite 
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC   = 
 SOURCEF   =
-SOURCEH   = sopen.c sclose.c  bread.c sread.c swrite.c
+SOURCEH   = sopen.c sclose.c  bread.c sread.c swrite.c longdoubleread.c
 OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
@@ -40,6 +40,12 @@ sread:
 	-@${MATLAB_MEX}  -g CC='${PCC}' CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' sread.c bread.c -lc
 	-@${RM} -f sread.o bread.o
 	-@${MV} sread.mex* ${PETSC_DIR}/bin/matlab
+
+#  This is hardwired to one particular system
+longdoubleread:  
+	${MATLAB_MEX}  -v -g CC='${PCC}'  CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' longdoubleread.c bread.c /usr/local/lib/libgcc_ext.10.4.dylib -lc
+	-@${RM} -f longdoubleread.o bread.o
+	-@${MV} longdoubleread.mex* ${PETSC_DIR}/bin/matlab
 
 swrite:  
 	-@${MATLAB_MEX} -g CC='${PCC}' CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' swrite.c bread.c -lc

@@ -18,7 +18,7 @@
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
        call DMDACreate2D(MPI_COMM_WORLD, DMDA_BOUNDARY_NONE,              &
-     &    DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -3,-3, PETSC_DECIDE,     &
+     &    DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -3,-3, PETSC_DECIDE,       &
      &    PETSC_DECIDE,1,1, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER,       &
      &    dm, ierr)
        call DMSetInitialGuess(dm,ComputeInitialGuess,ierr)
