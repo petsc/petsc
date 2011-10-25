@@ -63,7 +63,7 @@ const char *SNESLineSearchTypeName(SNESLineSearchType type)
 PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *),void *lsctx)
 {
   PetscFunctionBegin;
-  snes->ls_type = (SNESLineSearchType)-1;  /* unknown */
+  /* snes->ls_type = (SNESLineSearchType)-1; */  /* unknown */
   snes->ops->linesearch = func;
   snes->lsP = lsctx;
   PetscFunctionReturn(0);
