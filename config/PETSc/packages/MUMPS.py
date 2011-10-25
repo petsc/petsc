@@ -90,7 +90,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('LIBSEQ  =  $(LAPACK) -L$(topdir)/libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('OPTL    = -O -I.\n')
-    g.write('INC = $(INCPAR)\n')
+    g.write('INCS = $(INCPAR)\n')
     g.write('LIB = $(LIBPAR)\n')
     g.write('LIBSEQNEEDED =\n')
     g.close()
