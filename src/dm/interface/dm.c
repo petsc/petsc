@@ -1028,7 +1028,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
-C@*/
+@*/
 PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 {
   PetscFunctionBegin;
@@ -1055,7 +1055,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
-C@*/
+@*/
 PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 {
   PetscFunctionBegin;
@@ -1082,7 +1082,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
-C@*/
+@*/
 PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
