@@ -375,13 +375,15 @@ extern PetscErrorCode  MatSetValuesBatch(Mat,PetscInt,PetscInt,PetscInt[],const 
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as index on an associated grid.
+        column of a matrix as indexed on an associated grid.
+
+   Fortran usage is different, see MatSetValuesStencil() for details.
 
    Level: beginner
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil()
 S*/
 typedef struct {
   PetscInt k,j,i,c;
