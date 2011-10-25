@@ -124,8 +124,8 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->U); CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->V); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->V,PETSC_DECIDE,lclP->n-lclP->m); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->n - lclP->m); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->V,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
   ierr = VecSetType(lclP->U,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetType(lclP->V,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetFromOptions(lclP->U); CHKERRQ(ierr);
@@ -203,7 +203,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
   ierr = VecGetLocalSize(lclP->U,&nlocal); CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal); CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->n - lclP->m,&lclP->R); CHKERRQ(ierr);
+  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->m,&lclP->R); CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(lclP->R,lclP->V); CHKERRQ(ierr);
   lclP->rho = 1.0e-4;
   lclP->recompute_jacobian_flag = PETSC_TRUE;
