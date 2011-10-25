@@ -133,6 +133,7 @@ extern PetscErrorCode  MatGetFactorType(Mat,MatFactorType*);
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 extern PetscClassId  MAT_CLASSID;
 extern PetscClassId  MAT_FDCOLORING_CLASSID;
+extern PetscClassId  MAT_MULTTRANSPOSECOLORING_CLASSID;
 extern PetscClassId  MAT_PARTITIONING_CLASSID;
 extern PetscClassId  MAT_NULLSPACE_CLASSID;
 extern PetscClassId  MATMFFD_CLASSID;
@@ -1307,6 +1308,21 @@ extern PetscErrorCode  MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,vo
 extern PetscErrorCode  MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 extern PetscErrorCode  MatFDColoringSetF(MatFDColoring,Vec);
 extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+
+/*S
+     MatMultTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
+
+   Level: beginner
+
+  Concepts: coloring, sparse matrix product
+
+.seealso:  MatMultTransposeColoringCreate()
+S*/
+typedef struct _p_MatMultTransposeColoring* MatMultTransposeColoring;
+
+extern PetscErrorCode  MatMultTransposeColoringCreate(Mat,ISColoring,MatMultTransposeColoring *);
+extern PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring*);
+
 /* 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().

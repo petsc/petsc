@@ -3159,7 +3159,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*129*/0,
        MatMatTransposeMult_SeqAIJ_SeqAIJ,  
        MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ,  
-       MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ
+       MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ,
+       MatMultTransposeColoringCreate_SeqAIJ,
+/*134*/0
 };
 
 EXTERN_C_BEGIN

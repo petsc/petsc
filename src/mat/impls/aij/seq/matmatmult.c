@@ -666,3 +666,94 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeColoringCreate_SeqAIJ"
+PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatMultTransposeColoring c)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,nrows,N,j,k,m,*rows,*ci,*cj,ncols,col;
+  const PetscInt *is;
+  PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,bs = 1;
+  IS             *isa;
+  PetscBool      done;
+  PetscBool      flg1,flg2;
+
+  PetscFunctionBegin;
+  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
+
+  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
+    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  }
+
+  N          = mat->cmap->N/bs;
+  c->M       = mat->rmap->N/bs;  /* set total rows, columns and local rows */
+  c->N       = mat->cmap->N/bs;
+  c->m       = mat->rmap->N/bs;
+  c->rstart  = 0;
+
+  c->ncolors = nis;
+  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
+  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(c->m*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(c->m*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(c->m*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr); 
+
+  ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  if (!done) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+
+  ierr = PetscMalloc((c->m+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
+  ierr = PetscMalloc((c->m+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
+
+  for (i=0; i<nis; i++) {
+    ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
+    c->ncolumns[i] = n;
+    if (n) {
+      ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
+      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    } else {
+      c->columns[i]  = 0;
+    }
+
+    /* fast, crude version requires O(N*N) work */
+    ierr = PetscMemzero(rowhit,c->m*sizeof(PetscInt));CHKERRQ(ierr);
+    /* loop over columns*/
+    for (j=0; j<n; j++) {
+      col  = is[j];
+      rows = cj + ci[col]; 
+      m    = ci[col+1] - ci[col];
+      /* loop over columns marking them in rowhit */
+      for (k=0; k<m; k++) {
+        rowhit[*rows++] = col + 1;
+      }
+    }
+      /* count the number of hits */
+      nrows = 0;
+      for (j=0; j<c->m; j++) {
+        if (rowhit[j]) nrows++;
+      }
+      c->nrows[i] = nrows;
+      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
+      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
+      nrows       = 0;
+      for (j=0; j<c->m; j++) {
+        if (rowhit[j]) {
+          c->rows[i][nrows]          = j;
+          c->columnsforrow[i][nrows] = rowhit[j] - 1;
+          nrows++;
+        }
+      }
+    ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
+  }
+  ierr = MatRestoreColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
+  ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
