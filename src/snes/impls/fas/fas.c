@@ -381,7 +381,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_");CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr); 
+    ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
     if (snes->ops->computefunction) {
       ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
@@ -485,10 +485,10 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec B, Vec X) {
 
       /* inject the solution */
       if (fas->inject) {
-        ierr = MatRestrict(fas->inject, X, X_c);CHKERRQ(ierr);
+        ierr = MatRestrict(fas->inject, X, Xo_c);CHKERRQ(ierr);
       } else {
-        ierr = MatRestrict(fas->restrct, X, X_c);CHKERRQ(ierr);
-        ierr = VecPointwiseMult(X_c, fas->rscale, X_c);CHKERRQ(ierr);
+        ierr = MatRestrict(fas->restrct, X, Xo_c);CHKERRQ(ierr);
+        ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
       }
       ierr = VecScale(F, -1.0);CHKERRQ(ierr);
 
