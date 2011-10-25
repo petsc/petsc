@@ -327,8 +327,46 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 #if defined(USE_ARRAY)
   MatScalar *spdot;
 #endif
+  PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&flg,PETSC_NULL);CHKERRQ(ierr);
+
+  if (flg){
+    printf("Create MatMultTransposeColoring ...\n");
+  /* Create MatMultTransposeColoring from symbolic C=A*B^T */
+  MatMultTransposeColoring  matfdcoloring = 0;
+  ISColoring                iscoloring;
+  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
+  ierr = MatMultTransposeColoringCreate(C,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+
+    /* Create Bt_dense */
+  Mat      Bt_dense;
+  PetscInt m,n;
+  ierr = MatCreate(PETSC_COMM_WORLD,&Bt_dense);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bt_dense,A->cmap->n,matfdcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Bt_dense,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Bt_dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Bt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Bt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
+  printf("Bt_dense: %d,%d\n",m,n);
+
+  /* Get Bt_dense by Apply MatMultTransposeColoring to B */
+  ierr = MatMultTransposeColoringApply(B,Bt_dense,matfdcoloring);CHKERRQ(ierr);
+
+  /* C_dense = A*Bt_dense */
+  Mat C_dense;
+  ierr = MatMatMult(A,Bt_dense,MAT_INITIAL_MATRIX,2.0,&C_dense); CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(C_dense,"C_dense_");CHKERRQ(ierr);
+
+  
+
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not done yet");
+  PetscFunctionReturn(0);
+  }
+
 #if defined(USE_ARRAY)
   /* allocate an array for implementing sparse inner-product */
   ierr = PetscMalloc((A->cmap->n+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
@@ -664,6 +702,35 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(cn*2.0*a->nz);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeColoringApply_SeqAIJ"
+PetscErrorCode  MatMultTransposeColoringApply_SeqAIJ(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)B->data;
+  Mat_SeqDense   *atdense = (Mat_SeqDense*)Btdense->data;
+  PetscInt       m=Btdense->rmap->n,n=Btdense->cmap->n,j,k,l,col,anz,*atcol,brow,bcol;
+  MatScalar      *atval,*bval;
+
+  PetscFunctionBegin;    
+  ierr = PetscMemzero(atdense->v,(m*n)*sizeof(MatScalar));CHKERRQ(ierr);
+  for (k=0; k<coloring->ncolors; k++) { 
+    for (l=0; l<coloring->ncolumns[k]; l++) { /* insert a row of B to a column of Btdense */
+      col = coloring->columns[k][l];   /* =row of B */
+      anz = a->i[col+1] - a->i[col];
+      for (j=0; j<anz; j++){
+        atcol = a->j + a->i[col];
+        atval = a->a + a->i[col]; 
+        bval  = atdense->v;
+        brow  = atcol[j]; 
+        bcol  = k;
+        bval[bcol*m+brow] = atval[j];
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 

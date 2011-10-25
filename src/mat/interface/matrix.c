@@ -8976,6 +8976,48 @@ PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring *c)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeColoringApply"
+/*@
+    MatMultTransposeColoringApply - Given a symbolic matrix product C=A*B^T for which 
+    a MatMultTransposeColoring context has been created, computes a dense B^T by Apply 
+    MatMultTransposeColoring to sparse B.
+
+    Collective on MatMultTransposeColoring
+
+    Input Parameters:
++   B - sparse matrix B
+.   Btdense - symbolic dense matrix B^T
+-   coloring - coloring context created with MatMultTransposeColoringCreate()
+
+    Output Parameter:
+.   Btdense - dense matrix B^T 
+
+    Options Database Keys:
++    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
+.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
+-    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
+
+    Level: intermediate
+
+.seealso: MatMultTransposeColoringCreate(), MatMultTransposeColoringDestroy()
+
+.keywords: coloring
+@*/
+PetscErrorCode  MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;    
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(Btdense,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(coloring,MAT_MULTTRANSPOSECOLORING_CLASSID,3);
+  
+  if (!B->ops->multtransposecoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)B)->type_name);
+  ierr = (B->ops->multtransposecoloringapply)(B,Btdense,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeColoringCreate"
 /*@

@@ -1,46 +1,7 @@
 static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 #include <petscmat.h>
-#include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
-#include <../src/mat/utils/freespace.h>
-#include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeColoringApply"
-PetscErrorCode  MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)B->data;
-  Mat_SeqDense   *atdense = (Mat_SeqDense*)Btdense->data;
-  PetscInt       m=Btdense->rmap->n,n=Btdense->cmap->n;
-
-  PetscFunctionBegin;    
-  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(Btdense,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(coloring,MAT_MULTTRANSPOSECOLORING_CLASSID,3);
- 
-  //printf("MatMultTransposeColoringApply Btdense: %d,%d\n",Btdense->rmap->n,Btdense->cmap->n);
-  ierr = PetscMemzero(atdense->v,(m*n)*sizeof(MatScalar));CHKERRQ(ierr);
-
-  PetscInt j,k,l,col,anz;
-  for (k=0; k<coloring->ncolors; k++) { 
-    for (l=0; l<coloring->ncolumns[k]; l++) { /* insert a row of B to a column of Btdense */
-      col = coloring->columns[k][l];   // =row of B
-      anz = a->i[col+1] - a->i[col];
-      //printf("Brow %d, nz %d\n",col,anz);
-      for (j=0; j<anz; j++){
-        PetscInt  *atcol = a->j + a->i[col],brow,bcol;
-        MatScalar *atval = a->a + a->i[col],*bval=atdense->v;
-        brow = atcol[j]; bcol=k;
-        bval[bcol*m+brow] = atval[j];
-        //printf("  B(%d,%d) to Btdense (%d,%d)\n",col,atcol[j],atcol[j],k);
-      }
-    }
-  }
-  //ierr = MatView(Btdense,PETSC_VIEWER_STDOUT_WORLD);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -90,7 +51,7 @@ int main(int argc,char **argv) {
   /* Create MatMultTransposeColoring from symbolic C=A*B^T */
   MatMultTransposeColoring  matfdcoloring = 0;
   ISColoring                iscoloring;
-  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); //modify to C!
+  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
   ierr = MatMultTransposeColoringCreate(C,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   //ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
   //ierr = MatFDColoringView((MatFDColoring)matfdcoloring,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

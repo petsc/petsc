@@ -1321,6 +1321,7 @@ S*/
 typedef struct _p_MatMultTransposeColoring* MatMultTransposeColoring;
 
 extern PetscErrorCode  MatMultTransposeColoringCreate(Mat,ISColoring,MatMultTransposeColoring *);
+extern PetscErrorCode  MatMultTransposeColoringApply(Mat,Mat,MatMultTransposeColoring);
 extern PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring*);
 
 /* 
