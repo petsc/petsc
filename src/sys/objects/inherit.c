@@ -131,6 +131,38 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectCopyFortranFunctionPointers"
+/*@C
+   PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
+
+   Logically Collective on PetscObject
+
+   Input Parameter:
++  src - source object
+-  dest - destination object
+
+   Level: developer
+
+   Note:
+   Both objects must have the same class.
+@*/
+PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObject dest)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeader(src,1);
+  PetscValidHeader(dest,2);
+  if (src->classid != dest->classid) SETERRQ(src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
+
+  ierr = PetscFree(dest->fortran_func_pointers);CHKERRQ(ierr);
+  ierr = PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dest->fortran_func_pointers,src->fortran_func_pointers,src->num_fortran_func_pointers*sizeof(void(*)(void)));CHKERRQ(ierr);
+  dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectsView"
 /*@C

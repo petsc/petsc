@@ -639,6 +639,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmf)->ops->jacobian     = dm->ops->jacobian;
   }
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
   (*dmf)->ctx     = dm->ctx;
   (*dmf)->levelup = dm->levelup + 1;
   PetscFunctionReturn(0);
@@ -849,6 +850,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmc)->ops->jacobian     = dm->ops->jacobian;
   }
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->leveldown = dm->leveldown + 1;
   PetscFunctionReturn(0);
