@@ -193,8 +193,11 @@ typedef size_t PetscFortranAddr;
       Allocates enough space to store Fortran function pointers in PETSc object
    that are needed by the Fortran interface.
 */
-#define PetscObjectAllocateFortranPointers(obj,N)	\
-  if (!((PetscObject)(obj))->fortran_func_pointers) { \
-    *ierr = PetscMalloc(N*sizeof(void*),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
-  }
+#define PetscObjectAllocateFortranPointers(obj,N) do {                  \
+    if (!((PetscObject)(obj))->fortran_func_pointers) {                 \
+      *ierr = PetscMalloc((N)*sizeof(void(*)(void)),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
+      *ierr = PetscMemzero(((PetscObject)(obj))->fortran_func_pointers,(N)*sizeof(void(*)(void)));if (*ierr) return; \
+      ((PetscObject)obj)->num_fortran_func_pointers = (N);              \
+    }                                                                   \
+  } while (0)
 #endif
