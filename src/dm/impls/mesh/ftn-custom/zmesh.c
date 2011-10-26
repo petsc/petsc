@@ -104,7 +104,7 @@ void PETSC_STDCALL  vertexsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetVertexSectionReal(*mesh, pN, *fiberDim, &section);
-  *ierr = DMMeshSetSectionReal(*mesh, section);
+  *ierr = DMMeshSetSectionReal(*mesh, pN, section);
   *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }
@@ -122,7 +122,7 @@ void PETSC_STDCALL  cellsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(l
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetCellSectionReal(*mesh, pN, *fiberDim, &section);
-  *ierr = DMMeshSetSectionReal(*mesh, section);
+  *ierr = DMMeshSetSectionReal(*mesh, pN, section);
   *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }

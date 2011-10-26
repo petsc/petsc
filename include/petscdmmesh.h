@@ -113,7 +113,7 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
-extern PetscErrorCode DMMeshSetSectionReal(DM, SectionReal);
+extern PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
 extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
 extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
