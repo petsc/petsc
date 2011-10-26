@@ -9004,7 +9004,7 @@ PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring *c)
 
 .keywords: coloring
 @*/
-PetscErrorCode  MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
+PetscErrorCode MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
 {
   PetscErrorCode ierr;
 
@@ -9015,6 +9015,48 @@ PetscErrorCode  MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTranspose
   
   if (!B->ops->multtransposecoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)B)->type_name);
   ierr = (B->ops->multtransposecoloringapply)(B,Btdense,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransColoringApplyDenToSp"
+/*@
+    MatMultTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which 
+    a MatMultTransposeColoring context has been created and a dense matrix Cden=A*Btdense
+    in which Btdens is obtained from MatMultTransposeColoringApply(), recover sparse matrix 
+    Csp from Cden.
+
+    Collective on MatMultTransposeColoring
+
+    Input Parameters:
++   coloring - coloring context created with MatMultTransposeColoringCreate()
+-   Cden - matrix product of a sparse matrix and a dense matrix Btdense
+
+    Output Parameter:
+.   Csp - sparse matrix  
+
+    Options Database Keys:
++    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
+.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
+-    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
+
+    Level: intermediate
+
+.seealso: MatMultTransposeColoringCreate(), MatMultTransposeColoringDestroy(), MatMultTransposeColoringApply()
+
+.keywords: coloring
+@*/
+PetscErrorCode MatMultTransColoringApplyDenToSp(MatMultTransposeColoring matcoloring,Mat Cden,Mat Csp) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;    
+  PetscValidHeaderSpecific(matcoloring,MAT_MULTTRANSPOSECOLORING_CLASSID,1);
+  PetscValidHeaderSpecific(Cden,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Csp,MAT_CLASSID,3);
+  
+  if (!Csp->ops->multtranscoloringapplydentosp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)Csp)->type_name);
+  ierr = (Csp->ops->multtranscoloringapplydentosp)(matcoloring,Cden,Csp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

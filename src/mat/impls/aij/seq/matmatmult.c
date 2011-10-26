@@ -734,6 +734,32 @@ PetscErrorCode  MatMultTransposeColoringApply_SeqAIJ(Mat B,Mat Btdense,MatMultTr
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransColoringApplyDenToSp_SeqAIJ"
+PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring matcoloring,Mat Cden,Mat Csp)
+{
+  PetscErrorCode ierr;
+  PetscInt       k,l,row,col,m;
+  PetscScalar    *ca,*cval;
+
+  PetscFunctionBegin;    
+  ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetArray(Cden,&ca);CHKERRQ(ierr);
+  cval = ca;
+  for (k=0; k<matcoloring->ncolors; k++) { 
+    for (l=0; l<matcoloring->nrows[k]; l++){
+      row  = matcoloring->rows[k][l];             /* local row index */
+      col  = matcoloring->columnsforrow[k][l];    /* global column index */
+      ierr = MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    cval += m;
+  }
+  ierr = MatRestoreArray(Cden,&ca);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeColoringCreate_SeqAIJ"
 PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatMultTransposeColoring c)

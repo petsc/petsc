@@ -211,6 +211,7 @@ extern PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscRea
 extern PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat,ISColoring,MatMultTransposeColoring);
 extern PetscErrorCode MatMultTransposeColoringApply_SeqAIJ(Mat,Mat,MatMultTransposeColoring);
+extern PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring,Mat,Mat);
 
 extern PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
