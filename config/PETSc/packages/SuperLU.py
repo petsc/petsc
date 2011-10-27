@@ -3,10 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.2.tar.gz']
+    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz']
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
-    self.liblist      = [['libsuperlu_4.2.a']]
+    self.liblist      = [['libsuperlu_4.3.a']]
     self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludedDirs = ['SuperLU_DIST']
@@ -29,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('SuperLUroot  = '+self.packageDir+'\n')
     g.write('TMGLIB       = tmglib.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.2.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.3.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('LIBS         = $(SUPERLULIB) $(BLASLIB)\n')
