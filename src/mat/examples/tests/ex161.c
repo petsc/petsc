@@ -6,7 +6,7 @@ static char help[] = "Test MatMultTransposeColoring for AIJ matrices.\n\n";
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
-  Mat            A,B,C,C_dense,C_sparse;
+  Mat            A,B,C,C_dense,C_sparse,Bt_dense;
   PetscInt       I,J,m,n;
   PetscErrorCode ierr;
   MatScalar      one=1.0,val;
@@ -59,7 +59,6 @@ int main(int argc,char **argv) {
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
   /* Create Bt_dense */
-  Mat      Bt_dense;
   ierr = MatCreate(PETSC_COMM_WORLD,&Bt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(Bt_dense,A->cmap->n,matcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Bt_dense,MATDENSE);CHKERRQ(ierr);

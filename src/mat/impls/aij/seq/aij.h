@@ -83,6 +83,14 @@ typedef struct {
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
+typedef struct {
+  MatMultTransposeColoring  matcoloring;
+  Mat                       Bt_den;  /* dense matrix of B^T */
+  Mat                       ABt_den; /* dense matrix of A*B^T */
+  PetscBool                 usecoloring; 
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatMatMultTrans;
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */

@@ -188,13 +188,50 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscContainerDestroy_Mat_MatMatMultTrans"
+PetscErrorCode PetscContainerDestroy_Mat_MatMatMultTrans(void *ptr)
+{
+  PetscErrorCode      ierr;
+  Mat_MatMatMultTrans *multtrans=(Mat_MatMatMultTrans*)ptr;
+
+  PetscFunctionBegin;
+  ierr = MatMultTransposeColoringDestroy(&multtrans->matcoloring);CHKERRQ(ierr);
+  ierr = MatDestroy(&multtrans->Bt_den);CHKERRQ(ierr);
+  ierr = MatDestroy(&multtrans->ABt_den);CHKERRQ(ierr);
+  ierr = PetscFree(multtrans);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_SeqAIJ_MatMatMultTrans"
+PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(Mat A)
+{
+  PetscErrorCode      ierr;
+  PetscContainer      container;
+  Mat_MatMatMultTrans *multtrans=PETSC_NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
+  A->ops->destroy   = multtrans->destroy;
+  if (A->ops->destroy) {
+    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultTrans",0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
-  Mat            Bt;
-  PetscInt       *bti,*btj;
+  PetscErrorCode      ierr;
+  Mat                 Bt;
+  PetscInt            *bti,*btj;
+  Mat_MatMatMultTrans *multtrans;
+  PetscContainer      container;
   
   PetscFunctionBegin;
    /* create symbolic Bt */
@@ -207,6 +244,49 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   /* clean up */
   ierr = MatDestroy(&Bt);CHKERRQ(ierr);
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
+
+  /* create a supporting struct for reuse intermidiate dense matrices with matcoloring */
+  ierr = PetscNew(Mat_MatMatMultTrans,&multtrans);CHKERRQ(ierr);
+
+  /* attach the supporting struct to C */
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,multtrans);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultTrans);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultTrans",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
+  multtrans->usecoloring = PETSC_FALSE;
+  multtrans->destroy = (*C)->ops->destroy;
+  (*C)->ops->destroy = MatDestroy_SeqAIJ_MatMatMultTrans;
+
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
+  if (multtrans->usecoloring){
+    printf("Create MatMultTransposeColoring ...\n");
+    /* Create MatMultTransposeColoring from symbolic C=A*B^T */
+    MatMultTransposeColoring  matcoloring;
+    ISColoring                iscoloring;
+    Mat                       Bt_dense,C_dense;
+    ierr = MatGetColoring(*C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
+    ierr = MatMultTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
+    multtrans->matcoloring = matcoloring;
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    printf("Create MatMultTransposeColoring is done \n");
+
+    /* Create Bt_dense and C_dense = A*Bt_dense */
+    ierr = MatCreate(PETSC_COMM_SELF,&Bt_dense);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
+    ierr = MatSetType(Bt_dense,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(Bt_dense,PETSC_NULL);CHKERRQ(ierr);
+    Bt_dense->assembled = PETSC_TRUE;
+    multtrans->Bt_den = Bt_dense;
+
+    ierr = MatCreate(PETSC_COMM_SELF,&C_dense);CHKERRQ(ierr);
+    ierr = MatSetSizes(C_dense,A->rmap->n,matcoloring->ncolors,A->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
+    ierr = MatSetType(C_dense,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(C_dense,PETSC_NULL);CHKERRQ(ierr);
+    Bt_dense->assembled = PETSC_TRUE;
+    multtrans->ABt_den = C_dense;
+  }
   
 #if defined(INEFFICIENT_ALGORITHM)
   /* The algorithm below computes am*bm sparse inner-product - inefficient! It will be deleted later. */
@@ -324,47 +404,46 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
+  Mat_MatMatMultTrans *multtrans;
+  PetscContainer      container;
 #if defined(USE_ARRAY)
-  MatScalar *spdot;
+  MatScalar      *spdot;
 #endif
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr  = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
+  if (multtrans->usecoloring){
+    MatMultTransposeColoring  matcoloring = multtrans->matcoloring;
+   
+    Mat      Bt_dense;
+    PetscInt m,n;
+    Bt_dense = multtrans->Bt_den;
+    ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
+    printf("Bt_dense: %d,%d\n",m,n); 
 
-  if (flg){
-    printf("Create MatMultTransposeColoring ...\n");
-  /* Create MatMultTransposeColoring from symbolic C=A*B^T */
-  MatMultTransposeColoring  matfdcoloring = 0;
-  ISColoring                iscoloring;
-  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
-  ierr = MatMultTransposeColoringCreate(C,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    PetscLogDouble t0,tf,etime1=0.0,etime2=0.0;
+    /* Get Bt_dense by Apply MatMultTransposeColoring to B */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatMultTransposeColoringApply(B,Bt_dense,matcoloring);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime1 += tf - t0;
 
-    /* Create Bt_dense */
-  Mat      Bt_dense;
-  PetscInt m,n;
-  ierr = MatCreate(PETSC_COMM_WORLD,&Bt_dense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bt_dense,A->cmap->n,matfdcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(Bt_dense,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Bt_dense,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Bt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Bt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
-  printf("Bt_dense: %d,%d\n",m,n);
-
-  /* Get Bt_dense by Apply MatMultTransposeColoring to B */
-  ierr = MatMultTransposeColoringApply(B,Bt_dense,matfdcoloring);CHKERRQ(ierr);
-
-  /* C_dense = A*Bt_dense */
-  Mat C_dense;
-  ierr = MatMatMult(A,Bt_dense,MAT_INITIAL_MATRIX,2.0,&C_dense); CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(C_dense,"C_dense_");CHKERRQ(ierr);
-
+    /* C_dense = A*Bt_dense */
+    Mat C_dense = multtrans->ABt_den;
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime2 += tf - t0;
   
-
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not done yet");
-  PetscFunctionReturn(0);
+    /* Recover C from C_dense */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatMultTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime1 += tf - t0;
+    printf("etime ColoringApply: %g; MatMatMultNumeric_sp_dense: %g\n",etime1,etime2);
+    PetscFunctionReturn(0);
   }
 
 #if defined(USE_ARRAY)
