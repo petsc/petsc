@@ -83,6 +83,14 @@ typedef struct {
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
+typedef struct {
+  MatMultTransposeColoring  matcoloring;
+  Mat                       Bt_den;  /* dense matrix of B^T */
+  Mat                       ABt_den; /* dense matrix of A*B^T */
+  PetscBool                 usecoloring; 
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatMatMultTrans;
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
@@ -209,6 +217,9 @@ extern PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat,ISColoring,MatMultTransposeColoring);
+extern PetscErrorCode MatMultTransposeColoringApply_SeqAIJ(Mat,Mat,MatMultTransposeColoring);
+extern PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring,Mat,Mat);
 
 extern PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);

@@ -1621,6 +1621,19 @@ namespace ALE {
         }
       }
     }
+    int numRoots() {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      int n = 0;
+
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->coneOffsets[p+1] == this->coneOffsets[p]) {
+          if (this->supportOffsets[p+1]-this->supportOffsets[p] > 0) {
+            ++n;
+          }
+        }
+      }
+      return n;
+    }
     template<typename Visitor>
     void leaves(const Visitor& v) const {
       this->leaves(const_cast<Visitor&>(v));
@@ -1636,6 +1649,19 @@ namespace ALE {
           }
         }
       }
+    }
+    int numLeaves() {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      int n = 0;
+
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->supportOffsets[p+1] == this->supportOffsets[p]) {
+          if (this->coneOffsets[p+1]-this->coneOffsets[p] > 0) {
+            ++n;
+          }
+        }
+      }
+      return n;
     }
     template<typename Visitor>
     void base(const Visitor& v) const {

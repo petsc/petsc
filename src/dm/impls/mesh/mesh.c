@@ -2127,11 +2127,10 @@ PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *secti
 .keywords: mesh, elements
 .seealso: DMMeshCreate()
 @*/
-PetscErrorCode DMMeshSetSectionReal(DM dm, SectionReal section)
+PetscErrorCode DMMeshSetSectionReal(DM dm, const char name[], SectionReal section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
