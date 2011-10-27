@@ -261,11 +261,11 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
   if (multtrans->usecoloring){
-    printf("Create MatMultTransposeColoring ...\n");
     /* Create MatMultTransposeColoring from symbolic C=A*B^T */
     MatMultTransposeColoring  matcoloring;
     ISColoring                iscoloring;
     Mat                       Bt_dense,C_dense;
+    printf("Create MatMultTransposeColoring ...\n");
     ierr = MatGetColoring(*C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
     ierr = MatMultTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
     multtrans->matcoloring = matcoloring;
@@ -416,14 +416,15 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr  = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
   if (multtrans->usecoloring){
     MatMultTransposeColoring  matcoloring = multtrans->matcoloring;
-   
     Mat      Bt_dense;
     PetscInt m,n;
+    PetscLogDouble t0,tf,etime1=0.0,etime2=0.0;
+    Mat C_dense = multtrans->ABt_den;
+
     Bt_dense = multtrans->Bt_den;
     ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
     printf("Bt_dense: %d,%d\n",m,n); 
 
-    PetscLogDouble t0,tf,etime1=0.0,etime2=0.0;
     /* Get Bt_dense by Apply MatMultTransposeColoring to B */
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMultTransposeColoringApply(B,Bt_dense,matcoloring);CHKERRQ(ierr);
@@ -431,7 +432,6 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     etime1 += tf - t0;
 
     /* C_dense = A*Bt_dense */
-    Mat C_dense = multtrans->ABt_den;
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
     ierr = PetscGetTime(&tf);CHKERRQ(ierr);
