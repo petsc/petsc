@@ -132,7 +132,7 @@ for l=1:narg
       varargout(l) = {A};
     end
   elseif  header == 1211214 % Petsc Vec Object
-    m = double(read(fd,1,indices)); m
+    m = double(read(fd,1,indices)); 
     if arecomplex
       v = read(fd,2*m,precision);
       v = complex(v(1:2:2*m),v(2:2:2*m));
