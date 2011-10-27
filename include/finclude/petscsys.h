@@ -82,10 +82,12 @@
       PetscEnum PETSC_BIT_LOGICAL
       PetscEnum PETSC_ENUM
       PetscEnum PETSC_BOOL
-      PetscEnum PETSC_LONG_DOUBLE
+      PetscEnum PETSC___FLOAT128
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_REAL PETSC___FLOAT128
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif
@@ -94,7 +96,7 @@
       parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
       parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
       parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
-      parameter (PETSC_BOOL=9,PETSC_LONG_DOUBLE=10)
+      parameter (PETSC_BOOL=9,PETSC___FLOAT128=10)
 !
 !
 !
