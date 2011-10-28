@@ -1717,6 +1717,16 @@ namespace ALE {
       if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
     }
+    int sizeWithBC(PetscSection section, const point_type& p) {
+      typedef ISieveVisitor::SizeWithBCVisitor<sieve_type,PetscSection>             size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(section);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
+      return sV.getSize();
+    }
     template<typename Section>
     void allocate(const Obj<Section>& section) {
       section->allocatePoint();

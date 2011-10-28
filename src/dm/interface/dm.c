@@ -39,6 +39,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
+  v->workSize     = 0;
+  v->workArray    = PETSC_NULL;
   v->ltogmap      = PETSC_NULL;
   v->ltogmapb     = PETSC_NULL;
   v->bs           = 1;
@@ -167,6 +169,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->workArray);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
@@ -604,6 +607,40 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->prealloc_only = only;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetWorkArray"
+/*@C
+  DMGetWorkArray - Gets a work array guaranteed to be at least the input size
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DM object
+- size - The minium size
+
+  Output Parameter:
+. array - the work array
+
+  Level: developer
+
+.seealso DMDestroy(), DMCreate()
+@*/
+PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(array,3);
+  if (size > dm->workSize) {
+    dm->workSize = size;
+    ierr = PetscFree(dm->workArray);CHKERRQ(ierr);
+    ierr = PetscMalloc(dm->workSize * sizeof(PetscScalar), &dm->workArray);CHKERRQ(ierr);
+  }
+  *array = dm->workArray;
   PetscFunctionReturn(0);
 }
 
