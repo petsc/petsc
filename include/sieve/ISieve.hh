@@ -500,6 +500,22 @@ namespace ALE {
     public:
       int getSize() {return this->size;};
     };
+    template<typename Sieve>
+    class SizeWithBCVisitor<Sieve,PetscSection> {
+    protected:
+      PetscSection section;
+      int          size;
+    public:
+      SizeWithBCVisitor(PetscSection s) : section(s), size(0) {};
+      inline void visitPoint(const typename Sieve::point_type& point) {
+        PetscInt dim;
+        PetscErrorCode ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        this->size += dim;
+      };
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
+    public:
+      int getSize() {return this->size;};
+    };
     template<typename Section>
     class RestrictVisitor {
     public:
@@ -525,6 +541,70 @@ namespace ALE {
         const int         dim = section.getFiberDimension(point);
         if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
         const value_type *v   = section.restrictPoint(point);
+
+        if (orientation >= 0) {
+          for(int d = 0; d < dim; ++d, ++i) {
+            this->values[i] = v[d];
+          }
+        } else {
+          for(int d = dim-1; d >= 0; --d, ++i) {
+            this->values[i] = v[d];
+          }
+        }
+      }
+      template<typename Arrow>
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
+    public:
+      const value_type *getValues() const {return this->values;};
+      int  getSize() const {return this->i;};
+      int  getMaxSize() const {return this->size;};
+      void ensureSize(const int size) {
+        this->clear();
+        if (size > this->size) {
+          this->size = size;
+          if (this->allocated) {delete [] this->values;}
+          this->values = new value_type[this->size];
+          this->allocated = true;
+        }
+      };
+      void clear() {this->i = 0;};
+    };
+    template<typename ValueType>
+    class RestrictVecVisitor {
+    public:
+      typedef ValueType value_type;
+    protected:
+      const Vec          v;
+      const PetscSection section;
+      int                size;
+      int                i;
+      value_type        *values;
+      bool               allocated;
+      value_type        *array;
+    public:
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size) : v(v), section(s), size(size), i(0) {
+        this->values    = new value_type[this->size];
+        this->allocated = true;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values) : v(v), section(s), size(size), i(0) {
+        this->values    = values;
+        this->allocated = false;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      ~RestrictVecVisitor() {
+        if (this->allocated) {delete [] this->values;}
+        PetscErrorCode ierr = VecRestoreArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      template<typename Point>
+      inline void visitPoint(const Point& point, const int orientation) {
+        PetscInt       dim, offset;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        const value_type *v = &array[offset];
 
         if (orientation >= 0) {
           for(int d = 0; d < dim; ++d, ++i) {

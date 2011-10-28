@@ -120,6 +120,7 @@ extern PetscErrorCode   DMGetMatrix(DM, const MatType,Mat*);
 extern PetscErrorCode   DMSetMatrixPreallocateOnly(DM,PetscBool);
 extern PetscErrorCode   DMGetInterpolation(DM,DM,Mat*,Vec*);
 extern PetscErrorCode   DMGetInjection(DM,DM,VecScatter*);
+extern PetscErrorCode   DMGetWorkArray(DM,PetscInt,PetscScalar**);
 extern PetscErrorCode   DMRefine(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMCoarsen(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMRefineHierarchy(DM,PetscInt,DM[]);

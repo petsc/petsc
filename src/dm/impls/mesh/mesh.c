@@ -1932,25 +1932,23 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   /* Peeling back IMesh::restrictClosure() */
   try {
-    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = mesh->getRealSection("default");
-    const PETSC_MESH_TYPE::real_section_type::value_type *oldStorage = s->restrictSpace();
-    const PetscInt size = mesh->sizeWithBC(s, point);
-    ALE::ISieveVisitor::RestrictVisitor<PETSC_MESH_TYPE::real_section_type> rV(*s, size, s->getRawArray(size));
+    typedef ALE::ISieveVisitor::RestrictVecVisitor<PetscScalar> visitor_type;
+    PetscSection section;
     PetscScalar *array;
 
-    ierr = VecGetArray(v, &array);CHKERRQ(ierr);
-    s->setStorage(array);
+    ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    const PetscInt size = mesh->sizeWithBC(section, point); /* OPT: This can be precomputed */
+    ierr = DMGetWorkArray(dm, size, &array);CHKERRQ(ierr);
+    visitor_type rV(v, section, size, array);
     if (mesh->depth() == 1) {
       rV.visitPoint(point, 0);
       // Cone is guarateed to be ordered correctly
       mesh->getSieve()->orientedCone(point, rV);
     } else {
-      ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type,ALE::ISieveVisitor::RestrictVisitor<PETSC_MESH_TYPE::real_section_type> > pV((int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, rV, true);
+      ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type,visitor_type> pV((int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, rV, true);
 
       ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), point, pV);
     }
-    s->setStorage((PETSC_MESH_TYPE::real_section_type::value_type *) oldStorage);
-    ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
     *values = rV.getValues();
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
