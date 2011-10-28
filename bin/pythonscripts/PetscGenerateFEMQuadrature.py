@@ -14,13 +14,17 @@ from FIAT.lagrange import Lagrange
 
 generator  = PETSc.FEM.QuadratureGenerator()
 generator.setup()
-dim        = int(sys.argv[1])
-order      = int(sys.argv[2])
-components = int(sys.argv[3])
-numBlocks  = int(sys.argv[4])
-operator   = sys.argv[5]
-filename   = sys.argv[6]
-element    = Lagrange(default_simplex(dim), order)
-element.numComponents = components
-elements   = [element]
+elements   = []
+if not (len(sys.argv)-2) % 5 == 0:
+  sys.exit('Incomplete set of arguments')
+for n in range((len(sys.argv)-2) / 5):
+  dim        = int(sys.argv[n*5+1])
+  order      = int(sys.argv[n*5+2])
+  components = int(sys.argv[n*5+3])
+  numBlocks  = int(sys.argv[n*5+4])
+  operator   = sys.argv[n*5+5]
+  element    = Lagrange(default_simplex(dim), order)
+  element.numComponents = components
+  elements.append(element)
+filename = sys.argv[-1]
 generator.run(elements, numBlocks, operator, filename)
