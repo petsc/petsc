@@ -418,7 +418,7 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     MatMultTransposeColoring  matcoloring = multtrans->matcoloring;
     Mat      Bt_dense;
     PetscInt m,n;
-    PetscLogDouble t0,tf,etime1=0.0,etime2=0.0;
+    PetscLogDouble t0,tf,etime0=0.0,etime1=0.0,etime2=0.0;
     Mat C_dense = multtrans->ABt_den;
 
     Bt_dense = multtrans->Bt_den;
@@ -429,7 +429,7 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMultTransposeColoringApply(B,Bt_dense,matcoloring);CHKERRQ(ierr);
     ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime1 += tf - t0;
+    etime0 += tf - t0;
 
     /* C_dense = A*Bt_dense */
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
@@ -442,7 +442,7 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     ierr = MatMultTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
     ierr = PetscGetTime(&tf);CHKERRQ(ierr);
     etime1 += tf - t0;
-    printf("etime ColoringApply: %g; MatMatMultNumeric_sp_dense: %g\n",etime1,etime2);
+    printf("etime ColoringApply: %g %g; MatMatMultNumeric_sp_dense: %g\n",etime0,etime1,etime2);
     PetscFunctionReturn(0);
   }
 
@@ -818,24 +818,50 @@ PetscErrorCode  MatMultTransposeColoringApply_SeqAIJ(Mat B,Mat Btdense,MatMultTr
 PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring matcoloring,Mat Cden,Mat Csp)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)Csp->data;
   PetscInt       k,l,row,col,m;
-  PetscScalar    *ca,*cval;
+  PetscScalar    *ca_den,*cp_den,*ca=csp->a;
+  PetscInt       *ci=csp->i,*cj=csp->j,*rp,low,high,*cilen = csp->ilen,t,i;
+#if defined(PETSC_USE_DEBUG)
+  PetscBool      found; 
+#endif
 
   PetscFunctionBegin;    
   ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetArray(Cden,&ca);CHKERRQ(ierr);
-  cval = ca;
+  ierr = MatGetArray(Cden,&ca_den);CHKERRQ(ierr);
+  cp_den = ca_den;
   for (k=0; k<matcoloring->ncolors; k++) { 
     for (l=0; l<matcoloring->nrows[k]; l++){
-      row  = matcoloring->rows[k][l];             /* local row index */
-      col  = matcoloring->columnsforrow[k][l];    /* global column index */
-      ierr = MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES);CHKERRQ(ierr);
+      row   = matcoloring->rows[k][l];             /* local row index */
+      col   = matcoloring->columnsforrow[k][l];    /* global column index */
+
+      /* below is optimized from  MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES); */
+      rp   = cj + ci[row]; 
+      low  = 0; high = cilen[row]; 
+      while (high-low > 5) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+#if defined(PETSC_USE_DEBUG)
+      found = PETSC_FALSE;
+#endif
+      for (i=low; i<high; i++) {
+        if (rp[i] == col) {
+          *(ca + ci[row] + i) = cp_den[row];
+#if defined(PETSC_USE_DEBUG)
+          found = PETSC_TRUE;
+#endif
+          break;
+        }
+      } 
+#if defined(PETSC_USE_DEBUG)
+      if (!found) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d %d is not inserted",row,col);
+#endif
     }
-    cval += m;
+    cp_den += m;
   }
-  ierr = MatRestoreArray(Cden,&ca);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
