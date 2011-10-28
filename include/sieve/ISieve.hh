@@ -1142,8 +1142,8 @@ namespace ALE {
     void destroyIndices() {
       this->destroyIndices(this->chart, &this->coneOffsets, &this->supportOffsets);
       this->indexAllocated = false;
-      this->maxConeSize    = -1;
-      this->maxSupportSize = -1;
+      this->maxConeSize    = 0;
+      this->maxSupportSize = 0;
       this->baseSize       = -1;
       this->capSize        = -1;
     };
