@@ -1283,7 +1283,7 @@ namespace ALE {
       int               maxHeight;
       std::set<typename sieve_type::point_type> modifiedPoints;
     public:
-      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(-1) {};
+      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(0) {};
       void visitPoint(const typename sieve_type::point_type& point) {
         MaxSupportVisitor v(height, -1);
 
@@ -1316,7 +1316,7 @@ namespace ALE {
       const point_type  limitPoint;
       std::set<point_type> modifiedPoints;
     public:
-      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(sieve.getChart().max()+1) {};
+      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(0), limitPoint(sieve.getChart().max()+1) {};
       DepthVisitor(const sieve_type& s, const point_type& limit, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(limit) {};
       void visitPoint(const point_type& point) {
         if (point >= this->limitPoint) return;
