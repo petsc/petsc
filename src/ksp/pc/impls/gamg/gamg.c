@@ -175,8 +175,16 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
   /* RAP */
+  // #define USE_R
+#ifdef USE_R
+  /* make R wih brute force for now */
+  ierr = MatTranspose( Pold, Pnew );     
+  ierr = MatDestroy( &Pold );  CHKERRQ(ierr);
+  ierr = MatRARt( a_Amat_fine, Pnew, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
+  Pold = Pnew;
+#else
   ierr = MatPtAP( a_Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
-  
+#endif
   ierr = MatSetBlockSize( Cmat, a_cbs );      CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
@@ -440,8 +448,11 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     {
       IS findices;
       ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
-
+#ifdef USE_R
+      ierr = MatGetSubMatrix( Pold, new_indices, findices, MAT_INITIAL_MATRIX, &Pnew );
+#else
       ierr = MatGetSubMatrix( Pold, findices, new_indices, MAT_INITIAL_MATRIX, &Pnew );
+#endif
       CHKERRQ(ierr);
 
       ierr = ISDestroy( &findices ); CHKERRQ(ierr);
@@ -702,7 +713,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
   }
-  { 
+  {
     /* coarse grid */
     KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
     Mat Lmat = Aarr[pc_gamg->m_Nlevels-1];
