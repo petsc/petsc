@@ -124,8 +124,8 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->U); CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->V); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->n - lclP->m); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->V,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->V,PETSC_DECIDE,lclP->n-lclP->m); CHKERRQ(ierr);
   ierr = VecSetType(lclP->U,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetType(lclP->V,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetFromOptions(lclP->U); CHKERRQ(ierr);
@@ -162,6 +162,12 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
   ierr = VecGetOwnershipRange(lclP->U,&lo,&hi); CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)lclP->U)->comm,hi-lo,lo,1,&is_state); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(lclP->V,&lo,&hi); CHKERRQ(ierr);
+  if (0) {
+    PetscInt sizeU,sizeV;
+    ierr = VecGetSize(lclP->U,&sizeU);
+    ierr = VecGetSize(lclP->V,&sizeV);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);
+  }
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design); CHKERRQ(ierr);
   ierr = VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter); CHKERRQ(ierr);
   ierr = VecScatterCreate(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter); CHKERRQ(ierr);
@@ -203,7 +209,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
   ierr = VecGetLocalSize(lclP->U,&nlocal); CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal); CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->m,&lclP->R); CHKERRQ(ierr);
+  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R); CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(lclP->R,lclP->V); CHKERRQ(ierr);
   lclP->rho = 1.0e-4;
   lclP->recompute_jacobian_flag = PETSC_TRUE;
@@ -226,7 +232,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   /* p0 */
   ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
-  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (tao->jacobian_state_pre) {
+    ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  } else {
+    pset = pflag = PETSC_TRUE;
+  }
   if (set && pset && flag && pflag)
     symmetric = PETSC_TRUE;
   else
@@ -396,7 +406,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* p1 */
       ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
-      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (tao->jacobian_state_pre) {
+	ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      } else {
+	pset = pflag = PETSC_TRUE;
+      }
       if (set && pset && flag && pflag)
 	symmetric = PETSC_TRUE;
       else
@@ -482,7 +496,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       }
 
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
-      ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      if (tao->jacobian_state_pre) {
+	ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+      } else {
+	pset = pflag = PETSC_TRUE;
+      }
       if (set && pset && flag && pflag)
 	symmetric = PETSC_TRUE;
       else
@@ -615,7 +633,11 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   }
   ierr = TaoComputeConstraints(tao,X, tao->constraints); CHKERRQ(ierr);
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
-  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (tao->jacobian_state_pre) {
+    ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  } else {
+    pset = pflag = PETSC_TRUE;
+  }
   if (set && pset && flag && pflag)
     symmetric = PETSC_TRUE;
   else
@@ -665,7 +687,11 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   /*      WU = A' * c
           WV = B' * c */
   ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
-  ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  if (tao->jacobian_state_pre) {
+    ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
+  } else {
+    pset = pflag = PETSC_TRUE;
+  }
   if (set && pset && flag && pflag)
     symmetric = PETSC_TRUE;
   else
