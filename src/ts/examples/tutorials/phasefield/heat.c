@@ -230,10 +230,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
-  PetscScalar    *u,r;
-  PetscReal      hx,x;
+  PetscErrorCode    ierr;
+  PetscInt          i,xs,xm,Mx,scale,N;
+  PetscScalar       *u,r;
+  const PetscScalar *f;
+  PetscReal         hx,x;
+  Vec               finesolution;
+  PetscViewer       viewer;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -251,6 +254,14 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
+  ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr);
+  scale = N/Mx;
+  ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr);
+
   /*
      Compute function over the locally owned part of the grid
   */
@@ -265,7 +276,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     /* With the initial condition above the method is first order in space */
     /* this is a smooth initial condition so the method becomes second order in space */
     /*u[i] = PetscSinScalar(2*PETSC_PI*x); */
+    u[i] = f[scale*i];
   }
+  ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
+  ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
 
   /*
      Restore vectors
