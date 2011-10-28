@@ -1741,19 +1741,35 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateSection"
-PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const char bcName[], PetscInt numBCValues, PetscInt bcValues[], PetscSection *section) {
+PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numDof[], const char bcName[], PetscInt numBCValues, PetscInt bcValues[], PetscSection *section) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscInt      *numDofTot;
   PetscInt       pStart = 0, pEnd = 0, maxConstraints = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc((dim+1) * sizeof(PetscInt), &numDofTot);CHKERRQ(ierr);
+  for(PetscInt d = 0; d <= dim; ++d) {
+    numDofTot[d] = 0;
+    for(PetscInt f = 0; f < numFields; ++f) {
+      numDofTot[d] += numDof[f*(dim+1)+d];
+    }
+  }
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
+  if (numFields > 1) {
+    ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
+  } else {
+    numFields = 0;
+  }
   ierr = DMMeshGetDepthStratum(dm, -1, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
   for(PetscInt d = 0; d <= dim; ++d) {
     ierr = DMMeshGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
     for(PetscInt p = pStart; p < pEnd; ++p) {
-      ierr = PetscSectionSetDof(*section, p, numDof[d]);CHKERRQ(ierr);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
     }
   }
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
@@ -1769,6 +1785,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const
       }
     }
   }
+  ierr = PetscFree(numDofTot);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   if (maxConstraints) {
     PetscInt *indices;
