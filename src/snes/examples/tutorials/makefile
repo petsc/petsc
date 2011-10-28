@@ -545,6 +545,11 @@ runex50_5: #test different scatters
            done;\
          done;\
 	 ${RM} -f ex19_5.tmp
+runex50_6: # test ASM with AIJ and bs>1
+	-@${MPIEXEC} -n 4 ./ex50 -da_refine 2 -snes_monitor_short -ksp_monitor_short -pc_type asm -pc_asm_overlap 2 > ex50_6.tmp 2>&1; \
+	   ${DIFF} output/ex50_6.out ex50_6.tmp || echo  ${PWD} "\nPossible problem with ex50_6, diffs above \n========================================="; \
+	   ${RM} -f ex50_6.tmp
+
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -940,6 +945,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
+                                 ex50.PETSc runex50_6 ex50.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm

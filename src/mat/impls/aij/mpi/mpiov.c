@@ -417,7 +417,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
   Mat            A = c->A,B = c->B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
   PetscInt       rstart,cstart,*ai,*aj,*bi,*bj,*garray,i,j,k;
   PetscInt       row,total_sz,ct,ct1,ct2,ct3,mem_estimate,oct2,l,start,end;
   PetscInt       val,max1,max2,m,no_malloc =0,*tmp,new_estimate,ctr;
@@ -425,7 +424,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
   PetscBT        xtable;
 
   PetscFunctionBegin;
-  rank   = c->rank;
   m      = C->rmap->N;
   rstart = C->rmap->rstart;
   cstart = C->cmap->rstart;
@@ -526,7 +524,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
     isz1[i]     = ct2; /* size of each message */
   }
   ierr = PetscBTDestroy(xtable);CHKERRQ(ierr);
-  ierr = PetscInfo4(C,"Allocated %D bytes, required %D bytes, no of mallocs = %D\n",rank,mem_estimate,ct3,no_malloc);CHKERRQ(ierr);
+  ierr = PetscInfo3(C,"Allocated %D bytes, required %D bytes, no of mallocs = %D\n",mem_estimate,ct3,no_malloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 /* -------------------------------------------------------------------------*/

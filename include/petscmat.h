@@ -1320,9 +1320,10 @@ extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,
 S*/
 typedef struct _p_MatMultTransposeColoring* MatMultTransposeColoring;
 
-extern PetscErrorCode  MatMultTransposeColoringCreate(Mat,ISColoring,MatMultTransposeColoring *);
-extern PetscErrorCode  MatMultTransposeColoringApply(Mat,Mat,MatMultTransposeColoring);
-extern PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring*);
+extern PetscErrorCode MatMultTransposeColoringCreate(Mat,ISColoring,MatMultTransposeColoring *);
+extern PetscErrorCode MatMultTransposeColoringApply(Mat,Mat,MatMultTransposeColoring);
+extern PetscErrorCode MatMultTransColoringApplyDenToSp(MatMultTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatMultTransposeColoringDestroy(MatMultTransposeColoring*);
 
 /* 
     These routines are for partitioning matrices: currently used only 

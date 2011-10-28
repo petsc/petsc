@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 #include <petscbt.h>
-
+#include <../src/mat/blocktranspose.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
@@ -2961,7 +2961,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 2*i; ij[1] = 2*i + 1;
         ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
-	ierr  = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
 	diag  += 4;
       }
       break;
@@ -2969,7 +2970,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
         ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
-	ierr     = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
 	diag    += 9;
       }
       break;
@@ -2977,7 +2979,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 4*i; ij[1] = 4*i + 1; ij[2] = 4*i + 2; ij[3] = 4*i + 3;
         ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
 	diag  += 16;
       }
       break;
@@ -2985,7 +2988,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 5*i; ij[1] = 5*i + 1; ij[2] = 5*i + 2; ij[3] = 5*i + 3; ij[4] = 5*i + 4;
         ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
 	diag  += 25;
       }
       break;
@@ -2993,7 +2997,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 6*i; ij[1] = 6*i + 1; ij[2] = 6*i + 2; ij[3] = 6*i + 3; ij[4] = 6*i + 4; ij[5] = 6*i + 5;
         ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
 	diag  += 36;
       }
       break;
@@ -3001,7 +3006,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 7*i; ij[1] = 7*i + 1; ij[2] = 7*i + 2; ij[3] = 7*i + 3; ij[4] = 7*i + 4; ij[5] = 7*i + 5; ij[5] = 7*i + 6;
         ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
 	diag  += 49;
       }
       break;
@@ -3012,7 +3018,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
           IJ[j] = bs*i + j;
         }
         ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
-        ierr   = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_N(diag,bs);CHKERRQ(ierr);
 	diag  += bs2;
       }
       ierr = PetscFree3(v_work,v_pivots,IJ);CHKERRQ(ierr);
@@ -3161,7 +3168,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ,  
        MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ,
        MatMultTransposeColoringCreate_SeqAIJ,
-/*134*/MatMultTransposeColoringApply_SeqAIJ
+/*134*/MatMultTransposeColoringApply_SeqAIJ,
+       MatMultTransColoringApplyDenToSp_SeqAIJ
 };
 
 EXTERN_C_BEGIN

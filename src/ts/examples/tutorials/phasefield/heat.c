@@ -138,6 +138,7 @@ int main(int argc,char **argv)
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -261,6 +262,9 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     } else {
       u[i] = -.5;
     }
+    /* With the initial condition above the method is first order in space */
+    /* this is a smooth initial condition so the method becomes second order in space */
+    /*u[i] = PetscSinScalar(2*PETSC_PI*x); */
   }
 
   /*

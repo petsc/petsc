@@ -178,6 +178,7 @@ struct _MatOps {
   PetscErrorCode (*multtransposecoloringcreate)(Mat,ISColoring,MatMultTransposeColoring);
   /*134*/
   PetscErrorCode (*multtransposecoloringapply)(Mat,Mat,MatMultTransposeColoring);
+  PetscErrorCode (*multtranscoloringapplydentosp)(MatMultTransposeColoring,Mat,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

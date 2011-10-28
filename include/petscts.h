@@ -51,6 +51,17 @@ J*/
 E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
+/*E
+   TSConvergedReason - reason a TS method has converged or not
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+   Each reason has its own manual page.
+
+.seealso: TSGetConvergedReason()
+E*/
 typedef enum {
   TS_CONVERGED_ITERATING      = 0,
   TS_CONVERGED_TIME           = 1,
@@ -59,6 +70,46 @@ typedef enum {
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
 extern const char *const*TSConvergedReasons;
+
+/*MC
+   TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
+
+   Level: beginner
+
+.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+M*/
+
+/*MC
+   TS_CONVERGED_TIME - the final time was reached
+
+   Level: beginner
+
+.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration()
+M*/
+
+/*MC
+   TS_CONVERGED_ITS - the maximum number of iterations was reached prior to the final time
+
+   Level: beginner
+
+.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration()
+M*/
+
+/*MC
+   TS_DIVERGED_NONLINEAR_SOLVE - too many nonlinear solves failed
+
+   Level: beginner
+
+.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+M*/
+
+/*MC
+   TS_DIVERGED_STEP_REJECTED - too many steps were rejected
+
+   Level: beginner
+
+.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+M*/
 
 /* Logging support */
 extern PetscClassId  TS_CLASSID;
@@ -579,7 +630,7 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 #define TSROSWSANDU3      "sandu3"
 #define TSROSWASSP3P3S1C  "assp3p3s1c"
 #define TSROSWLASSP3P4S2C "lassp3p4s2c"
-#define TSROSWLLSSP3P3S2C "llssp3p3s2c"
+#define TSROSWLLSSP3P4S2C "llssp3p4s2c"
 #define TSROSWARK3        "ark3"
 
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
