@@ -1334,7 +1334,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-#ifdef VERBOSE
+#ifdef VERBOSE 
     PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
 #endif
   }
@@ -1680,7 +1680,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
 #ifdef VERBOSE
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
 #endif
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);

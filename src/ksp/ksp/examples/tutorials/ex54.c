@@ -131,12 +131,14 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
-    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);                                   CHKERRQ(ierr);
     ierr = PCSetType(pc,PCGAMG);                                CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);                              CHKERRQ(ierr);
+    
+    /* finish KSP/PC setup */
+    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+    ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
   }
 
   if( !PETSC_TRUE ) {

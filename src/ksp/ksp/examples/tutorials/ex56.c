@@ -243,7 +243,6 @@ int main(int argc,char **args)
   ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
   ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
 
-
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);
 #endif
