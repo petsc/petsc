@@ -80,6 +80,16 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetNumFields"
+PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(numFields,2);
+  *numFields = s->numFields;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetNumFields"
 PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 {

@@ -123,6 +123,7 @@ struct _n_PetscSection {
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);

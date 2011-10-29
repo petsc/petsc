@@ -578,19 +578,57 @@ namespace ALE {
       const PetscSection section;
       int                size;
       int                i;
+      int                nF;
+      int               *offsets;
+      int               *indices;
+      bool               processed;
       value_type        *values;
       bool               allocated;
       value_type        *array;
+    protected:
+      inline void swap(value_type& v, value_type& w) {
+        value_type tmp = v;
+        v = w;
+        w = tmp;
+      };
+      void processArray() {
+        for(PetscInt f = 1; f < nF; ++f) {
+          offsets[f+1] += offsets[f];
+        }
+        for(PetscInt i = 0; i < offsets[nF]; ++i) {
+          indices[i] = offsets[indices[i]]++;
+        }
+        assert(offsets[nF-1] == offsets[nF]);
+        for(PetscInt i = 0; i < offsets[nF]; ++i) {
+          if (indices[i] == -1) continue;
+          PetscInt   startPos = indices[i];
+          PetscInt   j        = startPos, k;
+          value_type val      = values[i];
+
+          do {
+            swap(val, values[j]);
+            k = indices[j];
+            indices[j] = -1;
+            j = k;
+          } while(j != startPos);
+        }
+      };
     public:
-      RestrictVecVisitor(const Vec v, const PetscSection s, const int size) : v(v), section(s), size(size), i(0) {
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size) : v(v), section(s), size(size), i(0), nF(0), processed(true) {
         this->values    = new value_type[this->size];
         this->allocated = true;
         PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
       };
-      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values) : v(v), section(s), size(size), i(0) {
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values) : v(v), section(s), size(size), i(0), nF(0), processed(true) {
         this->values    = values;
         this->allocated = false;
         PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values, int numFields, int *offsets, int *indices) : v(v), section(s), size(size), i(0), nF(numFields), offsets(offsets), indices(indices), processed(false) {
+        this->values    = values;
+        this->allocated = false;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+        for(PetscInt f = 0; f <= numFields; ++f) {offsets[f] = 0;}
       };
       ~RestrictVecVisitor() {
         if (this->allocated) {delete [] this->values;}
@@ -598,20 +636,44 @@ namespace ALE {
       };
       template<typename Point>
       inline void visitPoint(const Point& point, const int orientation) {
-        PetscInt       dim, offset;
+        // Known:
+        //   Nf: number of fields
+        // Unknown:
+        //   Np: number of points
+        //   P:  points
+        // Algorithm:
+        //   Pass 1: Stack up values as before, but also
+        //           count size of each field
+        //   Comp 1: Sum up sizes to get field offsets
+        //   Pass 2: Number each entry with its intended position
+        //   Pass 3: Reorder entries
+        // Algorithm if field sizes are known:
+        //   Comp 1: Partition array into field components
+        //   Pass 1: Stack up values at field offsets
+        PetscInt       dim, offset = 0;
         PetscErrorCode ierr;
 
         ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < nF; ++f) {
+          PetscInt fdim;
+
+          ierr = PetscSectionGetFieldDof(section, point, f, &fdim);CHKERRXX(ierr);
+          offsets[f+1] += fdim;
+          for(PetscInt d = 0; d < fdim; ++d, ++offset) {
+            indices[i+offset] = f;
+          }
+        }
         if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
         ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
         const value_type *v = &array[offset];
 
         if (orientation >= 0) {
-          for(int d = 0; d < dim; ++d, ++i) {
+          for(PetscInt d = 0; d < dim; ++d, ++i) {
             this->values[i] = v[d];
           }
         } else {
-          for(int d = dim-1; d >= 0; --d, ++i) {
+          // Does this require field splitting? I think so
+          for(PetscInt d = dim-1; d >= 0; --d, ++i) {
             this->values[i] = v[d];
           }
         }
@@ -619,7 +681,10 @@ namespace ALE {
       template<typename Arrow>
       inline void visitArrow(const Arrow& arrow, const int orientation) {}
     public:
-      const value_type *getValues() const {return this->values;};
+      const value_type *getValues() {
+        if (!processed) {processArray(); processed = true;}
+        return this->values;
+      };
       int  getSize() const {return this->i;};
       int  getMaxSize() const {return this->size;};
       void ensureSize(const int size) {

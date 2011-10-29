@@ -1819,13 +1819,18 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
     const Obj<PETSC_MESH_TYPE::real_section_type>& s = mesh->getRealSection(name);
-    const PetscInt pStart = s->getChart().min();
-    const PetscInt pEnd   = s->getChart().max();
+    const PetscInt pStart    = s->getChart().min();
+    const PetscInt pEnd      = s->getChart().max();
+    PetscInt       numFields = s->getNumSpaces();
 
     ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
+    if (numFields) {ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);}
     ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
     for(PetscInt p = pStart; p < pEnd; ++p) {
       ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(*section, p, f, s->getFiberDimension(p, f));CHKERRQ(ierr);
+      }
       ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
@@ -1846,15 +1851,21 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
     const Obj<PETSC_MESH_TYPE::real_section_type>& s = mesh->getRealSection(name);
-    PetscInt pStart, pEnd;
+    PetscInt pStart, pEnd, numFields;
 
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(pStart, pEnd));
+    ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+    for(PetscInt f = 0; f < numFields; ++f) {s->addSpace();}
     for(PetscInt p = pStart; p < pEnd; ++p) {
       PetscInt fDim, cDim;
 
       ierr = PetscSectionGetDof(section, p, &fDim);CHKERRQ(ierr);
       s->setFiberDimension(p, fDim);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionGetFieldDof(section, p, f, &fDim);CHKERRQ(ierr);
+        s->setFiberDimension(p, fDim, f);
+      }
       ierr = PetscSectionGetConstraintDof(section, p, &cDim);CHKERRQ(ierr);
       if (cDim) {s->setConstraintDimension(p, cDim);}
     }
@@ -1952,11 +1963,13 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
     typedef ALE::ISieveVisitor::RestrictVecVisitor<PetscScalar> visitor_type;
     PetscSection section;
     PetscScalar *array;
+    PetscInt     numFields;
 
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
     const PetscInt size = mesh->sizeWithBC(section, point); /* OPT: This can be precomputed */
-    ierr = DMGetWorkArray(dm, size, &array);CHKERRQ(ierr);
-    visitor_type rV(v, section, size, array);
+    ierr = DMGetWorkArray(dm, 2*size+numFields+1, &array);CHKERRQ(ierr);
+    visitor_type rV(v, section, size, array, numFields, (PetscInt *) &array[2*size], (PetscInt *) &array[size]);
     if (mesh->depth() == 1) {
       rV.visitPoint(point, 0);
       // Cone is guarateed to be ordered correctly
