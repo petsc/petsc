@@ -54,7 +54,7 @@ class Configure(PETSc.package.NewPackage):
     if self.setCompilers.isDarwin():
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
 
-    if self.framework.argDB['with-64-bit-indices']:
+    if self.libraryOptions.integerSize == 64:
       self.cflags = self.cflags + ' -DINTSIZE64'
     else:
       self.cflags = self.cflags + ' -DINTSIZE32'
