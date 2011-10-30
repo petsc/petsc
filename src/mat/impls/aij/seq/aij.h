@@ -84,7 +84,7 @@ typedef struct {
 } Mat_SeqAIJ;
 
 typedef struct {
-  MatMultTransposeColoring  matcoloring;
+  MatTransposeColoring      matcoloring;
   Mat                       Bt_den;  /* dense matrix of B^T */
   Mat                       ABt_den; /* dense matrix of A*B^T */
   PetscBool                 usecoloring; 
@@ -217,9 +217,9 @@ extern PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
-extern PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat,ISColoring,MatMultTransposeColoring);
-extern PetscErrorCode MatMultTransposeColoringApply_SeqAIJ(Mat,Mat,MatMultTransposeColoring);
-extern PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat,ISColoring,MatTransposeColoring);
+extern PetscErrorCode MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring,Mat,Mat);
 
 extern PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);

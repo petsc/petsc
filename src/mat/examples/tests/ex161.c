@@ -10,8 +10,8 @@ int main(int argc,char **argv) {
   PetscInt       I,J,m,n;
   PetscErrorCode ierr;
   MatScalar      one=1.0,val;
-  MatMultTransposeColoring  matcoloring = 0;
-  ISColoring                iscoloring;
+  MatTransposeColoring  matcoloring = 0;
+  ISColoring            iscoloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* Create A */
@@ -50,9 +50,9 @@ int main(int argc,char **argv) {
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
  
-  /* Create MatMultTransposeColoring from symbolic C=A*B^T */
+  /* Create MatTransposeColoring from symbolic C=A*B^T */
   ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
-  ierr = MatMultTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
+  ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
   //ierr = MatFDColoringSetFromOptions(matcoloring);CHKERRQ(ierr);
   //ierr = MatFDColoringView((MatFDColoring)matcoloring,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   //ierr = MatFDColoringView(matcoloring,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -68,8 +68,8 @@ int main(int argc,char **argv) {
   ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
   printf("Bt_dense: %d,%d\n",m,n);
 
-  /* Get Bt_dense by Apply MatMultTransposeColoring to B */
-  ierr = MatMultTransposeColoringApply(B,Bt_dense,matcoloring);CHKERRQ(ierr);
+  /* Get Bt_dense by Apply MatTransposeColoring to B */
+  ierr = MatTransposeColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
 
   /* C_dense = A*Bt_dense */
   ierr = MatMatMult(A,Bt_dense,MAT_INITIAL_MATRIX,2.0,&C_dense);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc,char **argv) {
 
   /* Recover C from C_dense */
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C_sparse);CHKERRQ(ierr);
-  ierr = MatMultTransColoringApplyDenToSp(matcoloring,C_dense,C_sparse);CHKERRQ(ierr);
+  ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C_sparse);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C_sparse,"C_sparse_");CHKERRQ(ierr);
   ierr = MatView(C_sparse,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **argv) {
   ierr = MatDestroy(&C_dense);CHKERRQ(ierr);
   ierr = MatDestroy(&C_sparse);CHKERRQ(ierr);
   ierr = MatDestroy(&Bt_dense);CHKERRQ(ierr);
-  ierr = MatMultTransposeColoringDestroy(&matcoloring);CHKERRQ(ierr);
+  ierr = MatTransposeColoringDestroy(&matcoloring);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr); 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

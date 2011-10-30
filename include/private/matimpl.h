@@ -175,10 +175,10 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*multtransposecoloringcreate)(Mat,ISColoring,MatMultTransposeColoring);
+  PetscErrorCode (*transposecoloringcreate)(Mat,ISColoring,MatTransposeColoring);
   /*134*/
-  PetscErrorCode (*multtransposecoloringapply)(Mat,Mat,MatMultTransposeColoring);
-  PetscErrorCode (*multtranscoloringapplydentosp)(MatMultTransposeColoring,Mat,Mat);
+  PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
+  PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring,Mat,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -400,7 +400,7 @@ struct  _p_MatFDColoring{
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
-struct  _p_MatMultTransposeColoring{
+struct  _p_MatTransposeColoring{
   PETSCHEADER(int);
   PetscInt       M,N,m;            /* total rows, columns; local rows */
   PetscInt       rstart;           /* first row owned by local processor */
@@ -1016,7 +1016,7 @@ extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_Back
 extern PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 extern PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
-extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_MultTransposeColoringCreate;
+extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
 extern PetscLogEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
