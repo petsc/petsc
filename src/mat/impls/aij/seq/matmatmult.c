@@ -826,45 +826,17 @@ PetscErrorCode MatMultTransColoringApplyDenToSp_SeqAIJ(MatMultTransposeColoring 
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)Csp->data;
-  PetscInt       k,l,row,col,m;
+  PetscInt       k,l,row,m,**rows=matcoloring->rows,**spidx=matcoloring->columnsforspidx;
   PetscScalar    *ca_den,*cp_den,*ca=csp->a;
-  PetscInt       *ci=csp->i,*cj=csp->j,*rp,low,high,*cilen = csp->ilen,t,i;
-#if defined(PETSC_USE_DEBUG)
-  PetscBool      found; 
-#endif
-
+ 
   PetscFunctionBegin;    
   ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetArray(Cden,&ca_den);CHKERRQ(ierr);
   cp_den = ca_den;
   for (k=0; k<matcoloring->ncolors; k++) { 
     for (l=0; l<matcoloring->nrows[k]; l++){
-      row   = matcoloring->rows[k][l];             /* local row index */
-      col   = matcoloring->columnsforrow[k][l];    /* global column index */
-
-      /* below is optimized from  MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES); */
-      rp   = cj + ci[row]; 
-      low  = 0; high = cilen[row]; 
-      while (high-low > 5) {
-        t = (low+high)/2;
-        if (rp[t] > col) high = t;
-        else             low  = t;
-      }
-#if defined(PETSC_USE_DEBUG)
-      found = PETSC_FALSE;
-#endif
-      for (i=low; i<high; i++) {
-        if (rp[i] == col) {
-          *(ca + ci[row] + i) = cp_den[row];
-#if defined(PETSC_USE_DEBUG)
-          found = PETSC_TRUE;
-#endif
-          break;
-        }
-      } 
-#if defined(PETSC_USE_DEBUG)
-      if (!found) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d %d is not inserted",row,col);
-#endif
+      row             = rows[k][l];       
+      ca[spidx[k][l]] = cp_den[row];
     }
     cp_den += m;
   }
@@ -879,10 +851,15 @@ PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscolori
   PetscErrorCode ierr;
   PetscInt       i,n,nrows,N,j,k,m,*rows,*ci,*cj,ncols,col,cm;
   const PetscInt *is;
-  PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,bs = 1;
+  PetscInt       nis = iscoloring->n,*rowhit,bs = 1;
   IS             *isa;
   PetscBool      done;
   PetscBool      flg1,flg2;
+  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
+  PetscInt       l,row,*rp,low,high,*cilen = csp->ilen,t;
+#if defined(PETSC_USE_DEBUG)
+  PetscBool      found; 
+#endif
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -900,17 +877,18 @@ PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscolori
   c->rstart  = 0;
 
   c->ncolors = nis;
-  cm         = c->m;
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr); 
-  ierr       = PetscMalloc(cm*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr); 
-  ierr       = PetscMalloc(cm*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr); 
-  ierr       = PetscMalloc(cm*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr); 
-   
-  ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr); 
+  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforspidx);CHKERRQ(ierr); 
   
-  ierr = PetscMalloc2(cm+1,PetscInt,&rowhit,cm+1,PetscInt,&columnsforrow);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr); // column-wise storage!!!
+  if (!done) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+
+  cm = c->m; 
+  ierr = PetscMalloc((cm+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   for (i=0; i<nis; i++) {
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
@@ -940,21 +918,51 @@ PetscErrorCode MatMultTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscolori
       if (rowhit[j]) nrows++;
     }
     c->nrows[i] = nrows;
-    ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
-    ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nrows+1,PetscInt,&c->rows[i],nrows+1,PetscInt,&c->columnsforrow[i],nrows+1,PetscInt,&c->columnsforspidx[i]);CHKERRQ(ierr);
     nrows       = 0;
     for (j=0; j<cm; j++) {
       if (rowhit[j]) {
-        c->rows[i][nrows]          = j;
-        c->columnsforrow[i][nrows] = rowhit[j] - 1;
+        c->rows[i][nrows]          = j; 
+        c->columnsforrow[i][nrows] = rowhit[j] - 1; 
         nrows++;
       }
     }
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
   }
   ierr = MatRestoreColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
-
-  ierr = PetscFree2(rowhit,columnsforrow);CHKERRQ(ierr);
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
+
+  /* set c->columnsforspidx to be used by MatMultTransColoringApplyDenToSp() in MatMatMultTransposeNumeric()  */
+  ci = csp->i; cj = csp->j;
+  for (k=0; k<c->ncolors; k++) { 
+    for (l=0; l<c->nrows[k]; l++){
+      row = c->rows[k][l];             /* local row index */
+      col = c->columnsforrow[k][l];    /* global column index */
+      /* below is optimized from  MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES); */
+      rp   = cj + ci[row]; 
+      low  = 0; high = cilen[row]; 
+      while (high-low > 5) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+#if defined(PETSC_USE_DEBUG)
+      found = PETSC_FALSE;
+#endif
+      for (i=low; i<high; i++) {
+        if (rp[i] == col) {
+          c->columnsforspidx[k][l] = ci[row] + i; /* index of mat(row,col) in csp->j and csp->a arrays */
+#if defined(PETSC_USE_DEBUG)
+          found = PETSC_TRUE;
+#endif
+          break;
+        }
+      } 
+#if defined(PETSC_USE_DEBUG) 
+      if (!found) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d %d is not inserted",row,col);
+#endif
+    }
+  }
   PetscFunctionReturn(0);
 }

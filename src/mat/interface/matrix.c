@@ -8964,14 +8964,14 @@ PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring *c)
 
   for (i=0; i<(*c)->ncolors; i++) {
     ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->rows[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->columnsforrow[i]);CHKERRQ(ierr);
+    ierr = PetscFree3((*c)->rows[i],(*c)->columnsforrow[i],(*c)->columnsforspidx[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
   ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->columnsforspidx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
