@@ -1778,7 +1778,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
       const Obj<PETSC_MESH_TYPE::label_sequence>& boundary = mesh->getLabelStratum(bcName, bcValues[bc]);
 
       for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-        const int n = numDof[mesh->depth(*e_iter)];
+        const int n = numDofTot[mesh->depth(*e_iter)];
 
         maxConstraints = PetscMax(maxConstraints, n);
         ierr = PetscSectionSetConstraintDof(*section, *e_iter, n);CHKERRQ(ierr);
@@ -1797,7 +1797,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
 
       ierr = PetscSectionGetConstraintDof(*section, p, &cDof);CHKERRQ(ierr);
       if (cDof) {
-        if (cDof > maxConstraints) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, poitn %d cDof %d > maxConstraints %d", p, cDof, maxConstraints);}
+        if (cDof > maxConstraints) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, point %d cDof %d > maxConstraints %d", p, cDof, maxConstraints);}
         for(PetscInt d = 0; d < cDof; ++d) {
           indices[d] = d;
         }
