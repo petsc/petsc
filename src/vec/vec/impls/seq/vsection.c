@@ -440,12 +440,12 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
       }
     } else {
       PetscInt offset = 0;
-      PetscInt j      = -1;
+      PetscInt j      = -1, field, i;
 
-      for(PetscInt field = 0; field < s->numFields; ++field) {
+      for(field = 0; field < s->numFields; ++field) {
         const PetscInt dim = s->field[field]->atlasDof[p]; /* PetscSectionGetFieldDof() */
 
-        for(PetscInt i = dim-1; i >= 0; --i) {
+        for(i = dim-1; i >= 0; --i) {
           array[++j] = values[i+offset];
         }
         offset += dim;
@@ -481,10 +481,10 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
       PetscInt *cDof;
       PetscInt  offset  = 0;
       PetscInt  cOffset = 0;
-      PetscInt  j       = 0;
+      PetscInt  j       = 0, field;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
-      for(PetscInt field = 0; field < s->numFields; ++field) {
+      for(field = 0; field < s->numFields; ++field) {
         const PetscInt  dim = s->field[field]->atlasDof[p];     /* PetscSectionGetFieldDof() */
         const PetscInt tDim = s->field[field]->bc->atlasDof[p]; /* PetscSectionGetFieldConstraintDof() */
         const PetscInt sDim = dim - tDim;
@@ -533,12 +533,12 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
       }
     } else {
       PetscInt offset = 0;
-      PetscInt j      = -1;
+      PetscInt j      = -1, field, i;
 
-      for(PetscInt field = 0; field < s->numFields; ++field) {
+      for(field = 0; field < s->numFields; ++field) {
         const PetscInt dim = s->field[field]->atlasDof[p];
 
-        for(PetscInt i = dim-1; i >= 0; --i) {
+        for(i = dim-1; i >= 0; --i) {
           array[++j] = values[i+offset];
         }
         offset += dim;
@@ -566,10 +566,10 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
       PetscInt *cDof;
       PetscInt  offset  = 0;
       PetscInt  cOffset = 0;
-      PetscInt  j       = 0;
+      PetscInt  j       = 0, field;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
-      for(PetscInt field = 0; field < s->numFields; ++field) {
+      for(field = 0; field < s->numFields; ++field) {
         const PetscInt  dim = s->field[field]->atlasDof[p];     /* PetscSectionGetFieldDof() */
         const PetscInt tDim = s->field[field]->bc->atlasDof[p]; /* PetscSectionGetFieldConstraintDof() */
         const PetscInt sDim = dim - tDim;
