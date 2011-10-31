@@ -505,12 +505,23 @@ namespace ALE {
     protected:
       PetscSection section;
       int          size;
+      PetscInt    *fieldSize;
+      PetscInt     numFields;
     public:
-      SizeWithBCVisitor(PetscSection s) : section(s), size(0) {};
+      SizeWithBCVisitor(PetscSection s) : section(s), size(0), fieldSize(PETSC_NULL), numFields(0) {};
+      SizeWithBCVisitor(PetscSection s, PetscInt *fieldSize) : section(s), size(0), fieldSize(fieldSize) {
+        PetscErrorCode ierr = PetscSectionGetNumFields(section, &numFields);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < numFields; ++f) {this->fieldSize[f] = 0;}
+      };
       inline void visitPoint(const typename Sieve::point_type& point) {
         PetscInt dim;
-        PetscErrorCode ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        PetscErrorCode ierr;
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
         this->size += dim;
+        for(PetscInt f = 0; f < numFields; ++f) {
+          ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
+          this->fieldSize[f] += dim;
+        }
       };
       inline void visitArrow(const typename Sieve::arrow_type&) {};
     public:
@@ -696,7 +707,7 @@ namespace ALE {
           this->allocated = true;
         }
       };
-      void clear() {this->i = 0;};
+      void clear() {this->i = 0; if (processed) {processed = false;}};
     };
     template<typename Section>
     class UpdateVisitor {
@@ -757,6 +768,166 @@ namespace ALE {
       template<typename Arrow>
       inline void visitArrow(const Arrow& arrow, const int orientation) {}
       void clear() {this->i = 0;};
+    };
+    template<typename ValueType>
+    class UpdateVecVisitor {
+    public:
+      typedef ValueType value_type;
+    protected:
+      const Vec          v;
+      const PetscSection section;
+      const value_type  *values;
+      const InsertMode   mode;
+      PetscInt           nF;
+      PetscInt           i;
+      value_type        *array;
+      PetscInt          *fieldSize;
+      PetscInt          *j;
+    protected:
+      inline static void add   (value_type& x, value_type y) {x += y;}
+      inline static void insert(value_type& x, value_type y) {x  = y;}
+      template<typename Point>
+      void updatePoint(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
+        PetscInt       dim;  // The number of dof on this point
+        PetscInt       cDim; // The nubmer of constraints on this point
+        PetscInt      *cDof; // The indices of the constrained dofs on this point
+        value_type    *a;    // The values on this point
+        PetscInt       offset, cInd = 0;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        ierr = PetscSectionGetConstraintDof(section, point, &cDim);CHKERRXX(ierr);
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        a    = &array[offset];
+        if (!cDim || setBC) {
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              fuse(a[k], values[i+k]);
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              fuse(a[k], values[i+dim-k-1]);
+            }
+          }
+        } else {
+          ierr = PetscSectionGetConstraintIndices(section, point, &cDof);CHKERRXX(ierr);
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+              fuse(a[k], values[i+k]);
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+              fuse(a[k], values[i+k]);
+            }
+          }
+        }
+        i += dim;
+      }
+      template<typename Point>
+      void updatePointFields(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
+        value_type    *a;
+        PetscInt       offset;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        a    = &array[offset];
+        for(PetscInt f = 0; f < nF; ++f) {
+          PetscInt    dim;  // The number of dof for field f on this point
+          PetscInt    cDim; // The nubmer of constraints for field f on this point
+          PetscInt   *cDof; // The indices of the constrained dofs for field f on this point
+          PetscInt    fOff = 0, cInd = 0;
+
+          ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
+          if (!cDim || setBC) {
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                fuse(a[fOff+k], values[j[f]+k]);
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              }
+            }
+          } else {
+            ierr = PetscSectionGetFieldConstraintIndices(section, point, f, &cDof);CHKERRXX(ierr);
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+                fuse(a[fOff+k], values[j[f]+k]);
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              }
+            }
+          }
+          fOff += dim;
+          j[f] += dim;
+        }
+      }
+    public:
+      UpdateVecVisitor(const Vec v, const PetscSection s, const value_type *values, InsertMode mode) : v(v), section(s), values(values), mode(mode), nF(0), i(0) {};
+      UpdateVecVisitor(const Vec v, const PetscSection s, const value_type *values, InsertMode mode, PetscInt numFields, PetscInt fieldSize[]) : v(v), section(s), values(values), mode(mode), nF(numFields), i(0) {
+        PetscErrorCode ierr;
+
+        ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+        ierr = PetscMalloc2(numFields,PetscInt,&this->fieldSize,numFields,PetscInt,&j);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < nF; ++f) {
+          this->fieldSize[f] = fieldSize[f];
+        }
+        this->clear();
+      };
+      ~UpdateVecVisitor() {
+        PetscErrorCode ierr;
+        ierr = VecRestoreArray(this->v, &this->array);CHKERRXX(ierr);
+        ierr = PetscFree2(fieldSize,j);CHKERRXX(ierr);
+      };
+      template<typename Point>
+      inline void visitPoint(const Point& point, const int orientation) {
+        if (nF) {
+          switch(mode) {
+          case INSERT_VALUES:
+            updatePointFields(point, this->insert, false, orientation);break;
+          case INSERT_ALL_VALUES:
+            updatePointFields(point, this->insert, true,  orientation);break;
+          case ADD_VALUES:
+            updatePointFields(point, this->add, false, orientation);break;
+          case ADD_ALL_VALUES:
+            updatePointFields(point, this->add, true,  orientation);break;
+          default:
+            throw PETSc::Exception("Invalid mode");
+          }
+        } else {
+          switch(mode) {
+          case INSERT_VALUES:
+            updatePoint(point, this->insert, false, orientation);break;
+          case INSERT_ALL_VALUES:
+            updatePoint(point, this->insert, true,  orientation);break;
+          case ADD_VALUES:
+            updatePoint(point, this->add, false, orientation);break;
+          case ADD_ALL_VALUES:
+            updatePoint(point, this->add, true,  orientation);break;
+          default:
+            throw PETSc::Exception("Invalid mode");
+          }
+        }
+      }
+      template<typename Arrow>
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
+    public:
+      void clear() {
+        this->i = 0;
+        if (nF) {
+          j[0] = 0;
+          for(PetscInt f = 1; f < nF; ++f) {
+            j[f] = j[f-1] + fieldSize[f-1];
+          }
+        }
+      };
     };
     template<typename Section, typename Order, typename Value>
     class IndicesVisitor {

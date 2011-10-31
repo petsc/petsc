@@ -614,3 +614,31 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldConstraintIndices"
+PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, PetscInt **indices)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscSectionGetConstraintIndices(s->field[field], point, indices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetFieldConstraintIndices"
+PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, PetscInt indices[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscSectionSetConstraintIndices(s->field[field], point, indices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

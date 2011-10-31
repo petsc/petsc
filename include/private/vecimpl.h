@@ -137,6 +137,8 @@ extern PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, 
 extern PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
 extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt**);
+extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
 extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
