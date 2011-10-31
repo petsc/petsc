@@ -8964,13 +8964,12 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
 
   for (i=0; i<(*c)->ncolors; i++) {
     ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
-    ierr = PetscFree3((*c)->rows[i],(*c)->columnsforrow[i],(*c)->columnsforspidx[i]);CHKERRQ(ierr);
+    ierr = PetscFree2((*c)->rows[i],(*c)->columnsforspidx[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
   ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columnsforspidx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8994,9 +8993,9 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
 .   Btdense - dense matrix B^T 
 
     Options Database Keys:
-+    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
-.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
--    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
++    -mat_transpose_coloring_view - Activates basic viewing or coloring
+.    -mat_transpose_coloring_view_draw - Activates drawing of coloring
+-    -mat_transpose_coloring_view_info - Activates viewing of coloring info
 
     Level: intermediate
 

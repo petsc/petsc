@@ -881,7 +881,6 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr); 
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr); 
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr); 
-  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr); 
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforspidx);CHKERRQ(ierr); 
   
   ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr); // column-wise storage!!!
@@ -918,12 +917,12 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
       if (rowhit[j]) nrows++;
     }
     c->nrows[i] = nrows;
-    ierr = PetscMalloc3(nrows+1,PetscInt,&c->rows[i],nrows+1,PetscInt,&c->columnsforrow[i],nrows+1,PetscInt,&c->columnsforspidx[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nrows+1,PetscInt,&c->rows[i],nrows+1,PetscInt,&c->columnsforspidx[i]);CHKERRQ(ierr);
     nrows       = 0;
     for (j=0; j<cm; j++) {
       if (rowhit[j]) {
         c->rows[i][nrows]          = j; 
-        c->columnsforrow[i][nrows] = rowhit[j] - 1; 
+        c->columnsforspidx[i][nrows] = rowhit[j] - 1; /* global column index */
         nrows++;
       }
     }
@@ -938,7 +937,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   for (k=0; k<c->ncolors; k++) { 
     for (l=0; l<c->nrows[k]; l++){
       row = c->rows[k][l];             /* local row index */
-      col = c->columnsforrow[k][l];    /* global column index */
+      col = c->columnsforspidx[k][l];    /* global column index */
       /* below is optimized from  MatSetValues(Csp,1,&row,1,&col,cval+row,INSERT_VALUES); */
       rp   = cj + ci[row]; 
       low  = 0; high = cilen[row]; 

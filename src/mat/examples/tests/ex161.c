@@ -69,7 +69,7 @@ int main(int argc,char **argv) {
   printf("Bt_dense: %d,%d\n",m,n);
 
   /* Get Bt_dense by Apply MatTransposeColoring to B */
-  ierr = MatTransposeColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
+  ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
 
   /* C_dense = A*Bt_dense */
   ierr = MatMatMult(A,Bt_dense,MAT_INITIAL_MATRIX,2.0,&C_dense);CHKERRQ(ierr);
