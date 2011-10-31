@@ -8611,6 +8611,7 @@ PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   fB = B->ops->matmulttranspose;
   if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
   if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = (*A->ops->matmulttransposesymbolic)(A,B,fill,C);CHKERRQ(ierr);
@@ -8956,22 +8957,20 @@ PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
 @*/
 PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscErrorCode       ierr;
+  PetscInt             i;
+  MatTransposeColoring matcolor=*c;
 
   PetscFunctionBegin;
-  if (!*c) PetscFunctionReturn(0);
-  if (--((PetscObject)(*c))->refct > 0) {*c = 0; PetscFunctionReturn(0);}
+  if (!matcolor) PetscFunctionReturn(0);
+  if (--((PetscObject)matcolor)->refct > 0) {matcolor = 0; PetscFunctionReturn(0);}
 
-  for (i=0; i<(*c)->ncolors; i++) {
-    ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
-    ierr = PetscFree2((*c)->rows[i],(*c)->columnsforspidx[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->ncolumns);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr); 
+  ierr = PetscFree2(matcolor->rows,matcolor->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr); 
+  ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
