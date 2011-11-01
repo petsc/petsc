@@ -406,12 +406,14 @@ struct  _p_MatTransposeColoring{
   PetscInt       rstart;           /* first row owned by local processor */
   PetscInt       ncolors;          /* number of colors */
   PetscInt       *ncolumns;        /* number of local columns for a color */ 
-  PetscInt       **columns;        /* lists the local columns of each color (using global column numbering) */
   PetscInt       *nrows;           /* number of local rows for each color */
-  PetscInt       **rows;           /* lists the local rows for each color (using the local row numbering) */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
-  PetscInt       **columnsforspidx; /* maps entry (row,color) in a dense matrix to index of original sparse matrix arrays a->j and a->a */
+ 
+  PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
+  PetscInt       *rows;                  /* lists the local rows for each color (using the local row numbering) */
+  PetscInt       *columnsforspidx;       /* maps (row,color) in the dense matrix to index of sparse matrix arrays a->j and a->a */
+  PetscInt       *columns;               /* lists the local columns of each color (using global column numbering) */
 };
 
 /*

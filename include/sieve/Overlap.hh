@@ -245,6 +245,7 @@ public:
   };
   /* assemble - Complete preallocation phase (optimized method) or input phase (flexible method) */
   void assemble() {
+    if (!flexRanks.size() && !ranks) return;
     if (!flexRanks.size() && ranks) {
       assembleFast();
     } else if (!ranks && !pointsOffset) {

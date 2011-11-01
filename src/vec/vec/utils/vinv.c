@@ -175,7 +175,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
     }
     tnorm  = PetscRealPart(sum);
     ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
-    *nrm = sqrt(*nrm);
+    *nrm = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
     for (i=0; i<n; i+=bs) {
@@ -494,7 +494,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     }
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     for (j=0; j<bs; j++) {
-      nrm[j] = sqrt(nrm[j]);
+      nrm[j] = PetscSqrtReal(nrm[j]);
     }
   } else if (ntype == NORM_1) {
     for (j=0; j<bs; j++) {
@@ -1200,7 +1200,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
     for(i = 0; i < n; i++) {
-      x[i] = sqrt(PetscAbsScalar(x[i]));
+      x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
     }
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }

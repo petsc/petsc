@@ -57,7 +57,7 @@ PetscErrorCode VecNorm_MPIPThread(Vec xin,NormType type,PetscReal *z)
     work  = BLASnrm2_(&bn,xx,&one);
     work *= work;
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-    *z = sqrt(sum);
+    *z = PetscSqrtReal(sum);
     ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
@@ -75,7 +75,7 @@ PetscErrorCode VecNorm_MPIPThread(Vec xin,NormType type,PetscReal *z)
     ierr = VecNorm_SeqPThread(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
     ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-    z[1] = sqrt(z[1]);
+    z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(0);
 }

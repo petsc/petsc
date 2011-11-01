@@ -472,7 +472,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
       for(i=0; i<x->nthreads; i++) {
         *z += kerneldatap[i].result*kerneldatap[i].result;
       }
-      *z = sqrt(*z);
+      *z = PetscSqrtReal(*z);
       ierr = PetscLogFlops(PetscMax(2.0*xin->map->n-1,0.0));CHKERRQ(ierr);
     }
     else {
