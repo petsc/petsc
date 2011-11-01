@@ -140,7 +140,8 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
   }
   if (snes->ls_monitor) {
     ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", sqrt(norms[0]),sqrt(norms[1]),sqrt(norms[2]),alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: norms[0] = %g, norms[1] = %g, norms[2] = %g alpha %g\n", 
+                                  PetscSqrtReal(norms[0]),PetscSqrtReal(norms[1]),PetscSqrtReal(norms[2]),alpha);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);

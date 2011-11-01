@@ -775,7 +775,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: alphas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
-                                    alpha, alpha_mid, alpha_old, sqrt(PetscRealPart(fnrm)), sqrt(PetscRealPart(fnrm_mid)), sqrt(PetscRealPart(fnrm_old)));CHKERRQ(ierr);
+                                    alpha, alpha_mid, alpha_old, PetscSqrtReal(PetscRealPart(fnrm)), PetscSqrtReal(PetscRealPart(fnrm_mid)), PetscSqrtReal(PetscRealPart(fnrm_old)));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
 
