@@ -350,7 +350,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D upper constraints %D Percent of total %g Percent of bounded %g\n",its,(double)fnorm,fact[0],fact[1],((double)(fact[0]+fact[1]))/((double)N),((double)(fact[0]+fact[1]))/((double)vi->ntruebounds));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"                               lower constraints satisfied %D upper constraints satisfied %D\n",its,fact_bound[0],fact_bound[1]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"                               lower constraints satisfied %D upper constraints satisfied %D\n",fact_bound[0],fact_bound[1]);CHKERRQ(ierr);
   
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);

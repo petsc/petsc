@@ -12,7 +12,7 @@ Input parameters include:\n\
    Concepts: TS^time-dependent linear problems
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
-   Routines: TSCreate(); TSSetSolution(); TSSetMatrices();
+   Routines: TSCreate(); TSSetSolution(); TSSetRHSJacobian(), TSSetIJacobian();
    Routines: TSSetInitialTimeStep(); TSSetDuration(); TSMonitorSet();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
    Routines: TSSetTimeStep(); TSGetTimeStep();
