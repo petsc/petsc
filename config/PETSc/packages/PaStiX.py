@@ -80,7 +80,7 @@ class Configure(PETSc.package.NewPackage):
     #                          INTEGER TYPE                           #
     ###################################################################
     g.write('\n')
-    if self.framework.argDB['with-64-bit-indices']:
+    if self.libraryOptions.integerSize == 64:
       g.write('#---------------------------\n')
       g.write('VERSIONINT  = _int64\n')
       g.write('CCTYPES     = -DFORCE_INT64\n')

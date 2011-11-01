@@ -712,13 +712,30 @@ scalar problem in two dimensions one could do
 \begin{tabbing}
    PetscScalar **f,**u;\\
    ...\\
-  DMDAVecGetArray(DM da,Vec local,(void*)\&u);\\
-  DMDAVecGetArray(DM da,Vec global,(void*)\&f);\\
+  DMDAVecGetArray(DM da,Vec local,\&u);\\
+  DMDAVecGetArray(DM da,Vec global,\&f);\\
    ...\\
       f[i][j] = u[i][j] - ...\\
    ...\\
-  DMDAVecRestoreArray(DM da,Vec local,(void*)\&u);\\
-  DMDAVecRestoreArray(DM da,Vec global,(void*)\&f);
+  DMDAVecRestoreArray(DM da,Vec local,\&u);\\
+  DMDAVecRestoreArray(DM da,Vec global,\&f);
+\end{tabbing}
+The recommended approach for multi-component PDEs is to declare a struct representing the fields defined at each node of the grid, e.g.
+\begin{tabbing}
+  typedef struct \{ \\
+    PetscScalar u,v,omega,temperature; \\
+  \} Node;
+\end{tabbing}
+and write residual evaluation using
+\begin{tabbing}
+  Node **f,**u;\\
+  DMDAVecGetArray(DM da,Vec local,\&u);\\
+  DMDAVecGetArray(DM da,Vec global,\&f);\\
+   ...\\
+      f[i][j].omega = ...\\
+   ...\\
+  DMDAVecRestoreArray(DM da,Vec local,\&u);\\
+  DMDAVecRestoreArray(DM da,Vec global,\&f);
 \end{tabbing}
 See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
 complete example and see \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an

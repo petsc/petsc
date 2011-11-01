@@ -1283,7 +1283,7 @@ namespace ALE {
       int               maxHeight;
       std::set<typename sieve_type::point_type> modifiedPoints;
     public:
-      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(-1) {};
+      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(0) {};
       void visitPoint(const typename sieve_type::point_type& point) {
         MaxSupportVisitor v(height, -1);
 
@@ -1316,7 +1316,7 @@ namespace ALE {
       const point_type  limitPoint;
       std::set<point_type> modifiedPoints;
     public:
-      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(sieve.getChart().max()+1) {};
+      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(0), limitPoint(sieve.getChart().max()+1) {};
       DepthVisitor(const sieve_type& s, const point_type& limit, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(limit) {};
       void visitPoint(const point_type& point) {
         if (point >= this->limitPoint) return;
@@ -1726,6 +1726,15 @@ namespace ALE {
       this->getSieve()->cone(p, cV);
       if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
+    }
+    void sizeWithBC(PetscSection section, const point_type& p, PetscInt fieldSize[]) {
+      typedef ISieveVisitor::SizeWithBCVisitor<sieve_type,PetscSection>             size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(section, fieldSize);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
     }
     template<typename Section>
     void allocate(const Obj<Section>& section) {

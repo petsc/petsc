@@ -52,7 +52,7 @@ class Configure(PETSc.package.NewPackage):
       g.write('CDEFS   = -DUpCase')
     else:
       g.write('CDEFS   = -DNoChange')
-    if self.framework.argDB['with-64-bit-indices']:
+    if self.libraryOptions.integerSize == 64:
       g.write(' -D_LONGINT')
     g.write('\n')
     # not sure what this is for

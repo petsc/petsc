@@ -614,7 +614,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   if (user->bcType == DIRICHLET) {
     bcLabel = "marker";
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, 1, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

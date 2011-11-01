@@ -167,10 +167,10 @@ void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mat
   FREECHAR(mattype,pN);
 }
 
-void PETSC_STDCALL  dmmeshcreatesection_(DM *mesh, PetscInt *dim, PetscInt numDof[], CHAR bcLabel PETSC_MIXED_LEN(lenN), PetscInt *numBC, PetscInt *markers, PetscSection *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshcreatesection_(DM *mesh, PetscInt *dim, PetscInt *numFields, PetscInt numDof[], CHAR bcLabel PETSC_MIXED_LEN(lenN), PetscInt *numBC, PetscInt *markers, PetscSection *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(bcLabel,lenN,pN);
-  *ierr = DMMeshCreateSection(*mesh, *dim, numDof, pN, *numBC, markers, section);
+  *ierr = DMMeshCreateSection(*mesh, *dim, *numFields, numDof, pN, *numBC, markers, section);
   FREECHAR(bcLabel,pN);
 }
 

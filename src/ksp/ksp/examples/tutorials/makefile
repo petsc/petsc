@@ -269,7 +269,7 @@ ex54: ex54.o chkopts
 
 ex55: ex55.o chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
-	${RM} ex55.o
+#	${RM} ex55.o
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
@@ -1025,7 +1025,7 @@ runex54:
 
 runex54_SA:
 	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa  -ksp_norm_type unpreconditioned > ex54_sa.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n========================================="; \
+         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
 	   ${RM} -f ex54_sa.tmp
 
 runex55:

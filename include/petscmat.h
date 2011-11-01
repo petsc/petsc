@@ -133,7 +133,7 @@ extern PetscErrorCode  MatGetFactorType(Mat,MatFactorType*);
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 extern PetscClassId  MAT_CLASSID;
 extern PetscClassId  MAT_FDCOLORING_CLASSID;
-extern PetscClassId  MAT_MULTTRANSPOSECOLORING_CLASSID;
+extern PetscClassId  MAT_TRANSPOSECOLORING_CLASSID;
 extern PetscClassId  MAT_PARTITIONING_CLASSID;
 extern PetscClassId  MAT_NULLSPACE_CLASSID;
 extern PetscClassId  MATMFFD_CLASSID;
@@ -1310,20 +1310,20 @@ extern PetscErrorCode  MatFDColoringSetF(MatFDColoring,Vec);
 extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 
 /*S
-     MatMultTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
+     MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
 
    Level: beginner
 
   Concepts: coloring, sparse matrix product
 
-.seealso:  MatMultTransposeColoringCreate()
+.seealso:  MatTransposeColoringCreate()
 S*/
-typedef struct _p_MatMultTransposeColoring* MatMultTransposeColoring;
+typedef struct _p_MatTransposeColoring* MatTransposeColoring;
 
-extern PetscErrorCode MatMultTransposeColoringCreate(Mat,ISColoring,MatMultTransposeColoring *);
-extern PetscErrorCode MatMultTransposeColoringApply(Mat,Mat,MatMultTransposeColoring);
-extern PetscErrorCode MatMultTransColoringApplyDenToSp(MatMultTransposeColoring,Mat,Mat);
-extern PetscErrorCode MatMultTransposeColoringDestroy(MatMultTransposeColoring*);
+extern PetscErrorCode MatTransposeColoringCreate(Mat,ISColoring,MatTransposeColoring *);
+extern PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
 
 /* 
     These routines are for partitioning matrices: currently used only 

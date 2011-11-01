@@ -9,7 +9,7 @@
 /* Logging support */
 PetscClassId  MAT_CLASSID;
 PetscClassId  MAT_FDCOLORING_CLASSID;
-PetscClassId  MAT_MULTTRANSPOSECOLORING_CLASSID;
+PetscClassId  MAT_TRANSPOSECOLORING_CLASSID;
 
 PetscLogEvent  MAT_Mult, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve;
@@ -19,7 +19,7 @@ PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Conve
 PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
 PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
-PetscLogEvent  MAT_MultTransposeColoringCreate;
+PetscLogEvent  MAT_TransposeColoringCreate;
 PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
@@ -1701,7 +1701,8 @@ PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBatch"
 /*@
-  MatSetValuesBatch - Inserts many blocks of values into a matrix at once. The blocks must all be square and the same size.
+  MatSetValuesBatch - Adds (ADD_VALUES) many blocks of values into a matrix at once. The blocks must all be square and
+  the same size. Currently, this can only be called once and creates the given matrix.
 
   Not Collective
 
@@ -1713,7 +1714,7 @@ PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 - v - a concatenation of logically two-dimensional arrays of values
 
   Notes:
-  In the future, we may extend this routine to handle rectangular blocks, and additive mode.
+  In the future, we will extend this routine to handle rectangular blocks, and to allow multiple calls for a given matrix.
 
   Level: advanced
 
@@ -8610,6 +8611,7 @@ PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   fB = B->ops->matmulttranspose;
   if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
   if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = (*A->ops->matmulttransposesymbolic)(A,B,fill,C);CHKERRQ(ierr);
@@ -8939,97 +8941,94 @@ PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeColoringDestroy"
+#define __FUNCT__ "MatTransposeColoringDestroy"
 /*@
-    MatMultTransposeColoringDestroy - Destroys a coloring context for matrix product C=A*B^T that was created
-    via MatMultTransposeColoringCreate().
+    MatTransposeColoringDestroy - Destroys a coloring context for matrix product C=A*B^T that was created
+    via MatTransposeColoringCreate().
 
-    Collective on MatMultTransposeColoring
+    Collective on MatTransposeColoring
 
     Input Parameter:
 .   c - coloring context
 
     Level: intermediate
 
-.seealso: MatMultTransposeColoringCreate()
+.seealso: MatTransposeColoringCreate()
 @*/
-PetscErrorCode  MatMultTransposeColoringDestroy(MatMultTransposeColoring *c)
+PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscErrorCode       ierr;
+  PetscInt             i;
+  MatTransposeColoring matcolor=*c;
 
   PetscFunctionBegin;
-  if (!*c) PetscFunctionReturn(0);
-  if (--((PetscObject)(*c))->refct > 0) {*c = 0; PetscFunctionReturn(0);}
+  if (!matcolor) PetscFunctionReturn(0);
+  if (--((PetscObject)matcolor)->refct > 0) {matcolor = 0; PetscFunctionReturn(0);}
 
-  for (i=0; i<(*c)->ncolors; i++) {
-    ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->rows[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->columnsforrow[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->ncolumns);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr); 
+  ierr = PetscFree2(matcolor->rows,matcolor->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr); 
+  ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeColoringApply"
+#define __FUNCT__ "MatTransColoringApplySpToDen"
 /*@
-    MatMultTransposeColoringApply - Given a symbolic matrix product C=A*B^T for which 
-    a MatMultTransposeColoring context has been created, computes a dense B^T by Apply 
-    MatMultTransposeColoring to sparse B.
+    MatTransColoringApplySpToDen - Given a symbolic matrix product C=A*B^T for which 
+    a MatTransposeColoring context has been created, computes a dense B^T by Apply 
+    MatTransposeColoring to sparse B.
 
-    Collective on MatMultTransposeColoring
+    Collective on MatTransposeColoring
 
     Input Parameters:
 +   B - sparse matrix B
 .   Btdense - symbolic dense matrix B^T
--   coloring - coloring context created with MatMultTransposeColoringCreate()
+-   coloring - coloring context created with MatTransposeColoringCreate()
 
     Output Parameter:
 .   Btdense - dense matrix B^T 
 
     Options Database Keys:
-+    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
-.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
--    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
++    -mat_transpose_coloring_view - Activates basic viewing or coloring
+.    -mat_transpose_coloring_view_draw - Activates drawing of coloring
+-    -mat_transpose_coloring_view_info - Activates viewing of coloring info
 
     Level: intermediate
 
-.seealso: MatMultTransposeColoringCreate(), MatMultTransposeColoringDestroy()
+.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy()
 
 .keywords: coloring
 @*/
-PetscErrorCode MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeColoring coloring)
+PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,Mat Btdense)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;    
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidHeaderSpecific(Btdense,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(coloring,MAT_MULTTRANSPOSECOLORING_CLASSID,3);
+  PetscValidHeaderSpecific(coloring,MAT_TRANSPOSECOLORING_CLASSID,3);
   
-  if (!B->ops->multtransposecoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)B)->type_name);
-  ierr = (B->ops->multtransposecoloringapply)(B,Btdense,coloring);CHKERRQ(ierr);
+  if (!B->ops->transcoloringapplysptoden) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)B)->type_name);
+  ierr = (B->ops->transcoloringapplysptoden)(coloring,B,Btdense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMultTransColoringApplyDenToSp"
+#define __FUNCT__ "MatTransColoringApplyDenToSp"
 /*@
-    MatMultTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which 
-    a MatMultTransposeColoring context has been created and a dense matrix Cden=A*Btdense
-    in which Btdens is obtained from MatMultTransposeColoringApply(), recover sparse matrix 
+    MatTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which 
+    a MatTransposeColoring context has been created and a dense matrix Cden=A*Btdense
+    in which Btdens is obtained from MatTransColoringApplySpToDen(), recover sparse matrix 
     Csp from Cden.
 
-    Collective on MatMultTransposeColoring
+    Collective on MatTransposeColoring
 
     Input Parameters:
-+   coloring - coloring context created with MatMultTransposeColoringCreate()
++   coloring - coloring context created with MatTransposeColoringCreate()
 -   Cden - matrix product of a sparse matrix and a dense matrix Btdense
 
     Output Parameter:
@@ -9042,28 +9041,28 @@ PetscErrorCode MatMultTransposeColoringApply(Mat B,Mat Btdense,MatMultTransposeC
 
     Level: intermediate
 
-.seealso: MatMultTransposeColoringCreate(), MatMultTransposeColoringDestroy(), MatMultTransposeColoringApply()
+.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
 .keywords: coloring
 @*/
-PetscErrorCode MatMultTransColoringApplyDenToSp(MatMultTransposeColoring matcoloring,Mat Cden,Mat Csp) 
+PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat Cden,Mat Csp) 
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;    
-  PetscValidHeaderSpecific(matcoloring,MAT_MULTTRANSPOSECOLORING_CLASSID,1);
+  PetscValidHeaderSpecific(matcoloring,MAT_TRANSPOSECOLORING_CLASSID,1);
   PetscValidHeaderSpecific(Cden,MAT_CLASSID,2);
   PetscValidHeaderSpecific(Csp,MAT_CLASSID,3);
   
-  if (!Csp->ops->multtranscoloringapplydentosp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)Csp)->type_name);
-  ierr = (Csp->ops->multtranscoloringapplydentosp)(matcoloring,Cden,Csp);CHKERRQ(ierr);
+  if (!Csp->ops->transcoloringapplydentosp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)Csp)->type_name);
+  ierr = (Csp->ops->transcoloringapplydentosp)(matcoloring,Cden,Csp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeColoringCreate"
+#define __FUNCT__ "MatTransposeColoringCreate"
 /*@
-   MatMultTransposeColoringCreate - Creates a matrix coloring context for matrix product C=A*B^T.
+   MatTransposeColoringCreate - Creates a matrix coloring context for matrix product C=A*B^T.
 
    Collective on Mat
 
@@ -9076,26 +9075,26 @@ PetscErrorCode MatMultTransColoringApplyDenToSp(MatMultTransposeColoring matcolo
    
     Level: intermediate
 
-.seealso: MatMultTransposeColoringDestroy(), MatMultTransposeColoringSetFromOptions(), MatMultTransposeColoringApply(),
-          MatMultTransposeColoringView(), 
+.seealso: MatTransposeColoringDestroy(), MatTransposeColoringSetFromOptions(), MatTransColoringApplySpToDen(),
+           MatTransColoringApplyDen()ToSp, MatTransposeColoringView(), 
 @*/
-PetscErrorCode  MatMultTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatMultTransposeColoring *color)
+PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTransposeColoring *color)
 {
-  MatMultTransposeColoring  c;
-  MPI_Comm                  comm;
-  PetscErrorCode            ierr;
+  MatTransposeColoring  c;
+  MPI_Comm              comm;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_MultTransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatMultTransposeColoring,int,MAT_MULTTRANSPOSECOLORING_CLASSID,0,"MatMultTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatMultTransposeColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,_p_MatTransposeColoring,int,MAT_TRANSPOSECOLORING_CLASSID,0,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,0);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
-  if (mat->ops->multtransposecoloringcreate) {
-    ierr = (*mat->ops->multtransposecoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
+  if (mat->ops->transposecoloringcreate) {
+    ierr = (*mat->ops->transposecoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Code not yet written for this matrix type");
 
   *color = c;
-  ierr = PetscLogEventEnd(MAT_MultTransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
