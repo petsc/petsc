@@ -283,14 +283,14 @@ PetscErrorCode TSRosWRegisterAll(void)
     ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
   }
   {
-    const PetscReal g = (3.0+sqrt(3.0))/6.0;
+    const PetscReal s3 = PetscSqrtReal(3.),g = (3.0+s3)/6.0;
     const PetscReal
       A[3][3] = {{0,0,0},
                  {1,0,0},
                  {0.25,0.25,0}},
       Gamma[3][3] = {{0,0,0},
-                     {(-3.0-sqrt(3.0))/6.0,g,0},
-                     {(-3.0-sqrt(3.0))/24.0,(-3.0-sqrt(3.0))/8.0,g}},
+                     {(-3.0-s3)/6.0,g,0},
+                     {(-3.0-s3)/24.0,(-3.0-s3)/8.0,g}},
         b[3] = {1./6.,1./6.,2./3.},
           b2[3] = {1./4.,1./4.,1./2.};
     ierr = TSRosWRegister(TSROSWASSP3P3S1C,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);

@@ -387,7 +387,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   */
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&en2);CHKERRQ(ierr);
-  en2s  = sqrt(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
+  en2s  = PetscSqrtReal(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
   ierr = VecNorm(appctx->solution,NORM_MAX,&enmax);CHKERRQ(ierr);
 
   /*

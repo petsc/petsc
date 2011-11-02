@@ -87,7 +87,7 @@ static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 #undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_3"
 /*MC
-   TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, c_eff=(sqrt(s)-1)/sqrt(s), where sqrt(s) is an integer
+   TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, c_eff=(PetscSqrtReal(s)-1)/PetscSqrtReal(s), where PetscSqrtReal(s) is an integer
 
    Pseudocode 2 of Ketcheson 2008
 
@@ -105,7 +105,7 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 
   PetscFunctionBegin;
   s = ssp->nstages;
-  n = (PetscInt)(sqrt((PetscReal)s)+0.001);
+  n = (PetscInt)(PetscSqrtReal((PetscReal)s)+0.001);
   r = s-n;
   if (n*n != s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = SSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
