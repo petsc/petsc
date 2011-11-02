@@ -522,21 +522,21 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMult_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+#define __FUNCT__ "MatTransposeMatMult_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   Mat            At;
@@ -557,8 +557,8 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;

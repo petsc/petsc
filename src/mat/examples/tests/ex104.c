@@ -50,8 +50,8 @@ int main(int argc,char **argv) {
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  /* Test MatMatTransposeMult() */
-  ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
+  /* Test MatTransposeMatMult() */
+  ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 

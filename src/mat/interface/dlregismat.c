@@ -154,9 +154,9 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatMatMultTrans",  MAT_CLASSID,&MAT_MatMultTranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultTrnSym" ,MAT_CLASSID,&MAT_MatMultTransposeSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_CLASSID,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatTransMult",  MAT_CLASSID,&MAT_MatTransposeMult);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatTrnMultSym", MAT_CLASSID,&MAT_MatTransposeMultSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatTrnMultNum", MAT_CLASSID,&MAT_MatTransposeMultNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTrnMatMult",    MAT_CLASSID,&MAT_TransposeMatMult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTrnMatMultSym", MAT_CLASSID,&MAT_TransposeMatMultSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID,&MAT_TransposeMatMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnColorCreate", MAT_CLASSID,&MAT_TransposeColoringCreate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRedundant",  MAT_CLASSID,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);

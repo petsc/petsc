@@ -172,9 +172,9 @@ struct _MatOps {
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
-  PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
-  PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*transposematmultsymbolic)(Mat,Mat,PetscReal,Mat*);
+  PetscErrorCode (*transposematmultnumeric)(Mat,Mat,Mat);
   PetscErrorCode (*transposecoloringcreate)(Mat,ISColoring,MatTransposeColoring);
   /*134*/
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
@@ -1022,7 +1022,7 @@ extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMult
 extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
 
 extern PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
-extern PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
+extern PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;
 extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
 
