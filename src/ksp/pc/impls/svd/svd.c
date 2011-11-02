@@ -62,10 +62,10 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
 #if !defined(PETSC_USE_COMPLEX)
   LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr);
+  if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif
-  if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
   ierr  = MatRestoreArray(jac->A,&a);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->U,&u);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->V,&v);CHKERRQ(ierr);
