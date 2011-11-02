@@ -85,8 +85,8 @@ int main(int argc,char **argv) {
   /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
   ierr = testPTAPRectangular();CHKERRQ(ierr);
 
-  /* test MatMatMultTranspose(): A*B^T */
-  ierr = MatMatMultTranspose(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
+  /* test MatMatTransposeMult(): A*B^T */
+  ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
   ierr = MatSetOptionsPrefix(D,"D=A*A^T_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);

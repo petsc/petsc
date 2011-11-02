@@ -176,16 +176,16 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
 /* This routine is not used. Should be removed! */
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTranspose_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMult_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
  
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,8 +225,8 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
   Mat                 Bt;
@@ -402,7 +402,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
     ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMultTranspose(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatTransposeMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -413,8 +413,8 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 
 /* #define USE_ARRAY - for sparse dot product. Slower than !USE_ARRAY */
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
@@ -957,7 +957,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   if (csp->nz != colorforrow[nis]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csp->nz %d != colorforrow[nis] %d",csp->nz,colorforrow[nis]);
 #endif
   
-  /* set c->columnsforspidx to be used by MatTransColoringApplyDenToSp() in MatMatMultTransposeNumeric()  */
+  /* set c->columnsforspidx to be used by MatTransColoringApplyDenToSp() in MatMatTransposeMultNumeric()  */
   ci = csp->i; cj = csp->j;
   for (k=0; k<c->ncolors; k++) { 
     for (l=0; l<c->nrows[k]; l++){

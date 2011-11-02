@@ -45,7 +45,7 @@ int main(int argc,char **argv) {
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   /* C = A*B^T */
-  ierr = MatMatMultTranspose(A,B,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
+  ierr = MatMatTransposeMult(A,B,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C,"C_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);

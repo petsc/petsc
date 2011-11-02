@@ -22,7 +22,7 @@ PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent  MAT_TransposeColoringCreate;
 PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
-PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
@@ -8555,9 +8555,9 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTranspose"
+#define __FUNCT__ "MatMatTransposeMult"
 /*@
-   MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A*B^T.
+   MatMatTransposeMult - Performs Matrix-Matrix Multiplication C=A*B^T.
 
    Neighbor-wise Collective on Mat
 
@@ -8582,9 +8582,9 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 
    Level: intermediate
 
-.seealso: MatMatMultTransposeSymbolic(), MatMatMultTransposeNumeric(), MatPtAP()
+.seealso: MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric(), MatPtAP()
 @*/
-PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -8606,20 +8606,20 @@ PetscErrorCode  MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
-  fA = A->ops->matmulttranspose;
-  if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for A of type %s",((PetscObject)A)->type_name);
-  fB = B->ops->matmulttranspose;
-  if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",((PetscObject)B)->type_name);
-  if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+  fA = A->ops->mattransposemult;
+  if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatTransposeMult not supported for A of type %s",((PetscObject)A)->type_name);
+  fB = B->ops->mattransposemult;
+  if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatTransposeMult not supported for B of type %s",((PetscObject)B)->type_name);
+  if (fB!=fA) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
 
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = PetscLogEventBegin(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = (*A->ops->matmulttransposesymbolic)(A,B,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMultTransposeSymbolic,A,B,0,0);CHKERRQ(ierr); 
+    ierr = PetscLogEventBegin(MAT_MatTransposeMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = (*A->ops->mattransposemultsymbolic)(A,B,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatTransposeMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
   }
-  ierr = PetscLogEventBegin(MAT_MatMultTransposeNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*A->ops->matmulttransposenumeric)(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultTransposeNumeric,A,B,0,0);CHKERRQ(ierr); 
+  ierr = PetscLogEventBegin(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*A->ops->mattransposemultnumeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 } 
 

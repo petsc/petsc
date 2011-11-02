@@ -151,9 +151,9 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatPtAP",          MAT_CLASSID,&MAT_PtAP);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_CLASSID,&MAT_PtAPSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_CLASSID,&MAT_PtAPNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrans",  MAT_CLASSID,&MAT_MatMultTranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrnSym" ,MAT_CLASSID,&MAT_MatMultTransposeSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_CLASSID,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatTransMult",  MAT_CLASSID,&MAT_MatTransposeMult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatTrnMultSym", MAT_CLASSID,&MAT_MatTransposeMultSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatTrnMultNum", MAT_CLASSID,&MAT_MatTransposeMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMult",    MAT_CLASSID,&MAT_TransposeMatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultSym", MAT_CLASSID,&MAT_TransposeMatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID,&MAT_TransposeMatMultNumeric);CHKERRQ(ierr);
@@ -161,6 +161,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatGetRedundant",  MAT_CLASSID,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetMultiProcBlock", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
+
 
   /* these may be specific to MPIAIJ matrices */
   ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_CLASSID,&MAT_Seqstompinum);

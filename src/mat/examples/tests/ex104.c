@@ -1,4 +1,4 @@
-static char help[] = "Test MatMatMult(), MatMatMultTranspose() for SeqDense matrices.\n\n";
+static char help[] = "Test MatMatMult(), MatTransposeMatMult() for SeqDense matrices.\n\n";
 
 #include <petscmat.h>
 

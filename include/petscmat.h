@@ -631,9 +631,9 @@ extern PetscErrorCode  MatPtAPNumeric(Mat,Mat,Mat);
 extern PetscErrorCode  MatTransposeMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatTransposetMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode  MatTransposetMatMultNumeric(Mat,Mat,Mat);
-extern PetscErrorCode  MatMatMultTranspose(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeSymbolic(Mat,Mat,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatMatTransposeMult(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatMatTransposeMultSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatMatTransposeMultNumeric(Mat,Mat,Mat);
 
 extern PetscErrorCode  MatAXPY(Mat,PetscScalar,Mat,MatStructure);
 extern PetscErrorCode  MatAYPX(Mat,PetscScalar,Mat,MatStructure);
