@@ -26,7 +26,43 @@ have
   x     = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} p_{v_0} u_{v_1} v_{v_1} p_{v_1} u_{v_2} v_{v_2} p_{v_2}]
 
 The problem here is that we would like to loop over each field separately for
-integration.
+integration. Therefore, the closure visitor in DMMeshVecGetClosure() reorders
+the data so that each field is contiguous
+
+  x'    = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} u_{v_1} v_{v_1} u_{v_2} v_{v_2} p_{v_0} p_{v_1} p_{v_2}]
+
+Likewise, DMMeshVecSetClosure() takes data partitioned by field, and correctly
+puts it into the Sieve ordering.
+
+Next Steps:
+
+- Fix pressure BC
+  - Input BC by field
+  - Make constant vector on the pressure space (get a local P vector?)
+  - Check that it is in the operator null space
+- Create Jacobian
+- Solve the system
+  - Check error in the result
+  - Refine and show convergence of correct order automatically (use femTest.py)
+- Reply to Marc Hesse
+  - Plan next steps with he and Avi
+- Use quadratic elements for velocity
+  - Check that disc error vanishes for exact solution
+  - Redo slides from GUCASTutorial for these new examples
+- Run in parallel
+  - Check scaling with Mark
+- Optimize closure operations
+  - The visitor should not be created every time
+  - The sizeWithBC operations can be precomputed (for a regular mesh)
+
+- Function to get list (IS) of dofs constrained by Dirichlet conditions
+- Flag for removing Dirichlet constrained unknowns
+- Make an interface for PetscSection+IS to represent a partition, then you can sue this to distributed dependent objects
+  - In general, we want IS+PetscSection to replace SectionInt
+- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
+
+- Improve DMDA conversion to get edges
+- Setup FV problem
 */
 
 #include <petscdmmesh.h>
@@ -76,7 +112,7 @@ PetscScalar zero(const PetscReal coords[]) {
 
     u = x^2 + y^2
     v = 2 x^2 - 2xy
-    p = x + y
+    p = x + y - 1
 
   so that
 
@@ -92,7 +128,7 @@ PetscScalar quadratic_v_2d(const PetscReal x[]) {
 };
 
 PetscScalar linear_p_2d(const PetscReal x[]) {
-  return x[0] + x[1];
+  return x[0] + x[1] - 1.0;
 };
 
 // gradP[d] = {p_x, p_y}
@@ -244,9 +280,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       numDof_0[4]  = {dim, 0, 1, 0};
   PetscInt       numDof_1[6]  = {dim, 0, 0, 1, 0, 0};
   PetscInt       numDof_2[8]  = {dim, 0, 0, 0, 1, 0, 0, 0};
-  const char    *bcLabel      = "marker";
-  PetscInt       markers[1]   = {1};
-  PetscInt      *numDof;
+  PetscInt      *numDof       = PETSC_NULL;
+  PetscInt       bcFields[1]  = {0};
+  IS             bcPoints[1]  = {PETSC_NULL};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -260,7 +296,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
   }
-  ierr = DMMeshCreateSection(dm, dim, 2, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
+  ierr = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(dm, dim, 2, numDof, 1, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

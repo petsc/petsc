@@ -176,6 +176,18 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionAddDof"
+PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDof)
+{
+  PetscFunctionBegin;
+  if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
+  }
+  s->atlasDof[point - s->atlasLayout.pStart] += numDof;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldDof"
 PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
@@ -228,6 +240,20 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
   if (numDof) {
     ierr = PetscSectionCheckConstraints(s);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(s->bc, point, numDof);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionAddConstraintDof"
+PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (numDof) {
+    ierr = PetscSectionCheckConstraints(s);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(s->bc, point, numDof);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
