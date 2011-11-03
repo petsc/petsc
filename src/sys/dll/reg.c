@@ -4,7 +4,6 @@
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
 #include <petscsys.h>           /*I "petscsys.h" I*/
-#include <stdarg.h>             /* Variadic functions. */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListGetPathAndFunction"
@@ -642,7 +641,7 @@ struct _n_PetscOpFList {
   char        *op;                /* op name */
   PetscInt    numArgs;            /* number of arguments to the operation */
   char        **argTypes;         /* list of argument types */
-  void        (*routine)(void);   /* the routine */
+  PetscOpF    routine;            /* the routine */
   char        *url;               /* url naming the link library and the routine */
   char        *path;              /* path of link library containing routine */
   char        *name;              /* routine name in dynamic library */
@@ -661,16 +660,16 @@ static PetscOpFList   opallhead = 0;
    PetscOfFListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
-     Not Collective
+   Formally collective on comm.
 
    Input Parameters:
-+  comm    - processors adding the op
-.  fl      - list of known ops
-.  url     - routine locator  (optional, if not using dynamic libraries and a nonempty fnc)
-.  fnc     - function pointer (optional, if using dynamic libraries and a nonempty url)
-.  op      - operation name
-.  numArgs - number of op arguments
--  ...     - list of argument type names (const char*)
++  comm     - processors adding the op
+.  fl       - list of known ops
+.  url      - routine locator  (optional, if not using dynamic libraries and a nonempty fnc)
+.  fnc      - function pointer (optional, if using dynamic libraries and a nonempty url)
+.  op       - operation name
+.  numArgs  - number of op arguments
+-  argTypes - list of argument type names (const char*)
 
    Notes:
    To remove a registered routine, pass in a PETSC_NULL url and fnc().
@@ -684,14 +683,12 @@ static PetscOpFList   opallhead = 0;
 
 .seealso: PetscOpFListDestroy(),PetscOpFList,  PetscFListAdd(), PetscFList
 @*/
-PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],void (*fnc)(void),const char op[], PetscInt numArgs, ...)
+PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscOpF fnc,const char op[], PetscInt numArgs, char* argTypes[])
 {
   PetscOpFList   entry,e,ne;
   PetscErrorCode ierr;
   char           *fpath,*fname;
   PetscInt       i;
-  const char     *argType;
-  va_list        ap;
 
   PetscFunctionBegin;
   if (!*fl) {
@@ -702,6 +699,13 @@ PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     entry->path    = fpath;
     entry->name    = fname;
     entry->routine = fnc;
+    entry->numArgs = numArgs;
+    if(numArgs) {
+      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
+      for(i = 0; i < numArgs; ++i) {
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
+      }
+    }
     entry->next    = 0;
     *fl = entry;
 
@@ -728,16 +732,10 @@ PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
         match = PETSC_FALSE;
       if(!match) goto next;
       if(numArgs) {
-        va_start(ap,numArgs);
         for(i = 0; i < numArgs; ++i) {
-          argType = va_arg(ap,const char*);
-          ierr = PetscStrcmp(argType, entry->argTypes[i], &match);  CHKERRQ(ierr);
-          if(!match) {
-            va_end(ap);
-            goto next;
-          }
+          ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
+          if(!match) goto next;
         }
-        va_end(ap);
       }
       if(!url && !fnc) {
         /* remove this record */
@@ -772,13 +770,10 @@ PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     ierr           = PetscStrallocpy(op,&entry->op);                    CHKERRQ(ierr);
     entry->numArgs = numArgs;
     if(numArgs) {
-      va_start(ap,numArgs);
       ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
       for(i = 0; i < numArgs; ++i) {
-        argType = va_arg(ap,const char*);
-        ierr = PetscStrallocpy(argType, &(entry->argTypes[i]));         CHKERRQ(ierr);
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
       }
-      va_end(ap);
     }
     ierr = PetscStrallocpy(url, &(entry->url));                         CHKERRQ(ierr);
     ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);   CHKERRQ(ierr);
@@ -874,13 +869,14 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 #define __FUNCT__ "PetscOpFListFind"
 /*@C
     PetscOpFListFind - Given a name, finds the matching op routine.
+    Formally collective on comm.
 
     Input Parameters:
-+   comm    - processes looking for the op
-.   fl      - pointer to list of known ops
-.   op      - operation name
-.   numArgs - number of op arguments
--   ...     - list of argument type names (const char*)
++   comm     - processes looking for the op
+.   fl       - pointer to list of known ops
+.   op       - operation name
+.   numArgs  - number of op arguments
+-   argTypes - list of argument type names 
 
 
     Output Parameters:
@@ -890,14 +886,12 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 
 .seealso: PetscOpFListAdd(), PetscOpFList
 @*/
-PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,void (**r)(void), const char* op, PetscInt numArgs, ...)
+PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscOpF *r, const char* op, PetscInt numArgs, char* argTypes[])
 {
   PetscOpFList   entry;
   PetscErrorCode ierr;
   PetscBool      match;
-  const char     *argType;
   PetscInt       i;
-  va_list        ap;
  
   PetscFunctionBegin;
   PetscValidPointer(r,3);
@@ -913,16 +907,10 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,void (**r)(void)
       match = PETSC_FALSE;
     if(!match) goto next;
     if(numArgs) {
-      va_start(ap,numArgs);
       for(i = 0; i < numArgs; ++i) {
-        argType = va_arg(ap,const char*);
-        ierr = PetscStrcmp(argType, entry->argTypes[i], &match);  CHKERRQ(ierr);
-        if(!match) {
-          va_end(ap);
-          goto next;
-        }
+        ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
+        if(!match) goto next;
       }
-      va_end(ap);
     }
     next: entry = entry->next;
   }
@@ -953,9 +941,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,void (**r)(void)
 
    Input Parameters:
 +  list   - the list of functions
--  viewer - ASCII viewer
-
-   Level: developer
+-  viewer - ASCII viewer   Level: developer
 
 .seealso: PetscOpFListAdd(), PetscOpFList
 @*/
