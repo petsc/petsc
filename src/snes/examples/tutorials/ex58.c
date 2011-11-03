@@ -3,7 +3,7 @@
 
 static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
  It solves a system of nonlinear equations in mixed\n\
-complementarity form using semismooth newton algorithm.This example is based on a\n\
+complementarity form.This example is based on a\n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and\n\
 boundary values along the edges of the domain, the objective is to find the\n\
 surface with the minimal area that satisfies the boundary conditions.\n\

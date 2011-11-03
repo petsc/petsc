@@ -312,7 +312,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
 .  -snes_max_it <max_it> - maximum number of iterations
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
-.  -snes_max_fail <max_fail> - maximum number of failures
+.  -snes_max_fail <max_fail> - maximum number of line search failures allowed before stopping, default is none
 .  -snes_max_linear_solve_fail - number of linear solver failures before SNESSolve() stops
 .  -snes_lag_preconditioner <lag> - how often preconditioner is rebuilt (use -1 to never rebuild)
 .  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)

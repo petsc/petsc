@@ -261,7 +261,7 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
     ierr  = VecWAXPY(w,-lambda,y,x);CHKERRQ(ierr);
     if (snes->nfuncs >= snes->max_funcs) {
       ierr = PetscInfo1(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count);CHKERRQ(ierr);
-      ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+      ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)lambda,(double)initslope);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
