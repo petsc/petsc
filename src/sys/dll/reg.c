@@ -655,9 +655,9 @@ struct _n_PetscOpFList {
 static PetscOpFList   opallhead = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOfFListAdd"
+#define __FUNCT__ "PetscOpFListAdd"
 /*@C
-   PetscOfFListAdd - Given a routine and a string id, saves that routine in the
+   PetscOpFListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
    Formally collective on comm.
@@ -683,7 +683,7 @@ static PetscOpFList   opallhead = 0;
 
 .seealso: PetscOpFListDestroy(),PetscOpFList,  PetscFListAdd(), PetscFList
 @*/
-PetscErrorCode  PetscOfFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscOpF fnc,const char op[], PetscInt numArgs, char* argTypes[])
+PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscOpF fnc,const char op[], PetscInt numArgs, char* argTypes[])
 {
   PetscOpFList   entry,e,ne;
   PetscErrorCode ierr;
