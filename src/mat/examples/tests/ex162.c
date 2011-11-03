@@ -6,9 +6,9 @@ static char help[] = "Test MatMatMult dual dispatch.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
   Mat            A /*sparse*/, B /* dense */, C;
-  PetscInt       I,J,m,n;
+  PetscInt       i,j,m,n;
   PetscErrorCode ierr;
-  MatScalar      one=1.0,val;
+  MatScalar      val;
 
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -17,10 +17,10 @@ int main(int argc,char **argv) {
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,4,4);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  I=0; J=0; val=1.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=1; J=3; val=2.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=2; J=2; val=3.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=3; J=0; val=4.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=0; j=0; val=1.0; ierr = MatSetValues(A,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=1; j=3; val=2.0; ierr = MatSetValues(A,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=2; j=2; val=3.0; ierr = MatSetValues(A,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=3; j=0; val=4.0; ierr = MatSetValues(A,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
@@ -32,10 +32,10 @@ int main(int argc,char **argv) {
   ierr = MatSetSizes(B,4,4,4,4);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
-  I=0; J=0; val=1.0; ierr = MatSetValues(B,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=1; J=3; val=2.0; ierr = MatSetValues(B,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=2; J=2; val=3.0; ierr = MatSetValues(B,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=3; J=0; val=4.0; ierr = MatSetValues(B,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=0; j=0; val=1.0; ierr = MatSetValues(B,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=1; j=3; val=2.0; ierr = MatSetValues(B,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=2; j=2; val=3.0; ierr = MatSetValues(B,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
+  i=3; j=0; val=4.0; ierr = MatSetValues(B,1,&i,1,&j,&val,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);

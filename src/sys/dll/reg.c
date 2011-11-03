@@ -733,7 +733,7 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
       if(!match) goto next;
       if(numArgs) {
         for(i = 0; i < numArgs; ++i) {
-          ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
+          ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);  CHKERRQ(ierr);
           if(!match) goto next;
         }
       }
@@ -912,6 +912,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscOpF *r, con
         if(!match) goto next;
       }
     }
+    break;
     next: entry = entry->next;
   }
   if (match) {
