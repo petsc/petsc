@@ -1,0 +1,63 @@
+  0 SNES VI Function norm 9.462208808922e-02 Active lower constraints 7235/7417 upper constraints 0/0 Percent of total 0.768945 Percent of bounded inf
+    0 KSP Residual norm 2.45582 
+    1 KSP Residual norm 0.00128243 
+    2 KSP Residual norm 3.86819e-06 
+  1 SNES VI Function norm 6.531808241410e-02 Active lower constraints 1474/4481 upper constraints 0/0 Percent of total 0.156659 Percent of bounded inf
+    0 KSP Residual norm 1.79388 
+    1 KSP Residual norm 0.00175002 
+    2 KSP Residual norm 1.06483e-05 
+  2 SNES VI Function norm 6.332326070491e-02 Active lower constraints 510/3673 upper constraints 0/0 Percent of total 0.0542034 Percent of bounded inf
+    0 KSP Residual norm 1.69715 
+    1 KSP Residual norm 0.00149716 
+    2 KSP Residual norm 1.506e-05 
+  3 SNES VI Function norm 6.080358988026e-02 Active lower constraints 349/2840 upper constraints 0/0 Percent of total 0.0370921 Percent of bounded inf
+    0 KSP Residual norm 2.09969 
+    1 KSP Residual norm 0.00184515 
+    2 KSP Residual norm 1.99648e-05 
+  4 SNES VI Function norm 5.720975715130e-02 Active lower constraints 256/1980 upper constraints 0/0 Percent of total 0.027208 Percent of bounded inf
+    0 KSP Residual norm 2.8578 
+    1 KSP Residual norm 0.00226013 
+    2 KSP Residual norm 2.2958e-05 
+  5 SNES VI Function norm 5.648367529895e-02 Active lower constraints 195/1120 upper constraints 0/0 Percent of total 0.0207248 Percent of bounded inf
+    0 KSP Residual norm 3.51446 
+    1 KSP Residual norm 0.00232593 
+    2 KSP Residual norm 2.25336e-05 
+  6 SNES VI Function norm 4.811827524269e-02 Active lower constraints 192/598 upper constraints 0/0 Percent of total 0.020406 Percent of bounded inf
+    0 KSP Residual norm 3.84745 
+    1 KSP Residual norm 0.00209297 
+    2 KSP Residual norm 1.91803e-05 
+  7 SNES VI Function norm 4.473481059749e-02 Active lower constraints 187/279 upper constraints 0/0 Percent of total 0.0198746 Percent of bounded inf
+    0 KSP Residual norm 3.90632 
+    1 KSP Residual norm 0.00172072 
+    2 KSP Residual norm 1.33253e-05 
+  8 SNES VI Function norm 3.430629141583e-02 Active lower constraints 185/185 upper constraints 0/0 Percent of total 0.019662 Percent of bounded inf
+    0 KSP Residual norm 3.98464 
+    1 KSP Residual norm 0.000790711 
+    2 KSP Residual norm 5.775e-06 
+  9 SNES VI Function norm 2.377475860294e-02 Active lower constraints 188/188 upper constraints 0/0 Percent of total 0.0199809 Percent of bounded inf
+    0 KSP Residual norm 1.27656 
+    1 KSP Residual norm 0.000115896 
+    2 KSP Residual norm 3.35269e-06 
+ 10 SNES VI Function norm 3.130744140105e-02 Active lower constraints 187/187 upper constraints 0/0 Percent of total 0.0198746 Percent of bounded inf
+    0 KSP Residual norm 0.390352 
+    1 KSP Residual norm 5.92961e-05 
+    2 KSP Residual norm 6.8412e-07 
+ 11 SNES VI Function norm 1.227008978633e-03 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded inf
+    0 KSP Residual norm 0.0282744 
+    1 KSP Residual norm 1.05237e-05 
+    2 KSP Residual norm 1.13023e-07 
+ 12 SNES VI Function norm 1.654855016822e-05 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded inf
+    0 KSP Residual norm 0.000332914 
+    1 KSP Residual norm 1.92261e-07 
+    2 KSP Residual norm 1.13265e-09 
+ 13 SNES VI Function norm 5.000365578806e-09 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded inf
+    0 KSP Residual norm 6.09034e-08 
+    1 KSP Residual norm 8.268e-11 
+    2 KSP Residual norm < 1.e-11
+ 14 SNES VI Function norm 2.005292575317e-13 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded inf
+    0 KSP Residual norm < 1.e-11
+    1 KSP Residual norm < 1.e-11
+    2 KSP Residual norm < 1.e-11
+    3 KSP Residual norm < 1.e-11
+ 15 SNES VI Function norm 2.692515736733e-15 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded inf
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
