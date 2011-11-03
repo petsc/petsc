@@ -2,7 +2,7 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
 /*
    u_t = uxx
    0 < x < 1;
-   At t=0: u(x) = exp(c*r*r*r), if r=sqrt((x-.5)*(x-.5)) < .125
+   At t=0: u(x) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5)) < .125
            u(x) = 0.0           if r >= .125
 
 

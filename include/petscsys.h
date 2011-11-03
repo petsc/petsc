@@ -1258,6 +1258,16 @@ typedef struct _p_PetscObject* PetscObject;
 S*/
 typedef struct _n_PetscFList *PetscFList;
 
+/*S
+     PetscOpFList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries, 
+                    accessed by string op name together with string argument types.
+
+   Level: advanced
+
+.seealso:  PetscOpFListAdd(), PetscOpFListFind(), PetscOpFListDestroy()
+S*/
+typedef struct _n_PetscOpFList *PetscOpFList;
+
 /*E
   PetscFileMode - Access mode for a file.
 
