@@ -8311,6 +8311,9 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
+
+extern PetscErrorCode MatQueryOp(MPI_Comm comm, void (**function)(void), const char op[], PetscInt numArgs, ...);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult"
 /*@
@@ -8378,16 +8381,20 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",((PetscObject)B)->type_name);
     mult = fB;
   } else { 
-    /* dispatch based on the type of A and B */
-    char  multname[256];
-    ierr = PetscStrcpy(multname,"MatMatMult_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
-    ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
-    if (!mult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
-  } 
+    /* dual dispatch using MatQueryOp */
+    ierr = MatQueryOp(((PetscObject)A)->comm, (PetscOpF*)(&mult), "MatMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name); CHKERRQ(ierr);
+    if(!mult){
+      /* dispatch based on the type of A and B from their PetscObject's PetscFLists. */
+      char  multname[256];
+      ierr = PetscStrcpy(multname,"MatMatMult_");CHKERRQ(ierr);
+      ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
+      ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
+      if (!mult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
+    } 
+  }
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
   ierr = (*mult)(A,B,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);   

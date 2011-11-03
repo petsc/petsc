@@ -2202,9 +2202,13 @@ PetscErrorCode  MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
+#if 0
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C",
                                      "MatMatMult_SeqAIJ_SeqDense",
                                       MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+#endif
+  ierr = MatRegisterOp(((PetscObject)B)->comm, PETSC_NULL,(PetscOpF)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE); CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",
                                      "MatMatMultSymbolic_SeqAIJ_SeqDense",
                                       MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);

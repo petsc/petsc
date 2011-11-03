@@ -185,6 +185,10 @@ struct _MatOps {
     in include/petscmat.h and include/finclude/petscmat.h
 */
 
+#include <petscsys.h>
+extern PetscErrorCode  MatRegisterOp(MPI_Comm, const char[], PetscOpF, const char[], PetscInt, ...);
+extern PetscErrorCode  MatQueryOp(MPI_Comm, PetscOpF*, const char[], PetscInt, ...);
+
 typedef struct _p_MatBaseName* MatBaseName;
 struct _p_MatBaseName {
   char        *bname,*sname,*mname;
