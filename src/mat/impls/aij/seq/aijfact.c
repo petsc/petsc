@@ -291,11 +291,11 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscBool          olddatastruct=PETSC_FALSE;
 
   PetscFunctionBegin; 
   /* Uncomment the oldatastruct part only while testing new data structure for MatSolve() */
   /*
+  PetscBool          olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
