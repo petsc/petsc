@@ -1,4 +1,4 @@
-static char help[] = "Test MatMultTransposeColoring for AIJ matrices.\n\n";
+static char help[] = "Test MatTransposeColoring for SeqAIJ matrices.\n\n";
 
 #include <petscmat.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
@@ -6,10 +6,10 @@ static char help[] = "Test MatMultTransposeColoring for AIJ matrices.\n\n";
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
-  Mat            A,B,C,C_dense,C_sparse,Bt_dense;
-  PetscInt       I,J,m,n;
-  PetscErrorCode ierr;
-  MatScalar      one=1.0,val;
+  Mat                   A,B,C,C_dense,C_sparse,Bt_dense;
+  PetscInt              row,col,m,n;
+  PetscErrorCode        ierr;
+  MatScalar             one=1.0,val;
   MatTransposeColoring  matcoloring = 0;
   ISColoring            iscoloring;
 
@@ -18,10 +18,10 @@ int main(int argc,char **argv) {
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,4,4);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  I=0; J=0; val=1.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=1; J=3; val=2.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=2; J=2; val=3.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
-  I=3; J=0; val=4.0; ierr = MatSetValues(A,1,&I,1,&J,&val,ADD_VALUES);CHKERRQ(ierr);
+  row=0; col=0; val=1.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row=1; col=3; val=2.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row=2; col=2; val=3.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row=3; col=0; val=4.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
@@ -32,12 +32,12 @@ int main(int argc,char **argv) {
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,2,4,2,4);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  I=0; J=0; ierr = MatSetValues(B,1,&I,1,&J,&one,ADD_VALUES);CHKERRQ(ierr);
-  I=0; J=1; ierr = MatSetValues(B,1,&I,1,&J,&one,ADD_VALUES);CHKERRQ(ierr);
+  row=0; col=0; ierr = MatSetValues(B,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row=0; col=1; ierr = MatSetValues(B,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
 
-  I=1; J=1; ierr = MatSetValues(B,1,&I,1,&J,&one,ADD_VALUES);CHKERRQ(ierr);
-  I=1; J=2; ierr = MatSetValues(B,1,&I,1,&J,&one,ADD_VALUES);CHKERRQ(ierr);
-  I=1; J=3; ierr = MatSetValues(B,1,&I,1,&J,&one,ADD_VALUES);CHKERRQ(ierr);
+  row=1; col=1; ierr = MatSetValues(B,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row=1; col=2; ierr = MatSetValues(B,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row=1; col=3; ierr = MatSetValues(B,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"B_");CHKERRQ(ierr);
@@ -53,9 +53,6 @@ int main(int argc,char **argv) {
   /* Create MatTransposeColoring from symbolic C=A*B^T */
   ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
   ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
-  //ierr = MatFDColoringSetFromOptions(matcoloring);CHKERRQ(ierr);
-  //ierr = MatFDColoringView((MatFDColoring)matcoloring,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  //ierr = MatFDColoringView(matcoloring,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
   /* Create Bt_dense */
