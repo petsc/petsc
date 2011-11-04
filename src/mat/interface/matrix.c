@@ -21,7 +21,7 @@ PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load,
 PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent  MAT_TransposeColoringCreate;
 PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
-PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
+PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
 PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
@@ -8311,6 +8311,169 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatRARt"
+/*@
+   MatRARt - Creates the matrix product C = R * A * R^T
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+.  R - the projection matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/nnz(A) 
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  
+
+   Level: intermediate
+
+.seealso: MatRARtSymbolic(), MatRARtNumeric(), MatMatMult()
+@*/
+PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(R,MAT_CLASSID,2);
+  PetscValidType(R,2);
+  ierr = MatPreallocated(R);CHKERRQ(ierr);
+  if (!R->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (R->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (R->cmap->N!=A->rmap->N) SETERRQ2(((PetscObject)R)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->cmap->N,A->rmap->N);
+  if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
+
+  if (!A->ops->rart) {
+    const MatType mattype;
+    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+    SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support RARt",mattype);
+  }
+  ierr = PetscLogEventBegin(MAT_RARt,A,R,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->rart)(A,R,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_RARt,A,R,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtNumeric"
+/*@
+   MatRARtNumeric - Computes the matrix product C = R * A * R^T
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+-  R - the projection matrix
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C must have been created by calling MatRARtSymbolic and must be destroyed by
+   the user using MatDeatroy().
+
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  C will be of type MATAIJ.
+
+   Level: intermediate
+
+.seealso: MatRARt(), MatRARtSymbolic(), MatMatMultNumeric()
+@*/
+PetscErrorCode  MatRARtNumeric(Mat A,Mat R,Mat C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(R,MAT_CLASSID,2);
+  PetscValidType(R,2);
+  ierr = MatPreallocated(R);CHKERRQ(ierr);
+  if (!R->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (R->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(C,MAT_CLASSID,3);
+  PetscValidType(C,3);
+  ierr = MatPreallocated(C);CHKERRQ(ierr);
+  if (C->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (R->rmap->N!=C->rmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->rmap->N,C->rmap->N);
+  if (R->cmap->N!=A->rmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->cmap->N,A->rmap->N);
+  if (A->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->rmap->N,A->cmap->N);
+  if (R->rmap->N!=C->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->rmap->N,C->cmap->N);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->rartnumeric)(A,R,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtSymbolic"
+/*@
+   MatRARtSymbolic - Creates the (i,j) structure of the matrix product C = R * A * R^T
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+-  R - the projection matrix
+
+   Output Parameters:
+.  C - the (i,j) structure of the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.  The product is computed using
+   this (i,j) structure by calling MatRARtNumeric().
+
+   Level: intermediate
+
+.seealso: MatRARt(), MatRARtNumeric(), MatMatMultSymbolic()
+@*/
+PetscErrorCode  MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (fill <1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  PetscValidHeaderSpecific(R,MAT_CLASSID,2);
+  PetscValidType(R,2);
+  ierr = MatPreallocated(R);CHKERRQ(ierr);
+  if (!R->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (R->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+
+  if (R->cmap->N!=A->rmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->cmap->N,A->rmap->N);
+  if (A->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->rmap->N,A->cmap->N);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->rartsymbolic)(A,R,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr); 
+
+  ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 extern PetscErrorCode MatQueryOp(MPI_Comm comm, void (**function)(void), const char op[], PetscInt numArgs, ...);
 

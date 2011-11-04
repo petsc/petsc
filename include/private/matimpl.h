@@ -179,6 +179,9 @@ struct _MatOps {
   /*134*/
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
   PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring,Mat,Mat);
+  PetscErrorCode (*rart)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
+  PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

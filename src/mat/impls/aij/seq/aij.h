@@ -206,10 +206,13 @@ extern PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 extern PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 
 extern PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
@@ -243,6 +246,7 @@ extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*
 extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
 extern PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 extern PetscErrorCode  MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatRARt_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
 extern PetscErrorCode  MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);

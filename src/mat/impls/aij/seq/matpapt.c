@@ -248,3 +248,99 @@ PetscErrorCode MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   ierr = PetscLogEventEnd(MAT_Applypapt,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*--------------------------------------------------*/
+/*
+  Defines projective product routines where A is a SeqAIJ matrix
+          C = R * A * R^T
+*/
+#if defined(MV)
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtSymbolic_SeqAIJ"
+PetscErrorCode MatRARtSymbolic_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!R->ops->rartsymbolic_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and R=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+  ierr = (*R->ops->rartsymbolic_seqaij)(A,R,fill,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtNumeric_SeqAIJ"
+PetscErrorCode MatRARtNumeric_SeqAIJ(Mat A,Mat R,Mat C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!R->ops->rartnumeric_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and R=%s",((PetscObject)A)->type_name,((PetscObject)R)->type_name);
+  ierr = (*R->ops->rartnumeric_seqaij)(A,R,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode     ierr;
+  Mat                P;
+  PetscInt           *rti,*rtj;
+  Mat_SeqAIJ         *c;
+
+  PetscFunctionBegin;
+  printf("MatRARtSymbolic_SeqAIJ_SeqAIJ ...\n");
+  /* create symbolic P=Rt */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,PETSC_NULL,&P);CHKERRQ(ierr);
+
+  /* get symbolic C=Pt*A*P */
+  ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
+#if defined(NEW)
+  /* create a supporting struct for reuse P=Rt */
+  ierr = PetscNew(Mat_MatMatMultTrans,&multtrans);CHKERRQ(ierr);
+
+  /* attach the supporting struct to C */
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,multtrans);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultTrans);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultTrans",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
+  multtrans->usecoloring = PETSC_FALSE;
+  multtrans->destroy = (*C)->ops->destroy;
+  (*C)->ops->destroy = MatDestroy_SeqAIJ_MatMatMultTrans;
+#endif
+  /* clean up */
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRARtNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  printf("MatRARtNumeric_SeqAIJ_SeqAIJ ...\n");
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatRARt_SeqAIJ_SeqAIJ"
+PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatRARtNumeric_SeqAIJ_SeqAIJ(A,R,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
