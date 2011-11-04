@@ -638,15 +638,15 @@ PetscErrorCode  PetscFListConcat(const char path[],const char name[],char fullna
 
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscOpFList {
-  char        *op;                /* op name */
-  PetscInt    numArgs;            /* number of arguments to the operation */
-  char        **argTypes;         /* list of argument types */
-  PetscOpF    routine;            /* the routine */
-  char        *url;               /* url naming the link library and the routine */
-  char        *path;              /* path of link library containing routine */
-  char        *name;              /* routine name in dynamic library */
-  PetscOpFList next;              /* next pointer */
-  PetscOpFList next_list;         /* used to maintain list of all lists for freeing */
+  char                 *op;                /* op name */
+  PetscInt             numArgs;            /* number of arguments to the operation */
+  char                 **argTypes;         /* list of argument types */
+  PetscVoidFunction    routine;            /* the routine */
+  char                 *url;               /* url naming the link library and the routine */
+  char                 *path;              /* path of link library containing routine */
+  char                 *name;              /* routine name in dynamic library */
+  PetscOpFList         next;              /* next pointer */
+  PetscOpFList         next_list;         /* used to maintain list of all lists for freeing */
 };
 
 /*
@@ -683,7 +683,7 @@ static PetscOpFList   opallhead = 0;
 
 .seealso: PetscOpFListDestroy(),PetscOpFList,  PetscFListAdd(), PetscFList
 @*/
-PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscOpF fnc,const char op[], PetscInt numArgs, char* argTypes[])
+PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscVoidFunction fnc,const char op[], PetscInt numArgs, char* argTypes[])
 {
   PetscOpFList   entry,e,ne;
   PetscErrorCode ierr;
@@ -886,7 +886,7 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 
 .seealso: PetscOpFListAdd(), PetscOpFList
 @*/
-PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscOpF *r, const char* op, PetscInt numArgs, char* argTypes[])
+PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunction *r, const char* op, PetscInt numArgs, char* argTypes[])
 {
   PetscOpFList   entry;
   PetscErrorCode ierr;

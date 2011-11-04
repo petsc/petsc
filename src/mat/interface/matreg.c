@@ -212,7 +212,7 @@ PetscOpFList MatOpList = 0;
 
   Level: advanced
 @*/
-PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscOpF function, const char op[], PetscInt numArgs, ...) {
+PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction function, const char op[], PetscInt numArgs, ...) {
   PetscErrorCode ierr;
   va_list ap;
   PetscInt i;
@@ -255,7 +255,7 @@ PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscOpF function
 
   Level: advanced
 @*/
-PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscOpF* function, const char op[], PetscInt numArgs, ...) {
+PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscVoidFunction* function, const char op[], PetscInt numArgs, ...) {
   PetscErrorCode ierr;
   va_list ap;
   PetscInt i;

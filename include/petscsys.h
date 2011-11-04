@@ -1513,10 +1513,9 @@ extern PetscErrorCode  PetscFListGet(PetscFList,char ***,int*);
     argument type names with function pointers or in dynamic link libraries that will be loaded 
     as needed.  Search on the op name and argument type names.
 */
-typedef void (*PetscOpF)(void);
-extern PetscErrorCode  PetscOpFListAdd(MPI_Comm, PetscOpFList*,const char[],PetscOpF, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListAdd(MPI_Comm, PetscOpFList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
 extern PetscErrorCode  PetscOpFListDestroy(PetscOpFList*);
-extern PetscErrorCode  PetscOpFListFind(MPI_Comm, PetscOpFList, PetscOpF*, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListFind(MPI_Comm, PetscOpFList, PetscVoidFunction*, const char[], PetscInt, char*[]);
 extern PetscErrorCode  PetscOpFListView(PetscOpFList,PetscViewer);
 /*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
