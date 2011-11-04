@@ -1,7 +1,8 @@
 static char help[] = "Test MatMatMult dual dispatch.\n\n";
 
 #include <petscmat.h>
-
+#include <private/matimpl.h>                  /* Need MatOpRegister for this test. */
+#include <../src/mat/impls/dense/seq/dense.h> /* Need MatMatMult_SeqAIJ_SeqDense for this test. */
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
@@ -41,6 +42,11 @@ int main(int argc,char **argv) {
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "B: %d,%d\n",m,n);
 
+  /* Register the multiplication routine. */
+  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL,(PetscVoidFunction)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE); CHKERRQ(ierr);
+
+  /* Remove this routine from B's FList to prevent double dispatch from that FList: do this by passing in a null url and function pointer together with the type- (and language-) specific op name. */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C", PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   /* C = A*B */
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
