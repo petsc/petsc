@@ -234,7 +234,7 @@ def version():
         if micro > 0:
             v += ".%d" % micro
         if patch > 0:
-            v += ".post%d" % patch
+            v += ".%d" % patch
     else:
         v = "%d.%d.dev%d" % (major, minor+1, 0)
     return v
