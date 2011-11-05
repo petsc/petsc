@@ -243,9 +243,9 @@ def tarball():
     VERSION = version()
     if '.dev' in VERSION:
         return None
-    if '.post' not in VERSION:
-        VERSION = VERSION + '.post0'
-    VERSION = VERSION.replace('.post', '-p')
+    bits = VERSION.split('.')
+    if len(bits) == 2: bits.append('0')
+    VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
             'petsc-lite-%s.tar.gz' % VERSION)
 
