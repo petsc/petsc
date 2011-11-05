@@ -260,7 +260,7 @@ runex10_4:
 
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
-	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex12_1.tmp 2>&1; \
+	   -ts_monitor -ksp_monitor_short > ex12_1.tmp 2>&1; \
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || echo  ${PWD} "\nPossible problem with ex12_1, diffs above \n========================================="; \
 	   ${RM} -f ex12_1.tmp
 
