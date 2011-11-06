@@ -4502,9 +4502,14 @@ user must create a MATSHELL matrix. Again, note the similarity
 to SNESSetJacobian().
 \end{itemize}
 
-Similar to SNESDefaultComputeJacobianColor() is the
-routine TSDefaultComputeJacobianColor() and TSDefaultComputeJacobian() that 
-corresponds to SNESDefaultComputeJacobian().
+To configure TS to use coloring, create a MatFDColoring, register the function
+\begin{tabbing}
+  MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);
+\end{tabbing}
+obtain the snes using TSGetSNES(), and set the Jacobian routine
+\begin{tabbing}
+  SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);
+\end{tabbing}
 \sindex{coloring with TS}
 
 \subsection{Solving Differential Algebraic Equations}

@@ -25,8 +25,7 @@
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
-          TSDefaultComputeJacobianColor(), MatFDColoringCreate(),
-          MatFDColoringSetFunction()
+          MatFDColoringCreate(), MatFDColoringSetFunction()
 
 @*/
 

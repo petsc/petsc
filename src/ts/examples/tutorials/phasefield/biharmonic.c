@@ -138,13 +138,16 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #if defined(f00)
-   ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-
-  ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&ctx);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  {
+    SNES snes;
+    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  }
 #endif
 
   if (vi) {

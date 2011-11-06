@@ -35,7 +35,8 @@ typedef struct {PetscReal kappa;PetscBool allencahn;PetscDrawViewPorts *ports;} 
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
+  TS                     ts;                   /* time integrator */
+  SNES                   snes;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
   PetscInt               steps,Mx, maxsteps = 1000000;
@@ -100,10 +101,10 @@ int main(int argc,char **argv)
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&ctx);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
