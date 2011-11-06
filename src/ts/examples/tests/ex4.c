@@ -85,59 +85,6 @@ int main(int argc,char **argv)
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,&data,PETSC_NULL);CHKERRQ(ierr);
-
-  /* set user provided RHSFunction and RHSJacobian */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&data);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
-  if (!flg){
-    /* ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); */
-    ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
-    if (fd_jacobian_coloring){ /* Use finite differences with coloring */
-      /* Get data structure of J */
-      PetscBool  pc_diagonal;
-      PetscBool  view_J;
-      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
-      if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
-        PetscInt rstart,rend,i;
-        PetscScalar  zero=0.0;
-        ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
-        for (i=rstart; i<rend; i++){
-          ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
-        }
-        ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      } else { /* the preconditioner of J has same data structure as J */
-        ierr = TSDefaultComputeJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr);
-      }
-
-      /* create coloring context */
-      ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&data);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-
-      ierr = PetscOptionsHasName(PETSC_NULL,"-view_J",&view_J);CHKERRQ(ierr);
-      if (view_J){ 
-        ierr = PetscPrintf(PETSC_COMM_SELF,"J computed from TSDefaultComputeJacobianColor():\n");CHKERRQ(ierr);
-        ierr = TSDefaultComputeJacobianColor(ts,0.0,global,&J,&J,&J_structure,matfdcoloring);CHKERRQ(ierr);
-        ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      }
-    } else { /* Use finite differences (slow) */
-      ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
-    }
-  }
-
-  /* Use SUNDIALS */
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSetType(ts,TSSUNDIALS);CHKERRQ(ierr);
 #else
@@ -149,6 +96,51 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,time_steps,ftime_original);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
+  /* set user provided RHSFunction and RHSJacobian */
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&data);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
+  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
+  if (!flg){
+    ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
+  } else {
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
+    if (fd_jacobian_coloring){ /* Use finite differences with coloring */
+      /* Get data structure of J */
+      PetscBool  pc_diagonal;
+      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
+      if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
+        PetscInt rstart,rend,i;
+        PetscScalar  zero=0.0;
+        ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
+        for (i=rstart; i<rend; i++){
+          ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      } else {
+        /* Fill the structure using the expensive SNESDefaultComputeJacobian. Temporarily set up the TS so we can call this function */
+        ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+        ierr = TSSetUp(ts);CHKERRQ(ierr);
+        ierr = SNESDefaultComputeJacobian(snes,x,&J,&J,&J_structure,ts);CHKERRQ(ierr);
+      }
+
+      /* create coloring context */
+      ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    } else { /* Use finite differences (slow) */
+      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */

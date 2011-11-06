@@ -627,6 +627,9 @@ extern PetscErrorCode  MatMatMultNumeric(Mat,Mat,Mat);
 extern PetscErrorCode  MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatRARt(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtNumeric(Mat,Mat,Mat);
 
 extern PetscErrorCode  MatTransposeMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatTransposetMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
@@ -1305,7 +1308,6 @@ extern PetscErrorCode  MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**
 extern PetscErrorCode  MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 extern PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring);
 extern PetscErrorCode  MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
-extern PetscErrorCode  MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 extern PetscErrorCode  MatFDColoringSetF(MatFDColoring,Vec);
 extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 
@@ -1601,7 +1603,16 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GETMULTIPROCBLOCK=123,
                MATOP_GETCOLUMNNORMS=125,
 	       MATOP_GET_SUBMATRICES_PARALLEL=128,
-               MATOP_SET_VALUES_BATCH=129
+               MATOP_SET_VALUES_BATCH=129,
+               MATOP_TRANSPOSEMATMULT=130,
+               MATOP_TRANSPOSEMATMULT_SYMBOLIC=131,
+               MATOP_TRANSPOSEMATMULT_NUMERIC=132,
+               MATOP_TRANSPOSECOLORING_CREATE=133,
+               MATOP_TRANSCOLORING_APPLY_SPTODEN=134,
+               MATOP_TRANSCOLORING_APPLY_DENTOSP=135,
+               MATOP_RARt=136,
+               MATOP_RARt_SYMBOLIC=137,
+               MATOP_RARt_NUMERIC=138
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);
 extern PetscErrorCode  MatShellSetOperation(Mat,MatOperation,void(*)(void));

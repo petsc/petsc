@@ -2422,7 +2422,7 @@ PetscErrorCode DMMeshPrintCellMatrix(PetscInt c, const char name[], PetscInt row
   for(int f = 0; f < rows; ++f) {
     PetscPrintf(PETSC_COMM_SELF, "  |");
     for(int g = 0; g < cols; ++g) {
-      PetscPrintf(PETSC_COMM_SELF, " %g", A[f*cols+g]);
+      PetscPrintf(PETSC_COMM_SELF, " %8.5g", A[f*cols+g]);
     }
     PetscPrintf(PETSC_COMM_SELF, " |\n");
   }

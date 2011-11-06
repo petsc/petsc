@@ -3,6 +3,7 @@
      Mechanism for register PETSc matrix types
 */
 #include <private/matimpl.h>      /*I "petscmat.h" I*/
+#include <stdarg.h> /* Variable-length arg lists. */
 
 PetscBool  MatRegisterAllCalled = PETSC_FALSE;
 
@@ -186,6 +187,97 @@ PetscErrorCode  MatRegisterBaseName(const char bname[],const char sname[],const 
   PetscFunctionReturn(0);
 }
 
+
+/*
+   Contains the list of Mat-related operations.
+*/
+PetscOpFList MatOpList = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRegisterOp"
+/*@C
+      MatRegisterOp - Registers a function via a pointer or a dynamic library url,
+                      that implements a polymorphic operation that is dispatched
+                      based on the op name and the declared arguments' type names.
+
+  Formally collective on comm.
+
+  Input Parameters:
++  comm     - processors adding the op
+.  url      - routine locator  (optional, if not using dynamic libraries and a nonempty fnc)
+.  function - function pointer (optional, if using dynamic libraries and a nonempty url)
+.  op       - operation name
+.  numArgs  - number of op arguments
+-  ...      - list of argument type names (const char*)
+
+  Level: advanced
+@*/
+PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction function, const char op[], PetscInt numArgs, ...) {
+  PetscErrorCode ierr;
+  va_list ap;
+  PetscInt i;
+  const char *argType;
+  char **argTypes = PETSC_NULL;
+  PetscFunctionBegin;
+  va_start(ap,numArgs);
+  if(numArgs) {
+    ierr = PetscMalloc(sizeof(char*)*numArgs, &argTypes); CHKERRQ(ierr);
+  }
+  for(i = 0; i < numArgs; ++i) {
+    argType = va_arg(ap,const char*);
+    ierr = PetscStrallocpy(argType, argTypes+i); CHKERRQ(ierr);
+  }
+  va_end(ap);
+  ierr = PetscOpFListAdd(comm, &MatOpList, url, function, op, numArgs, argTypes); CHKERRQ(ierr);
+  for(i = 0; i < numArgs; ++i) {
+    ierr = PetscFree(argTypes[i]); CHKERRQ(ierr);
+  }
+  ierr = PetscFree(argTypes); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatQueryOp"
+/*@C
+      MatQueryOp - Finds the function that implements a polymorphic operation that is dispatched
+                   based on the op name and the declared arguments' type names.
+
+  Formally collective on comm.
+
+  Input Parameters:
++  comm     - processors adding the op
+.  op       - operation name
+.  numArgs  - number of op arguments
+-  ...      - list of argument type names (const char*)
+
+  Output Parameters:
+.  function -- function pointer
+
+  Level: advanced
+@*/
+PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscVoidFunction* function, const char op[], PetscInt numArgs, ...) {
+  PetscErrorCode ierr;
+  va_list ap;
+  PetscInt i;
+  const char *argType;
+  char **argTypes = PETSC_NULL;
+  PetscFunctionBegin;
+  va_start(ap,numArgs);
+  if(numArgs) {
+    ierr = PetscMalloc(sizeof(char*)*numArgs, &argTypes); CHKERRQ(ierr);
+  }
+  for(i = 0; i < numArgs; ++i) {
+    argType = va_arg(ap,const char*);
+    ierr = PetscStrallocpy(argType, argTypes+i); CHKERRQ(ierr);
+  }
+  va_end(ap);
+  ierr = PetscOpFListFind(comm, MatOpList, function, op, numArgs, argTypes); CHKERRQ(ierr);
+  for(i = 0; i < numArgs; ++i) {
+    ierr = PetscFree(argTypes[i]); CHKERRQ(ierr);
+  }
+  ierr = PetscFree(argTypes); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

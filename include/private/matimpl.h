@@ -179,11 +179,18 @@ struct _MatOps {
   /*134*/
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
   PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring,Mat,Mat);
+  PetscErrorCode (*rart)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
+  PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
     in include/petscmat.h and include/finclude/petscmat.h
 */
+
+#include <petscsys.h>
+extern PetscErrorCode  MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
+extern PetscErrorCode  MatQueryOp(MPI_Comm, PetscVoidFunction*, const char[], PetscInt, ...);
 
 typedef struct _p_MatBaseName* MatBaseName;
 struct _p_MatBaseName {

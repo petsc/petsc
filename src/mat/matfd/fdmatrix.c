@@ -222,19 +222,17 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
 
    Calling sequence of (*f) function:
     For SNES:    PetscErrorCode (*f)(SNES,Vec,Vec,void*)
-    For TS:      PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*)
-    If not using SNES or TS: PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
+    If not using SNES: PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
 
    Level: advanced
 
-   Notes: This function is usually used automatically by SNES or TS (when one uses SNESSetJacobian() with the argument 
-     SNESDefaultComputeJacobianColor() or TSSetRHSJacobian() with the argument TSDefaultComputeJacobianColor()) and only needs to be used
-     by someone computing a matrix via coloring directly by calling MatFDColoringApply()
+   Notes: This function is usually used automatically by SNES (when one uses SNESSetJacobian() with the argument
+     SNESDefaultComputeJacobianColor()) and only needs to be used by someone computing a matrix via coloring directly by
+     calling MatFDColoringApply()
 
    Fortran Notes:
-    In Fortran you must call MatFDColoringSetFunction() for a coloring object to 
-  be used without SNES or TS or within the SNES solvers and MatFDColoringSetFunctionTS() if it is to be used
-  within the TS solvers.
+    In Fortran you must call MatFDColoringSetFunction() for a coloring object to
+  be used without SNES or within the SNES solvers.
 
 .keywords: Mat, Jacobian, finite differences, set, function
 
@@ -705,157 +703,3 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringApplyTS"
-/*@
-    MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
-    has been created, computes the Jacobian for a function via finite differences.
-
-   Collective on Mat, MatFDColoring, and Vec
-
-    Input Parameters:
-+   mat - location to store Jacobian
-.   coloring - coloring context created with MatFDColoringCreate()
-.   x1 - location at which Jacobian is to be computed
--   sctx - context required by function, if this is being used with the TS solver then it is TS object, otherwise it is null
-
-   Level: intermediate
-
-.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
-
-.keywords: coloring, Jacobian, finite differences
-@*/
-PetscErrorCode  MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
-{
-  PetscErrorCode (*f)(void*,PetscReal,Vec,Vec,void*)=(PetscErrorCode (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
-  PetscErrorCode ierr;
-  PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow;
-  PetscScalar    dx,*y,*xx,*w3_array;
-  PetscScalar    *vscale_array;
-  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
-  Vec            w1=coloring->w1,w2=coloring->w2,w3;
-  void           *fctx = coloring->fctx;
-  PetscBool      flg;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
-  PetscValidHeaderSpecific(x1,VEC_CLASSID,4);
-
-  ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  if (!coloring->w3) {
-    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
-  }
-  w3 = coloring->w3;
-
-  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
-  } else {
-    PetscBool  assembled;
-    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-    if (assembled) {
-      ierr = MatZeroEntries(J);CHKERRQ(ierr);
-    }
-  }
-
-  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*f)(sctx,t,x1,w1,fctx);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-
-  /* 
-      Compute all the scale factors and share with other processors
-  */
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
-  for (k=0; k<coloring->ncolors; k++) { 
-    /*
-       Loop over each column associated with color adding the 
-       perturbation to the vector w3.
-    */
-    for (l=0; l<coloring->ncolumns[k]; l++) {
-      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-      dx  = xx[col];
-      if (dx == (PetscScalar)0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
-      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
-      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
-      dx                *= epsilon;
-      vscale_array[col] = (PetscScalar)1.0/dx;
-    }
-  } 
-  vscale_array = vscale_array - start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
-  else                        vscaleforrow = coloring->columnsforrow;
-
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  /*
-      Loop over each color
-  */
-  for (k=0; k<coloring->ncolors; k++) { 
-    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
-    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
-    /*
-       Loop over each column associated with color adding the 
-       perturbation to the vector w3.
-    */
-    for (l=0; l<coloring->ncolumns[k]; l++) {
-      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-      dx  = xx[col];
-      if (dx == (PetscScalar)0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
-      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
-      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
-      dx            *= epsilon;
-      w3_array[col] += dx;
-    } 
-    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
-
-    /*
-       Evaluate function at x1 + dx (here dx is a vector of perturbations)
-    */
-    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
-
-    /*
-       Loop over rows of vector, putting results into Jacobian matrix
-    */
-    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    for (l=0; l<coloring->nrows[k]; l++) {
-      row    = coloring->rows[k][l];
-      col    = coloring->columnsforrow[k][l];
-      y[row] *= vscale_array[vscaleforrow[k][l]];
-      srow   = row + start;
-      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
-  }
-  ierr  = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  xx    = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-

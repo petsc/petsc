@@ -3169,7 +3169,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ,
        MatTransposeColoringCreate_SeqAIJ,
 /*134*/MatTransColoringApplySpToDen_SeqAIJ,
-       MatTransColoringApplyDenToSp_SeqAIJ
+       MatTransColoringApplyDenToSp_SeqAIJ,
+       MatRARt_SeqAIJ_SeqAIJ,
+       MatRARtSymbolic_SeqAIJ_SeqAIJ,
+       MatRARtNumeric_SeqAIJ_SeqAIJ
 };
 
 EXTERN_C_BEGIN
@@ -3787,6 +3790,7 @@ extern PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
 extern PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 EXTERN_C_END
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
