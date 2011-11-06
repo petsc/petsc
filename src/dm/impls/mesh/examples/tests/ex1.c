@@ -45,6 +45,13 @@ Proposed Solver API:
 I think we need a way to connect parts of the mesh to parts of the field defined over it. PetscSection is a map from
 mesh pieces (sieve points) to Vec pieces (size and offset). In addition, it handles multiple fields and constraints.
 The interface is here, http://petsc.cs.iit.edu/petsc/petsc-dev/annotate/eb9e8c4b5c78/include/private/vecimpl.h#l125.
+
+Meshes Used:
+
+The initial tests mesh the unit cube in the appropriate dimension. In 2D, we begin with 8 elements, so that the area of
+a cell is $2^{-(k+3)}$ where $k$ is the number of refinement levels, and there are $2^{k+3}$ cells. So, if we want at
+least N cells, then we need $k = \ceil{\lg N - 3}$ levels of refinement. In 3D, the refinement is less regular, but we
+can still ask that the area of a cell be about $N^{-1}$.
 */
 #include <petscdmmesh.h>
 
@@ -93,7 +100,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = user->partitioner;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -101,19 +107,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMMeshCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = PETSC_NULL;
-    DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMMeshRefine(*dm, refinementLimit, interpolate, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
-    }
-    /* Distribute mesh over processes */
-    ierr = DMMeshDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -136,6 +135,18 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
+  {
+    DM          distributedMesh = PETSC_NULL;
+    const char *partitioner     = user.partitioner;
+
+    /* Distribute mesh over processes */
+    ierr = DMMeshDistribute(dm, partitioner, &distributedMesh);CHKERRQ(ierr);
+    if (distributedMesh) {
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm  = distributedMesh;
+      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
