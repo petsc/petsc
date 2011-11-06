@@ -429,8 +429,6 @@ class Configure(config.base.Configure):
       extendby(self.compilers.flibs)
       extendby(self.compilers.cxxlibs)
       extendby(self.compilers.LIBS.split())
-      from IPython.Debugger import Tracer; debug_here = Tracer()
-      debug_here()
       for libname in nublast(lib_libs):
         libvar = 'PETSC_' + libname.upper() + '_LIB'
         addpath = ''
