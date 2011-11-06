@@ -3,15 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vi.c
+SOURCEC  = virsaug.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = vi.o
+SOURCEH  = virsaugimpl.h
+OBJSC    = virsaug.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = ss rs
-LOCDIR   = src/snes/impls/vi/
+LOCDIR   = src/snes/impls/vi/rsaug
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

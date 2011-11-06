@@ -33,7 +33,8 @@ J*/
 #define SNESTEST         "test"
 #define SNESNRICHARDSON  "nrichardson"
 #define SNESKSPONLY      "ksponly"
-#define SNESVI           "vi"
+#define SNESVIRS         "virs"
+#define SNESVISS         "viss"
 #define SNESNGMRES       "ngmres"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
@@ -402,6 +403,8 @@ extern PetscErrorCode  SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
 extern PetscErrorCode  SNESVISetComputeVariableBounds(SNES, PetscErrorCode (*)(SNES,Vec,Vec));
 extern PetscErrorCode  SNESVIGetInactiveSet(SNES,IS*);
+extern PetscErrorCode  SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
+extern PetscErrorCode  SNESVIComputeInactiveSetFnorm(SNES,Vec,Vec,PetscReal*);
 extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
 #define SNES_VI_INF   1.0e20
 #define SNES_VI_NINF -1.0e20

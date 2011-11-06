@@ -195,12 +195,10 @@ int main(int argc, char **argv)
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
  
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100,PETSC_DEFAULT);CHKERRQ(ierr);
-
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   
   /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_rand",FILE_MODE_WRITE,&view_rand);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_mat2",FILE_MODE_WRITE,&view_mat);CHKERRQ(ierr);

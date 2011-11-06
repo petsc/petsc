@@ -9,16 +9,20 @@ static char help[] = "Solves heat equation in 1d.\n";
 
 Evolve the  heat equation: 
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve the  Allen-Cahn equation: 
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
 
 Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait  -mymonitor
 
+
+The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with 
+./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
+to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain the initial solution file
 
 */
 #include <petscdmda.h>
@@ -47,7 +51,7 @@ int main(int argc,char **argv)
   PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
-
+  PetscBool              mymonitor;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -57,6 +61,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.allencahn = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr); 
@@ -120,8 +125,10 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
 
-  ctx.ports = PETSC_NULL;
-  ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
+  if (mymonitor) {
+    ctx.ports = PETSC_NULL;
+    ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -237,6 +244,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscReal         hx,x;
   Vec               finesolution;
   PetscViewer       viewer;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -254,17 +262,17 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  /*  InitialSolution is obtained with 
-      ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
-   */
-  /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
-  ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr);
-  scale = N/Mx;
-   ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr);*/
-
+  
+  ierr = PetscOptionsHasName(PETSC_NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
+    ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr);
+    scale = N/Mx;
+    ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr);
+  }
   /*
      Compute function over the locally owned part of the grid
   */
@@ -279,10 +287,14 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     /* With the initial condition above the method is first order in space */
     /* this is a smooth initial condition so the method becomes second order in space */
     /*u[i] = PetscSinScalar(2*PETSC_PI*x); */
-    //    u[i] = f[scale*i];
+    if (!flg) {
+      u[i] = f[scale*i];
+    }
   }
-  //  ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
-  //ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
+    ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
+  }
 
   /*
      Restore vectors

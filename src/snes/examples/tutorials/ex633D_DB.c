@@ -140,11 +140,10 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   	
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
