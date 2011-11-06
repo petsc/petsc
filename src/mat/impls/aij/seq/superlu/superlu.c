@@ -477,23 +477,23 @@ EXTERN_C_END
   Use ./configure --download-superlu to have PETSc installed with SuperLU
 
   Options Database Keys:
-+  -mat_superlu_equil: <FALSE> Equil (None)
-.  -mat_superlu_colperm <COLAMD> (choose one of) NATURAL MMD_ATA MMD_AT_PLUS_A COLAMD
-.  -mat_superlu_iterrefine <NOREFINE> (choose one of) NOREFINE SINGLE DOUBLE EXTRA
-.  -mat_superlu_symmetricmode: <FALSE> SymmetricMode (None)
-.  -mat_superlu_diagpivotthresh <1>: DiagPivotThresh (None)
-.  -mat_superlu_pivotgrowth: <FALSE> PivotGrowth (None)
-.  -mat_superlu_conditionnumber: <FALSE> ConditionNumber (None)
-.  -mat_superlu_rowperm <NOROWPERM> (choose one of) NOROWPERM LargeDiag
-.  -mat_superlu_replacetinypivot: <FALSE> ReplaceTinyPivot (None)
-.  -mat_superlu_printstat: <FALSE> PrintStat (None)
-.  -mat_superlu_lwork <0>: size of work array in bytes used by factorization (None)
-.  -mat_superlu_ilu_droptol <0>: ILU_DropTol (None)
-.  -mat_superlu_ilu_filltol <0>: ILU_FillTol (None)
-.  -mat_superlu_ilu_fillfactor <0>: ILU_FillFactor (None)
-.  -mat_superlu_ilu_droprull <0>: ILU_DropRule (None)
-.  -mat_superlu_ilu_norm <0>: ILU_Norm (None)
--  -mat_superlu_ilu_milu <0>: ILU_MILU (None)
++ -mat_superlu_equil <FALSE>            - Equil (None)
+. -mat_superlu_colperm <COLAMD>         - (choose one of) NATURAL MMD_ATA MMD_AT_PLUS_A COLAMD
+. -mat_superlu_iterrefine <NOREFINE>    - (choose one of) NOREFINE SINGLE DOUBLE EXTRA
+. -mat_superlu_symmetricmode: <FALSE>   - SymmetricMode (None)
+. -mat_superlu_diagpivotthresh <1>      - DiagPivotThresh (None)
+. -mat_superlu_pivotgrowth <FALSE>      - PivotGrowth (None)
+. -mat_superlu_conditionnumber <FALSE>  - ConditionNumber (None)
+. -mat_superlu_rowperm <NOROWPERM>      - (choose one of) NOROWPERM LargeDiag
+. -mat_superlu_replacetinypivot <FALSE> - ReplaceTinyPivot (None)
+. -mat_superlu_printstat <FALSE>        - PrintStat (None)
+. -mat_superlu_lwork <0>                - size of work array in bytes used by factorization (None)
+. -mat_superlu_ilu_droptol <0>          - ILU_DropTol (None)
+. -mat_superlu_ilu_filltol <0>          - ILU_FillTol (None)
+. -mat_superlu_ilu_fillfactor <0>       - ILU_FillFactor (None)
+. -mat_superlu_ilu_droprull <0>         - ILU_DropRule (None)
+. -mat_superlu_ilu_norm <0>             - ILU_Norm (None)
+- -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
    Notes: Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 

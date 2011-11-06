@@ -762,7 +762,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 . -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
 . -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern> (choose one of) SamePattern SamePattern_SameRowPerm
+. -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 

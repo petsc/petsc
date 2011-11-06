@@ -365,19 +365,19 @@ EXTERN_C_END
   which correspond to the options database keys below.
 
   Options Database Keys:
-  -mat_cholmod_dbound <0>: Minimum absolute value of diagonal entries of D (None)
-  -mat_cholmod_grow0 <1.2>: Global growth ratio when factors are modified (None)
-  -mat_cholmod_grow1 <1.2>: Column growth ratio when factors are modified (None)
-  -mat_cholmod_grow2 <5>: Affine column growth constant when factors are modified (None)
-  -mat_cholmod_maxrank <8>: Max rank of update, larger values are faster but use more memory [2,4,8] (None)
-  -mat_cholmod_factor <AUTO> (choose one of) SIMPLICIAL AUTO SUPERNODAL
-  -mat_cholmod_supernodal_switch <40>: flop/nnz_L threshold for switching to supernodal factorization (None)
-  -mat_cholmod_final_asis: <TRUE> Leave factors "as is" (None)
-  -mat_cholmod_final_pack: <TRUE> Pack the columns when finished (use FALSE if the factors will be updated later) (None)
-  -mat_cholmod_zrelax <0.8>: 3 real supernodal relaxed amalgamation parameters (None)
-  -mat_cholmod_nrelax <4>: 3 size_t supernodal relaxed amalgamation parameters (None)
-  -mat_cholmod_prefer_upper: <TRUE> Work with upper triangular form (faster when using fill-reducing ordering, slower in natural ordering) (None)
-  -mat_cholmod_print <3>: Verbosity level (None)
++ -mat_cholmod_dbound <0>          - Minimum absolute value of diagonal entries of D (None)
+. -mat_cholmod_grow0 <1.2>         - Global growth ratio when factors are modified (None)
+. -mat_cholmod_grow1 <1.2>         - Column growth ratio when factors are modified (None)
+. -mat_cholmod_grow2 <5>           - Affine column growth constant when factors are modified (None)
+. -mat_cholmod_maxrank <8>         - Max rank of update, larger values are faster but use more memory [2,4,8] (None)
+. -mat_cholmod_factor <AUTO>       - (choose one of) SIMPLICIAL AUTO SUPERNODAL
+. -mat_cholmod_supernodal_switch <40> - flop/nnz_L threshold for switching to supernodal factorization (None)
+. -mat_cholmod_final_asis <TRUE>   - Leave factors "as is" (None)
+. -mat_cholmod_final_pack <TRUE>   - Pack the columns when finished (use FALSE if the factors will be updated later) (None)
+. -mat_cholmod_zrelax <0.8>        - 3 real supernodal relaxed amalgamation parameters (None)
+. -mat_cholmod_nrelax <4>          - 3 size_t supernodal relaxed amalgamation parameters (None)
+. -mat_cholmod_prefer_upper <TRUE> - Work with upper triangular form (faster when using fill-reducing ordering, slower in natural ordering) (None)
+- -mat_cholmod_print <3>           - Verbosity level (None)
 
    Level: beginner
 
