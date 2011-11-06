@@ -116,6 +116,9 @@ class PETScMaker(script.Script):
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
    if retcode:
      self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
+     cachetxt = os.path.join(archdir, 'CMakeCache.txt')
+     log.write('Contents of %s:\n' % cachetxt)
+     log.write(open(cachetxt, 'r').read())
      return False
    else:
      return True # Configure successful
