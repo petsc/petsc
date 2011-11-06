@@ -180,7 +180,9 @@ extern PetscErrorCode SNESDestroy_VI(SNES);
 extern PetscErrorCode SNESView_VI(SNES,PetscViewer);
 extern PetscErrorCode SNESSetFromOptions_VI(SNES);
 extern PetscErrorCode SNESSetUp_VI(SNES);
+EXTERN_C_BEGIN
 extern PetscErrorCode SNESLineSearchSetType_VI(SNES,SNESLineSearchType);
+EXTERN_C_END
 extern PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
