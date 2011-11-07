@@ -91,6 +91,14 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMultTrans;
 
+typedef struct {
+  MatTransposeColoring matcoloring;
+  Mat                  Rt;   /* dense matrix of R^T */
+  Mat                  ARt;  /* dense matrix of A*R^T */
+  Mat                  RARt; /* dense matrix of R*A*R^T */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_RARt;
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
