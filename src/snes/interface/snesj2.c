@@ -25,8 +25,7 @@
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
-          TSDefaultComputeJacobianColor(), MatFDColoringCreate(),
-          MatFDColoringSetFunction()
+          MatFDColoringCreate(), MatFDColoringSetFunction()
 
 @*/
 
@@ -42,7 +41,7 @@ PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   *flag = SAME_NONZERO_PATTERN;
   ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
   ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
-  if (fd == ff) { /* reuse function value computed in SNES */
+  if (fd == ff && !snes->vec_rhs) { /* reuse function value computed in SNES */
     ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
   }
   ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);

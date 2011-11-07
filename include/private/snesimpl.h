@@ -27,6 +27,7 @@ struct _SNESOps {
   /* optional functions for pre and postcheck on a linesearch */
   PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
   PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *);  /* step-checking routine */
+  PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
 };
 
 /*
@@ -144,6 +145,9 @@ struct _p_SNES {
   PetscInt    nvwork;
 
   PetscBool   mf_operator;      /* -snes_mf_operator was used on this snes */
+
+  Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
+  PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
@@ -168,6 +172,18 @@ typedef struct {
     }}
 
 extern PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
+
+extern PetscErrorCode SNESVIProjectOntoBounds(SNES,Vec);
+extern PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscReal,PetscBool*);
+extern PetscErrorCode SNESReset_VI(SNES);
+extern PetscErrorCode SNESDestroy_VI(SNES);
+extern PetscErrorCode SNESView_VI(SNES,PetscViewer);
+extern PetscErrorCode SNESSetFromOptions_VI(SNES);
+extern PetscErrorCode SNESSetUp_VI(SNES);
+EXTERN_C_BEGIN
+extern PetscErrorCode SNESLineSearchSetType_VI(SNES,SNESLineSearchType);
+EXTERN_C_END
+extern PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);

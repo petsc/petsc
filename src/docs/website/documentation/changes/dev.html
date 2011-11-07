@@ -110,8 +110,11 @@
               <li>Removed newton solver specific SNESLineSearchCubic() and SNESLineSearchQuadratic() from petscsnes.h</li>
             </ul>
             <p><u><b>TS:</b></u></p>
-               -ts_max_time changed to -ts_final_time
-
+            <ul>
+              <li>-ts_max_time changed to -ts_final_time</li>
+              <li>TSDefaultComputeJacobian() and TSDefaultComputeJacobianColor() have been removed.
+              Configure TS to use coloring with SNESSetJacobian().</li>
+            </ul>
             <p><u><b>DM/DA:</b></u></p>
             <p><u><b>DMMG:</b></u></p>
             <p><u><b>PetscViewer:</b></u></p>

@@ -349,7 +349,7 @@ EXTERN_C_END
   
 
 /*MC
-  MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package UMFPACK.
 
   ./configure --download-umfpack to install PETSc to use UMFPACK
@@ -358,21 +358,21 @@ EXTERN_C_END
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_umfpack_prl - UMFPACK print level: Control[UMFPACK_PRL]
-. -mat_umfpack_strategy <AUTO> (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
-. -mat_umfpack_dense_col <alpha_c> - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
-. -mat_umfpack_dense_row <0.2>: Control[UMFPACK_DENSE_ROW] 
-. -mat_umfpack_amd_dense <10>: Control[UMFPACK_AMD_DENSE] 
-. -mat_umfpack_block_size <bs> - UMFPACK block size for BLAS-Level 3 calls: Control[UMFPACK_BLOCK_SIZE]
-. -mat_umfpack_2by2_tolerance <0.01>: Control[UMFPACK_2BY2_TOLERANCE] 
-. -mat_umfpack_fixq <0>: Control[UMFPACK_FIXQ] 
-. -mat_umfpack_aggressive <1>: Control[UMFPACK_AGGRESSIVE] 
++ -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
+. -mat_umfpack_strategy <AUTO>         - (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
+. -mat_umfpack_dense_col <alpha_c>     - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
+. -mat_umfpack_dense_row <0.2>         - Control[UMFPACK_DENSE_ROW]
+. -mat_umfpack_amd_dense <10>          - Control[UMFPACK_AMD_DENSE]
+. -mat_umfpack_block_size <bs>         - UMFPACK block size for BLAS-Level 3 calls: Control[UMFPACK_BLOCK_SIZE]
+. -mat_umfpack_2by2_tolerance <0.01>   - Control[UMFPACK_2BY2_TOLERANCE]
+. -mat_umfpack_fixq <0>                - Control[UMFPACK_FIXQ]
+. -mat_umfpack_aggressive <1>          - Control[UMFPACK_AGGRESSIVE]
 . -mat_umfpack_pivot_tolerance <delta> - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
-.  -mat_umfpack_sym_pivot_tolerance <0.001>: Control[UMFPACK_SYM_PIVOT_TOLERANCE] 
-.  -mat_umfpack_scale <NONE> (choose one of) NONE SUM MAX
-. -mat_umfpack_alloc_init <delta> - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
-.  -mat_umfpack_droptol <0>: Control[UMFPACK_DROPTOL] 
-- -mat_umfpack_irstep <maxit> - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
+.  -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
+.  -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
+. -mat_umfpack_alloc_init <delta>      - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
+.  -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
+- -mat_umfpack_irstep <maxit>          - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
 
    Level: beginner
 

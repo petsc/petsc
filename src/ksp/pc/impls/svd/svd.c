@@ -62,10 +62,10 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
 #if !defined(PETSC_USE_COMPLEX)
   LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr);
+  if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif
-  if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
   ierr  = MatRestoreArray(jac->A,&a);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->U,&u);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->V,&v);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SVD options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremeal singular values","None",jac->monitor?PETSC_TRUE:PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor?PETSC_TRUE:PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {                    /* Should make PCSVDSetMonitor() */
     if (flg && !jac->monitor) {
       ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,"stdout",&jac->monitor);CHKERRQ(ierr);

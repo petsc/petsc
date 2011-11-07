@@ -325,6 +325,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
     if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){

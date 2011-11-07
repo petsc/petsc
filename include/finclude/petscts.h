@@ -40,8 +40,6 @@
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !
-      external TSDEFAULTCOMPUTEJACOBIAN
-      external TSDEFAULTCOMPUTEJACOBIANCOLOR
       external TSCOMPUTERHSFUNCTIONLINEAR
       external TSCOMPUTERHSJACOBIANCONSTANT
       external TSCOMPUTEIFUNCTIONLINEAR

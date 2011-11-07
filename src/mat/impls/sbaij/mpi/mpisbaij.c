@@ -1617,9 +1617,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   b   = (Mat_MPISBAIJ*)B->data;
   mbs = B->rmap->n/bs;
   Mbs = B->rmap->N/bs;
-  if (mbs*bs != B->rmap->n) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"No of local rows %D must be divisible by blocksize %D",B->rmap->N,bs);
-  }
+  if (mbs*bs != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"No of local rows %D must be divisible by blocksize %D",B->rmap->N,bs);
 
   B->rmap->bs  = bs;
   b->bs2 = bs*bs;
@@ -1911,8 +1909,8 @@ M*/
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
-           off-diagonal portion of the local submatrix (possibly different for
-           each block row) or PETSC_NULL.
+           off-diagonal portion of the local submatrix that is right of the diagonal 
+           (possibly different for each block row) or PETSC_NULL.
 
 
    Options Database Keys:
@@ -1950,9 +1948,9 @@ M*/
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
           -------------------
-   row 3  |  o o o d d d o o o o o o
-   row 4  |  o o o d d d o o o o o o
-   row 5  |  o o o d d d o o o o o o
+   row 3  |  . . . d d d o o o o o o
+   row 4  |  . . . d d d o o o o o o
+   row 5  |  . . . d d d o o o o o o
           -------------------
 .ve
   
@@ -1963,8 +1961,8 @@ M*/
 
    Now d_nz should indicate the number of block nonzeros per row in the upper triangular
    plus the diagonal part of the d matrix,
-   and o_nz should indicate the number of block nonzeros per row in the upper triangular
-   part of the o matrix.
+   and o_nz should indicate the number of block nonzeros per row in the o matrix
+
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
@@ -1981,6 +1979,9 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidType(B,1);
+  PetscValidLogicalCollectiveInt(B,bs,2);
   ierr = PetscTryMethod(B,"MatMPISBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,bs,d_nz,d_nnz,o_nz,o_nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2063,9 +2064,9 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
           -------------------
-   row 3  |  o o o d d d o o o o o o
-   row 4  |  o o o d d d o o o o o o
-   row 5  |  o o o d d d o o o o o o
+   row 3  |  . . . d d d o o o o o o
+   row 4  |  . . . d d d o o o o o o
+   row 5  |  . . . d d d o o o o o o
           -------------------
 .ve
   

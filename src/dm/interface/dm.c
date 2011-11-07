@@ -7,9 +7,9 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate"
 /*@
-  DMCreate - Creates an empty vector object. The type can then be set with DMetType().
+  DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
-   If you never  call DMSetType()  it will generate an 
+   If you never  call DMSetType()  it will generate an
    error when you try to use the vector.
 
   Collective on MPI_Comm
