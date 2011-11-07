@@ -447,9 +447,6 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
       }
       nitem = nitem->next;
     }
-
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)bag);CHKERRQ(ierr);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -587,12 +584,8 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag *bag)
   ierr = PetscViewerBinaryRead(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
   if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
   ierr = PetscViewerBinaryRead(view,bagsizecount,2,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscMalloc(bagsizecount[0],bag);CHKERRQ(ierr);
-  ierr = PetscMemzero(*bag,bagsizecount[0]);CHKERRQ(ierr);
-  (*bag)->bagsize = bagsizecount[0];
   ierr = PetscObjectGetComm((PetscObject)view,&comm);CHKERRQ(ierr);
-  (*bag)->bagcomm        = comm;
-  (*bag)->structlocation = (void*)(((char*)(*bag)) + sizeof(PetscScalar)*(sizeof(struct _n_PetscBag)/sizeof(PetscScalar)) + sizeof(PetscScalar));
+  ierr = PetscBagCreate(comm,bagsizecount[0]-sizeof(struct _n_PetscBag)-sizeof(PetscScalar),bag);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryRead(view,(*bag)->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(view,(*bag)->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
