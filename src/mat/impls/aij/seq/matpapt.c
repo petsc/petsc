@@ -263,7 +263,6 @@ PetscErrorCode PetscContainerDestroy_Mat_RARt(void *ptr)
   Mat_RARt       *rart=(Mat_RARt*)ptr;
 
   PetscFunctionBegin;
-  printf("PetscContainerDestroy_Mat_RARt...\n");
   ierr = MatTransposeColoringDestroy(&rart->matcoloring);CHKERRQ(ierr);
   ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
   ierr = MatDestroy(&rart->ARt);CHKERRQ(ierr);
@@ -281,7 +280,6 @@ PetscErrorCode MatDestroy_SeqAIJ_RARt(Mat A)
   Mat_RARt       *rart=PETSC_NULL;
 
   PetscFunctionBegin;
-  printf("MatDestroy_SeqAIJ_RARt ...\n");
   ierr = PetscObjectQuery((PetscObject)A,"Mat_RARt",(PetscObject *)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr = PetscContainerGetPointer(container,(void **)&rart);CHKERRQ(ierr);
@@ -309,7 +307,6 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   Mat_SeqAIJ           *c;
 
   PetscFunctionBegin;
-  printf("MatRARtSymbolic_SeqAIJ_SeqAIJ ...\n");
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   /* create symbolic P=Rt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
@@ -345,7 +342,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   MCCreate += tf - t0;
 
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-  /* Create Rt_dense and RARt_dense = R*A*Rt_dense */
+  /* Create Rt_dense */
   ierr = MatCreate(PETSC_COMM_SELF,&Rt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
   ierr = MatSetType(Rt_dense,MATSEQDENSE);CHKERRQ(ierr);
@@ -353,6 +350,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   Rt_dense->assembled = PETSC_TRUE;
   rart->Rt            = Rt_dense;
   
+  /* Create ARt_dense = A*Rt_dense */
   ierr = MatCreate(PETSC_COMM_SELF,&ARt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(ARt_dense,A->rmap->n,matcoloring->ncolors,A->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
   ierr = MatSetType(ARt_dense,MATSEQDENSE);CHKERRQ(ierr);
@@ -360,6 +358,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ARt_dense->assembled = PETSC_TRUE;
   rart->ARt            = ARt_dense;
 
+  /* Create RARt_dense = R*A*Rt_dense */
   ierr = MatCreate(PETSC_COMM_SELF,&RARt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(RARt_dense,(*C)->rmap->n,matcoloring->ncolors,(*C)->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
   ierr = MatSetType(RARt_dense,MATSEQDENSE);CHKERRQ(ierr);
@@ -384,10 +383,38 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatRARtNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C) 
 {
-  /* PetscErrorCode ierr; */
+  PetscErrorCode        ierr; 
+  Mat_SeqAIJ            *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data,*c=(Mat_SeqAIJ*)C->data;
+  Mat_RARt              *rart;
+  PetscContainer        container;
+  MatTransposeColoring  matcoloring;
+  Mat                   Rt,ARt,RARt;
 
   PetscFunctionBegin;
-  printf("MatRARtNumeric_SeqAIJ_SeqAIJ ...\n");
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_RARt",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr  = PetscContainerGetPointer(container,(void **)&rart);CHKERRQ(ierr);
+
+  /* Get dense Rt by Apply MatTransposeColoring to R */
+  matcoloring = rart->matcoloring;
+  Rt          = rart->Rt;
+  //ierr = MatGetLocalSize(Rt,&m,&n);CHKERRQ(ierr);
+  //printf("Rt_dense: %d,%d\n",m,n); 
+  ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt);CHKERRQ(ierr);
+  
+  /* Get dense ARt = A*Rt */
+  ARt = rart->ARt;
+  ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Rt,ARt);CHKERRQ(ierr);
+  //ierr = MatView(ARt,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Get dense RARt = R*ARt */
+  RARt = rart->RARt;
+  ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,ARt,RARt);CHKERRQ(ierr);
+  //ierr = MatView(RARt,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Recover C from C_dense */
+  ierr = MatTransColoringApplyDenToSp(matcoloring,RARt,C);CHKERRQ(ierr);
+  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
