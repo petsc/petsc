@@ -342,7 +342,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       break;
     }
     if (ncg->monitor) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "beta = %e\n", beta);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", beta);CHKERRQ(ierr);
     }
     ierr = VecAYPX(lX, beta, dX);CHKERRQ(ierr);
     /* line search for the proper contribution of lX to the solution */

@@ -7,6 +7,7 @@
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
+  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
@@ -53,6 +54,7 @@ struct _p_SNES {
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *jacP;                    /* user-defined Jacobian context */
   void *initialguessP;           /* user-defined initial guess context */
+  void *gsP;                     /* user-defined Gauss-Seidel context */
   KSP  ksp;                      /* linear solver context */
   PetscBool usesksp;
 

@@ -10,6 +10,7 @@ typedef struct {
   PetscInt       level;                        /* level = 0 coarsest level */
   PetscInt       levels;                       /* if level + 1 = levels; we're the last turtle */
 
+  PetscViewer    monitor;                      /* debuggging output for FAS */
 
   /* smoothing objects */
   SNES           upsmooth;                     /* the SNES for presmoothing */

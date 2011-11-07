@@ -70,14 +70,13 @@ extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
 #endif
-extern PetscErrorCode NonlinearGS(SNES,Vec);
+extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES                   snes;                         /* nonlinear solver */
-  SNES                   psnes;                        /* nonlinear Gauss-Seidel approximate solver */
   Vec                    x;                            /* solution vector */
   AppCtx                 user;                         /* user-defined work context */
   PetscInt               its;                          /* iterations for convergence */
@@ -110,9 +109,12 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
-    ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
-    ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
-    ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
+    /* ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr); */
+    /* ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr); */
+    /* ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr); */
+
+    ierr = SNESSetGS(snes, NonlinearGS, PETSC_NULL);CHKERRQ(ierr);
+
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,9 +124,6 @@ int main(int argc,char **argv)
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  if (use_ngs) {
-    ierr = SNESShellSetContext(psnes,da);CHKERRQ(ierr);
-  }
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
@@ -413,19 +412,19 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-PetscErrorCode NonlinearGS(SNES snes,Vec X)
+PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
 {
   PetscInt       i,j,Mx,My,xs,ys,xm,ym,k,its,l;
   PetscErrorCode ierr;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar    **x,F,J,u,uxx,uyy;
+  PetscScalar    **x,**b,bij,F,J,u,uxx,uyy;
   DM             da;
   AppCtx         *user;
-  Vec            localX;
+  Vec            localX,localB;
 
   PetscFunctionBegin;
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -435,16 +434,20 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
   sc     = hx*hy*lambda;
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
 
 
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-
-  for (l=0; l<its; l++) {
+  ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
+  for (l=0; l<1; l++) {
 
     ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    if (B) {
+      ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+    }
     /*
      Get a pointer to vector data.
      - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -453,7 +456,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
      the array.
      */
     ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-
+    if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
     /*
      Get local grid boundaries (for 2-dimensional DMDA):
      xs, ys   - starting grid indices (no ghost points)
@@ -468,17 +471,19 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
           /* boundary conditions are all zero Dirichlet */
           x[j][i] = 0.0; 
         } else {
+          if (B) {
+            bij = b[j][i];
+          } else {
+            bij = 0.;
+          }
           u       = x[j][i];
-
-          for (k=0; k<10; k++) {
+          for (k=0; k<1; k++) {
             uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
             uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
-            F        = uxx + uyy - sc*PetscExpScalar(u);
+            F        = uxx + uyy - sc*PetscExpScalar(u) - bij;
             J       = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(u);
             u       = u - F/J;
           }
-          
-          
           x[j][i] = u;
         }
       }
