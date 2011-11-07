@@ -79,19 +79,19 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetCyclesOnLevel"
-PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, PetscInt cycles) {
+PetscErrorCode SNESFASSetCyclesOnLevel(SNES snes, PetscInt level, PetscInt cycles) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscInt top_level = fas->level,i;
 
   PetscFunctionBegin;
   if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetRestriction", level);
+    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetCyclesOnLevel", level);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
   if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
+    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
   fas->n_cycles = cycles;
   PetscFunctionReturn(0);
 }
@@ -516,7 +516,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
   Vec X_c, Xo_c, F_c, B_c,F,B;
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscInt i, k;
-  PetscScalar fnorm;
+  PetscReal fnorm;
 
   PetscFunctionBegin;
   F = snes->vec_func;
