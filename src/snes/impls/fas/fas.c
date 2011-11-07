@@ -146,8 +146,8 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
     if (i > 0) {
       ierr = SNESCreate(comm, &fas->next);CHKERRQ(ierr);
       ierr = SNESSetOptionsPrefix(fas->next,((PetscObject)snes)->prefix);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
       fas = (SNES_FAS *)fas->next->data;
     }
   }
@@ -326,7 +326,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     /* set the DMs of the pre and post-smoothers here */
     if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
-      if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
+    if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
   }
   if (fas->next) {
     /* gotta set up the solution vector for this to work */
@@ -380,9 +380,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","PCMGSetNumberSmoothUp",fas->n_cycles,&fas->n_cycles,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
-  if (monflg) {
-    
-  }
 
   /* other options for the coarsest level */
   if (fas->level == 0) {
@@ -435,6 +432,8 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   if (monflg) {
     fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+
+    /* set the monitors for the upsmoother and downsmoother */
     if (fas->upsmooth)   ierr = SNESMonitorSet(fas->upsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->downsmooth) ierr = SNESMonitorSet(fas->downsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
@@ -516,8 +515,22 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
   B = snes->vec_rhs;
   /* pre-smooth -- just update using the pre-smoother */
   if (snes->ops->computegs) {
+    if (fas->monitor) {
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+    }
     for (k = 0; k < fas->max_up_it; k++) {
       ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+      if (snes->monitor) {
+        ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+        ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+      }
     }
   } else if (fas->upsmooth) {
     ierr = SNESSolve(fas->upsmooth, B, X);CHKERRQ(ierr);
@@ -527,10 +540,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
   if (fas->next) {
     for (i = 0; i < fas->n_cycles; i++) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-      if (fas->monitor) {
-        ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d=%e\n", fas->level, fnorm);CHKERRQ(ierr);
-      }
+
       X_c  = fas->next->vec_sol;
       Xo_c = fas->next->work[0];
       F_c  = fas->next->vec_func;
@@ -569,8 +579,22 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
     /* down-smooth -- just update using the down-smoother */
   if (fas->level != 0) {
     if (snes->ops->computegs) {
+      if (fas->monitor) {
+        ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+        ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+      }
       for (k = 0; k < fas->max_down_it; k++) {
         ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+        if (fas->monitor) {
+          ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+          ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+        }
       }
     }else if (fas->downsmooth) {
       ierr = SNESSolve(fas->downsmooth, B, X);CHKERRQ(ierr);
