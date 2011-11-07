@@ -1,67 +1,82 @@
-#ifndef __PETSCFWK_H
-#define __PETSCFWK_H
+#ifndef __PETSCSHELL_H
+#define __PETSCSHELL_H
 
 #include "petscsys.h"
 
-extern  PetscClassId PETSC_FWK_CLASSID;
+extern  PetscClassId PETSC_SHELL_CLASSID;
 
 /* 
-   There is only one type implementing PetscFwk, 
-   so all the code is in the interface and implements only one class PETSCFWK (below) 
-   rather than using something like PETSCFWK_BASIC, etc.
+   There is only one type implementing PetscShell, 
+   so all the code is in the interface and implements only one class PETSCSHELL (below) 
+   rather than using something like PETSCSHELL_BASIC, etc.
 */
-#define PETSCFWK "petscfwk" 
+#define PETSCSHELL "petscshell" 
 
 
-struct _p_PetscFwk;
-typedef struct _p_PetscFwk *PetscFwk;
+/*S
+     PetscShell - a simple interpreter of string messages.
+                  Responds to PetscShellCall(shell,message) by calling 
+                  nameMessage(shell) or nameCall(shell,message),
+                  where name is the shell's object name and functions nameMessage and nameCall
+                  are attached to shell via PetscObjectComposeFunction() or found in a dynamic
+                  library specified by the shell's url (see PetscShellSetURL()).
 
-extern PetscFwk  PETSC_FWK_DEFAULT_(MPI_Comm);
-#define PETSC_FWK_DEFAULT_SELF  PETSC_FWK_DEFAULT_(PETSC_COMM_SELF)
-#define PETSC_FWK_DEFAULT_WORLD PETSC_FWK_DEFAULT_(PETSC_COMM_WORLD)
+   Level: intermediate
+
+   Note: PetscShellSetURL() allows for Python backends.  In this case name.message() or name()
+         are called, where name is a Python class.
+
+.seealso:  PetscShellSetURL(), PetscShellCall(), PetscShellRegisterComponent()
+S*/
+typedef struct _p_PetscShell *PetscShell;
+
+extern PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm);
+#define PETSC_SHELL_DEFAULT_SELF  PETSC_SHELL_DEFAULT_(PETSC_COMM_SELF)
+#define PETSC_SHELL_DEFAULT_WORLD PETSC_SHELL_DEFAULT_(PETSC_COMM_WORLD)
 
 
 
-extern PetscErrorCode  PetscFwkInitializePackage(const char path[]);
-extern PetscErrorCode  PetscFwkFinalizePackage(void);
+extern PetscErrorCode  PetscShellInitializePackage(const char[]);
+extern PetscErrorCode  PetscShellFinalizePackage(void);
 
 /**/
-extern PetscErrorCode  PetscFwkCall(PetscFwk component,       const char *message);
-extern PetscErrorCode  PetscFwkGetURL(PetscFwk component,     const char **outurl);
-extern PetscErrorCode  PetscFwkSetURL(PetscFwk component,     const char *inurl);
+extern PetscErrorCode  PetscShellCreate(MPI_Comm, PetscShell*);
+extern PetscErrorCode  PetscShellSetURL(PetscShell,     const char*);
+extern PetscErrorCode  PetscShellCall(PetscShell,       const char *);
+extern PetscErrorCode  PetscShellGetURL(PetscShell,     const char **);
+extern PetscErrorCode  PetscShellView(PetscShell, PetscViewer);
+extern PetscErrorCode  PetscShellDestroy(PetscShell*);
 /**/
-extern PetscErrorCode  PetscFwkCreate(MPI_Comm comm, PetscFwk *fwk);
-extern PetscErrorCode  PetscFwkView(PetscFwk fwk, PetscViewer viewerASCII);
-extern PetscErrorCode  PetscFwkRegisterComponent(PetscFwk fwk, const char key[]);
-extern PetscErrorCode  PetscFwkRegisterDependence(PetscFwk fwk, const char server_key[], const char client_key[]);
-extern PetscErrorCode  PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]);
-extern PetscErrorCode  PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *component, PetscBool  *found);
-extern PetscErrorCode  PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent);
-extern PetscErrorCode  PetscFwkVisit(PetscFwk fwk, const char *message);
-extern PetscErrorCode  PetscFwkDestroy(PetscFwk* fwk);
+extern PetscErrorCode  PetscShellRegisterComponentShell(PetscShell, const char[], PetscShell);
+extern PetscErrorCode  PetscShellRegisterComponentURL(PetscShell, const char[], const char[]);
+extern PetscErrorCode  PetscShellRegisterDependence(PetscShell, const char[], const char[]);
+extern PetscErrorCode  PetscShellGetComponent(PetscShell, const char[], PetscShell *, PetscBool  *);
+extern PetscErrorCode  PetscShellVisit(PetscShell, const char *);
+extern PetscErrorCode  PetscShellGetVisitor(PetscShell, PetscShell *);
+
 
 
 
 /* 
    This library deals with components and frameworks.
 
-PetscFwk can (i) act as a  "framework" (more or less as before), or
+PetscShell can (i) act as a  "framework" (more or less as before), or
 (ii) as a "component" (more about it below).
 
-(i) As a "framework", PetscFwk is a bag of "components" (other
-PetscFwk objects).
-One can register components (PetscFwkRegisterComponent) and
+(i) As a "framework", PetscShell is a bag of "components" (other
+PetscShell objects).
+One can register components (PetscShellRegisterComponent) and
 dependencies between them (PetscRegisterDependence) through keys.
-For each new key the framework creates a new PetscFwk component with
+For each new key the framework creates a new PetscShell component with
 its PetscObject name equal to the key, and inserts a vertex into the
 dependency graph.
 For each dependency between two keys, it inserts a corresponding edge
 into the dependency graph.
 A framework can "visit" its components in the topological sort order
 of the dependency graph, and "call" each component
-with a string "<message>": PetscFwkVisit
+with a string "<message>": PetscShellVisit
 
-(ii) As a "component", PetscFwk supports essentially one interface:
+(ii) As a "component", PetscShell supports essentially one interface:
 "call" with two arguments,
 the component itself and a string "<message>".  This call is forwarded
 to an implementing function in two different ways:
@@ -106,20 +121,20 @@ are supposed to be static methods in a Python class <name>,
             located in <module>, found at <path>. In this case
 message handlers must have names matching <message>,
             if a <message>-specific handler is absent.  These
-handlers are passed a petsc4py.Fwk object wrapping the component,
+handlers are passed a petsc4py.Shell object wrapping the component,
             and a Python string, encapsulating <message>, if necessary.
 
-A URL can be associated with an PetscFwk using PetscFwkSetURL.
-A URL can be reset using repeated calls to PetscFwkSetURL.
-The URL can be retrieved using PetscFwkGetURL.
+A URL can be associated with an PetscShell using PetscShellSetURL.
+A URL can be reset using repeated calls to PetscShellSetURL.
+The URL can be retrieved using PetscShellGetURL.
 
 A component attached to a framework using a key can be extracted with
-PetscFwkGetComponent,
+PetscShellGetComponent,
 and then its vtable can be manipulated either by composing functions
 with it using PetscObjectComposeFunction,
 or by setting the component's URL.
 There is a shorthand way of associating a URL to a component being
-attached to a framework: PetscFwkRegisterComponentURL.
+attached to a framework: PetscShellyRegisterComponentURL.
        
 */
 #endif

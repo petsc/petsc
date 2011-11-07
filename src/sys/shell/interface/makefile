@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fwk.c
+SOURCEC  = shell.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = fwk.o
+OBJSC    = shell.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/sys/fwk/interface/
+LOCDIR   = src/sys/shell/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -4,17 +4,7 @@ EXTERN_C_BEGIN
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestIACall"
-PetscErrorCode  TestIACall(PetscFwk component, const char* message) {
-  MPI_Comm comm = ((PetscObject)component)->comm;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}/* TestIACall() */
-
-#undef  __FUNCT__ 
-#define __FUNCT__ "TestIBCall"
-PetscErrorCode  TestIBCall(PetscFwk component, const char* message) {
+PetscErrorCode  TestIACall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscBool  init;
@@ -22,17 +12,27 @@ PetscErrorCode  TestIBCall(PetscFwk component, const char* message) {
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
   ierr = PetscStrcmp(message, "initialize", &init); CHKERRQ(ierr);
   if(init) {
-    PetscFwk fwk;
-    ierr = PetscFwkGetParent(component, &fwk); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "%s: registering dependence: %s --> TestIA\n", __FUNCT__, ((PetscObject)component)->name); CHKERRQ(ierr);
-    ierr = PetscFwkRegisterDependence(fwk, ((PetscObject)component)->name, "TestIA"); CHKERRQ(ierr);    
+    PetscShell shell;
+    ierr = PetscShellGetVisitor(component, &shell); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: registering dependence: TestIB --> %s\n", __FUNCT__, ((PetscObject)component)->name); CHKERRQ(ierr);
+    ierr = PetscShellRegisterDependence(shell, "TestIB", ((PetscObject)component)->name); CHKERRQ(ierr);    
   }
+  PetscFunctionReturn(0);
+}/* TestIACall() */
+
+#undef  __FUNCT__ 
+#define __FUNCT__ "TestIBCall"
+PetscErrorCode  TestIBCall(PetscShell component, const char* message) {
+  MPI_Comm comm = ((PetscObject)component)->comm;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* TestIBCall() */
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestICCall"
-PetscErrorCode  TestICCall(PetscFwk component, const char* message) {
+PetscErrorCode  TestICCall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -9,7 +9,7 @@ SOURCEH     =
 OBJSC       = testcomponentsI.o testcomponentsII.o
 OBJSF       = 
 MANSEC      = Sys
-LOCDIR      = src/sys/fwk/examples/tests/
+LOCDIR      = src/sys/shell/examples/tests/
 
 
 include ${PETSC_DIR}/conf/variables
@@ -25,19 +25,13 @@ TESTS = test1
 libs: chklib_dir lib shared
 
 test1: test1.c
-	make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} EX=test1 ex
+	make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} TEST=test1 test
 
-EX_DIR     = .
-TESTS       = test1
-ex: libs chkex_dir ${EX}.o
-	${SL_LINKER} -o ${EX} ${EX}.o ${PETSC_LIB};\
-	${MV} ${EX} ${EX_DIR}/;\
+TEST       = test1
+test: libs ${TEST}.o
+	${SL_LINKER} -o ${TEST} ${TEST}.o ${PETSC_LIB};\
 	${RM} ${EX}.o 
 
-chkex_dir:
-	@if [ ! -d "${EX_DIR}" ]; then \
-	  echo Making directory ${EX_DIR} for executables; \
-	  ${MKDIR} ${EX_DIR}; fi
 
 
 distclean: clean
