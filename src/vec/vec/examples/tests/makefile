@@ -255,7 +255,7 @@ runex12:
 	   else echo ${PWD} ; echo "Possible problem with with ex12_1, diffs above \n========================================="; fi;\
 	   ${RM} -f ex12_1.tmp
 runex13:
-	-@${MPIEXEC}  -n 2 ./ex13 > ex13_1.tmp 2>&1;\
+	-@${MPIEXEC}  -n 4 ./ex13 > ex13_1.tmp 2>&1;\
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex13_1, diffs above \n========================================="; fi;\
 	   ${RM} -f ex13_1.tmp

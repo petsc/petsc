@@ -9,7 +9,8 @@ class Configure(PETSc.package.NewPackage):
     self.functions    = ['pastix']
     self.includes     = ['pastix.h']
     self.downloadfilename = 'pastix'
-    self.complex      = 0
+    self.requires32bitint = 0
+    self.complex      = 1
     self.fc           = 1
     return
 
@@ -18,37 +19,39 @@ class Configure(PETSc.package.NewPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.scotch     = framework.require('PETSc.packages.PTScotch',self)
     self.make       = framework.require('config.programs', self)
-    self.deps       = [self.mpi, self.blasLapack, self.scotch]   
+    self.deps       = [self.mpi,self.blasLapack, self.scotch]
     return
-  
+
   def Install(self):
     import os
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
-    if self.setCompilers.isDarwin():    
+    # This one should be the only one needed
+    # all other tests for mac should not be useful.
+    if self.setCompilers.isDarwin():
       g.write('HOSTARCH   = i686_mac\n')
     else:
       g.write('HOSTARCH   = i686_pc_linux\n')
-    g.write('VERSIONBIT  = _32bit\n')
+    g.write('VERSIONBIT  = _XXbit\n')
     g.write('EXEEXT      = \n')
     g.write('OBJEXT      = .o\n')
     g.write('LIBEXT      = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     self.setCompilers.pushLanguage('C')
-    g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')      
+    g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
     # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
-    if self.setCompilers.isDarwin():    
+    if self.setCompilers.isDarwin():
       cflags = ' -DX_ARCHi686_mac    '
-    else: cflags = ''
-    g.write('CCFOPT      = '+self.setCompilers.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
+    else:
+      cflags = ''
+    if self.mpi.found:
+      g.write('CCFOPT      = '+self.setCompilers.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
+    else:
+      g.write('CCFOPT      = '+self.setCompilers.getCompilerFlags()+' '+cflags+'\n')
     self.setCompilers.popLanguage()
-    if not self.compilers.fortranIsF90:
-      raise RuntimeError('Installing PaStiX requires a F90 compiler') 
-    self.setCompilers.pushLanguage('FC') 
-    g.write('CFPROG      = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CF90PROG    = '+self.setCompilers.getCompiler()+'\n')
-    g.write('MCFPROG     = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CF90CCPOPT  = '+ self.setCompilers.getCompilerFlags()+'\n')
-    self.setCompilers.popLanguage()
+    g.write('CFPROG      = \n')
+    g.write('CF90PROG    = \n')
+    g.write('MCFPROG     = \n')
+    g.write('CF90CCPOPT  = \n')
     g.write('\n')
     g.write('LKFOPT      =\n')
     g.write('MKPROG      = '+self.make.make+'\n')
@@ -62,7 +65,7 @@ class Configure(PETSc.package.NewPackage):
     extralib = ''
     if self.libraries.add('-lm','sin'): extralib += ' -lm'
     if self.libraries.add('-lrt','timer_create'): extralib += ' -lrt'
-    
+
     g.write('EXTRALIB    = '+extralib+' \n')
     g.write('\n')
     g.write('VERSIONMPI  = _mpi\n')
@@ -90,10 +93,10 @@ class Configure(PETSc.package.NewPackage):
     ###################################################################
     #                           FLOAT TYPE                            #
     ###################################################################
-    if self.scalartypes.precision == 'double':
-      g.write('VERSIONPRC  = _double\n')
-      g.write('CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE -DPREC_DOUBLE\n')
-      g.write('\n')
+    # Now PaStiX supports multi arithmetic with [sdcz]pastix calls
+    g.write('#VERSIONPRC  = _double\n')
+    g.write('#CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE -DPREC_DOUBLE\n')
+    g.write('#\n')
     g.write('# uncomment the following lines for float=complex support\n')
     g.write('#VERSIONFLT  = _complex\n')
     g.write('#CCTYPES  := $(CCTYPES) -DFORCE_COMPLEX -DTYPE_COMPLEX\n')
@@ -103,11 +106,12 @@ class Configure(PETSc.package.NewPackage):
     g.write('#                          MPI/THREADS                            #\n')
     g.write('###################################################################\n')
     g.write('\n')
-    g.write('# uncomment the following lines for sequential (NOMPI) version\n')
-    g.write('#VERSIONMPI  = _nompi\n')
-    g.write('#CCTYPES    := $(CCTYPES) -DFORCE_NOMPI\n')
-    g.write('#MPCCPROG    = $(CCPROG)\n')
-    g.write('#MCFPROG     = $(CFPROG)\n')
+    if not self.mpi.found:
+      g.write('# uncomment the following lines for sequential (NOMPI) version\n')
+      g.write('VERSIONMPI  = _nompi\n')
+      g.write('CCTYPES    := $(CCTYPES) -DFORCE_NOMPI\n')
+      g.write('MPCCPROG    = $(CCPROG)\n')
+      g.write('MCFPROG     = $(CFPROG)\n')
     g.write('\n')
     g.write('# uncomment the following lines for non-threaded (NOSMP) version\n')
     g.write('#VERSIONSMP  = _nosmp\n')
@@ -153,11 +157,11 @@ class Configure(PETSc.package.NewPackage):
     g.write('\n')
     g.write('# Scotch always needed to compile\n')
     g.write('#scotch								\n')
-    g.write('CCPASTIX   := $(CCPASTIX) '+self.headers.toString(self.scotch.include)+'\n')
+    if (self.mpi.found):
+      g.write('CCPASTIX   := $(CCPASTIX) -DDISTRIBUTED -DWITH_SCOTCH '+self.headers.toString(self.scotch.include)+'\n')
+    else:
+      g.write('CCPASTIX   := $(CCPASTIX) -DWITH_SCOTCH '+self.headers.toString(self.scotch.include)+'\n')
     g.write('EXTRALIB   := $(EXTRALIB) '+self.libraries.toString(self.scotch.dlib)+'\n')
-    g.write('#ptscotch				\n')			     
-    g.write('#CCPASTIX   := $(CCPASTIX) -I$(SCOTCH_INC) -DDISTRIBUTED	\n')
-    g.write('#EXTRALIB   := $(EXTRALIB) -L$(SCOTCH_LIB) -lptscotch -lscotcherrexit\n')
     g.write('\n')
     g.write('###################################################################\n')
     g.write('#                             MARCEL                              #\n')
@@ -193,11 +197,11 @@ class Configure(PETSc.package.NewPackage):
 
     g.write('MAKE     = $(MKPROG)\n')
     g.write('CC       = $(MPCCPROG)\n')
-    if self.setCompilers.isDarwin():    
+    if self.setCompilers.isDarwin():
       cflags = ' -DX_ARCHi686_mac    '
     else: cflags = ''
     g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)'+cflags+'\n')
-    g.write('FC       = $(MCFPROG)\n') 
+    g.write('FC       = $(MCFPROG)\n')
     g.write('FFLAGS   = $(CCFOPT)\n')
     g.write('LDFLAGS  = $(EXTRALIB) $(BLASLIB)\n')
 

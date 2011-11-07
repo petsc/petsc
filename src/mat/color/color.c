@@ -451,9 +451,10 @@ $    -mat_coloring_view
    Level: intermediate
 
    Notes:
-     These compute the graph coloring of the graph of A^{T}A. The coloring used 
-   for efficient (parallel or thread based) triangular solves etc is NOT yet 
-   available. 
+$    A graph coloring C(A)  is a division of vertices  so that two vertices of the same color do not share any common edges.
+$    A suitable coloring for a  smoother  is simply C(A).
+$    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows. 
+$         This corresponds to C(A^{T} A).  This is what MatGetColoring() computes.
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
 

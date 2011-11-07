@@ -73,7 +73,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
 {
   PetscErrorCode ierr;
   PetscMPIInt    lo = 0,hi,t;
-  PetscInt       bs = map->bs;
 
   PetscFunctionBegin;
   if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
@@ -81,7 +80,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
   ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
   while (hi - lo > 1) {
     t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]/bs) hi = t;
+    if (idx < map->range[t]) hi = t;
     else                     lo = t;
   }
   *owner = lo;
@@ -118,20 +117,34 @@ struct _n_PetscSection {
   PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
   PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
   PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+
+  PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
+  PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
+extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
 extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt**);
+extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
 extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
@@ -312,6 +325,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
     if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){

@@ -59,7 +59,11 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ALE::DMBuilder::createBoxMesh(comm, dim, false, interpolate, debug, dm);CHKERRQ(ierr);
+  try {
+    ierr = ALE::DMBuilder::createBoxMesh(comm, dim, false, interpolate, debug, dm);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    SETERRQ1(comm, PETSC_ERR_PLIB, "Unable to create mesh: %s", e.message());
+  }
   PetscFunctionReturn(0);
 }
 

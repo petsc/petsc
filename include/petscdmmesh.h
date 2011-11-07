@@ -33,6 +33,7 @@ extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
 extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
 extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMMeshGetStratum(DM, const char [], PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
 
 extern PetscErrorCode DMCartesianCreate(MPI_Comm, DM *);
 extern PetscErrorCode DMMeshCartesianGetMesh(DM, ALE::Obj<ALE::CartesianMesh>&);
@@ -46,7 +47,7 @@ extern PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 extern PetscErrorCode DMMeshMarkBoundaryCells(DM, const char [], PetscInt, PetscInt);
 extern PetscErrorCode DMMeshGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
-extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt [], const char [], PetscInt, PetscInt[], PetscSection *);
+extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
 extern PetscErrorCode DMMeshSetSection(DM, const char [], PetscSection);
 extern PetscErrorCode DMMeshGetDefaultSection(DM, PetscSection *);
 extern PetscErrorCode DMMeshGetCoordinateSection(DM, PetscSection *);
@@ -113,7 +114,7 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
-extern PetscErrorCode DMMeshSetSectionReal(DM, SectionReal);
+extern PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
 extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
 extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
@@ -240,7 +241,7 @@ PetscErrorCode DMMeshInterpolationSetDim(DM dm, PetscInt dim, DMMeshInterpolatio
 PetscErrorCode DMMeshInterpolationGetDim(DM dm, PetscInt *dim, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationSetDof(DM dm, PetscInt dof, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetDof(DM dm, PetscInt *dof, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscReal point[], DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[], DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetCoordinates(DM dm, Vec *points, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);

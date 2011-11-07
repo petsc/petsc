@@ -82,11 +82,10 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   /* Set the boundary conditions */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Time stepping",&stage_timestep);

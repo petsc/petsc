@@ -269,7 +269,7 @@ ex54: ex54.o chkopts
 
 ex55: ex55.o chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
-	${RM} ex55.o
+#	${RM} ex55.o
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
@@ -974,6 +974,10 @@ runex45_2:
 	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson > ex45_2.tmp 2>&1; \
 	   ${DIFF} output/ex45_2.out ex45_2.tmp || echo ${PWD} "\nPossible problem with with ex45_2, diffs above \n========================================="; \
 	   ${RM} -f ex45_2.tmp
+runex45f:
+	-@${MPIEXEC} -n 4 ./ex45f -ksp_monitor_short -da_refine 5 -pc_type mg -pc_mg_levels 5 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.1,0,1.1 -mg_levels_ksp_max_it 2 -mg_levels_pc_type jacobi -ksp_pc_side right > ex45f_1.tmp 2>&1; \
+	   ${DIFF} output/ex45f_1.out ex45f_1.tmp || echo ${PWD} "\nPossible problem with with ex45f_1, diffs above \n========================================="; \
+	   ${RM} -f ex45f_1.tmp
 
 runex49:
 	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
@@ -1021,7 +1025,7 @@ runex54:
 
 runex54_SA:
 	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa  -ksp_norm_type unpreconditioned > ex54_sa.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n========================================="; \
+         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
 	   ${RM} -f ex54_sa.tmp
 
 runex55:
@@ -1054,7 +1058,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
-                                 ex22f.rm ex21f.PETSc runex21f ex21f.rm
+                                 ex22f.rm ex21f.PETSc runex21f ex21f.rm ex45f.PETSc runex45f ex45f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \

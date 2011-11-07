@@ -530,14 +530,11 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 .   F - function vector
 -   ctx - [optional] user-defined function context 
 
-    Important: 
-    The user MUST call either this routine or TSSetMatrices().
-
     Level: beginner
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetMatrices()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian()
 @*/
 PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
@@ -559,7 +556,6 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
-   Use TSSetMatrices() for linear problems.
 
    Logically Collective on TS
 
@@ -596,8 +592,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
    
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
-.seealso: TSDefaultComputeJacobianColor(),
-          SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetMatrices()
+.seealso: SNESDefaultComputeJacobianColor(), TSSetRHSFunction()
 
 @*/
 PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
@@ -655,13 +650,13 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Important:
-   The user MUST call either this routine, TSSetRHSFunction(), or TSSetMatrices().  This routine must be used when not solving an ODE.
+   The user MUST call either this routine, TSSetRHSFunction().  This routine must be used when not solving an ODE, for example a DAE.
 
    Level: beginner
 
 .keywords: TS, timestep, set, DAE, Jacobian
 
-.seealso: TSSetMatrices(), TSSetRHSFunction(), TSSetIJacobian()
+.seealso: TSSetRHSJacobian(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
 PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 {
@@ -790,7 +785,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 
 .keywords: TS, timestep, DAE, Jacobian
 
-.seealso: TSSetIFunction(), TSSetRHSJacobian()
+.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultComputeJacobian()
 
 @*/
 PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)

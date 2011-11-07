@@ -332,7 +332,7 @@ static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const Pets
   last_desired_h = sz->desired_h;
   sz->desired_h = h*PetscMax(dec,PetscMin(inc,optimal)); /* Trim to [dec,inc] */
   if (last_desired_h > 1e-14) {                          /* Normally only happens on the first step */
-    *next_h = sqrt(last_desired_h * sz->desired_h);
+    *next_h = PetscSqrtReal(last_desired_h * sz->desired_h);
   } else {
     *next_h = sz->desired_h;
   }
@@ -397,7 +397,7 @@ static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const Pets
     last_desired_h = both->desired_h;
     both->desired_h = PetscMax(h*dec,PetscMin(h*inc,current.h));
     *next_h = (both->count_at_order > 0)
-      ? sqrt(last_desired_h * both->desired_h)
+      ? PetscSqrtReal(last_desired_h * both->desired_h)
       : both->desired_h;
     both->count_at_order++;
   } else {

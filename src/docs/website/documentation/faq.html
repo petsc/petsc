@@ -1596,7 +1596,7 @@ in
                 continuous first derivatives (often occurs when there
                 are "if" statements in the residual evaluation, e.g.
                 phase change or TVD limiters). Use a variational
-                inequality solver (SNESVI) if the discontinuities are of
+                inequality solver (SNESVIRS) if the discontinuities are of
                 fundamental importance.</li>
               <li>Try a trust region method (<tt>-ts_type tr</tt>, may
                 have to adjust parameters).</li>
@@ -1653,13 +1653,20 @@ in
                 iterative solve), try <tt>-ksp_type fgmres</tt> or <tt>-ksp_type
 
                   gcr</tt>.</li>
+              <li>You are using geometric multigrid, but some equations
+                (often boundary conditions) are not scaled compatibly
+                between levels. Try <tt>-pc_mg_galerkin</tt> to
+                algebraically construct a correctly scaled coarse
+                operator or make sure that all the equations are scaled
+                in the same way if you want to use rediscretized coarse
+                levels.</li>
               <li>The matrix is very ill-conditioned. You can run with
-                -pc_type none -ksp_type gmres
-                -ksp_monitor_singular_value -ksp_gmres_restart 100 to
+                <tt>-pc_type none -ksp_type gmres
+                -ksp_monitor_singular_value -ksp_gmres_restart 100</tt> to
                 get approximations to the condition number of the
-                operator. Or run with -pc_type &lt;somepc&gt; to get
+                operator. Or run with <tt>-pc_type somepc</tt> to get
                 condition number estimates of the preconditioned
-                operator.&nbsp;</li>
+                operator.</li>
               <ul>
                 <li> Try to improve it by choosing the relative scaling
                   of components/boundary conditions.</li>

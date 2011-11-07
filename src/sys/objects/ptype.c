@@ -51,7 +51,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
     *mtype = MPI_CHAR;
   } else if (ptype == PETSC_BIT_LOGICAL) {
     *mtype = MPI_BYTE;
-  } else if (ptype == PETSC_LONG_DOUBLE) {
+  } else if (ptype == PETSC___FLOAT128) {
     *mtype = MPI_LONG_DOUBLE;
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
@@ -103,7 +103,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   } else if (mtype == MPI_CHAR) {
     *ptype = PETSC_CHAR;
   } else if (mtype == MPI_LONG_DOUBLE) {
-    *ptype = PETSC_LONG_DOUBLE;
+    *ptype = PETSC___FLOAT128;
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   }
@@ -115,19 +115,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_BIT_LOGICAL_SIZE = sizeof(char),
               PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool), 
-              PETSC_LONG_DOUBLE_SIZE = sizeof(long double)} PetscDataTypeSize;
-#if defined(PETSC_USE_COMPLEX)
-#define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
-#else
-#define PETSC_SCALAR_SIZE PETSC_DOUBLE_SIZE
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-#define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
-#else
-#define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
-#endif
-#define PETSC_FORTRANADDR_SIZE PETSC_LONG_SIZE
-
+              PETSC___FLOAT128_SIZE = sizeof(long double)} PetscDataTypeSize;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeGetSize"
@@ -176,8 +164,8 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
     *size = PETSC_BIT_LOGICAL_SIZE;
   } else if (ptype == PETSC_BOOL) {
     *size = PETSC_BOOL_SIZE;
-  } else if (ptype == PETSC_LONG_DOUBLE) {
-    *size = PETSC_LONG_DOUBLE_SIZE;
+  } else if (ptype == PETSC___FLOAT128) {
+    *size = PETSC___FLOAT128_SIZE;
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }

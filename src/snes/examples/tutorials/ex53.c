@@ -45,8 +45,8 @@ int main(int argc,char **argv)
 
   ierr = SNESSetJacobian(snes,user.Jac,user.Jac,FormJacobian1,&user);CHKERRQ(ierr);
 
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,user.lb,user.ub);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,user.zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)user.zz,"x*");CHKERRQ(ierr);
   ierr = VecView(user.zz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

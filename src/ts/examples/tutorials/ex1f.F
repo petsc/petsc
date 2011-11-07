@@ -57,6 +57,7 @@
       PetscErrorCode      ierr
       double precision  param_max,param_min,dt,tmax,zero
       double precision  ftime
+      TSConvergedReason reason
 
       i5 = 5
       param_max = 6.81
@@ -177,9 +178,11 @@
 !
       call TSSolve(ts,x,ftime,ierr)
       call TSGetTimeStepNumber(ts,its,ierr)
+      call TSGetConvergedReason(ts,reason,ierr)
 
-      write(6,100) its,ftime
- 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2)
+      write(6,100) its,ftime,reason
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2    &
+     &     ,' reason ',i3)
 
 !
 !     Free the data structures constructed above

@@ -365,7 +365,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr=VecNorm(D, NORM_2, &dcurnorm);CHKERRQ(ierr);
       if((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
     }
-    if (ngmres->epsilonB*dnorm<dminnorm || sqrt(fnorm)<ngmres->deltaB*sqrt(fminnorm)) {
+    if (ngmres->epsilonB*dnorm<dminnorm || PetscSqrtReal(fnorm)<ngmres->deltaB*PetscSqrtReal(fminnorm)) {
     } else {
       selectA=PETSC_FALSE;
     }
@@ -389,16 +389,16 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     selectRestart = PETSC_FALSE;
 
     /* difference stagnation restart */
-    if((ngmres->epsilonB*dnorm > dminnorm) && (sqrt(fAnorm) > ngmres->deltaB*sqrt(fminnorm))) {
+    if((ngmres->epsilonB*dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB*PetscSqrtReal(fminnorm))) {
       if (ngmres->monitor) {
         ierr = PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", ngmres->epsilonB*dnorm, dminnorm);CHKERRQ(ierr);
       }
       selectRestart = PETSC_TRUE;
     }
     /* residual stagnation restart */
-    if (sqrt(fAnorm) > ngmres->gammaC*sqrt(fminnorm)) {
+    if (PetscSqrtReal(fAnorm) > ngmres->gammaC*PetscSqrtReal(fminnorm)) {
       if (ngmres->monitor) {
-        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", sqrt(fAnorm), ngmres->gammaC*sqrt(fminnorm));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", PetscSqrtReal(fAnorm), ngmres->gammaC*PetscSqrtReal(fminnorm));CHKERRQ(ierr);
       }
       selectRestart = PETSC_TRUE;
     }

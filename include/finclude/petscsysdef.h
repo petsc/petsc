@@ -112,13 +112,15 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
 #elif defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_SCALAR PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#define PETSC_SCALAR PETSC___FLOAT128
+#else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_REAL PETSC___FLOAT128
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -133,11 +135,11 @@
 #if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
-#define PetscImaginaryPart(a) aimg(a)
+#define PetscImaginaryPart(a) aimag(a)
 #else
 #define PetscRealPart(a) dreal(a)
 #define PetscConj(a) dconjg(a)
-#define PetscImaginaryPart(a) daimg(a)
+#define PetscImaginaryPart(a) daimag(a)
 #endif
 #else
 #if defined (PETSC_USE_REAL_SINGLE)

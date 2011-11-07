@@ -500,6 +500,33 @@ namespace ALE {
     public:
       int getSize() {return this->size;};
     };
+    template<typename Sieve>
+    class SizeWithBCVisitor<Sieve,PetscSection> {
+    protected:
+      PetscSection section;
+      int          size;
+      PetscInt    *fieldSize;
+      PetscInt     numFields;
+    public:
+      SizeWithBCVisitor(PetscSection s) : section(s), size(0), fieldSize(PETSC_NULL), numFields(0) {};
+      SizeWithBCVisitor(PetscSection s, PetscInt *fieldSize) : section(s), size(0), fieldSize(fieldSize) {
+        PetscErrorCode ierr = PetscSectionGetNumFields(section, &numFields);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < numFields; ++f) {this->fieldSize[f] = 0;}
+      };
+      inline void visitPoint(const typename Sieve::point_type& point) {
+        PetscInt dim;
+        PetscErrorCode ierr;
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        this->size += dim;
+        for(PetscInt f = 0; f < numFields; ++f) {
+          ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
+          this->fieldSize[f] += dim;
+        }
+      };
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
+    public:
+      int getSize() {return this->size;};
+    };
     template<typename Section>
     class RestrictVisitor {
     public:
@@ -552,6 +579,135 @@ namespace ALE {
         }
       };
       void clear() {this->i = 0;};
+    };
+    template<typename ValueType>
+    class RestrictVecVisitor {
+    public:
+      typedef ValueType value_type;
+    protected:
+      const Vec          v;
+      const PetscSection section;
+      int                size;
+      int                i;
+      int                nF;
+      int               *offsets;
+      int               *indices;
+      bool               processed;
+      value_type        *values;
+      bool               allocated;
+      value_type        *array;
+    protected:
+      inline void swap(value_type& v, value_type& w) {
+        value_type tmp = v;
+        v = w;
+        w = tmp;
+      };
+      void processArray() {
+        for(PetscInt f = 1; f < nF; ++f) {
+          offsets[f+1] += offsets[f];
+        }
+        for(PetscInt i = 0; i < offsets[nF]; ++i) {
+          indices[i] = offsets[indices[i]]++;
+        }
+        assert(offsets[nF-1] == offsets[nF]);
+        for(PetscInt i = 0; i < offsets[nF]; ++i) {
+          if (indices[i] == -1) continue;
+          PetscInt   startPos = indices[i];
+          PetscInt   j        = startPos, k;
+          value_type val      = values[i];
+
+          do {
+            swap(val, values[j]);
+            k = indices[j];
+            indices[j] = -1;
+            j = k;
+          } while(j != startPos);
+        }
+      };
+    public:
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size) : v(v), section(s), size(size), i(0), nF(0), processed(true) {
+        this->values    = new value_type[this->size];
+        this->allocated = true;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values) : v(v), section(s), size(size), i(0), nF(0), processed(true) {
+        this->values    = values;
+        this->allocated = false;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values, int numFields, int *offsets, int *indices) : v(v), section(s), size(size), i(0), nF(numFields), offsets(offsets), indices(indices), processed(false) {
+        this->values    = values;
+        this->allocated = false;
+        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+        for(PetscInt f = 0; f <= numFields; ++f) {offsets[f] = 0;}
+      };
+      ~RestrictVecVisitor() {
+        if (this->allocated) {delete [] this->values;}
+        PetscErrorCode ierr = VecRestoreArray(this->v, &this->array);CHKERRXX(ierr);
+      };
+      template<typename Point>
+      inline void visitPoint(const Point& point, const int orientation) {
+        // Known:
+        //   Nf: number of fields
+        // Unknown:
+        //   Np: number of points
+        //   P:  points
+        // Algorithm:
+        //   Pass 1: Stack up values as before, but also
+        //           count size of each field
+        //   Comp 1: Sum up sizes to get field offsets
+        //   Pass 2: Number each entry with its intended position
+        //   Pass 3: Reorder entries
+        // Algorithm if field sizes are known:
+        //   Comp 1: Partition array into field components
+        //   Pass 1: Stack up values at field offsets
+        PetscInt       dim, offset = 0;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < nF; ++f) {
+          PetscInt fdim;
+
+          ierr = PetscSectionGetFieldDof(section, point, f, &fdim);CHKERRXX(ierr);
+          offsets[f+1] += fdim;
+          for(PetscInt d = 0; d < fdim; ++d, ++offset) {
+            indices[i+offset] = f;
+          }
+        }
+        if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        const value_type *v = &array[offset];
+
+        if (orientation >= 0) {
+          for(PetscInt d = 0; d < dim; ++d, ++i) {
+            this->values[i] = v[d];
+          }
+        } else {
+          // Does this require field splitting? I think so
+          for(PetscInt d = dim-1; d >= 0; --d, ++i) {
+            this->values[i] = v[d];
+          }
+        }
+      }
+      template<typename Arrow>
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
+    public:
+      const value_type *getValues() {
+        if (!processed) {processArray(); processed = true;}
+        return this->values;
+      };
+      int  getSize() const {return this->i;};
+      int  getMaxSize() const {return this->size;};
+      void ensureSize(const int size) {
+        this->clear();
+        if (size > this->size) {
+          this->size = size;
+          if (this->allocated) {delete [] this->values;}
+          this->values = new value_type[this->size];
+          this->allocated = true;
+        }
+      };
+      void clear() {this->i = 0; if (processed) {processed = false;}};
     };
     template<typename Section>
     class UpdateVisitor {
@@ -612,6 +768,166 @@ namespace ALE {
       template<typename Arrow>
       inline void visitArrow(const Arrow& arrow, const int orientation) {}
       void clear() {this->i = 0;};
+    };
+    template<typename ValueType>
+    class UpdateVecVisitor {
+    public:
+      typedef ValueType value_type;
+    protected:
+      const Vec          v;
+      const PetscSection section;
+      const value_type  *values;
+      const InsertMode   mode;
+      PetscInt           nF;
+      PetscInt           i;
+      value_type        *array;
+      PetscInt          *fieldSize;
+      PetscInt          *j;
+    protected:
+      inline static void add   (value_type& x, value_type y) {x += y;}
+      inline static void insert(value_type& x, value_type y) {x  = y;}
+      template<typename Point>
+      void updatePoint(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
+        PetscInt       dim;  // The number of dof on this point
+        PetscInt       cDim; // The nubmer of constraints on this point
+        PetscInt      *cDof; // The indices of the constrained dofs on this point
+        value_type    *a;    // The values on this point
+        PetscInt       offset, cInd = 0;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        ierr = PetscSectionGetConstraintDof(section, point, &cDim);CHKERRXX(ierr);
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        a    = &array[offset];
+        if (!cDim || setBC) {
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              fuse(a[k], values[i+k]);
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              fuse(a[k], values[i+dim-k-1]);
+            }
+          }
+        } else {
+          ierr = PetscSectionGetConstraintIndices(section, point, &cDof);CHKERRXX(ierr);
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+              fuse(a[k], values[i+k]);
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+              fuse(a[k], values[i+k]);
+            }
+          }
+        }
+        i += dim;
+      }
+      template<typename Point>
+      void updatePointFields(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
+        value_type    *a;
+        PetscInt       offset;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
+        a    = &array[offset];
+        for(PetscInt f = 0; f < nF; ++f) {
+          PetscInt    dim;  // The number of dof for field f on this point
+          PetscInt    cDim; // The nubmer of constraints for field f on this point
+          PetscInt   *cDof; // The indices of the constrained dofs for field f on this point
+          PetscInt    fOff = 0, cInd = 0;
+
+          ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
+          if (!cDim || setBC) {
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                fuse(a[fOff+k], values[j[f]+k]);
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              }
+            }
+          } else {
+            ierr = PetscSectionGetFieldConstraintIndices(section, point, f, &cDof);CHKERRXX(ierr);
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+                fuse(a[fOff+k], values[j[f]+k]);
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
+                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              }
+            }
+          }
+          fOff += dim;
+          j[f] += dim;
+        }
+      }
+    public:
+      UpdateVecVisitor(const Vec v, const PetscSection s, const value_type *values, InsertMode mode) : v(v), section(s), values(values), mode(mode), nF(0), i(0) {};
+      UpdateVecVisitor(const Vec v, const PetscSection s, const value_type *values, InsertMode mode, PetscInt numFields, PetscInt fieldSize[]) : v(v), section(s), values(values), mode(mode), nF(numFields), i(0) {
+        PetscErrorCode ierr;
+
+        ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+        ierr = PetscMalloc2(numFields,PetscInt,&this->fieldSize,numFields,PetscInt,&j);CHKERRXX(ierr);
+        for(PetscInt f = 0; f < nF; ++f) {
+          this->fieldSize[f] = fieldSize[f];
+        }
+        this->clear();
+      };
+      ~UpdateVecVisitor() {
+        PetscErrorCode ierr;
+        ierr = VecRestoreArray(this->v, &this->array);CHKERRXX(ierr);
+        ierr = PetscFree2(fieldSize,j);CHKERRXX(ierr);
+      };
+      template<typename Point>
+      inline void visitPoint(const Point& point, const int orientation) {
+        if (nF) {
+          switch(mode) {
+          case INSERT_VALUES:
+            updatePointFields(point, this->insert, false, orientation);break;
+          case INSERT_ALL_VALUES:
+            updatePointFields(point, this->insert, true,  orientation);break;
+          case ADD_VALUES:
+            updatePointFields(point, this->add, false, orientation);break;
+          case ADD_ALL_VALUES:
+            updatePointFields(point, this->add, true,  orientation);break;
+          default:
+            throw PETSc::Exception("Invalid mode");
+          }
+        } else {
+          switch(mode) {
+          case INSERT_VALUES:
+            updatePoint(point, this->insert, false, orientation);break;
+          case INSERT_ALL_VALUES:
+            updatePoint(point, this->insert, true,  orientation);break;
+          case ADD_VALUES:
+            updatePoint(point, this->add, false, orientation);break;
+          case ADD_ALL_VALUES:
+            updatePoint(point, this->add, true,  orientation);break;
+          default:
+            throw PETSc::Exception("Invalid mode");
+          }
+        }
+      }
+      template<typename Arrow>
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
+    public:
+      void clear() {
+        this->i = 0;
+        if (nF) {
+          j[0] = 0;
+          for(PetscInt f = 1; f < nF; ++f) {
+            j[f] = j[f-1] + fieldSize[f-1];
+          }
+        }
+      };
     };
     template<typename Section, typename Order, typename Value>
     class IndicesVisitor {
@@ -1142,8 +1458,8 @@ namespace ALE {
     void destroyIndices() {
       this->destroyIndices(this->chart, &this->coneOffsets, &this->supportOffsets);
       this->indexAllocated = false;
-      this->maxConeSize    = -1;
-      this->maxSupportSize = -1;
+      this->maxConeSize    = 0;
+      this->maxSupportSize = 0;
       this->baseSize       = -1;
       this->capSize        = -1;
     };
@@ -1621,6 +1937,19 @@ namespace ALE {
         }
       }
     }
+    int numRoots() {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      int n = 0;
+
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->coneOffsets[p+1] == this->coneOffsets[p]) {
+          if (this->supportOffsets[p+1]-this->supportOffsets[p] > 0) {
+            ++n;
+          }
+        }
+      }
+      return n;
+    }
     template<typename Visitor>
     void leaves(const Visitor& v) const {
       this->leaves(const_cast<Visitor&>(v));
@@ -1636,6 +1965,19 @@ namespace ALE {
           }
         }
       }
+    }
+    int numLeaves() {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      int n = 0;
+
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->supportOffsets[p+1] == this->supportOffsets[p]) {
+          if (this->coneOffsets[p+1]-this->coneOffsets[p] > 0) {
+            ++n;
+          }
+        }
+      }
+      return n;
     }
     template<typename Visitor>
     void base(const Visitor& v) const {

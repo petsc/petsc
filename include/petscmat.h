@@ -133,6 +133,7 @@ extern PetscErrorCode  MatGetFactorType(Mat,MatFactorType*);
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 extern PetscClassId  MAT_CLASSID;
 extern PetscClassId  MAT_FDCOLORING_CLASSID;
+extern PetscClassId  MAT_TRANSPOSECOLORING_CLASSID;
 extern PetscClassId  MAT_PARTITIONING_CLASSID;
 extern PetscClassId  MAT_NULLSPACE_CLASSID;
 extern PetscClassId  MATMFFD_CLASSID;
@@ -375,13 +376,15 @@ extern PetscErrorCode  MatSetValuesBatch(Mat,PetscInt,PetscInt,PetscInt[],const 
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as index on an associated grid.
+        column of a matrix as indexed on an associated grid.
+
+   Fortran usage is different, see MatSetValuesStencil() for details.
 
    Level: beginner
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil()
 S*/
 typedef struct {
   PetscInt k,j,i,c;
@@ -624,13 +627,16 @@ extern PetscErrorCode  MatMatMultNumeric(Mat,Mat,Mat);
 extern PetscErrorCode  MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatRARt(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtNumeric(Mat,Mat,Mat);
 
+extern PetscErrorCode  MatTransposeMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatTransposetMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatTransposetMatMultNumeric(Mat,Mat,Mat);
 extern PetscErrorCode  MatMatTransposeMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatMatTransposetMultSymbolic(Mat,Mat,PetscReal,Mat*);
-extern PetscErrorCode  MatMatTransposetMultNumeric(Mat,Mat,Mat);
-extern PetscErrorCode  MatMatMultTranspose(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeSymbolic(Mat,Mat,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatMatTransposeMultSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatMatTransposeMultNumeric(Mat,Mat,Mat);
 
 extern PetscErrorCode  MatAXPY(Mat,PetscScalar,Mat,MatStructure);
 extern PetscErrorCode  MatAYPX(Mat,PetscScalar,Mat,MatStructure);
@@ -1302,9 +1308,25 @@ extern PetscErrorCode  MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**
 extern PetscErrorCode  MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 extern PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring);
 extern PetscErrorCode  MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
-extern PetscErrorCode  MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 extern PetscErrorCode  MatFDColoringSetF(MatFDColoring,Vec);
 extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+
+/*S
+     MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
+
+   Level: beginner
+
+  Concepts: coloring, sparse matrix product
+
+.seealso:  MatTransposeColoringCreate()
+S*/
+typedef struct _p_MatTransposeColoring* MatTransposeColoring;
+
+extern PetscErrorCode MatTransposeColoringCreate(Mat,ISColoring,MatTransposeColoring *);
+extern PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
+
 /* 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().
@@ -1581,7 +1603,16 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GETMULTIPROCBLOCK=123,
                MATOP_GETCOLUMNNORMS=125,
 	       MATOP_GET_SUBMATRICES_PARALLEL=128,
-               MATOP_SET_VALUES_BATCH=129
+               MATOP_SET_VALUES_BATCH=129,
+               MATOP_TRANSPOSEMATMULT=130,
+               MATOP_TRANSPOSEMATMULT_SYMBOLIC=131,
+               MATOP_TRANSPOSEMATMULT_NUMERIC=132,
+               MATOP_TRANSPOSECOLORING_CREATE=133,
+               MATOP_TRANSCOLORING_APPLY_SPTODEN=134,
+               MATOP_TRANSCOLORING_APPLY_DENTOSP=135,
+               MATOP_RARt=136,
+               MATOP_RARt_SYMBOLIC=137,
+               MATOP_RARt_NUMERIC=138
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);
 extern PetscErrorCode  MatShellSetOperation(Mat,MatOperation,void(*)(void));

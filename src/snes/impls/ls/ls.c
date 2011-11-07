@@ -217,13 +217,13 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (snes->ls_monitor) {
     ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: gnorm after quadratic fit %14.12e\n",(double)*gnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: gnorm after quadratic fit %14.12e\n",(double)(*gnorm));CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*snes->ls_alpha*initslope) { /* sufficient reduction */
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",(double)lambda);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     goto theend1;
@@ -236,7 +236,7 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
       if (snes->ls_monitor) {
         ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)*gnorm,(double)*ynorm,(double)minlambda,(double)lambda,(double)initslope);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)minlambda,(double)lambda,(double)initslope);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       *flag = PETSC_FALSE; 
@@ -251,7 +251,7 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
     if (a == 0.0) {
       lambdatemp = -initslope/(2.0*b);
     } else {
-      lambdatemp = (-b + sqrt(d))/(3.0*a);
+      lambdatemp = (-b + PetscSqrtReal(d))/(3.0*a);
     }
     lambdaprev = lambda;
     gnormprev  = *gnorm;
@@ -261,7 +261,7 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
     ierr  = VecWAXPY(w,-lambda,y,x);CHKERRQ(ierr);
     if (snes->nfuncs >= snes->max_funcs) {
       ierr = PetscInfo1(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count);CHKERRQ(ierr);
-      ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+      ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)lambda,(double)initslope);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
@@ -275,12 +275,12 @@ PetscErrorCode  SNESLineSearchCubic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec y,P
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*snes->ls_alpha*initslope) { /* is reduction enough? */
       if (snes->ls_monitor) {
-	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %14.12e lambda=%18.16e\n",(double)*gnorm,(double)lambda);CHKERRQ(ierr);
+	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %14.12e lambda=%18.16e\n",(double)(*gnorm),(double)lambda);CHKERRQ(ierr);
       }
       break;
     } else {
       if (snes->ls_monitor) {
-        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",(double)*gnorm,(double)lambda);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",(double)(*gnorm),(double)lambda);CHKERRQ(ierr);
       }
     }
     count++;
@@ -429,7 +429,7 @@ PetscErrorCode  SNESLineSearchQuadratic_LS(SNES snes,void *lsctx,Vec x,Vec f,Vec
       if (snes->ls_monitor) {
         ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"Line search: Unable to find good step length! %D \n",count);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"Line search: fnorm=%14.12e, gnorm=%14.12e, ynorm=%14.12e, lambda=%14.12e, initial slope=%14.12e\n",(double)fnorm,(double)*gnorm,(double)*ynorm,(double)lambda,(double)initslope);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"Line search: fnorm=%14.12e, gnorm=%14.12e, ynorm=%14.12e, lambda=%14.12e, initial slope=%14.12e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)lambda,(double)initslope);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       ierr = VecCopy(x,w);CHKERRQ(ierr);

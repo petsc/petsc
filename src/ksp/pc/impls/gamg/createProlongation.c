@@ -50,8 +50,11 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
   PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,nloc;
   PetscScalar   *data_arr;
   PetscReal     *datas;
+  PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare( (PetscObject)a_Gmat, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
+  assert(isMPIAIJ);
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);                      assert(npe>1);
   ierr = MatGetOwnershipRange( a_Gmat, &my0, &Iend );    CHKERRQ(ierr);
@@ -162,6 +165,9 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     ierr = PetscFree( gids );  CHKERRQ(ierr);
     ierr = PetscFree( real_gids );  CHKERRQ(ierr);
   } else {
+    PetscBool      isAIJ;
+    ierr = PetscTypeCompare( (PetscObject)a_Gmat_2, MATSEQAIJ, &isAIJ ); CHKERRQ(ierr);
+    assert(isAIJ);
     matA_1 = (Mat_SeqAIJ*)a_Gmat_1->data;
     nghosts_2 = nghosts_1 = 0;
   }
@@ -327,6 +333,9 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
     matA = (Mat_SeqAIJ*)mpimat->A->data;
     matB = (Mat_SeqAIJ*)mpimat->B->data;
   } else {
+    PetscBool      isAIJ;
+    ierr = PetscTypeCompare( (PetscObject)a_Gmat, MATSEQAIJ, &isAIJ ); CHKERRQ(ierr);
+    assert(isAIJ);
     matA = (Mat_SeqAIJ*)a_Gmat->data;
   }
   assert( matA && !matA->compressedrow.use );
@@ -1325,7 +1334,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-#ifdef VERBOSE
+#ifdef VERBOSE 
     PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
 #endif
   }
@@ -1461,14 +1470,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
 
   /* create prolongator, create P matrix */
-  ierr = MatCreateMPIAIJ(wcomm, nloc*bs_in, nLocalSelected*col_bs,
+  ierr = MatCreateMPIAIJ(wcomm, 
+                         nloc*bs_in, nLocalSelected*col_bs,
                          PETSC_DETERMINE, PETSC_DETERMINE,
                          a_data_cols, PETSC_NULL, a_data_cols, PETSC_NULL,
                          &Prol );
   CHKERRQ(ierr);
   
   /* can get all points "removed" */
-  ierr = MatGetSize( Prol, &kk, &jj );  CHKERRQ(ierr);
+  ierr =  MatGetSize( Prol, &kk, &jj ); CHKERRQ(ierr);
   if( jj==0 ) {
     assert(0);
     *a_isOK = PETSC_FALSE;
@@ -1670,12 +1680,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
 #ifdef VERBOSE
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
 #endif
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
-    
+
       /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
       ierr = MatMatMult( a_Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat );   CHKERRQ(ierr);
       ierr = MatGetVecs( a_Amat, &diag, 0 );    CHKERRQ(ierr);
@@ -1683,7 +1693,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = VecReciprocal( diag );         CHKERRQ(ierr);
       ierr = MatDiagonalScale( tMat, diag, 0 ); CHKERRQ(ierr);
       ierr = VecDestroy( &diag );           CHKERRQ(ierr);
-      alpha = -1.5/emax;
+      alpha = -1.333333/emax;
       ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
       ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       Prol = tMat;

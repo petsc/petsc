@@ -146,6 +146,8 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
+
+
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscFList {
   void        (*routine)(void);   /* the routine */
@@ -164,7 +166,7 @@ static PetscFList   dlallhead = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListAdd"
 /*@C
-   PetscFListAddDynamic - Given a routine and a string id, saves that routine in the
+   PetscFListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
      Not Collective
@@ -181,7 +183,7 @@ static PetscFList   dlallhead = 0;
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
    for that particular component (e.g., SNESRegisterDynamic()) instead of
-   calling PetscFListAddDynamic() directly.
+   calling PetscFListAdd() directly.
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
   occuring in pathname will be replaced with appropriate values.
@@ -628,6 +630,349 @@ PetscErrorCode  PetscFListConcat(const char path[],const char name[],char fullna
     ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(fullname,name);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+/* ------------------------------------------------------------------------------*/
+struct _n_PetscOpFList {
+  char                 *op;                /* op name */
+  PetscInt             numArgs;            /* number of arguments to the operation */
+  char                 **argTypes;         /* list of argument types */
+  PetscVoidFunction    routine;            /* the routine */
+  char                 *url;               /* url naming the link library and the routine */
+  char                 *path;              /* path of link library containing routine */
+  char                 *name;              /* routine name in dynamic library */
+  PetscOpFList         next;              /* next pointer */
+  PetscOpFList         next_list;         /* used to maintain list of all lists for freeing */
+};
+
+/*
+     Keep a linked list of PetscOfFLists so that we can destroy all the left-over ones.
+*/
+static PetscOpFList   opallhead = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpFListAdd"
+/*@C
+   PetscOpFListAdd - Given a routine and a string id, saves that routine in the
+   specified registry.
+
+   Formally collective on comm.
+
+   Input Parameters:
++  comm     - processors adding the op
+.  fl       - list of known ops
+.  url      - routine locator  (optional, if not using dynamic libraries and a nonempty fnc)
+.  fnc      - function pointer (optional, if using dynamic libraries and a nonempty url)
+.  op       - operation name
+.  numArgs  - number of op arguments
+-  argTypes - list of argument type names (const char*)
+
+   Notes:
+   To remove a registered routine, pass in a PETSC_NULL url and fnc().
+
+   url can be of the form  [/path/libname[.so.1.0]:]functionname[()]  where items in [] denote optional 
+
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environment variable}
+   occuring in url will be replaced with appropriate values.
+
+   Level: developer
+
+.seealso: PetscOpFListDestroy(),PetscOpFList,  PetscFListAdd(), PetscFList
+@*/
+PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscVoidFunction fnc,const char op[], PetscInt numArgs, char* argTypes[])
+{
+  PetscOpFList   entry,e,ne;
+  PetscErrorCode ierr;
+  char           *fpath,*fname;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!*fl) {
+    ierr           = PetscNew(struct _n_PetscOpFList,&entry); CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(op,&entry->op);          CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(url,&(entry->url));      CHKERRQ(ierr);
+    ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);
+    entry->path    = fpath;
+    entry->name    = fname;
+    entry->routine = fnc;
+    entry->numArgs = numArgs;
+    if(numArgs) {
+      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
+      for(i = 0; i < numArgs; ++i) {
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
+      }
+    }
+    entry->next    = 0;
+    *fl = entry;
+
+    /* add this new list to list of all lists */
+    if (!opallhead) {
+      opallhead       = *fl;
+      (*fl)->next_list = 0;
+    } else {
+      ne               = opallhead;
+      opallhead        = *fl;
+      (*fl)->next_list = ne;
+    }
+  } else {
+    /* search list to see if it is already there */
+    e  = PETSC_NULL;
+    ne = *fl;
+    while (ne) {
+      PetscBool  match;
+      ierr = PetscStrcmp(ne->op,op,&match);CHKERRQ(ierr);
+      if(!match) goto next;
+      if(numArgs == ne->numArgs) 
+        match = PETSC_TRUE;
+      else 
+        match = PETSC_FALSE;
+      if(!match) goto next;
+      if(numArgs) {
+        for(i = 0; i < numArgs; ++i) {
+          ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);  CHKERRQ(ierr);
+          if(!match) goto next;
+        }
+      }
+      if(!url && !fnc) {
+        /* remove this record */
+        if(e) e->next = ne->next;
+        ierr = PetscFree(ne->op);    CHKERRQ(ierr);
+        ierr = PetscFree(ne->url);   CHKERRQ(ierr);
+        ierr = PetscFree(ne->path);  CHKERRQ(ierr);
+        ierr = PetscFree(ne->name);  CHKERRQ(ierr);
+        if(numArgs) {
+          for(i = 0; i < numArgs; ++i) {
+            ierr = PetscFree(ne->argTypes[i]);  CHKERRQ(ierr);
+          }
+          ierr = PetscFree(ne->argTypes);       CHKERRQ(ierr);
+        }
+        ierr = PetscFree(ne);                   CHKERRQ(ierr);
+      }
+      else {
+        /* Replace url, fpath, fname and fnc. */
+        ierr = PetscStrallocpy(url, &(ne->url)); CHKERRQ(ierr);
+        ierr = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);
+        ierr = PetscFree(ne->path);CHKERRQ(ierr);
+        ierr = PetscFree(ne->name);CHKERRQ(ierr);
+        ne->path    = fpath;
+        ne->name    = fname;
+        ne->routine = fnc;
+      }
+      PetscFunctionReturn(0);
+      next: {e = ne; ne = ne->next;}
+    }
+    /* create new entry and add to end of list */
+    ierr           = PetscNew(struct _n_PetscOpFList,&entry);           CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(op,&entry->op);                    CHKERRQ(ierr);
+    entry->numArgs = numArgs;
+    if(numArgs) {
+      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
+      for(i = 0; i < numArgs; ++i) {
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscStrallocpy(url, &(entry->url));                         CHKERRQ(ierr);
+    ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);   CHKERRQ(ierr);
+    entry->path    = fpath;
+    entry->name    = fname;
+    entry->routine = fnc;
+    entry->next    = 0;
+    ne->next       = entry;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpFListDestroy"
+/*@C
+    PetscOpFListDestroy - Destroys a list of registered op routines.
+
+    Input Parameter:
+.   fl  - pointer to list
+
+    Level: developer
+
+.seealso: PetscOpFListAdd(), PetscOpFList
+@*/
+PetscErrorCode  PetscOpFListDestroy(PetscOpFList *fl)
+{
+  PetscOpFList     next,entry,tmp;
+  PetscErrorCode   ierr;
+  PetscInt         i;
+
+  PetscFunctionBegin;
+  if (!*fl) PetscFunctionReturn(0);
+  if (!opallhead) PetscFunctionReturn(0);
+
+  /*
+       Remove this entry from the master Op list (if it is in it)
+  */
+  if (opallhead == *fl) {
+    if (opallhead->next_list) {
+      opallhead = opallhead->next_list;
+    } else {
+      opallhead = 0;
+    }
+  } else {
+    tmp = opallhead;
+    while (tmp->next_list != *fl) {
+      tmp = tmp->next_list;
+      if (!tmp->next_list) break;
+    }
+    if (tmp->next_list) tmp->next_list = tmp->next_list->next_list;
+  }
+
+  /* free this list */
+  entry = *fl;
+  while (entry) {
+    next = entry->next;
+    ierr = PetscFree(entry->op);  CHKERRQ(ierr);
+    for(i = 0; i < entry->numArgs; ++i) {
+      ierr = PetscFree(entry->argTypes[i]); CHKERRQ(ierr);
+    }
+    ierr = PetscFree(entry->argTypes);  CHKERRQ(ierr);
+    ierr = PetscFree(entry->url);CHKERRQ(ierr);
+    ierr = PetscFree(entry->path);CHKERRQ(ierr);
+    ierr = PetscFree(entry->name);CHKERRQ(ierr);
+    ierr = PetscFree(entry);CHKERRQ(ierr);
+    entry = next;
+  }
+  *fl = 0;
+  PetscFunctionReturn(0);
+}
+
+/*
+   Destroys all the function lists that anyone has every registered, such as MatOpList, etc.
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpFListDestroyAll"
+PetscErrorCode  PetscOpFListDestroyAll(void)
+{
+  PetscOpFList     tmp2,tmp1 = opallhead;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (tmp1) {
+    tmp2 = tmp1->next_list;
+    ierr = PetscOpFListDestroy(&tmp1);CHKERRQ(ierr);
+    tmp1 = tmp2;
+  }
+  opallhead = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpFListFind"
+/*@C
+    PetscOpFListFind - Given a name, finds the matching op routine.
+    Formally collective on comm.
+
+    Input Parameters:
++   comm     - processes looking for the op
+.   fl       - pointer to list of known ops
+.   op       - operation name
+.   numArgs  - number of op arguments
+-   argTypes - list of argument type names 
+
+
+    Output Parameters:
+.   r       - routine implementing op with the given arg types
+
+    Level: developer
+
+.seealso: PetscOpFListAdd(), PetscOpFList
+@*/
+PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunction *r, const char* op, PetscInt numArgs, char* argTypes[])
+{
+  PetscOpFList   entry;
+  PetscErrorCode ierr;
+  PetscBool      match;
+  PetscInt       i;
+ 
+  PetscFunctionBegin;
+  PetscValidPointer(r,3);
+  if (!op) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Attempting to find operation with null name");
+  *r = PETSC_NULL;
+  entry = fl;
+  while (entry) {
+    ierr = PetscStrcmp(entry->op,op,&match); CHKERRQ(ierr);
+    if(!match) goto next;
+    if(numArgs == entry->numArgs) 
+      match = PETSC_TRUE;
+    else
+      match = PETSC_FALSE;
+    if(!match) goto next;
+    if(numArgs) {
+      for(i = 0; i < numArgs; ++i) {
+        ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
+        if(!match) goto next;
+      }
+    }
+    break;
+    next: entry = entry->next;
+  }
+  if (match) {
+    if (entry->routine) {
+      *r   = entry->routine;
+    }
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+    else {
+      /* it is not yet in memory so load from dynamic library */
+      ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,entry->path,entry->name,(void **)r);CHKERRQ(ierr);
+      if (*r) {
+        entry->routine = *r;
+      } 
+    }
+#endif
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpFListView"
+/*@C
+   PetscOpFListView - prints out contents of a PetscOpFList
+
+   Collective on viewer
+
+   Input Parameters:
++  list   - the list of functions
+-  viewer - ASCII viewer   Level: developer
+
+.seealso: PetscOpFListAdd(), PetscOpFList
+@*/
+PetscErrorCode  PetscOpFListView(PetscOpFList list,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  PetscValidPointer(list,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
+
+  while (list) {
+    if (list->url) {
+      ierr = PetscViewerASCIIPrintf(viewer," %s: ",list->url); CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "%s(", list->op);    CHKERRQ(ierr);
+    for(i = 0; i < list->numArgs;++i) {
+      if(i > 0) {
+        ierr = PetscViewerASCIIPrintf(viewer, ", "); CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "%s", list->argTypes[i]);    CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, ")\n");    CHKERRQ(ierr);
+    list = list->next;
   }
   PetscFunctionReturn(0);
 }

@@ -13,4 +13,4 @@ TS 11 dt 348.729 time 376.984 fnorm 7.95866e-07
 TS 12 dt 102314 time 102691 fnorm 1.02096e-11
 TS 13 dt 8.77318e+09 time 8.77328e+09 fnorm 0
 TS 14 dt 9.6505e+21 time 9.6505e+21 fnorm 0
-Number of pseudo time-steps    14 final time 9.65E+21
+Number of pseudo time-steps    14 final time 9.65E+21 reason   1

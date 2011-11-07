@@ -135,23 +135,17 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
-  LogEvent LogEventRegister(LogCookie cookie, const char *name){
-    LogEvent event = 0;
-#if 0
+  LogEvent LogEventRegister(LogCookie cookie, const char *name) {
     std::string event_name(name);
-    if(_log_event.find(event_name) == _log_event.end()) {    
-      PetscErrorCode ierr = PetscLogEventRegister(&event, name, cookie);
-      CHKERROR(ierr, "PetscLogEventRegister failed");
-#ifdef ALE_LOGGING_VERBOSE
-      //std::cout << "Registered event " << name << " to " << event << std::endl;
-#endif
-      _log_event[event_name] = event;                   
-    }                                                        
-    else {                                                   
+    LogEvent event = 0;
+
+    if (_log_event.find(event_name) == _log_event.end()) {
+      PetscErrorCode ierr = PetscLogEventRegister(name, cookie, &event);CHKERROR(ierr, "PetscLogEventRegister failed");
+      _log_event[event_name] = event;
+    } else {
       // event by that name already registered, so we retrieve its registration number.
-      event = _log_event[event_name];                   
+      event = _log_event[event_name];
     }
-#endif                                                        
     return event;
   }
 

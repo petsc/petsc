@@ -1147,7 +1147,7 @@ extern PetscErrorCode    PetscMallocSetDumpLog(void);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1155,12 +1155,16 @@ extern const char *PetscDataTypes[];
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_SCALAR  PETSC_FLOAT
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define  PETSC_SCALAR  PETSC___FLOAT128
 #else
 #define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define  PETSC_REAL  PETSC___FLOAT128
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -1253,6 +1257,16 @@ typedef struct _p_PetscObject* PetscObject;
 .seealso:  PetscFListAdd(), PetscFListDestroy()
 S*/
 typedef struct _n_PetscFList *PetscFList;
+
+/*S
+     PetscOpFList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries, 
+                    accessed by string op name together with string argument types.
+
+   Level: advanced
+
+.seealso:  PetscOpFListAdd(), PetscOpFListFind(), PetscOpFListDestroy()
+S*/
+typedef struct _n_PetscOpFList *PetscOpFList;
 
 /*E
   PetscFileMode - Access mode for a file.
@@ -1494,6 +1508,15 @@ extern PetscErrorCode  PetscFListView(PetscFList,PetscViewer);
 extern PetscErrorCode  PetscFListConcat(const char [],const char [],char []);
 extern PetscErrorCode  PetscFListGet(PetscFList,char ***,int*);
 
+/*
+    Multiple dispatch operation function lists. Lists of names of routines with corresponding
+    argument type names with function pointers or in dynamic link libraries that will be loaded 
+    as needed.  Search on the op name and argument type names.
+*/
+extern PetscErrorCode  PetscOpFListAdd(MPI_Comm, PetscOpFList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListDestroy(PetscOpFList*);
+extern PetscErrorCode  PetscOpFListFind(MPI_Comm, PetscOpFList, PetscVoidFunction*, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListView(PetscOpFList,PetscViewer);
 /*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
 

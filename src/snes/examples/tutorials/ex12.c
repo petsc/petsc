@@ -592,9 +592,10 @@ PetscErrorCode SetupSection(AppCtx *user) {
   PetscInt       numDof_0[2] = {1, 0};
   PetscInt       numDof_1[3] = {1, 0, 0};
   PetscInt       numDof_2[4] = {1, 0, 0, 0};
-  PetscInt      *numDof;
-  const char    *bcLabel = PETSC_NULL;
-  PetscInt       markers[1] = {1};
+  PetscInt      *numDof      = PETSC_NULL;
+  PetscInt       numBC       = 0;
+  PetscInt       bcField[1]  = {0};
+  IS             bcPoints[1] = {PETSC_NULL};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -612,9 +613,10 @@ PetscErrorCode SetupSection(AppCtx *user) {
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
   }
   if (user->bcType == DIRICHLET) {
-    bcLabel = "marker";
+    numBC = 1;
+    ierr  = DMMeshGetStratumIS(user->dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, 1, numDof, numBC, bcField, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

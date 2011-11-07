@@ -1687,22 +1687,22 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMult_SeqDense_SeqDense"
-PetscErrorCode MatMatTransposeMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMult_SeqDense_SeqDense"
+PetscErrorCode MatTransposeMatMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatTransposeMultSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatTransposeMatMultSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatTransposeMultNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
+  ierr = MatTransposeMatMultNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqDense_SeqDense"
-PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_SeqDense_SeqDense"
+PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   PetscInt       m=A->cmap->n,n=B->cmap->n;
@@ -1720,8 +1720,8 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMultNumeric_SeqDense_SeqDense"
-PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatTransposeMatMultNumeric_SeqDense_SeqDense"
+PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
@@ -2012,9 +2012,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
 /*129*/0,
-       MatMatTransposeMult_SeqDense_SeqDense,  
-       MatMatTransposeMultSymbolic_SeqDense_SeqDense,  
-       MatMatTransposeMultNumeric_SeqDense_SeqDense, 
+       MatTransposeMatMult_SeqDense_SeqDense,  
+       MatTransposeMatMultSymbolic_SeqDense_SeqDense,  
+       MatTransposeMatMultNumeric_SeqDense_SeqDense, 
 };
 
 #undef __FUNCT__  
@@ -2202,9 +2202,12 @@ PetscErrorCode  MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C",
                                      "MatMatMult_SeqAIJ_SeqDense",
                                       MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",
                                      "MatMatMultSymbolic_SeqAIJ_SeqDense",
                                       MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);

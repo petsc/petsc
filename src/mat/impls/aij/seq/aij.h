@@ -83,6 +83,22 @@ typedef struct {
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
+typedef struct {
+  MatTransposeColoring      matcoloring;
+  Mat                       Bt_den;  /* dense matrix of B^T */
+  Mat                       ABt_den; /* dense matrix of A*B^T */
+  PetscBool                 usecoloring; 
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatMatMultTrans;
+
+typedef struct {
+  MatTransposeColoring matcoloring;
+  Mat                  Rt;   /* dense matrix of R^T */
+  Mat                  ARt;  /* dense matrix of A*R^T */
+  Mat                  RARt; /* dense matrix of R*A*R^T */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_RARt;
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
@@ -198,17 +214,23 @@ extern PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 extern PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 
+extern PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
-extern PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
-extern PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat,ISColoring,MatTransposeColoring);
+extern PetscErrorCode MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring,Mat,Mat);
 
 extern PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
@@ -232,6 +254,7 @@ extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*
 extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
 extern PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 extern PetscErrorCode  MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatRARt_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
 extern PetscErrorCode  MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);

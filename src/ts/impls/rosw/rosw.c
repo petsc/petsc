@@ -26,6 +26,7 @@ struct _RosWTableau {
   PetscReal *A;                 /* Propagation table, strictly lower triangular */
   PetscReal *Gamma;             /* Stage table, lower triangular with nonzero diagonal */
   PetscBool *GammaZeroDiag;     /* Diagonal entries that are zero in stage table Gamma, vector indicating explicit statages */
+  PetscReal *GammaExplicitCorr; /* Coefficients for correction terms needed for explicit stages in transformed variables*/
   PetscReal *b;                 /* Step completion table */
   PetscReal *bembed;            /* Step completion table for embedded method of order one less */
   PetscReal *ASum;              /* Row sum of A */
@@ -153,7 +154,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWLASSP3P4S2C, TSROSWLLSSP3P3S2C, SSP
+.seealso: TSROSW, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, SSP
 M*/
 
 /*MC
@@ -168,11 +169,11 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLLSSP3P3S2C, TSSSP
+.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLLSSP3P4S2C, TSSSP
 M*/
 
 /*MC
-     TSROSWLLSSP3P3S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+     TSROSWLLSSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -282,14 +283,14 @@ PetscErrorCode TSRosWRegisterAll(void)
     ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
   }
   {
-    const PetscReal g = (3.0+sqrt(3.0))/6.0;
+    const PetscReal s3 = PetscSqrtReal(3.),g = (3.0+s3)/6.0;
     const PetscReal
       A[3][3] = {{0,0,0},
                  {1,0,0},
                  {0.25,0.25,0}},
       Gamma[3][3] = {{0,0,0},
-                     {(-3.0-sqrt(3.0))/6.0,g,0},
-                     {(-3.0-sqrt(3.0))/24.0,(-3.0-sqrt(3.0))/8.0,g}},
+                     {(-3.0-s3)/6.0,g,0},
+                     {(-3.0-s3)/24.0,(-3.0-s3)/8.0,g}},
         b[3] = {1./6.,1./6.,2./3.},
           b2[3] = {1./4.,1./4.,1./2.};
     ierr = TSRosWRegister(TSROSWASSP3P3S1C,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
@@ -322,7 +323,7 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {1./18.,65./108.,-2./27,0}},
         b[4] = {1./6.,1./6.,1./6.,1./2.},
         b2[4] = {3./16.,10./16.,3./16.,0};
-     ierr = TSRosWRegister(TSROSWLLSSP3P3S2C,3,4,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
+     ierr = TSRosWRegister(TSROSWLLSSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
   }
 
  {
@@ -391,7 +392,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
     RosWTableau t = &link->tab;
     RosWTableauList = link->next;
     ierr = PetscFree5(t->A,t->Gamma,t->b,t->ASum,t->GammaSum);CHKERRQ(ierr);
-    ierr = PetscFree4(t->At,t->bt,t->GammaInv,t->GammaZeroDiag);CHKERRQ(ierr);
+    ierr = PetscFree5(t->At,t->bt,t->GammaInv,t->GammaZeroDiag,t->GammaExplicitCorr);CHKERRQ(ierr);
     ierr = PetscFree2(t->bembed,t->bembedt);CHKERRQ(ierr);
     ierr = PetscFree(t->name);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -496,9 +497,10 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   t->order = order;
   t->s = s;
   ierr = PetscMalloc5(s*s,PetscReal,&t->A,s*s,PetscReal,&t->Gamma,s,PetscReal,&t->b,s,PetscReal,&t->ASum,s,PetscReal,&t->GammaSum);CHKERRQ(ierr);
-  ierr = PetscMalloc4(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag);CHKERRQ(ierr);
+  ierr = PetscMalloc5(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag,s*s,PetscReal,&t->GammaExplicitCorr);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->GammaExplicitCorr,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
   if (bembed) {
     ierr = PetscMalloc2(s,PetscReal,&t->bembed,s,PetscReal,&t->bembedt);CHKERRQ(ierr);
@@ -539,6 +541,16 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   }
   for (i=0; i<s*s; i++) t->GammaInv[i] = PetscRealPart(GammaInv[i]);
   ierr = PetscFree(GammaInv);CHKERRQ(ierr);
+
+  for (i=0; i<s; i++) {
+    for (k=0; k<i+1; k++) {
+      t->GammaExplicitCorr[i*s+k]=(t->GammaExplicitCorr[i*s+k])*(t->GammaInv[k*s+k]);
+      for (j=k+1; j<i+1; j++) {
+        t->GammaExplicitCorr[i*s+k]+=(t->GammaExplicitCorr[i*s+j])*(t->GammaInv[j*s+k]);
+      }
+    }
+  }
+
   for (i=0; i<s; i++) {
     for (j=0; j<s; j++) {
       t->At[i*s+j] = 0;

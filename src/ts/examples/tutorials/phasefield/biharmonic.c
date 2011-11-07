@@ -9,15 +9,11 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation: 
 ---------------
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 ---------------
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi 
-
-Add a simple term to the right hand side so that the bulge grows/expands with time
----------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1  -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi -growth
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn   -da_refine 5 -vi -mymonitor
 
    u_t =  kappa \Delta \Delta u +   6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
     -1 <= u <= 1 
@@ -25,28 +21,28 @@ Add a simple term to the right hand side so that the bulge grows/expands with ti
 
 Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows 
 ---------------
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_solution -ts_monitor_solution_initial
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
  
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_solution -ts_monitor_solution_initial
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_solution -ts_monitor_solution_initial
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi -ts_monitor_solution -ts_monitor_solution_initial
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and then grows)
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1.
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -mymonitor
 
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -degenerate
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -degenerate -mymonitor
 
 
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi -ts_monitor_solution -ts_monitor_solution_initial
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 
 
@@ -55,8 +51,8 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 #include <petscdmda.h>
 #include <petscts.h>
 
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**);
-                                                                                          typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -72,7 +68,7 @@ int main(int argc,char **argv)
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
   PetscReal              vbounds[] = {-1.1,1.1};
-  PetscBool              wait,vi = PETSC_FALSE;
+  PetscBool              wait,vi = PETSC_FALSE,mymonitor;
   Vec                    ul,uh;
   UserCtx                ctx;
 
@@ -82,8 +78,6 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ctx.kappa = 1.0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
-  ctx.growth = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-growth",&ctx.growth,PETSC_NULL);CHKERRQ(ierr);
   ctx.degenerate = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&ctx.degenerate,PETSC_NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
@@ -101,8 +95,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
   ctx.truncation = 1;
   ierr = PetscOptionsInt("-truncation","order of log truncation (1=cubic, 2=quadratic)","",ctx.truncation,&ctx.truncation,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,1000);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -126,6 +121,8 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -141,13 +138,18 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&ctx);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+#if defined(f00)
+  {
+    SNES snes;
+    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  }
+#endif
 
   if (vi) {
     ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
@@ -160,7 +162,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -169,8 +171,10 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
-  ctx.ports = PETSC_NULL;
-  ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
+  if (mymonitor) {
+    ctx.ports = PETSC_NULL;
+    ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -187,6 +191,7 @@ int main(int argc,char **argv)
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -273,9 +278,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
     }
     f[i] = -ctx->kappa*(l + r - 2.0*c)*sx; 
-    if (ctx->growth) {
-      f[i] += 100000*((x[i] < .2) ?  0: sx*x[i]);
-    }
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
       case 1: // double well
@@ -345,13 +347,110 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
+/* 
+   FormJacobian - Evaluates nonlinear function's Jacobian
+
+*/
+PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructure *str,void *ptr)
+{
+  DM             da;
+  PetscErrorCode ierr;
+  PetscInt       i,Mx,xs,xm;
+  MatStencil     row,cols[5];
+  PetscReal      hx,sx;
+  PetscScalar    *x,c,r,l,vals[5];
+  Vec            localX;
+  UserCtx        *ctx = (UserCtx*)ptr;
+  PetscReal      tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b;//a and b are used in the cubic truncation of the log function
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
+
+  /*
+     Scatter ghost points to local vector,using the 2-step process
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  /*
+     Get pointers to vector data
+  */
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+
+  /*
+     Get local grid boundaries
+  */
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  for (i=xs; i<xs+xm; i++) {
+    row.i = i;
+    if (ctx->degenerate) {
+      c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; 
+    } else {
+      cols[0].i = i - 2; vals[0] = -ctx->kappa*sx*sx;
+      cols[1].i = i - 1; vals[1] =  4.0*ctx->kappa*sx*sx;
+      cols[2].i = i    ; vals[2] = -6.0*ctx->kappa*sx*sx;
+      cols[3].i = i + 1; vals[3] =  4.0*ctx->kappa*sx*sx;
+      cols[4].i = i + 2; vals[4] = -ctx->kappa*sx*sx;
+    }
+    ierr = MatSetValuesStencil(*B,1,&row,5,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+
+    if (ctx->cahnhillard) {
+      switch (ctx->energy) {
+      case 1: // double well
+        //  f[i] += 6.*.25*x[i]*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (3.*x[i]*x[i] - 1.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      break;
+      case 2: // double obstacle
+       //        f[i] += -(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          break;
+      case 3: // logarithmic + double well
+        break;
+      case 4: // logarithmic + double obstacle
+        break;
+      }
+    }
+
+  }
+
+  /*
+     Restore vectors
+  */
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0); 
+} 
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
-  PetscScalar    *u,r;
-  PetscReal      hx,x;
+  PetscErrorCode    ierr;
+  PetscInt          i,xs,xm,Mx,N,scale;
+  PetscScalar       *u,r;
+  PetscReal         hx,x;
+  const PetscScalar *f;
+  Vec               finesolution;
+  PetscViewer       viewer;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -369,6 +468,18 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
+ /*  InitialSolution.biharmonic is obtained by running 
+      ./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 30
+      After changing the initial grid spacing to 10 and the stencil width to 2 in the DMDA create.
+   */
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.biharmonic",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
+  ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr);
+  scale = N/Mx;
+  ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr);
+
   /*
      Compute function over the locally owned part of the grid
   */
@@ -380,7 +491,13 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     } else {
       u[i] = -.5;
     }
+    /* With the initial condition above the method is first order in space */
+    /* this is a smooth initial condition so the method becomes second order in space */
+    /*u[i] = PetscSinScalar(2*PETSC_PI*x); */
+    u[i] = f[scale*i];
   }
+  ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
+  ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
 
   /*
      Restore vectors

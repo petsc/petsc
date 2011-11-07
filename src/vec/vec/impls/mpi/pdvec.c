@@ -692,6 +692,14 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
+#if defined(PETSC_USE_REAL_SINGLE)
+    scalartype = H5T_NATIVE_FLOAT;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#error "HDF5 output with 128 bit floats not supported."
+#else
+    scalartype = H5T_NATIVE_DOUBLE;
+#endif
+
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
   if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
@@ -700,13 +708,6 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
     status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
 
-#if defined(PETSC_USE_REAL_SINGLE)
-    scalartype = H5T_NATIVE_FLOAT;
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#error "HDF5 output with 128 bit floats not supported."
-#else
-    scalartype = H5T_NATIVE_DOUBLE;
-#endif
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
 #else

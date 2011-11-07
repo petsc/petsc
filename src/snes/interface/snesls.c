@@ -1,6 +1,6 @@
 #include <private/snesimpl.h>      /*I "petscsnes.h"  I*/
 
-const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "SECANT", "SNESLineSearchType","SNES_LS_",0};
+const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "SECANT", "USERDEFINED", "SNESLineSearchType","SNES_LS_",0};
 
 const char *SNESLineSearchTypeName(SNESLineSearchType type)
 {
@@ -63,7 +63,7 @@ const char *SNESLineSearchTypeName(SNESLineSearchType type)
 PetscErrorCode  SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *),void *lsctx)
 {
   PetscFunctionBegin;
-  snes->ls_type = (SNESLineSearchType)-1;  /* unknown */
+  snes->ls_type = SNES_LS_USER_DEFINED; /* user defined */
   snes->ops->linesearch = func;
   snes->lsP = lsctx;
   PetscFunctionReturn(0);
@@ -775,7 +775,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: alphas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
-                                    alpha, alpha_mid, alpha_old, sqrt(PetscRealPart(fnrm)), sqrt(PetscRealPart(fnrm_mid)), sqrt(PetscRealPart(fnrm_old)));CHKERRQ(ierr);
+                                    alpha, alpha_mid, alpha_old, PetscSqrtReal(PetscRealPart(fnrm)), PetscSqrtReal(PetscRealPart(fnrm_mid)), PetscSqrtReal(PetscRealPart(fnrm_old)));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
 

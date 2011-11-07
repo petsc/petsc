@@ -101,6 +101,10 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   void *ptmp = p; 
 #endif
 
+  FILE *myf;
+  myf = fopen("/Users/barrysmith/jeff","w");
+ fprintf(myf,"%d n\n",n);fflush(myf);
+
   maxblock = 65536;
   if (type == PETSC_INT)         n *= sizeof(int);
   else if (type == PETSC_SCALAR) n *= sizeof(PetscScalar);
@@ -108,9 +112,13 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_CHAR)   n *= sizeof(char);
   else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
   
+ fprintf(myf,"%d n\n",n);fflush(myf);
+
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
+    fprintf(myf,"fd %d %d n\n",fd, n);fflush(myf);
     err = read(fd,pp,wsize);
+    fprintf(myf,"%d err %d wsize\n",err,wsize);fflush(myf);
 #if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
 #endif
@@ -121,12 +129,13 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     n  -= err;
     pp += err;
   }
+ fprintf(myf,"%d err\n",err);fflush(myf);
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
   else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
   else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
 #endif
-
+ fprintf(myf,"%d err\n",err);fflush(myf);
   return 0;
 }
 

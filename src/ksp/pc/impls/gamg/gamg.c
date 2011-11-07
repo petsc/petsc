@@ -4,7 +4,7 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include "private/matimpl.h"
 
-#if defined PETSC_USE_LOG
+#if defined PETSC_USE_LOG 
 PetscLogEvent gamg_setup_events[NUM_SET];
 #endif
 #define GAMG_MAXLEVELS 30
@@ -17,7 +17,7 @@ static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 /* Private context for the GAMG preconditioner */
 static PetscBool s_avoid_repart = PETSC_FALSE;
 static PetscInt s_min_eq_proc = 600;
-static PetscReal s_threshold = 0.001;
+static PetscReal s_threshold = 0.05;
 typedef struct gamg_TAG {
   PetscInt       m_dim;
   PetscInt       m_Nlevels;
@@ -54,7 +54,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-my0)/bs; 
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
-
+ 
   pc_gamg->m_data_rows = 1;
   if(a_coords==0 && pc_gamg->m_method==0) pc_gamg->m_method = 2; /* use SA if no coords */
   if( pc_gamg->m_method==0 ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
@@ -175,8 +175,16 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
   /* RAP */
+  // #define USE_R
+#ifdef USE_R
+  /* make R wih brute force for now */
+  ierr = MatTranspose( Pold, Pnew );     
+  ierr = MatDestroy( &Pold );  CHKERRQ(ierr);
+  ierr = MatRARt( a_Amat_fine, Pnew, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
+  Pold = Pnew;
+#else
   ierr = MatPtAP( a_Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
-  
+#endif
   ierr = MatSetBlockSize( Cmat, a_cbs );      CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
@@ -440,8 +448,11 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     {
       IS findices;
       ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
-
+#ifdef USE_R
+      ierr = MatGetSubMatrix( Pold, new_indices, findices, MAT_INITIAL_MATRIX, &Pnew );
+#else
       ierr = MatGetSubMatrix( Pold, findices, new_indices, MAT_INITIAL_MATRIX, &Pnew );
+#endif
       CHKERRQ(ierr);
 
       ierr = ISDestroy( &findices ); CHKERRQ(ierr);
@@ -684,7 +695,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 #ifdef VERBOSE
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
 #endif 
     }
     { 
@@ -702,7 +713,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
   }
-  { 
+  {
     /* coarse grid */
     KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
     Mat Lmat = Aarr[pc_gamg->m_Nlevels-1];
@@ -966,7 +977,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PCGAMGSetSolverType_GAMG(PC pc, char str[], PetscInt sz )
 {
   PC_MG           *mg = (PC_MG*)pc->data;
-  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx; 
   
   PetscFunctionBegin;
   if(sz < 64) strcpy(pc_gamg->m_type,str);
@@ -994,6 +1005,13 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                               64, 
                               &flag ); 
     CHKERRQ(ierr);
+    if( flag && pc_gamg->m_data != 0 ) {
+      if( (strcmp(pc_gamg->m_type,"sa")==0 && pc_gamg->m_method != 2) ||
+          (strcmp(pc_gamg->m_type,"pa")==0 && pc_gamg->m_method != 1) ||
+          (strcmp(pc_gamg->m_type,"geo")==0 && pc_gamg->m_method != 0) ) { 
+        SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "PCSetFromOptions called of PCSetCoordinates (with new method, after data was created)"); 
+      }
+    }
 
     if (flag && strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
     else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;

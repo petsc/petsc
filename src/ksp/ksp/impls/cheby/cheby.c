@@ -59,12 +59,11 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_Chebychev(KSP ksp,PetscReal a
       ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
-
-      if (a >= 0) cheb->tform[0] = a;
-      if (b >= 0) cheb->tform[1] = b;
-      if (c >= 0) cheb->tform[2] = c;
-      if (d >= 0) cheb->tform[3] = d;
     }
+    if (a >= 0) cheb->tform[0] = a;
+    if (b >= 0) cheb->tform[1] = b;
+    if (c >= 0) cheb->tform[2] = c;
+    if (d >= 0) cheb->tform[3] = d;
   } else {
     ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
     ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);

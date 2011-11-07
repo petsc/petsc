@@ -63,8 +63,11 @@ typedef struct {
 
 
 #define MatIJGetSuppIndex_Private(A,mode,i,ii)                          \
+do                                                                      \
+ {                                                                      \
+  (ii) = -1;                                                            \
   if((mode) == MATIJ_LOCAL) {                                           \
-    ii = i;                                                             \
+    (ii) = i;                                                           \
   }                                                                     \
   else {                                                                \
     Mat_IJ *_13_ij = (Mat_IJ*)((A)->data);                              \
@@ -74,10 +77,12 @@ typedef struct {
       else                                                              \
         (ii) = -1;                                                      \
     }                                                                   \
-    else  {                                                            \
-      PetscHashIMap(_13_ij->hsupp,i,ii);                                \
+    else  {                                                             \
+      PetscHashIMap(_13_ij->hsupp,(i),(ii));                            \
     }                                                                   \
   }                                                                     \
+ }                                                                      \
+while(0)
 
 #define MatIJGetIndexImage_Private(A,mode,i,ii)                         \
 {                                                                       \
@@ -179,7 +184,7 @@ PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
     else {
       /* Convert to local. */
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if((indi < 0 || indi > pg->m)){
+      if((indi < 0 || indi >= pg->m)){
         /* drop */
         if(outsizes_) outsizes_[i] = 0;
         continue;
@@ -300,7 +305,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
     }
     else {
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if((indi < 0 || indi > pg->m)){
+      if((indi < 0 || indi >=pg->m)){
         /* drop */
         continue;
       }
@@ -334,7 +339,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
         /* Convert to local. */
         MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
       }
-      if((indi < 0 || indi > pg->m)){
+      if((indi < 0 || indi >= pg->m)){
         /* drop */
         continue;
       }
@@ -402,7 +407,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
 {
   PetscErrorCode ierr;
   Mat_IJ *pga = (Mat_IJ*)A->data;
-  Mat_IJ *pgb = (Mat_IJ*)A->data;
+  Mat_IJ *pgb = (Mat_IJ*)B->data;
   PetscBool isij;
   PetscInt indi = -1, indj, i,j,k,outsize_ = -1,*outidxi_ = PETSC_NULL, *outidxj_ = PETSC_NULL, *binsizes_ = PETSC_NULL;
 
@@ -484,7 +489,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
     else {
       /* Convert to local. */
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if((indi < 0 || indi > pga->m)){
+      if((indi < 0 || indi >= pga->m)){
         /* drop */
         continue;
       }
@@ -512,7 +517,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
       else {
         /* Convert to local. */
         MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-        if((indi < 0 || indi > pga->m)){
+        if((indi < 0 || indi >= pga->m)){
           /* drop */
           continue;
         }
@@ -530,7 +535,55 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_IJ"
+PetscErrorCode MatGetRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[]) {
+  PetscInt off,len,i,r;
+  PetscErrorCode ierr;
+  Mat_IJ *pg = (Mat_IJ*)A->data;
 
+  PetscFunctionBegin;
+  /* It is easy to implement this, but will only be done, if there is demand. */
+  if(rowsize) *rowsize = 0; 
+  if(cols)    *cols    = PETSC_NULL; 
+  if(vals)    *vals    = PETSC_NULL;
+
+  /* Convert to local. */
+  MatIJGetSuppIndex_Private(A,MATIJ_GLOBAL,row,r);
+  if((r >= 0 && r < pg->m)){
+    off = pg->ijlen[r];
+    len = pg->ijlen[r+1]-pg->ijlen[r];
+    if(cols) *cols = pg->ij+off;
+    if(rowsize) *rowsize = len;
+    if(vals) {
+      ierr = PetscMalloc(sizeof(PetscScalar)*len, vals); CHKERRQ(ierr);
+      for(i = 0; i < len; ++i) {
+        (*vals)[i] = (PetscScalar)1.0;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+ }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_IJ"
+PetscErrorCode MatRestoreRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[]) {
+
+  PetscInt r;
+  PetscErrorCode ierr;
+  Mat_IJ *pg = (Mat_IJ*)A->data;
+
+  PetscFunctionBegin;
+
+  /* Convert to local. */
+  MatIJGetSuppIndex_Private(A,MATIJ_GLOBAL,row,r);
+  if((r >= 0 && r < pg->m)){
+    if(vals) {
+      ierr = PetscFree(*vals); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 
 /*@C
@@ -1763,8 +1816,8 @@ PetscErrorCode MatTranspose_IJ(Mat A, MatReuse reuse, Mat *B)
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "MatMatTransposeMult_IJ_IJ"
-PetscErrorCode MatMatTransposeMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
+#define __FUNCT__ "MatTransposeMatMult_IJ_IJ"
+PetscErrorCode MatTransposeMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Mat *CC) 
 {
   PetscErrorCode ierr;
   Mat C;
@@ -1910,7 +1963,7 @@ PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Ma
                                                                                                -
    */
   ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &At);                CHKERRQ(ierr);
-  ierr = MatMatTransposeMult(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
+  ierr = MatTransposeMatMult(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
   ierr = MatDestroy(&At);                                         CHKERRQ(ierr);
   *CC = C;
   PetscFunctionReturn(0);
@@ -1993,7 +2046,7 @@ PetscErrorCode MatDestroy_IJ(Mat A) {
   A->data = PETSC_NULL;
   
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatTransposeMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatTransposeMatMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2017,14 +2070,14 @@ PetscErrorCode MatCreate_IJ(Mat A) {
   A->ops->assemblybegin         = MatAssemblyBegin_IJ;
   A->ops->assemblyend           = MatAssemblyEnd_IJ;
   A->ops->zeroentries           = MatZeroEntries_IJ;
+  A->ops->getrow                = MatGetRow_IJ;
+  A->ops->restorerow            = MatRestoreRow_IJ;
   A->ops->duplicate             = MatDuplicate_IJ;
   A->ops->destroy               = MatDestroy_IJ;
   A->ops->view                  = MatView_IJ;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A, "MatMatMult_ij_ij_C", "MatMatMult_IJ_IJ", 
-                                           MatMatMult_IJ_IJ);          CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A, "MatMatTransposeMult_ij_ij_C", "MatMatTransposeMult_IJ_IJ", 
-                                           MatMatTransposeMult_IJ_IJ); CHKERRQ(ierr);
+  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL, (PetscVoidFunction)MatMatMult_IJ_IJ, "MatMatMult", 2, MATIJ,MATIJ);  CHKERRQ(ierr);
+  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL, (PetscVoidFunction)MatTransposeMatMult_IJ_IJ, "MatTransposeMatMult", 2, MATIJ,MATIJ);  CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A, MATIJ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

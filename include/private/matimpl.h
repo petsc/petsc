@@ -130,9 +130,9 @@ struct _MatOps {
   PetscErrorCode (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
   /*94*/
   PetscErrorCode (*ptapnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
-  PetscErrorCode (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*);
-  PetscErrorCode (*matmulttransposenumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
+  PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
   PetscErrorCode (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=seqaij */
   /*99*/
   PetscErrorCode (*ptapnumeric_seqaij)(Mat,Mat,Mat);             /* actual implememtation, A=seqaij */
@@ -172,14 +172,25 @@ struct _MatOps {
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
-  PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
-  PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*transposematmultsymbolic)(Mat,Mat,PetscReal,Mat*);
+  PetscErrorCode (*transposematmultnumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*transposecoloringcreate)(Mat,ISColoring,MatTransposeColoring);
+  /*134*/
+  PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
+  PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring,Mat,Mat);
+  PetscErrorCode (*rart)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
+  PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
     in include/petscmat.h and include/finclude/petscmat.h
 */
+
+#include <petscsys.h>
+extern PetscErrorCode  MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
+extern PetscErrorCode  MatQueryOp(MPI_Comm, PetscVoidFunction*, const char[], PetscInt, ...);
 
 typedef struct _p_MatBaseName* MatBaseName;
 struct _p_MatBaseName {
@@ -394,6 +405,22 @@ struct  _p_MatFDColoring{
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
 
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
+};
+
+struct  _p_MatTransposeColoring{
+  PETSCHEADER(int);
+  PetscInt       M,N,m;            /* total rows, columns; local rows */
+  PetscInt       rstart;           /* first row owned by local processor */
+  PetscInt       ncolors;          /* number of colors */
+  PetscInt       *ncolumns;        /* number of local columns for a color */ 
+  PetscInt       *nrows;           /* number of local rows for each color */
+  PetscInt       currentcolor;     /* color for which function evaluation is being done now */
+  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+ 
+  PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
+  PetscInt       *rows;                  /* lists the local rows for each color (using the local row numbering) */
+  PetscInt       *columnsforspidx;       /* maps (row,color) in the dense matrix to index of sparse matrix arrays a->j and a->a */
+  PetscInt       *columns;               /* lists the local columns of each color (using global column numbering) */
 };
 
 /*
@@ -996,13 +1023,13 @@ extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_Back
 extern PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 extern PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
-extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
+extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
 extern PetscLogEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
 
-extern PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 extern PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
+extern PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;
 extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
 

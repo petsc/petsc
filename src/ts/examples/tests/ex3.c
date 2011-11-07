@@ -34,7 +34,7 @@ typedef struct{
 
 extern PetscScalar exact(PetscScalar,PetscReal);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
-extern void  Petsc_KSPSolve(AppCtx*);
+extern PetscErrorCode Petsc_KSPSolve(AppCtx*);
 extern PetscScalar bspl(PetscScalar*,PetscScalar,PetscInt,PetscInt,PetscInt[][2],PetscInt);
 extern void femBg(PetscScalar[][3],PetscScalar*,PetscInt,PetscScalar*,PetscReal);
 extern void femA(AppCtx*,PetscInt,PetscScalar*);
@@ -50,6 +50,7 @@ int main(int argc,char **argv)
   PetscReal      stepsz[4],T,ftime;
   PetscErrorCode ierr;
   TS             ts;
+  SNES           snes;
   Mat            Jmat;
   AppCtx         appctx;   /* user-defined application context */
   Vec            init_sol; /* ts solution vector */
@@ -136,7 +137,8 @@ int main(int argc,char **argv)
   }
 
   /* use petsc to compute the jacobian by finite differences */
-  ierr = TSSetRHSJacobian(ts,Jmat,Jmat,TSDefaultComputeJacobian,&appctx);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
 
   /* get the command line options if there are any and set them */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -242,7 +244,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
 
-  norm_2 = sqrt(h)*norm_2;
+  norm_2 = PetscSqrtReal(h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %G, 2-norm error = %6.4f, max norm error = %6.4f\n",
@@ -262,29 +264,29 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 %%      Function to solve a linear system using KSP                                           %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-void  Petsc_KSPSolve(AppCtx *obj)
+PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 {
    PetscErrorCode  ierr;
    KSP             ksp;
    PC              pc;
 
    /*create the ksp context and set the operators,that is, associate the system matrix with it*/
-   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);
-   ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat,DIFFERENT_NONZERO_PATTERN);
+   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+   ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
    /*get the preconditioner context, set its type and the tolerances*/
-   ierr = KSPGetPC(ksp,&pc);
-   ierr = PCSetType(pc,PCLU);
-   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
+   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
    /*get the command line options if there are any and set them*/
-   ierr = KSPSetFromOptions(ksp);
+   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
    /*get the linear system (ksp) solve*/
-   ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);
+   ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);CHKERRQ(ierr);
 
    KSPDestroy(&ksp);
-   return;
+   return 0;
 }
 
 /***********************************************************************
@@ -580,7 +582,7 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
     ierr = VecCopy(obj->ksp_rhs,globalout);
   } else {
     /* ksp_sol = inv(Amat)*ksp_rhs */
-    Petsc_KSPSolve(obj);
+    ierr = Petsc_KSPSolve(obj);CHKERRQ(ierr);
     ierr = VecCopy(obj->ksp_sol,globalout);
   }
   return 0;

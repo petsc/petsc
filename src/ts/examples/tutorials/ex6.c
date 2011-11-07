@@ -12,7 +12,7 @@ Input parameters include:\n\
    Concepts: TS^time-dependent linear problems
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
-   Routines: TSCreate(); TSSetSolution(); TSSetMatrices();
+   Routines: TSCreate(); TSSetSolution(); TSSetRHSJacobian(), TSSetIJacobian();
    Routines: TSSetInitialTimeStep(); TSSetDuration(); TSMonitorSet();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
    Routines: TSSetTimeStep(); TSGetTimeStep();
@@ -399,7 +399,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   */
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
-  norm_2 = sqrt(appctx->h)*norm_2;
+  norm_2 = PetscSqrtReal(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);

@@ -3,7 +3,7 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
 /* 
    u_t = uxx + uyy
    0 < x < 1, 0 < y < 1; 
-   At t=0: u(x,y) = exp(c*r*r*r), if r=sqrt((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
+   At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
 

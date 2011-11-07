@@ -533,7 +533,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     err = fflush(fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {

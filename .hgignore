@@ -38,6 +38,7 @@ src/python/*
 *~
 *.orig
 #*#
+.nagged
 ex[0-9]
 ex[0-9]f
 ex[0-9]f90
@@ -98,3 +99,5 @@ GTAGS
 CMakeLists.txt
 src/snes/examples/tutorials/ex52\.h
 src/snes/examples/tutorials/ex52_inline\.h
+src/snes/examples/tutorials/ex56_inline\.h
+src/snes/examples/tutorials/ex56\.h

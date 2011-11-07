@@ -540,10 +540,10 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 
   if (ntype == NORM_2) {
-    result[0] = sqrt(result[0]);
+    result[0] = PetscSqrtReal(result[0]);
   } else if (ntype == NORM_1_AND_2) {
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
-    result[1] = sqrt(result[1]);
+    result[1] = PetscSqrtReal(result[1]);
   }
   if (ntype!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[ntype],result[0]);CHKERRQ(ierr);

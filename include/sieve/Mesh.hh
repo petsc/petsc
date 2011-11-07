@@ -1259,6 +1259,23 @@ namespace ALE {
         this->value = std::max(this->value, this->getLabelValue(arrow.target));
       };
     };
+    class BinaryStratifyVisitor {
+    protected:
+      label_type& height;
+      label_type& depth;
+      bool        isLeaf;
+    public:
+      BinaryStratifyVisitor(label_type& h, label_type& d, bool isLeaf) : height(h), depth(d), isLeaf(isLeaf) {};
+      void visitPoint(const typename sieve_type::point_type& point) {
+        if (isLeaf) {
+          height.setCone(0, point);
+          depth.setCone(1, point);
+        } else {
+          height.setCone(1, point);
+          depth.setCone(0, point);
+        }
+      };
+    };
     class HeightVisitor {
     protected:
       const sieve_type& sieve;
@@ -1266,7 +1283,7 @@ namespace ALE {
       int               maxHeight;
       std::set<typename sieve_type::point_type> modifiedPoints;
     public:
-      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(-1) {};
+      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(0) {};
       void visitPoint(const typename sieve_type::point_type& point) {
         MaxSupportVisitor v(height, -1);
 
@@ -1299,7 +1316,7 @@ namespace ALE {
       const point_type  limitPoint;
       std::set<point_type> modifiedPoints;
     public:
-      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(sieve.getChart().max()+1) {};
+      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(0), limitPoint(sieve.getChart().max()+1) {};
       DepthVisitor(const sieve_type& s, const point_type& limit, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(limit) {};
       void visitPoint(const point_type& point) {
         if (point >= this->limitPoint) return;
@@ -1492,6 +1509,17 @@ namespace ALE {
       return this->_labels[name]->support(value);
     };
   public: // Stratification
+    void computeBinaryStratification() {
+      const Obj<label_type>& height = this->createLabel("height");
+      const Obj<label_type>& depth  = this->createLabel("depth");
+      BinaryStratifyVisitor  l(*height, *depth, true);
+      BinaryStratifyVisitor  r(*height, *depth, false);
+
+      this->_sieve->leaves(l);
+      this->_sieve->roots(r);
+      this->setHeight(1);
+      this->setDepth(1);
+    };
     void computeHeights() {
       const Obj<label_type>& label = this->createLabel(std::string("height"));
       HeightVisitor          h(*this->_sieve, *label);
@@ -1564,9 +1592,18 @@ namespace ALE {
     virtual const Obj<label_sequence>& depthStratum(int depth) {
       return this->getLabelStratum("depth", depth);
     };
+    #undef __FUNCT__
+    #define __FUNCT__ "stratify"
     void stratify() {
-      this->computeHeights();
-      this->computeDepths();
+      ALE::LogEvent event = ALE::LogEventRegister(__FUNCT__);
+      ALE::LogEventBegin(event);
+      if (this->_sieve->numRoots() + this->_sieve->numLeaves() == (int) this->_sieve->getChart().size()) {
+        this->computeBinaryStratification();
+      } else {
+        this->computeHeights();
+        this->computeDepths();
+      }
+      ALE::LogEventEnd(event);
     };
   protected:
     template<typename Value>
@@ -1679,6 +1716,25 @@ namespace ALE {
       this->getSieve()->cone(p, cV);
       if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
+    }
+    int sizeWithBC(PetscSection section, const point_type& p) {
+      typedef ISieveVisitor::SizeWithBCVisitor<sieve_type,PetscSection>             size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(section);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
+      return sV.getSize();
+    }
+    void sizeWithBC(PetscSection section, const point_type& p, PetscInt fieldSize[]) {
+      typedef ISieveVisitor::SizeWithBCVisitor<sieve_type,PetscSection>             size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(section, fieldSize);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
     }
     template<typename Section>
     void allocate(const Obj<Section>& section) {

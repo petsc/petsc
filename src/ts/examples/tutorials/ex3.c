@@ -392,7 +392,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   */
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
-  norm_2 = sqrt(appctx->h)*norm_2;
+  norm_2 = PetscSqrtReal(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);

@@ -174,29 +174,70 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
+/* This routine is not used. Should be removed! */
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultTranspose_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMult_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-
+ 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscContainerDestroy_Mat_MatMatMultTrans"
+PetscErrorCode PetscContainerDestroy_Mat_MatMatMultTrans(void *ptr)
+{
+  PetscErrorCode      ierr;
+  Mat_MatMatMultTrans *multtrans=(Mat_MatMatMultTrans*)ptr;
+
+  PetscFunctionBegin;
+  ierr = MatTransposeColoringDestroy(&multtrans->matcoloring);CHKERRQ(ierr);
+  ierr = MatDestroy(&multtrans->Bt_den);CHKERRQ(ierr);
+  ierr = MatDestroy(&multtrans->ABt_den);CHKERRQ(ierr);
+  ierr = PetscFree(multtrans);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_SeqAIJ_MatMatMultTrans"
+PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(Mat A)
+{
+  PetscErrorCode      ierr;
+  PetscContainer      container;
+  Mat_MatMatMultTrans *multtrans=PETSC_NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
+  A->ops->destroy   = multtrans->destroy;
+  if (A->ops->destroy) {
+    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultTrans",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
-  Mat            Bt;
-  PetscInt       *bti,*btj;
+  PetscErrorCode      ierr;
+  Mat                 Bt;
+  PetscInt            *bti,*btj;
+  Mat_MatMatMultTrans *multtrans;
+  PetscContainer      container;
+  
+  PetscLogDouble      t0,tf,etime2=0.0;
   
   PetscFunctionBegin;
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
    /* create symbolic Bt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,PETSC_NULL,&Bt);CHKERRQ(ierr);
@@ -204,6 +245,62 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   /* get symbolic C=A*Bt */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
 
+  /* create a supporting struct for reuse intermidiate dense matrices with matcoloring */
+  ierr = PetscNew(Mat_MatMatMultTrans,&multtrans);CHKERRQ(ierr);
+
+  /* attach the supporting struct to C */
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,multtrans);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultTrans);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultTrans",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
+  multtrans->usecoloring = PETSC_FALSE;
+  multtrans->destroy = (*C)->ops->destroy;
+  (*C)->ops->destroy = MatDestroy_SeqAIJ_MatMatMultTrans;
+
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  etime2 += tf - t0;
+
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
+  if (multtrans->usecoloring){
+    /* Create MatTransposeColoring from symbolic C=A*B^T */
+    MatTransposeColoring      matcoloring;
+    ISColoring                iscoloring;
+    Mat                       Bt_dense,C_dense;
+    PetscLogDouble            etime0=0.0,etime01=0.0,etime1=0.0;
+
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatGetColoring(*C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime0 += tf - t0;
+
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
+    multtrans->matcoloring = matcoloring;
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime01 += tf - t0;
+
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    /* Create Bt_dense and C_dense = A*Bt_dense */
+    ierr = MatCreate(PETSC_COMM_SELF,&Bt_dense);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
+    ierr = MatSetType(Bt_dense,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(Bt_dense,PETSC_NULL);CHKERRQ(ierr);
+    Bt_dense->assembled = PETSC_TRUE;
+    multtrans->Bt_den = Bt_dense;
+
+    ierr = MatCreate(PETSC_COMM_SELF,&C_dense);CHKERRQ(ierr);
+    ierr = MatSetSizes(C_dense,A->rmap->n,matcoloring->ncolors,A->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
+    ierr = MatSetType(C_dense,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(C_dense,PETSC_NULL);CHKERRQ(ierr);
+    Bt_dense->assembled = PETSC_TRUE;
+    multtrans->ABt_den = C_dense;
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime1 += tf - t0;
+    printf("Sym = GetColor %g + ColorCreate %g + MatDenseCreate %g + non-colorSym %g = %g\n",etime0,etime01,etime1,etime2,etime0+etime01+etime1+etime2);
+  }
   /* clean up */
   ierr = MatDestroy(&Bt);CHKERRQ(ierr);
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
@@ -304,7 +401,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
     ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMultTranspose(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatTransposeMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -315,8 +412,8 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 
 /* #define USE_ARRAY - for sparse dot product. Slower than !USE_ARRAY */
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
@@ -324,11 +421,48 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
+  Mat_MatMatMultTrans *multtrans;
+  PetscContainer      container;
 #if defined(USE_ARRAY)
-  MatScalar *spdot;
+  MatScalar      *spdot;
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr  = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
+  if (multtrans->usecoloring){
+    MatTransposeColoring  matcoloring = multtrans->matcoloring;
+    Mat                   Bt_dense;
+    PetscInt              m,n;
+    PetscLogDouble t0,tf,etime0=0.0,etime1=0.0,etime2=0.0;
+    Mat C_dense = multtrans->ABt_den;
+
+    Bt_dense = multtrans->Bt_den;
+    ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
+    printf("Bt_dense: %d,%d\n",m,n); 
+
+    /* Get Bt_dense by Apply MatTransposeColoring to B */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime0 += tf - t0;
+
+    /* C_dense = A*Bt_dense */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime2 += tf - t0;
+  
+    /* Recover C from C_dense */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    etime1 += tf - t0;
+    printf("Num = ColoringApply: %g %g + Mult_sp_dense %g = %g\n",etime0,etime1,etime2,etime0+etime1+etime2);
+    PetscFunctionReturn(0);
+  }
+
 #if defined(USE_ARRAY)
   /* allocate an array for implementing sparse inner-product */
   ierr = PetscMalloc((A->cmap->n+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
@@ -387,21 +521,21 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMult_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+#define __FUNCT__ "MatTransposeMatMult_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
-  ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   Mat            At;
@@ -422,8 +556,8 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
@@ -664,5 +798,251 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(cn*2.0*a->nz);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatTransColoringApplySpToDen_SeqAIJ"
+PetscErrorCode  MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring coloring,Mat B,Mat Btdense)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)B->data;
+  Mat_SeqDense   *atdense = (Mat_SeqDense*)Btdense->data;
+  PetscInt       m=Btdense->rmap->n,n=Btdense->cmap->n,j,k,l,col,anz,*atcol,brow;
+  MatScalar      *atval,*bval=atdense->v;
+  PetscInt       *columns=coloring->columns,*colorforcol=coloring->colorforcol;
+
+  PetscFunctionBegin;    
+  ierr = PetscMemzero(atdense->v,(m*n)*sizeof(MatScalar));CHKERRQ(ierr);
+  for (k=0; k<coloring->ncolors; k++) { 
+    for (l=0; l<coloring->ncolumns[k]; l++) { /* insert a row of B to a column of Btdense */
+      col   = *(columns + colorforcol[k] + l);
+      atcol = a->j + a->i[col];
+      atval = a->a + a->i[col]; 
+      anz   = a->i[col+1] - a->i[col];
+      for (j=0; j<anz; j++){
+        brow  = atcol[j]; 
+        bval[k*m+brow] = atval[j];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatTransColoringApplyDenToSp_SeqAIJ"
+PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcoloring,Mat Cden,Mat Csp)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)Csp->data;
+  PetscInt       k,l,row,m; 
+  PetscScalar    *ca_den,*cp_den,*ca=csp->a;
+  PetscInt       *rows=matcoloring->rows,*spidx=matcoloring->columnsforspidx,*colorforrow=matcoloring->colorforrow,idx;
+ 
+  PetscFunctionBegin;    
+  ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetArray(Cden,&ca_den);CHKERRQ(ierr);
+  cp_den = ca_den;
+  for (k=0; k<matcoloring->ncolors; k++) { 
+    for (l=0; l<matcoloring->nrows[k]; l++){
+      row     = *(rows + colorforrow[k] + l);
+      idx     = *(spidx + colorforrow[k] + l);
+      ca[idx] = cp_den[row];
+    }
+    cp_den += m;
+  }
+  ierr = MatRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ MatGetColumnIJ_SeqAIJ_Color() and MatRestoreColumnIJ_SeqAIJ_Color() are customized from
+ MatGetColumnIJ_SeqAIJ() and MatRestoreColumnIJ_SeqAIJ() by adding an output
+ spidx[], index of a->j, to be used for setting 'columnsforspidx' in MatTransposeColoringCreate_SeqAIJ().
+ */
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color"
+PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*collengths,*cia,*cja,n = A->cmap->n,m = A->rmap->n;
+  PetscInt       nz = a->i[m],row,*jj,mr,col;
+  PetscInt       *cspidx;
+
+  PetscFunctionBegin;  
+  *nn = n;
+  if (!ia) PetscFunctionReturn(0);
+  if (symmetric) {
+    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatGetColumnIJ_SeqAIJ_Color() not supported for the case symmetric");
+    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
+    jj = a->j;
+    for (i=0; i<nz; i++) {
+      collengths[jj[i]]++;
+    }
+    cia[0] = oshift;
+    for (i=0; i<n; i++) {
+      cia[i+1] = cia[i] + collengths[i];
+    }
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    jj   = a->j;
+    for (row=0; row<m; row++) {
+      mr = a->i[row+1] - a->i[row];
+      for (i=0; i<mr; i++) {
+        col = *jj++;
+        cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
+        cja[cia[col] + collengths[col]++ - oshift] = row + oshift;  
+      }
+    }
+    ierr = PetscFree(collengths);CHKERRQ(ierr);
+    *ia = cia; *ja = cja;
+    *spidx = cspidx;
+  }
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Color"
+PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  if (!ia) PetscFunctionReturn(0);
+
+  ierr = PetscFree(*ia);CHKERRQ(ierr);
+  ierr = PetscFree(*ja);CHKERRQ(ierr);
+  ierr = PetscFree(*spidx);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeColoringCreate_SeqAIJ"
+PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatTransposeColoring c)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,nrows,N,j,k,m,*row_idx,*ci,*cj,ncols,col,cm;
+  const PetscInt *is;
+  PetscInt       nis = iscoloring->n,*rowhit,bs = 1;
+  IS             *isa;
+  PetscBool      done;
+  PetscBool      flg1,flg2;
+  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
+  PetscInt       *colorforrow,*rows,*rows_i,*columnsforspidx,*columnsforspidx_i,*idxhit,*spidx; 
+  PetscInt       *colorforcol,*columns,*columns_i;
+  PetscLogDouble t0,tf,etime_GetIS=0.0,etime_GetColumnIJ=0.0,etime_memzero=0.0,etime_loop=0.0,t00,tf0;
+
+  PetscFunctionBegin;
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  etime_GetIS += tf - t0;
+
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
+    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  }
+
+  N         = mat->cmap->N/bs;
+  c->M      = mat->rmap->N/bs;  /* set total rows, columns and local rows */
+  c->N      = mat->cmap->N/bs;
+  c->m      = mat->rmap->N/bs;
+  c->rstart = 0;
+
+  c->ncolors = nis;
+  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
+  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr); 
+  ierr       = PetscMalloc2(csp->nz+1,PetscInt,&rows,csp->nz+1,PetscInt,&columnsforspidx);CHKERRQ(ierr);
+  ierr       = PetscMalloc((nis+1)*sizeof(PetscInt),&colorforrow);CHKERRQ(ierr);
+  colorforrow[0]    = 0; 
+  rows_i            = rows; 
+  columnsforspidx_i = columnsforspidx;
+
+  ierr = PetscMalloc((nis+1)*sizeof(PetscInt),&colorforcol);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&columns);CHKERRQ(ierr);
+  colorforcol[0] = 0; 
+  columns_i      = columns;
+  
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,&done);CHKERRQ(ierr); /* column-wise storage of mat */
+  if (!done) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  etime_GetColumnIJ += tf - t0;
+
+  cm = c->m; 
+  ierr = PetscMalloc((cm+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
+  ierr = PetscMalloc((cm+1)*sizeof(PetscInt),&idxhit);CHKERRQ(ierr);
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  for (i=0; i<nis; i++) { 
+    ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
+    c->ncolumns[i] = n;
+    if (n) {
+      ierr = PetscMemcpy(columns_i,is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    } 
+    colorforcol[i+1] = colorforcol[i] + n;
+    columns_i       += n;
+
+    /* fast, crude version requires O(N*N) work */
+    ierr = PetscGetTime(&t00);CHKERRQ(ierr);
+    ierr = PetscMemzero(rowhit,cm*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscGetTime(&tf0);CHKERRQ(ierr);
+    etime_memzero += tf0 - t00;
+
+    /* loop over columns*/
+    for (j=0; j<n; j++) { 
+      col     = is[j];   
+      row_idx = cj + ci[col]; 
+      m       = ci[col+1] - ci[col]; 
+      /* loop over columns marking them in rowhit */
+      for (k=0; k<m; k++) {
+        idxhit[*row_idx]   = spidx[ci[col] + k];
+        rowhit[*row_idx++] = col + 1;
+      }
+    }
+    /* count the number of hits */
+    nrows = 0;
+    for (j=0; j<cm; j++) {
+      if (rowhit[j]) nrows++;
+    }
+    c->nrows[i]      = nrows; 
+    colorforrow[i+1] = colorforrow[i] + nrows; 
+   
+    nrows       = 0;
+    for (j=0; j<cm; j++) {
+      if (rowhit[j]) {
+        rows_i[nrows]            = j;
+        columnsforspidx_i[nrows] = idxhit[j]; 
+        nrows++;
+      }
+    }
+    ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
+    rows_i += nrows; columnsforspidx_i += nrows; 
+  }
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  etime_loop += tf - t0;
+
+  ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,&done);CHKERRQ(ierr);
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  if (csp->nz != colorforrow[nis]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csp->nz %d != colorforrow[nis] %d",csp->nz,colorforrow[nis]);
+#endif
+  
+  c->colorforrow     = colorforrow;
+  c->rows            = rows;
+  c->columnsforspidx = columnsforspidx;
+  c->colorforcol     = colorforcol;
+  c->columns         = columns;
+  printf(" Time for ColoringCreate: IS %g, ColumnIJ: %g, memzero %g, loop %g\n",etime_GetIS,etime_GetColumnIJ,etime_memzero,etime_loop);
+  ierr = PetscFree(idxhit);
   PetscFunctionReturn(0);
 }
