@@ -401,17 +401,30 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  /* setup from the determined types if the smoothers don't exist */
-  if ((!fas->upsmooth) && (fas->level != 0) && (smoothupflg || smoothflg)) {
+  /* setup from the determined types if there is no pointwise procedure or smoother defined */
+  if ((!fas->downsmooth) && ((smoothdownflg || smoothflg) || !snes->ops->computegs)) {
+    const char     *prefix;
+    ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+    ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
+    ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
+    if (fas->level || (fas->levels == 1)) {
+      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_");CHKERRQ(ierr);
+    } else {
+      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_coarse_");CHKERRQ(ierr);
+    }
+    ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
+    ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
+    if (snes->ops->computefunction) {
+      ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    }
+  }
+
+  if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !snes->ops->computegs)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->upsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->upsmooth,prefix);CHKERRQ(ierr);
-    if (fas->level || (fas->levels == 1)) {
-      ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_");CHKERRQ(ierr);
-    } else {
-      ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_coarse_");CHKERRQ(ierr);
-    }
+    ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->upsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->upsmooth, pre_type);CHKERRQ(ierr);
     if (snes->ops->computefunction) {
@@ -422,18 +435,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
   }
 
-  if ((!fas->downsmooth) && (smoothdownflg || smoothflg)) {
-    const char     *prefix;
-    ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
-    ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
-    ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
-    ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_");CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
-    ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
-    if (snes->ops->computefunction) {
-      ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
-    }
-  }
   if (fas->downsmooth) {
     ierr = SNESSetTolerances(fas->downsmooth, 0.0, 0.0, 0.0, fas->max_down_it, 1000);CHKERRQ(ierr);
   }

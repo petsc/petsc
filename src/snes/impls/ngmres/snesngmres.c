@@ -244,7 +244,21 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
     /* Computation of x^M */
-    if (!snes->pc) {
+    if (snes->pc) {
+      ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    } else if (snes->ops->computegs) {
+      /* compute the update using the supplied Gauss-Seidel routine */
+      ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
       ierr = VecScale(Y, -1.0);CHKERRQ(ierr);
@@ -258,15 +272,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       fnorm = gnorm;
       ierr = VecCopy(G, F);CHKERRQ(ierr);
       ierr = VecCopy(W, X);CHKERRQ(ierr);
-    } else {
-      ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
-      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-        snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
-      }
-      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
     }
 
     /* r = F(x) */
