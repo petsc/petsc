@@ -269,9 +269,10 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ISColoring                iscoloring;
     Mat                       Bt_dense,C_dense;
     PetscLogDouble            etime0=0.0,etime01=0.0,etime1=0.0;
+    Mat_SeqAIJ                *c=(Mat_SeqAIJ*)(*C)->data;
 
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-    ierr = MatGetColoring(*C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
+    ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr); 
     ierr = PetscGetTime(&tf);CHKERRQ(ierr);
     etime0 += tf - t0;
 
@@ -290,6 +291,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatSeqDenseSetPreallocation(Bt_dense,PETSC_NULL);CHKERRQ(ierr);
     Bt_dense->assembled = PETSC_TRUE;
     multtrans->Bt_den = Bt_dense;
+    printf("\n  Bt_dense: %d,%d; Cnz %d / (cm*ncolors %d) = %g\n",A->cmap->n,matcoloring->ncolors,c->nz,A->rmap->n*matcoloring->ncolors,(PetscReal)(c->nz)/(A->rmap->n*matcoloring->ncolors)); 
 
     ierr = MatCreate(PETSC_COMM_SELF,&C_dense);CHKERRQ(ierr);
     ierr = MatSetSizes(C_dense,A->rmap->n,matcoloring->ncolors,A->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
@@ -440,7 +442,6 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
     Bt_dense = multtrans->Bt_den;
     ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
-    printf("Bt_dense: %d,%d\n",m,n); 
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
@@ -1042,7 +1043,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   c->columnsforspidx = columnsforspidx;
   c->colorforcol     = colorforcol;
   c->columns         = columns;
-  printf(" Time for ColoringCreate: IS %g, ColumnIJ: %g, memzero %g, loop %g\n",etime_GetIS,etime_GetColumnIJ,etime_memzero,etime_loop);
+  /* printf(" Time for ColoringCreate: IS %g, ColumnIJ: %g, memzero %g, loop %g\n",etime_GetIS,etime_GetColumnIJ,etime_memzero,etime_loop); */
   ierr = PetscFree(idxhit);
   PetscFunctionReturn(0);
 }

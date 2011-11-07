@@ -6,7 +6,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/utils/freespace.h>
-
+#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
 /*
      MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
@@ -384,11 +384,11 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C) 
 {
   PetscErrorCode        ierr; 
-  Mat_SeqAIJ            *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data,*c=(Mat_SeqAIJ*)C->data;
   Mat_RARt              *rart;
   PetscContainer        container;
   MatTransposeColoring  matcoloring;
   Mat                   Rt,ARt,RARt;
+  PetscLogDouble        Mult_sp_den=0.0,app1=0.0,app2=0.0,t0,tf;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"Mat_RARt",(PetscObject *)&container);CHKERRQ(ierr);
@@ -398,23 +398,28 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   /* Get dense Rt by Apply MatTransposeColoring to R */
   matcoloring = rart->matcoloring;
   Rt          = rart->Rt;
-  //ierr = MatGetLocalSize(Rt,&m,&n);CHKERRQ(ierr);
-  //printf("Rt_dense: %d,%d\n",m,n); 
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  app1 += tf - t0;
   
   /* Get dense ARt = A*Rt */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ARt = rart->ARt;
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Rt,ARt);CHKERRQ(ierr);
-  //ierr = MatView(ARt,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Get dense RARt = R*ARt */
   RARt = rart->RARt;
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,ARt,RARt);CHKERRQ(ierr);
-  //ierr = MatView(RARt,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  Mult_sp_den += tf - t0;
 
   /* Recover C from C_dense */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatTransColoringApplyDenToSp(matcoloring,RARt,C);CHKERRQ(ierr);
-  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  app2 += tf - t0;
+  printf("Num = ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);
   PetscFunctionReturn(0);
 }
 
