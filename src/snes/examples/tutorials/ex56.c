@@ -137,17 +137,17 @@ PetscScalar linear_p_2d(const PetscReal x[]) {
   return x[0] + x[1] - 1.0;
 };
 
-// gradP[d] = {p_x, p_y}
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const int dim   = 2;
   const int Ncomp = dim;
 
   for(int comp = 0; comp < Ncomp; ++comp) {
-    f0[comp] = gradU[2*Ncomp+comp] + 3.0;
+    f0[comp] = 3.0;
   }
 }
 
 // gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
+// u[Ncomp]          = {p}
 void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
   const int dim   = 2;
   const int Ncomp = dim;
@@ -157,9 +157,11 @@ void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
       //f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]);
       f1[comp*dim+d] = gradU[comp*dim+d];
     }
+    f1[comp*dim+comp] += u[Ncomp];
   }
 }
 
+// gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
 void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const int dim = 2;
 
@@ -895,7 +897,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
                 realSpaceDerJ[d] = 0.0;
                 for(PetscInt d2 = 0; d2 < dim; ++d2) {
                   realSpaceDerI[d] += invJ[d2*dim+d]*basisDerI[(q*Nb_i*Ncomp_i+fidx)*dim+d2];
-                  realSpaceDerJ[d] += invJ[d2*dim+d]*basisDerJ[(q*Nb_i*Ncomp_i+gidx)*dim+d2];
+                  realSpaceDerJ[d] += invJ[d2*dim+d]*basisDerJ[(q*Nb_j*Ncomp_j+gidx)*dim+d2];
                 }
               }
               elemMat[eOffset+i*cellDof+j] += basisI[q*Nb_i*Ncomp_i+fidx]*g0[fc*Ncomp_j+gc]*basisJ[q*Nb_j*Ncomp_j+gidx];
@@ -1009,6 +1011,12 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
                                        user->q, g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof], user);CHKERRQ(ierr);
     }
   }
+  if (debug) {
+    ALE::Obj<PETSC_MESH_TYPE> mesh;
+    ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+    mesh->setDebug(debug);
+    mesh->getSieve()->setDebug(debug);
+  }
   for(PetscInt c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMMeshPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
     ierr = DMMeshMatSetClosure(dm, Jac, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
@@ -1100,8 +1108,12 @@ int main(int argc, char **argv)
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESMeshFormFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
+      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
+      ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
