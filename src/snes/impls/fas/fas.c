@@ -287,9 +287,22 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   SNES_FAS       *fas = (SNES_FAS *) snes->data,*tmp;
   PetscErrorCode ierr;
   VecScatter     injscatter;
+  PetscInt       dm_levels;
+
 
   PetscFunctionBegin;
-  /* should call the SNESSetFromOptions() only when approriate */
+  /* reset to use the DM if appropriate */
+  
+  if (fas->usedmfornumberoflevels && !fas->level) {
+    ierr = DMGetRefineLevel(snes->dm,&dm_levels);CHKERRQ(ierr);
+    dm_levels++;
+    if (dm_levels > fas->levels) { /* the problem is now being solved on a finer grid */
+      ierr = SNESFASSetLevels(snes,dm_levels,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);  /* it is bad to call this here, but otherwise will never be called for the new hierarchy */
+    }
+  }
+
+  /* should call the SNESSetFromOptions() only when appropriate */
   tmp = fas;
   while (tmp) {
     if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);CHKERRQ(ierr);}
@@ -343,7 +356,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 {
   SNES_FAS   *fas = (SNES_FAS *) snes->data;
   PetscInt levels = 1;
-  PetscBool flg, monflg;
+  PetscBool flg, smoothflg, smoothupflg, smoothdownflg, monflg;
   PetscErrorCode ierr;
   const char * def_smooth = SNESNRICHARDSON;
   char pre_type[256];
@@ -359,6 +372,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     if (!flg && snes->dm) {
       ierr = DMGetRefineLevel(snes->dm,&levels);CHKERRQ(ierr);
       levels++;
+      fas->usedmfornumberoflevels = PETSC_TRUE;
     }
     ierr = SNESFASSetLevels(snes, levels, PETSC_NULL);CHKERRQ(ierr);
   }
@@ -366,35 +380,29 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   /* type of pre and/or post smoothers -- set both at once */
   ierr = PetscMemcpy(post_type, def_smooth, 256);CHKERRQ(ierr);
   ierr = PetscMemcpy(pre_type, def_smooth, 256);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-snes_fas_smoother_type","Nonlinear smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&flg);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscOptionsList("-snes_fas_smoother_type","Nonlinear smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&smoothflg);CHKERRQ(ierr);
+  if (smoothflg) {
     ierr = PetscMemcpy(post_type, pre_type, 256);CHKERRQ(ierr);
   } else {
-    ierr = PetscOptionsList("-snes_fas_smoothup_type",  "Nonlinear smoother method","SNESSetType",SNESList,def_smooth,pre_type, 256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-snes_fas_smoothdown_type","Nonlinear smoother method","SNESSetType",SNESList,def_smooth,post_type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-snes_fas_smoothup_type",  "Nonlinear smoother method","SNESSetType",SNESList,def_smooth,pre_type, 256,&smoothupflg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-snes_fas_smoothdown_type","Nonlinear smoother method","SNESSetType",SNESList,def_smooth,post_type,256,&smoothdownflg);CHKERRQ(ierr);
   }
 
   /* options for the number of preconditioning cycles and cycle type */
-  ierr = PetscOptionsInt("-snes_fas_up_it","Number of upsmoother iterations","PCMGSetNumberSmoothUp",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_fas_down_it","Number of downsmoother iterations","PCMGSetNumberSmoothUp",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","PCMGSetNumberSmoothUp",fas->n_cycles,&fas->n_cycles,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smooth iterations","SNESFASSetNumberSmoothUp",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smooth iterations","SNESFASSetNumberSmoothUp",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&fas->n_cycles,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
 
   /* other options for the coarsest level */
   if (fas->level == 0) {
-    ierr = PetscOptionsList("-snes_fas_coarse_smoother_type","Coarsest smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscMemcpy(post_type, pre_type, 256);CHKERRQ(ierr);
-    } else {
-      ierr = PetscOptionsList("-snes_fas_coarse_smoothup_type",  "Nonlinear smoother method","SNESSetType",SNESList,def_smooth,pre_type, 256,&flg);CHKERRQ(ierr);
-      ierr = PetscOptionsList("-snes_fas_coarse_smoothdown_type","Nonlinear smoother method","SNESSetType",SNESList,def_smooth,post_type,256,&flg);CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsList("-snes_fas_coarse_smoother_type","Coarsest smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&smoothflg);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if the smoothers don't exist */
-  if (!fas->upsmooth) {
+  if ((!fas->upsmooth) && (fas->level != 0) && (smoothupflg || smoothflg)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->upsmooth);CHKERRQ(ierr);
@@ -414,7 +422,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
   }
 
-  if (!fas->downsmooth && fas->level != 0) {
+  if ((!fas->downsmooth) && (smoothdownflg || smoothflg)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
@@ -432,7 +440,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   if (monflg) {
     fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
-
     /* set the monitors for the upsmoother and downsmoother */
     if (fas->upsmooth)   ierr = SNESMonitorSet(fas->upsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->downsmooth) ierr = SNESMonitorSet(fas->downsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -514,26 +521,26 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
   F = snes->vec_func;
   B = snes->vec_rhs;
   /* pre-smooth -- just update using the pre-smoother */
-  if (snes->ops->computegs) {
+  if (fas->downsmooth) {
+    ierr = SNESSolve(fas->downsmooth, B, X);CHKERRQ(ierr);
+  } else if (snes->ops->computegs) {
     if (fas->monitor) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
     for (k = 0; k < fas->max_up_it; k++) {
       ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
       if (snes->monitor) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
       }
     }
-  } else if (fas->upsmooth) {
-    ierr = SNESSolve(fas->upsmooth, B, X);CHKERRQ(ierr);
   } else if (snes->pc) {
     ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
   }
@@ -576,28 +583,28 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
       ierr = MatInterpolateAdd(fas->interpolate, X_c, X, X);CHKERRQ(ierr);
     }
   }
-    /* down-smooth -- just update using the down-smoother */
+    /* up-smooth -- just update using the down-smoother */
   if (fas->level != 0) {
-    if (snes->ops->computegs) {
+    if (fas->upsmooth) {
+      ierr = SNESSolve(fas->upsmooth, B, X);CHKERRQ(ierr);
+    } else if (snes->ops->computegs) {
       if (fas->monitor) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
       }
       for (k = 0; k < fas->max_down_it; k++) {
         ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
         if (fas->monitor) {
           ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
           ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(fas->monitor, "%d Gauss-Seidel Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
         }
       }
-    }else if (fas->downsmooth) {
-      ierr = SNESSolve(fas->downsmooth, B, X);CHKERRQ(ierr);
     } else if (snes->pc) {
       ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
     }
