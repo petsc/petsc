@@ -551,10 +551,11 @@ runex50_6: # test ASM with AIJ and bs>1
 	   ${RM} -f ex50_6.tmp
 
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
-	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas -use_ngs 1 -grashof 4e4 -snes_fas_smoothup 10 -snes_fas_smoothdown 10
-        # > ex50_fas.tmp 2>&1; \
-	#   ${DIFF} output/ex50_fas.out ex50_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_6, diffs above \n========================================="; \
-	#   ${RM} -f ex50_6.tmp
+	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas -use_ngs 1 -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 \
+        -lidvelocity 100 \
+         > ex50_fas.tmp 2>&1; \
+	   ${DIFF} output/ex50_fas.out ex50_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
+           ${RM} -f ex50_fas.tmp
 
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
@@ -960,7 +961,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
-                                 ex50.PETSc runex50_6 ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
+                                 ex50.PETSc runex50_6 runex50_fas ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
