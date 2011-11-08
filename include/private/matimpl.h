@@ -1027,7 +1027,7 @@ extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MA
 extern PetscLogEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
-
+extern PetscLogEvent  MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
 extern PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 extern PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;

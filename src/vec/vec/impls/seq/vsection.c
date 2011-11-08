@@ -399,6 +399,11 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(0);
   if (!(*s)->refcnt--) {
+    PetscInt f;
+
+    for(f = 0; f < (*s)->numFields; ++f) {
+      ierr = PetscSectionDestroy(&(*s)->field[f]);CHKERRQ(ierr);
+    }
     ierr = PetscSectionDestroy(&(*s)->bc);CHKERRQ(ierr);
     ierr = PetscFree((*s)->bcIndices);CHKERRQ(ierr);
     ierr = PetscFree2((*s)->atlasDof, (*s)->atlasOff);CHKERRQ(ierr);
