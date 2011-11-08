@@ -94,7 +94,7 @@ static PetscErrorCode TaoView_LCL(TaoSolver tao, PetscViewer viewer)
 static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 {
   TAO_LCL *lclP = (TAO_LCL*)tao->data;
-  PetscInt lo, hi;
+  PetscInt lo, hi, nlocalstate, nlocaldesign;
   PetscErrorCode ierr;
   PetscBool flag;
   IS is_state, is_design;
@@ -124,8 +124,10 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->U); CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)tao)->comm,&lclP->V); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->U,PETSC_DECIDE,lclP->m); CHKERRQ(ierr);
-  ierr = VecSetSizes(lclP->V,PETSC_DECIDE,lclP->n-lclP->m); CHKERRQ(ierr);
+  ierr = ISGetLocalSize(tao->state_is,&nlocalstate); CHKERRQ(ierr);
+  ierr = ISGetLocalSize(tao->design_is,&nlocaldesign); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->U,nlocalstate,lclP->m); CHKERRQ(ierr);
+  ierr = VecSetSizes(lclP->V,nlocaldesign,lclP->n-lclP->m); CHKERRQ(ierr);
   ierr = VecSetType(lclP->U,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetType(lclP->V,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
   ierr = VecSetFromOptions(lclP->U); CHKERRQ(ierr);
