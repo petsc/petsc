@@ -36,9 +36,10 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Create Jacobian
-  - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
-  - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
+- Flag for removing Dirichlet constrained unknowns
+- Use quadratic elements for velocity
+  - Check that disc error vanishes for exact solution
+  - Redo slides from GUCASTutorial for these new examples
 - Fix pressure BC
   - Make constant vector on the pressure space (get a local P vector?)
   - Use MatSetNullSpace() on the Jacobian
@@ -48,18 +49,16 @@ Next Steps:
   - Refine and show convergence of correct order automatically (use femTest.py)
 - Reply to Marc Hesse
   - Plan next steps with he and Avi
-- Use quadratic elements for velocity
-  - Check that disc error vanishes for exact solution
-  - Redo slides from GUCASTutorial for these new examples
 - Run in parallel
   - Check scaling with Mark
 - Optimize closure operations
   - The visitor should not be created every time
   - The sizeWithBC operations can be precomputed (for a regular mesh)
+- Sparsify Jacobian
+  - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
+  - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
-- Function to get list (IS) of dofs constrained by Dirichlet conditions
-- Flag for removing Dirichlet constrained unknowns
-- Make an interface for PetscSection+IS to represent a partition, then you can sue this to distributed dependent objects
+- Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
 - Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
 
