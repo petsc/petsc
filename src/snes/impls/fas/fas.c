@@ -49,6 +49,8 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->interpolate          = PETSC_NULL;
   fas->restrct              = PETSC_NULL;
   fas->inject               = PETSC_NULL;
+  fas->monitor              = PETSC_NULL;
+  fas->usedmfornumberoflevels = PETSC_FALSE;
 
   PetscFunctionReturn(0);
 }
@@ -148,6 +150,9 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
       ierr = SNESSetOptionsPrefix(fas->next,((PetscObject)snes)->prefix);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
+      if (snes->ops->computegs) {
+        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+      }
       fas = (SNES_FAS *)fas->next->data;
     }
   }
@@ -292,15 +297,16 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   PetscFunctionBegin;
   /* reset to use the DM if appropriate */
-  
-  if (fas->usedmfornumberoflevels && !fas->level) {
+  if (fas->usedmfornumberoflevels && (fas->level == fas->levels - 1)) {
     ierr = DMGetRefineLevel(snes->dm,&dm_levels);CHKERRQ(ierr);
     dm_levels++;
-    if (dm_levels > fas->levels) { /* the problem is now being solved on a finer grid */
+    if (dm_levels > fas->levels) {
       ierr = SNESFASSetLevels(snes,dm_levels,PETSC_NULL);CHKERRQ(ierr);
-      ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);  /* it is bad to call this here, but otherwise will never be called for the new hierarchy */
+      ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     }
   }
+
+  if (!snes->work || snes->nwork != 2) {ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);} /* work vectors used for intergrid transfers */
 
   /* should call the SNESSetFromOptions() only when appropriate */
   tmp = fas;
@@ -310,7 +316,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     tmp = tmp->next ? (SNES_FAS*) tmp->next->data : 0;
   }
 
-  if (!snes->work || snes->nwork != 2) {ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);} /* work vectors used for intergrid transfers */
   /* gets the solver ready for solution */
   if (fas->next) {
     if (snes->ops->computegs) {
@@ -341,8 +346,9 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
     if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
   }
+
   if (fas->next) {
-    /* gotta set up the solution vector for this to work */
+   /* gotta set up the solution vector for this to work */
     if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
@@ -534,7 +540,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
     }
     for (k = 0; k < fas->max_up_it; k++) {
       ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
-      if (snes->monitor) {
+      if (fas->monitor) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);

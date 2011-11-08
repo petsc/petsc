@@ -550,6 +550,12 @@ runex50_6: # test ASM with AIJ and bs>1
 	   ${DIFF} output/ex50_6.out ex50_6.tmp || echo  ${PWD} "\nPossible problem with ex50_6, diffs above \n========================================="; \
 	   ${RM} -f ex50_6.tmp
 
+runex50_fas: #test ex50 with FAS and pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas -use_ngs 1 -grashof 4e4 -snes_fas_smoothup 10 -snes_fas_smoothdown 10
+        # > ex50_fas.tmp 2>&1; \
+	#   ${DIFF} output/ex50_fas.out ex50_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_6, diffs above \n========================================="; \
+	#   ${RM} -f ex50_6.tmp
+
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \

@@ -555,12 +555,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy - b[j][i].omega;
           /* convective coefficient derivatives */
           dfodo = 2.0*(hydhx + hxdhy) + (vxp - vxm*hy + vyp - vym*hx);
-          if (vx > 0.0) {
+          if (PetscRealPart(vx) > 0.0) {
             dfodu = u - x[j][i-1].omega;
           } else {
             dfodu = (x[j][i+1].omega - u)*hy;
           }
-          if (vy > 0.0) {
+          if (PetscRealPart(vy) > 0.0) {
             dfodv = u - x[j-1][i].omega;
           } else {
             dfodv = (x[j+1][i].omega - u)*hx;
@@ -575,12 +575,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             (vyp*(u - x[j-1][i].temp) +
              vym*(x[j+1][i].temp - u)) * hx) - b[j][i].temp;
           dftdt = 2.0*(hydhx + hxdhy) + prandtl*(vxp - vxm*hy + vyp - vym*hx);
-          if (vx > 0.0) {
+          if (PetscRealPart(vx) > 0.0) {
             dftdu = prandtl*(u - x[j][i-1].temp);
           } else {
             dftdu = prandtl*(x[j][i+1].temp - u)*hy;
           }
-          if (vy > 0.0) {
+          if (PetscRealPart(vy) > 0.0) {
             dftdv = prandtl*(u - x[j-1][i].temp);
           } else {
             dftdv = prandtl*(x[j+1][i].temp - u)*hx;
