@@ -7,7 +7,8 @@ cdef extern from * nogil:
     PetscSNESType SNESTEST
     PetscSNESType SNESNRICHARDSON
     PetscSNESType SNESKSPONLY
-    PetscSNESType SNESVI
+    PetscSNESType SNESVIRS
+    PetscSNESType SNESVISS
     PetscSNESType SNESNGMRES
     PetscSNESType SNESQN
     PetscSNESType SNESSHELL
