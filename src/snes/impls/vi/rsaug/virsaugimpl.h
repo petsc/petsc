@@ -35,11 +35,12 @@ typedef struct {
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
   /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
+  PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
   void                     *ctxP; /* user defined check redundancy context */
 
 
   PetscBool                ignorefunctionsign;    /* when computing active set ignore the sign of the function values */
-} SNES_VI;
+} SNES_VIRSAUG;
 
 #endif
 
