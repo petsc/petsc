@@ -59,6 +59,7 @@ typedef struct {
   PassiveReal epsilon;        /* Regularization */
   PassiveReal source;         /* Source term */
   PetscInt    jtype;          /* What type of Jacobian to assemble */
+  PetscBool   picard;
 } AppCtx;
 
 /*
@@ -66,6 +67,7 @@ typedef struct {
 */
 static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 static PetscErrorCode MySNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -112,6 +114,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.lambda = 6.0; user.p = 2.0; user.epsilon = 1e-5; user.source = 0.1; user.jtype = 4; alloc_star = PETSC_FALSE;
   use_precheck = 0; precheck_angle = 10.;
+  user.picard = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"p-Bratu options",__FILE__);CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-lambda","Bratu parameter","",user.lambda,&user.lambda,NULL);CHKERRQ(ierr);
@@ -119,6 +122,8 @@ int main(int argc,char **argv)
     ierr = PetscOptionsReal("-epsilon","Strain-regularization in p-Laplacian","",user.epsilon,&user.epsilon,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-source","Constant source term","",user.source,&user.source,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-jtype","Jacobian type, 1=plain, 2=first term 3=star 4=full","",user.jtype,&user.jtype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-picard","Solve with defect-correction Picard iteration","",&user.picard);CHKERRQ(ierr);
+    if (user.picard) {user.jtype = 2; user.p = 3;}
     ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-precheck","Use a pre-check correction intended for use with Picard iteration 1=this version, 2=library","",use_precheck,&use_precheck,NULL);CHKERRQ(ierr);
     if (use_precheck == 2) {    /* Using library version, get the angle */
@@ -185,16 +190,26 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,B,MySNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetJacobian(snes,A,B,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+    if (!user.picard) {
+      ierr = SNESSetJacobian(snes,A,B,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+    }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  if (user.picard) {
+    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionPicardLocal);CHKERRQ(ierr);
+  } else {
+    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  }
   ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
+  if (user.picard) {
+    ierr = SNESSetPicard(snes,r,SNESDAFormFunction,A,B,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+  } else {
+    ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -391,6 +406,39 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FormFunctionPicardLocal"
+/*
+    This is the opposite sign of the part of FormFunctionLocal that excludes the A(x) x part of the operation, 
+    that is FormFunction applies A(x) x - b(x) while this applies b(x) because for Picard we think of it as solving A(x) x = b(x)
+
+*/
+static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+{
+  PetscReal      hx,hy,dhx,dhy,sc,source;
+  PetscInt       i,j;
+
+  PetscFunctionBegin;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  sc     = hx*hy*user->lambda;
+  source = hx*hy*user->source;
+  dhx    = 1/hx;
+  dhy    = 1/hy;
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      if (!(i == 0 || j == 0 || i == info->mx-1 || j == info->my-1)) {
+        const PetscScalar u = x[j][i];
+        f[j][i] = sc*PetscExpScalar(u) + source;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
@@ -473,7 +521,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             /* Jacobian arising from Picard linearization */
             v[0] = -hxdhy*e_S;                                           col[0].j = j-1;   col[0].i = i;
             v[1] = -hydhx*e_W;                                           col[1].j = j;     col[1].i = i-1;
-            v[2] = (e_W+e_E)*hydhx + (e_S+e_N)*hxdhy - sc*PetscExpScalar(u); col[2].j = row.j; col[2].i = row.i;
+            v[2] = (e_W+e_E)*hydhx + (e_S+e_N)*hxdhy;                    col[2].j = row.j; col[2].i = row.i;
             v[3] = -hydhx*e_E;                                           col[3].j = j;     col[3].i = i+1;
             v[4] = -hxdhy*e_N;                                           col[4].j = j+1;   col[4].i = i;
             ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

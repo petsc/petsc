@@ -151,6 +151,9 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatPtAP",          MAT_CLASSID,&MAT_PtAP);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_CLASSID,&MAT_PtAPSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_CLASSID,&MAT_PtAPNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatRARt",          MAT_CLASSID,&MAT_RARt);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatRARtSymbolic",  MAT_CLASSID,&MAT_RARtSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatRARtNumeric",   MAT_CLASSID,&MAT_RARtNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTransMult",  MAT_CLASSID,&MAT_MatTransposeMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultSym", MAT_CLASSID,&MAT_MatTransposeMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultNum", MAT_CLASSID,&MAT_MatTransposeMultNumeric);CHKERRQ(ierr);

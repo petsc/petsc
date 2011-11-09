@@ -83,6 +83,7 @@ typedef struct {
 } AppCtx;
 
 PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
+extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -107,7 +108,8 @@ int main(int argc,char **argv)
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
-  
+  ierr = SNESSetGS(snes, NonlinearGS, (void *)&user);CHKERRQ(ierr);
+
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
 		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /* 
@@ -125,20 +127,19 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
-    
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      Also, compute the initial guess.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
-     
+
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  
   ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 
@@ -147,9 +148,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
-  
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
-  
+
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
 
@@ -167,7 +168,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  
   ierr = PetscFinalize();
   return 0;
 }
@@ -371,6 +371,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionReturn(0);
 } 
 
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
@@ -400,3 +401,249 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "NonlinearGS"
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+{
+  DMDALocalInfo  info;
+  Field          **x,**b;
+  PetscErrorCode ierr;
+  Vec            localX, localB;
+  DM             da;
+  PetscInt       xints,xinte,yints,yinte,i,j,k,l;
+  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
+  PetscReal      grashof,prandtl,lid;
+  PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar    fu, fv, fomega, ftemp;
+  PetscScalar    dfudu;
+  PetscScalar    dfvdv;
+  PetscScalar    dfodu, dfodv, dfodo;
+  PetscScalar    dftdu, dftdv, dftdt;
+  PetscScalar    yu, yv, yo, yt;
+
+  PetscScalar    ptnorm;
+  AppCtx         *user = (AppCtx*)ctx;
+  PetscFunctionBegin;
+
+  grashof = user->grashof;
+  prandtl = user->prandtl;
+  lid     = user->lidvelocity;
+  ierr = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+  */
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicate(localX, &localB);CHKERRQ(ierr);
+    ierr = VecSet(localB, 0.0);CHKERRQ(ierr);
+  }
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+
+  /* looks like a combination of the formfunction / formjacobian routines */
+  dhx = (PetscReal)(info.mx-1);  dhy = (PetscReal)(info.my-1);
+  hx = 1.0/dhx;                   hy = 1.0/dhy;
+  hxdhy = hx*dhy;                 hydhx = hy*dhx;
+
+  xints = info.xs; xinte = info.xs+info.xm; yints = info.ys; yinte = info.ys+info.ym;
+
+  /* Set the boundary conditions on the momentum equations */
+  /* Test whether we are on the bottom edge of the global array */
+  if (yints == 0) {
+    j = 0;
+    yints = yints + 1;
+    /* bottom edge */
+    for (i=info.xs; i<info.xs+info.xm; i++) {
+      fu     = x[j][i].u;
+      fv     = x[j][i].v;
+
+      x[j][i].u     = 0.0 + b[j][i].u;
+      x[j][i].v     = 0.0 + b[j][i].v;
+    }
+  }
+
+  /* Test whether we are on the top edge of the global array */
+  if (yinte == info.my) {
+    j = info.my - 1;
+    yinte = yinte - 1;
+    /* top edge */
+    for (i=info.xs; i<info.xs+info.xm; i++) {
+      fu     = x[j][i].u - lid;
+      fv     = x[j][i].v;
+
+      x[j][i].u     = lid + b[j][i].u;
+      x[j][i].v     = b[j][i].v;
+    }
+  }
+
+  /* Test whether we are on the left edge of the global array */
+  if (xints == 0) {
+    i = 0;
+    xints = xints + 1;
+    /* left edge */
+    for (j=info.ys; j<info.ys+info.ym; j++) {
+      fu     = x[j][i].u;
+      fv     = x[j][i].v;
+
+      x[j][i].u     = 0.0 + b[j][i].u;
+      x[j][i].v     = 0.0 + b[j][i].v;
+    }
+  }
+
+  /* Test whether we are on the right edge of the global array */
+  if (xinte == info.mx) {
+    i = info.mx - 1;
+    xinte = xinte - 1;
+    /* right edge */ 
+    for (j=info.ys; j<info.ys+info.ym; j++) {
+      fu     = x[j][i].u;
+      fv     = x[j][i].v;
+      x[j][i].u     = 0.0 + b[j][i].u;
+      x[j][i].v     = 0.0 + b[j][i].v;
+    }
+  }
+
+  for (k=0; k < 3; k++) {
+    for (j=info.ys; j<info.ys + info.ym; j++) {
+      for (i=info.xs; i<info.xs + info.xm; i++) {
+        if (i != 0 && i != info.mx - 1 && j != 0 && j != info.my-1) {
+          for (l = 0; l < 10; l++) {
+          /* U velocity */
+          ptnorm = 0.0;
+          u          = x[j][i].u;
+          uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
+          uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
+          fu    = uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx - b[j][i].u;
+          dfudu = 2.0*(hydhx + hxdhy);
+          /* V velocity */
+          u          = x[j][i].v;
+          uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
+          uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
+          fv    = uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy - b[j][i].v;
+          dfvdv = 2.0*(hydhx + hxdhy); 
+          /*
+           convective coefficients for upwinding
+           */
+          vx = x[j][i].u; avx = PetscAbsScalar(vx);
+          vxp = .5*(vx+avx); vxm = .5*(vx-avx);
+          vy = x[j][i].v; avy = PetscAbsScalar(vy);
+          vyp = .5*(vy+avy); vym = .5*(vy-avy);
+          /* Omega */
+          u          = x[j][i].omega;
+          uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
+          uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
+          fomega = uxx + uyy +
+            (vxp*(u - x[j][i-1].omega) +
+             vxm*(x[j][i+1].omega - u)) * hy +
+            (vyp*(u - x[j-1][i].omega) +
+             vym*(x[j+1][i].omega - u)) * hx -
+            .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy - b[j][i].omega;
+          /* convective coefficient derivatives */
+          dfodo = 2.0*(hydhx + hxdhy) + (vxp - vxm*hy + vyp - vym*hx);
+          if (PetscRealPart(vx) > 0.0) {
+            dfodu = u - x[j][i-1].omega;
+          } else {
+            dfodu = (x[j][i+1].omega - u)*hy;
+          }
+          if (PetscRealPart(vy) > 0.0) {
+            dfodv = u - x[j-1][i].omega;
+          } else {
+            dfodv = (x[j+1][i].omega - u)*hx;
+          }
+          /* Temperature */
+          u             = x[j][i].temp;
+          uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
+          uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
+          ftemp =  uxx + uyy  + prandtl * (
+            (vxp*(u - x[j][i-1].temp) +
+             vxm*(x[j][i+1].temp - u)) * hy +
+            (vyp*(u - x[j-1][i].temp) +
+             vym*(x[j+1][i].temp - u)) * hx) - b[j][i].temp;
+          dftdt = 2.0*(hydhx + hxdhy) + prandtl*(vxp - vxm*hy + vyp - vym*hx);
+          if (PetscRealPart(vx) > 0.0) {
+            dftdu = prandtl*(u - x[j][i-1].temp);
+          } else {
+            dftdu = prandtl*(x[j][i+1].temp - u)*hy;
+          }
+          if (PetscRealPart(vy) > 0.0) {
+            dftdv = prandtl*(u - x[j-1][i].temp);
+          } else {
+            dftdv = prandtl*(x[j+1][i].temp - u)*hx;
+          }
+          /* invert the system:
+           [ dfu / du     0        0        0    ][yu] = [fu]
+           [     0    dfv / dv     0        0    ][yv]   [fv]
+           [ dfo / du dfo / dv dfo / do     0    ][yo]   [fo]
+           [ dft / du dft / dv     0    dft / dt ][yt]   [ft]
+
+           by simple back-substitution
+
+           */
+          yu = fu / dfudu;
+          yv = fv / dfvdv;
+          yo = fomega / dfodo;
+          yt = ftemp / dftdt;
+          yo = (fomega - (dfodu*yu + dfodv*yv)) / dfodo;
+          yt = (ftemp - (dftdu*yu + dftdv*yv)) / dftdt;
+
+          x[j][i].u = x[j][i].u - yu;
+          x[j][i].v = x[j][i].v - yv;
+          x[j][i].temp  = x[j][i].temp - yt;
+          x[j][i].omega = x[j][i].omega - yo;
+
+          ptnorm += fu*fu + fv*fv + fomega*fomega + ftemp*ftemp;
+          ptnorm = PetscSqrtScalar(ptnorm);
+
+          }
+        }
+        if (j == 0) {
+          fomega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy;
+          ftemp  = x[j][i].temp-x[j+1][i].temp;
+          x[j][i].omega = x[j][i].omega - fomega + b[j][i].omega;
+          x[j][i].temp  = x[j][i].temp - ftemp + b[j][i].temp;
+        }
+        if (j == info.my - 1) {
+          fomega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
+          ftemp  = x[j][i].temp-x[j-1][i].temp;
+          x[j][i].omega = x[j][i].omega - fomega + b[j][i].omega;
+          x[j][i].temp  = x[j][i].temp - ftemp + b[j][i].temp;
+        }
+
+        if (i == 0) {
+          fomega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx;
+          ftemp  = x[j][i].temp;
+          x[j][i].omega = x[j][i].omega - fomega + b[j][i].omega;
+          x[j][i].temp  = x[j][i].temp - ftemp + b[j][i].temp;
+        }
+
+        if (i == info.mx - 1) {
+          fomega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx;
+          ftemp  = x[j][i].temp - (PetscReal)(grashof>0);
+          x[j][i].omega = x[j][i].omega - fomega + b[j][i].omega;
+          x[j][i].temp  = x[j][i].temp - ftemp + b[j][i].temp;
+        }
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMLocalToGlobalBegin(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
+  } else {
+    ierr = VecDestroy(&localB);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}

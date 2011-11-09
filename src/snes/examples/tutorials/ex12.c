@@ -618,6 +618,9 @@ PetscErrorCode SetupSection(AppCtx *user) {
   }
   ierr = DMMeshCreateSection(user->dm, user->dim, 1, numDof, numBC, bcField, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
+  if (user->bcType == DIRICHLET) {
+    ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

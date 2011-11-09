@@ -255,7 +255,15 @@ typedef struct {
 } VecStash;
 
 #if defined(PETSC_HAVE_CUSP)
-/* Defines the flag structure that the CUSP arch uses. */
+/*E
+    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
+   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
+   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+ 
+E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
 
@@ -348,9 +356,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUSP_CPU;
-    }
+    x->valid_GPU_array = PETSC_CUSP_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);

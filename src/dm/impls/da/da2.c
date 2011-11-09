@@ -734,6 +734,7 @@ PetscErrorCode  DMDAFormFunction1(DM da,Vec vu,Vec vfu,void *w)
   DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
+  if (!dd->lf) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_NULL,"DMDASetLocalFunction() never called");
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
