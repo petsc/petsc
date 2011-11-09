@@ -379,6 +379,109 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
+/*
+ RAB = R * A * Bdense; Cdense=A*Bdense and D = R*Cdense
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense"
+PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat C,Mat RAB)
+{
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data;
+  PetscErrorCode ierr;
+  PetscScalar    *b,*c,r1,r2,r3,r4,*b1,*b2,*b3,*b4;
+  MatScalar      *aa,*ra;
+  PetscInt       cm=A->rmap->n,cn=B->cmap->n,bm=B->rmap->n,col,i,j,n,*aj,am=A->rmap->n;
+  PetscInt       am2=2*am,am3=3*am,bm4=4*bm;
+  PetscScalar    *d,*c1,*c2,*c3,*c4;
+  PetscInt       *rj,rm=R->rmap->n,dm=RAB->rmap->n,dn=RAB->cmap->n;
+  PetscInt       rm2=2*rm,rm3=3*rm,colrm;
+ 
+  PetscFunctionBegin;
+  if (!dm || !dn) PetscFunctionReturn(0);
+  if (bm != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,bm);
+  if (am != R->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in R %D not equal rows in A %D\n",R->cmap->n,am);
+  if (R->rmap->n != RAB->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in RAB %D not equal rows in R %D\n",RAB->rmap->n,R->rmap->n);
+  if (B->cmap->n != RAB->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in RAB %D not equal columns in B %D\n",RAB->cmap->n,B->cmap->n);
+
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatGetArray(C,&c);CHKERRQ(ierr);
+  ierr = MatGetArray(RAB,&d);CHKERRQ(ierr);
+  b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
+  c1 = c; c2 = c1 + cm; c3 = c2 + cm; c4 = c3 + cm;
+  for (col=0; col<cn-4; col += 4){  /* over columns of C */
+    for (i=0; i<am; i++) {        /* over rows of A in those columns */
+      r1 = r2 = r3 = r4 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*aa)*b1[*aj]; 
+        r2 += (*aa)*b2[*aj]; 
+        r3 += (*aa)*b3[*aj]; 
+        r4 += (*aa++)*b4[*aj++]; 
+      }
+      c[i]       = r1;
+      c[am  + i] = r2;
+      c[am2 + i] = r3;
+      c[am3 + i] = r4;
+    }
+    b1 += bm4;
+    b2 += bm4;
+    b3 += bm4;
+    b4 += bm4;
+
+    /* RAB[:,col] = R*C[:,col] */
+    colrm = col*rm;
+    for (i=0; i<rm; i++) {        /* over rows of R in those columns */
+      r1 = r2 = r3 = r4 = 0.0;
+      n   = r->i[i+1] - r->i[i]; 
+      rj  = r->j + r->i[i];
+      ra  = r->a + r->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*ra)*c1[*rj]; 
+        r2 += (*ra)*c2[*rj]; 
+        r3 += (*ra)*c3[*rj]; 
+        r4 += (*ra++)*c4[*rj++]; 
+      }
+      d[colrm + i]       = r1;
+      d[colrm + rm + i]  = r2;
+      d[colrm + rm2 + i] = r3;
+      d[colrm + rm3 + i] = r4;
+    }
+  }
+  for (;col<cn; col++){     /* over extra columns of C */
+    for (i=0; i<am; i++) {  /* over rows of A in those columns */
+      r1 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*aa++)*b1[*aj++]; 
+      }
+      c[i]     = r1;
+    }
+    b1 += bm;
+
+    for (i=0; i<rm; i++) {  /* over rows of R in those columns */
+      r1 = 0.0;
+      n   = r->i[i+1] - r->i[i]; 
+      rj  = r->j + r->i[i];
+      ra  = r->a + r->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*ra++)*c[*rj++]; 
+      }
+      d[col*rm + i]     = r1;
+    }
+  }
+  ierr = PetscLogFlops(cn*2.0*(a->nz + r->nz));CHKERRQ(ierr);
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatRestoreArray(RAB,&d);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatRARtNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C) 
@@ -403,14 +506,18 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   app1 += tf - t0;
   
-  /* Get dense ARt = A*Rt */
+  /* Get dense RARt = R*A*Rt */
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-  ARt = rart->ARt;
+  ARt  = rart->ARt;
+  RARt = rart->RARt;
+  ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(R,A,Rt,ARt,RARt);CHKERRQ(ierr);
+#if defined(MV)
+   /* Get dense ARt = A*Rt */
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Rt,ARt);CHKERRQ(ierr);
 
   /* Get dense RARt = R*ARt */
-  RARt = rart->RARt;
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,ARt,RARt);CHKERRQ(ierr);
+#endif
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   Mult_sp_den += tf - t0;
 
