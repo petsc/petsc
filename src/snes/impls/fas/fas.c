@@ -37,21 +37,21 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   snes->usespc              = PETSC_FALSE;
 
   ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
-  snes->data                = (void*) fas;
-  fas->level                = 0;
-  fas->levels               = 1;
-  fas->n_cycles             = 1;
-  fas->max_up_it            = 1;
-  fas->max_down_it          = 1;
-  fas->upsmooth             = PETSC_NULL;
-  fas->downsmooth           = PETSC_NULL;
-  fas->next                 = PETSC_NULL;
-  fas->interpolate          = PETSC_NULL;
-  fas->restrct              = PETSC_NULL;
-  fas->inject               = PETSC_NULL;
-  fas->monitor              = PETSC_NULL;
+  snes->data                  = (void*) fas;
+  fas->level                  = 0;
+  fas->levels                 = 1;
+  fas->n_cycles               = 1;
+  fas->max_up_it              = 1;
+  fas->max_down_it            = 1;
+  fas->upsmooth               = PETSC_NULL;
+  fas->downsmooth             = PETSC_NULL;
+  fas->next                   = PETSC_NULL;
+  fas->interpolate            = PETSC_NULL;
+  fas->restrct                = PETSC_NULL;
+  fas->inject                 = PETSC_NULL;
+  fas->monitor                = PETSC_NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
-
+  fas->useGS                  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -74,6 +74,52 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
   fas->n_cycles = cycles;
   if (fas->next) {
     ierr = SNESFASSetCycles(fas->next, cycles);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASSetGS"
+PetscErrorCode SNESFASSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void *), void * ctx, PetscBool use_gs) {
+  PetscErrorCode ierr = 0;
+  SNES_FAS       *fas = (SNES_FAS *)snes->data;
+  PetscFunctionBegin;
+
+  /* use or don't use it according to user wishes*/
+  fas->useGS = use_gs;
+  if (gsfunc) {
+    ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
+    /* push the provided GS up the tree */
+    if (fas->next) ierr = SNESFASSetGS(fas->next, gsfunc, ctx, use_gs);CHKERRQ(ierr);
+  } else if (snes->ops->computegs) {
+    /* assume that the user has set the GS solver at this level */
+    if (fas->next) ierr = SNESFASSetGS(fas->next, PETSC_NULL, PETSC_NULL, use_gs);CHKERRQ(ierr);
+  } else if (use_gs) {
+    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "No user Gauss-Seidel function provided in SNESFASSetGS on level %d", fas->level);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASSetGSOnLevel"
+PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void *), void * ctx, PetscBool use_gs) {
+  SNES_FAS       *fas =  (SNES_FAS *)snes->data;
+  PetscErrorCode ierr;
+  PetscInt       top_level = fas->level,i;
+  SNES           cur_snes = snes;
+  PetscFunctionBegin;
+  if (level > top_level)
+    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetCyclesOnLevel", level);
+  /* get to the correct level */
+  for (i = fas->level; i > level; i--) {
+    fas = (SNES_FAS *)fas->next->data;
+    cur_snes = fas->next;
+  }
+  if (fas->level != level)
+    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
+  fas->useGS = use_gs;
+  if (gsfunc) {
+    ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -129,7 +175,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   MPI_Comm comm;
   PetscFunctionBegin;
-  comm = ((PetscObject)snes)->comm;
+   comm = ((PetscObject)snes)->comm;
   if (levels == fas->levels) {
     if (!comms)
       PetscFunctionReturn(0);
@@ -150,12 +196,12 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
       ierr = SNESSetOptionsPrefix(fas->next,((PetscObject)snes)->prefix);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
-      if (snes->ops->computegs) {
-        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
-      }
       fas = (SNES_FAS *)fas->next->data;
     }
   }
+  /* by default set the GS smoothers up the chain if one exists on the finest level */
+  if (snes->ops->computegs)
+    ierr = SNESFASSetGS(snes, snes->ops->computegs, snes->gsP, fas->useGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +342,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
 
   PetscFunctionBegin;
-  /* reset to use the DM if appropriate */
+
   if (fas->usedmfornumberoflevels && (fas->level == fas->levels - 1)) {
     ierr = DMGetRefineLevel(snes->dm,&dm_levels);CHKERRQ(ierr);
     dm_levels++;
@@ -401,20 +447,24 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
 
+  ierr = PetscOptionsBool("-snes_fas_ngs", "Use Nonlinear Gauss-Seidel smoother if provided", "SNESSetGS", fas->useGS, &fas->useGS, &flg);CHKERRQ(ierr);
+
   /* other options for the coarsest level */
   if (fas->level == 0) {
     ierr = PetscOptionsList("-snes_fas_coarse_smoother_type","Coarsest smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&smoothflg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_fas_coarse_ngs", "Use Nonlinear Gauss-Seidel smoother if provided", "SNESSetGS", fas->useGS, &fas->useGS, &flg);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
-  if ((!fas->downsmooth) && ((smoothdownflg || smoothflg) || !snes->ops->computegs)) {
+
+  if ((!fas->downsmooth) && ((smoothdownflg || smoothflg) || !fas->useGS)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
     if (fas->level || (fas->levels == 1)) {
-      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_");CHKERRQ(ierr);
+      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_levels_down_");CHKERRQ(ierr);
     } else {
       ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_coarse_");CHKERRQ(ierr);
     }
@@ -425,12 +475,12 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     }
   }
 
-  if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !snes->ops->computegs)) {
+  if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !fas->useGS)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->upsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->upsmooth,prefix);CHKERRQ(ierr);
-    ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_");CHKERRQ(ierr);
+    ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_up_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->upsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->upsmooth, pre_type);CHKERRQ(ierr);
     if (snes->ops->computefunction) {
@@ -490,6 +540,9 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       } else {
         ierr = PetscViewerASCIIPrintf(viewer, "no down-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
       }
+      if (fas->useGS) {
+        ierr = PetscViewerASCIIPrintf(viewer, "Using user Gauss-Seidel on level %D\n",  fas->level);CHKERRQ(ierr);
+      }
       if (fas->next) fas = (SNES_FAS *)fas->next->data;
     }
     ierr = PetscViewerASCIIPopTab(viewer);
@@ -535,7 +588,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", 0, fnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
     for (k = 0; k < fas->max_up_it; k++) {
@@ -544,7 +597,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", k+1, fnorm);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
       }
     }
@@ -599,7 +652,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", 0, fnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", 0, fnorm);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
       }
       for (k = 0; k < fas->max_down_it; k++) {
@@ -608,7 +661,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
           ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
           ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %e\n", k+1, fnorm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", k+1, fnorm);CHKERRQ(ierr);
           ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
         }
       }

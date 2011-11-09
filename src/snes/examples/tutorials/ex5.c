@@ -86,7 +86,6 @@ int main(int argc,char **argv)
   PetscBool              flg = PETSC_FALSE;
   DM                     da;
   PetscBool              matlab_function = PETSC_FALSE;
-  PetscBool              use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -105,17 +104,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
-
-  if (use_ngs) {
-    /* ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr); */
-    /* ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr); */
-    /* ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr); */
-
-    ierr = SNESSetGS(snes, NonlinearGS, PETSC_NULL);CHKERRQ(ierr);
-
-  }
+  ierr = SNESSetGS(snes, NonlinearGS, PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors

@@ -96,7 +96,6 @@ int main(int argc,char **argv)
   SNES           snes;
   DM             da;
   Vec            x;
-  PetscBool      use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
   comm = PETSC_COMM_WORLD;
@@ -109,11 +108,7 @@ int main(int argc,char **argv)
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);  
-  if (use_ngs) {
-    ierr = SNESSetGS(snes, NonlinearGS, (void *)&user);CHKERRQ(ierr);
-  }
+  ierr = SNESSetGS(snes, NonlinearGS, (void *)&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
 		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -132,20 +127,19 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
-    
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      Also, compute the initial guess.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
-     
+
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  
   ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 
@@ -154,9 +148,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
-  
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
-  
+
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
 
@@ -174,7 +168,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  
   ierr = PetscFinalize();
   return 0;
 }

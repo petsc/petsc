@@ -22,4 +22,7 @@ extern PetscErrorCode SNESFASSetRestriction(SNES, PetscInt, Mat);
 extern PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);
 extern PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
 
+extern PetscErrorCode SNESFASSetGS(SNES, PetscErrorCode (*)(SNES,Vec,Vec,void *), void *, PetscBool);
+extern PetscErrorCode SNESFASSetGSOnLevel(SNES, PetscInt, PetscErrorCode (*)(SNES,Vec,Vec,void *), void *, PetscBool);
+
 #endif

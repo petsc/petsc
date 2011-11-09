@@ -389,7 +389,7 @@ runex5_5_ls:
 	   ${RM} -f ex5_5_ls.tmp
 
 runex5_5_fas:
-	-@./ex5 -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor  -snes_type fas \
+	-@./ex5 -snes_fas_coarse_smoother_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor -snes_type fas \
            -fas_coarse_ksp_type richardson -da_refine 6 \
            > ex5_5_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
@@ -551,11 +551,19 @@ runex50_6: # test ASM with AIJ and bs>1
 	   ${RM} -f ex50_6.tmp
 
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
-	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas -use_ngs 1 -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 \
+	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas -snes_fas_ngs -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 \
         -lidvelocity 100 \
          > ex50_fas.tmp 2>&1; \
 	   ${DIFF} output/ex50_fas.out ex50_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
            ${RM} -f ex50_fas.tmp
+
+runex50_ngmres_fas: #test ex50 with NGMRES preconditioned by FAS with pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type ngmres \
+        -npc_snes_type fas -npc_snes_fas_ngs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6 \
+        -lidvelocity 100 -grashof 4e4 \
+         #> ex50_ngmres_fas.tmp 2>&1; \
+	 #  ${DIFF} output/ex50_ngmres_fas.out ex50_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
+         #  ${RM} -f ex50_ngmres_fas.tmp
 
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
