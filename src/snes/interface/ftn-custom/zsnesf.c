@@ -11,9 +11,11 @@
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgettype_                     SNESGETTYPE
-#define snesdaformfunction_              SNESDAFORMFUNCTION          
+#define snesdaformfunction_              SNESDAFORMFUNCTION
 #define snessetfunction_                 SNESSETFUNCTION
+#define snessetgs_                       SNESSETGS
 #define snesgetfunction_                 SNESGETFUNCTION
+#define snesgetgs_                       SNESGETGS
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesdefaultconverged_            SNESDEFAULTCONVERGED
 #define snesskipconverged_               SNESSKIPCONVERGED
@@ -29,7 +31,7 @@
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matmffdcomputejacobian_          matmffdcomputejacobian           
+#define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
@@ -40,7 +42,9 @@
 #define snesgettype_                     snesgettype
 #define snesdaformfunction_              snesdaformfunction
 #define snessetfunction_                 snessetfunction
+#define snessetgs_                       snessetgs
 #define snesgetfunction_                 snesgetfunction
+#define snesgetgs_                       snesgetgs
 #define snessetconvergencetest_          snessetconvergencetest
 #define snesdefaultconverged_            snesdefaultconverged
 #define snesskipconverged_               snesskipconverged
@@ -49,7 +53,7 @@
 #define snesgetconvergencehistory_       snesgetconvergencehistory
 #define snessettype_                     snessettype
 #define snesappendoptionsprefix_         snesappendoptionsprefix
-#define snessetoptionsprefix_            snessetoptionsprefix 
+#define snessetoptionsprefix_            snessetoptionsprefix
 #define snesmonitorlg_                   snesmonitorlg
 #define snesmonitordefault_              snesmonitordefault
 #define snesmonitorsolution_             snesmonitorsolution
@@ -190,9 +194,9 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len), Petsc
 /* ---------------------------------------------------------*/
 
 /*
-        These are not usually called from Fortran but allow Fortran users 
+   These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
-   
+
    functions, hence no STDCALL
 */
 void  snesdaformfunction_(SNES *snes,Vec *X, Vec *F,void *ptr,PetscErrorCode *ierr)
@@ -211,6 +215,19 @@ void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)
     *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
   }
 }
+
+
+void PETSC_STDCALL snessetgs_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECT(ctx);
+  PetscObjectAllocateFortranPointers(*snes,12);
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdaformfunction_) {
+    *ierr = SNESSetGS(*snes,SNESDAFormFunction,ctx);
+  } else {
+    ((PetscObject)*snes)->fortran_func_pointers[0] = (PetscVoidFunction)func;
+    *ierr = SNESSetGS(*snes,oursnesfunction,ctx);
+  }
+}
 /* ---------------------------------------------------------*/
 
 /* the func argument is ignored */
@@ -220,6 +237,13 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,Pets
   CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,PETSC_NULL,ctx);
 }
+
+void PETSC_STDCALL snesgetgs_(SNES *snes,void *func,void **ctx,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(ctx);
+  *ierr = SNESGetGS(*snes,PETSC_NULL,ctx);
+}
+
 /*----------------------------------------------------------------------*/
 
 void snesdefaultconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r, void *ct,PetscErrorCode *ierr)

@@ -1211,13 +1211,39 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetGS"
+/*@C
+   SNESSetGS - Sets the user nonlinear Gauss-Seidel routine for
+   use with composed nonlinear solvers.
+
+   Input Parameters:
++  snes   - the SNES context
+.  gsfunc - function evaluation routine
+-  ctx    - [optional] user-defined context for private data for the
+            smoother evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (SNES snes,Vec x,Vec b,void *ctx);
+
++  X   - solution vector
+.  B   - RHS vector
+-  ctx - optional user-defined function context
+
+   Notes:
+   The GS routines are used by the composed nonlinear solver to generate
+    a problem appropriate update to the solution, particularly FAS.
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeGS()
+@*/
 PetscErrorCode SNESSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void *), void * ctx) {
   PetscFunctionBegin;
   if (gsfunc) snes->ops->computegs = gsfunc;
   if (ctx) snes->gsP = ctx;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetComputeInitialGuess"
@@ -1340,6 +1366,31 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeGS"
+/*@
+   SNESComputeGS - Calls the Gauss-Seidel function that has been set with
+                   SNESSetGS().
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  x - input vector
+-  b - rhs vector
+
+   Output Parameter:
+.  x - new solution vector
+
+   Notes:
+   SNESComputeGS() is typically used within composed nonlinear solver
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, compute, function
+
+.seealso: SNESSetGS(), SNESComputeFunction()
+@*/
 PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -3157,6 +3208,23 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**func)(SNES,Ve
   if (ctx)  *ctx  = snes->funP;
   PetscFunctionReturn(0);
 }  
+
+/*@C
+   SNESGetGS - Returns the GS function and context.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
++  gsfunc - the function (or PETSC_NULL)
+-  ctx    - the function context (or PETSC_NULL)
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, get, function
+
+.seealso: SNESSetGS(), SNESGetFunction()
+@*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetGS"
