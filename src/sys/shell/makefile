@@ -1,8 +1,7 @@
 ALL: lib
 
-SOURCEH  = ../../../include/petscfwk.h 
-DIRS     = interface #examples
-LOCDIR   = src/sys/fwk/
+DIRS     = interface 
+LOCDIR   = src/sys/shell/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/conf/variables
