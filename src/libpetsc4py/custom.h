@@ -10,12 +10,12 @@ extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#define PetscFwkPythonCall_C        PetscFwkPythonCall
-#define PetscFwkPythonLoadVTable_C  PetscFwkPythonLoadVTable
-#define PetscFwkPythonClearVTable_C PetscFwkPythonClearVTable
-extern PetscErrorCode (*PetscFwkPythonCall_C)(PetscFwk,const char*,void*);
-extern PetscErrorCode (*PetscFwkPythonLoadVTable_C)(PetscFwk,const char*,const char*,void**);
-extern PetscErrorCode (*PetscFwkPythonClearVTable_C)(PetscFwk,void**);
+#define PetscShellPythonCall_C        PetscShellPythonCall
+#define PetscShellPythonLoadVTable_C  PetscShellPythonLoadVTable
+#define PetscShellPythonClearVTable_C PetscShellPythonClearVTable
+extern PetscErrorCode (*PetscShellPythonCall_C)(PetscShell,const char*,void*);
+extern PetscErrorCode (*PetscShellPythonLoadVTable_C)(PetscShell,const char*,const char*,void**);
+extern PetscErrorCode (*PetscShellPythonClearVTable_C)(PetscShell,void**);
 EXTERN_C_END
 
 #undef __FUNCT__

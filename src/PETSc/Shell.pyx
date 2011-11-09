@@ -1,89 +1,93 @@
 # -----------------------------------------------------------------------------
 
-cdef class Fwk(Object):
-
-    cdef PetscFwk fwk
+cdef class Shell(Object):
 
     def __cinit__(self):
-        self.obj = <PetscObject*> &self.fwk
-        self.fwk = NULL
+        self.obj = <PetscObject*> &self.shell
+        self.shell = NULL
 
     def view(self, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( PetscFwkView(self.fwk, vwr) )
+        CHKERR( PetscShellView(self.shell, vwr) )
 
     def destroy(self):
-        CHKERR( PetscFwkDestroy(&self.fwk) )
+        CHKERR( PetscShellDestroy(&self.shell) )
         return self
 
     def create(self, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscFwk newfwk = NULL
-        CHKERR( PetscFwkCreate(ccomm, &newfwk) )
-        PetscCLEAR(self.obj); self.fwk = newfwk
+        cdef PetscShell newshell = NULL
+        CHKERR( PetscShellCreate(ccomm, &newshell) )
+        PetscCLEAR(self.obj); self.shell = newshell
         return self
 
     def getURL(self):
         cdef const_char *_url = NULL
-        CHKERR( PetscFwkGetURL(self.fwk, &_url) )
+        CHKERR( PetscShellGetURL(self.shell, &_url) )
         if _url == NULL: return None
         return bytes2str(_url)
 
     def setURL(self, url):
         cdef const_char *_url = NULL
         url = str2bytes(url, &_url)
-        CHKERR( PetscFwkSetURL(self.fwk, _url) )
-        return 0
+        CHKERR( PetscShellSetURL(self.shell, _url) )
+        return self
 
-    def registerComponent(self, key, url=None):
+    def registerComponent(self, key, url=None, Shell component = None):
         cdef const_char *_key = NULL
         cdef const_char *_url = NULL
+        cdef PetscShell _component = NULL
         key = str2bytes(key, &_key)
         url = str2bytes(url, &_url)
-        if _url == NULL:
-            CHKERR( PetscFwkRegisterComponent(self.fwk, _key) )
-        else:
-            CHKERR( PetscFwkRegisterComponentURL(self.fwk, _key, _url) )
+        if component is not None:
+            _component = component.shell
+        CHKERR( PetscShellRegisterComponentShell(self.shell, _key, _component) )
+        if _url != NULL:
+            CHKERR( PetscShellGetComponent(self.shell, _key, &_component,NULL) )
+            CHKERR( PetscShellSetURL(_component, _url) )
+        return self
 
-    def registerDependence(self, clientkey, serverkey):
+    def registerDependence(self, serverkey, clientkey):
         cdef const_char *_clientkey = NULL
         cdef const_char *_serverkey = NULL
         clientkey = str2bytes(clientkey, &_clientkey)
         serverkey = str2bytes(serverkey, &_serverkey)
-        CHKERR( PetscFwkRegisterDependence(self.fwk, _clientkey, _serverkey) )
+        CHKERR( PetscShellRegisterDependence(self.shell,_serverkey,_clientkey) )
         return self
 
     def getComponent(self, key):
         cdef const_char *_key = NULL
-        cdef PetscFwk component = NULL
+        cdef PetscShell component = NULL
         cdef PetscBool found = PETSC_FALSE
         key = str2bytes(key, &_key)
-        CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
+        CHKERR( PetscShellGetComponent(self.shell, _key, &component, &found) )
         if found == PETSC_FALSE or component == NULL: return None
-        cdef Fwk fwk = Fwk()
-        fwk.fwk = component
-        PetscINCREF(fwk.obj);
-        return fwk
+        cdef Shell shell = Shell()
+        shell.shell = component
+        PetscINCREF(shell.obj);
+        return shell
 
     def call(self, message):
         cdef const_char *_message = NULL
         message = str2bytes(message, &_message)
-        CHKERR( PetscFwkCall(self.fwk, _message) )
+        CHKERR( PetscShellCall(self.shell, _message) )
+        return self
 
-    def getParent(self):
-        cdef PetscFwk parent = NULL
-        CHKERR( PetscFwkGetParent(self.fwk, &parent) )
-        if parent == NULL: return None
-        cdef Fwk fwk = Fwk()
-        fwk.fwk = parent
-        PetscINCREF(fwk.obj);
-        return fwk
+    def getVisitor(self):
+        cdef PetscShell visitor = NULL
+        CHKERR( PetscShellGetVisitor(self.shell, &visitor) )
+        if visitor == NULL: 
+           return None
+        cdef Shell shell = Shell()
+        shell.shell = visitor
+        PetscINCREF(shell.obj);
+        return shell
 
     def visit(self, message):
         cdef const_char *_message = NULL
         message = str2bytes(message, &_message)
-        CHKERR( PetscFwkVisit(self.fwk, _message) )
+        CHKERR( PetscShellVisit(self.shell, _message) )
         return self
 
     def __getitem__(self, key):
@@ -101,16 +105,16 @@ cdef class Fwk(Object):
         def __set__(self, value):
             self.setURL(value)
 
-    property parent:
+    property visitor:
         def __get__(self):
-            return self.getParent()
+            return self.getVisitor()
 
     @classmethod
     def DEFAULT(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef Fwk fwk = Fwk()
-        fwk.fwk = PETSC_FWK_DEFAULT_(ccomm)
-        PetscINCREF(fwk.obj)
-        return fwk
+        cdef Shell shell = Shell()
+        shell.shell = PETSC_SHELL_DEFAULT_(ccomm)
+        PetscINCREF(shell.obj)
+        return shell
 
 # -----------------------------------------------------------------------------

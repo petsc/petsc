@@ -11,6 +11,9 @@ cdef extern from "petsc.h":
     ctypedef struct _p_PetscObject
     ctypedef _p_PetscObject* PetscObject
 
+    struct _p_PetscShell
+    ctypedef _p_PetscShell* PetscShell
+
     struct _p_PetscViewer
     ctypedef _p_PetscViewer* PetscViewer
 
@@ -73,6 +76,12 @@ ctypedef public api class Object [
     cdef object get_attr(self, char name[])
     cdef object set_attr(self, char name[], object attr)
     cdef object get_dict(self)
+
+ctypedef public api class Shell(Object) [
+    type   PyPetscShell_Type,
+    object PyPetscShellObject,
+    ]:
+    cdef PetscShell shell
 
 ctypedef public api class Viewer(Object) [
     type   PyPetscViewer_Type,

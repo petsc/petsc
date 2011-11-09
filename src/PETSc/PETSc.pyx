@@ -113,7 +113,7 @@ include "petscmpi.pxi"
 include "petscsys.pxi"
 include "petsclog.pxi"
 include "petscobj.pxi"
-include "petscfwk.pxi"
+include "petscshell.pxi"
 include "petscvwr.pxi"
 include "petscrand.pxi"
 include "petscis.pxi"
@@ -141,7 +141,7 @@ include "Sys.pyx"
 include "Log.pyx"
 include "Comm.pyx"
 include "Object.pyx"
-include "Fwk.pyx"
+include "Shell.pyx"
 include "Viewer.pyx"
 include "Random.pyx"
 include "IS.pyx"
@@ -325,7 +325,7 @@ cdef int initialize(object args, object comm) except -1:
 
 cdef extern from *:
     PetscClassId PETSC_OBJECT_CLASSID    "PETSC_OBJECT_CLASSID"
-    PetscClassId PETSC_FWK_CLASSID       "PETSC_FWK_CLASSID"
+    PetscClassId PETSC_SHELL_CLASSID     "PETSC_SHELL_CLASSID"
     PetscClassId PETSC_VIEWER_CLASSID    "PETSC_VIEWER_CLASSID"
     PetscClassId PETSC_RANDOM_CLASSID    "PETSC_RANDOM_CLASSID"
     PetscClassId PETSC_IS_CLASSID        "IS_CLASSID"
@@ -349,7 +349,7 @@ cdef int register(char path[]) except -1:
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
     PyPetscType_Register(PETSC_OBJECT_CLASSID,    Object)
-    PyPetscType_Register(PETSC_FWK_CLASSID,       Fwk)
+    PyPetscType_Register(PETSC_SHELL_CLASSID,     Shell)
     PyPetscType_Register(PETSC_VIEWER_CLASSID,    Viewer)
     PyPetscType_Register(PETSC_RANDOM_CLASSID,    Random)
     PyPetscType_Register(PETSC_IS_CLASSID,        IS)

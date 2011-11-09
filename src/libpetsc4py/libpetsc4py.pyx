@@ -2425,30 +2425,23 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
 
 # --------------------------------------------------------------------
 
-cdef extern from * nogil:
-    struct _p_PetscFwk
-    ctypedef _p_PetscFwk *PetscFwk
-
-cdef type Fwk
-from petsc4py.PETSc import Fwk
-
-cdef inline Object Fwk_(PetscFwk p):
-    cdef Object ob = Fwk.__new__(Fwk)
+cdef inline Object Shell_(PetscShell p):
+    cdef Shell ob = Shell.__new__(Shell)
     ob.obj[0] = newRef(p)
     return ob
 
-cdef PetscErrorCode PetscFwkPython_Call(
-    PetscFwk   component_p,
+cdef PetscErrorCode PetscShellPython_Call(
+    PetscShell   component_p,
     const_char *message_p,
     void       *vtable_p,
     ) \
     except IERR with gil:
-    FunctionBegin(b"PetscFwkPython_Call")
+    FunctionBegin(b"PetscShellPython_Call")
     assert component_p != NULL
     assert message_p   != NULL
     assert vtable_p    != NULL
     #
-    cdef component = Fwk_(component_p)
+    cdef component = Shell_(component_p)
     cdef vtable = <object> vtable_p
     cdef message = bytes2str(message_p)
     #
@@ -2461,14 +2454,14 @@ cdef PetscErrorCode PetscFwkPython_Call(
         function(component)
     return FunctionEnd()
 
-cdef PetscErrorCode PetscFwkPython_LoadVTable(
-    PetscFwk   component_p,
+cdef PetscErrorCode PetscShellPython_LoadVTable(
+    PetscShell   component_p,
     const_char *path_p,
     const_char *name_p,
     void       **vtable_p,
     ) \
     except IERR with gil:
-    FunctionBegin(b"PetscFwkPython_LoadVTable")
+    FunctionBegin(b"PetscShellPython_LoadVTable")
     assert component_p != NULL
     assert path_p      != NULL
     assert name_p      != NULL
@@ -2482,12 +2475,12 @@ cdef PetscErrorCode PetscFwkPython_LoadVTable(
     Py_INCREF(<PyObject*>vtable_p[0])
     return FunctionEnd()
 
-cdef PetscErrorCode PetscFwkPython_ClearVTable(
-    PetscFwk component_p,
+cdef PetscErrorCode PetscShellPython_ClearVTable(
+    PetscShell component_p,
     void     **vtable_p,
     ) \
     except IERR with gil:
-    FunctionBegin(b"PetscFwkPython_ClearVTable")
+    FunctionBegin(b"PetscShellPython_ClearVTable")
     assert component_p != NULL
     assert vtable_p    != NULL
     Py_DECREF(<PyObject*>vtable_p[0])
@@ -2519,12 +2512,12 @@ cdef extern from * nogil:
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const_char[]) except IERR
 
-  PetscErrorCode (*PetscFwkPythonCall_C) \
-      (PetscFwk,const_char[],void *) except IERR
-  PetscErrorCode (*PetscFwkPythonLoadVTable_C) \
-      (PetscFwk,const_char[],const_char[],void**) except IERR
-  PetscErrorCode (*PetscFwkPythonClearVTable_C) \
-      (PetscFwk,void**) except IERR
+  PetscErrorCode (*PetscShellPythonCall_C) \
+      (PetscShell,const_char[],void *) except IERR
+  PetscErrorCode (*PetscShellPythonLoadVTable_C) \
+      (PetscShell,const_char[],const_char[],void**) except IERR
+  PetscErrorCode (*PetscShellPythonClearVTable_C) \
+      (PetscShell,void**) except IERR
 
 
 cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
@@ -2541,13 +2534,13 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
     global PetscPythonMonitorSet_C
     PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
 
-    # Python Fwk support
-    global PetscFwkPythonCall_C
-    PetscFwkPythonCall_C = PetscFwkPython_Call
-    global PetscFwkPythonLoadVTable_C
-    PetscFwkPythonLoadVTable_C = PetscFwkPython_LoadVTable
-    global PetscFwkPythonClearVTable_C
-    PetscFwkPythonClearVTable_C = PetscFwkPython_ClearVTable
+    # Python Shell support
+    global PetscShellPythonCall_C
+    PetscShellPythonCall_C = PetscShellPython_Call
+    global PetscShellPythonLoadVTable_C
+    PetscShellPythonLoadVTable_C = PetscShellPython_LoadVTable
+    global PetscShellPythonClearVTable_C
+    PetscShellPythonClearVTable_C = PetscShellPython_ClearVTable
 
     return FunctionEnd()
 
