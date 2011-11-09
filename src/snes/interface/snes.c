@@ -1186,7 +1186,7 @@ $      f'(x) x = -f(x),
 
 .keywords: SNES, nonlinear, set, function
 
-.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetPicard()
 @*/
 PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
@@ -1204,6 +1204,97 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
   }
   if (func) snes->ops->computefunction = func;
   if (ctx)  snes->funP                 = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESPicardComputeFunction"
+PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /*  A(x)*x - b(x) */
+  ierr = (*snes->ops->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,snes->jacP);CHKERRQ(ierr);
+  ierr = (*snes->ops->computepfunction)(snes,x,f,snes->funP);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+  ierr = VecView(f,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+  ierr = VecScale(f,-1.0);CHKERRQ(ierr);
+  ierr = MatMultAdd(snes->jacobian_pre,x,f,f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESPicardComputeJacobian"
+PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  PetscFunctionBegin;
+  *flag = snes->matstruct;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetPicard"
+/*@C
+   SNESSetPicard - Use SNES to solve the semilinear-system A(x) x = b(x) via a Picard type iteration
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  r - vector to store function value
+.  func - function evaluation routine
+.  jmat - normally the same as mat but you can pass another matrix for which you compute the Jacobian of A(x) x - b(x) (see jmat below)
+.  mat - matrix to store A
+.  mfunc  - function to compute matrix value
+-  ctx - [optional] user-defined context for private data for the
+         function evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (SNES snes,Vec x,Vec f,void *ctx);
+
++  f - function vector
+-  ctx - optional user-defined function context 
+
+   Calling sequence of mfunc:
+$     mfunc (SNES snes,Vec x,Mat *jmat,Mat *mat,int *flag,void *ctx);
+
++  x - input vector
+.  jmat - Form Jacobian matrix of A(x) x - b(x) if available, not there is really no reason to use it in this way since then you can just use SNESSetJacobian(), 
+          normally just pass mat in this location
+.  mat - form A(x) matrix
+.  flag - flag indicating information about the preconditioner matrix
+   structure (same as flag in KSPSetOperators()), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
+-  ctx - [optional] user-defined Jacobian context
+
+   Notes:
+    One can call SNESSetPicard() or SNESSetFunction() (and possibly SNESSetJacobian()) but cannot call both
+
+$     Solves the equation A(x) x = b(x) via the defect correction algorithm A(x^{n}) (x^{n+1} - x^{n}) = b(x^{n}) - A(x^{n})x^{n}
+$     Note that when an exact solver is used this corresponds to the "classic" Picard A(x^{n}) x^{n+1} = b(x^{n}) iteration.
+
+     Run with -snes_mf_operator to solve the system with Newton's method using A(x^{n}) to construct the preconditioner.
+
+   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used.
+
+   There is some controversity over the definition of a Picard iteration for nonlinear systems but almost everyone agrees that it involves a linear solve and some
+   believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration 
+   different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument :-).
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetPicard()
+@*/
+PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),Mat jmat, Mat mat, PetscErrorCode (*mfunc)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->ops->computepfunction = func;
+  snes->ops->computepjacobian = mfunc;
+  ierr = SNESSetFunction(snes,r,SNESPicardComputeFunction,ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,jmat,mat,SNESPicardComputeJacobian,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

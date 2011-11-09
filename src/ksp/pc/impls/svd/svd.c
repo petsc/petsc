@@ -226,7 +226,8 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
   Concepts: SVD
 
   Options Database:
-.  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
+-  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
++  -pc_svd_monitor  Print information on the extreme singular values of the operator
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
