@@ -185,7 +185,6 @@ PetscErrorCode  VecCreate_MPICUSP(Vec vv)
   PetscFunctionBegin;
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUSP);CHKERRQ(ierr);
-  vv->valid_GPU_array      = PETSC_CUSP_UNALLOCATED;
   vv->ops->dotnorm2        = VecDotNorm2_MPICUSP;
   vv->ops->waxpy           = VecWAXPY_SeqCUSP;
   vv->ops->duplicate       = VecDuplicate_MPICUSP;
@@ -215,6 +214,9 @@ PetscErrorCode  VecCreate_MPICUSP(Vec vv)
      reset array?
      get values?
   */
+  ierr = VecCUSPAllocateCheck(vv);CHKERRCUSP(ierr);
+  vv->valid_GPU_array      = PETSC_CUSP_GPU;
+  ierr = VecSet(vv,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
