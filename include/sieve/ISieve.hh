@@ -683,9 +683,13 @@ namespace ALE {
             this->values[i] = v[d];
           }
         } else {
-          // Does this require field splitting? I think so
-          for(PetscInt d = dim-1; d >= 0; --d, ++i) {
-            this->values[i] = v[d];
+          // Does this require component splitting? I think so
+          PetscInt comp = dim;
+
+          for(PetscInt d = dim/comp-1; d >= 0; --d) {
+            for(PetscInt c = 0; c < comp; ++c, ++i) {
+              this->values[i] = v[d*comp+c];
+            }
           }
         }
       }
@@ -819,7 +823,7 @@ namespace ALE {
           } else {
             for(PetscInt k = 0; k < dim; ++k) {
               if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
-              fuse(a[k], values[i+k]);
+              fuse(a[k], values[i+dim-k-1]);
             }
           }
         }
@@ -829,6 +833,7 @@ namespace ALE {
       void updatePointFields(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
         value_type    *a;
         PetscInt       offset;
+        PetscInt       fOff = 0;
         PetscErrorCode ierr;
 
         ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
@@ -837,7 +842,7 @@ namespace ALE {
           PetscInt    dim;  // The number of dof for field f on this point
           PetscInt    cDim; // The nubmer of constraints for field f on this point
           PetscInt   *cDof; // The indices of the constrained dofs for field f on this point
-          PetscInt    fOff = 0, cInd = 0;
+          PetscInt    cInd = 0;
 
           ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
           ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
@@ -1090,6 +1095,216 @@ namespace ALE {
         }
       };
       void clear() {this->i = 0; this->p = 0;};
+    };
+    template<typename Order, typename Value>
+    class IndicesVisitor<PetscSection, Order, Value> {
+    public:
+      typedef Value                      value_type;
+      typedef typename Order::point_type point_type;
+    protected:
+      const PetscSection& section;
+      // This can't be const because UniformSection can't have a const restrict(), because of stupid map semantics
+      Order&              order;
+      int                 size;
+      int                 i, p;
+      bool                setBC;           // If true, returns indices for constrained dofs, otherwise negative values are returned
+      //bool                skipConstraints; // If true, do not return constrained indices at all
+      value_type         *values;
+      bool                allocated;
+      point_type         *points;
+      PetscInt            nF;
+      PetscInt           *fieldSize;
+      PetscInt           *j;
+    protected:
+      void updatePoint(const point_type& point, const bool setBC, const int orientation = 1) {
+        PetscInt       dim;  // The number of dof on this point
+        PetscInt       cDim; // The nubmer of constraints on this point
+        PetscInt      *cDof; // The indices of the constrained dofs on this point
+        PetscInt       offset = this->order.getIndex(point);
+        PetscInt       cInd   = 0;
+        PetscErrorCode ierr;
+
+        ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
+        ierr = PetscSectionGetConstraintDof(section, point, &cDim);CHKERRXX(ierr);
+        if (!cDim || setBC) {
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              values[i+k] = offset+k;
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              values[i+dim-k-1] = offset+k;
+            }
+          }
+        } else {
+          ierr = PetscSectionGetConstraintIndices(section, point, &cDof);CHKERRXX(ierr);
+          if (orientation >= 0) {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {
+                // Insert check for returning constrained indices
+                values[i+k] = -(offset+k+1);
+                ++cInd;
+              } else {
+                values[i+k] = offset+k;
+              }
+            }
+          } else {
+            for(PetscInt k = 0; k < dim; ++k) {
+              if ((cInd < cDim) && (k == cDof[cInd])) {
+                // Insert check for returning constrained indices
+                values[i+dim-k-1] = -(offset+k+1);
+                ++cInd;
+              } else {
+                values[i+dim-k-1] = offset+k;
+              }
+            }
+          }
+        }
+        i += dim;
+      }
+      void updatePointFields(const point_type& point, const bool setBC, const int orientation = 1) {
+        PetscInt       offset = this->order.getIndex(point);
+        PetscInt       fOff   = 0;
+        PetscErrorCode ierr;
+
+        for(PetscInt f = 0; f < nF; ++f) {
+          PetscInt  dim;  // The number of dof for field f on this point
+          PetscInt  cDim; // The nubmer of constraints for field f on this point
+          PetscInt *cDof; // The indices of the constrained dofs for field f on this point
+          PetscInt  cInd = 0;
+
+          ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
+          if (!cDim || setBC) {
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                values[j[f]+k] = offset+fOff+k;
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                values[j[f]+dim-k-1] = offset+fOff+k;
+              }
+            }
+          } else {
+            ierr = PetscSectionGetFieldConstraintIndices(section, point, f, &cDof);CHKERRXX(ierr);
+            if (orientation >= 0) {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {
+                  values[j[f]+k] = -(offset+fOff+k+1);
+                  ++cInd;
+                } else {
+                  values[j[f]+k] = offset+fOff+k;
+                }
+              }
+            } else {
+              for(PetscInt k = 0; k < dim; ++k) {
+                if ((cInd < cDim) && (k == cDof[cInd])) {
+                  values[j[f]+dim-k-1] = -(offset+fOff+k+1);
+                  ++cInd;
+                } else {
+                  values[j[f]+dim-k-1] = offset+fOff+k;
+                }
+              }
+            }
+          }
+          fOff += dim - cDim;
+          j[f] += dim;
+          i    += dim;
+        }
+      }
+    public:
+      IndicesVisitor(const PetscSection& s, Order& o, const int size, const bool unique = false, const PetscInt fieldSize[] = PETSC_NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
+        PetscErrorCode ierr;
+
+        ierr = PetscMalloc(this->size * sizeof(value_type), &this->values);CHKERRXX(ierr);
+        this->allocated = true;
+        this->points    = PETSC_NULL;
+        if (unique) {
+          ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
+        }
+        nF = 0;
+        if (fieldSize) {
+          ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
+          ierr = PetscMalloc2(nF,PetscInt,&this->fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);
+          for(PetscInt f = 0; f < nF; ++f) {
+            this->fieldSize[f] = fieldSize[f];
+          }
+        }
+        this->clear();
+      };
+      IndicesVisitor(const PetscSection& s, Order& o, const int size, value_type *values, const bool unique = false, const PetscInt fieldSize[] = PETSC_NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
+        PetscErrorCode ierr;
+
+        this->values    = values;
+        this->allocated = false;
+        this->points    = PETSC_NULL;
+        if (unique) {
+          ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
+        }
+        nF = 0;
+        if (fieldSize) {
+          ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
+          ierr = PetscMalloc2(nF,PetscInt,&fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);
+          for(PetscInt f = 0; f < nF; ++f) {
+            this->fieldSize[f] = fieldSize[f];
+          }
+        }
+        this->clear();
+      };
+      ~IndicesVisitor() {
+        PetscErrorCode ierr;
+        if (this->allocated) {ierr = PetscFree(values);CHKERRXX(ierr);}
+        ierr = PetscFree(points);CHKERRXX(ierr);
+        ierr = PetscFree2(fieldSize,j);CHKERRXX(ierr);
+      };
+    public:
+      inline void visitPoint(const point_type& point, const int orientation) {
+        if (p >= size) {
+          ostringstream msg;
+          msg << "Too many points (>" << size << ")for IndicesVisitor visitor";
+          throw ALE::Exception(msg.str().c_str());
+        }
+        if (points) {
+          PetscInt pp;
+          for(pp = 0; pp < p; ++pp) {if (points[pp] == point) break;}
+          if (pp != p) return;
+          points[p++] = point;
+        }
+        if (nF) {
+          updatePointFields(point, setBC, orientation);
+        } else {
+          updatePoint(point, setBC, orientation);
+        }
+      }
+      template<typename Arrow>
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
+    public:
+      const value_type *getValues() const {return this->values;};
+      int  getSize() const {return this->i;};
+      int  getMaxSize() const {return this->size;};
+      void ensureSize(const int size) {
+        this->clear();
+        if (size > this->size) {
+          PetscErrorCode ierr;
+
+          this->size = size;
+          if (this->allocated) {ierr = PetscFree(this->values);CHKERRXX(ierr);}
+          ierr = PetscMalloc(this->size * sizeof(value_type), &this->values);CHKERRXX(ierr);
+          this->allocated = true;
+          ierr = PetscFree(this->points);CHKERRXX(ierr);
+          ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
+        }
+      };
+      void clear() {
+        this->p = 0;
+        this->i = 0;
+        if (nF) {
+          j[0] = 0;
+          for(PetscInt f = 1; f < nF; ++f) {
+            j[f] = j[f-1] + fieldSize[f-1];
+          }
+        }
+      };
     };
     template<typename Sieve, typename Label>
     class MarkVisitor {

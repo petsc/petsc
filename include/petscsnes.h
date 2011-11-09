@@ -358,6 +358,7 @@ extern PetscErrorCode SNESMeshFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
 typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+typedef PetscErrorCode (*SNESGS)(SNES,Vec,Vec,void*);
 extern PetscErrorCode  SNESSetFunction(SNES,Vec,SNESFunction,void*);
 extern PetscErrorCode  SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 extern PetscErrorCode  SNESComputeFunction(SNES,Vec,Vec);
@@ -368,6 +369,10 @@ extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStr
 extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 extern PetscErrorCode  SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJacobian,void*);
 extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,void**);
+
+extern PetscErrorCode  SNESSetGS(SNES,SNESGS,void*);
+extern PetscErrorCode  SNESGetGS(SNES,SNESGS*,void**);
+extern PetscErrorCode  SNESComputeGS(SNES,Vec,Vec);
 
 /* --------- Routines specifically for line search methods --------------- */
 /*E

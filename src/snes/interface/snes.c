@@ -543,6 +543,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (snes->pc) {
     ierr = SNESSetOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+    ierr = SNESSetGS(snes->pc, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     /* Should we make a duplicate vector and matrix? Leave the DM to make it? */
     ierr = SNESSetFunction(snes->pc, snes->vec_func, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes->pc, snes->jacobian, snes->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
@@ -1207,6 +1208,43 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetGS"
+/*@C
+   SNESSetGS - Sets the user nonlinear Gauss-Seidel routine for
+   use with composed nonlinear solvers.
+
+   Input Parameters:
++  snes   - the SNES context
+.  gsfunc - function evaluation routine
+-  ctx    - [optional] user-defined context for private data for the
+            smoother evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (SNES snes,Vec x,Vec b,void *ctx);
+
++  X   - solution vector
+.  B   - RHS vector
+-  ctx - optional user-defined function context
+
+   Notes:
+   The GS routines are used by the composed nonlinear solver to generate
+    a problem appropriate update to the solution, particularly FAS.
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeGS()
+@*/
+PetscErrorCode SNESSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void *), void * ctx) {
+  PetscFunctionBegin;
+  if (gsfunc) snes->ops->computegs = gsfunc;
+  if (ctx) snes->gsP = ctx;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESPicardComputeFunction"
 PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
@@ -1416,6 +1454,52 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESComputeGS"
+/*@
+   SNESComputeGS - Calls the Gauss-Seidel function that has been set with
+                   SNESSetGS().
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  x - input vector
+-  b - rhs vector
+
+   Output Parameter:
+.  x - new solution vector
+
+   Notes:
+   SNESComputeGS() is typically used within composed nonlinear solver
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, compute, function
+
+.seealso: SNESSetGS(), SNESComputeFunction()
+@*/
+PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
+  PetscCheckSameComm(snes,1,x,2);
+  if(b) PetscCheckSameComm(snes,1,b,3);
+  if (snes->ops->computegs) {
+    PetscStackPush("SNES user GS");
+    ierr = (*snes->ops->computegs)(snes,x,b,snes->gsP);CHKERRQ(ierr);
+    PetscStackPop;
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESComputeJacobian"
@@ -3216,6 +3300,34 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**func)(SNES,Ve
   PetscFunctionReturn(0);
 }  
 
+/*@C
+   SNESGetGS - Returns the GS function and context.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
++  gsfunc - the function (or PETSC_NULL)
+-  ctx    - the function context (or PETSC_NULL)
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, get, function
+
+.seealso: SNESSetGS(), SNESGetFunction()
+@*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetGS"
+PetscErrorCode SNESGetGS (SNES snes, PetscErrorCode(**func)(SNES, Vec, Vec, void*), void ** ctx) 
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (func) *func = snes->ops->computegs;
+  if (ctx)  *ctx  = snes->funP;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetOptionsPrefix"
 /*@C
@@ -3842,7 +3954,7 @@ PetscErrorCode  SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
   int               nlhs = 1,nrhs = 5;
   mxArray	    *plhs[1],*prhs[5];
   long long int     lx = 0,ly = 0,ls = 0;
-      
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);

@@ -135,18 +135,36 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
   } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     mesh->view("");
   } else {
-    int dim = mesh->getDimension();
+    PetscInt  dim   = mesh->getDimension();
+    PetscInt  size  = mesh->commSize();
+    PetscInt  depth = mesh->depth();
+    PetscInt  num   = 0;
+    PetscInt *sizes;
 
+    ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    if (mesh->depth() == 1) {
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->depthStratum(0)->size(), 0);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->heightStratum(0)->size(), dim);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&depth, &depth, 1, MPIU_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
+    if (depth == 1) {
+      num  = mesh->depthStratum(0)->size();
+      ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
+      for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      num  = mesh->heightStratum(0)->size();
+      ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", dim);CHKERRQ(ierr);
+      for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
       for(int d = 0; d <= dim; d++) {
-        // FIX: Need to globalize
-        ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->depthStratum(d)->size(), d);CHKERRQ(ierr);
+        num  = mesh->depthStratum(d)->size();
+        ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", d);CHKERRQ(ierr);
+        for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
+    ierr = PetscFree(sizes);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1889,10 +1907,16 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
         ierr = PetscSectionSetFieldDof(*section, p, f, s->getFiberDimension(p, f));CHKERRQ(ierr);
       }
       ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldConstraintDof(*section, p, f, s->getConstraintDimension(p, f));CHKERRQ(ierr);
+      }
     }
     ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
     for(PetscInt p = pStart; p < pEnd; ++p) {
       ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, (PetscInt *) s->getConstraintDof(p, f));CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -1924,7 +1948,13 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
         s->setFiberDimension(p, fDim, f);
       }
       ierr = PetscSectionGetConstraintDof(section, p, &cDim);CHKERRQ(ierr);
-      if (cDim) {s->setConstraintDimension(p, cDim);}
+      if (cDim) {
+        s->setConstraintDimension(p, cDim);
+        for(PetscInt f = 0; f < numFields; ++f) {
+          ierr = PetscSectionGetFieldConstraintDof(section, p, f, &cDim);CHKERRQ(ierr);
+          s->setConstraintDimension(p, cDim, f);
+        }
+      }
     }
     s->allocatePoint();
     for(PetscInt p = pStart; p < pEnd; ++p) {
@@ -1932,6 +1962,10 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
 
       ierr = PetscSectionGetConstraintIndices(section, p, &indices);CHKERRQ(ierr);
       s->setConstraintDof(p, indices);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionGetFieldConstraintIndices(section, p, f, &indices);CHKERRQ(ierr);
+        s->setConstraintDof(p, indices, f);
+      }
     }
     {
       PetscBool isDefault;
@@ -2096,10 +2130,20 @@ PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar val
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   /* Copying from updateOperator() */
   try {
+    typedef ALE::ISieveVisitor::IndicesVisitor<PetscSection,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
     ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = mesh->getRealSection("default");
     const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = mesh->getFactory()->getGlobalOrder(mesh, s->getName(), s);
-    typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
-    visitor_type iV(*s, *globalOrder, (int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())*mesh->getMaxDof(), mesh->depth() > 1);
+    PetscSection section;
+    PetscInt     numFields;
+    PetscInt    *fieldSize = PETSC_NULL;
+
+    ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+    if (numFields) {
+      ierr = DMGetWorkArray(dm, numFields, (PetscScalar **) &fieldSize);CHKERRQ(ierr);
+      mesh->sizeWithBC(section, point, fieldSize); /* OPT: This can be precomputed */
+    }
+    visitor_type iV(section, *globalOrder, (int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())*mesh->getMaxDof(), mesh->depth() > 1, fieldSize);
 
     ierr = updateOperator(A, *mesh->getSieve(), iV, point, values, mode);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
@@ -2422,7 +2466,7 @@ PetscErrorCode DMMeshPrintCellMatrix(PetscInt c, const char name[], PetscInt row
   for(int f = 0; f < rows; ++f) {
     PetscPrintf(PETSC_COMM_SELF, "  |");
     for(int g = 0; g < cols; ++g) {
-      PetscPrintf(PETSC_COMM_SELF, " %8.5g", A[f*cols+g]);
+      PetscPrintf(PETSC_COMM_SELF, " % 9.5g", A[f*cols+g]);
     }
     PetscPrintf(PETSC_COMM_SELF, " |\n");
   }

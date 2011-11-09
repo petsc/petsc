@@ -202,12 +202,17 @@ class QuadratureGenerator(script.Script):
       basis = element.get_nodal_basis()
       dim = element.get_reference_element().get_spatial_dimension()
       ext = '_'+str(num+i)
+      spatialDim = Define()
+      spatialDim.identifier = 'SPATIAL_DIM'+ext
+      spatialDim.replacementText = str(dim)
       numFunctions = Define()
       numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
       numFunctions.replacementText = str(basis.get_num_members())
       numComponents = Define()
       numComponents.identifier = 'NUM_BASIS_COMPONENTS'+ext
       numComponents.replacementText = str(numComp)
+      numDofName   = 'numDof'+ext
+      numDofs      = [numComp*len(ids[0]) for d, ids in element.entity_dofs().items()]
       basisName    = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
       perm         = self.getBasisFuncOrder(element)
@@ -236,7 +241,8 @@ class QuadratureGenerator(script.Script):
             basisDerTabNew[q][i*2+1] = basisDerTab[q][i]
         basisTab    = basisTabNew
         basisDerTab = basisDerTabNew
-      code.extend([numFunctions, numComponents,
+      code.extend([spatialDim, numFunctions, numComponents,
+                   self.getArray(self.Cxx.getVar(numDofName), numDofs, 'Number of degrees of freedom for each dimension', 'int'),
                    self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
                    self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
     return code

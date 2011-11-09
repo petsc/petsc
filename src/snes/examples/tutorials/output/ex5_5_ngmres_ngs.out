@@ -1,67 +1,63 @@
   0 SNES Function norm 1.11127 
-  1 SNES Function norm 0.343478 
-  2 SNES Function norm 0.2039 
-  3 SNES Function norm 0.142466 
-  4 SNES Function norm 0.107034 
-  5 SNES Function norm 0.0838039 
-  6 SNES Function norm 0.0673772 
-  7 SNES Function norm 0.0551257 
-  8 SNES Function norm 0.045629 
-  9 SNES Function norm 0.0380652 
- 10 SNES Function norm 0.0319414 
- 11 SNES Function norm 0.0269626 
- 12 SNES Function norm 0.0229504 
- 13 SNES Function norm 0.0197722 
- 14 SNES Function norm 0.0172772 
- 15 SNES Function norm 0.0152755 
- 16 SNES Function norm 0.0135828 
- 17 SNES Function norm 0.0120924 
- 18 SNES Function norm 0.0108047 
- 19 SNES Function norm 0.00977732 
- 20 SNES Function norm 0.00903776 
- 21 SNES Function norm 0.00853982 
- 22 SNES Function norm 0.00819718 
- 23 SNES Function norm 0.00793518 
- 24 SNES Function norm 0.00771074 
- 25 SNES Function norm 0.00750829 
- 26 SNES Function norm 0.00732592 
- 27 SNES Function norm 0.00716047 
- 28 SNES Function norm 0.00700158 
- 29 SNES Function norm 0.00683275 
- 30 SNES Function norm 0.00663241 
- 31 SNES Function norm 0.0063739 
- 32 SNES Function norm 0.00602832 
- 33 SNES Function norm 0.00557578 
- 34 SNES Function norm 0.00502178 
- 35 SNES Function norm 0.00438612 
- 36 SNES Function norm 0.0037076 
- 37 SNES Function norm 0.00304961 
- 38 SNES Function norm 0.0024506 
- 39 SNES Function norm 0.00193821 
- 40 SNES Function norm 0.0015235 
- 41 SNES Function norm 0.00121049 
- 42 SNES Function norm 0.000997576 
- 43 SNES Function norm 0.000868008 
- 44 SNES Function norm 0.000790492 
- 45 SNES Function norm 0.00073474 
- 46 SNES Function norm 0.000680761 
- 47 SNES Function norm 0.000620825 
- 48 SNES Function norm 0.000559035 
- 49 SNES Function norm 0.000500858 
+  1 SNES Function norm 0.565096 
+  2 SNES Function norm 0.384346 
+  3 SNES Function norm 0.292364 
+  4 SNES Function norm 0.235438 
+  5 SNES Function norm 0.196743 
+  6 SNES Function norm 0.168319 
+  7 SNES Function norm 0.146367 
+  8 SNES Function norm 0.128902 
+  9 SNES Function norm 0.114647 
+ 10 SNES Function norm 0.102763 
+ 11 SNES Function norm 0.0926977 
+ 12 SNES Function norm 0.0840577 
+ 13 SNES Function norm 0.0765552 
+ 14 SNES Function norm 0.0699766 
+ 15 SNES Function norm 0.06416 
+ 16 SNES Function norm 0.0589797 
+ 17 SNES Function norm 0.0543368 
+ 18 SNES Function norm 0.0501526 
+ 19 SNES Function norm 0.0463638 
+ 20 SNES Function norm 0.0429189 
+ 21 SNES Function norm 0.039776 
+ 22 SNES Function norm 0.0369012 
+ 23 SNES Function norm 0.0342669 
+ 24 SNES Function norm 0.0318506 
+ 25 SNES Function norm 0.0296345 
+ 26 SNES Function norm 0.0276042 
+ 27 SNES Function norm 0.025748 
+ 28 SNES Function norm 0.0240559 
+ 29 SNES Function norm 0.0225186 
+ 30 SNES Function norm 0.0211266 
+ 31 SNES Function norm 0.0198696 
+ 32 SNES Function norm 0.0187353 
+ 33 SNES Function norm 0.0177102 
+ 34 SNES Function norm 0.0167793 
+ 35 SNES Function norm 0.0159271 
+ 36 SNES Function norm 0.0151391 
+ 37 SNES Function norm 0.0144025 
+ 38 SNES Function norm 0.0137076 
+ 39 SNES Function norm 0.0130482 
+ 40 SNES Function norm 0.0124219 
+ 41 SNES Function norm 0.0118297 
+ 42 SNES Function norm 0.0112751 
+ 43 SNES Function norm 0.0107632 
+ 44 SNES Function norm 0.0102989 
+ 45 SNES Function norm 0.00988576 
+ 46 SNES Function norm 0.00952521 
+ 47 SNES Function norm 0.00921582 
+ 48 SNES Function norm 0.00895356 
+ 49 SNES Function norm 0.0087325 
 SNES Object: 1 MPI processes
   type: ngmres
     line search variant: QUADRATIC
     Number of stored past updates: 10
-    Maximum iterations before total restart: 200
     Residual selection: gammaA=2e+00, gammaC=2e+00
     Difference restart: epsilonB=1e-01, deltaB=9e-01
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=0
   total number of function evaluations=99
-  SNES Object:  (npc_)   1 MPI processes
-    type: shell
-    maximum iterations=3, maximum function evaluations=10000
-    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-    total number of linear solver iterations=0
-    total number of function evaluations=0
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-npc_snes_max_it value: 3

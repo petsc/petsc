@@ -52,7 +52,6 @@ SNES Object: 1 MPI processes
   type: ngmres
     line search variant: QUADRATIC
     Number of stored past updates: 10
-    Maximum iterations before total restart: 200
     Residual selection: gammaA=2e+00, gammaC=2e+00
     Difference restart: epsilonB=1e-01, deltaB=9e-01
   maximum iterations=50, maximum function evaluations=10000
