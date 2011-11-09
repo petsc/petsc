@@ -191,7 +191,8 @@ cdef extern from * nogil:
     int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatMatMultTranspose(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatMatTransposeMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
     int MatMatMultSymbolic(PetscMat,PetscMat,PetscReal,PetscMat*)
     int MatMatMultNumeric(PetscMat,PetscMat,PetscMat)
 
