@@ -36,7 +36,8 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Flag for removing Dirichlet constrained unknowns
+- Check for interpolated mesh when unknowns are placed on edges and faces
+- Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Use quadratic elements for velocity
   - Check that disc error vanishes for exact solution
   - Redo slides from GUCASTutorial for these new examples
@@ -73,8 +74,15 @@ Next Steps:
 #error This example requires Sieve. Reconfigure using --with-sieve
 #endif
 
+/*------------------------------------------------------------------------------
+  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex56.h'
+ -----------------------------------------------------------------------------*/
+#include "ex56.h"
+
 const int numFields     = 2;
-const int numComponents = 3;
+const int numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+
+typedef enum {NEUMANN, DIRICHLET} BCType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -101,12 +109,8 @@ typedef struct {
   void        (*g2Funcs[numFields*numFields])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]); /* The g_2 functions g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void        (*g3Funcs[numFields*numFields])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]); /* The g_3 functions g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
   PetscScalar (*exactFuncs[numComponents])(const PetscReal x[]);                                   /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  BCType        bcType;            /* The type of boundary conditions */
 } AppCtx;
-
-/*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 numComp src/snes/examples/tutorials/ex56.h'
- -----------------------------------------------------------------------------*/
-#include "ex56.h"
 
 PetscScalar zero(const PetscReal coords[]) {
   return 0.0;
@@ -218,6 +222,8 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  PetscInt       bc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -225,6 +231,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
+  options->bcType          = DIRICHLET;
   options->numBatches      = 1;
   options->numBlocks       = 1;
   options->showResidual    = PETSC_TRUE;
@@ -239,6 +246,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
+  bc = options->bcType;
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+  options->bcType = (BCType) bc;
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
@@ -322,28 +332,28 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   /* These can be generated using config/PETSc/FEM.py */
   PetscInt       dim          = user->dim;
-  PetscInt       numDof_0[4]  = {dim, 0, 1, 0};
-  PetscInt       numDof_1[6]  = {dim, 0, 0, 1, 0, 0};
-  PetscInt       numDof_2[8]  = {dim, 0, 0, 0, 1, 0, 0, 0};
-  PetscInt      *numDof       = PETSC_NULL;
+  PetscInt       numBC        = 0;
   PetscInt       bcFields[1]  = {0};
   IS             bcPoints[1]  = {PETSC_NULL};
+  PetscInt       numDof[numFields*(SPATIAL_DIM_0+1)];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch(user->dim) {
-  case 1:
-    numDof = numDof_0;break;
-  case 2:
-    numDof = numDof_1;break;
-  case 3:
-    numDof = numDof_2;break;
-  default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
+  if (dim != SPATIAL_DIM_0) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);}
+  if (dim != SPATIAL_DIM_1) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);}
+  for(PetscInt d = 0; d <= dim; ++d) {
+    numDof[0*(dim+1)+d] = numDof_0[d];
+    numDof[1*(dim+1)+d] = numDof_1[d];
   }
-  ierr = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
-  ierr = DMMeshCreateSection(dm, dim, 2, numDof, 1, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  if (user->bcType == DIRICHLET) {
+    numBC = 1;
+    ierr  = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+  }
+  ierr = DMMeshCreateSection(dm, dim, 2, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
+  if (user->bcType == DIRICHLET) {
+    ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -434,7 +444,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
           PetscReal         interpolant = 0.0;
           for(int f = 0; f < numBasisFuncs; ++f) {
             const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs+fidx];
+            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
           }
           if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d error %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
           elemError += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
@@ -498,6 +508,38 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
     }
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
+  // Temporary bullshit
+  {
+    ALE::Obj<PETSC_MESH_TYPE> mesh;
+    PetscScalar *coordsE;
+    PetscInt     dim;
+
+    ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
+    ierr = DMMeshGetDepthStratum(dm, 1, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
+
+    for(PetscInt e = vStart; e < vEnd; ++e) {
+      mesh->getSieve()->cone(e, pV);
+      const PetscInt *points = pV.getPoints();
+      PetscScalar    *coordsA, *coordsB;
+
+      if (pV.getSize() != 2) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", pV.getSize(), e);}
+      ierr = VecGetValuesSection(coordinates, cSection, points[0], &coordsA);CHKERRQ(ierr);
+      ierr = VecGetValuesSection(coordinates, cSection, points[1], &coordsB);CHKERRQ(ierr);
+      for(PetscInt d = 0; d < dim; ++d) {
+        coordsE[d] = 0.5*(coordsA[d] + coordsB[d]);
+      }
+      for(PetscInt c = 0; c < numComp; ++c) {
+        values[c] = (*funcs[c])(coordsE);
+      }
+      ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
+      pV.clear();
+    }
+    ierr = PetscFree(coordsE);CHKERRQ(ierr);
+  }
+
   ierr = PetscFree2(funcs,values);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);

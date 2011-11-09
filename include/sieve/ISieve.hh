@@ -683,9 +683,13 @@ namespace ALE {
             this->values[i] = v[d];
           }
         } else {
-          // Does this require field splitting? I think so
-          for(PetscInt d = dim-1; d >= 0; --d, ++i) {
-            this->values[i] = v[d];
+          // Does this require component splitting? I think so
+          PetscInt comp = dim;
+
+          for(PetscInt d = dim/comp-1; d >= 0; --d) {
+            for(PetscInt c = 0; c < comp; ++c, ++i) {
+              this->values[i] = v[d*comp+c];
+            }
           }
         }
       }
