@@ -262,7 +262,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   etime2 += tf - t0;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmulttrans_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmattransmult_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
   if (multtrans->usecoloring){
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring      matcoloring;

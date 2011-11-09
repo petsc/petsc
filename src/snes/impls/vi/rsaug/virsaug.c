@@ -2379,7 +2379,7 @@ PetscErrorCode SNESView_VIRSAUG(SNES snes,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIRSAUGSetVariableBounds"
-/*@
+/*@C
    SNESVIRSAUGSetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
 
    Input Parameters:
