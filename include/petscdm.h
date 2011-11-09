@@ -43,6 +43,7 @@ J*/
 #define DMMESH      "mesh"
 #define DMCARTESIAN "cartesian"
 #define DMIGA       "iga"
+#define DMREDUNDANT "redundant"
 
 extern PetscFList DMList;
 extern PetscBool  DMRegisterAllCalled;

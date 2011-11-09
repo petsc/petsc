@@ -775,7 +775,7 @@ runex21:
 	   else  echo  ${PWD} "\nPossible problem with with ex21_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 10 > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_monitor_short -ksp_monitor_short -dmmg_view > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex22_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp
