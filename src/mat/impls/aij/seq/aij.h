@@ -93,9 +93,9 @@ typedef struct {
 
 typedef struct {
   MatTransposeColoring matcoloring;
-  Mat                  Rt;   /* dense matrix of R^T */
-  Mat                  ARt;  /* dense matrix of A*R^T */
-  Mat                  RARt; /* dense matrix of R*A*R^T */
+  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  RARt;  /* dense matrix of R*A*R^T */
+  MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
 
