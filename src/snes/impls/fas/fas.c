@@ -59,7 +59,7 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGetLevels"
 /*@
-   SNESFASGetLevels - Gets the number of levels to use with FAS.
+   SNESFASGetLevels - Gets the number of levels in a FAS.
 
    Input Parameter:
 .  snes - the preconditioner context
@@ -115,8 +115,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetCyclesOnLevel"
 /*@
-   SNESFASSetCycles - Sets the type cycles to use.  Use SNESFASSetCyclesOnLevel() for more
-   complicated cycling.
+   SNESFASSetCyclesOnLevel - Sets the type cycles to use on a particular level.
 
    Logically Collective on SNES
 
@@ -397,8 +396,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
    SNESFASSetInterpolation - Sets the function to be used to calculate the
    interpolation from l-1 to the lth level
 
-   Logically Collective on PC and Mat
-
    Input Parameters:
 +  snes      - the multigrid context
 .  mat       - the interpolation operator
@@ -439,8 +436,6 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
 /*@
    SNESFASSetRestriction - Sets the function to be used to restrict the defect
    from level l to l-1.
-
-   Logically Collective on SNES and Mat
 
    Input Parameters:
 +  snes  - the multigrid context
@@ -487,8 +482,6 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
    SNESFASSetRScale - Sets the scaling factor of the restriction
    operator from level l to l-1.
 
-   Logically Collective on SNES and Mat
-
    Input Parameters:
 +  snes   - the multigrid context
 .  rscale - the restriction scaling
@@ -526,8 +519,6 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
 /*@
    SNESFASSetInjection - Sets the function to be used to inject the solution
    from level l to l-1.
-
-   Logically Collective on SNES and Mat
 
    Input Parameters:
 +  snes  - the multigrid context
