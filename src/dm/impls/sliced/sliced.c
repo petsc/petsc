@@ -259,6 +259,7 @@ PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
     bs = slice->bs;
     ierr = VecCreateGhostBlock(((PetscObject)dm)->comm,bs,slice->n*bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
     *gvec = slice->globalvector;
+    ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -276,7 +277,7 @@ PetscErrorCode  DMCreate_Sliced(DM p)
   ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
   p->data = slice;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
   p->ops->getmatrix          = DMGetMatrix_Sliced;
   p->ops->destroy            = DMDestroy_Sliced;
@@ -332,7 +333,7 @@ PetscErrorCode  DMSlicedCreate(MPI_Comm comm,DM *dm)
     Notes:
        The idx parameters should be freed by the calling routine with PetscFree()
 
-.seealso DMSlicedDestroy(), DMSlicedCreateGlobalVector(), DMSlicedCreate()
+.seealso DMSlicedDestroy(), DMCreateGlobalVector(), DMSlicedCreate()
 
 @*/
 PetscErrorCode  DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
