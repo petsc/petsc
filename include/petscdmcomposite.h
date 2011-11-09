@@ -6,7 +6,6 @@
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode   DMCompositeCreate(MPI_Comm,DM*);
-extern PetscErrorCode   DMCompositeAddArray(DM,PetscMPIInt,PetscInt);
 extern PetscErrorCode   DMCompositeAddDM(DM,DM);
 extern PetscErrorCode   DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
 extern PetscErrorCode   DMCompositeAddVecScatter(DM,VecScatter);

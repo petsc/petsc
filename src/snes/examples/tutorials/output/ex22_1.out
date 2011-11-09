@@ -115,7 +115,7 @@
 DMMG Object with 5 levels
 Using global (nonghosted) Jacobian coloring computation
   DM (no prefix)
-    contains 2 DMs and 0 redundant arrays
+    contains 2 DMs
     Link 0: DM of type redundant
       redundant: rank=0 N=1
     Link 1: DM of type da
@@ -124,7 +124,7 @@ Using global (nonghosted) Jacobian coloring computation
       Processor [1] M 10 m 2 w 2 s 1
       X range of indices: 5 10
   DM (no prefix)
-    contains 2 DMs and 0 redundant arrays
+    contains 2 DMs
     Link 0: DM of type redundant
       redundant: rank=0 N=1
     Link 1: DM of type da
@@ -133,7 +133,7 @@ Using global (nonghosted) Jacobian coloring computation
       Processor [1] M 19 m 2 w 2 s 1
       X range of indices: 10 19
   DM (no prefix)
-    contains 2 DMs and 0 redundant arrays
+    contains 2 DMs
     Link 0: DM of type redundant
       redundant: rank=0 N=1
     Link 1: DM of type da
@@ -142,7 +142,7 @@ Using global (nonghosted) Jacobian coloring computation
       Processor [1] M 37 m 2 w 2 s 1
       X range of indices: 19 37
   DM (no prefix)
-    contains 2 DMs and 0 redundant arrays
+    contains 2 DMs
     Link 0: DM of type redundant
       redundant: rank=0 N=1
     Link 1: DM of type da
@@ -151,7 +151,7 @@ Using global (nonghosted) Jacobian coloring computation
       Processor [1] M 73 m 2 w 2 s 1
       X range of indices: 37 73
   DM (no prefix)
-    contains 2 DMs and 0 redundant arrays
+    contains 2 DMs
     Link 0: DM of type redundant
       redundant: rank=0 N=1
     Link 1: DM of type da

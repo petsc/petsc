@@ -13,7 +13,7 @@ static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *
   PetscInt                     i,j,n;
 
   PetscFunctionBegin;
-  n = com->nDM + com->nredundant; /* Total number of entries */
+  n = com->nDM;                 /* Total number of entries */
 
   /* Explicit index sets are not required for MatCreateNest, but getting them here allows MatNest to do consistency
    * checking and allows ISEqual to compare by identity instead of by contents. */
@@ -25,15 +25,7 @@ static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *
     for (j=0,clink=com->next; clink; j++,clink=clink->next) {
       Mat sub = PETSC_NULL;
       if (i == j) {
-        switch (rlink->type) {
-        case DMCOMPOSITE_ARRAY:
-          ierr = MatCreateMPIDense(((PetscObject)dm)->comm,rlink->n,clink->n,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_NULL,&sub);CHKERRQ(ierr);
-          break;
-        case DMCOMPOSITE_DM:
-          ierr = DMGetMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
-          break;
-        default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"unknown type");
-        }
+        ierr = DMGetMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
       } else if (com->FormCoupleLocations) {
         SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
       }
@@ -104,47 +96,35 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   /* loop over packed objects, handling one at at time */
   next = com->next;
   while (next) {
-    if (next->type == DMCOMPOSITE_ARRAY) {
-      if (rank == next->rank) {  /* zero the "little" block */
-        for (j=com->rstart+next->rstart; j<com->rstart+next->rstart+next->n; j++) {
-          for (i=com->rstart+next->rstart; i<com->rstart+next->rstart+next->n; i++) {
-            ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
-          }
-        }
-      }
-    } else if (next->type == DMCOMPOSITE_DM) {
-      PetscInt       nc,rstart,*ccols,maxnc;
-      const PetscInt *cols,*rstarts;
-      PetscMPIInt    proc;
+    PetscInt       nc,rstart,*ccols,maxnc;
+    const PetscInt *cols,*rstarts;
+    PetscMPIInt    proc;
 
-      ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
 
-      maxnc = 0;
-      for (i=0; i<mA; i++) {
-        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        maxnc = PetscMax(nc,maxnc);
-      }
-      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
-      for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
-        /* remap the columns taking into how much they are shifted on each process */
-        for (j=0; j<nc; j++) {
-          proc = 0;
-          while (cols[j] >= rstarts[proc+1]) proc++;
-          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        }
-        ierr = MatPreallocateSet(com->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
-        ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
+    maxnc = 0;
+    for (i=0; i<mA; i++) {
+      ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      maxnc = PetscMax(nc,maxnc);
     }
+    ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+    for (i=0; i<mA; i++) {
+      ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+      /* remap the columns taking into how much they are shifted on each process */
+      for (j=0; j<nc; j++) {
+        proc = 0;
+        while (cols[j] >= rstarts[proc+1]) proc++;
+        ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
+      }
+      ierr = MatPreallocateSet(com->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ccols);CHKERRQ(ierr);
+    ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
     next = next->next;
   }
   if (com->FormCoupleLocations) {
@@ -158,47 +138,35 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
 
   next = com->next;
   while (next) {
-    if (next->type == DMCOMPOSITE_ARRAY) {
-      if (rank == next->rank) {
-        for (j=com->rstart+next->rstart; j<com->rstart+next->rstart+next->n; j++) {
-          for (i=com->rstart+next->rstart; i<com->rstart+next->rstart+next->n; i++) {
-            ierr = MatSetValue(*J,j,i,0.0,INSERT_VALUES);CHKERRQ(ierr);
-          }
-        }
-      }
-    } else if (next->type == DMCOMPOSITE_DM) {
-      PetscInt          nc,rstart,row,maxnc,*ccols;
-      const PetscInt    *cols,*rstarts;
-      const PetscScalar *values;
-      PetscMPIInt       proc;
+    PetscInt          nc,rstart,row,maxnc,*ccols;
+    const PetscInt    *cols,*rstarts;
+    const PetscScalar *values;
+    PetscMPIInt       proc;
 
-      ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
-      maxnc = 0;
-      for (i=0; i<mA; i++) {
-        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        maxnc = PetscMax(nc,maxnc);
-      }
-      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
-      for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
-        for (j=0; j<nc; j++) {
-          proc = 0;
-          while (cols[j] >= rstarts[proc+1]) proc++;
-          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        }
-        row  = com->rstart+next->rstart+i;
-        ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
+    ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+    maxnc = 0;
+    for (i=0; i<mA; i++) {
+      ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      maxnc = PetscMax(nc,maxnc);
     }
+    ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+    for (i=0; i<mA; i++) {
+      ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      for (j=0; j<nc; j++) {
+        proc = 0;
+        while (cols[j] >= rstarts[proc+1]) proc++;
+        ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
+      }
+      row  = com->rstart+next->rstart+i;
+      ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ccols);CHKERRQ(ierr);
+    ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
     next = next->next;
   }
   if (com->FormCoupleLocations) {
