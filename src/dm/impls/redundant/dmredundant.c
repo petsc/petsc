@@ -209,6 +209,31 @@ static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetColoring_Redundant"
+static PetscErrorCode DMGetColoring_Redundant(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+{
+  DM_Redundant   *red = (DM_Redundant*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt i,nloc;
+  ISColoringValue *colors;
+
+  PetscFunctionBegin;
+  switch (ctype) {
+  case IS_COLORING_GLOBAL:
+    nloc = red->n;
+    break;
+  case IS_COLORING_GHOSTED:
+    nloc = red->N;
+    break;
+  default: SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  }
+  ierr = PetscMalloc(nloc*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
+  for (i=0; i<nloc; i++) colors[i] = i;
+  ierr = ISColoringCreate(((PetscObject)dm)->comm,red->N,nloc,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringSetType(*coloring,ctype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRefine_Redundant"
@@ -382,6 +407,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->refine             = DMRefine_Redundant;
   dm->ops->coarsen            = DMCoarsen_Redundant;
   dm->ops->getinterpolation   = DMGetInterpolation_Redundant;
+  dm->ops->getcoloring        = DMGetColoring_Redundant;
   ierr = PetscStrallocpy(VECSTANDARD,&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
