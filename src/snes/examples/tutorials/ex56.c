@@ -8,7 +8,7 @@ The command line options include:\n\
  The variable-viscosity Stokes problem, which we discretize using the finite
 element method on an unstructured mesh. The weak form equations are
 
-  < \nabla v, \nabla u + {\nabla u}^T > + < \nabla\cdot v, p > + < v, f > = 0
+  < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
   < q, \nabla\cdot v >                                                    = 0
 
 We start with homogeneous Dirichlet conditions. We will expand this as the set
@@ -125,8 +125,8 @@ PetscScalar zero(const PetscReal coords[]) {
 
   so that
 
-    -\Delta u + \nabla p = <-4, -4> + <1, 1> = <-3, -3>
-    \nabla \cdot u       = 2x - 2x = 0
+    -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
+    \nabla \cdot u           = 2x - 2x                    = 0
 */
 PetscScalar quadratic_u_2d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1];
@@ -141,10 +141,10 @@ PetscScalar linear_p_2d(const PetscReal x[]) {
 };
 
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
-  const int dim   = 2;
-  const int Ncomp = dim;
+  const PetscInt dim   = 2;
+  const PetscInt Ncomp = dim;
 
-  for(int comp = 0; comp < Ncomp; ++comp) {
+  for(PetscInt comp = 0; comp < Ncomp; ++comp) {
     f0[comp] = 3.0;
   }
 }
@@ -152,41 +152,40 @@ void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
 // gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
 // u[Ncomp]          = {p}
 void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const int dim   = 2;
-  const int Ncomp = dim;
+  const PetscInt dim   = 2;
+  const PetscInt Ncomp = dim;
 
-  for(int comp = 0; comp < Ncomp; ++comp) {
-    for(int d = 0; d < dim; ++d) {
+  for(PetscInt comp = 0; comp < Ncomp; ++comp) {
+    for(PetscInt d = 0; d < dim; ++d) {
       //f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]);
       f1[comp*dim+d] = gradU[comp*dim+d];
     }
-    f1[comp*dim+comp] += u[Ncomp];
+    f1[comp*dim+comp] -= u[Ncomp];
   }
 }
 
 // gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
 void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
-  const int dim = 2;
+  const PetscInt dim = 2;
 
   f0[0] = 0.0;
-  for(int d = 0; d < dim; ++d) {
+  for(PetscInt d = 0; d < dim; ++d) {
     f0[0] += gradU[d*dim+d];
   }
 }
 
 void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const int dim = 2;
+  const PetscInt dim = 2;
 
-  for(int d = 0; d < dim; ++d) {
+  for(PetscInt d = 0; d < dim; ++d) {
     f1[d] = 0.0;
   }
 }
 
 // < q, \nabla\cdot v >
+// NcompI = 1, NcompJ = dim
 void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
-  const int dim    = 2;
-  //const int NcompI = 1;
-  //const int NcompJ = dim;
+  const PetscInt dim = 2;
 
   g1[0*dim+0] = 1.0; // \frac{\partial\phi^u}{\partial x}
   g1[0*dim+1] = 0.0;
@@ -194,26 +193,25 @@ void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
   g1[1*dim+1] = 1.0; // \frac{\partial\phi^v}{\partial y}
 }
 
-// < \nabla\cdot v, p >
+// -< \nabla\cdot v, p >
+// NcompI = dim, NcompJ = 1
 void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
-  const int dim    = 2;
-  //const int NcompI = dim;
-  //const int NcompJ = 1;
+  const PetscInt dim = 2;
 
-  g2[0*dim+0] = 1.0; // \frac{\partial\psi^u}{\partial x}
-  g2[0*dim+1] = 0.0;
-  g2[1*dim+0] = 0.0;
-  g2[1*dim+1] = 1.0; // \frac{\partial\psi^v}{\partial y}
+  g2[0*dim+0] = -1.0; // \frac{\partial\psi^u}{\partial x}
+  g2[0*dim+1] =  0.0;
+  g2[1*dim+0] =  0.0;
+  g2[1*dim+1] = -1.0; // \frac{\partial\psi^v}{\partial y}
 }
 
 // < \nabla v, \nabla u + {\nabla u}^T >
+// This just gives \nabla u, give the perdiagonal for the transpose
 void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
-  const int dim   = 2;
-  const int Ncomp = dim;
+  const PetscInt dim   = 2;
+  const PetscInt Ncomp = dim;
 
-  // This just gives \nabla u, give the perdiagonal for the transpose
-  for(int compI = 0; compI < Ncomp; ++compI) {
-    for(int d = 0; d < dim; ++d) {
+  for(PetscInt compI = 0; compI < Ncomp; ++compI) {
+    for(PetscInt d = 0; d < dim; ++d) {
       g3[((compI*Ncomp+compI)*dim+d)*dim+d] = 1.0;
     }
   }
@@ -333,6 +331,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   /* These can be generated using config/PETSc/FEM.py */
   PetscInt       dim          = user->dim;
   PetscInt       numBC        = 0;
+  PetscInt       numComp[2]   = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
   PetscInt       bcFields[1]  = {0};
   IS             bcPoints[1]  = {PETSC_NULL};
   PetscInt       numDof[numFields*(SPATIAL_DIM_0+1)];
@@ -349,7 +348,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     numBC = 1;
     ierr  = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMMeshCreateSection(dm, dim, 2, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(dm, dim, 2, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
@@ -605,10 +604,10 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
     const PetscInt   Nq   = quad[field].numQuadPoints;
-    PetscScalar      f0[1*dim];     // Nq = 1
-    PetscScalar      f1[1*dim*dim]; // Nq = 1
+    PetscScalar      f0[NUM_QUADRATURE_POINTS_0*dim];
+    PetscScalar      f1[NUM_QUADRATURE_POINTS_0*dim*dim];
 
-    assert(Nq == 1);
+    assert(Nq <= NUM_QUADRATURE_POINTS_0);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
@@ -895,6 +894,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
           PetscScalar g2[dim*dim*dim];     // Ncomp_i*Ncomp_j*dim
           PetscScalar g3[dim*dim*dim*dim]; // Ncomp_i*Ncomp_j*dim*dim
 
+          assert(Ncomp_i <= dim);assert(Ncomp_j <= dim);
           ierr = PetscMemzero(g0, Ncomp_i*Ncomp_j         * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(g1, Ncomp_i*Ncomp_j*dim     * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(g2, Ncomp_i*Ncomp_j*dim     * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1149,8 +1149,6 @@ int main(int argc, char **argv)
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESMeshFormFunction(snes, r, b, &user);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
-      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
