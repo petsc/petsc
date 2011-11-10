@@ -190,11 +190,11 @@ PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscContainerDestroy_Mat_MatMatMultTrans"
-PetscErrorCode PetscContainerDestroy_Mat_MatMatMultTrans(void *ptr)
+#define __FUNCT__ "PetscContainerDestroy_Mat_MatMatTransMult"
+PetscErrorCode PetscContainerDestroy_Mat_MatMatTransMult(void *ptr)
 {
   PetscErrorCode      ierr;
-  Mat_MatMatMultTrans *multtrans=(Mat_MatMatMultTrans*)ptr;
+  Mat_MatMatTransMult *multtrans=(Mat_MatMatTransMult*)ptr;
 
   PetscFunctionBegin;
   ierr = MatTransposeColoringDestroy(&multtrans->matcoloring);CHKERRQ(ierr);
@@ -210,17 +210,17 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(Mat A)
 {
   PetscErrorCode      ierr;
   PetscContainer      container;
-  Mat_MatMatMultTrans *multtrans=PETSC_NULL;
+  Mat_MatMatTransMult *multtrans=PETSC_NULL;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatTransMult",(PetscObject *)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
   A->ops->destroy   = multtrans->destroy;
   if (A->ops->destroy) {
     ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   }
-  ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultTrans",0);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatTransMult",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,7 +231,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscErrorCode      ierr;
   Mat                 Bt;
   PetscInt            *bti,*btj;
-  Mat_MatMatMultTrans *multtrans;
+  Mat_MatMatTransMult *multtrans;
   PetscContainer      container;
   PetscLogDouble      t0,tf,etime2=0.0;
   
@@ -245,13 +245,13 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
 
   /* create a supporting struct for reuse intermidiate dense matrices with matcoloring */
-  ierr = PetscNew(Mat_MatMatMultTrans,&multtrans);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_MatMatTransMult,&multtrans);CHKERRQ(ierr);
 
   /* attach the supporting struct to C */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,multtrans);CHKERRQ(ierr);
-  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultTrans);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultTrans",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatTransMult);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatTransMult",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 
   multtrans->usecoloring = PETSC_FALSE;
@@ -427,14 +427,14 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
-  Mat_MatMatMultTrans *multtrans;
+  Mat_MatMatTransMult *multtrans;
   PetscContainer      container;
 #if defined(USE_ARRAY)
   MatScalar      *spdot;
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultTrans",(PetscObject *)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatTransMult",(PetscObject *)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr  = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
   if (multtrans->usecoloring){
