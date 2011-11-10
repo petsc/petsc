@@ -833,6 +833,9 @@ runex28_3:
 	    -pack_dm_mat_type $$mtype -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi > ex28_3.tmp 2>&1; \
 	    ${DIFF} output/ex28_3.out ex28_3.tmp || echo  ${PWD} "\nPossible problem with ex28_3 mtype=$${mtype}; diffs above \n========================================="; ${RM} -f ex28_3.tmp; \
 	  done
+runex28_4:
+	-@${MPIEXEC} -n 6 ./ex28 -da_grid_x 257 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_u_ksp_type gmres -fieldsplit_u_ksp_pc_side right -fieldsplit_u_pc_type mg -fieldsplit_u_pc_mg_levels 4 -fieldsplit_u_mg_levels_ksp_type richardson -fieldsplit_u_mg_levels_pc_type sor -fieldsplit_u_pc_mg_galerkin -fieldsplit_u_ksp_converged_reason -fieldsplit_k_pc_type jacobi > ex28_4.tmp 2>&1; \
+	  ${DIFF} output/ex28_4.out ex28_4.tmp || echo  ${PWD} "\nPossible problem with ex28_4 mtype=$${mtype}; diffs above \n========================================="; ${RM} -f ex28_4.tmp;
 
 runex32:
 	-@${MPIEXEC} -n 1 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd_operator -da_grid_x 10 -da_grid_y 10

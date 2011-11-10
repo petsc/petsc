@@ -16,6 +16,7 @@ extern PetscErrorCode   DMCompositeGetNumberDM(DM,PetscInt*);
 extern PetscErrorCode   DMCompositeRestoreAccess(DM,Vec,...);
 extern PetscErrorCode   DMCompositeGetLocalVectors(DM,...);
 extern PetscErrorCode   DMCompositeGetEntries(DM,...);
+extern PetscErrorCode   DMCompositeGetEntriesArray(DM,DM[]);
 extern PetscErrorCode   DMCompositeRestoreLocalVectors(DM,...);
 extern PetscErrorCode   DMCompositeGetGlobalISs(DM,IS*[]);
 extern PetscErrorCode   DMCompositeGetLocalISs(DM,IS**);
