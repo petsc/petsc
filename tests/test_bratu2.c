@@ -29,7 +29,6 @@
 
 #include "taosolver.h"
 #include "petscda.h"
-#include <math.h>   /* exp() */
 
 static char help[] = 
 "Solves a nonlinear system in parallel with OT.\n\
@@ -236,7 +235,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin(PetscMin(i,mx-i-1)*hx,temp) ); 
+      x[row] = temp1*PetscSqrtScalar( PetscMin(PetscMin(i,mx-i-1)*hx,temp) ); 
     }
   }
 
@@ -316,7 +315,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 
@@ -435,7 +434,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
       /* interior grid points */
       v[0] = -hxdhy; col[0] = row - gxm;
       v[1] = -hydhx; col[1] = row - 1;
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = -hydhx; col[3] = row + 1;
       v[4] = -hxdhy; col[4] = row + gxm;
       info = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(info);

@@ -252,12 +252,12 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *fcn,Vec G,voi
       d7 *= rhy;
       d8 *= rhx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
       
       ft = ft + (f2 + f4);
 
@@ -276,36 +276,36 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *fcn,Vec G,voi
   for (j=0; j<my; j++){   /* left side */
     d3=(user->left[j+1] - user->left[j+2])*rhy;
     d2=(user->left[j+1] - x[j*mx])*rhx;
-    ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+    ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
   }
   
   for (i=0; i<mx; i++){ /* bottom */
     d2=(user->bottom[i+1]-user->bottom[i+2])*rhx;
     d3=(user->bottom[i+1]-x[i])*rhy;
-    ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+    ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
   }
   
   for (j=0; j< my; j++){ /* right side */
     d1=(x[(j+1)*mx-1]-user->right[j+1])*rhx;
     d4=(user->right[j]-user->right[j+1])*rhy;
-    ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+    ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
   }
   
   for (i=0; i<mx; i++){ /* top side */
     d1=(x[(my-1)*mx + i] - user->top[i+1])*rhy;
     d4=(user->top[i+1] - user->top[i])*rhx;
-    ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+    ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
   }
   
   /* Bottom left corner */
   d1=(user->left[0]-user->left[1])*rhy;
   d2=(user->bottom[0]-user->bottom[1])*rhx;
-  ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+  ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
 
   /* Top right corner */
   d1=(user->right[my+1] - user->right[my])*rhy;
   d2=(user->top[mx+1] - user->top[mx])*rhx;
-  ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+  ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
 
   (*fcn)=ft*area;
 
@@ -440,12 +440,12 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       d7 = (xlt-xl)*rhy;
       d8 = (xlt-xt)*rhx;
       
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -579,7 +579,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       for (k=0; k<maxits; k++){
 	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
 	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=sqrt(nf1*nf1+nf2*nf2);
+	fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
 	if (fnorm <= tol) break;
 	njac11=one+u2*u2-u1*u1;
 	njac12=two*u1*u2;

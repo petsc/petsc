@@ -834,7 +834,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   n = user->mx * user->mx * user->mx;
   m = 3 * user->mx * user->mx * (user->mx-1);
-  sqrt_beta = sqrt(user->beta);
+  sqrt_beta = PetscSqrtScalar(user->beta);
 
 
   ierr = VecCreate(PETSC_COMM_WORLD,&XX); CHKERRQ(ierr);
@@ -892,7 +892,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 	  if (ls<user->ns){
 	    l =ls*n + linear_index;
 	    l = remap[ls*n + linear_index]; 
-	    v = 100*sin(2*PI*(vx+0.25*is))*sin(2*PI*(vy+0.25*js))*sin(2*PI*(vz+0.25*ks));
+	    v = 100*PetscSinScalar(2*PI*(vx+0.25*is))*PetscSinScalar(2*PI*(vy+0.25*js))*PetscSinScalar(2*PI*(vz+0.25*ks));
 	    ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES); CHKERRQ(ierr);
 	  }
 	}
@@ -1074,7 +1074,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatAssemblyBegin(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  ierr = MatScale(user->L,pow(h,1.5)); CHKERRQ(ierr);
+  ierr = MatScale(user->L,PetscPowScalar(h,1.5)); CHKERRQ(ierr);
 
   /* Generate Div matrix */
   if (!user->use_ptap) {

@@ -217,7 +217,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
   while (1){
 
     /* Check Stopping Condition      */
-    ierr = TaoMonitor(tao,iter++,qp->pobj,sqrt(qp->gap + qp->dinfeas),
+    ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
 			    qp->pinfeas, step, &reason); CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
@@ -490,7 +490,7 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
   gap[1]*=gap[1];
 
 
-  qp->pathnorm=sqrt( (gap[0]+gap[1]) );
+  qp->pathnorm=PetscSqrtScalar( (gap[0]+gap[1]) );
   *norm=qp->pathnorm;
 
   PetscFunctionReturn(0);

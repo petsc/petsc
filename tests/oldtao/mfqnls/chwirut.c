@@ -11,7 +11,6 @@
 */
 
 #include "tao.h"
-#include <math.h>  /*  For pow(), fabs(), log(), and exp()  */
 
 
 /*
@@ -174,7 +173,7 @@ int EvaluateConstraints(TaoSolver tao, Vec X, Vec R, void *ptr)
 
 
   for (i=0;i<NOBSERVATIONS;i++) {
-    r[i] = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+    r[i] = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
 
 
@@ -207,7 +206,7 @@ int EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, void *ptr)
 
 
   for (i=0;i<NOBSERVATIONS;i++) {
-    base = exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+    base = PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 
     user->j[i][0] = t[i]*base;
     user->j[i][1] = base/(x[1] + x[2]*t[i]);

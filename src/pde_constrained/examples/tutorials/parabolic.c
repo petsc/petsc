@@ -926,7 +926,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   n = user->mx * user->mx * user->mx;
   m = 3 * user->mx * user->mx * (user->mx-1);
-  sqrt_beta = sqrt(user->beta);
+  sqrt_beta = PetscSqrtScalar(user->beta);
 
   user->ksp_its = 0;
   user->ksp_its_initial = 0;
@@ -1129,7 +1129,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatAssemblyBegin(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->L,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  ierr = MatScale(user->L,pow(h,1.5)); CHKERRQ(ierr);
+  ierr = MatScale(user->L,PetscPowScalar(h,1.5)); CHKERRQ(ierr);
 
   /* Generate Div matrix */
   ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);

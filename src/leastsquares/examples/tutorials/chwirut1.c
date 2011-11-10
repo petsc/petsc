@@ -9,7 +9,6 @@
 */
 
 #include "taosolver.h"
-#include <math.h>  /*  For pow(), fabs(), log(), and exp()  */
 
 
 /*
@@ -158,7 +157,7 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArray(F,&f); CHKERRQ(ierr);
 
   for (i=0;i<NOBSERVATIONS;i++) {
-    f[i] = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+    f[i] = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
 
   
@@ -191,7 +190,7 @@ PetscErrorCode EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStru
 
 
   for (i=0;i<NOBSERVATIONS;i++) {
-    base = exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+    base = PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 
     user->j[i][0] = t[i]*base;
     user->j[i][1] = base/(x[1] + x[2]*t[i]);

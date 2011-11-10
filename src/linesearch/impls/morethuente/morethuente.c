@@ -451,7 +451,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     theta = 3 * (*fx - *fp) / (*stp - *stx) + *dx + *dp;
     s = PetscMax(PetscAbsReal(theta),PetscAbsReal(*dx));
     s = PetscMax(s,PetscAbsReal(*dp));
-    gamma1 = s*sqrt(pow(theta/s,2.0) - (*dx/s)*(*dp/s));
+    gamma1 = s*PetscSqrtScalar(PetscPowScalar(theta/s,2.0) - (*dx/s)*(*dp/s));
     if (*stp < *stx) gamma1 = -gamma1;
     /* Can p be 0?  Check */
     p = (gamma1 - *dx) + theta;
@@ -479,7 +479,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
     s = PetscMax(PetscAbsReal(theta),PetscAbsReal(*dx));
     s = PetscMax(s,PetscAbsReal(*dp));
-    gamma1 = s*sqrt(pow(theta/s,2.0) - (*dx/s)*(*dp/s));
+    gamma1 = s*PetscSqrtScalar(PetscPowScalar(theta/s,2.0) - (*dx/s)*(*dp/s));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
     q = ((gamma1 - *dp) + gamma1) + *dx;
@@ -513,7 +513,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
 
     /* The case gamma1 = 0 only arises if the cubic does not tend
        to infinity in the direction of the step. */
-    gamma1 = s*sqrt(PetscMax(0.0,pow(theta/s,2.0) - (*dx/s)*(*dp/s)));
+    gamma1 = s*PetscSqrtScalar(PetscMax(0.0,PetscPowScalar(theta/s,2.0) - (*dx/s)*(*dp/s)));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
     q = (gamma1 + (*dx - *dp)) + gamma1;
@@ -552,7 +552,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
       theta = 3*(*fp - *fy)/(*sty - *stp) + *dy + *dp;
       s = PetscMax(PetscAbsReal(theta),PetscAbsReal(*dy));
       s = PetscMax(s,PetscAbsReal(*dp));
-      gamma1 = s*sqrt(pow(theta/s,2.0) - (*dy/s)*(*dp/s));
+      gamma1 = s*PetscSqrtScalar(PetscPowScalar(theta/s,2.0) - (*dy/s)*(*dp/s));
       if (*stp > *sty) gamma1 = -gamma1;
       p = (gamma1 - *dp) + theta;
       q = ((gamma1 - *dp) + gamma1) + *dy;

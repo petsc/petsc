@@ -309,7 +309,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	
       /* Safeguard par */
 	if (par <= pars && paru > 0) {
-	    par = PetscMax(p001, sqrt(parl/paru)) * paru;
+	    par = PetscMax(p001, PetscSqrtScalar(parl/paru)) * paru;
 	}
 	
 	/* Copy the lower triangle of A into its upper triangle and 
@@ -375,7 +375,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	        /* Compute alpha */
 		prod = BLASdot_(&blasn, z, &blas1, x, &blas1) / delta;
 		temp = (delta - xnorm)*((delta + xnorm)/delta);
-		alpha = temp/(PetscAbs(prod) + sqrt(prod*prod + temp/delta));
+		alpha = temp/(PetscAbs(prod) + PetscSqrtScalar(prod*prod + temp/delta));
 		if (prod >= 0) 
 		    alpha = PetscAbs(alpha);
 		else 

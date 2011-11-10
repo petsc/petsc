@@ -331,12 +331,12 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
       d7 *= rhy;
       d8 *= rhx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
       
       ft = ft + (f2 + f4);
 
@@ -358,14 +358,14 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
     for (j=ys; j<ys+ym; j++){
       d3=(left[j-ys+1] - left[j-ys+2])*rhy;
       d2=(left[j-ys+1] - x[(j-gys)*gxm])*rhx;
-      ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
     }
   }
   if (ys==0){ /* bottom side */
     for (i=xs; i<xs+xm; i++){
       d2=(bottom[i+1-xs]-bottom[i-xs+2])*rhx;
       d3=(bottom[i-xs+1]-x[i-gxs])*rhy;
-      ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
     }
   }
 
@@ -373,26 +373,26 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
     for (j=ys; j< ys+ym; j++){
       d1=(x[(j+1-gys)*gxm-1]-right[j-ys+1])*rhx;
       d4=(right[j-ys]-right[j-ys+1])*rhy;
-      ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
     }
   }
   if (ys+ym==my){ /* top side */
     for (i=xs; i<xs+xm; i++){
       d1=(x[(gym-1)*gxm + i-gxs] - top[i-xs+1])*rhy;
       d4=(top[i-xs+1] - top[i-xs])*rhx;
-      ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
     }
   }
 
   if (ys==0 && xs==0){
     d1=(left[0]-left[1])*rhy;
     d2=(bottom[0]-bottom[1])*rhx;
-    ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
   }
   if (ys+ym == my && xs+xm == mx){
     d1=(right[ym+1] - right[ym])*rhy;
     d2=(top[xm+1] - top[xm])*rhx;
-    ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
   }
 
   ft=ft*area;
@@ -554,12 +554,12 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
       d7 = (xlt-xl)*rhy;
       d8 = (xlt-xt)*rhx;
       
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -712,7 +712,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       for (k=0; k<maxits; k++){
 	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
 	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=sqrt(nf1*nf1+nf2*nf2);
+	fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
 	if (fnorm <= tol) break;
 	njac11=one+u2*u2-u1*u1;
 	njac12=two*u1*u2;

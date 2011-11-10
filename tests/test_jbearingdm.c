@@ -170,7 +170,7 @@ PetscErrorCode FormInitialGuess(TaoDM taodm, Vec X)
   /* Compute initial guess over locally owned part of mesh */
   for (j=ys; j<ye; j++) {  /*  for (j=0; j<my; j++) */
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<mx; i++) */
-      val = PetscMax(sin(((PetscReal)(i)+1.0)*hx),0.0);
+      val = PetscMax(PetscSinScalar(((PetscReal)(i)+1.0)*hx),0.0);
       x[j][i] = val;
       x[j][i] = 0;
     }
@@ -258,7 +258,7 @@ static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscReal
   ierr = PetscMemzero((void*)&(g[dminfo->xs][dminfo->ys]),dminfo->xm*dminfo->ym*sizeof(PetscReal)); CHKERRQ(ierr);
   for (i=xs; i< xs+xm-1; i++){
     xi=i*hx;
-    sinxi = sin(xi);
+    sinxi = PetscSinScalar(xi);
     px = p(xi,ecc);
     pxp= p(xi+hx,ecc);
     pxm= p(xi-hx,ecc);
@@ -274,27 +274,27 @@ static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscReal
       dvdy = (elem[0] - elem[2]) / hy;
       sqGrad= dvdx*dvdx + dvdy*dvdy;
       wq = (2.0*p(xi,ecc) + p(xi+hx,ecc)) / 6.0;
-      wv = ecc*(sin(xi)*elem[0] + sin(xi+hx)*elem[1] + sin(xi)*elem[2]) / 3.0;
+      wv = ecc*(PetscSinScalar(xi)*elem[0] + PetscSinScalar(xi+hx)*elem[1] + PetscSinScalar(xi)*elem[2]) / 3.0;
       fl = wq*sqGrad - wv;
       dvdx *= hy*wq;
       dvdy *= hx*wq;
-      gelem[0] = (dvdx + dvdy) - ecc*sin(xi)*aread3;
-      gelem[1] = -dvdx - ecc*sin(xi+hx)*aread3;
-      gelem[2] = -dvdy - ecc*sin(xi)*aread3;
+      gelem[0] = (dvdx + dvdy) - ecc*PetscSinScalar(xi)*aread3;
+      gelem[1] = -dvdx - ecc*PetscSinScalar(xi+hx)*aread3;
+      gelem[2] = -dvdy - ecc*PetscSinScalar(xi)*aread3;
 
       /* Upper element */
       dvdx = (elem[3] - elem[2]) / hx;
       dvdy = (elem[3] - elem[1]) / hy;
       sqGrad = dvdx*dvdx + dvdy*dvdy;
       wq = (2.0*p(xi+hx,ecc) + p(xi,ecc)) / 6.0;
-      wv = ecc*(sin(xi+hx)*elem[1] + sin(xi)*elem[2] + sin(xi+hx)*elem[3]) / 3.0;
+      wv = ecc*(PetscSinScalar(xi+hx)*elem[1] + PetscSinScalar(xi)*elem[2] + PetscSinScalar(xi+hx)*elem[3]) / 3.0;
       fu = wq*sqGrad - wv;
 
       dvdx *= hy*wq;
       dvdy *= hx*wq;
-      gelem[1] += -dvdy - ecc*sin(xi+hx) * aread3;
-      gelem[2] += -dvdx - ecc*sin(xi) * aread3;
-      gelem[3] = dvdx + dvdy - ecc*sin(xi+hx) * aread3;
+      gelem[1] += -dvdy - ecc*PetscSinScalar(xi+hx) * aread3;
+      gelem[2] += -dvdx - ecc*PetscSinScalar(xi) * aread3;
+      gelem[3] = dvdx + dvdy - ecc*PetscSinScalar(xi+hx) * aread3;
       
       g[j][i] += gelem[0];
       g[j][i+1] += gelem[1];
@@ -576,7 +576,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   floc=0.0;
   for (i=xs; i< xs+xm; i++){
     xi=(i+1)*hx;
-    sinxi = sin(xi);
+    sinxi = PetscSinScalar(xi);
     px = p(xi,ecc);
     pxp= p(xi+hx,ecc);
     pxm= p(xi-hx,ecc);
@@ -646,6 +646,6 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
 { 
-  PetscReal t=1.0+ecc*cos(xi); 
+  PetscReal t=1.0+ecc*PetscCosScalar(xi); 
   return (t*t*t); 
 }

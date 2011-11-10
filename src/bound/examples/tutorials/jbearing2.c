@@ -8,7 +8,6 @@
 #include "petscdm.h"
 #include "petscksp.h"
 #include "taosolver.h"
-#include <math.h>  /* for cos() sin(0), and atan() */
 
 static  char help[]=
 "This example demonstrates use of the TAO package to \n\
@@ -202,7 +201,7 @@ int main( int argc, char **argv )
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
 { 
-  PetscReal t=1.0+ecc*cos(xi); 
+  PetscReal t=1.0+ecc*PetscCosScalar(xi); 
   return (t*t*t); 
 }
 
@@ -235,7 +234,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   /* Compute the linear term in the objective function */  
   info = VecGetArray(user->B,&b); CHKERRQ(info);
   for (i=xs; i<xs+xm; i++){
-    temp=sin((i+1)*hx);
+    temp=PetscSinScalar((i+1)*hx);
     for (j=ys; j<ys+ym; j++){
       k=xm*(j-ys)+(i-xs);
       b[k]=  - ehxhy*temp;

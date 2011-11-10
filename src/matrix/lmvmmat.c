@@ -438,7 +438,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           }
 
           sigmanew = ((2*ctx->s_alpha-1)*ys_sum + 
-                    sqrt((2*ctx->s_alpha-1)*(2*ctx->s_alpha-1)*ys_sum*ys_sum - 
+                    PetscSqrtScalar((2*ctx->s_alpha-1)*(2*ctx->s_alpha-1)*ys_sum*ys_sum - 
 		 4*(ctx->s_alpha)*(ctx->s_alpha-1)*yy_sum*ss_sum)) / denom;
         }
 
@@ -696,7 +696,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             }
 
             sigmanew = ((2*ctx->r_alpha-1)*ys_sum +
-                        sqrt((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum -
+                        PetscSqrtScalar((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum -
                              4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
           }
 

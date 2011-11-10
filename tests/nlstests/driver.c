@@ -1,5 +1,4 @@
 #include "taosolver.h"
-#include <math.h>  /*  For pow(), fabs(), log(), and exp()  */
 
 #define MMAX 1000
 #define NMAX 100
@@ -79,7 +78,7 @@ int main(int argc, char **argv)
 	user.m = m;
 	user.nrun++;
 	
-        user.factor = pow(10,nstart);
+        user.factor = PetscPowScalar(10,nstart);
 	
 	ierr = VecCreateSeq(PETSC_COMM_SELF,n,&X); CHKERRQ(ierr);
 	ierr = VecCreateSeq(PETSC_COMM_SELF,m,&F); CHKERRQ(ierr);

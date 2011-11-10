@@ -10,7 +10,6 @@
 
 #include "taosolver.h"
 #include "mpi.h"
-#include <math.h>  /*  For pow(), fabs(), log(), and exp()  */
 
 
 /*
@@ -502,7 +501,7 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
 {
   PetscReal *t = user->t;
   PetscReal *y = user->y;
-  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+  *f = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   return(0);
 }
 
