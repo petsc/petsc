@@ -134,11 +134,11 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4'},
                                                                ],
-                        'src/snes/examples/tutorials/ex56':   [{'numProcs': 1, 'args': '-refinement_limit 0.0 -bc_type dirichlet -interpolate 1',
+                        'src/snes/examples/tutorials/ex56':   [{'numProcs': 1, 'args': '-refinement_limit 0.0 -bc_type dirichlet -interpolate 0',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex56.h'},
+                                                               {'numProcs': 1, 'args': '-refinement_limit 0.0 -bc_type dirichlet -interpolate 1'},
                                                                {'numProcs': 1, 'args': '-refinement_limit 0.0 -bc_type dirichlet -interpolate 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex56.h'}
-],
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex56.h'}],
 
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }

@@ -36,14 +36,11 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
-- Use quadratic elements for velocity
-  - Check that disc error vanishes for exact solution
-  - Redo slides from GUCASTutorial for these new examples
 - Fix pressure BC
   - Make constant vector on the pressure space (get a local P vector?)
   - Use MatSetNullSpace() on the Jacobian
   - Check that it is in the operator null space
+- Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Solve the system
   - Check error in the result
   - Refine and show convergence of correct order automatically (use femTest.py)
@@ -58,6 +55,7 @@ Next Steps:
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
+- Redo slides from GUCASTutorial for this new example
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
 - Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
@@ -516,15 +514,15 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   {
     ALE::Obj<PETSC_MESH_TYPE> mesh;
     PetscScalar *coordsE;
-    PetscInt     dim;
+    PetscInt     eStart = 0, eEnd = 0, dim;
 
     ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
-    ierr = DMMeshGetDepthStratum(dm, 1, &vStart, &vEnd);CHKERRQ(ierr);
+    if (mesh->depth() > 1) {ierr = DMMeshGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
     ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
 
-    for(PetscInt e = vStart; e < vEnd; ++e) {
+    for(PetscInt e = eStart; e < eEnd; ++e) {
       mesh->getSieve()->cone(e, pV);
       const PetscInt *points = pV.getPoints();
       PetscScalar    *coordsA, *coordsB;
