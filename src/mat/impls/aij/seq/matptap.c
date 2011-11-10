@@ -162,11 +162,12 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
-  PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
-  PetscInt       *ci=c->i,*cj=c->j,*cjj;
+  PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pcol;
+  PetscInt       *ci=c->i,*cj=c->j,*cjj,cnz;
   PetscInt       am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
-  PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow,apcol;
-  MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
+  PetscInt       i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
+  MatScalar      *aa=a->a,*apa,*pa=p->a,*pval,*ca=c->a,*caj;
+  PetscBool      sparse_axpy=PETSC_FALSE;
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
@@ -178,56 +179,60 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0;i<am;i++) {
-    /* Form sparse row of A*P */
-    anzi  = ai[i+1] - ai[i];
-    apnzj = 0;
-    for (j=0;j<anzi;j++) {
-      prow = *aj++;
-      pnzj = pi[prow+1] - pi[prow];
-      pjj  = pj + pi[prow];
-      paj  = pa + pi[prow];
-      for (k=0;k<pnzj;k++) {
-        if (!apjdense[pjj[k]]) {
-          apjdense[pjj[k]] = -1; 
-          apj[apnzj++]     = pjj[k];
+    /* Form sparse row of AP[i,:] = A[i,:]*P */
+    anz  = ai[i+1] - ai[i];
+    apnz = 0;
+    for (j=0; j<anz; j++) {
+      prow = aj[j];
+      pnz  = pi[prow+1] - pi[prow];
+      pcol = pj + pi[prow];
+      pval = pa + pi[prow];
+      for (k=0; k<pnz; k++) {
+        if (!apjdense[pcol[k]]) {
+          apjdense[pcol[k]] = -1; 
+          apj[apnz++]       = pcol[k];
         }
-        apa[pjj[k]] += (*aa)*paj[k];
+        apa[pcol[k]] += aa[j]*pval[k];
       }
-      ierr = PetscLogFlops(2.0*pnzj);CHKERRQ(ierr);
-      aa++;
+      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
+    }
+    aj += anz; aa += anz;
+
+    if (sparse_axpy){
+      ierr = PetscSortInt(apnz,apj);CHKERRQ(ierr);
     }
 
-    /* Sort the j index array for quick sparse axpy. */
-    /* Note: a array does not need sorting as it is in dense storage locations. */
-    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
+    /* Compute P^T*A*P using outer product P[i,:]^T*AP[i,:]. */
+    pnz  = pi[i+1] - pi[i];
+    pcol = pj + pi[i];
+    pval = pa + pi[i];
+    for (j=0; j<pnz; j++) {
+      crow = pcol[j]; 
+      cjj  = cj + ci[crow];
+      caj  = ca + ci[crow];
 
-    /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
-    pnzi = pi[i+1] - pi[i];
-    for (j=0;j<pnzi;j++) {
-      nextap = 0;
-      crow   = *pJ++;
-      cjj    = cj + ci[crow];
-      caj    = ca + ci[crow];
-      /* Perform sparse axpy operation.  Note cjj includes apj. */
-      apcol = apj[nextap];
-      for (k=0; nextap<apnzj; k++) {
-#if defined(PETSC_USE_DEBUG)  
-        if (k >= ci[crow+1] - ci[crow]) {
-          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
+      if (sparse_axpy){  /* Perform sparse axpy */
+        nextap = 0;
+        apcol = apj[nextap];
+        for (k=0; nextap<apnz; k++) {
+          if (cjj[k] == apcol) {
+            caj[k] += pval[j]*apa[apcol];
+            apcol   = apj[++nextap];
+          }
         }
-#endif
-        if (cjj[k] == apcol) {
-          caj[k] += (*pA)*apa[apcol];
-          apcol   = apj[++nextap];
+        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
+      } else { /* Perform dense axpy */
+        cnz  = ci[crow+1] - ci[crow];
+        for (k=0; k<cnz; k++){
+          caj[k] += pval[j]*apa[cjj[k]];
         }
+        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
       }
-      ierr = PetscLogFlops(2.0*apnzj);CHKERRQ(ierr);
-      pA++;
     }
 
     /* Zero the current row info for A*P */
-    for (j=0;j<apnzj;j++) {
-      apcol = apj[j];
+    for (j=0; j<apnz; j++) {
+      apcol           = apj[j];
       apa[apcol]      = 0.;
       apjdense[apcol] = 0;
     }
