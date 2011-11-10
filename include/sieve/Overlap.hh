@@ -381,7 +381,7 @@ protected:
   const second_type *endRemoteP;
 public:
   DualSequence(const first_type *begin, const second_type *beginRemote, const first_type *end, const second_type *endRemote) : beginP(begin), beginRemoteP(beginRemote), endP(end), endRemoteP(endRemote) {};
-  ~DualSequence() {};
+  virtual ~DualSequence() {};
   iterator begin() {return iterator(beginP, beginRemoteP);};
   iterator end()   {return iterator(endP,   endRemoteP);};
 };
