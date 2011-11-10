@@ -362,8 +362,6 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
 
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   MDenCreate += tf - t0;
-  printf("RARt_den %d %d; Rt_den %d %d\n",RARt_dense->rmap->n,RARt_dense->cmap->n,Rt_dense->rmap->n,Rt_dense->cmap->n);
-  printf("Sym = GetColor %g + MColorCreate %g + MDenCreate %g + other %g = %g\n",GColor,MCCreate,MDenCreate,etime,GColor+MCCreate+MDenCreate+etime);
 
   rart->destroy = (*C)->ops->destroy;
   (*C)->ops->destroy = MatDestroy_SeqAIJ_RARt;
@@ -371,11 +369,17 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   /* clean up */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_INFO)
+  PetscReal density= (PetscReal)(c->nz)/(RARt_dense->rmap->n*RARt_dense->cmap->n);
+  ierr = PetscInfo6(*C,"RARt_den %D %D; Rt_den %D %D, (RARt->nz %D)/(m*ncolors)=%g\n",RARt_dense->rmap->n,RARt_dense->cmap->n,Rt_dense->rmap->n,Rt_dense->cmap->n,c->nz,density);
+  ierr = PetscInfo5(*C,"Sym = GetColor %g + MColorCreate %g + MDenCreate %g + other %g = %g\n",GColor,MCCreate,MDenCreate,etime,GColor+MCCreate+MDenCreate+etime);
+#endif
   PetscFunctionReturn(0);
 }
 
 /*
- RAB = R * A * Bdense; Cdense=A*Bdense and D = R*Cdense
+ RAB = R * A * B, R and A in seqaij format, B in dense format; 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense"
@@ -512,7 +516,10 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   ierr = MatTransColoringApplyDenToSp(matcoloring,RARt,C);CHKERRQ(ierr);
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   app2 += tf - t0;
-  printf("Num = ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);
+
+#if defined(PETSC_USE_INFO)
+  ierr = PetscInfo4(C,"Num = ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);
+#endif
   PetscFunctionReturn(0);
 }
 
