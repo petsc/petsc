@@ -635,11 +635,14 @@ namespace ALE {
         this->allocated = false;
         PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
       };
-      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values, int numFields, int *offsets, int *indices) : v(v), section(s), size(size), i(0), nF(numFields), offsets(offsets), indices(indices), processed(false) {
+      RestrictVecVisitor(const Vec v, const PetscSection s, const int size, value_type *values, int *offsets, int *indices) : v(v), section(s), size(size), i(0), nF(0), offsets(offsets), indices(indices), processed(false) {
+        PetscErrorCode ierr;
+
         this->values    = values;
         this->allocated = false;
-        PetscErrorCode ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
-        for(PetscInt f = 0; f <= numFields; ++f) {offsets[f] = 0;}
+        ierr = VecGetArray(this->v, &this->array);CHKERRXX(ierr);
+        ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
+        for(PetscInt f = 0; f <= nF; ++f) {offsets[f] = 0;}
       };
       ~RestrictVecVisitor() {
         if (this->allocated) {delete [] this->values;}
@@ -661,34 +664,49 @@ namespace ALE {
         // Algorithm if field sizes are known:
         //   Comp 1: Partition array into field components
         //   Pass 1: Stack up values at field offsets
-        PetscInt       dim, offset = 0;
+        PetscInt       dim, off;
         PetscErrorCode ierr;
 
         ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
-        for(PetscInt f = 0; f < nF; ++f) {
-          PetscInt fdim;
-
-          ierr = PetscSectionGetFieldDof(section, point, f, &fdim);CHKERRXX(ierr);
-          offsets[f+1] += fdim;
-          for(PetscInt d = 0; d < fdim; ++d, ++offset) {
-            indices[i+offset] = f;
-          }
+        if (i+dim > size) {
+          ostringstream msg;
+          msg << "Too many values for RestrictVisitor "<<i+dim<<" > "<<size<< std::endl;
+          throw ALE::Exception(msg.str().c_str());
         }
-        if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
-        ierr = PetscSectionGetOffset(section, point, &offset);CHKERRXX(ierr);
-        const value_type *v = &array[offset];
+        ierr = PetscSectionGetOffset(section, point, &off);CHKERRXX(ierr);
+        const value_type *v = &array[off];
 
-        if (orientation >= 0) {
-          for(PetscInt d = 0; d < dim; ++d, ++i) {
-            this->values[i] = v[d];
+        if (nF) {
+          for(PetscInt f = 0, fOff = 0; f < nF; ++f) {
+            PetscInt comp, fDim;
+
+            ierr = PetscSectionGetFieldDof(section, point, f, &fDim);CHKERRXX(ierr);
+            offsets[f+1] += fDim;
+            for(PetscInt d = 0; d < fDim; ++d) {
+              indices[i+d] = f;
+            }
+            if (orientation >= 0) {
+              for(PetscInt d = 0; d < fDim; ++d, ++i) {
+                this->values[i] = v[fOff+d];
+              }
+            } else {
+              ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRXX(ierr);
+              for(PetscInt d = fDim/comp-1; d >= 0; --d) {
+                for(PetscInt c = 0; c < comp; ++c, ++i) {
+                  this->values[i] = v[fOff+d*comp+c];
+                }
+              }
+            }
+            fOff += fDim;
           }
         } else {
-          // Does this require component splitting? I think so
-          PetscInt comp = dim;
-
-          for(PetscInt d = dim/comp-1; d >= 0; --d) {
-            for(PetscInt c = 0; c < comp; ++c, ++i) {
-              this->values[i] = v[d*comp+c];
+          if (orientation >= 0) {
+            for(PetscInt d = 0; d < dim; ++d, ++i) {
+              this->values[i] = v[d];
+            }
+          } else {
+            for(PetscInt d = dim-1; d >= 0; --d, ++i) {
+              this->values[i] = v[d];
             }
           }
         }
@@ -840,10 +858,12 @@ namespace ALE {
         a    = &array[offset];
         for(PetscInt f = 0; f < nF; ++f) {
           PetscInt    dim;  // The number of dof for field f on this point
+          PetscInt    comp; // The number of components for field f on this point
           PetscInt    cDim; // The nubmer of constraints for field f on this point
           PetscInt   *cDof; // The indices of the constrained dofs for field f on this point
           PetscInt    cInd = 0;
 
+          ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRXX(ierr);
           ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
           ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
           if (!cDim || setBC) {
@@ -852,8 +872,10 @@ namespace ALE {
                 fuse(a[fOff+k], values[j[f]+k]);
               }
             } else {
-              for(PetscInt k = 0; k < dim; ++k) {
-                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              for(PetscInt k = dim/comp-1; k >= 0; --k) {
+                for(PetscInt c = 0; c < comp; ++c) {
+                  fuse(a[fOff+(dim/comp-1-k)*comp+c], values[j[f]+k*comp+c]);
+                }
               }
             }
           } else {
@@ -864,9 +886,12 @@ namespace ALE {
                 fuse(a[fOff+k], values[j[f]+k]);
               }
             } else {
-              for(PetscInt k = 0; k < dim; ++k) {
-                if ((cInd < cDim) && (k == cDof[cInd])) {++cInd; continue;}
-                fuse(a[fOff+k], values[j[f]+dim-k-1]);
+              for(PetscInt k = dim/comp-1; k >= 0; --k) {
+                for(PetscInt c = 0; c < comp; ++c) {
+                  PetscInt ind = k*comp+c;
+                  if ((cInd < cDim) && (ind == cDof[cInd])) {++cInd; continue;}
+                  fuse(a[fOff+(dim/comp-1-k)*comp+c], values[j[f]+ind]);
+                }
               }
             }
           }
@@ -1169,10 +1194,12 @@ namespace ALE {
 
         for(PetscInt f = 0; f < nF; ++f) {
           PetscInt  dim;  // The number of dof for field f on this point
+          PetscInt  comp; // The number of components for field f on this point
           PetscInt  cDim; // The nubmer of constraints for field f on this point
           PetscInt *cDof; // The indices of the constrained dofs for field f on this point
           PetscInt  cInd = 0;
 
+          ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRXX(ierr);
           ierr = PetscSectionGetFieldDof(section, point, f, &dim);CHKERRXX(ierr);
           ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cDim);CHKERRXX(ierr);
           if (!cDim || setBC) {
@@ -1181,8 +1208,10 @@ namespace ALE {
                 values[j[f]+k] = offset+fOff+k;
               }
             } else {
-              for(PetscInt k = 0; k < dim; ++k) {
-                values[j[f]+dim-k-1] = offset+fOff+k;
+              for(PetscInt k = dim/comp-1; k >= 0; --k) {
+                for(PetscInt c = 0; c < comp; ++c) {
+                  values[j[f]+(dim/comp-1-k)*comp+c] = offset+fOff+k*comp+c;
+                }
               }
             }
           } else {
@@ -1197,12 +1226,15 @@ namespace ALE {
                 }
               }
             } else {
-              for(PetscInt k = 0; k < dim; ++k) {
-                if ((cInd < cDim) && (k == cDof[cInd])) {
-                  values[j[f]+dim-k-1] = -(offset+fOff+k+1);
-                  ++cInd;
-                } else {
-                  values[j[f]+dim-k-1] = offset+fOff+k;
+              for(PetscInt k = dim/comp-1; k >= 0; --k) {
+                for(PetscInt c = 0; c < comp; ++c) {
+                  PetscInt ind = k*comp+c;
+                  if ((cInd < cDim) && (ind == cDof[cInd])) {
+                    values[j[f]+(dim/comp-1-k)*comp+c] = -(offset+fOff+ind+1);
+                    ++cInd;
+                  } else {
+                    values[j[f]+(dim/comp-1-k)*comp+c] = offset+fOff+ind;
+                  }
                 }
               }
             }
@@ -1223,6 +1255,7 @@ namespace ALE {
           ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
         }
         nF = 0;
+        this->fieldSize = this->j = PETSC_NULL;
         if (fieldSize) {
           ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
           ierr = PetscMalloc2(nF,PetscInt,&this->fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);
@@ -1242,6 +1275,7 @@ namespace ALE {
           ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
         }
         nF = 0;
+        this->fieldSize = this->j = PETSC_NULL;
         if (fieldSize) {
           ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
           ierr = PetscMalloc2(nF,PetscInt,&fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);

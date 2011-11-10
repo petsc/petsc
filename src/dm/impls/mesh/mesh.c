@@ -1784,7 +1784,7 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateSection"
-PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
+PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt      *numDofTot, *maxConstraints;
   PetscInt       pStart = 0, pEnd = 0;
@@ -1801,6 +1801,11 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
   if (numFields > 1) {
     ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
+    if (numComp) {
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
+      }
+    }
   } else {
     numFields = 0;
   }
@@ -1899,7 +1904,12 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
     PetscInt       numFields = s->getNumSpaces();
 
     ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
-    if (numFields) {ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);}
+    if (numFields) {
+      ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
+      for(PetscInt f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldComponents(*section, f, s->getSpaceComponents(f));CHKERRQ(ierr);
+      }
+    }
     ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
     for(PetscInt p = pStart; p < pEnd; ++p) {
       ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
@@ -1937,7 +1947,11 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(pStart, pEnd));
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {s->addSpace();}
+    for(PetscInt f = 0; f < numFields; ++f) {
+      PetscInt comp;
+      ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr);
+      s->addSpace(comp);
+    }
     for(PetscInt p = pStart; p < pEnd; ++p) {
       PetscInt fDim, cDim;
 
@@ -2060,7 +2074,7 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
     const PetscInt size = mesh->sizeWithBC(section, point); /* OPT: This can be precomputed */
     ierr = DMGetWorkArray(dm, 2*size+numFields+1, &array);CHKERRQ(ierr);
-    visitor_type rV(v, section, size, array, numFields, (PetscInt *) &array[2*size], (PetscInt *) &array[size]);
+    visitor_type rV(v, section, size, array, (PetscInt *) &array[2*size], (PetscInt *) &array[size]);
     if (mesh->depth() == 1) {
       rV.visitPoint(point, 0);
       // Cone is guarateed to be ordered correctly

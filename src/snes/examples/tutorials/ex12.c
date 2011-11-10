@@ -616,7 +616,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
     numBC = 1;
     ierr  = DMMeshGetStratumIS(user->dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, 1, numDof, numBC, bcField, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, 1, PETSC_NULL, numDof, numBC, bcField, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);

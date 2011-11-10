@@ -101,10 +101,37 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %d must be positive", numFields);
   }
   s->numFields = numFields;
+  ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(PetscSection), &s->field);CHKERRQ(ierr);
   for(f = 0; f < s->numFields; ++f) {
+    s->numFieldComponents[f] = 1;
     ierr = PetscSectionCreate(s->atlasLayout.comm, &s->field[f]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldComponents"
+PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(numComp,2);
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  *numComp = s->numFieldComponents[field];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetFieldComponents"
+PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
+{
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  s->numFieldComponents[field] = numComp;
   PetscFunctionReturn(0);
 }
 
@@ -401,6 +428,7 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
   if (!(*s)->refcnt--) {
     PetscInt f;
 
+    ierr = PetscFree((*s)->numFieldComponents);CHKERRQ(ierr);
     for(f = 0; f < (*s)->numFields; ++f) {
       ierr = PetscSectionDestroy(&(*s)->field[f]);CHKERRQ(ierr);
     }

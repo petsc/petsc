@@ -119,12 +119,15 @@ struct _n_PetscSection {
   PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
 
   PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
+  PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
+extern PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);

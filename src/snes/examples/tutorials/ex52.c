@@ -223,7 +223,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   //if (user->bcType == DIRICHLET) {
   //  bcLabel = "marker";
   //}
-  ierr = DMMeshCreateSection(dm, dim, 1, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(dm, dim, 1, PETSC_NULL, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
