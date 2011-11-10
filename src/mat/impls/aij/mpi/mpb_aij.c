@@ -55,7 +55,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
       if (garrayCMap[aijB->j[j]]) nnz[i]++;
     }
   }
-  ierr = MatMPIAIJSetPreallocation(*(subMat),PETSC_NULL,PETSC_NULL,PETSC_NULL,nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*(subMat),0,PETSC_NULL,0,nnz);CHKERRQ(ierr);
 
   /* reuse diag block with the new submat */
   ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);

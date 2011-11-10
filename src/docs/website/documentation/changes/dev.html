@@ -101,6 +101,9 @@
             <p><u><b>Mat:</b></u></p>
             <ul>
               <li>Renamed MatNullSpaceAttach() to MatSetNullSpace()</li>
+              <li>Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()</li>
+              <li>Added MatMatTransposeMult() for C=A*B^T</li>
+              <li>Added MatRARt() for C=R*A*R^T</li>
             </ul>
             <p><u><b>PC:</b></u></p>
             <p><u><b>KSP:</b></u></p>
@@ -114,8 +117,14 @@
               <li>-ts_max_time changed to -ts_final_time</li>
               <li>TSDefaultComputeJacobian() and TSDefaultComputeJacobianColor() have been removed.
               Configure TS to use coloring with SNESSetJacobian().</li>
+              <li>Added TSROSW for Rosenbrock-W methods.</li>
+              <li>Added a common, extensible system for adaptive controllers, see TSGetAdapt().</li>
             </ul>
             <p><u><b>DM/DA:</b></u></p>
+            <ul>
+              <li>Added DMRedundant for managing globally coupled degrees of freedom.</li>
+              <li>Removed DMCompositeAddArray(), use DMRedundantCreate() and DMCompositeAddDM().</li>
+            </ul>
             <p><u><b>DMMG:</b></u></p>
             <p><u><b>PetscViewer:</b></u></p>
             <p><u><b>SYS:</b></u></p>

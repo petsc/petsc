@@ -29,6 +29,8 @@ struct _SNESOps {
   PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
   PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *);  /* step-checking routine */
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
+  PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 };
 
 /*
@@ -58,6 +60,7 @@ struct _p_SNES {
   void *gsP;                     /* user-defined Gauss-Seidel context */
   KSP  ksp;                      /* linear solver context */
   PetscBool usesksp;
+  MatStructure matstruct;        /* Used by Picard solver */
 
   Vec  vec_sol_update;           /* pointer to solution update */
 

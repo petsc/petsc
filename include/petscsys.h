@@ -1538,10 +1538,10 @@ extern PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary);
 extern PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*
-  PetscFwk support.  Needs to be documented.  
+  PetscShell support.  Needs to be better documented.  
   Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
 */
-#include "petscfwk.h"
+#include "petscshell.h"
 
 /*
      Useful utility routines

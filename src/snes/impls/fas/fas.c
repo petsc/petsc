@@ -1,5 +1,5 @@
 /* Defines the basic SNES object */
-#include <../src/snes/impls/fas/fasimpls.h>
+#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
 
 /*MC
 Full Approximation Scheme nonlinear multigrid solver.
@@ -149,7 +149,7 @@ PetscErrorCode SNESFASSetCyclesOnLevel(SNES snes, PetscInt level, PetscInt cycle
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetGS"
-/*@
+/*@C
    SNESFASSetGS - Sets a nonlinear GS smoother and if it should be used.
    Use SNESFASSetGSOnLevel() for more complicated staging of smoothers
    and nonlinear preconditioners.
@@ -190,7 +190,7 @@ PetscErrorCode SNESFASSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetGSOnLevel"
-/*@
+/*@C
    SNESFASSetGSOnLevel - Sets the nonlinear smoother on a particular level.
 
    Logically Collective on SNES
@@ -269,7 +269,7 @@ PetscErrorCode SNESFASGetSNES(SNES snes, PetscInt level, SNES * lsnes) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetLevels"
-/*@
+/*@C
    SNESFASSetLevels - Sets the number of levels to use with FAS.
    Must be called before any other FAS routine.
 

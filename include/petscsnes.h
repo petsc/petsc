@@ -367,6 +367,8 @@ extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
 extern PetscErrorCode  SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
+extern PetscErrorCode  SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJacobian,void*);
+extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,void**);
 
 extern PetscErrorCode  SNESSetGS(SNES,SNESGS,void*);
 extern PetscErrorCode  SNESGetGS(SNES,SNESGS*,void**);
@@ -425,10 +427,23 @@ extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
 
 /* Routines for Multiblock solver */
-PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
-PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
-PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
-PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
+extern PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
+extern PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
+extern PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+
+/* Routines for FAS */
+extern PetscErrorCode SNESFASGetLevels(SNES, PetscInt *);
+extern PetscErrorCode SNESFASSetCycles(SNES, PetscInt);
+extern PetscErrorCode SNESFASSetCyclesOnLevel(SNES, PetscInt, PetscInt);
+extern PetscErrorCode SNESFASGetSNES(SNES, PetscInt, SNES *);
+extern PetscErrorCode SNESFASSetLevels(SNES, PetscInt, MPI_Comm *);
+extern PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
+extern PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
+extern PetscErrorCode SNESFASSetInterpolation(SNES, PetscInt, Mat);
+extern PetscErrorCode SNESFASSetRestriction(SNES, PetscInt, Mat);
+extern PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
+extern PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);
 
 PETSC_EXTERN_CXX_END
 #endif

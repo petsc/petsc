@@ -26,9 +26,9 @@ We must be able to distribute meshes with these characteristics
 
 Partition requirements:
 
-We must be able to partition any dimensional element. Thus, we partition cells for finite elements, but faces for
-finite volumes, and vertices for finite difference. We must be able to pull along the \textit{start} of the partition
-element, and also ghost to any specified overlap.
+We must be able to partition any dimensional element, meaning that we specify a partition of cells, or vertices, or
+edge, or faces, and then we must figure out how the rest of the mesh should be distributed. We must be able to pull
+along the \textit{star} of the partition element, and also ghost to any specified overlap.
 
 Solver requirements:
 

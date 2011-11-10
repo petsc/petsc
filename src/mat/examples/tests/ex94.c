@@ -1,5 +1,5 @@
 
-static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), sequential MatTransposeMatMult(), MatMatTransposeMult()\n\
+static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), sequential MatTransposeMatMult(), MatMatTransposeMult(), MatRARt()\n\
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
 /* Example of usage:
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   char           file[4][128];
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
-  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_FALSE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
   
@@ -232,6 +232,19 @@ int main(int argc,char **args)
       alpha -=0.1;
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    }
+
+    if (size>1) Test_MatRARt = PETSC_FALSE;
+    /* Test MatRARt() */
+    if (Test_MatRARt){
+      Mat       R, RARt;
+      PetscBool equal;
+      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
+      ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt);CHKERRQ(ierr);
+      ierr = MatEqual(C,RARt,&equal);CHKERRQ(ierr);
+      if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PtAP != RARt");
+      ierr = MatDestroy(&R);CHKERRQ(ierr);
+      ierr = MatDestroy(&RARt);CHKERRQ(ierr);
     }
 
     /* Create vector x that is compatible with P */

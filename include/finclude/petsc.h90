@@ -10,6 +10,7 @@
 #include "finclude/petscdmda.h90"
 #include "finclude/petscdmadda.h90"
 #include "finclude/petscdmcomposite.h90"
+#include "finclude/petscdmredundant.h90"
 #include "finclude/petscdmmesh.h90"
 #include "finclude/petscpc.h90"
 #include "finclude/petscksp.h90"

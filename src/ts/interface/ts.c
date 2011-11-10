@@ -547,7 +547,9 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   if (f)   ts->userops->rhsfunction = f;
   if (ctx) ts->funP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {ierr = VecDuplicate(ts->vec_sol,&r);CHKERRQ(ierr);}
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  if (!ts->dm && ts->vec_sol) {ierr = VecDestroy(&r);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -669,7 +671,9 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   if (f)   ts->userops->ifunction = f;
   if (ctx) ts->funP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!res && !ts->dm && ts->vec_sol) {ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);}
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  if (!ts->dm && ts->vec_sol) {ierr = VecDestroy(&res);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

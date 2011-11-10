@@ -2716,7 +2716,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqAIJ(Y,X,nnz);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,nnz);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,nnz);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
     ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);

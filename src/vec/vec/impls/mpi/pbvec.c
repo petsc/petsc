@@ -436,7 +436,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
-          VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost(), VecIsGhosted()
 
 @*/ 
 PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)

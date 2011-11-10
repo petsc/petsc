@@ -2,6 +2,7 @@
 static char help[] = "Solves PDE optimization problem.\n\n";
 
 #include <petscdmda.h>
+#include <petscdmredundant.h>
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 #include <petscsnes.h>
@@ -87,7 +88,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   UserCtx        user;
-  DM             da;
+  DM             red,da;
   DMMG           *dmmg;
   DM             packer;
   PetscBool      use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
@@ -109,7 +110,8 @@ int main(int argc,char **argv)
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
+  ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
 
@@ -132,6 +134,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&red);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDestroy(&packer);CHKERRQ(ierr);
   if (use_monitor) {
@@ -161,21 +164,23 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG           dmmg = (DMMG)dummy;
   PetscErrorCode ierr;
-  PetscInt       xs,xm,i,N,nredundant;
+  PetscInt       xs,xm,i,N;
   ULambda        *u_lambda,*fu_lambda;
   PetscScalar    d,h,*w,*fw;
-  Vec            vu_lambda,vfu_lambda;
-  DM             da;
+  Vec            vw,vfw,vu_lambda,vfu_lambda;
+  DM             red,da;
   DM             packer = (DM)dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(packer,U,w,vu_lambda);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(packer,U,vw,vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,FU,&vfw,&vfu_lambda);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = VecGetArray(vw,&w);CHKERRQ(ierr);
+  ierr = VecGetArray(vfw,&fw);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vu_lambda,&u_lambda);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vfu_lambda,&fu_lambda);CHKERRQ(ierr);
   d    = N-1.0;
@@ -202,10 +207,12 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               fu_lambda[i].u   = -(d*(u_lambda[i+1].u - 2.0*u_lambda[i].u + u_lambda[i-1].u) - 2.0*h);
   } 
 
+  ierr = VecRestoreArray(vw,&w);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vfw,&fw);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,vu_lambda,&u_lambda);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,vfu_lambda,&fu_lambda);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,FU,&vfw,&vfu_lambda);CHKERRQ(ierr);
   ierr = PetscLogFlops(13.0*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

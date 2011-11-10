@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
   PetscErrorCode ierr;
-  PetscBool      flg,flg2;
+  PetscBool      flg,flg2,ghosted;
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
@@ -82,6 +82,8 @@ int main(int argc,char **argv)
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRQ(ierr);
   }
+  ierr = VecIsGhosted(gxs,&ghosted);CHKERRQ(ierr);
+  if (!ghosted) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec is not ghosted");
 
   /*
       Test VecDuplicate()

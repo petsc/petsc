@@ -11,7 +11,6 @@
 #define dmcompositegetentries5_      DMCOMPOSITEGETENTRIES5
 #define dmcompositecreate_           DMCOMPOSITECREATE
 #define dmcompositeadddm_            DMCOMPOSITEADDDM
-#define dmcompositeaddarray_         DMCOMPOSITEADDARRAY
 #define dmcompositedestroy_          DMCOMPOSITEDESTROY
 #define dmcompositegetaccess4_       DMCOMPOSITEGETACCESS4
 #define dmcompositescatter4_         DMCOMPOSITESCATTER4
@@ -28,7 +27,6 @@
 #define dmcompositecreate_           dmcompositecreate
 #define dmcompositeadddm_            dmcompositeadddm
 #define dmcompositedestroy_          dmcompositedestroy
-#define dmcompositeaddarray_         dmcompositeaddarray
 #define dmcompositegetaccess4_       dmcompositegetaccess4
 #define dmcompositescatter4_         dmcompositescatter4
 #define dmcompositerestoreaccess4_   dmcompositerestoreaccess4
@@ -83,11 +81,6 @@ void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
 void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
 {
   *ierr = DMDestroy(dm);
-}
-
-void PETSC_STDCALL dmcompositeaddarray_(DM *dm,PetscInt *r,PetscInt *n,PetscErrorCode *ierr)
-{
-  *ierr = DMCompositeAddArray(*dm,*r,*n);
 }
 
 void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)

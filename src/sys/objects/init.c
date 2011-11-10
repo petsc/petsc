@@ -636,7 +636,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_CUSP)

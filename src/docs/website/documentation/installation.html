@@ -47,6 +47,7 @@
                         and Users Manual</strong></a></li>
                   <li><a href="referencing.html"><strong>Referencing&nbsp;
 
+
                         PETSc</strong></a></li>
                   <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
                   <li><strong><font color="#ff0000">Installation</font></strong>
@@ -64,6 +65,7 @@
               <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
               <li><a href="../miscellaneous/external.html"><strong>External
 
+
                     Software</strong></a></li>
               <li><a href="../developers/index.html"><strong>Developers
                     Site</strong></a></li>
@@ -79,6 +81,7 @@
             <div style="margin-left: 40px;"><font color="#ff0000">./configure
 --with-cc=gcc
 --with-fc=gfortran
+
 
                 --download-f-blas-lapack=1 --download-mpich=1</font><br>
             </div>
@@ -101,24 +104,15 @@
               <li><font color="#ff0000">cd petsc-3.2-p0</font></li>
               <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
 
+
                   export PETSC_DIR</font><br>
                 csh/tcsh shell:&nbsp; <font color="#ff0000">setenv
                   PETSC_DIR $PWD</font></li>
-              <li><font color="#ff0000">./configure</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(use
---help
-for
-options
-or
-the
-
-
-
-
-
-
-
-                <a href="#ExampleUsage">example usages</a> below)</li>
+              <li><font color="#ff0000">./configure</font>&nbsp;&nbsp;
+                (takes most standard autoconf configure options or use
+                --help
+                or
+                see the <a href="#ExampleUsage">example usages</a>)</li>
               <li> <font color="#ff0000">make all</font><br>
               </li>
               <li><font color="#ff0000">make test</font><br>
@@ -134,6 +128,7 @@ the
               <li><a href="installation.html#MPI:"> MPI problems</a>. I
                 <a
                   href="installation.html#I%20don%27t%20want%20to%20use%20MPI:">Don't
+
 
                   want MPI</a></li>
               <li> Check the <a
@@ -227,6 +222,7 @@ make
 
 
 
+
                 </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
                   color="#ff0000"><br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure
@@ -238,6 +234,7 @@ make
                   color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
                 <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
 
 
@@ -311,7 +308,7 @@ make
             <ul>
               <li>Specify compilers using the options <span
                   style="color: rgb(255, 0, 0);">--with-cc --with-fc
-                  --with-cxx</span> for c, c++, fortran compilers</li>
+                  --with-cxx</span> for c, c++, and fortran compilers</li>
               <ul>
                 <li><span style="color: rgb(255, 0, 0);">--with-cc=mpicc
                     --with-fc=mpif90</span><br>
@@ -331,7 +328,7 @@ make
               </ul>
               <li>If no compilers are specified - configure will
                 automatically look for available MPI or regular
-                compilers in users PATH</li>
+                compilers in the user's PATH</li>
               <ul>
                 <li>mpicc/mpiCC/mpif90 or mpif77<br>
                 </li>
@@ -341,7 +338,7 @@ make
               <li>Its best to use <a href="MPICompilers">MPI compilers</a>
                 as this will avoid the situation where MPI is compiled
                 with one set of compilers [like gcc/g77] and user
-                specified incompatible compilers&nbsp; to PETSc [perhaps
+                specified incompatible compilers to PETSc [perhaps
                 icc/ifort]. This can be done by either specifying
                 --with-cc=mpicc or --with-mpi-dir [and not
                 --with-cc=gcc]</li>
@@ -349,6 +346,7 @@ make
                 <li><span style="color: rgb(255, 0, 0);">--with-cc=mpicc
                     --with-fc=mpif90</span></li>
                 <li><span style="color: rgb(255, 0, 0);">--with-mpi-dir=/opt/mpich2-1.1
+
 
                     [but *no* --with-cc=gcc ]<br>
                   </span></li>
@@ -380,16 +378,18 @@ make
                     href="installation.html#Docs:%20%20Installation">Return
 to
 
+
                     Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font>
             </p>
             <hr>
             <p><font color="#551a8b"><b><a name="external">External
                     Packages:</a></b></font> PETSc provides interfaces
               to various <a href="../miscellaneous/external.html">external
-                packages</a>. Blas/Lapack and MPI are generally required
-              packages - but one can optionally use <a
-                href="linearsolvertable.html">external solvers</a> like
-              Hypre, MUMPS etc.. from within PETSc aplications.<br>
+
+                packages</a>. Blas/Lapack is a required packages, MPI is
+              not required if running sequentially. One can optionally
+              use <a href="linearsolvertable.html">external solvers</a>
+              like Hypre, MUMPS etc.. from within PETSc aplications.<br>
             </p>
             <p>PETSc configure has the ability to download and install
               these external packages. Alternatively if these packages
@@ -405,9 +405,11 @@ to
             <ul>
               <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1
 
+
                   --download-mpich=1</span></li>
               <li><span style="color: rgb(255, 0, 0);">--download-blacs=1
 --download-scalapack=1
+
 
                   --download-mumps=1</span><br>
               </li>
@@ -439,6 +441,7 @@ to
             </ul>
             <span style="color: rgb(153, 51, 153);">--with-PACKAGENAME-include=INCLUDEPATH
 
+
               --with-PACKAGENAME-lib=LIBRARYLIST</span>: Usually a
             package is defined completely by its include file location -
             and library list. [If the package is already installed] -
@@ -448,6 +451,7 @@ to
               <li><span style="color: rgb(255, 0, 0);">--with-superlu-include=/home/petsc/software/suerplu/include
 --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a</span></li>
               <li><span style="color: rgb(255, 0, 0);">--with-parmetis-include=/sandbox/balay/parmetis/include
+
 
                   --with-parmetis-lib="-L/sandbox/balay/parmetis/lib
                   -lparmetis -lmetis"</span></li>
@@ -469,6 +473,7 @@ to
                 modes for any given package - and not mix these. [i.e
                 mixing <span style="color: rgb(255, 0, 0);">-with-mpi-dir
 
+
                   <span style="color: rgb(51, 0, 51);">and</span> </span><span
                   style="color: rgb(255, 0, 0);">-with-mpi-include<span
                     style="color: rgb(51, 0, 51);"> etc.. should be
@@ -478,9 +483,10 @@ to
                     not support certain options like <span
                       style="color: rgb(255, 0, 0);">--download-PACKAGENAME</span>
                     or <span style="color: rgb(255, 0, 0);">--with-PACKAGENAME-dir</span>.
-                    Some architectures like Windows might have issues
-                    with these options. In these cases, <span
+                    Some architectures like Microsoft Windows might have
+                    issues with these options. In these cases, <span
                       style="color: rgb(255, 0, 0);">--with-PACKAGENAME-include
+
 
                       --with-PACKAGENAME-lib</span> options should be
                     prefered.</span></span></li>
@@ -488,10 +494,11 @@ to
                     style="color: rgb(51, 0, 51);">Its best to install
                     some external packages like SuperLU_DIST, MUMPS,
                     Hypre with the option <span style="color: rgb(255,
-                      0, 0);">--download-PACKAGENAME</span>.&nbsp;
-                    [the correct options for these packages are <span
+                      0, 0);">--download-PACKAGENAME</span>.&nbsp; [the
+                    correct options for these packages are <span
                       style="color: rgb(255, 0, 0);">--download-superlu_dist=1
 --download-mumps=1
+
 
                       --download-hypre=1</span>]<br>
                   </span></span></li>
@@ -506,14 +513,14 @@ to
                 <li><span style="color: rgb(255, 0, 0);"><span
                       style="color: rgb(51, 0, 51);">All packages will
                       be installed with the same set of compilers - this
-                      avoids problems [for ex: wiered link time errors]
+                      avoids problems [for ex: weirded link time errors]
                       with mixing code compiled with multiple compilers
                       [for example mixing gfortran and ifort compiled
                       code].<br>
                     </span></span></li>
               </ul>
               <li><span style="color: rgb(255, 0, 0);"><span
-                    style="color: rgb(51, 0, 51);">If one had to
+                    style="color: rgb(51, 0, 51);">If you want to
                     download a compatible external package manually,
                     then the URL for this package is listed in configure
                     source for this package. For example, check <span
@@ -523,10 +530,10 @@ to
             <span style="font-weight: bold;">Additional options</span>:<br>
             <p><span style="color: rgb(255, 0, 0);"><span style="color:
                   rgb(153, 51, 153);">--with-external-packages-dir=PATH</span></span>
-              : By default, external packages will be installed in <span
+              : By default, external packages will be unpacked in <span
                 style="color: rgb(255, 0, 0);">${PETSC_DIR}/externalpackages</span>.
               However one can choose a different location where these
-              packages are installed.</p>
+              packages are unpacked.</p>
             <p><font color="#551a8b"><b><a
                     href="#Docs:%20%20Installation">Return to
                     Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
@@ -545,6 +552,7 @@ to
               <ul>
                 <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1</span>&nbsp;
 
+
                   [when fortran compiler is present]<br>
                 </li>
                 <li><span style="color: rgb(255, 0, 0);">--download-f2cblaslapack=1</span>
@@ -560,6 +568,7 @@ to
               <ul>
                 <li style="color: rgb(255, 0, 0);">--with-blas-lib=libblas.a
 
+
                   --with-lapack-lib=liblapack.a</li>
                 <li><span style="color: rgb(255, 0, 0);">--with-blas-lapack-dir=opt/intel/mkl72</span></li>
               </ul>
@@ -572,6 +581,7 @@ to
                   slamch, dlamch and xerbla. In this case instead of
                   using ESSL we suggest </font><font style="color:
                   rgb(255, 0, 0);" color="#0f0000">--download-f-blas-lapack=yes.&nbsp;&nbsp;
+
 
 
                 </font><font color="#0f0000">If you really want to use
@@ -589,40 +599,41 @@ href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBL
               PETSc. </p>
             <ul>
               <li>Configure will automatically look for MPI compilers
-                mpicc/mpif77 etc and use them if found [in default PATH]<br>
-              </li>
-              <li>One can use the following options to download/install<br>
+                mpicc/mpif77 etc and use them if found in your PATH<br>
               </li>
               <li>One can use the following options to let configure
                 download/install MPI automatically</li>
               <ul>
                 <li><span style="color: rgb(255, 0, 0);">--download-mpich=1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
+
                   [install and use MPICH]</li>
                 <li><span style="color: rgb(255, 0, 0);">--download-openmpi=1</span>&nbsp;
+
 
                   [Install and use Open MPI]<br>
                 </li>
               </ul>
-              <li>Alternatively one can use other <a
-                  href="installation.html#external">externalpackages</a>
-                installation options.</li>
+              <li>See&nbsp; <a href="installation.html#external">externalpackages</a>
+                for other installation options.</li>
             </ul>
             <font color="#551a8b"><b><a name="MPICompilers"></a></b></font><span
               style="font-weight: bold; color: rgb(153, 51, 153);">Using
               MPI Compilers</span>:<br>
             <ul>
-              <li>Its best to install PETSc with MPI compilers - this
-                way, the SAME compilers used to build MPI are used to
-                build PETSc [this avoids incompatibilities which might
-                crop up - when using libraries compiled with different c
-                or fortran compilers.]. This can be achieved with the
+              <li>Its best to install PETSc with MPI compiler wrappers
+                (often called mpicc, mpicxx, mpif90) - this way, the
+                SAME compilers used to build MPI are used to build PETSc
+                [this avoids incompatibilities which might crop up -
+                when using libraries compiled with different c or
+                fortran compilers.]. This can be achieved with the
                 following modes.</li>
               <ul>
                 <li>Vendor provided MPI might already be
                   installed.&nbsp; IBM, SGI, Cray etc provide their own.<br>
                   &nbsp; <span style="color: rgb(255, 0, 0);">./config/confiure.py
 --with-cc=mpcc
+
 
                     --with-fc=mpf77</span><br>
                 </li>
@@ -667,6 +678,7 @@ href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBL
             ./configure such as <br>
             <br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
             UNABLE to EXECUTE BINARIES for config/configure.py <br>
 -------------------------------------------------------------------------------<br>
             Cannot run executables created with C. If this machine uses
@@ -700,25 +712,27 @@ href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBL
                   style="color: rgb(255, 0, 0);">--with-mpiexec</span><br>
               </li>
             </ul>
-            <br>
             <table style="border-collapse: collapse;" id="AutoNumber5"
               border="1" bordercolor="#111111" cellpadding="0"
               cellspacing="0" width="72%">
               <tbody>
                 <tr>
-                  <td width="26%">&nbsp;MPI&nbsp;&nbsp;&nbsp; </td>
-                  <td width="74%">&nbsp;<a
-                      href="http://www.mpi-forum.org">http://www.mpi-forum.org</a></td>
+                  <td width="26%"><br>
+                  </td>
+                  <td width="74%"><br>
+                  </td>
                 </tr>
                 <tr>
-                  <td width="26%">&nbsp;MPICH</td>
-                  <td width="74%">&nbsp;<a
-                      href="http://www.mcs.anl.gov/mpi/mpich">http://www.mcs.anl.gov/mpi/mpich</a></td>
+                  <td width="26%"><br>
+                  </td>
+                  <td width="74%"><br>
+                  </td>
                 </tr>
                 <tr>
-                  <td width="26%">&nbsp;Open MPI</td>
-                  <td width="74%">&nbsp;<a href="http://www.lam-mpi.org">http://www.open-mpi.org<br>
-                    </a></td>
+                  <td width="26%"><br>
+                  </td>
+                  <td width="74%"><br>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -727,26 +741,29 @@ href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBL
                     href="installation.html#Docs:%20%20Installation">Return
 to
 
+
                     Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font>
             </p>
             <hr>
             <h3><a name="Windows"><font color="#551a8b">&nbsp;Microsoft
                   Windows Installation With MS/Intel/Compaq Compilers:</font></a></h3>
-            <p>Microsoft windows OS does not provide the same unix shell
+            <p>Microsoft Windows OS does not provide the same unix shell
               enviornment as the other OSes. Also the default
               MS/Intel/Compaq compilers behave differently than other
-              unix compilers. And PETSc primarily relies on a unix
-              envirment for build tools. So to install PETSc on windows
-              - one has to install <a href="http://www.cygwin.com">cygwin</a>
-              [for the unix enviornment] and use <a href="#Win32fe">win32fe</a>
-              [part of PETSc sources,to interface to MS/Intel/Compaq
+              unix compilers.&nbsp; So to install PETSc on Microsoft
+              Windows - one has to install <a
+                href="http://www.cygwin.com">cygwin</a> [for the unix
+              enviornment] and use <a href="#Win32fe">win32fe</a> [part
+              of PETSc sources,to interface to MS/Intel/Compaq
               compilers].<br>
             </p>
             <p><font color="#551a8b"><b>Install Cygwin: </b></font>Please
 download
 
+
               and install cygwin package from <a
                 href="http://www.cygwin.com">http://www.cygwin.com</a>&nbsp;
+
 
               Make sure the following cygwin components are installed.<br>
             </p>
@@ -770,6 +787,7 @@ F90
 compilers.
 If
 
+
               you are using these compilers - please do [from
               cygwin/bash shell]:<br>
             </p>
@@ -783,6 +801,7 @@ If
               compilers to be setup properly in a cygwin bash command
               shell, so that "<span style="color: rgb(255, 0, 0);">cl
                 foo.c</span>" or "<span style="color: rgb(255, 0, 0);">ifort
+
                 foo.f</span>" works from this shell. For example - if
               using VS2005 C and Intel 10 Fortran one can do:</p>
             <ul>
@@ -800,17 +819,13 @@ If
               <li>Now run configure with win32fe and then build the
                 libraries with make [as per the usual instructions]</li>
             </ul>
-            Notes: This a new requirement as win32fe can no longer
-            autodetect the newer versions of compilers. They currently
-            default to "noautodetect mode.<br>
             <p><font color="#551a8b"><b>Example Configure usage</b></font><font
-                color="#551a8b"><b> with Windows Compilers:<br>
-                </b></font></p>
-            <p><br>
-              Use configure with VC2005 C and Intel Fortran 10 [With
+                color="#551a8b"><b> with Windows Compilers:</b></font></p>
+            <p> Use configure with VC2005 C and Intel Fortran 10 [With
               MPICH2 installed].<br>
             </p>
             <p> <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
 
                 ./configure --with-cc='win32fe cl' --with-fc='win32fe
                 ifort'&nbsp; --with-cxx='win32fe cl'&nbsp;
@@ -835,7 +850,8 @@ If
             unsupported by Compaq F90]<br>
             <p><font color="#551a8b"><b>ExternalPackages</b></font><font
                 color="#551a8b"><b>:</b> </font>--download-package
-              option does not work with many external packages.<br>
+              option does not work with many external packages no
+              Microsoft Windows.<br>
             </p>
             <p><font color="#551a8b"><b>Project Files:</b> </font>We
               cannot provide Microsoft Visual Studio project files for
@@ -866,6 +882,7 @@ If
             <p><b><font color="#551a8b">Debugger:&nbsp; </font></b>Running
 PETSc
 
+
               probrams with -start_in_debugger is not supported on this
               platform, so debuggers will need to be initiated manually.
               Make sure your environment is properly configured to use
@@ -889,7 +906,8 @@ cygwin.
 In
 this
 
-              case follow the regular instructions.<br>
+
+              case follow the regular Unix instructions.<br>
             </p>
             <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc
                   Win32 front end - win32fe</font>:</b>&nbsp; This tool
@@ -911,6 +929,7 @@ this
               creating a dir for PETSc in the required location with
               user privileges, and then do the PETSc install [as a <span
                 style="font-weight: bold;">regular/non-root user</span>].
+
               i.e<br>
             </p>
             <ul>
@@ -973,6 +992,7 @@ this
                   style="font-weight: bold;">'conftest'</span>. Run this
                 binary 'conftest' on <span style="font-weight: bold;">one
 
+
                   compute node</span> using the job scheduler.</li>
               <li>The above run of conftest will create a new python
                 script <span style="font-weight: bold;">'reconfigure'</span>.
@@ -1003,35 +1023,16 @@ this
 -tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"<br>
               </span></p>
             <hr>
-            <p><a name="PythonBindings"><font color="#551a8b"><big
-                    style="font-weight: bold;">Installing TOPS
-                    components</big>:</font></a></p>
-            <p>To install TOPS components one has to download and
-              install CCA Tools.&nbsp; [linux only]<br>
-            </p>
-            <ul>
-              <li>Get the CCA Tools package from <a
-href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz</a></li>
-              <li>Configure cca-tools using '-with-mpi' option
-                [prerequisites might be Java SDK, c++, mpich1]</li>
-              <li>Configure PETSc with C++, babel, ccafe options. Check
-                config/config/asterix-tops.py for an example.<br>
-              </li>
-              <li>Build PETSc libraries &amp; TOPS components with 'make
-                all'<br>
-              </li>
-              <li>To test&nbsp; do: 'cd src/tops; make examples'<br>
-              </li>
-            </ul>
-            <hr>
             <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to
                   use NVidia GPUs (aka CUDA)</font></a></h3>
             <ul>
               <li>Install CUDA and Cusp in default locations;
-                /usr/local/cuda. The version of Cusp you should use is listed in
-                $PETSC_DIR/config/PETSc/packages/cuda.py. Thrust has been included in CUDA since the 4.0 release. The required
-                version of CUDA may not be publically available, you may need to register as an NVIDIA Developer (free) to access
-                them. <br>
+                /usr/local/cuda. The version of Cusp you should use is
+                listed in $PETSC_DIR/config/PETSc/packages/cuda.py.
+                Thrust has been included in CUDA since the 4.0 release.
+                The required version of CUDA may not be publically
+                available, you may need to register as an NVIDIA
+                Developer (free) to access them. <br>
               </li>
             </ul>
             <ul>
@@ -1041,15 +1042,20 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
                 <li>install compatible NVidia kernel <a
                     href="http://developer.nvidia.com/object/cuda_3_1_downloads.html#Linux">developer
 
+
                     driver</a> by running the executable you download,
                   as root</li>
-                <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the CUDA libraries, for instance
+                <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to
+                  the CUDA libraries, for instance
                   <ul>
-                    <li>LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib</li>
+                    <li>export
+                      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib</li>
                   </ul>
                 </li>
-                <li>It is possible to verify CUDA installation with the Nvidia CUDA SDK, by
-                  compiling the SDK and then running 'deviceQuery' &amp;&amp; 'binomialOptions -type=double']<br>
+                <li>It is possible to verify CUDA installation with the
+                  Nvidia CUDA SDK, by compiling the SDK and then running
+                  'deviceQuery' &amp;&amp; 'binomialOptions
+                  -type=double']<br>
                 </li>
               </ul>
               <li>Configure and build PETSc with the additional
@@ -1064,7 +1070,8 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
                   <li>If you run a 64-bit OS,
                     <ul>
                       <li>you may need --with-cudac="nvcc -m64"</li>
-                      <li>make sure to put /usr/local/cuda/lib64 in LD_LIBRARY_PATH</li>
+                      <li>make sure to put /usr/local/cuda/lib64 in
+                        LD_LIBRARY_PATH</li>
                     </ul>
                   </li>
                 </ul>
@@ -1107,12 +1114,11 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
               -dmmg_nlevels 1 -da_grid_x 100 -da_grid_y 100 -log_summary
               -mat_no_inode -preload off&nbsp; -vec_threads 2</span><br>
             <br>
-            <hr><br>
             <hr>
-            <p></p>
             <p><font color="#551a8b"><b><a
                     href="installation.html#Docs:%20%20Installation">Return
 to
+
 
                     Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>
                 </b></font></p>
