@@ -341,7 +341,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
     s->atlasOff[p] = offset;
     offset += s->atlasDof[p];
   }
-  ierr = PetscSectionSetUpBC(s);
+  ierr = PetscSectionSetUpBC(s);CHKERRQ(ierr);
   /* Assume that all fields have the same chart */
   for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
     PetscInt off = s->atlasOff[p];

@@ -219,16 +219,41 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
+        DM       *dms;
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
         ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
+        ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
-          char splitname[8];
-          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+          char buf[256];
+          const char *splitname;
+          /* Split naming precedence: object name, prefix, number */
+          splitname = ((PetscObject)pc->dm)->name;
+          if (!splitname) {
+            ierr = PetscObjectGetOptionsPrefix((PetscObject)dms[i],&splitname);CHKERRQ(ierr);
+            if (splitname) {
+              size_t len;
+              ierr = PetscStrncpy(buf,splitname,sizeof buf);CHKERRQ(ierr);
+              buf[sizeof buf - 1] = 0;
+              ierr = PetscStrlen(buf,&len);CHKERRQ(ierr);
+              if (buf[len-1] == '_') buf[len-1] = 0; /* Remove trailing underscore if it was used */
+              splitname = buf;
+            }
+          }
+          if (!splitname) {
+            ierr = PetscSNPrintf(buf,sizeof buf,"%D",i);CHKERRQ(ierr);
+            splitname = buf;
+          }
           ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
           ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
+        for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
+          ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(dms);CHKERRQ(ierr);
       }
     } else {
       if (jac->bs <= 0) {
@@ -290,14 +315,20 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
+        DM       *dms;
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
         ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
+        ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
+          ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
           ilink->is = fields[i];
           ilink     = ilink->next;
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
+        ierr = PetscFree(dms);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);

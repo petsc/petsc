@@ -336,7 +336,7 @@ runex24:                        # This is not in the nightlies because the conve
 	   ${RM} -f ex24_1.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo  ${PWD} "\nPossible problem with ex25_1, diffs above \n=========================================";  \
 	   ${RM} -f ex25_1.tmp
 
