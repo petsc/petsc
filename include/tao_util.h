@@ -4,7 +4,6 @@
 
 PetscErrorCode VecPow(Vec Vec1, PetscReal p);
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian);
-PetscErrorCode VecCompare(Vec, Vec, PetscBool *);
 PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
 PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
