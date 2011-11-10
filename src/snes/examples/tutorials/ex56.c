@@ -36,7 +36,6 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Check for interpolated mesh when unknowns are placed on edges and faces
 - Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Use quadratic elements for velocity
   - Check that disc error vanishes for exact solution
@@ -331,6 +330,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   /* These can be generated using config/PETSc/FEM.py */
   PetscInt       dim          = user->dim;
   PetscInt       numBC        = 0;
+  PetscInt       numFields    = 2;
   PetscInt       numComp[2]   = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
   PetscInt       bcFields[1]  = {0};
   IS             bcPoints[1]  = {PETSC_NULL};
@@ -344,11 +344,16 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
   }
+  for(PetscInt f = 0; f < numFields; ++f) {
+    for(PetscInt d = 1; d < dim; ++d) {
+      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");}
+    }
+  }
   if (user->bcType == DIRICHLET) {
     numBC = 1;
     ierr  = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMMeshCreateSection(dm, dim, 2, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
