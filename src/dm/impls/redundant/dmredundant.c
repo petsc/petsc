@@ -123,7 +123,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
     }
     ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES)?MPI_SUM:MPI_MAX,red->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
-    if (rank == mine->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
+    if (rank == red->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
 #endif
   } break;
   case INSERT_VALUES:

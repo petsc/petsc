@@ -45,6 +45,7 @@ int MPIUNI_Memcpy(void *a,const void* b,int n) {
   char *aa= (char*)a;
   char *bb= (char*)b;
 
+  if (b == MPI_IN_PLACE) return 0;
   for (i=0; i<n; i++) aa[i] = bb[i];
   return 0;
 }
