@@ -3,17 +3,32 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPow"
-PetscErrorCode VecPow(Vec Vec1, PetscReal p)
+/*@
+  VecPow - Replaces each component of a vector by x_i^p
+
+  Not Collective
+
+  Input Parameter:
++ v - the vector
+- p - the exponent to use on each element
+
+  Output Parameter:
+. v - the vector
+
+  Level: intermediate
+
+@*/
+PetscErrorCode VecPow(Vec v, PetscReal p)
 {
   PetscErrorCode ierr;
   PetscInt n,i;
   PetscReal *v1;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1, VEC_CLASSID, 1); 
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1); 
 
-  ierr = VecGetArray(Vec1, &v1); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(Vec1, &n); CHKERRQ(ierr);
+  ierr = VecGetArray(v, &v1); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v, &n); CHKERRQ(ierr);
 
   if (1.0 == p) {
   }
@@ -34,7 +49,7 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
   else if (0.5 == p) {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
-        v1[i] = sqrt(v1[i]);
+        v1[i] = PetscSqrtScalar(v1[i]);
       }
       else {
         v1[i] = TAO_INFINITY;
@@ -44,7 +59,7 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
   else if (-0.5 == p) {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
-        v1[i] = 1.0 / sqrt(v1[i]);
+        v1[i] = 1.0 / PetscSqrtScalar(v1[i]);
       }
       else {
         v1[i] = TAO_INFINITY;
@@ -64,7 +79,7 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
   else {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
-        v1[i] = pow(v1[i], p);
+        v1[i] = PetscPowScalar(v1[i], p);
       }
       else {
         v1[i] = TAO_INFINITY;
@@ -72,13 +87,25 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
     }
   }
 
-  ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&v1); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "VecMedian"
+/*@
+  VecMedian - Computes the componentwise median of three vectors
+  and stores the result in this vector.  Used primarily for projecting
+  a vector within upper and lower bounds. 
+
+  Input Parameters:
+. Vec1, Vec2, Vec3 - The three vectors
+
+  Output Parameter:
+. VMedian - The median vector
+
+  Level: advanced
+@*/
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
   PetscErrorCode ierr;
@@ -145,44 +172,49 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecCompare"
-PetscErrorCode VecCompare(Vec V1,Vec V2, PetscBool *flg){
-  PetscErrorCode ierr;
-  PetscInt n1,n2,N1,N2;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(V1,VEC_CLASSID,1); 
-  PetscValidHeaderSpecific(V2,VEC_CLASSID,2); 
-  ierr = VecGetSize(V1,&N1);CHKERRQ(ierr);
-  ierr = VecGetSize(V2,&N2);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(V1,&n1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(V2,&n2);CHKERRQ(ierr);
-  if (N1==N2 && n1==n2) 
-    *flg=PETSC_TRUE;
-  else
-    *flg=PETSC_FALSE;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Fischer"
 PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
-     return sqrt(a*a + b*b) - (a + b);
+     return PetscSqrtScalar(a*a + b*b) - (a + b);
    }
-   return -2.0*a*b / (sqrt(a*a + b*b) + (a + b));
+   return -2.0*a*b / (PetscSqrtScalar(a*a + b*b) + (a + b));
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecFischer"
-PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
+/*@
+   Fischer - Evaluates the Fischer-Burmeister function for complementarity 
+   problems.
+   
+   Input Parameters:
++  X - current point
+.  F - function evaluated at x
+.  L - lower bounds 
+-  U - upper bounds
+
+   Output Parameters:
+.  FB - The Fischer-Burmeister function vector
+
+   Notes: 
+   The Fischer-Burmeister function is defined as
+$        phi(a,b) := sqrt(a*a + b*b) - a - b
+   and is used reformulate a complementarity problem as a semismooth
+   system of equations.
+
+   The result of this function is done by cases:
++  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i]
+.  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i])
+.  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i])
+.  l[i] finite < u[i] finite -- fb[i] = phi(x[i]-l[i], phi(u[i]-x[i], -f[u]))
+-  otherwise l[i] == u[i] -- fb[i] = l[i] - x[i]
+
+   Level: developer
+
+@*/
+PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 {
-  PetscReal *x, *f, *l, *u, *ff;
+  PetscReal *x, *f, *l, *u, *fb;
   PetscReal xval, fval, lval, uval;
   PetscErrorCode ierr;
   PetscInt low[5], high[5], n, i;
@@ -192,13 +224,13 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
   PetscValidHeaderSpecific(F, VEC_CLASSID,2); 
   PetscValidHeaderSpecific(L, VEC_CLASSID,3); 
   PetscValidHeaderSpecific(U, VEC_CLASSID,4); 
-  PetscValidHeaderSpecific(FF, VEC_CLASSID,4); 
+  PetscValidHeaderSpecific(FB, VEC_CLASSID,4); 
 
   ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(FF, low + 4, high + 4); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(FB, low + 4, high + 4); CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
     if (low[0] != low[i] || high[0] != high[i])
@@ -209,7 +241,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
   ierr = VecGetArray(F, &f); CHKERRQ(ierr);
   ierr = VecGetArray(L, &l); CHKERRQ(ierr);
   ierr = VecGetArray(U, &u); CHKERRQ(ierr);
-  ierr = VecGetArray(FF, &ff); CHKERRQ(ierr);
+  ierr = VecGetArray(FB, &fb); CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(X, &n); CHKERRQ(ierr);
 
@@ -218,20 +250,20 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
     lval = l[i]; uval = u[i];
 
     if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
-      ff[i] = -fval;
+      fb[i] = -fval;
     } 
     else if (lval <= -TAO_INFINITY) {
-      ff[i] = -Fischer(uval - xval, -fval);
+      fb[i] = -Fischer(uval - xval, -fval);
     } 
     else if (uval >=  TAO_INFINITY) {
-      ff[i] =  Fischer(xval - lval,  fval);
+      fb[i] =  Fischer(xval - lval,  fval);
     } 
     else if (lval == uval) {
-      ff[i] = lval - xval;
+      fb[i] = lval - xval;
     }
     else {
       fval  =  Fischer(uval - xval, -fval);
-      ff[i] =  Fischer(xval - lval,  fval);
+      fb[i] =  Fischer(xval - lval,  fval);
     }
   }
   
@@ -239,27 +271,56 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
   ierr = VecRestoreArray(F, &f); CHKERRQ(ierr);
   ierr = VecRestoreArray(L, &l); CHKERRQ(ierr);
   ierr = VecRestoreArray(U, &u); CHKERRQ(ierr);
-  ierr = VecRestoreArray(FF, &ff); CHKERRQ(ierr);
+  ierr = VecRestoreArray(FB, &fb); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SFischer"
 PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
-     return sqrt(a*a + b*b + 2.0*c*c) - (a + b);
+     return PetscSqrtScalar(a*a + b*b + 2.0*c*c) - (a + b);
    }
-   return 2.0*(c*c - a*b) / (sqrt(a*a + b*b + 2.0*c*c) + (a + b));
+   return 2.0*(c*c - a*b) / (PetscSqrtScalar(a*a + b*b + 2.0*c*c) + (a + b));
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSFischer"
-PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FF)
+/*@
+   SFischer - Evaluates the Smoothed Fischer-Burmeister function for
+   complementarity problems.
+
+   Input Parameters:
++  X - current point
+.  F - function evaluated at x
+.  L - lower bounds
+.  U - upper bounds
+-  mu - smoothing parameter
+
+   Output Parameters:
+.  FB - The Smoothed Fischer-Burmeister function vector
+
+   Notes:
+   The Smoothed Fischer-Burmeister function is defined as
+$        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
+   and is used reformulate a complementarity problem as a semismooth
+   system of equations.
+
+   The result of this function is done by cases:
++  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i] - 2*mu*x[i]
+.  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i], mu)
+.  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i], mu)
+.  l[i] finite < u[i] finite -- fb[i] = phi(x[i]-l[i], phi(u[i]-x[i], -f[u], mu), mu)
+-  otherwise l[i] == u[i] -- fb[i] = l[i] - x[i]
+
+   Level: developer
+
+.seealso  VecFischer()
+@*/
+PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 {
-  PetscReal *x, *f, *l, *u, *ff;
+  PetscReal *x, *f, *l, *u, *fb;
   PetscReal xval, fval, lval, uval;
   PetscErrorCode ierr;
   PetscInt low[5], high[5], n, i;
@@ -269,13 +330,13 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FF)
   PetscValidHeaderSpecific(F, VEC_CLASSID,2);
   PetscValidHeaderSpecific(L, VEC_CLASSID,3);
   PetscValidHeaderSpecific(U, VEC_CLASSID,4);
-  PetscValidHeaderSpecific(FF, VEC_CLASSID,6);
+  PetscValidHeaderSpecific(FB, VEC_CLASSID,6);
 
   ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(FF, low + 4, high + 4); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(FB, low + 4, high + 4); CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
     if (low[0] != low[i] || high[0] != high[i])
@@ -286,7 +347,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FF)
   ierr = VecGetArray(F, &f); CHKERRQ(ierr);
   ierr = VecGetArray(L, &l); CHKERRQ(ierr);
   ierr = VecGetArray(U, &u); CHKERRQ(ierr);
-  ierr = VecGetArray(FF, &ff); CHKERRQ(ierr);
+  ierr = VecGetArray(FB, &fb); CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(X, &n); CHKERRQ(ierr);
   
@@ -295,49 +356,45 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FF)
     lval = (*l++); uval = (*u++);
 
     if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
-      (*ff++) = -fval - mu*xval;
+      (*fb++) = -fval - mu*xval;
     } 
     else if (lval <= -TAO_INFINITY) {
-      (*ff++) = -SFischer(uval - xval, -fval, mu);
+      (*fb++) = -SFischer(uval - xval, -fval, mu);
     } 
     else if (uval >=  TAO_INFINITY) {
-      (*ff++) =  SFischer(xval - lval,  fval, mu);
+      (*fb++) =  SFischer(xval - lval,  fval, mu);
     } 
     else if (lval == uval) {
-      (*ff++) = lval - xval;
+      (*fb++) = lval - xval;
     } 
     else {
       fval    =  SFischer(uval - xval, -fval, mu);
-      (*ff++) =  SFischer(xval - lval,  fval, mu);
+      (*fb++) =  SFischer(xval - lval,  fval, mu);
     }
   }
-  x -= n; f -= n; l -=n; u -= n; ff -= n;
+  x -= n; f -= n; l -=n; u -= n; fb -= n;
 
   ierr = VecRestoreArray(X, &x); CHKERRQ(ierr);
   ierr = VecRestoreArray(F, &f); CHKERRQ(ierr);
   ierr = VecRestoreArray(L, &l); CHKERRQ(ierr);
   ierr = VecRestoreArray(U, &u); CHKERRQ(ierr);
-  ierr = VecRestoreArray(FF, &ff); CHKERRQ(ierr);
+  ierr = VecRestoreArray(FB, &fb); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "fischnorm"
 PETSC_STATIC_INLINE PetscReal fischnorm(PetscReal a, PetscReal b)
 {
-  return sqrt(a*a + b*b);
+  return PetscSqrtScalar(a*a + b*b);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "fischsnorm"
 PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 {
-  return sqrt(a*a + b*b + 2.0*c*c);
+  return PetscSqrtScalar(a*a + b*b + 2.0*c*c);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "D_Fischer"
-/*@C
+/*@
    D_Fischer - Calculates an element of the B-subdifferential of the 
    Fischer-Burmeister function for complementarity problems.
   
@@ -354,7 +411,7 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 +  Da - diagonal perturbation component of the result
 -  Db - row scaling component of the result
 
-   Level: intermediate
+   Level: developer
 
 .seealso Fischer()
 @*/
@@ -491,8 +548,8 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
 };
 
 #undef __FUNCT__
-#define __FUNCT__ ""
-/*@C
+#define __FUNCT__ "D_SFischer"
+/*@
    D_SFischer - Calculates an element of the B-subdifferential of the
    smoothed Fischer-Burmeister function for complementarity problems.
  
@@ -511,7 +568,7 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
 .  Db - row scaling component of the result
 -  Dm - derivative with respect to scaling parameter
 
-   Level: intermediate
+   Level: developer
 
 .seealso TaoVec::SFischer()
 @*/
