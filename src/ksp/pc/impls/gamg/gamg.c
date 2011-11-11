@@ -175,7 +175,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
   /* RAP */
-  // #define USE_R
+  /* #define USE_R */
 #ifdef USE_R
   /* make R wih brute force for now */
   ierr = MatTranspose( Pold, Pnew );     
