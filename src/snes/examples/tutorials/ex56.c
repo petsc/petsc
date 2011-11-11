@@ -76,14 +76,16 @@ const int numFields     = 2;
 const int numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
+typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscInt      debug;             /* The debugging level */
   PetscMPIInt   rank;              /* The process rank */
   PetscMPIInt   numProcs;          /* The number of processes */
+  RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscLogEvent createMeshEvent, residualEvent, jacobianEvent, integrateResCPUEvent, integrateJacCPUEvent;
-  PetscBool     showResidual, showJacobian;
+  PetscBool     showInitial, showResidual, showJacobian;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
@@ -214,36 +216,43 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
-  PetscInt       bc;
+  const char    *runTypes[2] = {"full", "test"};
+  PetscInt       bc, run;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->debug           = 0;
+  options->runType         = RUN_FULL;
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
   options->bcType          = DIRICHLET;
   options->numBatches      = 1;
   options->numBlocks       = 1;
-  options->showResidual    = PETSC_TRUE;
-  options->showJacobian    = PETSC_TRUE;
+  options->showResidual    = PETSC_FALSE;
+  options->showResidual    = PETSC_FALSE;
+  options->showJacobian    = PETSC_FALSE;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex52.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex52.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex56.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  run = options->runType;
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex56.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
+  options->runType = (RunType) run;
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex56.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex56.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex56.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
   bc = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex56.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex52.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex56.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex56.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex56.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex56.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex56.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",       DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -475,7 +484,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   Output Parameter:
 . X - vector
 */
-PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt numComp, ...)
+PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, AppCtx *user, PetscInt numComp, ...)
 {
   Vec            localX, coordinates;
   PetscSection   section, cSection;
@@ -542,9 +551,13 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Local vertex function\n");CHKERRQ(ierr);
-  ierr = VecView(localX, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  if (user->showInitial) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
+    for(int p = 0; p < user->numProcs; ++p) {
+      if (p == user->rank) {ierr = VecView(localX, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
+  }
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -1105,9 +1118,11 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
        MatAssemblyBegin(), MatAssemblyEnd(). */
   ierr = MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /* Tell the matrix we will never add a new nonzero location to the matrix.
-     If we do, it will generate an error. */
-  ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+
+  if (user->showJacobian) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Jacobian:\n");CHKERRQ(ierr);
+    ierr = MatView(Jac, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1152,10 +1167,9 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs[0], user.exactFuncs[1], user.exactFuncs[2]);CHKERRQ(ierr);
-  //if (user.run == RUN_FULL)
-  if (0) {
-    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, numComponents, zero, zero, zero);CHKERRQ(ierr);
+  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, &user, numComponents, user.exactFuncs[0], user.exactFuncs[1], user.exactFuncs[2]);CHKERRQ(ierr);
+  if (user.runType == RUN_FULL) {
+    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, &user, numComponents, zero, zero, zero);CHKERRQ(ierr);
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -1187,7 +1201,6 @@ int main(int argc, char **argv)
       MatStructure flag;
 
       ierr = SNESMeshFormJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
-      ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESMeshFormFunction(snes, r, b, &user);CHKERRQ(ierr);
@@ -1200,7 +1213,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if (0) {
+  if (user.runType == RUN_FULL) {
     PetscViewer viewer;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
