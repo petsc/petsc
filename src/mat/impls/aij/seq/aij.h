@@ -92,6 +92,12 @@ typedef struct {
 } Mat_MatMatTransMult;
 
 typedef struct {
+  PetscScalar    *apa;         /* temporary arrays for storing values of A*P */
+  Mat            AP;           /* symbolic A*P */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_PtAP;
+
+typedef struct {
   MatTransposeColoring matcoloring;
   Mat                  Rt;    /* dense matrix of R^T */
   Mat                  RARt;  /* dense matrix of R*A*R^T */

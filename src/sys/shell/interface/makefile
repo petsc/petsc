@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = shell.c
+SOURCEC  = sysshell.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = shell.o
+OBJSC    = sysshell.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = Sys

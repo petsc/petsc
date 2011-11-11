@@ -51,10 +51,16 @@ int main(int argc,char **args)
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
   M = 3*nn*nn*nn; /* global number of equations */
-  m = nn*nn*nn/npe;
-  if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
+  if(npe==2) {
+    if(mype==1) m=0;
+    else m = nn*nn*nn;
+    npe = 1;
+  }
+  else {
+    m = nn*nn*nn/npe;
+    if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
+  }
   m *= 3; /* number of equations local*/
-
   /* Setup solver, get PC type and pc */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
   ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
@@ -71,11 +77,11 @@ int main(int argc,char **args)
     if(nn!=NP*(nn/NP))SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
     const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
-    const PetscInt Ni1 = Ni0 + (nn/NP), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
+    const PetscInt Ni1 = Ni0 + (m>0 ? (nn/NP) : 0), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
     const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
     PetscInt *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar vv[24], v2[24];
-  
+    
     /* count nnz */
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
@@ -275,6 +281,7 @@ int main(int argc,char **args)
 
   /* 2nd solve */
   {
+/* #define TwoSolve */
 #if defined(TwoSolve)
     PetscReal emax, emin;
     ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);

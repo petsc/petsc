@@ -36,11 +36,6 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Fix pressure BC
-  - Make constant vector on the pressure space (get a local P vector?)
-  - Use MatSetNullSpace() on the Jacobian
-  - Check that it is in the operator null space
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Solve the system
   - Check error in the result
   - Refine and show convergence of correct order automatically (use femTest.py)
@@ -55,6 +50,7 @@ Next Steps:
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
+- Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Redo slides from GUCASTutorial for this new example
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
@@ -553,42 +549,79 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
 #if 0
-  /* This is necessary for higher order elements */
-  ierr = MeshGetSectionReal(mesh, "exactSolution", &this->_options.exactSol.section);CHKERRQ(ierr);
-  const Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("exactSolution");
-  this->_mesh->setupField(s);
-  const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = this->_mesh->heightStratum(0);
-  const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = this->_mesh->getRealSection("coordinates");
-  const int                                       localDof    = this->_mesh->sizeWithBC(s, *cells->begin());
-  PETSC_MESH_TYPE::real_section_type::value_type *values      = new PETSC_MESH_TYPE::real_section_type::value_type[localDof];
-  PetscReal                                      *v0          = new PetscReal[dim()];
-  PetscReal                                      *J           = new PetscReal[dim()*dim()];
-  PetscReal                                       detJ;
-  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), this->_mesh->depth())+1, true);
+  const PetscInt localDof = this->_mesh->sizeWithBC(s, *cells->begin());
+  PetscReal      detJ;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), *c_iter, pV);
+  ierr = PetscMalloc(localDof * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
+  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
+
+  for(PetscInt c = cStart; c < cEnd; ++c) {
+    ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), c, pV);
     const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
     const int                          oSize   = pV.getSize();
     int                                v       = 0;
 
-    this->_mesh->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-    for(int cl = 0; cl < oSize; ++cl) {
-      const int pointDim = s->getFiberDimension(oPoints[cl]);
+    ierr = DMMeshComputeCellGeometry(dm, c, v0, J, PETSC_NULL, &detJ);CHKERRQ(ierr);
+    for(PetscInt cl = 0; cl < oSize; ++cl) {
+      const PetscInt fDim;
 
+      ierr = PetscSectionGetDof(oPoints[cl], &fDim);CHKERRQ(ierr);
       if (pointDim) {
-        for(int d = 0; d < pointDim; ++d, ++v) {
+        for(PetscInt d = 0; d < fDim; ++d, ++v) {
           values[v] = (*this->_options.integrate)(v0, J, v, initFunc);
         }
       }
     }
-    this->_mesh->update(s, *c_iter, values);
+    ierr = DMMeshVecSetClosure(dm, localX, c, values);CHKERRQ(ierr);
     pV.clear();
   }
-  delete [] values;
-  delete [] v0;
-  delete [] J;
+  ierr = PetscFree2(v0,J);CHKERRQ(ierr);
+  ierr = PetscFree(values);CHKERRQ(ierr);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreatePressureNullSpace"
+PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
+  Vec            pressure, localP;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetGlobalVector(dm, &pressure);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localP);CHKERRQ(ierr);
+  ierr = VecSet(pressure, 0.0);CHKERRQ(ierr);
+  // Put a constant in for all pressures
+  // Could change this to project the constant function onto the pressure space (when that is finished)
+  {
+    PetscSection section;
+    PetscInt     pStart, pEnd, p;
+    PetscScalar *a;
+
+    ierr = DMMeshGetSection(dm, "default", &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt fDim, off, d;
+
+      ierr = PetscSectionGetFieldDof(section, p, 1, &fDim);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldOffset(section, p, 1, &off);CHKERRQ(ierr);
+      for(d = 0; d < fDim; ++d) {
+        a[off+d] = 1.0;
+      }
+    }
+    ierr = VecRestoreArray(localP, &a);CHKERRQ(ierr);
+  }
+  ierr = DMLocalToGlobalBegin(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localP);CHKERRQ(ierr);
+  if (user->debug) {
+    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
+    ierr = VecView(pressure, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &pressure, nullSpace);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &pressure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1086,9 +1119,11 @@ int main(int argc, char **argv)
   SNES           snes;                 /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
+  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
   PetscReal      error;                /* L_2 error in the solution */
+  PetscBool      isNull;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
@@ -1107,6 +1142,10 @@ int main(int argc, char **argv)
   ierr = DMGetMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
   ierr = SNESSetJacobian(snes, A, J, SNESMeshFormJacobian, &user);CHKERRQ(ierr);
+  ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
+  if (!isNull) {SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");}
 
   ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
@@ -1168,7 +1207,7 @@ int main(int argc, char **argv)
     /*ierr = PetscViewerSetType(viewer, PETSCVIEWERDRAW);CHKERRQ(ierr);
       ierr = PetscViewerDrawSetInfo(viewer, PETSC_NULL, "Solution", PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr); */
     ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "ex56_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(user.dm, viewer);CHKERRQ(ierr);
     ierr = VecView(u, viewer);CHKERRQ(ierr);

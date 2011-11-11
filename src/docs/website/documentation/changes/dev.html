@@ -101,12 +101,16 @@
             <p><u><b>Mat:</b></u></p>
             <ul>
               <li>Renamed MatNullSpaceAttach() to MatSetNullSpace()</li>
+              <li>MatMult() no longer removes the nullspace set by MatSetNullSpace()</li>
               <li>Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()</li>
               <li>Added MatMatTransposeMult() for C=A*B^T</li>
               <li>Added MatRARt() for C=R*A*R^T</li>
             </ul>
             <p><u><b>PC:</b></u></p>
             <p><u><b>KSP:</b></u></p>
+            <ul>
+              <li>KSPSetOperators() will automatically set the null space present on the input matrix</li>
+            </ul>
             <p><u><b>SNES:</b></u></p>
             <ul>
               <li>Added SNESLineSearchSetType()</li>

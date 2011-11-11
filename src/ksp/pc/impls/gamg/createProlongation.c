@@ -1114,7 +1114,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
   }
   else {
     PetscInt      idx,num_fine_ghosts,num_crs_ghost,nLocalSelected,myCrs0;
-    Mat_MPIAIJ   *mpimat2;
+    Mat_MPIAIJ   *mpimat2; 
     Mat           Gmat2;
     Vec           locState;
     PetscScalar   *cpcol_state;
@@ -1132,7 +1132,12 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
 
     if( a_Gmat_2 != 0 ) { /* output */
       /* grow graph to get wider set of selected vertices to cover fine grid, invalidates 'llist' */
-      ierr = MatMatMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
+      if( npe==1 ){
+        ierr = MatMatTransposeMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
+      }
+      else {
+        ierr = MatMatMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
+      }
       *a_Gmat_2 = Gmat2; /* output */
     }
     else Gmat2 = a_Gmat1;  /* use local to get crsGIDs at least */
@@ -1345,9 +1350,13 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* square matrix - SA */  
   if( a_method != 0 ){
     Mat Gmat2;
-    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    if( npe==1 ){
+      ierr = MatMatTransposeMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    }
+    else {
+      ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    }
     CHKERRQ(ierr);
-    /* ierr = MatDestroy( &Gmat );  CHKERRQ(ierr); */
     AuxMat = Gmat;
     Gmat = Gmat2;
     /* force compressed row storage for B matrix in AuxMat */

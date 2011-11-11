@@ -2173,19 +2173,10 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
 #endif
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  if (mat->nullsp) {
-    ierr = MatNullSpaceRemove(mat->nullsp,x,&x);CHKERRQ(ierr);
-  }
-
   if (!mat->ops->mult) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"This matrix type does not have a multiply defined");
   ierr = PetscLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
-
-  if (mat->nullsp) {
-    ierr = MatNullSpaceRemove(mat->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
@@ -7433,6 +7424,38 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetNullSpace"
+/*@
+   MatGetNullSpace - retrieves the null space to a matrix.
+
+   Logically Collective on Mat and MatNullSpace
+
+   Input Parameters:
++  mat - the matrix
+-  nullsp - the null space object
+
+   Level: developer
+
+   Notes:
+      This null space is used by solvers. Overwrites any previous null space that may have been attached
+
+   Concepts: null space^attaching to matrix
+
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
+@*/
+PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(nullsp,2);
+  *nullsp = mat->nullsp;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetNullSpace"
 /*@
@@ -7449,7 +7472,7 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
    Level: developer
 
    Notes:
-      Overwrites any previous null space that may have been attached
+      This null space is used by solvers. Overwrites any previous null space that may have been attached
 
    Concepts: null space^attaching to matrix
 

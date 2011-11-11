@@ -302,7 +302,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   PetscContainer      container;
   MatTransposeColoring matcoloring;
   ISColoring           iscoloring;
-  Mat                  Rt_dense,ARt_dense,RARt_dense;
+  Mat                  Rt_dense,RARt_dense;
   PetscLogDouble       GColor=0.0,MCCreate=0.0,MDenCreate=0.0,t0,tf,etime=0.0;
   Mat_SeqAIJ           *c;
 
@@ -488,7 +488,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   Mat_RARt              *rart;
   PetscContainer        container;
   MatTransposeColoring  matcoloring;
-  Mat                   Rt,ARt,RARt;
+  Mat                   Rt,RARt;
   PetscLogDouble        Mult_sp_den=0.0,app1=0.0,app2=0.0,t0,tf;
 
   PetscFunctionBegin;
