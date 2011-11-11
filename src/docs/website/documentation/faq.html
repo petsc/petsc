@@ -1656,6 +1656,12 @@ in
                 methods and ask petsc-users@mcs.anl.gov or
                 petsc-maint@mcs.anl.gov if you want advice about how to
                 implement them.</li>
+              <li>If the method converges in preconditioned residual,
+                but not in true residual, the preconditioner is likely
+                singular or nearly so. This is common for saddle point
+                problems (e.g. incompressible flow) or strongly
+                nonsymmetric operators (e.g. low-Mach hyperbolic
+                problems with large time steps).</li>
               <li>The preconditioner is too weak or is unstable. See if
                 <tt>-pc_type asm -sub_pc_type lu</tt> improves the
                 convergence rate. If GMRES is losing too much progress
