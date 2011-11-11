@@ -4271,7 +4271,6 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   for (ii = 0; ii < nz; ii++){
     nnz[i[ii]] += 1;
   }
-  /* ierr = MatSeqAIJCreate(comm,m,n,0,nnz,mat);CHKERRQ(ierr); */
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
