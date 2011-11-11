@@ -12,11 +12,6 @@ extern PetscErrorCode SNESFASGetSNES(SNES, PetscInt, SNES *);
 extern PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
 extern PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
 
-extern PetscErrorCode SNESFASGetSmoother(SNES, PetscInt, SNES *);
-extern PetscErrorCode SNESFASGetSmootherUp(SNES, PetscInt, SNES *);
-extern PetscErrorCode SNESFASGetSmootherDown(SNES, PetscInt, SNES *);
-extern PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES *);
-
 extern PetscErrorCode SNESFASSetInterpolation(SNES, PetscInt, Mat);
 extern PetscErrorCode SNESFASSetRestriction(SNES, PetscInt, Mat);
 extern PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);

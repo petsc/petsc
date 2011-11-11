@@ -1,5 +1,5 @@
 /* Defines the basic SNES object */
-#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnesfas.h"  I*/
 
 /*MC
 Full Approximation Scheme nonlinear multigrid solver.
