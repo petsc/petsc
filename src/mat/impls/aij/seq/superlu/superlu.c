@@ -547,29 +547,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     lu->options.Equil = NO;
   } else if (ftype == MAT_FACTOR_ILU){
     /* Set the default input options of ilu: */
-#if 0
-    options.Fact = DOFACT;
-    options.Equil = YES;           /* must be YES for ilu - don't know why */
-    options.ColPerm = COLAMD;
-    options.DiagPivotThresh = 0.1; /* different from complete LU */
-    options.Trans = NOTRANS;
-    options.IterRefine = NOREFINE;
-    options.SymmetricMode = NO;
-    options.PivotGrowth = NO;
-    options.ConditionNumber = NO;
-    options.PrintStat = YES;
-    options.RowPerm = LargeDiag;
-    options.ILU_DropTol = 1e-4;
-    options.ILU_FillTol = 1e-2;
-    options.ILU_FillFactor = 10.0;
-    options.ILU_DropRule = DROP_BASIC | DROP_AREA;
-    options.ILU_Norm = INF_NORM;
-    options.ILU_MILU = SMILU_2;
-#endif
     ilu_set_default_options(&lu->options);
-    /* there is a bug with options.RowPerm=LargeDiag causing src/ksp/ksp/examples/tutorials/runex52_superlu crashes
-       See email communication Betwen Hong and Sharry on Feb. Tue, Feb 22, 2011 */
-    lu->options.RowPerm = NOROWPERM; 
   }
   lu->options.PrintStat = NO;
   

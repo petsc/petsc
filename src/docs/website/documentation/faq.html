@@ -165,6 +165,8 @@
                   that when you code Newton's method you should compute
                   the function and its Jacobian at the same time. How
                   can one do this in PETSc?</a></li>
+              <li><a href="faq.html#conditionnumber">How can I determine
+                  the condition number of a matrix?</a></li>
               <li><a href="faq.html#invertmatrix">How can I compute the
                   inverse of a PETSc matrix?</a></li>
               <li><a href="faq.html#schurcomplement">How can I compute a
@@ -1106,6 +1108,21 @@ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.
                     retreive the information in your FormJacobian()
                     function.<br>
                     <br>
+                    <span style="color: rgb(255, 0, 0);"><a name="conditionnumber"></a>How can I determine
+                      the condition number of a matrix?<br>
+                    </span>For small matrices, the condition number can
+                    be reliably computed using <tt>-pc_type svd
+                    -pc_svd_monitor</tt>.  For larger matrices, you can
+                    run with <tt>-pc_type none -ksp_type gmres
+                    -ksp_monitor_singular_value -ksp_gmres_restart
+                    1000</tt> to get approximations to the condition
+                    number of the operator. This will generally be
+                    accurate for the largest singular values, but may
+                    overestimate the smallest singular value unless the
+                    method has converged. Make sure to avoid
+                    restarts. To estimate the condition number of the
+                    preconditioned operator, use <tt>-pc_type
+                    somepc</tt> in the last command.<br><br>
                     <span style="color: rgb(255, 0, 0);"><a
                         name="invertmatrix"></a>How can I compute the
                       inverse of a matrix in PETSc?<br>
@@ -1639,6 +1656,12 @@ in
                 methods and ask petsc-users@mcs.anl.gov or
                 petsc-maint@mcs.anl.gov if you want advice about how to
                 implement them.</li>
+              <li>If the method converges in preconditioned residual,
+                but not in true residual, the preconditioner is likely
+                singular or nearly so. This is common for saddle point
+                problems (e.g. incompressible flow) or strongly
+                nonsymmetric operators (e.g. low-Mach hyperbolic
+                problems with large time steps).</li>
               <li>The preconditioner is too weak or is unstable. See if
                 <tt>-pc_type asm -sub_pc_type lu</tt> improves the
                 convergence rate. If GMRES is losing too much progress
@@ -1660,13 +1683,7 @@ in
                 operator or make sure that all the equations are scaled
                 in the same way if you want to use rediscretized coarse
                 levels.</li>
-              <li>The matrix is very ill-conditioned. You can run with
-                <tt>-pc_type none -ksp_type gmres
-                -ksp_monitor_singular_value -ksp_gmres_restart 100</tt> to
-                get approximations to the condition number of the
-                operator. Or run with <tt>-pc_type somepc</tt> to get
-                condition number estimates of the preconditioned
-                operator.</li>
+              <li>The matrix is very ill-conditioned. Check the <a href="faq.html#conditionnumber">condition number</a>.</li>
               <ul>
                 <li> Try to improve it by choosing the relative scaling
                   of components/boundary conditions.</li>

@@ -33,6 +33,40 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat A,Mat P,Mat C)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscContainerDestroy_Mat_PtAP"
+PetscErrorCode PetscContainerDestroy_Mat_PtAP(void *ptr)
+{
+  PetscErrorCode ierr;
+  Mat_PtAP       *ptap=(Mat_PtAP*)ptr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(ptap->apa);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->AP);CHKERRQ(ierr);
+  ierr = PetscFree(ptap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_SeqAIJ_PtAP"
+PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
+{
+  PetscErrorCode ierr;
+  PetscContainer container;
+  Mat_PtAP       *ptap=PETSC_NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_PtAP",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr = PetscContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr);
+  A->ops->destroy = ptap->destroy;
+  if (A->ops->destroy) {
+    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectCompose((PetscObject)A,"Mat_PtAP",0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) 
 {
@@ -45,6 +79,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt           i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi,nlnk,*lnk;
   MatScalar          *ca;
   PetscBT            lnkbt;
+  Mat_PtAP           *ptap;
+  PetscContainer     container;
 
   PetscFunctionBegin;
   /* Get ij structure of P^T */
@@ -134,10 +170,29 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
-  c = (Mat_SeqAIJ *)((*C)->data);
+  c          = (Mat_SeqAIJ *)(*C)->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
+
+  /* create a supporting struct for reuse by MatPtAPNumeric() */
+  ierr = PetscNew(Mat_PtAP,&ptap);CHKERRQ(ierr);
+
+  /* attach the supporting struct to C */
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,ptap);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_PtAP);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_PtAP",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
+  ptap->destroy      = (*C)->ops->destroy;
+  (*C)->ops->destroy = MatDestroy_SeqAIJ_PtAP;
+
+  /* Allocate temporary array for storage of one row of A*P */
+  ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+
+  /* Get structure of A*P */
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,P,fill,&ptap->AP);CHKERRQ(ierr);
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
@@ -160,20 +215,27 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
+  Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data,*ap; 
   Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
-  PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pcol;
+  PetscInt       *ai=a->i,*aj=a->j,*apj,*pi=p->i,*pj=p->j,*pcol;
   PetscInt       *ci=c->i,*cj=c->j,*cjj,cnz;
   PetscInt       am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
   PetscInt       i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
   MatScalar      *aa=a->a,*apa,*pa=p->a,*pval,*ca=c->a,*caj;
   PetscBool      sparse_axpy=PETSC_FALSE;
+  Mat_PtAP       *ptap;
+  PetscContainer container;
 
   PetscFunctionBegin;
-  /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apj,cn,PetscInt,&apjdense);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matptap_spaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_PtAP",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr  = PetscContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr);
+
+  /* Get temporary array for storage of one row of A*P */
+  apa = ptap->apa;
   ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
+  ap   = (Mat_SeqAIJ *)(ptap->AP)->data;
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -188,24 +250,19 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       pcol = pj + pi[prow];
       pval = pa + pi[prow];
       for (k=0; k<pnz; k++) {
-        if (!apjdense[pcol[k]]) {
-          apjdense[pcol[k]] = -1; 
-          apj[apnz++]       = pcol[k];
-        }
         apa[pcol[k]] += aa[j]*pval[k];
       }
       ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
     }
     aj += anz; aa += anz;
-
-    if (sparse_axpy){
-      ierr = PetscSortInt(apnz,apj);CHKERRQ(ierr);
-    }
-
+    
     /* Compute P^T*A*P using outer product P[i,:]^T*AP[i,:]. */
+    apj  = ap->j + ap->i[i]; 
+    apnz = ap->i[i+1] - ap->i[i];
     pnz  = pi[i+1] - pi[i];
     pcol = pj + pi[i];
     pval = pa + pi[i];
+    
     for (j=0; j<pnz; j++) {
       crow = pcol[j]; 
       cjj  = cj + ci[crow];
@@ -232,15 +289,13 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
     /* Zero the current row info for A*P */
     for (j=0; j<apnz; j++) {
-      apcol           = apj[j];
-      apa[apcol]      = 0.;
-      apjdense[apcol] = 0;
+      apcol      = apj[j];
+      apa[apcol] = 0.;
     }
   }
 
   /* Assemble the final matrix and clean up */
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree3(apa,apj,apjdense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

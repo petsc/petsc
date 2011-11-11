@@ -89,7 +89,13 @@ typedef struct {
   Mat                       ABt_den; /* dense matrix of A*B^T */
   PetscBool                 usecoloring; 
   PetscErrorCode (*destroy)(Mat);
-} Mat_MatMatMultTrans;
+} Mat_MatMatTransMult;
+
+typedef struct {
+  PetscScalar    *apa;         /* temporary arrays for storing values of A*P */
+  Mat            AP;           /* symbolic A*P */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_PtAP;
 
 typedef struct {
   MatTransposeColoring matcoloring;

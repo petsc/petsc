@@ -518,7 +518,6 @@ PetscPolymorphicFunction(VecGhostGetLocalForm,(Vec x),(x,&s),Vec,s)
 extern PetscErrorCode  VecGhostRestoreLocalForm(Vec,Vec*);
 extern PetscErrorCode  VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
 extern PetscErrorCode  VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
-extern PetscErrorCode  VecIsGhosted(Vec,PetscBool*);
 
 extern PetscErrorCode  VecConjugate(Vec);
 

@@ -490,7 +490,7 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
      dest,sendtag,recvbuf,recvcount,\
      recvtype,source,recvtag,\
      comm,status) \
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount) * MPI_sizeof(sendtype))
+  MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount) * MPI_sizeof(sendtype))
 #define MPI_Sendrecv_replace(buf,count, datatype,dest,sendtag,\
      source,recvtag,comm,status) MPI_SUCCESS
 #define MPI_Type_contiguous(count, oldtype,newtype) \
@@ -589,7 +589,7 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     (sendbuf != MPI_IN_PLACE) ?  MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)*MPI_sizeof(sendtype)) : 0, \
+     MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)*MPI_sizeof(sendtype)), \
      MPI_SUCCESS)
 #define MPI_Alltoall(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \
@@ -607,9 +607,9 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Reduce(sendbuf, recvbuf,count,\
      datatype,op,root,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
+      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
-     ((sendbuf != MPI_IN_PLACE) ? MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)) : 0, \
+    (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)), \
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Scan(sendbuf, recvbuf,count,datatype,op,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)),\

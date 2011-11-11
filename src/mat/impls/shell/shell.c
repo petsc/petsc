@@ -170,7 +170,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShellGetContext"
-/*@C
+/*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
     Not Collective

@@ -790,7 +790,7 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
  
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
+.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntriesArray()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(),  DMCompositeScatter(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
@@ -814,6 +814,38 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
     next = next->next;
   }
   va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetEntriesArray"
+/*@
+    DMCompositeGetEntriesArray - Gets the DM for each entry in a DMComposite.
+
+    Not Collective
+
+    Input Parameter:
++    dm - the packer object
+-    dms - array of sufficient length (see DMCompositeGetNumberDM()), holds the DMs on output
+
+    Level: advanced
+
+.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntries()
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
+         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(),  DMCompositeScatter(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
+
+@*/
+PetscErrorCode DMCompositeGetEntriesArray(DM dm,DM dms[])
+{
+  struct DMCompositeLink *next;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  /* loop over packed objects, handling one at at time */
+  for (next=com->next,i=0; next; next=next->next,i++) dms[i] = next->dm;
   PetscFunctionReturn(0);
 }
 

@@ -37,7 +37,7 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
     ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
   }
   if (!isShell) {
-    PetscInt *dnz, *onz;
+    PetscInt *dnz, *onz, bsLocal;
 
     if (bs < 0) {
       if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
@@ -53,7 +53,8 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
         bs = 1;
       }
       // Must have same blocksize on all procs (some might have no points)
-      ierr = MPI_Allreduce(&bs, &bs, 1, MPIU_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
+      bsLocal = bs;
+      ierr = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
 #ifdef USE_NEW_OVERLAP
