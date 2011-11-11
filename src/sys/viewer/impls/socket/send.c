@@ -105,7 +105,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr_list[0],hp->h_length);CHKERRQ(ierr);
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
