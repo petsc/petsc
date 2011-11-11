@@ -574,7 +574,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 	      (int)(info.nz_used/(PetscReal)N),npe);
 #endif
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
-        level < (GAMG_MAXLEVELS-1) && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
+        level < (GAMG_MAXLEVELS-1) && (level==0 || M>TOP_GRID_LIM); /* && (npe==1 || nactivepe>1); */
         level++ ){
     level1 = level + 1;
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)

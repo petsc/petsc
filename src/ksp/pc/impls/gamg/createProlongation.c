@@ -1681,7 +1681,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSetOperators( eksp, a_Amat, a_Amat, SAME_NONZERO_PATTERN );
       CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
-      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr); /* smoother */
+      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);  /* smoother */
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
@@ -1702,7 +1702,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = VecReciprocal( diag );         CHKERRQ(ierr);
       ierr = MatDiagonalScale( tMat, diag, 0 ); CHKERRQ(ierr);
       ierr = VecDestroy( &diag );           CHKERRQ(ierr);
-      alpha = -1.333333/emax;
+      alpha = -1.5/emax;
       ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
       ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       Prol = tMat;
