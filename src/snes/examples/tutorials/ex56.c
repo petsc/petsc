@@ -37,6 +37,7 @@ puts it into the Sieve ordering.
 Next Steps:
 
 - Run in 3D
+- Run with refinement
 - Run in parallel
   - Check scaling with Mark
 - Optimize closure operations
@@ -212,7 +213,7 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
 
     u = x^2 + y^2
     v = y^2 + z^2
-    w = 2 x^2 + 2 y^2 - 2(x+y)z
+    w = x^2 + y^2 - 2(x+y)z
     p = x + y + z - 3/2
     f_x = f_y = f_z = 3
 
@@ -230,7 +231,7 @@ PetscScalar quadratic_v_3d(const PetscReal x[]) {
 };
 
 PetscScalar quadratic_w_3d(const PetscReal x[]) {
-  return 2.0*x[0]*x[0] + 2.0*x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+  return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 };
 
 PetscScalar linear_p_3d(const PetscReal x[]) {

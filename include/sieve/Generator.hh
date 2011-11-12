@@ -1280,6 +1280,7 @@ namespace ALE {
           }
         }
         if (interpolate) {
+          // This does not work anymore (edgemarkerlist is always empty). I tried -ee and it gave bogus results
           if (out.edgemarkerlist) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
@@ -1307,31 +1308,29 @@ namespace ALE {
 //             }
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
-                typename Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
-                typename Mesh::point_type cornerB(out.trifacelist[f*3+1]+out.numberoftetrahedra);
-                typename Mesh::point_type cornerC(out.trifacelist[f*3+2]+out.numberoftetrahedra);
+                typename Mesh::point_type cornerA = out.trifacelist[f*3+0]+out.numberoftetrahedra;
+                typename Mesh::point_type cornerB = out.trifacelist[f*3+1]+out.numberoftetrahedra;
+                typename Mesh::point_type cornerC = out.trifacelist[f*3+2]+out.numberoftetrahedra;
                 Obj<typename Mesh::sieve_type::supportSet> corners = typename Mesh::sieve_type::supportSet();
                 Obj<typename Mesh::sieve_type::supportSet> edges   = typename Mesh::sieve_type::supportSet();
                 corners->clear();corners->insert(cornerA);corners->insert(cornerB);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeA = *newS->nJoin1(corners)->begin();
                 corners->clear();corners->insert(cornerB);corners->insert(cornerC);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeB = *newS->nJoin1(corners)->begin();
                 corners->clear();corners->insert(cornerC);corners->insert(cornerA);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeC = *newS->nJoin1(corners)->begin();
+                edges->insert(edgeA); edges->insert(edgeB); edges->insert(edgeC);
                 ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(30);
-                const typename Mesh::point_type           face       = *newS->nJoin1(edges)->begin();
-                const int                                 faceMarker = out.trifacemarkerlist[f];
+                typename Mesh::point_type face       = *newS->nJoin1(edges)->begin();
+                const int                 faceMarker = out.trifacemarkerlist[f];
 
+                if (renumber) {face = renumbering[face];}
                 ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*newSieve, face, pV);
                 const size_t                     n    = pV.getSize();
                 const typename Mesh::point_type *cone = pV.getPoints();
 
                 for(size_t c = 0; c < n; ++c) {
-                  if (renumber) {
-                    mesh->setValue(newMarkers, renumbering[cone[c]], faceMarker);
-                  } else {
-                    mesh->setValue(newMarkers, cone[c], faceMarker);
-                  }
+                  mesh->setValue(newMarkers, cone[c], faceMarker);
                 }
                 pV.clear();
               }
