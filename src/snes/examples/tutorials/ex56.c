@@ -1,5 +1,5 @@
-static char help[] = "Stokes Problem in 2d.\n\
-We solve the  Stokes problem in a 2D rectangular\n\
+static char help[] = "Stokes Problem in 2d and 3d.\n\
+We solve the  Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMMESH) to discretize it.\n\
 The command line options include:\n\
   -visc_model <name>, the viscosity model\n\n\n";
@@ -36,11 +36,7 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Solve the system
-  - Check error in the result
-  - Refine and show convergence of correct order automatically (use femTest.py)
-- Reply to Marc Hesse
-  - Plan next steps with he and Avi
+- Run in 3D
 - Run in parallel
   - Check scaling with Mark
 - Optimize closure operations
@@ -50,6 +46,7 @@ Next Steps:
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
+- Refine and show convergence of correct order automatically (use femTest.py)
 - Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Redo slides from GUCASTutorial for this new example
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
@@ -112,11 +109,12 @@ PetscScalar zero(const PetscReal coords[]) {
 }
 
 /*
-  Suppose we use exact solution:
+  In 2D we use exact solution:
 
     u = x^2 + y^2
     v = 2 x^2 - 2xy
     p = x + y - 1
+    f_x = f_y = 3
 
   so that
 
@@ -136,19 +134,18 @@ PetscScalar linear_p_2d(const PetscReal x[]) {
 };
 
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
-  const PetscInt dim   = 2;
-  const PetscInt Ncomp = dim;
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
 
   for(PetscInt comp = 0; comp < Ncomp; ++comp) {
     f0[comp] = 3.0;
   }
 }
 
-// gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
+// gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
 // u[Ncomp]          = {p}
 void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const PetscInt dim   = 2;
-  const PetscInt Ncomp = dim;
+  const PetscInt dim   = SPATIAL_DIM_0;
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
 
   for(PetscInt comp = 0; comp < Ncomp; ++comp) {
     for(PetscInt d = 0; d < dim; ++d) {
@@ -159,9 +156,9 @@ void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
   }
 }
 
-// gradU[comp*dim+d] = {u_x, u_y, v_x, v_y}
+// gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
 void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
-  const PetscInt dim = 2;
+  const PetscInt dim = SPATIAL_DIM_0;
 
   f0[0] = 0.0;
   for(PetscInt d = 0; d < dim; ++d) {
@@ -170,7 +167,7 @@ void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
 }
 
 void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const PetscInt dim = 2;
+  const PetscInt dim = SPATIAL_DIM_0;
 
   for(PetscInt d = 0; d < dim; ++d) {
     f1[d] = 0.0;
@@ -180,30 +177,28 @@ void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
 // < q, \nabla\cdot v >
 // NcompI = 1, NcompJ = dim
 void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
-  const PetscInt dim = 2;
+  const PetscInt dim = SPATIAL_DIM_0;
 
-  g1[0*dim+0] = 1.0; // \frac{\partial\phi^u}{\partial x}
-  g1[0*dim+1] = 0.0;
-  g1[1*dim+0] = 0.0;
-  g1[1*dim+1] = 1.0; // \frac{\partial\phi^v}{\partial y}
+  for(PetscInt d = 0; d < dim; ++d) {
+    g1[d*dim+d] = 1.0; // \frac{\partial\phi^{u_d}}{\partial x_d}
+  }
 }
 
 // -< \nabla\cdot v, p >
 // NcompI = dim, NcompJ = 1
 void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
-  const PetscInt dim = 2;
+  const PetscInt dim = SPATIAL_DIM_0;
 
-  g2[0*dim+0] = -1.0; // \frac{\partial\psi^u}{\partial x}
-  g2[0*dim+1] =  0.0;
-  g2[1*dim+0] =  0.0;
-  g2[1*dim+1] = -1.0; // \frac{\partial\psi^v}{\partial y}
+  for(PetscInt d = 0; d < dim; ++d) {
+    g2[d*dim+d] = -1.0; // \frac{\partial\psi^{u_d}}{\partial x_d}
+  }
 }
 
 // < \nabla v, \nabla u + {\nabla u}^T >
 // This just gives \nabla u, give the perdiagonal for the transpose
 void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
-  const PetscInt dim   = 2;
-  const PetscInt Ncomp = dim;
+  const PetscInt dim   = SPATIAL_DIM_0;
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
 
   for(PetscInt compI = 0; compI < Ncomp; ++compI) {
     for(PetscInt d = 0; d < dim; ++d) {
@@ -211,6 +206,36 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
     }
   }
 }
+
+/*
+  In 3D we use exact solution:
+
+    u = x^2 + y^2
+    v = y^2 + z^2
+    w = 2 x^2 + 2 y^2 - 2(x+y)z
+    p = x + y + z - 3/2
+    f_x = f_y = f_z = 3
+
+  so that
+
+    -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
+    \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
+*/
+PetscScalar quadratic_u_3d(const PetscReal x[]) {
+  return x[0]*x[0] + x[1]*x[1];
+};
+
+PetscScalar quadratic_v_3d(const PetscReal x[]) {
+  return x[1]*x[1] + x[2]*x[2];
+};
+
+PetscScalar quadratic_w_3d(const PetscReal x[]) {
+  return 2.0*x[0]*x[0] + 2.0*x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+};
+
+PetscScalar linear_p_3d(const PetscReal x[]) {
+  return x[0] + x[1] + x[2] - 1.5;
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
@@ -303,26 +328,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
   PetscFunctionBegin;
-  switch(user->dim) {
-  case 2:
-    user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
-    user->q[0].quadPoints    = points_0;
-    user->q[0].quadWeights   = weights_0;
-    user->q[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
-    user->q[0].numComponents = NUM_BASIS_COMPONENTS_0;
-    user->q[0].basis         = Basis_0;
-    user->q[0].basisDer      = BasisDerivatives_0;
-    user->q[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
-    user->q[1].quadPoints    = points_1;
-    user->q[1].quadWeights   = weights_1;
-    user->q[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
-    user->q[1].numComponents = NUM_BASIS_COMPONENTS_1;
-    user->q[1].basis         = Basis_1;
-    user->q[1].basisDer      = BasisDerivatives_1;
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
-  }
+  user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
+  user->q[0].quadPoints    = points_0;
+  user->q[0].quadWeights   = weights_0;
+  user->q[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
+  user->q[0].numComponents = NUM_BASIS_COMPONENTS_0;
+  user->q[0].basis         = Basis_0;
+  user->q[0].basisDer      = BasisDerivatives_0;
+  user->q[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
+  user->q[1].quadPoints    = points_1;
+  user->q[1].quadWeights   = weights_1;
+  user->q[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
+  user->q[1].numComponents = NUM_BASIS_COMPONENTS_1;
+  user->q[1].basis         = Basis_1;
+  user->q[1].basisDer      = BasisDerivatives_1;
   PetscFunctionReturn(0);
 }
 
@@ -330,13 +349,11 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
-  /* These can be generated using config/PETSc/FEM.py */
-  PetscInt       dim          = user->dim;
-  PetscInt       numBC        = 0;
-  PetscInt       numFields    = 2;
-  PetscInt       numComp[2]   = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
-  PetscInt       bcFields[1]  = {0};
-  IS             bcPoints[1]  = {PETSC_NULL};
+  PetscInt       dim                = user->dim;
+  PetscInt       numBC              = 0;
+  PetscInt       numComp[numFields] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
+  PetscInt       bcFields[1]        = {0};
+  IS             bcPoints[1]        = {PETSC_NULL};
   PetscInt       numDof[numFields*(SPATIAL_DIM_0+1)];
   PetscErrorCode ierr;
 
@@ -368,31 +385,37 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
   PetscFunctionBegin;
+  user->f0Funcs[0] = f0_u;
+  user->f0Funcs[1] = f0_p;
+  user->f1Funcs[0] = f1_u;
+  user->f1Funcs[1] = f1_p;
+  user->g0Funcs[0] = PETSC_NULL;
+  user->g0Funcs[1] = PETSC_NULL;
+  user->g0Funcs[2] = PETSC_NULL;
+  user->g0Funcs[3] = PETSC_NULL;
+  user->g1Funcs[0] = PETSC_NULL;
+  user->g1Funcs[1] = PETSC_NULL;
+  user->g1Funcs[2] = g1_pu;      // < q, \nabla\cdot v >
+  user->g1Funcs[3] = PETSC_NULL;
+  user->g2Funcs[0] = PETSC_NULL;
+  user->g2Funcs[1] = g2_up;      // < \nabla\cdot v, p >
+  user->g2Funcs[2] = PETSC_NULL;
+  user->g2Funcs[3] = PETSC_NULL;
+  user->g3Funcs[0] = g3_uu;      // < \nabla v, \nabla u + {\nabla u}^T >
+  user->g3Funcs[1] = PETSC_NULL;
+  user->g3Funcs[2] = PETSC_NULL;
+  user->g3Funcs[3] = PETSC_NULL;
   switch(user->dim) {
   case 2:
-    user->f0Funcs[0]    = f0_u;
-    user->f0Funcs[1]    = f0_p;
-    user->f1Funcs[0]    = f1_u;
-    user->f1Funcs[1]    = f1_p;
-    user->g0Funcs[0]    = PETSC_NULL;
-    user->g0Funcs[1]    = PETSC_NULL;
-    user->g0Funcs[2]    = PETSC_NULL;
-    user->g0Funcs[3]    = PETSC_NULL;
-    user->g1Funcs[0]    = PETSC_NULL;
-    user->g1Funcs[1]    = PETSC_NULL;
-    user->g1Funcs[2]    = g1_pu;      // < q, \nabla\cdot v >
-    user->g1Funcs[3]    = PETSC_NULL;
-    user->g2Funcs[0]    = PETSC_NULL;
-    user->g2Funcs[1]    = g2_up;      // < \nabla\cdot v, p >
-    user->g2Funcs[2]    = PETSC_NULL;
-    user->g2Funcs[3]    = PETSC_NULL;
-    user->g3Funcs[0]    = g3_uu;      // < \nabla v, \nabla u + {\nabla u}^T >
-    user->g3Funcs[1]    = PETSC_NULL;
-    user->g3Funcs[2]    = PETSC_NULL;
-    user->g3Funcs[3]    = PETSC_NULL;
     user->exactFuncs[0] = quadratic_u_2d;
     user->exactFuncs[1] = quadratic_v_2d;
     user->exactFuncs[2] = linear_p_2d;
+    break;
+  case 3:
+    user->exactFuncs[0] = quadratic_u_3d;
+    user->exactFuncs[1] = quadratic_v_3d;
+    user->exactFuncs[2] = quadratic_w_3d;
+    user->exactFuncs[3] = linear_p_3d;
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -484,14 +507,12 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   Output Parameter:
 . X - vector
 */
-PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, AppCtx *user, PetscInt numComp, ...)
+PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), AppCtx *user)
 {
   Vec            localX, coordinates;
   PetscSection   section, cSection;
   PetscInt       vStart, vEnd;
-  PetscScalar (**funcs)(const PetscReal []);
   PetscScalar   *values;
-  va_list        ap;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -500,12 +521,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, AppCtx *us
   ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numComp,PetscScalar (*)(const PetscReal *),&funcs,numComp,PetscScalar,&values);CHKERRQ(ierr);
-  va_start(ap, numComp);
-  for(PetscInt c = 0; c < numComp; ++c) {
-    funcs[c] = va_arg(ap, PetscScalar (*)(const PetscReal []));
-  }
-  va_end(ap);
+  ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for(PetscInt v = vStart; v < vEnd; ++v) {
     PetscScalar *coords;
 
@@ -547,7 +563,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, AppCtx *us
     ierr = PetscFree(coordsE);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree2(funcs,values);CHKERRQ(ierr);
+  ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
@@ -642,7 +658,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 #define __FUNCT__ "IntegrateResidualBatchCPU"
 PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscInt field, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscQuadrature quad[], void (*f0_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]), void (*f1_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]), PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug   = user->debug;
-  const PetscInt dim     = 2;
+  const PetscInt dim     = SPATIAL_DIM_0;
   PetscInt       cOffset = 0;
   PetscInt       eOffset = 0;
   PetscErrorCode ierr;
@@ -659,7 +675,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     assert(Nq <= NUM_QUADRATURE_POINTS_0);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
+      ierr = DMMeshPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
     for(PetscInt q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
@@ -785,9 +801,8 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
 */
 PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 {
-  const PetscInt   debug     = user->debug;
-  const PetscInt   dim       = user->dim;
-  const PetscInt   numFields = 2;
+  const PetscInt   debug = user->debug;
+  const PetscInt   dim   = user->dim;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec;
   PetscInt         cStart, cEnd;
@@ -871,7 +886,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   const PetscReal *basisJ    = quad[fieldJ].basis;
   const PetscReal *basisDerJ = quad[fieldJ].basisDer;
   const PetscInt   debug   = user->debug;
-  const PetscInt   dim     = 2;
+  const PetscInt   dim     = SPATIAL_DIM_0;
   PetscInt         cellDof = 0; // Total number of dof on a cell
   PetscInt         cOffset = 0; // Offset into coefficients[] for element e
   PetscInt         eOffset = 0; // Offset into elemMat[] for element e
@@ -1167,9 +1182,12 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, &user, numComponents, user.exactFuncs[0], user.exactFuncs[1], user.exactFuncs[2]);CHKERRQ(ierr);
+  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
   if (user.runType == RUN_FULL) {
-    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, &user, numComponents, zero, zero, zero);CHKERRQ(ierr);
+    PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
+
+    for(PetscInt c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
+    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, numComponents, initialGuess, &user);CHKERRQ(ierr);
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

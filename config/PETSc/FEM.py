@@ -235,10 +235,9 @@ class QuadratureGenerator(script.Script):
         basisDerTabNew = numpy.zeros(newShape)
         for q in range(basisTab.shape[0]):
           for i in range(basisTab.shape[1]):
-            basisTabNew[q][i*2+0] = basisTab[q][i]
-            basisTabNew[q][i*2+1] = basisTab[q][i]
-            basisDerTabNew[q][i*2+0] = basisDerTab[q][i]
-            basisDerTabNew[q][i*2+1] = basisDerTab[q][i]
+            for c in range(numComp):
+              basisTabNew[q][i*numComp+c]    = basisTab[q][i]
+              basisDerTabNew[q][i*numComp+c] = basisDerTab[q][i]
         basisTab    = basisTabNew
         basisDerTab = basisDerTabNew
       code.extend([spatialDim, numFunctions, numComponents,
