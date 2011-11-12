@@ -193,7 +193,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_Triangle"
-      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef typename Mesh::real_section_type::value_type real;
         int                                   dim   = 2;
@@ -287,7 +287,7 @@ namespace ALE {
         m->stratify();
         mesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         mesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering,
         m->getArrowSection("orientation").ptr());
@@ -335,7 +335,11 @@ namespace ALE {
 #endif
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              if (renumber) {
+                mesh->setValue(newMarkers, renumbering[v+out.numberoftriangles], out.pointmarkerlist[v]);
+              } else {
+                mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              }
             }
           }
           if (interpolate) {
@@ -566,7 +570,7 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef typename Mesh::real_section_type::value_type real;
         typedef typename Mesh::point_type point_type;
@@ -713,7 +717,7 @@ namespace ALE {
         m->stratify();
         refMesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         refMesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
         {
@@ -735,7 +739,11 @@ namespace ALE {
         if (refMesh->commRank() == 0) {
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              if (renumber) {
+                refMesh->setValue(newMarkers, renumbering[v+out.numberoftriangles], out.pointmarkerlist[v]);
+              } else {
+                refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              }
             }
           }
           if (interpolate) {
@@ -759,10 +767,10 @@ namespace ALE {
 #endif
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool renumber = false) {
         throw ALE::Exception("Not yet implemented");
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
 #if 0
         Obj<Mesh> serialMesh;
         if (mesh->commSize() > 1) {
@@ -777,7 +785,7 @@ namespace ALE {
         for(int c = 0; c < numCells; c++) {
           serialMaxVolumes[c] = maxVolume;
         }
-        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate);
+        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate, forceSerial, renumber);
         delete [] serialMaxVolumes;
         return refMesh;
       };
@@ -956,7 +964,7 @@ namespace ALE {
         const int         dim   = 3;
         Obj<Mesh>         mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const PetscMPIInt rank  = mesh->commRank();
-        bool        createConvexHull = false;
+        bool              createConvexHull = false;
         ::tetgenio        in;
         ::tetgenio        out;
 
@@ -1117,7 +1125,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_TetGen"
-      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef typename Mesh::real_section_type::value_type real;
         const int                             dim   = 3;
@@ -1243,7 +1251,7 @@ namespace ALE {
         m->stratify();
         mesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         mesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
         {
@@ -1264,7 +1272,11 @@ namespace ALE {
 
         for(int v = 0; v < out.numberofpoints; v++) {
           if (out.pointmarkerlist[v]) {
-            mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            if (renumber) {
+              mesh->setValue(newMarkers, renumbering[v+out.numberoftetrahedra], out.pointmarkerlist[v]);
+            } else {
+              mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            }
           }
         }
         if (interpolate) {
@@ -1275,7 +1287,11 @@ namespace ALE {
                 typename Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
                 Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(endpointA, endpointB, 1);
 
-                mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                if (renumber) {
+                  mesh->setValue(newMarkers, renumbering[*edge->begin()], out.edgemarkerlist[e]);
+                } else {
+                  mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                }
               }
             }
           }
@@ -1311,7 +1327,11 @@ namespace ALE {
                 const typename Mesh::point_type *cone = pV.getPoints();
 
                 for(size_t c = 0; c < n; ++c) {
-                  mesh->setValue(newMarkers, cone[c], faceMarker);
+                  if (renumber) {
+                    mesh->setValue(newMarkers, renumbering[cone[c]], faceMarker);
+                  } else {
+                    mesh->setValue(newMarkers, cone[c], faceMarker);
+                  }
                 }
                 pV.clear();
               }
@@ -1498,7 +1518,7 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef typename Mesh::real_section_type::value_type real;
         typedef typename Mesh::point_type point_type;
@@ -1646,7 +1666,7 @@ namespace ALE {
         m->stratify();
         refMesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         refMesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
         {
@@ -1667,7 +1687,11 @@ namespace ALE {
 
         for(int v = 0; v < out.numberofpoints; v++) {
           if (out.pointmarkerlist[v]) {
-            refMesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            if (renumber) {
+              refMesh->setValue(newMarkers, renumbering[v+out.numberoftetrahedra], out.pointmarkerlist[v]);
+            } else {
+              refMesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            }
           }
         }
         if (interpolate) {
@@ -1678,7 +1702,11 @@ namespace ALE {
                 typename Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
                 Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(endpointA, endpointB, 1);
 
-                refMesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                if (renumber) {
+                  refMesh->setValue(newMarkers, renumbering[*edge->begin()], out.edgemarkerlist[e]);
+                } else {
+                  refMesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                }
               }
             }
           }
@@ -1705,7 +1733,11 @@ namespace ALE {
                 const typename Mesh::point_type *cone = pV.getPoints();
 
                 for(size_t c = 0; c < n; ++c) {
-                  refMesh->setValue(newMarkers, cone[c], faceMarker);
+                  if (renumber) {
+                    refMesh->setValue(newMarkers, renumbering[cone[c]], faceMarker);
+                  } else {
+                    refMesh->setValue(newMarkers, cone[c], faceMarker);
+                  }
                 }
                 pV.clear();
               }
@@ -1719,17 +1751,17 @@ namespace ALE {
 #endif
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         throw ALE::Exception("Not yet implemented");
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         const int numCells         = mesh->heightStratum(0)->size();
         double   *serialMaxVolumes = new double[numCells];
 
         for(int c = 0; c < numCells; c++) {
           serialMaxVolumes[c] = maxVolume;
         }
-        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate);
+        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate, forceSerial, renumber);
         delete [] serialMaxVolumes;
         return refMesh;
       };
@@ -1757,18 +1789,18 @@ namespace ALE {
       }
       return NULL;
     };
-    static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+    static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
       int dim = boundary->getDimension();
 
       if (dim == 1) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained);
+        return ALE::Triangle::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained, renumber);
 #else
         throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 2) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained);
+        return ALE::TetGen::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained, renumber);
 #else
         throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
@@ -1811,36 +1843,36 @@ namespace ALE {
       }
       return NULL;
     };
-    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool renumber = false) {
       int dim = mesh->getDimension();
 
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
+        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
+        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
       }
       return NULL;
     };
-    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
+    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
       int dim = mesh->getDimension();
 
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial);
+        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate);
+        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif

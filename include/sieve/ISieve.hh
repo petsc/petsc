@@ -2548,6 +2548,18 @@ namespace ALE {
           }
         }
         for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (sieve.support(*b_iter)->size() == 0) {
+            const typename Sieve::coneSequence::iterator coneBegin = sieve.coneBegin(*b_iter);
+            const typename Sieve::coneSequence::iterator coneEnd   = sieve.coneEnd(*b_iter);
+
+            for(typename Sieve::coneSequence::iterator c_iter = coneBegin; c_iter != coneEnd; ++c_iter) {
+              if (renumbering.find(*c_iter) == renumbering.end()) {
+                renumbering[*c_iter] = max++;
+              }
+            }
+          }
+        }
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           if (renumbering.find(*b_iter) == renumbering.end()) {
             renumbering[*b_iter] = max++;
           }

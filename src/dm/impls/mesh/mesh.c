@@ -1653,7 +1653,7 @@ PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(boundary, mB);CHKERRQ(ierr);
   ierr = DMMeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMeshV(mB, interpolate);
+  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMeshV(mB, interpolate, false, true);
   ierr = DMMeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1687,7 +1687,7 @@ PetscErrorCode DMMeshRefine(DM mesh, double refinementLimit, PetscBool  interpol
   if (refinementLimit == 0.0) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = DMMeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate);
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate, false, true);
   ierr = DMMeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
