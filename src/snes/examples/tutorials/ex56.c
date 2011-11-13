@@ -1,4 +1,4 @@
-static char help[] = "Stokes Problem in 2d and 3d.\n\
+static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
 We solve the  Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMMESH) to discretize it.\n\
 The command line options include:\n\
@@ -14,7 +14,17 @@ element method on an unstructured mesh. The weak form equations are
 We start with homogeneous Dirichlet conditions. We will expand this as the set
 of test problems is developed.
 
-Organization of Integration Routine:
+Discretization:
+
+We use a Python script to generate a tabulation of the finite element basis
+functions at quadrature points, which we put in a C header file. The generic
+command would be:
+
+    bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex56.h
+
+We can currently generate an arbitrary order Lagrange element. The underlying
+FIAT code is capable of handling more exotic elements, but these have not been
+tested with this code.
 
 Field Data:
 
@@ -51,10 +61,13 @@ Next Steps:
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
-- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
 
-- Improve DMDA conversion to get edges
-- Setup FV problem
+Possible new examples:
+
+- Hexahedral Stokes example
+  - Improve DMDA conversion to get edges
+- A Finite Volume problem
+- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
 */
 
 #include <petscdmmesh.h>
