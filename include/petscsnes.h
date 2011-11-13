@@ -347,13 +347,13 @@ extern PetscErrorCode  SNESDefaultConverged(SNES,PetscInt,PetscReal,PetscReal,Pe
 extern PetscErrorCode  SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 extern PetscErrorCode  SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
-extern PetscErrorCode  SNESDAFormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode  SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-extern PetscErrorCode  SNESMeshFormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode SNESMeshFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);

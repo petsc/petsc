@@ -1172,7 +1172,7 @@ int main(int argc, char **argv)
 
   ierr = DMGetMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
-  ierr = SNESSetJacobian(snes, A, J, SNESMeshFormJacobian, &user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
   ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
@@ -1180,7 +1180,7 @@ int main(int argc, char **argv)
 
   ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, SNESDMMeshComputeFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
@@ -1209,7 +1209,7 @@ int main(int argc, char **argv)
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESMeshFormFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESDMMeshComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
@@ -1219,10 +1219,10 @@ int main(int argc, char **argv)
       Vec          b;
       MatStructure flag;
 
-      ierr = SNESMeshFormJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = SNESDMMeshComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-      ierr = SNESMeshFormFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = SNESDMMeshComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);

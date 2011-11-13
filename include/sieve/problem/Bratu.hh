@@ -301,9 +301,9 @@ namespace ALE {
           this->_options.func = this->_options.exactFunc;
           U                   = exactSolution().vec;
           if (dim() == 2) {
-            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
@@ -626,9 +626,9 @@ namespace ALE {
           ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
           ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
           if (dim() == 2) {
-            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_2d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
+            ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_2d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_3d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
+            ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_3d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }

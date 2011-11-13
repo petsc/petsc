@@ -76,9 +76,9 @@
       external SNESLINESEARCHNO
       external SNESLINESEARCHNONORMS
 
-      external SNESDAFORMFUNCTION
-      external SNESDACOMPUTEJACOBIANWITHADIFOR
-      external SNESDACOMPUTEJACOBIAN
+      external SNESDMDACOMPUTEFUNCTION
+      external SNESDMDACOMPUTEJACOBIANWITHADIFOR
+      external SNESDMDACOMPUTEJACOBIAN
 
 !  End of Fortran include file for the SNES package in PETSc
 
