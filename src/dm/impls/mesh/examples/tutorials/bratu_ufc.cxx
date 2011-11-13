@@ -687,17 +687,17 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
     ierr = DMGetGlobalVector(da, &F);CHKERRQ(ierr);
     if (options->dim == 2) {
       options->func = linear_2d;
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       options->func = cos_x;
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else {
       options->func = linear_3d;
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       options->func = cos_x;
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     }
     ierr = DMRestoreGlobalVector(da, &X);CHKERRQ(ierr);
@@ -1018,22 +1018,22 @@ PetscErrorCode FormWeakForms(DM dm, Options *options)
     if (options->dim == 2) {
       options->func      = linear_2d;
       options->exactFunc = linear_2d;
-      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecSet(F, 0.0);CHKERRQ(ierr);
       options->func      = cos_x;
       options->exactFunc = cos_x;
-      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else if (options->dim == 3) {
       options->func      = linear_3d;
       options->exactFunc = linear_3d;
-      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecSet(F, 0.0);CHKERRQ(ierr);
       options->func      = cos_x;
       options->exactFunc = cos_x;
-      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
@@ -1581,9 +1581,9 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
     if (dim == 2) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
     } else if (dim == 3) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
@@ -1667,9 +1667,9 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
     if (options->dim == 2) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }

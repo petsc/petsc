@@ -179,19 +179,19 @@ int main(int argc,char **argv)
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else if (fd_jacobian_ghosted) {
     ierr = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,B,MySNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else {
     if (!user.picard) {
-      ierr = SNESSetJacobian(snes,A,B,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,A,B,SNESDMDAComputeJacobian,&user);CHKERRQ(ierr);
     }
   }
 
@@ -206,9 +206,9 @@ int main(int argc,char **argv)
   ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (user.picard) {
-    ierr = SNESSetPicard(snes,r,SNESDAFormFunction,A,B,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+    ierr = SNESSetPicard(snes,r,SNESDMDAComputeFunction,A,B,SNESDMDAComputeJacobian,&user);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
