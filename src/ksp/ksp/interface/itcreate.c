@@ -446,9 +446,11 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
   }
-  ierr = MatGetNullSpace(Amat, &nullsp);CHKERRQ(ierr);
-  if (nullsp) {
-    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+  if (Amat) {
+    ierr = MatGetNullSpace(Amat, &nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
