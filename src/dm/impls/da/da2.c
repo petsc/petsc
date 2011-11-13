@@ -196,7 +196,12 @@ static PetscErrorCode DMDAFunction(DM dm,Vec x,Vec F)
 
    Level: intermediate
 
-   Notes: The routine SNESDMDAComputeFunction() uses this the cached function to evaluate the user provided function.
+   Notes: 
+      If you used SNESSetFunction(snes,r,SNESDMDAComputeFunction,ctx); then the context passed to your function is the ctx set here.
+
+      If you use SNESSetDM() and did not use SNESSetFunction() then the context passed to your function is the context set with DMSetApplicationContext()
+
+   Developer Notes: It is possibly confusing which context is passed to the user function, it would be nice to unify them somehow.
 
 .keywords:  distributed array, refine
 
