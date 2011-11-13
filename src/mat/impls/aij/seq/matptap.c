@@ -196,6 +196,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Allocate temporary array for storage of one row of A*P */
   ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(MatScalar));CHKERRQ(ierr); 
   ptap->api = api;
   ptap->apj = apj;
 
@@ -231,7 +232,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   PetscInt        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
   PetscScalar     *aa=a->a,*pa=p->a;
   PetscInt        *apj,*pcol,*cjj,cnz;
-  PetscInt        am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
+  PetscInt        am=A->rmap->N,cm=C->rmap->N;
   PetscInt        i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
   PetscScalar     *apa,*pval,*ca=c->a,*caj;
   PetscBool       sparse_axpy=PETSC_FALSE;
@@ -246,8 +247,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
   /* Get temporary array for storage of one row of A*P */
   apa = ptap->apa;
-  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
-
+  
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
