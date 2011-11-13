@@ -18,9 +18,13 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
+    /* ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); */
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
+  /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -142,6 +146,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFunctionReturn(0);
 }
 
+#define DENSEAXPY
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -153,39 +158,77 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   PetscInt       am=A->rmap->N,cm=C->rmap->N;
-  PetscInt       i,j,k,anzi,bnzi,cnzi,brow,nextb;
-  MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
-
+  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
+#if defined(DENSEAXPY)
+  PetscScalar    *ab_dense;
+#else
+  PetscInt       nextb;
+#endif
+  
   PetscFunctionBegin;  
+#if defined(DENSEAXPY)
+  ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&ab_dense);CHKERRQ(ierr);//mv to symbolic
+  ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);//mv to symbolic
+#endif
+
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
   /* Build the ith row in C by summing over nonzero columns in A, */
   /* the rows of B corresponding to nonzeros of A. */
+#if defined(DENSEAXPY)
   for (i=0;i<am;i++) {
     anzi = ai[i+1] - ai[i];
+    cnzi = ci[i+1] - ci[i];
     for (j=0;j<anzi;j++) {
-      brow = *aj++;
+      brow = aj[j];
       bnzi = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       baj  = ba + bi[brow];
+      /* perform dense axpy */
+      for (k=0; k<bnzi; k++) {
+        ab_dense[bjj[k]] += aa[j]*baj[k];
+      }
+      flops += 2*bnzi;
+    }
+    for (k=0; k<cnzi; k++) {
+      ca[k]          += ab_dense[cj[k]];
+      ab_dense[cj[k]] = 0.0; /* zero ab_dense */
+    }
+    flops += cnzi;
+    aj += anzi; aa += anzi;
+    cj += cnzi; ca += cnzi;
+  }
+#else
+  for (i=0;i<am;i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = ci[i+1] - ci[i];
+    for (j=0;j<anzi;j++) {
+      brow = aj[j];
+      bnzi = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      baj  = ba + bi[brow];
+      /* perform sparse axpy */
       nextb = 0;
       for (k=0; nextb<bnzi; k++) {
         if (cj[k] == bjj[nextb]){ /* ccol == bcol */
-          ca[k] += (*aa)*baj[nextb++];
+          ca[k] += aa[j]*baj[nextb++];
         }
       }
       flops += 2*bnzi;
-      aa++;
     }
-    cnzi = ci[i+1] - ci[i];
-    ca += cnzi;
-    cj += cnzi;
+    aj += anzi; aa += anzi;
+    cj += cnzi; ca += cnzi;
   }
+#endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
-
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  
+#if defined(DENSEAXPY) 
+  ierr = PetscFree(ab_dense);CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
 

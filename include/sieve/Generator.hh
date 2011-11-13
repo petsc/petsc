@@ -442,7 +442,7 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             int s = 0;
 
@@ -656,7 +656,7 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(2);
             int s = 0;
@@ -858,7 +858,7 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             int s = 0;
 
@@ -1694,6 +1694,7 @@ namespace ALE {
           }
         }
         if (interpolate) {
+          // This does not work anymore (edgemarkerlist is always empty). I tried -ee and it gave bogus results
           if (out.edgemarkerlist) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
@@ -1724,30 +1725,22 @@ namespace ALE {
                 corners->clear();corners->insert(cornerC);corners->insert(cornerA);
                 edges->insert(*newS->nJoin1(corners)->begin());
                 ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(30);
-                const typename Mesh::point_type          face       = *newS->nJoin1(edges)->begin();
-                const int                                faceMarker = out.trifacemarkerlist[f];
+                typename Mesh::point_type face       = *newS->nJoin1(edges)->begin();
+                const int                 faceMarker = out.trifacemarkerlist[f];
 
+                if (renumber) {face = renumbering[face];}
                 ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*newSieve, face, pV);
                 const size_t                     n    = pV.getSize();
                 const typename Mesh::point_type *cone = pV.getPoints();
 
                 for(size_t c = 0; c < n; ++c) {
-                  if (renumber) {
-                    refMesh->setValue(newMarkers, renumbering[cone[c]], faceMarker);
-                  } else {
-                    refMesh->setValue(newMarkers, cone[c], faceMarker);
-                  }
+                  refMesh->setValue(newMarkers, cone[c], faceMarker);
                 }
                 pV.clear();
               }
             }
           }
         }
-#if 0
-        if (refMesh->commSize() > 1) {
-          return ALE::Distribution<Mesh>::distributeMesh(refMesh);
-        }
-#endif
         return refMesh;
       };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {

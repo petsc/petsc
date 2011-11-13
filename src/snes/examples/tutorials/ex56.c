@@ -36,20 +36,19 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Run in 3D
-- Run with refinement
+- Fix 3D refinement with interpolation (markers are wrong, compare ex56_9.out and ex56_10.out)
 - Run in parallel
   - Check scaling with Mark
+
+- Refine and show convergence of correct order automatically (use femTest.py)
+- Fix InitialGuess for arbitrary disc (means making dual application work again)
+- Redo slides from GUCASTutorial for this new example
 - Optimize closure operations
   - The visitor should not be created every time
   - The sizeWithBC operations can be precomputed (for a regular mesh)
 - Sparsify Jacobian
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
-
-- Refine and show convergence of correct order automatically (use femTest.py)
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
-- Redo slides from GUCASTutorial for this new example
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
 - Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
