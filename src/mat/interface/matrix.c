@@ -7446,8 +7446,6 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 @*/
 PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
