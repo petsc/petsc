@@ -441,7 +441,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
     ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
   } else {
-    ierr = VecDuplicate(localX, &localB);CHKERRQ(ierr);
     ierr = VecSet(localB, 0.0);CHKERRQ(ierr);
   }
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -640,10 +639,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   if (B) {
     ierr = DMLocalToGlobalBegin(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
-  } else {
-    ierr = VecDestroy(&localB);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
