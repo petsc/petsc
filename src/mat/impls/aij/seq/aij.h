@@ -81,6 +81,8 @@ typedef struct {
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
+  
+  PetscScalar      *matmult_abdense;          /* used by MatMatMult() */
 } Mat_SeqAIJ;
 
 typedef struct {

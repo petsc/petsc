@@ -915,6 +915,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   ierr = MatDestroy(&a->XtoY);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
+  ierr = PetscFree(a->matmult_abdense);CHKERRQ(ierr); 
 
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
