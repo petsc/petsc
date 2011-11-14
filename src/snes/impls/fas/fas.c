@@ -320,9 +320,6 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
       fas = (SNES_FAS *)fas->next->data;
     }
   }
-  /* by default set the GS smoothers up the chain if one exists on the finest level */
-  if (snes->ops->computegs)
-    ierr = SNESFASSetGS(snes, snes->ops->computegs, snes->gsP, fas->useGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -604,7 +601,7 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
 #define __FUNCT__ "SNESSetUp_FAS"
 PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
-  SNES_FAS       *fas = (SNES_FAS *) snes->data,*tmp;
+  SNES_FAS       *fas = (SNES_FAS *) snes->data;
   PetscErrorCode ierr;
   VecScatter     injscatter;
   PetscInt       dm_levels;
@@ -623,17 +620,41 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   if (!snes->work || snes->nwork != 2) {ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);} /* work vectors used for intergrid transfers */
 
-  /* should call the SNESSetFromOptions() only when appropriate */
-  tmp = fas;
-  while (tmp) {
-    if (tmp->upsmooth) {ierr = SNESSetFromOptions(tmp->upsmooth);CHKERRQ(ierr);}
-    if (tmp->downsmooth) {ierr = SNESSetFromOptions(tmp->downsmooth);CHKERRQ(ierr);}
-    tmp = tmp->next ? (SNES_FAS*) tmp->next->data : 0;
+  /* setup the pre and post smoothers and set their function, jacobian, and gs evaluation routines if the user has neglected this */
+  if (fas->upsmooth) {
+    ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
+    if (snes->ops->computefunction && !fas->upsmooth->ops->computefunction) {
+      ierr = SNESSetFunction(fas->upsmooth, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+    }
+    if (snes->ops->computejacobian && !fas->upsmooth->ops->computejacobian) {
+      ierr = SNESSetJacobian(fas->upsmooth, fas->upsmooth->jacobian, fas->upsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+    }
+   if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
+      ierr = SNESSetGS(fas->upsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+    }
+  }
+  if (fas->downsmooth) {
+    ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);
+    if (snes->ops->computefunction && !fas->downsmooth->ops->computefunction) {
+      ierr = SNESSetFunction(fas->downsmooth, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+    }
+    if (snes->ops->computejacobian && !fas->downsmooth->ops->computejacobian) {
+      ierr = SNESSetJacobian(fas->downsmooth, fas->downsmooth->jacobian, fas->downsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+    }
+   if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
+      ierr = SNESSetGS(fas->downsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+    }
   }
 
-  /* gets the solver ready for solution */
+  /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->next) {
-    if (snes->ops->computegs) {
+    if (snes->ops->computefunction && !fas->next->ops->computefunction) {
+      ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+    }
+    if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
+      ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+    }
+   if (snes->ops->computegs && !fas->next->ops->computegs) {
       ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     }
   }
@@ -739,9 +760,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     }
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
-    if (snes->ops->computefunction) {
-      ierr = SNESSetFunction(fas->downsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
-    }
   }
 
   if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !fas->useGS)) {
@@ -752,9 +770,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESAppendOptionsPrefix(fas->upsmooth,"fas_levels_up_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->upsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
     ierr = SNESSetType(fas->upsmooth, pre_type);CHKERRQ(ierr);
-    if (snes->ops->computefunction) {
-      ierr = SNESSetFunction(fas->upsmooth,PETSC_NULL,snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
-    }
   }
   if (fas->upsmooth) {
     ierr = SNESSetTolerances(fas->upsmooth, 0.0, 0.0, 0.0, fas->max_up_it, 1000);CHKERRQ(ierr);
