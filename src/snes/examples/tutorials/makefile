@@ -561,9 +561,9 @@ runex50_ngmres_fas: #test ex50 with NGMRES preconditioned by FAS with pointwise 
 	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type ngmres \
         -npc_snes_type fas -npc_snes_fas_ngs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6 \
         -lidvelocity 100 -grashof 4e4 \
-         #> ex50_ngmres_fas.tmp 2>&1; \
-	 #  ${DIFF} output/ex50_ngmres_fas.out ex50_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
-         #  ${RM} -f ex50_ngmres_fas.tmp
+         > ex50_ngmres_fas.tmp 2>&1; \
+	   ${DIFF} output/ex50_ngmres_fas.out ex50_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
+           ${RM} -f ex50_ngmres_fas.tmp
 
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
