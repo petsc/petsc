@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine 
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
   if (Jtype == 0){ /* use user provided Jacobian evaluation routine */

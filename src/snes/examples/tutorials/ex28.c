@@ -388,7 +388,7 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMGetMatrix(dau,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMGetMatrix(dak,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

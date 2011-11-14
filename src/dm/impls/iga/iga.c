@@ -71,14 +71,14 @@ PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetMatrix_IGA"
-PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J)
+#define __FUNCT__ "DMCreateMatrix_IGA"
+PetscErrorCode DMCreateMatrix_IGA(DM dm, const MatType mtype, Mat *J)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*J,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

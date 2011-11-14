@@ -123,7 +123,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
@@ -191,7 +191,7 @@ PetscErrorCode  DMDestroy(DM *dm)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMSetUp(DM dm)
@@ -218,11 +218,11 @@ PetscErrorCode  DMSetUp(DM dm)
 .   dm - the DM object to set options for
 
     Options Database:
-.   -dm_preallocate_only: Only preallocate the matrix for DMGetMatrix(), but do not fill it with zeros
+.   -dm_preallocate_only: Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
@@ -263,7 +263,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
     Level: developer
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMView(DM dm,PetscViewer v)
@@ -295,7 +295,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 
     Level: beginner
 
-.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
@@ -322,7 +322,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
 
     Level: beginner
 
-.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
@@ -464,7 +464,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
    
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMRefine(), DMCoarsen()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen()
 
 @*/
 PetscErrorCode  DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
@@ -495,7 +495,7 @@ PetscErrorCode  DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the injection.
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMCreateMatrix(), DMGetInterpolation()
 
 @*/
 PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
@@ -524,7 +524,7 @@ PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
@@ -538,9 +538,9 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix"
+#define __FUNCT__ "DMCreateMatrix"
 /*@C
-    DMGetMatrix - Gets empty Jacobian for a DMDA or DMComposite
+    DMCreateMatrix - Gets empty Jacobian for a DMDA or DMComposite
 
     Collective on DM
 
@@ -569,7 +569,7 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode  DMCreateMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
 
@@ -590,7 +590,7 @@ PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 #undef __FUNCT__
 #define __FUNCT__ "DMSetMatrixPreallocateOnly"
 /*@
-  DMSetMatrixPreallocateOnly - When DMGetMatrix() is called the matrix will be properly
+  DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
 
   Logically Collective on DMDA
@@ -600,7 +600,7 @@ PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 - only - PETSC_TRUE if only want preallocation
 
   Level: developer
-.seealso DMGetMatrix()
+.seealso DMCreateMatrix()
 @*/
 PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 {
@@ -839,7 +839,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/
@@ -1019,7 +1019,7 @@ PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(void**))
@@ -1042,7 +1042,7 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
@@ -1067,7 +1067,7 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
@@ -1090,7 +1090,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
@@ -1116,7 +1116,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
     Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian 
            computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
 @*/
@@ -1143,7 +1143,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/
@@ -1167,7 +1167,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetRhs(), DMSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetRhs(), DMSetMat()
 
 @*/
 PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
@@ -1194,7 +1194,7 @@ PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
@@ -1219,7 +1219,7 @@ PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
@@ -1244,7 +1244,7 @@ PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
@@ -1268,7 +1268,7 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
 @*/
@@ -1299,7 +1299,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/

@@ -670,7 +670,7 @@ PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,v
     
     if (!useFAS) {
       if (!dmmg[i]->B) {
-        ierr = DMGetMatrix(dmmg[i]->dm,dmmg[i]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
+        ierr = DMCreateMatrix(dmmg[i]->dm,dmmg[i]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;

@@ -1424,7 +1424,7 @@ PetscErrorCode FormOperator(DM dm, Options *options)
     Vec X;
 
     ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DMGetMatrix(da, MATAIJ, &J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(da, MATAIJ, &J);CHKERRQ(ierr);
     if (options->dim == 2) {
       ierr = DMDAFormJacobianLocal(da, (DMDALocalFunction1) Jac_Structured_2d_FD, X, J, options);CHKERRQ(ierr);
     } else if (options->dim == 3) {

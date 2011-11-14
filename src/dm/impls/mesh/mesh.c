@@ -332,8 +332,8 @@ PetscErrorCode DMMeshGetCellMatrix(DM dm, const MatType mtype, Mat *J)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetMatrix_Mesh"
-PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Mesh"
+PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 {
   SectionReal            section;
   ISLocalToGlobalMapping ltog;

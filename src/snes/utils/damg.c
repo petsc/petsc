@@ -483,7 +483,7 @@ PetscErrorCode  DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscError
           These are also used if grid sequencing is selected for the linear problem. We should probably turn off grid sequencing
           for the linear problem */
       if (!dmmg[i]->B) {
-	ierr = DMGetMatrix(dmmg[i]->dm,dmmg[nlevels-1]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dmmg[i]->dm,dmmg[nlevels-1]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
 	dmmg[i]->J = dmmg[i]->B;

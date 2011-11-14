@@ -95,7 +95,7 @@
       call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormRHSFunction,       &
      &     user,ierr)
       call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
-      call DMGetMatrix(da,MATAIJ,J,ierr)
+      call DMCreateMatrix(da,MATAIJ,J,ierr)
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
 
       ftime = 1.0

@@ -147,7 +147,7 @@ int main(int argc,char **argv)
     ierr      = MatMPIAIJSetPreallocation(user.J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
     user.A    = user.J;
   } else {
-    ierr      = DMGetMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
+    ierr      = DMCreateMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
     user.A    = user.J;
   }
 

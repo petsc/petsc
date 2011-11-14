@@ -9,8 +9,8 @@ typedef struct  {
 } DM_Redundant;
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetMatrix_Redundant"
-static PetscErrorCode DMGetMatrix_Redundant(DM dm,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Redundant"
+static PetscErrorCode DMCreateMatrix_Redundant(DM dm,const MatType mtype,Mat *J)
 {
   DM_Redundant           *red = (DM_Redundant*)dm->data;
   PetscErrorCode         ierr;
@@ -398,7 +398,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->view               = DMView_Redundant;
   dm->ops->createglobalvector = DMCreateGlobalVector_Redundant;
   dm->ops->createlocalvector  = DMCreateLocalVector_Redundant;
-  dm->ops->getmatrix          = DMGetMatrix_Redundant;
+  dm->ops->getmatrix          = DMCreateMatrix_Redundant;
   dm->ops->destroy            = DMDestroy_Redundant;
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Redundant;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Redundant;
@@ -432,7 +432,7 @@ EXTERN_C_END
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMGetMatrix(), DMCompositeAddDM()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateMatrix(), DMCompositeAddDM()
 
 @*/
 PetscErrorCode DMRedundantCreate(MPI_Comm comm,PetscInt rank,PetscInt N,DM *dm)

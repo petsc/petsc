@@ -170,7 +170,7 @@
 !                         products within Newton-Krylov method
 !
 
-      call DMGetMatrix(da,MATAIJ,J,ierr)
+      call DMCreateMatrix(da,MATAIJ,J,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER                            &
      &     ,'-adiformf_jacobian',                                                 &

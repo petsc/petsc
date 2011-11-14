@@ -2,8 +2,8 @@
 #include "packimpl.h" /*I   "petscdmcomposite.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Composite_Nest"
-static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Composite_Nest"
+static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *J)
 {
   const DM_Composite           *com = (DM_Composite*)dm->data;
   const struct DMCompositeLink *rlink,*clink;
@@ -25,7 +25,7 @@ static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *
     for (j=0,clink=com->next; clink; j++,clink=clink->next) {
       Mat sub = PETSC_NULL;
       if (i == j) {
-        ierr = DMGetMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
+        ierr = DMCreateMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
       } else if (com->FormCoupleLocations) {
         SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
       }
@@ -47,8 +47,8 @@ static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Composite_AIJ"
-static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Composite_AIJ"
+static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -100,7 +100,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
     const PetscInt *cols,*rstarts;
     PetscMPIInt    proc;
 
-    ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
     ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
     const PetscScalar *values;
     PetscMPIInt       proc;
 
-    ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
     ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
@@ -180,8 +180,8 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Composite"
-PetscErrorCode  DMGetMatrix_Composite(DM dm,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Composite"
+PetscErrorCode DMCreateMatrix_Composite(DM dm,const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscBool              usenest;
@@ -190,9 +190,9 @@ PetscErrorCode  DMGetMatrix_Composite(DM dm,const MatType mtype,Mat *J)
   PetscFunctionBegin;
   ierr = PetscStrcmp(mtype,MATNEST,&usenest);CHKERRQ(ierr);
   if (usenest) {
-    ierr = DMGetMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);
   } else {
-    ierr = DMGetMatrix_Composite_AIJ(dm,mtype?mtype:MATAIJ,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_Composite_AIJ(dm,mtype?mtype:MATAIJ,J);CHKERRQ(ierr);
   }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);

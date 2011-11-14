@@ -117,7 +117,7 @@ extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);
 extern PetscErrorCode   DMGetColoring(DM,ISColoringType,const MatType,ISColoring*);
-extern PetscErrorCode   DMGetMatrix(DM, const MatType,Mat*);
+extern PetscErrorCode   DMCreateMatrix(DM,const MatType,Mat*);
 extern PetscErrorCode   DMSetMatrixPreallocateOnly(DM,PetscBool);
 extern PetscErrorCode   DMGetInterpolation(DM,DM,Mat*,Vec*);
 extern PetscErrorCode   DMGetInjection(DM,DM,VecScatter*);

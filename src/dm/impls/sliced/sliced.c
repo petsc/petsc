@@ -14,8 +14,8 @@ typedef struct  {
 } DM_Sliced;
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Sliced" 
-PetscErrorCode  DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Sliced" 
+PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
@@ -262,7 +262,7 @@ PetscErrorCode  DMCreate_Sliced(DM p)
 
   ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
-  p->ops->getmatrix          = DMGetMatrix_Sliced;
+  p->ops->getmatrix          = DMCreateMatrix_Sliced;
   p->ops->destroy            = DMDestroy_Sliced;
   PetscFunctionReturn(0);
 }

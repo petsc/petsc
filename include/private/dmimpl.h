@@ -56,10 +56,10 @@ struct _p_DM {
   Vec                    x;       /* location at which the functions/Jacobian are computed */
   MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */
   VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  MatType                mattype;  /* type of matrix created with DMGetMatrix() */
+  MatType                mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt               bs;
   ISLocalToGlobalMapping ltogmap,ltogmapb;
-  PetscBool              prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */
+  PetscBool              prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                   *data;

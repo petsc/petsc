@@ -122,9 +122,9 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.work4);CHKERRQ(ierr);
 	
   // Get Jacobian matrix structure from the da for the entire thing, da1 
-  ierr = DMGetMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
   // Get the (usual) mass matrix structure from da2 
-  ierr = DMGetMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
 	
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
 	

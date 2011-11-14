@@ -156,7 +156,7 @@ int main(int argc,char **argv)
     SNES snes;
     ISColoring iscoloring;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);

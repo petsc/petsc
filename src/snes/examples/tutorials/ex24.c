@@ -156,7 +156,7 @@ int main(int argc,char **argv)
     ierr   = DMCompositeGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
     ierr   = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr   = DMGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
+    ierr   = DMCreateMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
     ierr   = MatSetColoring(appctx->J,iscoloring);CHKERRQ(ierr);
     ierr   = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr   = DMDASetLocalFunction(da,(DMDALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);

@@ -196,7 +196,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
     if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-    ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
     ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr); 
   }

@@ -62,8 +62,8 @@ PetscErrorCode  DMGetColoring_ADDA(DM dm, ISColoringType ctype,const MatType mty
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_ADDA"
-PetscErrorCode  DMGetMatrix_ADDA(DM dm, const MatType mtype, Mat *mat) 
+#define __FUNCT__ "DMCreateMatrix_ADDA"
+PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat) 
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -96,7 +96,7 @@ PetscErrorCode  DMGetMatrix_ADDA(DM dm, const MatType mtype, Mat *mat)
 
 .keywords: distributed array, matrix
 
-.seealso: DMGetMatrix()
+.seealso: DMCreateMatrix()
 @*/
 PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat) 
 {
@@ -776,7 +776,7 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
   dm->ops->view = DMView;
   dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
   dm->ops->getcoloring = DMGetColoring_ADDA;
-  dm->ops->getmatrix = DMGetMatrix_ADDA;
+  dm->ops->getmatrix = DMCreateMatrix_ADDA;
   dm->ops->getinterpolation = DMGetInterpolation_ADDA;
   dm->ops->refine = DMRefine_ADDA;
   dm->ops->coarsen = DMCoarsen_ADDA;

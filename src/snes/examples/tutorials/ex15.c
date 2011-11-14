@@ -169,7 +169,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* B can be type of MATAIJ,MATBAIJ or MATSBAIJ */
-  ierr = DMGetMatrix(alloc_star ? dastar : da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(alloc_star ? dastar : da,MATAIJ,&B);CHKERRQ(ierr);
 
   A    = B;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);

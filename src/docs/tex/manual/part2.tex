@@ -3174,7 +3174,7 @@ A_{{10}_{10}}   & A_{{11}_{10}} & A_{{10}_{11}} & A_{{11}_{11}} & ...\\
 \end{array} \right).
 \]
 Note that for interlaced storage the number of rows/columns of each
-block must be the same size. Matrices obtained with DMGetMatrix()
+block must be the same size. Matrices obtained with DMCreateMatrix()
 where the DM is a a DMDA are always stored interlaced.
 Block matrices can also be stored using the MATNEST format which holds separate assembled blocks.
 Each of these nested matrices is itself distributed in parallel.

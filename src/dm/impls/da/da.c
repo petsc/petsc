@@ -493,7 +493,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
    Notes: See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for 
        the diagonal and off-diagonal blocks of the matrix
 
-.seealso: DMGetMatrix(), DMDASetBlockFills()
+.seealso: DMCreateMatrix(), DMDASetBlockFills()
 @*/
 PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {

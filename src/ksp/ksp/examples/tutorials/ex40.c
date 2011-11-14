@@ -68,9 +68,9 @@ int main(int Argc,char **Args)
 
   /* construct matrix */
   if( comm_size == 1 ) {
-    ierr = DMGetMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
-    ierr = DMGetMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
   }
 
   /* get local corners for this processor, user is responsible for freeing lcs,lce */

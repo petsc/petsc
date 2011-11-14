@@ -262,7 +262,7 @@ int main(int argc,char **argv)
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
   PetscBool      use_coloring=PETSC_TRUE;
   MatFDColoring  matfdcoloring=0;
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (use_coloring){
     ISColoring     iscoloring;

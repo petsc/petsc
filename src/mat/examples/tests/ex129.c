@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = VecSet(y,one);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   nrhs = 2;

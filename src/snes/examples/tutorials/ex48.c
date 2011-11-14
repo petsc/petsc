@@ -1319,8 +1319,8 @@ static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_THI_Tridiagonal"
-static PetscErrorCode DMGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
+static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   Mat A;
@@ -1501,7 +1501,7 @@ int main(int argc,char *argv[])
     ierr = DMDestroy(&da);CHKERRQ(ierr);
   }
   if (thi->tridiagonal) {
-    (DMMGGetDM(dmmg))->ops->getmatrix = DMGetMatrix_THI_Tridiagonal;
+    (DMMGGetDM(dmmg))->ops->getmatrix = DMCreateMatrix_THI_Tridiagonal;
   }
   {
     /* Use the user-defined matrix type on all but the coarse level */

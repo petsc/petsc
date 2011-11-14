@@ -284,7 +284,7 @@ PetscErrorCode DMCreate_Cartesian(DM dm)
   dm->ops->createlocalvector  = 0; /* DMCreateLocalVector_Cartesian; */
   dm->ops->getinterpolation   = DMGetInterpolation_Cartesian;
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = 0; /* DMGetMatrix_Cartesian; */
+  dm->ops->getmatrix          = 0; /* DMCreateMatrix_Cartesian; */
   dm->ops->refine             = DMRefine_Cartesian;
   dm->ops->coarsen            = DMCoarsen_Cartesian;
   dm->ops->refinehierarchy    = 0;

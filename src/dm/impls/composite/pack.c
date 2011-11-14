@@ -1084,7 +1084,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
   p->ops->getinterpolation                = DMGetInterpolation_Composite;
-  p->ops->getmatrix                       = DMGetMatrix_Composite;
+  p->ops->getmatrix                       = DMCreateMatrix_Composite;
   p->ops->getcoloring                     = DMGetColoring_Composite;
   p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
   p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;

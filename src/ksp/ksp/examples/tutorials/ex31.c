@@ -358,7 +358,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);

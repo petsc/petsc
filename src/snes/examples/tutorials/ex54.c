@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da */
-  ierr = DMGetMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
   ierr = MatDuplicate(user.M,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);

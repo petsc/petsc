@@ -820,7 +820,7 @@ int main(int argc, char **argv)
                          products within Newton-Krylov method
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* J can be type of MATAIJ, MATBAIJ or MATSBAIJ */
-  ierr = DMGetMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
   ierr = SNESSetJacobian(snes, A, J, SNESMeshFormJacobian, &user);CHKERRQ(ierr);
 

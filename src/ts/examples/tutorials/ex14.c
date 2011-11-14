@@ -1682,7 +1682,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(&da3);CHKERRQ(ierr);
   ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);

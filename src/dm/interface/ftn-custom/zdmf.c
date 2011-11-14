@@ -7,12 +7,14 @@
 #define dmsetinitialguess_           DMSETINITIALGUESS
 #define dmsetfunction_               DMSETFUNCTION
 #define dmsetjacobian_               DMSETJACOBIAN
+#define dmcreatematrix_              DMCREATEMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmview_                      dmview
 #define dmgetcoloring_               dmgetcoloring
 #define dmsetinitialguess_           dmsetinitialguess
 #define dmsetfunction_               dmsetfunction
 #define dmsetjacobian_               dmsetjacobian
+#define dmcreatematrix_              dmcreatematrix
 #endif
 
 static PetscErrorCode ourdminitialguess(DM dm,Vec x)
@@ -80,5 +82,15 @@ void PETSC_STDCALL dmview_(DM *da,PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = DMView(*da,v);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+void PETSC_STDCALL dmcreatematrix_(DM *dm,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(mat_type,len,t);
+  *ierr = DMCreateMatrix(*dm,t,J);
+  FREECHAR(mat_type,t);
 }
 EXTERN_C_END

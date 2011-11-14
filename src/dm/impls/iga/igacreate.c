@@ -27,7 +27,7 @@ PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 /* External function declarations here */
 extern PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec);
-extern PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_IGA(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Vec g);
@@ -66,7 +66,7 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = DMGetMatrix_IGA;
+  dm->ops->getmatrix          = DMCreateMatrix_IGA;
   dm->ops->getinterpolation   = 0 /* DMGetInterpolation_IGA */;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
