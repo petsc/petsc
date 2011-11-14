@@ -13,6 +13,25 @@
 #include <sieve/Distribution.hh>
 #include <sieve/Generator.hh>
 
+/*S
+  DMMESH - DM object that encapsulates an unstructured mesh. This uses the Sieve package to represent the mesh.
+
+  Level: intermediate
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMMeshCreate()
+S*/
+/*S
+  DMCARTESIAN - DM object that encapsulates a structured, Cartesian mesh in any dimension. This is currently a
+  replacement for DMDA in dimensions greater than 3.
+
+  Level: intermediate
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMCartesianCreate(), DMDA
+S*/
 extern PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
 
 extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
