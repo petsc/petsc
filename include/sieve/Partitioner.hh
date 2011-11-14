@@ -42,10 +42,7 @@ extern "C" {
 }
 #endif
 #ifdef PETSC_HAVE_PARMETIS
-extern "C" {
   #include <parmetis.h>
-  extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
-}
 #endif
 #ifdef PETSC_HAVE_HMETIS
 extern "C" {
@@ -235,7 +232,12 @@ namespace ALE {
           }
           if (vtxdist[1] == vtxdist[nparts]) {
             if (partition->commRank() == 0) {
-              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+              /* Parameters changes (Matt, check to make sure it's right):
+               * (removed) numflags
+               * (changed) options -> NULL implies all defaults (only for
+               * METIS, not ParMETIS!
+               */
+              METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
               if (partition->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
             }
           } else {
@@ -1847,7 +1849,10 @@ namespace ALE {
             }
             if (vtxdist[1] == vtxdist[nparts]) {
               if (bundle->commRank() == 0) {
-                METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+                /* Parameters changes (Matt, check to make sure it's right):
+                 * (removed) numflags
+                 */
+                METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
                 if (bundle->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
               }
             } else {
