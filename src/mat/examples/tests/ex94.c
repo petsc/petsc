@@ -24,7 +24,7 @@ int main(int argc,char **args)
   char           file[4][128];
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
-  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_FALSE;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
   
@@ -242,7 +242,12 @@ int main(int argc,char **args)
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
       ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt);CHKERRQ(ierr);
       ierr = MatEqual(C,RARt,&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PtAP != RARt");
+      if (!equal) {
+        PetscReal norm;
+        ierr = MatAXPY(RARt,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* RARt = -RARt + C */
+        ierr = MatNorm(RARt,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        if (norm > 1.e-13) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"|PtAP - RARt| = %g",norm);
+      }
       ierr = MatDestroy(&R);CHKERRQ(ierr);
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);
     }

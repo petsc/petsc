@@ -258,13 +258,13 @@ typedef struct {PetscScalar x,y,z;} DMDACoor3d;
     
 extern PetscErrorCode   DMDAGetLocalInfo(DM,DMDALocalInfo*);
 typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
-extern PetscErrorCode   DMDAFormFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
-extern PetscErrorCode   DMDAFormFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
+extern PetscErrorCode   DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
+extern PetscErrorCode   DMDAComputeFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
 extern PetscErrorCode   DMDAFormJacobianLocal(DM, DMDALocalFunction1, Vec, Mat, void *);
-extern PetscErrorCode   DMDAFormFunction1(DM,Vec,Vec,void*);
-extern PetscErrorCode   DMDAFormFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
-extern PetscErrorCode   DMDAFormFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
-extern PetscErrorCode   DMDAFormFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
+extern PetscErrorCode   DMDAComputeFunction1(DM,Vec,Vec,void*);
+extern PetscErrorCode   DMDAComputeFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
+extern PetscErrorCode   DMDAComputeFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
+extern PetscErrorCode   DMDAComputeFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
 extern PetscErrorCode   DMDAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
 extern PetscErrorCode   DMDAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
 extern PetscErrorCode   DMDAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
@@ -341,7 +341,7 @@ extern PetscErrorCode   DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (
 #  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,0)
 #endif
 
-extern PetscErrorCode   DMDAFormFunctioniTest1(DM,void*);
+extern PetscErrorCode   DMDAComputeFunctioniTest1(DM,void*);
 extern PetscErrorCode   DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
 extern PetscErrorCode   DMDASetBlockFills(DM,PetscInt*,PetscInt*);
 extern PetscErrorCode   DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);

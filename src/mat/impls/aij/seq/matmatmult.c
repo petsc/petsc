@@ -18,26 +18,26 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
+    /* ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); */
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
+  /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ"
+PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
 {
   PetscErrorCode     ierr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  PetscInt           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
-  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
-  MatScalar          *ca;
+  PetscInt           *ai=Ai,*aj=Aj,*bi=Bi,*bj=Bj,*bjj,*ci,*cj;
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,ndouble=0;
   PetscBT            lnkbt;
-  PetscReal          afill;
 
   PetscFunctionBegin;
   /* Allocate ci array, arrays for fill computation and */
@@ -58,10 +58,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
     j    = anzi;
-    aj   = a->j + ai[i];
+    aj   = Aj + ai[i];
     while (j){/* assume cols are almost in increasing order, starting from its end saves computation */
       j--;
-      brow = *(aj + j); 
+      brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
@@ -73,7 +73,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
       ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
-      nspacedouble++;
+      ndouble++;
     }
 
     /* Copy data into free space, then initialize lnk */
@@ -81,7 +81,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
-
     ci[i+1] = ci[i] + cnzi;
   }
 
@@ -91,6 +90,27 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
+    
+  *Ci           = ci;
+  *Cj           = cj;
+  *nspacedouble = ndouble;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*ci,*cj;
+  PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
+  MatScalar      *ca;
+  PetscReal      afill;
+
+  PetscFunctionBegin;
+  /* Get ci and cj */
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -126,7 +146,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFunctionReturn(0);
 }
 
-
+#define DENSEAXPY
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -138,39 +158,77 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   PetscInt       am=A->rmap->N,cm=C->rmap->N;
-  PetscInt       i,j,k,anzi,bnzi,cnzi,brow,nextb;
-  MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
-
+  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
+#if defined(DENSEAXPY)
+  PetscScalar    *ab_dense;
+#else
+  PetscInt       nextb;
+#endif
+  
   PetscFunctionBegin;  
+#if defined(DENSEAXPY)
+  ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&ab_dense);CHKERRQ(ierr);//mv to symbolic
+  ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);//mv to symbolic
+#endif
+
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
   /* Build the ith row in C by summing over nonzero columns in A, */
   /* the rows of B corresponding to nonzeros of A. */
+#if defined(DENSEAXPY)
   for (i=0;i<am;i++) {
     anzi = ai[i+1] - ai[i];
+    cnzi = ci[i+1] - ci[i];
     for (j=0;j<anzi;j++) {
-      brow = *aj++;
+      brow = aj[j];
       bnzi = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       baj  = ba + bi[brow];
+      /* perform dense axpy */
+      for (k=0; k<bnzi; k++) {
+        ab_dense[bjj[k]] += aa[j]*baj[k];
+      }
+      flops += 2*bnzi;
+    }
+    for (k=0; k<cnzi; k++) {
+      ca[k]          += ab_dense[cj[k]];
+      ab_dense[cj[k]] = 0.0; /* zero ab_dense */
+    }
+    flops += cnzi;
+    aj += anzi; aa += anzi;
+    cj += cnzi; ca += cnzi;
+  }
+#else
+  for (i=0;i<am;i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = ci[i+1] - ci[i];
+    for (j=0;j<anzi;j++) {
+      brow = aj[j];
+      bnzi = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      baj  = ba + bi[brow];
+      /* perform sparse axpy */
       nextb = 0;
       for (k=0; nextb<bnzi; k++) {
         if (cj[k] == bjj[nextb]){ /* ccol == bcol */
-          ca[k] += (*aa)*baj[nextb++];
+          ca[k] += aa[j]*baj[nextb++];
         }
       }
       flops += 2*bnzi;
-      aa++;
     }
-    cnzi = ci[i+1] - ci[i];
-    ca += cnzi;
-    cj += cnzi;
+    aj += anzi; aa += anzi;
+    cj += cnzi; ca += cnzi;
   }
+#endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
-
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  
+#if defined(DENSEAXPY) 
+  ierr = PetscFree(ab_dense);CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -44,9 +44,9 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDAComputeJacobianWithAdic"
+#define __FUNCT__ "SNESDMDAComputeJacobianWithAdic"
 /*@
-    SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
+    SNESDMDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() as long as the user context has a DMDA as
     its first record and DMDASetLocalAdicFunction() has been called.  
 
@@ -65,7 +65,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 .seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDMDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;

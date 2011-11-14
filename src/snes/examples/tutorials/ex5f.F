@@ -156,7 +156,7 @@
      &         g_FormFunctionLocal,ierr)
 #endif
       call SNESSetDM(snes,da,ierr)
-      call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
+      call SNESSetFunction(snes,r,SNESDMDAComputeFunction,da,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,7 +188,7 @@
       A = J
 #endif
 
-      call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                        &
+      call SNESSetJacobian(snes,A,J,SNESDMDAComputeJacobian,                        &
      &                       da,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER                            &
@@ -198,7 +198,7 @@
         call DMCreateColoring(da,IS_COLORING_GHOSTED,                                 &
      &                     coloring,MATAIJ,ierr)
         call MatSetColoring(J,coloring,ierr)
-        call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &
+        call SNESSetJacobian(snes,A,J,SNESDMDAComputeJacobianWithAdifor,            &
      &                         da,ierr)
         call ISColoringDestroy(coloring,ierr)
       endif

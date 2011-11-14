@@ -281,7 +281,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DMCompositeGetAccess(packer,U,PETSC_NULL,PETSC_NULL,&vglambda);CHKERRQ(ierr);
 
   /* G() */
-  ierr = DMDAFormFunction1(da,vu,vfu,vw);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(da,vu,vfu,vw);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_ADIC)
   if (useadic) { 

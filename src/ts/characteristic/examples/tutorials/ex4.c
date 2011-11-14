@@ -333,7 +333,7 @@ int DoSolve(DMMG *dmmg)
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* Evaluate operator (I + \Delta t/2 L) u^-  = X^- */
-    ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
+    ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
     /* Advect Xold into Xstar */
     ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
     /* Xstar -> Xold */

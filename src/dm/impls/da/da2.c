@@ -178,7 +178,7 @@ static PetscErrorCode DMDAFunction(DM dm,Vec x,Vec F)
   ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMDAFormFunction1(dm,localX,F,dm->ctx);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(dm,localX,F,dm->ctx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -196,7 +196,12 @@ static PetscErrorCode DMDAFunction(DM dm,Vec x,Vec F)
 
    Level: intermediate
 
-   Notes: The routine SNESDAFormFunction() uses this the cached function to evaluate the user provided function.
+   Notes: 
+      If you used SNESSetFunction(snes,r,SNESDMDAComputeFunction,ctx); then the context passed to your function is the ctx set here.
+
+      If you use SNESSetDM() and did not use SNESSetFunction() then the context passed to your function is the context set with DMSetApplicationContext()
+
+   Developer Notes: It is possibly confusing which context is passed to the user function, it would be nice to unify them somehow.
 
 .keywords:  distributed array, refine
 
@@ -491,7 +496,7 @@ static PetscErrorCode DMDAJacobian(DM dm,Vec x,Mat A,Mat B, MatStructure *str)
 
    Level: intermediate
 
-   Notes: The routine SNESDAFormFunction() uses this the cached function to evaluate the user provided function.
+   Notes: The routine SNESDMDAComputeFunction() uses this the cached function to evaluate the user provided function.
 
 .keywords:  distributed array, refine
 
@@ -568,9 +573,9 @@ PetscErrorCode  DMDAGetLocalJacobian(DM da,DMDALocalFunction1 *lj)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunction"
+#define __FUNCT__ "DMDAComputeFunction"
 /*@
-    DMDAFormFunction - Evaluates a user provided function on each processor that 
+    DMDAComputeFunction - Evaluates a user provided function on each processor that 
         share a DMDA
 
    Input Parameters:
@@ -581,14 +586,14 @@ PetscErrorCode  DMDAGetLocalJacobian(DM da,DMDALocalFunction1 *lj)
 
     Notes: Does NOT do ghost updates on vu upon entry
 
-           This should eventually replace DMDAFormFunction1
+           This should eventually replace DMDAComputeFunction1
 
     Level: advanced
 
 .seealso: DMDAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode  DMDAFormFunction(DM da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu,void *w)
+PetscErrorCode  DMDAComputeFunction(DM da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u,*fu;
@@ -608,9 +613,9 @@ PetscErrorCode  DMDAFormFunction(DM da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunctionLocal"
+#define __FUNCT__ "DMDAComputeFunctionLocal"
 /*@C 
-   DMDAFormFunctionLocal - This is a universal function evaluation routine for
+   DMDAComputeFunctionLocal - This is a universal function evaluation routine for
    a local DM function.
 
    Collective on DMDA
@@ -628,7 +633,7 @@ PetscErrorCode  DMDAFormFunction(DM da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode  DMDAFormFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
+PetscErrorCode  DMDAComputeFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
 {
   Vec            localX;
   DMDALocalInfo  info;
@@ -655,9 +660,9 @@ PetscErrorCode  DMDAFormFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunctionLocalGhost"
+#define __FUNCT__ "DMDAComputeFunctionLocalGhost"
 /*@C 
-   DMDAFormFunctionLocalGhost - This is a universal function evaluation routine for
+   DMDAComputeFunctionLocalGhost - This is a universal function evaluation routine for
    a local DM function, but the ghost values of the output are communicated and added.
 
    Collective on DMDA
@@ -675,7 +680,7 @@ PetscErrorCode  DMDAFormFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode  DMDAFormFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
+PetscErrorCode  DMDAComputeFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
 {
   Vec            localX, localF;
   DMDALocalInfo  info;
@@ -708,9 +713,9 @@ PetscErrorCode  DMDAFormFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunction1"
+#define __FUNCT__ "DMDAComputeFunction1"
 /*@
-    DMDAFormFunction1 - Evaluates a user provided function on each processor that 
+    DMDAComputeFunction1 - Evaluates a user provided function on each processor that 
         share a DMDA
 
    Input Parameters:
@@ -726,7 +731,7 @@ PetscErrorCode  DMDAFormFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X
 .seealso: DMDAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode  DMDAFormFunction1(DM da,Vec vu,Vec vfu,void *w)
+PetscErrorCode  DMDAComputeFunction1(DM da,Vec vu,Vec vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u,*fu;
@@ -749,8 +754,8 @@ PetscErrorCode  DMDAFormFunction1(DM da,Vec vu,Vec vfu,void *w)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunctioniTest1"
-PetscErrorCode  DMDAFormFunctioniTest1(DM da,void *w)
+#define __FUNCT__ "DMDAComputeFunctioniTest1"
+PetscErrorCode  DMDAComputeFunctioniTest1(DM da,void *w)
 {
   Vec            vu,fu,fui;
   PetscErrorCode ierr;
@@ -769,12 +774,12 @@ PetscErrorCode  DMDAFormFunctioniTest1(DM da,void *w)
   ierr = DMGetGlobalVector(da,&fu);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&fui);CHKERRQ(ierr);
   
-  ierr = DMDAFormFunction1(da,vu,fu,w);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(da,vu,fu,w);CHKERRQ(ierr);
 
   ierr = VecGetArray(fui,&ui);CHKERRQ(ierr);
   ierr = VecGetLocalSize(fui,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = DMDAFormFunctioni1(da,i,vu,ui+i,w);CHKERRQ(ierr);
+    ierr = DMDAComputeFunctioni1(da,i,vu,ui+i,w);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(fui,&ui);CHKERRQ(ierr);
 
@@ -791,9 +796,9 @@ PetscErrorCode  DMDAFormFunctioniTest1(DM da,void *w)
 }  
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunctioni1"
+#define __FUNCT__ "DMDAComputeFunctioni1"
 /*@
-    DMDAFormFunctioni1 - Evaluates a user provided point-wise function
+    DMDAComputeFunctioni1 - Evaluates a user provided point-wise function
 
    Input Parameters:
 +    da - the DM that defines the grid
@@ -809,7 +814,7 @@ PetscErrorCode  DMDAFormFunctioniTest1(DM da,void *w)
 .seealso: DMDAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode  DMDAFormFunctioni1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
+PetscErrorCode  DMDAComputeFunctioni1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u;
@@ -835,9 +840,9 @@ PetscErrorCode  DMDAFormFunctioni1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAFormFunctionib1"
+#define __FUNCT__ "DMDAComputeFunctionib1"
 /*@
-    DMDAFormFunctionib1 - Evaluates a user provided point-block function
+    DMDAComputeFunctionib1 - Evaluates a user provided point-block function
 
    Input Parameters:
 +    da - the DM that defines the grid
@@ -853,7 +858,7 @@ PetscErrorCode  DMDAFormFunctioni1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void
 .seealso: DMDAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode  DMDAFormFunctionib1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
+PetscErrorCode  DMDAComputeFunctionib1(DM da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u;
@@ -951,7 +956,7 @@ EXTERN_C_END
 
     Notes: Does NOT do ghost updates on vu upon entry
 
-.seealso: DMDAFormFunction1()
+.seealso: DMDAComputeFunction1()
 
 @*/
 PetscErrorCode  DMDAComputeJacobian1WithAdic(DM da,Vec vu,Mat J,void *w)
@@ -1012,7 +1017,7 @@ PetscErrorCode  DMDAComputeJacobian1WithAdic(DM da,Vec vu,Mat J,void *w)
 
    Level: advanced
 
-.seealso: DMDAFormFunction1()
+.seealso: DMDAComputeFunction1()
 
 @*/
 PetscErrorCode  DMDAMultiplyByJacobian1WithAdic(DM da,Vec vu,Vec v,Vec f,void *w)
@@ -1076,7 +1081,7 @@ PetscErrorCode  DMDAMultiplyByJacobian1WithAdic(DM da,Vec vu,Vec v,Vec f,void *w
 
     Level: advanced
 
-.seealso: DMDAFormFunction1()
+.seealso: DMDAComputeFunction1()
 
 @*/
 PetscErrorCode  DMDAComputeJacobian1(DM da,Vec vu,Mat J,void *w)
@@ -1109,7 +1114,7 @@ PetscErrorCode  DMDAComputeJacobian1(DM da,Vec vu,Mat J,void *w)
 
     Notes: Does NOT do ghost updates on vu upon entry
 
-.seealso: DMDAFormFunction1()
+.seealso: DMDAComputeFunction1()
 
 */
 PetscErrorCode  DMDAComputeJacobian1WithAdifor(DM da,Vec vu,Mat J,void *w)
@@ -1223,7 +1228,7 @@ PetscErrorCode  DMDAFormJacobianLocal(DM da, DMDALocalFunction1 func, Vec X, Mat
 
    Level: advanced
 
-.seealso: DMDAFormFunction1(), DMDAMultiplyByJacobian1WithAdifor(), DMDAMultiplyByJacobian1WithAdic()
+.seealso: DMDAComputeFunction1(), DMDAMultiplyByJacobian1WithAdifor(), DMDAMultiplyByJacobian1WithAdic()
 
 @*/
 PetscErrorCode  DMDAMultiplyByJacobian1WithAD(DM da,Vec u,Vec v,Vec f,void *w)
@@ -1264,7 +1269,7 @@ PetscErrorCode  DMDAMultiplyByJacobian1WithAD(DM da,Vec u,Vec v,Vec f,void *w)
 
    Level: advanced
 
-.seealso: DMDAFormFunction1()
+.seealso: DMDAComputeFunction1()
 
 @*/
 PetscErrorCode  DMDAMultiplyByJacobian1WithAdifor(DM da,Vec u,Vec v,Vec f,void *w)

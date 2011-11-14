@@ -1,4 +1,4 @@
-static char help[] = "Stokes Problem in 2d and 3d.\n\
+static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
 We solve the  Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMMESH) to discretize it.\n\
 The command line options include:\n\
@@ -14,7 +14,17 @@ element method on an unstructured mesh. The weak form equations are
 We start with homogeneous Dirichlet conditions. We will expand this as the set
 of test problems is developed.
 
-Organization of Integration Routine:
+Discretization:
+
+We use a Python script to generate a tabulation of the finite element basis
+functions at quadrature points, which we put in a C header file. The generic
+command would be:
+
+    bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex56.h
+
+We can currently generate an arbitrary order Lagrange element. The underlying
+FIAT code is capable of handling more exotic elements, but these have not been
+tested with this code.
 
 Field Data:
 
@@ -36,25 +46,28 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Run in 3D
+- Fix 3D refinement with interpolation (markers are wrong, compare ex56_9.out and ex56_10.out)
 - Run in parallel
   - Check scaling with Mark
+
+- Refine and show convergence of correct order automatically (use femTest.py)
+- Fix InitialGuess for arbitrary disc (means making dual application work again)
+- Redo slides from GUCASTutorial for this new example
 - Optimize closure operations
   - The visitor should not be created every time
   - The sizeWithBC operations can be precomputed (for a regular mesh)
 - Sparsify Jacobian
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
-
-- Refine and show convergence of correct order automatically (use femTest.py)
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
-- Redo slides from GUCASTutorial for this new example
 - Make an interface for PetscSection+IS to represent a partition, then you can use this to distribute dependent objects
   - In general, we want IS+PetscSection to replace SectionInt
-- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
 
-- Improve DMDA conversion to get edges
-- Setup FV problem
+Possible new examples:
+
+- Hexahedral Stokes example
+  - Improve DMDA conversion to get edges
+- A Finite Volume problem
+- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
 */
 
 #include <petscdmmesh.h>
@@ -212,7 +225,7 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
 
     u = x^2 + y^2
     v = y^2 + z^2
-    w = 2 x^2 + 2 y^2 - 2(x+y)z
+    w = x^2 + y^2 - 2(x+y)z
     p = x + y + z - 3/2
     f_x = f_y = f_z = 3
 
@@ -230,7 +243,7 @@ PetscScalar quadratic_v_3d(const PetscReal x[]) {
 };
 
 PetscScalar quadratic_w_3d(const PetscReal x[]) {
-  return 2.0*x[0]*x[0] + 2.0*x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+  return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 };
 
 PetscScalar linear_p_3d(const PetscReal x[]) {
@@ -1171,7 +1184,7 @@ int main(int argc, char **argv)
 
   ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
-  ierr = SNESSetJacobian(snes, A, J, SNESMeshFormJacobian, &user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
   ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
@@ -1179,7 +1192,7 @@ int main(int argc, char **argv)
 
   ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, SNESDMMeshComputeFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
@@ -1208,7 +1221,7 @@ int main(int argc, char **argv)
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESMeshFormFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESDMMeshComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
@@ -1218,10 +1231,10 @@ int main(int argc, char **argv)
       Vec          b;
       MatStructure flag;
 
-      ierr = SNESMeshFormJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = SNESDMMeshComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-      ierr = SNESMeshFormFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = SNESDMMeshComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);

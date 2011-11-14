@@ -1028,7 +1028,7 @@ int main(int argc, char **argv)
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
     }
-    ierr = SNESMeshFormFunction(snes, X, F, &user);CHKERRQ(ierr);
+    ierr = SNESDMMeshComputeFunction(snes, X, F, &user);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
   }
@@ -1051,7 +1051,7 @@ int main(int argc, char **argv)
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
     }
-    ierr = SNESMeshFormJacobian(snes, X, &J, &J, &flag, &user);CHKERRQ(ierr);
+    ierr = SNESDMMeshComputeJacobian(snes, X, &J, &J, &flag, &user);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }

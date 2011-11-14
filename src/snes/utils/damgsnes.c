@@ -129,7 +129,7 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMDAFormFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -154,7 +154,7 @@ PetscErrorCode DMMGFormFunctionGhost(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = VecSet(localF, 0.0);CHKERRQ(ierr);
-  ierr = DMDAFormFunction1(da,localX,localF,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(da,localX,localF,dmmg->user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
@@ -201,7 +201,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMDAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
@@ -211,9 +211,9 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
 #include <private/snesimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDAFormFunction"
+#define __FUNCT__ "SNESDMDAComputeFunction"
 /*@C 
-   SNESDAFormFunction - This is a universal function evaluation routine that
+   SNESDMDAComputeFunction - This is a universal function evaluation routine that
    may be used with SNESSetFunction(). Must be used with SNESSetDM().
 
    Collective on SNES
@@ -230,7 +230,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
           SNESSetFunction(), SNESSetJacobian(), SNESSetDM()
 
 @*/
-PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode  SNESDMDAComputeFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
@@ -238,7 +238,7 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscInt       N,n;
   
   PetscFunctionBegin;
-  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFuntion(snes,SNESDAFormFunction,) without also calling SNESSetDM() to set the DMDA context");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFuntion(snes,SNESDMDAComputeFunction,) without also calling SNESSetDM() to set the DMDA context");
 
   /* determine whether X=localX */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMDAFormFunction1(da,localX,F,ptr);CHKERRQ(ierr);
+  ierr = DMDAComputeFunction1(da,localX,F,ptr);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
@@ -265,9 +265,9 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
 #if defined(PETSC_HAVE_SIEVE)
 #undef __FUNCT__
-#define __FUNCT__ "SNESMeshFormFunction"
+#define __FUNCT__ "SNESDMMeshComputeFunction"
 /*@C
-  SNESMeshFormFunction - This is a universal function evaluation routine that
+  SNESDMMeshComputeFunction - This is a universal function evaluation routine that
   may be used with SNESSetFunction() as long as the user context has a DMMesh
   as its first record and the user has called DMMeshSetLocalFunction().
 
@@ -278,13 +278,13 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 . X - input vector
 . F - function vector
 - ptr - pointer to a structure that must have a DMMesh as its first entry.
-        This ptr must have been passed into SNESMeshFormFunction() as the context.
+        This ptr must have been passed into SNESDMMeshComputeFunction() as the context.
 
   Level: intermediate
 
 .seealso: DMMeshSetLocalFunction(), DMMeshSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 @*/
-PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
+PetscErrorCode SNESDMMeshComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
 {
   DM               dm = *(DM*) ptr;
   PetscErrorCode (*lf)(DM, Vec, Vec, void *);
@@ -296,7 +296,7 @@ PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
-  if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESMeshFormFunction,) without the DMMesh context");
+  if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESDMMeshComputeFunction,) without the DMMesh context");
   PetscValidHeaderSpecific(dm, DM_CLASSID, 4);
 
   /* determine whether X = localX */
@@ -329,9 +329,9 @@ PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
 
 #if defined(PETSC_HAVE_SIEVE)
 #undef __FUNCT__
-#define __FUNCT__ "SNESMeshFormJacobian"
+#define __FUNCT__ "SNESDMMeshComputeJacobian"
 /*
-  SNESMeshFormJacobian - This is a universal Jacobian evaluation routine that
+  SNESDMMeshComputeJacobian - This is a universal Jacobian evaluation routine that
   may be used with SNESSetJacobian() as long as the user context has a DMMesh
   as its first record and the user has called DMMeshSetLocalJacobian().
 
@@ -344,13 +344,13 @@ PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
 . B - Jacobian used in preconditioner (usally same as J)
 . flag - indicates if the matrix changed its structure
 - ptr - pointer to a structure that must have a DMMesh as its first entry.
-        This ptr must have been passed into SNESMeshFormFunction() as the context.
+        This ptr must have been passed into SNESDMMeshComputeFunction() as the context.
 
   Level: intermediate
 
 .seealso: DMMeshSetLocalFunction(), DMMeshSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 */
-PetscErrorCode SNESMeshFormJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
+PetscErrorCode SNESDMMeshComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
 {
   DM               dm = *(DM*) ptr;
   PetscErrorCode (*lj)(DM, Vec, Mat, void *);
@@ -442,9 +442,9 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDAComputeJacobianWithAdifor"
+#define __FUNCT__ "SNESDMDAComputeJacobianWithAdifor"
 /*
-    SNESDAComputeJacobianWithAdifor - This is a universal Jacobian evaluation routine
+    SNESDMDAComputeJacobianWithAdifor - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() from Fortran as long as the user context has 
     a DMDA as its first record and DMDASetLocalAdiforFunction() has been called.  
 
@@ -463,7 +463,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 .seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
-PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDMDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;
@@ -486,9 +486,9 @@ PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,Ma
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDAComputeJacobian"
+#define __FUNCT__ "SNESDMDAComputeJacobian"
 /*
-   SNESDAComputeJacobian - This is a universal Jacobian evaluation routine for a
+   SNESDMDAComputeJacobian - This is a universal Jacobian evaluation routine for a
    locally provided Jacobian. Must be used with SNESSetDM().
 
    Collective on SNES
@@ -506,7 +506,7 @@ PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,Ma
 .seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian(), SNESSetDM()
 
 */
-PetscErrorCode  SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDMDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = snes->dm;
   PetscErrorCode ierr;
@@ -1006,7 +1006,7 @@ PetscErrorCode DMMGFunctioni(void* ctx,PetscInt i,Vec u,PetscScalar* r)
   ierr = DMDAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
   ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
-  ierr = DMDAFormFunctioni1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeFunctioni1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1024,7 +1024,7 @@ PetscErrorCode DMMGFunctionib(PetscInt i,Vec u,PetscScalar* r,void* ctx)
   ierr = DMDAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
   ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
-  ierr = DMDAFormFunctionib1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeFunctionib1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
