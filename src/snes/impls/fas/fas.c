@@ -612,7 +612,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
   }
 
-  ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+  ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
 
   /* setup the pre and post smoothers and set their function, jacobian, and gs evaluation routines if the user has neglected this */
   if (fas->upsmooth) {
@@ -780,6 +780,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   if (monflg) {
     fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
     /* set the monitors for the upsmoother and downsmoother */
+    ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->upsmooth)   ierr = SNESMonitorSet(fas->upsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->downsmooth) ierr = SNESMonitorSet(fas->downsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -893,6 +894,11 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
     }
   } else if (snes->pc) {
     ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(fas->downsmooth,&reason);CHKERRQ(ierr);
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   }
   if (fas->next) {
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
@@ -967,6 +973,11 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
       }
     } else if (snes->pc) {
       ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(fas->downsmooth,&reason);CHKERRQ(ierr);
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     }
   }
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
