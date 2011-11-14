@@ -6,8 +6,6 @@
 PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
-  char           typeName[256];
   DM_DA          *dd = (DM_DA*)da->data;
   PetscInt       refine = 0;
   PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE;
@@ -31,7 +29,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     negativeMNP = PETSC_TRUE;
   }
 
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA Options","DMDA");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMDA Options");CHKERRQ(ierr);
     if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,PETSC_NULL);CHKERRQ(ierr);}
     if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,PETSC_NULL);CHKERRQ(ierr);}
     if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,PETSC_NULL);CHKERRQ(ierr);}
@@ -44,16 +42,8 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
 
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DMSetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(da,typeName);CHKERRQ(ierr);
-    }
     if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,PETSC_NULL);CHKERRQ(ierr);}
-
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
     if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){

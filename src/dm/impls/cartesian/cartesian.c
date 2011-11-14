@@ -239,24 +239,16 @@ PetscErrorCode DMCartesianGetSectionReal(DM dm, const char name[], SectionReal *
 #define __FUNCT__ "DMSetFromOptions_Cartesian"
 PetscErrorCode  DMSetFromOptions_Cartesian(DM dm)
 {
-  /* DM_Mesh       *mesh = (DM_Mesh *) dm->data; */
   char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMCartesian Options", "DMCartesian");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMCartesian Options");CHKERRQ(ierr);
     /* Handle DMCartesian refinement */
     /* Handle associated vectors */
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(dm, typeName);CHKERRQ(ierr);
-    }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

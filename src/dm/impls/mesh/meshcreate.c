@@ -6,21 +6,14 @@
 #define __FUNCT__ "DMSetFromOptions_Mesh"
 PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 {
-  //DM_Mesh       *mesh = (DM_Mesh *) dm->data;
-  char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMMesh Options", "DMMesh");CHKERRQ(ierr);
+  ierr = PetscOptionsHead "DMMesh Options");CHKERRQ(ierr);
     /* Handle DMMesh refinement */
     /* Handle associated vectors */
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(dm, typeName);CHKERRQ(ierr);
-    }
     /* Handle viewing */
     ierr = PetscOptionsBool("-mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
@@ -44,9 +37,7 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
     if (flg) {
       ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

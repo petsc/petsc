@@ -4,23 +4,12 @@
 #define __FUNCT__ "DMSetFromOptions_IGA"
 PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 {
-  /* DM_IGa       *iga = (DM_IGA *) dm->data; */
-  char           typeName[256];
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMIGA Options", "DMIGA");CHKERRQ(ierr);
-    /* Handle associated vectors */
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(dm, typeName);CHKERRQ(ierr);
-    }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMIGA Options");CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

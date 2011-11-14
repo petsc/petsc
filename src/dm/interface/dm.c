@@ -229,20 +229,28 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 {
   PetscBool      flg1 = PETSC_FALSE,flg;
   PetscErrorCode ierr;
-  char           mtype[256] = MATAIJ;
+  char           typeName[256] = MATAIJ;
 
   PetscFunctionBegin;
-  if (dm->ops->setfromoptions) {
-    ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
-  }
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,mtype,mtype,sizeof mtype,&flg);CHKERRQ(ierr);
+    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
+    }
+    if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(mtype,&dm->mattype);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(typeName,&dm->mattype);CHKERRQ(ierr);
     }
+    if (dm->ops->setfromoptions) {
+      ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+    }
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg1) {
     ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
