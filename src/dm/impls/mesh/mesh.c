@@ -1723,8 +1723,8 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetInterpolation_Mesh"
-PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
+#define __FUNCT__ "DMCreateInterpolation_Mesh"
+PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
 }
 

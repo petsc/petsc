@@ -53,8 +53,8 @@ PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetColoring_ADDA"
-PetscErrorCode  DMGetColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
+#define __FUNCT__ "DMCreateColoring_ADDA"
+PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -115,8 +115,8 @@ PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_ADDA"
-PetscErrorCode  DMGetInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec) 
+#define __FUNCT__ "DMCreateInterpolation_ADDA"
+PetscErrorCode  DMCreateInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -158,8 +158,8 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInjection_ADDA"
-PetscErrorCode  DMGetInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
+#define __FUNCT__ "DMCreateInjection_ADDA"
+PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -240,8 +240,8 @@ PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscI
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetAggregates_ADDA"
-PetscErrorCode  DMGetAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
+#define __FUNCT__ "DMCreateAggregates_ADDA"
+PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 {
   PetscErrorCode ierr=0;
   PetscInt       i;
@@ -775,13 +775,13 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
 
   dm->ops->view = DMView;
   dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
-  dm->ops->getcoloring = DMGetColoring_ADDA;
+  dm->ops->getcoloring = DMCreateColoring_ADDA;
   dm->ops->getmatrix = DMCreateMatrix_ADDA;
-  dm->ops->getinterpolation = DMGetInterpolation_ADDA;
+  dm->ops->getinterpolation = DMCreateInterpolation_ADDA;
   dm->ops->refine = DMRefine_ADDA;
   dm->ops->coarsen = DMCoarsen_ADDA;
-  dm->ops->getinjection = DMGetInjection_ADDA;
-  dm->ops->getaggregates = DMGetAggregates_ADDA;
+  dm->ops->getinjection = DMCreateInjection_ADDA;
+  dm->ops->getaggregates = DMCreateAggregates_ADDA;
   dm->ops->setup = DMSetUp_ADDA;
   dm->ops->destroy = DMDestroy_ADDA;
   PetscFunctionReturn(0);

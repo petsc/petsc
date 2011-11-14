@@ -34,7 +34,7 @@ extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Ve
 extern PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec l, InsertMode mode, Vec g);
 #if 0
 extern PetscErrorCode DMCreateLocalToGlobalMapping_IGA(DM dm);
-extern PetscErrorCode DMGetInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
+extern PetscErrorCode DMCreateInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 #endif
 extern PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMDestroy_IGA(DM dm);
@@ -67,7 +67,7 @@ PetscErrorCode DMCreate_IGA(DM dm)
 
   dm->ops->getcoloring        = 0;
   dm->ops->getmatrix          = DMCreateMatrix_IGA;
-  dm->ops->getinterpolation   = 0 /* DMGetInterpolation_IGA */;
+  dm->ops->getinterpolation   = 0 /* DMCreateInterpolation_IGA */;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

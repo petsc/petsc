@@ -15,9 +15,9 @@
 #include <petscpcmg.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolationScale"
+#define __FUNCT__ "DMCreateInterpolationScale"
 /*@
-    DMGetInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the 
+    DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the 
       nearby fine grid points.
 
   Input Parameters:
@@ -30,10 +30,10 @@
 
   Level: developer
 
-.seealso: DMGetInterpolation()
+.seealso: DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
+PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   PetscErrorCode ierr;
   Vec            fine;
@@ -50,8 +50,8 @@ PetscErrorCode  DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_1D_Q1"
-PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_1D_Q1"
+PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,i_start,m_f,Mx,*idx_f;
@@ -176,8 +176,8 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_1D_Q0"
-PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_1D_Q0"
+PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,i_start,m_f,Mx,*idx_f;
@@ -248,8 +248,8 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_2D_Q1"
-PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_2D_Q1"
+PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -474,8 +474,8 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 */
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_2D_Q0"
-PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_2D_Q0"
+PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -585,8 +585,8 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
        Contributed by Jianming Yang <jianming-yang@uiowa.edu>
 */
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_3D_Q0"
-PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_3D_Q0"
+PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,*idx_f,dof;
@@ -704,8 +704,8 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_3D_Q1"
-PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
+#define __FUNCT__ "DMCreateInterpolation_DA_3D_Q1"
+PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
@@ -985,8 +985,8 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA"
-PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
+#define __FUNCT__ "DMCreateInterpolation_DA"
+PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -1013,30 +1013,30 @@ PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 
   if (ddc->interptype == DMDA_Q1){
     if (dimc == 1){
-      ierr = DMGetInterpolation_DA_1D_Q1(dac,daf,A);CHKERRQ(ierr);
+      ierr = DMCreateInterpolation_DA_1D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
-      ierr = DMGetInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
+      ierr = DMCreateInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3){
-      ierr = DMGetInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
+      ierr = DMCreateInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   } else if (ddc->interptype == DMDA_Q0){
     if (dimc == 1){
-      ierr = DMGetInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
+      ierr = DMCreateInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
-       ierr = DMGetInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
+       ierr = DMCreateInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3){
-       ierr = DMGetInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
+       ierr = DMCreateInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   }
   if (scale) {
-    ierr = DMGetInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
+    ierr = DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInjection_DA_1D"
-PetscErrorCode DMGetInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
+#define __FUNCT__ "DMCreateInjection_DA_1D"
+PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 {
     PetscErrorCode   ierr;
     PetscInt         i,i_start,m_f,Mx,*idx_f,dof;
@@ -1094,8 +1094,8 @@ PetscErrorCode DMGetInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInjection_DA_2D"
-PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
+#define __FUNCT__ "DMCreateInjection_DA_2D"
+PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -1160,8 +1160,8 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInjection_DA_3D"
-PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
+#define __FUNCT__ "DMCreateInjection_DA_3D"
+PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
   PetscInt         i,j,k,i_start,j_start,k_start,m_f,n_f,p_f,Mx,My,Mz;
@@ -1243,8 +1243,8 @@ PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInjection_DA"
-PetscErrorCode  DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
+#define __FUNCT__ "DMCreateInjection_DA"
+PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -1268,18 +1268,18 @@ PetscErrorCode  DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 1){
-    ierr = DMGetInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
   } else if (dimc == 2) {
-    ierr = DMGetInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
   } else if (dimc == 3) {
-    ierr = DMGetInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetAggregates_DA"
-PetscErrorCode  DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
+#define __FUNCT__ "DMCreateAggregates_DA"
+PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;

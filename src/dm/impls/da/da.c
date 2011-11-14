@@ -274,7 +274,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 #define __FUNCT__ "DMDASetInterpolationType"
 /*@
        DMDASetInterpolationType - Sets the type of interpolation that will be 
-          returned by DMGetInterpolation()
+          returned by DMCreateInterpolation()
 
    Logically Collective on DMDA
 
@@ -284,7 +284,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
    Level: intermediate
 
-   Notes: you should call this on the coarser of the two DMDAs you pass to DMGetInterpolation()
+   Notes: you should call this on the coarser of the two DMDAs you pass to DMCreateInterpolation()
 
 .keywords:  distributed array, interpolation
 
@@ -305,7 +305,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 #define __FUNCT__ "DMDAGetInterpolationType"
 /*@
        DMDAGetInterpolationType - Gets the type of interpolation that will be
-          used by DMGetInterpolation()
+          used by DMCreateInterpolation()
 
    Not Collective
 
@@ -319,7 +319,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 
 .keywords:  distributed array, interpolation
 
-.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMGetInterpolation()
+.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMCreateInterpolation()
 @*/
 PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 {
@@ -685,7 +685,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     /* force creation of the coordinate vector */
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
-    ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
   }
@@ -790,7 +790,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
     
-    ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMGetInterpolation for nonuniform DMDA coordinates.\n\n";
+static char help[] = "Tests DMCreateInterpolation for nonuniform DMDA coordinates.\n\n";
 
 #include <petscdmda.h>
 
@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   } else if (dim == 3) {
     ierr = SetCoordinates3d(daf);CHKERRQ(ierr);
   }
-  ierr = DMGetInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
 
 
   /* Free memory */

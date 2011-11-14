@@ -9268,7 +9268,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
    Input Parameters:
 +  mat - the matrix product C
--  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DMGetColoring()
+-  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DMCreateColoring()
 
     Output Parameter:
 .   color - the new coloring context

@@ -75,7 +75,7 @@ extern PetscErrorCode DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec
 extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm);
-extern PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
+extern PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsenHierarchy_Mesh(DM dm, int numLevels, DM *coarseHierarchy);
@@ -222,7 +222,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
 
   dm->ops->getcoloring        = 0;
   dm->ops->getmatrix          = DMCreateMatrix_Mesh;
-  dm->ops->getinterpolation   = DMGetInterpolation_Mesh;
+  dm->ops->getinterpolation   = DMCreateInterpolation_Mesh;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

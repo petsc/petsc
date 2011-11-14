@@ -116,8 +116,8 @@ PetscErrorCode DMView_Cartesian(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetInterpolation_Cartesian"
-PetscErrorCode DMGetInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *interpolation, Vec *scaling)
+#define __FUNCT__ "DMCreateInterpolation_Cartesian"
+PetscErrorCode DMCreateInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *interpolation, Vec *scaling)
 {
   ALE::Obj<ALE::CartesianMesh> coarse;
   ALE::Obj<ALE::CartesianMesh> fine;
@@ -282,7 +282,7 @@ PetscErrorCode DMCreate_Cartesian(DM dm)
   dm->ops->localtoglobalend   = 0;
   dm->ops->createglobalvector = 0; /* DMCreateGlobalVector_Cartesian; */
   dm->ops->createlocalvector  = 0; /* DMCreateLocalVector_Cartesian; */
-  dm->ops->getinterpolation   = DMGetInterpolation_Cartesian;
+  dm->ops->getinterpolation   = DMCreateInterpolation_Cartesian;
   dm->ops->getcoloring        = 0;
   dm->ops->getmatrix          = 0; /* DMCreateMatrix_Cartesian; */
   dm->ops->refine             = DMRefine_Cartesian;

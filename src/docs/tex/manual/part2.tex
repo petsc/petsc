@@ -4265,10 +4265,10 @@ These parameters may be set from the options database with
 Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
 Extensions may be forthcoming.
 However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
-An example of this for 2D distributed arrays is given below that uses the utility routine DMGetColoring().
+An example of this for 2D distributed arrays is given below that uses the utility routine DMCreateColoring().
 
 \begin{tabbing}
-   DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
+   DMCreateColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
    ISColoringDestroy(\&iscoloring);

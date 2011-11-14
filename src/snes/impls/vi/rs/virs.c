@@ -62,12 +62,12 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_SNESVI"
+#define __FUNCT__ "DMCreateInterpolation_SNESVI"
 /*
-     DMGetInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
+     DMCreateInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
 
 */
-PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
+PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
@@ -138,7 +138,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecAssemblyBegin(finemarked);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(finemarked);CHKERRQ(ierr);
 
-  ierr = DMGetInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
+  ierr = DMCreateInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
   ierr = VecScatterBegin(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
     dmsnesvi->getinterpolation   = dm->ops->getinterpolation;
-    dm->ops->getinterpolation    = DMGetInterpolation_SNESVI;
+    dm->ops->getinterpolation    = DMCreateInterpolation_SNESVI;
     dmsnesvi->coarsen            = dm->ops->coarsen;
     dm->ops->coarsen             = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector = dm->ops->createglobalvector;

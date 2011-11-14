@@ -51,11 +51,11 @@ extern const char *DMDABoundaryTypes[];
 
 /*E
     DMDAInterpolationType - Defines the type of interpolation that will be returned by 
-       DMGetInterpolation.
+       DMCreateInterpolation.
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), DMDACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), DMDACreate()
 E*/
 typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
@@ -68,7 +68,7 @@ extern PetscErrorCode   DMDAGetInterpolationType(DM,DMDAInterpolationType*);
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), 
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), 
           DMDASetElementType(), DMDAGetElements(), DMDARestoreElements(), DMDACreate()
 E*/
 typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;

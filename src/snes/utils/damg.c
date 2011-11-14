@@ -262,7 +262,7 @@ PetscErrorCode  DMMGSetDM(DMMG *dmmg, DM dm)
 
   /* Create interpolation/restriction between levels */
   for (i=1; i<nlevels; i++) {
-    ierr = DMGetInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -195,7 +195,7 @@
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adifor_jacobian .eq. 1) then
-        call DMGetColoring(da,IS_COLORING_GHOSTED,                                 &
+        call DMCreateColoring(da,IS_COLORING_GHOSTED,                                 &
      &                     coloring,MATAIJ,ierr)
         call MatSetColoring(J,coloring,ierr)
         call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &

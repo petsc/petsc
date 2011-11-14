@@ -500,7 +500,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
   if (asa_lev->dm) {
     /* coarsen DM and get the restriction matrix */
     ierr = DMCoarsen(asa_lev->dm, PETSC_NULL, &(asa_lev->next->dm));CHKERRQ(ierr);
-    ierr = DMGetAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
+    ierr = DMCreateAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
     ierr = MatGetSize(asa_lev->agg, &m, &n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(asa_lev->agg, &m_loc, &n_loc);CHKERRQ(ierr);
     if (n!=asa_lev->size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"DM interpolation matrix has incorrect size!\n");

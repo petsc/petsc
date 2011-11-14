@@ -972,7 +972,7 @@ PetscErrorCode  DMDAComputeJacobian1WithAdic(DM da,Vec vu,Mat J,void *w)
   ierr = DMDAGetAdicArray(da,PETSC_TRUE,&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
   ierr = DMDAGetAdicArray(da,PETSC_FALSE,&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  ierr = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
 
   PetscADSetValueAndColor(ad_ustart,gtdof,iscoloring->colors,ustart);
 
@@ -1125,7 +1125,7 @@ PetscErrorCode  DMDAComputeJacobian1WithAdifor(DM da,Vec vu,Mat J,void *w)
                   (void (*)(PetscInt*,DMDALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*))*dd->adifor_lf;
 
   PetscFunctionBegin;
-  ierr = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
   Nc   = iscoloring->n;
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   N    = info.gxm*info.gym*info.gzm*info.dof;

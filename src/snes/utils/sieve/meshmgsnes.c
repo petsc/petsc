@@ -224,7 +224,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   ierr = VecSet(dmmg[level]->r, 0.0);CHKERRQ(ierr);
 /*   for(j = 1; j <= level; ++j) { */
 /*     if (!dmmg[j]->inject) { */
-/*       ierr = DMGetInjection(dmmg[j-1]->dm, dmmg[j]->dm, &dmmg[j]->inject);CHKERRQ(ierr); */
+/*       ierr = DMCreateInjection(dmmg[j-1]->dm, dmmg[j]->dm, &dmmg[j]->inject);CHKERRQ(ierr); */
 /*     } */
 /*   } */
 

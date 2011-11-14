@@ -157,7 +157,7 @@ int main(int argc,char **argv)
     ISColoring iscoloring;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);

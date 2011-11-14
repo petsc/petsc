@@ -647,12 +647,12 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       }
       /* set the interpolation and restriction from the DM */
       if (!fas->interpolate) {
-        ierr = DMGetInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
+        ierr = DMCreateInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
         fas->restrct = fas->interpolate;
       }
       /* set the injection from the DM */
       if (!fas->inject) {
-        ierr = DMGetInjection(fas->next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
+        ierr = DMCreateInjection(fas->next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
         ierr = MatCreateScatter(((PetscObject)snes)->comm, injscatter, &fas->inject);CHKERRQ(ierr);
         ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
       }

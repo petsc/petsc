@@ -210,8 +210,8 @@ static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetColoring_Redundant"
-static PetscErrorCode DMGetColoring_Redundant(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+#define __FUNCT__ "DMCreateColoring_Redundant"
+static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   DM_Redundant   *red = (DM_Redundant*)dm->data;
   PetscErrorCode ierr;
@@ -266,8 +266,8 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetInterpolation_Redundant"
-static PetscErrorCode DMGetInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *scale)
+#define __FUNCT__ "DMCreateInterpolation_Redundant"
+static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *scale)
 {
   PetscErrorCode ierr;
   DM_Redundant   *redc = (DM_Redundant*)dmc->data;
@@ -289,7 +289,7 @@ static PetscErrorCode DMGetInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *sca
   for (i=rstart; i<rend; i++) {ierr = MatSetValue(*P,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);}
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (scale) {ierr = DMGetInterpolationScale(dmc,dmf,*P,scale);CHKERRQ(ierr);}
+  if (scale) {ierr = DMCreateInterpolationScale(dmc,dmf,*P,scale);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -406,8 +406,8 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Redundant;
   dm->ops->refine             = DMRefine_Redundant;
   dm->ops->coarsen            = DMCoarsen_Redundant;
-  dm->ops->getinterpolation   = DMGetInterpolation_Redundant;
-  dm->ops->getcoloring        = DMGetColoring_Redundant;
+  dm->ops->getinterpolation   = DMCreateInterpolation_Redundant;
+  dm->ops->getcoloring        = DMCreateColoring_Redundant;
   ierr = PetscStrallocpy(VECSTANDARD,&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);

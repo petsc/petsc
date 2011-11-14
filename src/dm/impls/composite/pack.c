@@ -898,8 +898,8 @@ PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_Composite"
-PetscErrorCode  DMGetInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
+#define __FUNCT__ "DMCreateInterpolation_Composite"
+PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 {
   PetscErrorCode         ierr;
   PetscInt               m,n,M,N,nDM,i;
@@ -930,7 +930,7 @@ PetscErrorCode  DMGetInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 
   /* loop over packed objects, handling one at at time */
   for (nextc=comcoarse->next,nextf=comfine->next,i=0; nextc; nextc=nextc->next,nextf=nextf->next,i++) {
-    ierr = DMGetInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = MatCreateNest(((PetscObject)fine)->comm,nDM,PETSC_NULL,nDM,PETSC_NULL,mats,A);CHKERRQ(ierr);
   for (i=0; i<nDM*nDM; i++) {ierr = MatDestroy(&mats[i]);CHKERRQ(ierr);}
@@ -958,8 +958,8 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetColoring_Composite" 
-PetscErrorCode  DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+#define __FUNCT__ "DMCreateColoring_Composite" 
+PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode         ierr;
   PetscInt               n,i,cnt;
@@ -992,7 +992,7 @@ PetscErrorCode  DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType
     while (next) {
       ISColoring     lcoloring;
 
-      ierr = DMGetColoring(next->dm,IS_COLORING_GLOBAL,mtype,&lcoloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(next->dm,IS_COLORING_GLOBAL,mtype,&lcoloring);CHKERRQ(ierr);
       for (i=0; i<lcoloring->N; i++) {
         colors[cnt++] = maxcol + lcoloring->colors[i];
       }
@@ -1083,9 +1083,9 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
-  p->ops->getinterpolation                = DMGetInterpolation_Composite;
+  p->ops->getinterpolation                = DMCreateInterpolation_Composite;
   p->ops->getmatrix                       = DMCreateMatrix_Composite;
-  p->ops->getcoloring                     = DMGetColoring_Composite;
+  p->ops->getcoloring                     = DMCreateColoring_Composite;
   p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
   p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;
   p->ops->destroy                         = DMDestroy_Composite;
