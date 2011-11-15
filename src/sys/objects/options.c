@@ -1950,6 +1950,40 @@ PetscErrorCode  PetscOptionsGetStringArray(const char pre[],const char name[],ch
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsUsed"
+/*@C
+   PetscOptionsUsed - Indicates if PETSc has used a particular option set in the database
+
+   Not Collective
+
+   Input Parameter:
+.    option - string name of option
+
+   Output Parameter:
+.   used - PETSC_TRUE if the option was used, otherwise false, including if option was not found in options database
+
+   Level: advanced
+
+.seealso: PetscOptionsView(), PetscOptionsLeft(), PetscOptionsAllUsed()
+@*/
+PetscErrorCode  PetscOptionsUsed(const char *option,PetscBool *used)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *used = PETSC_FALSE;
+  for (i=0; i<options->N; i++) {
+    ierr = PetscStrcmp(options->names[i],option,used);CHKERRQ(ierr);
+    if (*used) {
+      *used = options->used[i];
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAllUsed"
 /*@C
    PetscOptionsAllUsed - Returns a count of the number of options in the 
