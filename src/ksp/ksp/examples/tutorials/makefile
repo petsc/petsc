@@ -896,6 +896,12 @@ runex25_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_2.tmp
 
+runex28:
+	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2   > ex28_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex28_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex28_1.tmp
+
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
@@ -1049,7 +1055,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex43.PETSc runex43 runex43_2 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm
-TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm
+TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
                                  ex22f.rm ex21f.PETSc runex21f ex21f.rm ex45f.PETSc runex45f ex45f.rm

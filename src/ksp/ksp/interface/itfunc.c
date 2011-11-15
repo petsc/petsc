@@ -204,11 +204,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (ksp->dmActive) {
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
+      /* only computes initial guess the first time through */
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (ir) {
       ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 

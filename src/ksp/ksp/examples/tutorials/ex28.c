@@ -6,9 +6,9 @@ static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 #include <petscksp.h>
 #include <petscdmmg.h>
 
-extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
-extern PetscErrorCode ComputeInitialSolution(DMMG*);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeInitialSolution(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -16,50 +16,47 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  DMMG           *dmmg;
-  PetscReal      norm;
+  KSP            ksp;
   DM             da;
+  Vec            x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-
-  ierr = ComputeInitialSolution(dmmg);CHKERRQ(ierr);
-
-  VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);
-  for (i=0; i<1000; i++) {
-    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-    ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = ComputeInitialSolution(da,x);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,x);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  for (i=0; i<10; i++) {
+    ierr = KSPSolve(ksp,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
-  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); */
-
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeInitialSolution"
-PetscErrorCode ComputeInitialSolution(DMMG *dmmg)
+PetscErrorCode ComputeInitialSolution(DM da,Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       mx,col[2],xs,xm,i;
   PetscScalar    Hx,val[2];
-  Vec            x = DMMGGetx(dmmg);
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
-  ierr = DMDAGetCorners(DMMGGetDM(dmmg),&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   
   for(i=xs; i<xs+xm; i++){
     col[0] = 2*i; col[1] = 2*i + 1;
@@ -73,25 +70,26 @@ PetscErrorCode ComputeInitialSolution(DMMG *dmmg)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec dummy,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx;
   PetscScalar    h;
+  Vec            x;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,&x);CHKERRQ(ierr);
   h    = 2.0*PETSC_PI/((mx));
-  ierr = VecCopy(dmmg->x,b);CHKERRQ(ierr);
+  ierr = VecCopy(x,b);CHKERRQ(ierr);
   ierr = VecScale(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DMMG dmmg,Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DM da,Vec x,Mat J,Mat jac,MatStructure *str)
 {
-  DM             da = dmmg->dm;
   PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;
   PetscScalar    v[7],Hx;
