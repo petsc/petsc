@@ -379,7 +379,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
    Options Database Key:
 +    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,
                         rather than the diagonal
-.    -pc_jacobi_rowsum - use the maximum absolute value in each row as the scaling factor,
+.    -pc_jacobi_rowsum - use the row sums as the scaling factor,
                         rather than the diagonal
 -    -pc_jacobi_abs - use the absolute value of the diagaonl entry
 
