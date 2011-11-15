@@ -33,6 +33,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   *dm = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -235,12 +237,10 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
     }
-    if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
