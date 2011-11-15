@@ -523,6 +523,19 @@ class Configure(config.package.Package):
         self.compilers.LIBS = oldLibs
     return
 
+  def checklsame(self):
+    ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''
+    routine = 'lsame';
+    if self.f2c:
+      if self.mangling == 'underscore':
+        routine = routine + '_'
+    else:
+      routine = self.compilers.mangleFortranFunction(routine)
+    if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
+      self.addDefine('MISSING_LAPACK_'+routine, 1)
+
+
+
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
@@ -534,11 +547,14 @@ class Configure(config.package.Package):
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
+
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
+    self.executeTest(self.checklsame)
     return
 
 if __name__ == '__main__':
