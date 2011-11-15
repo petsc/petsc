@@ -23,7 +23,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
   /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
-  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
   /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
@@ -97,7 +97,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   PetscFunctionReturn(0);
 }
 
-#define DENSEAXPY
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
@@ -108,6 +107,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
   MatScalar      *ca;
   PetscReal      afill;
+  PetscInt       dense_axpy=1; /* <=0: use sparse axpy; otherwise: num of dense rows used in MatMatMultNumeric_SeqAIJ_SeqAIJ() */
 
   PetscFunctionBegin;
   /* Get ci and cj */
@@ -127,10 +127,18 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
 
-#if defined(DENSEAXPY)
-  ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
-  ierr = PetscMemzero(c->matmult_abdense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
-#endif
+  /* Determine witch MatMatMultNumeric_SeqAIJ_SeqAIJ() to be used */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-matmatmult_denseaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
+  if (dense_axpy > 0){
+    if (dense_axpy != 2) dense_axpy = 1;
+    c->matmult_denseaxpy = dense_axpy;
+    ierr = PetscMalloc(dense_axpy*bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
+    ierr = PetscMemzero(c->matmult_abdense,dense_axpy*bn*sizeof(PetscScalar));CHKERRQ(ierr);
+    (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
+  } else { /* slower, but use less memory */
+    c->matmult_denseaxpy = 0;
+    (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
+  }
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -162,14 +170,10 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am=A->rmap->N,cm=C->rmap->N;
+  PetscInt       am=A->rmap->n,cm=C->rmap->n;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
   PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
-#if defined(DENSEAXPY)
   PetscScalar    *ab_dense=c->matmult_abdense;
-#else
-  PetscInt       nextb;
-#endif
   
   PetscFunctionBegin;  
   /* clean old values in C */
@@ -177,30 +181,132 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   /* Traverse A row-wise. */
   /* Build the ith row in C by summing over nonzero columns in A, */
   /* the rows of B corresponding to nonzeros of A. */
-#if defined(DENSEAXPY)
-  for (i=0;i<am;i++) {
-    anzi = ai[i+1] - ai[i];
-    cnzi = ci[i+1] - ci[i];
-    for (j=0;j<anzi;j++) {
-      brow = aj[j];
-      bnzi = bi[brow+1] - bi[brow];
-      bjj  = bj + bi[brow];
-      baj  = ba + bi[brow];
-      /* perform dense axpy */
-      for (k=0; k<bnzi; k++) {
-        ab_dense[bjj[k]] += aa[j]*baj[k];
+
+  if (c->matmult_denseaxpy == 2){ /* use two rows of AP for faster execution */
+    PetscScalar *ab_den0,*ab_den1;
+    ab_den0 = ab_dense;
+    ab_den1 = ab_dense + B->cmap->n;
+    for (i=0; i<am; i+=2) {
+      anzi = ai[i+1] - ai[i];
+      for (j=0;j<anzi;j++) {
+        brow = aj[j];
+        bnzi = bi[brow+1] - bi[brow];
+        bjj  = bj + bi[brow];
+        baj  = ba + bi[brow];
+        /* perform dense axpy */
+        for (k=0; k<bnzi; k++) {
+          ab_den0[bjj[k]] += aa[j]*baj[k];
+        }
+        flops += 2*bnzi;
       }
-      flops += 2*bnzi;
+      aj += anzi; aa += anzi;
+
+      anzi = ai[i+2] - ai[i+1];
+      for (j=0;j<anzi;j++) {
+        brow = aj[j];
+        bnzi = bi[brow+1] - bi[brow];
+        bjj  = bj + bi[brow];
+        baj  = ba + bi[brow];
+        /* perform dense axpy */
+        for (k=0; k<bnzi; k++) {
+          ab_den1[bjj[k]] += aa[j]*baj[k];
+        }
+        flops += 2*bnzi;
+      }
+      aj += anzi; aa += anzi;
+
+      cnzi = ci[i+1] - ci[i];
+      for (k=0; k<cnzi; k++) {
+        ca[k]          += ab_den0[cj[k]];
+        ab_den0[cj[k]] = 0.0; /* zero ab_dense */
+      }
+      flops += cnzi;
+      cj += cnzi; ca += cnzi;
+
+      cnzi = ci[i+2] - ci[i+1];
+      for (k=0; k<cnzi; k++) {
+        ca[k]          += ab_den1[cj[k]];
+        ab_den1[cj[k]] = 0.0; /* zero ab_dense */
+      }
+      flops += cnzi;
+      cj += cnzi; ca += cnzi;
     }
-    for (k=0; k<cnzi; k++) {
-      ca[k]          += ab_dense[cj[k]];
-      ab_dense[cj[k]] = 0.0; /* zero ab_dense */
+
+    for (;i<am; i++){     /* over extra rows of A */
+      anzi = ai[i+1] - ai[i];
+      for (j=0; j<anzi; j++) {
+        brow = aj[j];
+        bnzi = bi[brow+1] - bi[brow];
+        bjj  = bj + bi[brow];
+        baj  = ba + bi[brow];
+        /* perform dense axpy */
+        for (k=0; k<bnzi; k++) {
+          ab_den0[bjj[k]] += aa[j]*baj[k];
+        }
+        flops += 2*bnzi;
+      }
+      aj += anzi; aa += anzi;
+      cnzi = ci[i+1] - ci[i];
+      for (k=0; k<cnzi; k++) {
+        ca[k]          += ab_dense[cj[k]];
+        ab_den0[cj[k]] = 0.0; /* zero ab_dense */
+      }
+      flops += cnzi;
+      cj += cnzi; ca += cnzi;
     }
-    flops += cnzi;
-    aj += anzi; aa += anzi;
-    cj += cnzi; ca += cnzi;
+  } else { /* use a single row of AP */
+    for (i=0; i<am; i++) {
+      anzi = ai[i+1] - ai[i];
+      for (j=0; j<anzi; j++) {
+        brow = aj[j];
+        bnzi = bi[brow+1] - bi[brow];
+        bjj  = bj + bi[brow];
+        baj  = ba + bi[brow];
+        /* perform dense axpy */
+        for (k=0; k<bnzi; k++) {
+          ab_dense[bjj[k]] += aa[j]*baj[k];
+        }
+        flops += 2*bnzi;
+      }
+      aj += anzi; aa += anzi;
+
+      cnzi = ci[i+1] - ci[i];
+      for (k=0; k<cnzi; k++) {
+        ca[k]          += ab_dense[cj[k]];
+        ab_dense[cj[k]] = 0.0; /* zero ab_dense */
+      }
+      flops += cnzi;
+      cj += cnzi; ca += cnzi;
+    }
   }
-#else
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  C->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode ierr;
+  PetscLogDouble flops=0.0;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
+  PetscInt       am=A->rmap->N,cm=C->rmap->N;
+  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
+  PetscInt       nextb;
+  
+  PetscFunctionBegin;  
+  /* clean old values in C */
+  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+  /* Traverse A row-wise. */
+  /* Build the ith row in C by summing over nonzero columns in A, */
+  /* the rows of B corresponding to nonzeros of A. */
   for (i=0;i<am;i++) {
     anzi = ai[i+1] - ai[i];
     cnzi = ci[i+1] - ci[i];
@@ -221,7 +327,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     aj += anzi; aa += anzi;
     cj += cnzi; ca += cnzi;
   }
-#endif
+
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
