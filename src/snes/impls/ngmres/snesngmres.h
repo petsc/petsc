@@ -9,7 +9,8 @@ typedef struct {
   /* Solver parameters and counters */
   PetscInt     msize;          /* maximum size of krylov space */
   PetscInt     restart_it;     /* number of iterations the restart conditions persist before restart */
-  PetscViewer   monitor;        /* debugging output for NGMRES */
+  PetscViewer  monitor;        /* debugging output for NGMRES */
+  PetscBool    useGS;          /* use nonlinear GS or not */
 
   /* History and subspace data */
   Vec          *Fdot;          /* residual history -- length msize */

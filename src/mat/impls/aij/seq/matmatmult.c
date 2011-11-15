@@ -97,6 +97,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   PetscFunctionReturn(0);
 }
 
+#define DENSEAXPY
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
@@ -126,6 +127,11 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
 
+#if defined(DENSEAXPY)
+  ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
+  ierr = PetscMemzero(c->matmult_abdense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+#endif
+
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
@@ -146,7 +152,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFunctionReturn(0);
 }
 
-#define DENSEAXPY
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -161,17 +166,12 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
   PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
 #if defined(DENSEAXPY)
-  PetscScalar    *ab_dense;
+  PetscScalar    *ab_dense=c->matmult_abdense;
 #else
   PetscInt       nextb;
 #endif
   
   PetscFunctionBegin;  
-#if defined(DENSEAXPY)
-  ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&ab_dense);CHKERRQ(ierr);//mv to symbolic
-  ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);//mv to symbolic
-#endif
-
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
@@ -225,10 +225,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  
-#if defined(DENSEAXPY) 
-  ierr = PetscFree(ab_dense);CHKERRQ(ierr); 
-#endif
   PetscFunctionReturn(0);
 }
 

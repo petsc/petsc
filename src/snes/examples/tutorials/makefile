@@ -367,6 +367,13 @@ runex5_5_nrichardson:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_nrichardson, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_nrichardson.tmp
 
+runex5_5_ngmres_ngs:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_ngs 1 -npc_snes_max_it ${N_SMOOTHS} \
+        > ex5_5_ngmres_ngs.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_ngmres_ngs.out ex5_5_ngmres_ngs.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_ngs, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_ngmres_ngs.tmp
+
 runex5_5_qn:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls secant -snes_qn_m ${N_RESTART} \
         > ex5_5_qn.tmp 2>&1; \
@@ -949,7 +956,7 @@ runex58_2:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
-                                  runex5_5_qn runex5_5_ls \
+                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas \
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
