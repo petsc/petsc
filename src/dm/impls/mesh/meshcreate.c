@@ -11,7 +11,7 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead "DMMesh Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMMesh Options");CHKERRQ(ierr);
     /* Handle DMMesh refinement */
     /* Handle associated vectors */
     /* Handle viewing */
