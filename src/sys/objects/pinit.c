@@ -1263,3 +1263,25 @@ PetscErrorCode  PetscFinalize(void)
   PetscFunctionReturn(ierr);
 }
 
+#if defined(PETSC_MISSING_LAPACK_lsame_)
+EXTERN_C_BEGIN
+int lsame_(char *a,char *b)
+{
+  if (*a == *b) return 1;
+  if (*a + 32 == *b) return 1;
+  if (*a - 32 == *b) return 1;
+  return 0;
+}
+EXTERN_C_END
+
+#if defined(PETSC_MISSING_LAPACK_lsame)
+EXTERN_C_BEGIN
+int lsame(char *a,char *b)
+{
+  if (*a == *b) return 1;
+  if (*a + 32 == *b) return 1;
+  if (*a - 32 == *b) return 1;
+  return 0;
+}
+EXTERN_C_END
+#endif
