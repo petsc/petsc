@@ -885,16 +885,16 @@ runex23_2:
 	   ${RM} -f ex23_2.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full  > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex25_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIEXEC} -n 2 ./ex25 > ex25_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
+	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full > ex25_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex25_1.tmp
+	   ${RM} -f ex25_2.tmp
 
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
