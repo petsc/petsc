@@ -38,6 +38,28 @@
   Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); 
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */
 
+typedef struct {
+  MatTransposeColoring      matcoloring;
+  Mat                       Bt_den;  /* dense matrix of B^T */
+  Mat                       ABt_den; /* dense matrix of A*B^T */
+  PetscBool                 usecoloring; 
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatMatTransMult;
+
+typedef struct {
+  PetscInt       *api,*apj;    /* symbolic structure of A*P */
+  PetscScalar    *apa;         /* temporary array for storing one row of A*P */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_PtAP;
+
+typedef struct {
+  MatTransposeColoring matcoloring;
+  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  RARt;  /* dense matrix of R*A*R^T */
+  MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_RARt;
+
 /*  
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
@@ -82,31 +104,10 @@ typedef struct {
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
   
-  PetscInt         matmult_denseaxpy;    /*  used by MatMatMult(): <=0: use sparse axpy; otherwise: num of dense rows used in MatMatMultNumeric() */
+  PetscInt         matmult_denseaxpy;    /* used by MatMatMult(): <=0: use sparse axpy; otherwise: num of dense rows used in MatMatMultNumeric() */
   PetscScalar      *matmult_abdense;     /* used by MatMatMult() */
+  Mat_PtAP         *ptap;                /* used by MatPtAP() */
 } Mat_SeqAIJ;
-
-typedef struct {
-  MatTransposeColoring      matcoloring;
-  Mat                       Bt_den;  /* dense matrix of B^T */
-  Mat                       ABt_den; /* dense matrix of A*B^T */
-  PetscBool                 usecoloring; 
-  PetscErrorCode (*destroy)(Mat);
-} Mat_MatMatTransMult;
-
-typedef struct {
-  PetscInt       *api,*apj;    /* symbolic structure of A*P */
-  PetscScalar    *apa;         /* temporary array for storing one row of A*P */
-  PetscErrorCode (*destroy)(Mat);
-} Mat_PtAP;
-
-typedef struct {
-  MatTransposeColoring matcoloring;
-  Mat                  Rt;    /* dense matrix of R^T */
-  Mat                  RARt;  /* dense matrix of R*A*R^T */
-  MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
-  PetscErrorCode (*destroy)(Mat);
-} Mat_RARt;
 
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
@@ -229,7 +230,11 @@ extern PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt,PetscInt*,
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,Mat);
+extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat,Mat,Mat);
+
 extern PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 
