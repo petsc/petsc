@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
-                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c \
+                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c  ex23.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
                 ex45.c ex46.c ex47.c ex49.c ex50.c ex51.c ex52.c ex53.c \
@@ -866,14 +866,8 @@ runex21f:
 	   if (${DIFF} output/ex21f_1.out ex21f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex21f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21f_1.tmp
-runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex22_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex22_1.tmp
-
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short -pc_type mg -da_refine 2 -ksp_type fgmres > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex22f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp
@@ -1048,7 +1042,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
-                                 ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
+                                 ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm \
