@@ -11,7 +11,7 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex4tu.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex19tu.c ex20.c ex21.c ex22.c \
-                ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c \
+                ex23.c ex24.c ex25.c ex26.c  ex28.c ex29.c ex30.c ex31.c \
                 ex32.c ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c ex49.c \
                 ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex63.c ex633D_DB.c ex64.c ex65.c
@@ -811,13 +811,6 @@ runex25_2:
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex25_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_2.tmp
-runex27:
-	-@${MPIEXEC} -n 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
-runex27_p:
-	-@${MPIEXEC} -n 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
-runex27_li:              # This algorithm, using a linearly implicit step, is the one described in the paper
-	-@${MPIEXEC} -n 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_type ksponly -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
-
 runex28_0:
 	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0 > ex28_0.tmp 2>&1; \
 	  ${DIFF} output/ex28_0.out ex28_0.tmp || echo  ${PWD} "\nPossible problem with ex28_0, diffs above \n========================================="; ${RM} -f ex28_0.tmp
