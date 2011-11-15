@@ -1273,6 +1273,7 @@ int lsame_(char *a,char *b)
   return 0;
 }
 EXTERN_C_END
+#endif
 
 #if defined(PETSC_MISSING_LAPACK_lsame)
 EXTERN_C_BEGIN
