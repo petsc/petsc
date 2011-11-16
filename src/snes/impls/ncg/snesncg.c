@@ -253,7 +253,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
   }
   ierr = VecDot(lX, F, &dXdotF);CHKERRQ(ierr);
-  for(i = 1; i < maxits; i++) {
+  for(i = 1; i < maxits + 1; i++) {
     lsSuccess = PETSC_TRUE;
     /* some update types require the old residual */
     ierr = VecCopy(F, Fold);CHKERRQ(ierr);

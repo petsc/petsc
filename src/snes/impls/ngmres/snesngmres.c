@@ -236,7 +236,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   k_restart = 1;
   l = 1;
-  for (k=1; k<snes->max_its; k++) {
+  for (k=1; k < snes->max_its+1; k++) {
     /* select which vector of the stored subspace will be updated */
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
