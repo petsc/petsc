@@ -335,7 +335,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  if (!b && !ksp->vec_rhs) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Must set right hand side");
 
   if (x && x == b) {
     if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");

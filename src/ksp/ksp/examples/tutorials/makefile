@@ -903,13 +903,13 @@ runex28:
 	   ${RM} -f ex28_1.tmp
 
 runex29:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex29 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 > ex29_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex29_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex29_1.tmp
 
 runex29_2:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -bc_type neumann -dmmg_nlevels 9 > ex29_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex29  -bc_type neumann -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex29_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex29_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex29_2.tmp
