@@ -23,7 +23,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
   /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
-  (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
   /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
@@ -126,8 +126,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
+  (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqAIJ;
 
-  /* Determine witch MatMatMultNumeric_SeqAIJ_SeqAIJ() to be used */
+  /* Determine which MatMatMultNumeric_SeqAIJ_SeqAIJ() to be used */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matmatmult_denseaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
   if (dense_axpy > 0){
     if (dense_axpy != 2) dense_axpy = 1;
@@ -791,6 +792,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 
   PetscFunctionBegin;
   ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
+  (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
 

@@ -231,7 +231,8 @@ class Configure(config.base.Configure):
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
-        includes.extend(i.include)
+        if not i.PACKAGE.lower() == 'valgrind':
+          includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     if self.framework.argDB['with-single-library']:
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)

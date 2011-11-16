@@ -38,7 +38,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscErrorCode ierr;
   PetscScalar    *a,*u,*v,*d,*work;
-  PetscBLASInt   nb,lwork,lierr;
+  PetscBLASInt   nb,lwork;
   PetscInt       i,n;
 
   PetscFunctionBegin;
@@ -61,8 +61,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = MatGetArray(jac->V,&v);CHKERRQ(ierr); 
   ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
 #if !defined(PETSC_USE_COMPLEX)
-  LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr);
-  if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+  {
+    PetscBLASInt lierr;
+    LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr);
+    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+  }
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif

@@ -1,7 +1,7 @@
 
 ALL: lib 
 
-CFLAGS    =
+CFLAGS    = ${VALGRIND_INCLUDE}
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = gcomm.c   gtype.c   olist.c    pname.c  tagm.c \

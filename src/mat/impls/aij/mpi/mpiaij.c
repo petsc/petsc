@@ -5405,6 +5405,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat
   ierr = MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *C   = Cmat;
+  (*C)->ops->matmult = MatMatMult_MPIDense_MPIAIJ;
   PetscFunctionReturn(0);
 }
 
