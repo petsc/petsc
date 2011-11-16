@@ -357,7 +357,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   PetscScalar     *aa=a->a,*pa=p->a;
   PetscInt        *apj,*pcol,*cjj,cnz;
   PetscInt        am=A->rmap->N,cm=C->rmap->N;
-  PetscInt        i,j,k,anz,apnz,pnz,prow,crow,apcol;
+  PetscInt        i,j,k,anz,apnz,pnz,prow,crow;
   PetscScalar     *apa,*pval,*ca=c->a,*caj;
   Mat_PtAP        *ptap = c->ptap;
 
@@ -404,10 +404,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
     }
 
     /* Zero the current row info for A*P */
-    for (j=0; j<apnz; j++) {
-      apcol      = apj[j];
-      apa[apcol] = 0.;
-    }
+    for (j=0; j<apnz; j++) apa[apj[j]] = 0.0;
   }
 
   /* Assemble the final matrix and clean up */
