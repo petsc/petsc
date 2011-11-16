@@ -446,7 +446,7 @@ testex5f: ex5f.PETSc
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process"; \
 	   else echo "Possible error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex5f_1.tmp; fi;  \
          ${RM} -f ex5f_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
@@ -704,14 +704,14 @@ testex19: ex19.PETSc
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; \
 	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
            ${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; fi; \
         ${RM} -f ex19_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
@@ -729,7 +729,7 @@ testx11ex19: ex19.PETSc
 	     if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
              echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
 	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
-             echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+             echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
              cat ex19_1.tmp; fi; \
 	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex19"; fi; \
         ${RM} -f ex19_1.tmp; \
@@ -906,14 +906,14 @@ testex50: ex50.PETSc
 	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex50_1.tmp; fi; \
 	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
            ${MPIEXEC} -n 2 ./ex50 -da_refine 3   > ex50_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex50_1.tmp; fi; fi; \
         ${RM} -f ex50_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
@@ -931,7 +931,7 @@ testx11ex50: ex50.PETSc
 	     if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
              echo "Graphics example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
 	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex50 1 MPI process"; \
-             echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+             echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
              cat ex50_1.tmp; fi; \
 	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex50"; fi; \
         ${RM} -f ex50_1.tmp; \

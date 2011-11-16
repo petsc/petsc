@@ -58,7 +58,7 @@ if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.v
   print '*                  http://www.python.org/download/                            *'
   print '*                                                                             *'
   print '*           You CANNOT configure PETSc without Python                         *'
-  print '*   http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html     *'
+  print '*   http://www.mcs.anl.gov/petsc/documentation/installation.html     *'
   print '*******************************************************************************'
   sys.exit(4)
 

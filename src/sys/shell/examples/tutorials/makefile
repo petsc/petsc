@@ -16,7 +16,7 @@ ex1: ex1.o chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_LIB} 
 	${RM} ex1.o
 
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 
 

@@ -980,7 +980,7 @@ runex37_6:
 	   if (${DIFF} output/ex37_6.out ex37_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex37_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex37_1.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex40:
 	-@${MPIEXEC} -n 3 ./ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
@@ -1007,7 +1007,7 @@ runex42_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex42_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex42_2.tmp
 
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex47:
 	-@${MPIEXEC} -n 1  ./ex47 -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
 	   if (${DIFF} output/ex47_1.out ex47_1.tmp) then true; \
@@ -1068,7 +1068,7 @@ runex52_4:
 	else echo ${PWD} ; echo "Possible problem with with ex52_4, diffs above \n========================================="; fi; \
 	${RM} -f ex52_4.tmp
 
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex53:
 	-@${MPIEXEC} -n 3 ./ex53 -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small > ex53_1.tmp 2>&1;\
 	${MPIEXEC} -n 3 ./ex53 -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
@@ -1171,7 +1171,7 @@ runex67f:
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex67f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex67f_1.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex73:
 	-@${MPIEXEC} -n 3  ./ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info
 
@@ -1313,7 +1313,7 @@ runex93:
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex93_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex94:
 	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
@@ -1349,7 +1349,7 @@ runex98:
 	   else echo ${PWD} ; echo "Possible problem with with ex98, diffs above \n========================================="; fi; \
 	   ${RM} -f ex98.tmp
 
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 NPROCS    = 1 3 
 DOF       = 1 2 3 4 5 6 8 9 16
 runex100:
