@@ -25,7 +25,7 @@ def currentversion(petscdir):
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(patchversion)
   try:
     import urllib
-    fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/include/petscversion.h")
+    fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/include/petscversion.h")
     pv = fd.read()
     fd.close()
     amajorversion = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
@@ -38,7 +38,7 @@ def currentversion(petscdir):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("The version of PETSc you are using is out-of-date, we recommend updating to the new release")
     print(" Available Version: "+aversion+"   Installed Version: "+version)
-    print("http://www.mcs.anl.gov/petsc/petsc-as/download/index.html")
+    print("http://www.mcs.anl.gov/petsc/download/index.html")
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
   fd = open(os.path.join(petscdir,'.nagged'),"w")
   fd.close()

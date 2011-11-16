@@ -66,7 +66,7 @@ ex16: ex16.o  chkopts
 	-${CLINKER}  -o ex16 ex16.o ${PETSC_MAT_LIB}
 	${RM} ex16.o
 
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
