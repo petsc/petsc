@@ -1578,6 +1578,8 @@ PetscErrorCode DMMeshDistribute(DM serialMesh, const char partitioner[], DM *par
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(serialMesh, DM_CLASSID, 1);
+  PetscValidPointer(parallelMesh,3);
   ierr = MPI_Comm_size(((PetscObject) serialMesh)->comm, &commSize);CHKERRQ(ierr);
   if (commSize == 1) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
