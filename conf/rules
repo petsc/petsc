@@ -221,12 +221,11 @@ tree: ${ACTION}
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
-	@-if [ "${DIRS}" != "" ]; then \
-	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
+	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
 	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done ; fi
+	done
 
 #This target goes through all the dirs that contains a makefile
 alltree_makefile: ${ACTION}
