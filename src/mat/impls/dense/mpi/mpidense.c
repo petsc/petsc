@@ -1121,9 +1121,11 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
-PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
+PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->cmap->n;
@@ -1144,7 +1146,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIDense_MPIDense"
-PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 

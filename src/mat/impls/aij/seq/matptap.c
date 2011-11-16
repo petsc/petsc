@@ -189,20 +189,20 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+  ierr = PetscMalloc(cn*(sizeof(MatScalar)+sizeof(PetscInt))+c->rmax*sizeof(PetscInt),&apa);CHKERRQ(ierr);
 
-  apj      = (PetscInt *)(apa + cn);
-  apjdense = apj + cn;
+  apjdense = (PetscInt *)(apa + cn);
+  apj      = apjdense + cn;
+  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
-  for (i=0;i<am;i++) {
+  for (i=0; i<am; i++) {
     /* Form sparse row of A*P */
     anzi  = ai[i+1] - ai[i];
     apnzj = 0;
-    for (j=0;j<anzi;j++) {
+    for (j=0; j<anzi; j++) {
       prow = *aj++;
       pnzj = pi[prow+1] - pi[prow];
       pjj  = pj + pi[prow];
@@ -224,7 +224,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
 
     /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
     pnzi = pi[i+1] - pi[i];
-    for (j=0;j<pnzi;j++) {
+    for (j=0; j<pnzi; j++) {
       nextap = 0;
       crow   = *pJ++;
       cjj    = cj + ci[crow];
@@ -245,7 +245,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
     }
 
     /* Zero the current row info for A*P */
-    for (j=0;j<apnzj;j++) {
+    for (j=0; j<apnzj; j++) {
       apa[apj[j]]      = 0.;
       apjdense[apj[j]] = 0;
     }
@@ -273,14 +273,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   /* flag 'sparse_axpy' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fastest, but requires more storage;
-       1: do one sparse axpy in MatPtAPNumeric() 
-       2: do two sparse axpy in MatPtAPNumeric() - slowest, but does not store structure of A*P */
+       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; (default)
+       1: do one sparse axpy - uses same memory as sparse_axpy=0 and might execute less flops 
+          (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
+       2: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
   if (sparse_axpy == 2){ 
-    /* Implementation used in petsc-3.2: 
-     doese not store structure of A*P, requires two sparse axpy in each step 
-     of loop (i=0;i<am;i++). Slow, but use less memory */
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(A,P,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -310,19 +308,17 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   c->nonew   = 0;
 
   /* create a supporting struct for reuse by MatPtAPNumeric() */
-  ierr    = PetscNew(Mat_PtAP,&ptap);CHKERRQ(ierr);
-  c->ptap = ptap;
-  ptap->destroy        = (*C)->ops->destroy;
-  (*C)->ops->destroy   = MatDestroy_SeqAIJ_PtAP;
+  ierr = PetscNew(Mat_PtAP,&ptap);CHKERRQ(ierr);
+  c->ptap            = ptap;
+  ptap->destroy      = (*C)->ops->destroy;
+  (*C)->ops->destroy = MatDestroy_SeqAIJ_PtAP;
 
   /* Allocate temporary array for storage of one row of A*P */
+  ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(PetscScalar));CHKERRQ(ierr); 
   if (sparse_axpy == 1){
-    ierr = PetscMalloc((c->rmax+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(ptap->apa,(c->rmax+1)*sizeof(MatScalar));CHKERRQ(ierr); 
     A->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy;
   } else {
-    ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(MatScalar));CHKERRQ(ierr); 
     A->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;
   }
   ptap->api = api;
