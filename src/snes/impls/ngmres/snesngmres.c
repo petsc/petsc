@@ -2,9 +2,6 @@
 #include <../src/snes/impls/ngmres/snesngmres.h>
 #include <petscblaslapack.h>
 
-
-
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NGMRES"
 PetscErrorCode SNESReset_NGMRES(SNES snes)
@@ -95,7 +92,6 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   if (debug) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-snes_ngmres_ngs",      "Use nonlinear Gauss-Seidel",    "SNES", ngmres->useGS, &ngmres->useGS, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_gammaA",   "Residual selection constant",   "SNES", ngmres->gammaA, &ngmres->gammaA, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_gammaC", "  Residual restart constant",     "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, PETSC_NULL);CHKERRQ(ierr);
@@ -254,7 +250,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-    } else if (ngmres->useGS && snes->ops->computegs) {
+    } else if (snes->usegs && snes->ops->computegs) {
       /* compute the update using the supplied Gauss-Seidel routine */
       ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
@@ -497,7 +493,6 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ierr = PetscNewLog(snes, SNES_NGMRES, &ngmres);CHKERRQ(ierr);
   snes->data = (void*) ngmres;
   ngmres->msize = 10;
-  ngmres->useGS = PETSC_FALSE;
 
   ngmres->restart_it = 2;
   ngmres->gammaA     = 2.0;

@@ -51,7 +51,6 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->inject                 = PETSC_NULL;
   fas->monitor                = PETSC_NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
-  fas->useGS                  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -174,7 +173,7 @@ PetscErrorCode SNESFASSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,voi
   PetscFunctionBegin;
 
   /* use or don't use it according to user wishes*/
-  fas->useGS = use_gs;
+  snes->usegs = use_gs;
   if (gsfunc) {
     ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
     /* push the provided GS up the tree */
@@ -223,7 +222,7 @@ PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*g
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
-  fas->useGS = use_gs;
+  snes->usegs = use_gs;
   if (gsfunc) {
     ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
   }
@@ -336,7 +335,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
 -  n    - the number of smoothing steps
 
    Options Database Key:
-.  -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
+.  -snes_fas_smoothup <n> - Sets number of pre-smoothing steps
 
    Level: advanced
 
@@ -368,7 +367,7 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n) {
 -  n    - the number of smoothing steps
 
    Options Database Key:
-.  -snes_fas_smoothup <n> - Sets number of pre-smoothing steps
+.  -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
 
    Level: advanced
 
@@ -731,18 +730,15 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBool("-snes_fas_ngs", "Use Nonlinear Gauss-Seidel smoother if provided", "SNESSetGS", fas->useGS, &fas->useGS, &flg);CHKERRQ(ierr);
-
   /* other options for the coarsest level */
   if (fas->level == 0) {
     ierr = PetscOptionsList("-snes_fas_coarse_smoother_type","Coarsest smoother method","SNESSetType",SNESList,def_smooth,pre_type,256,&smoothflg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-snes_fas_coarse_ngs", "Use Nonlinear Gauss-Seidel smoother if provided", "SNESSetGS", fas->useGS, &fas->useGS, &flg);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
 
-  if ((!fas->downsmooth) && ((smoothdownflg || smoothflg) || !fas->useGS)) {
+  if ((!fas->downsmooth) && ((smoothdownflg || smoothflg) || !snes->usegs)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
@@ -756,7 +752,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESSetType(fas->downsmooth, pre_type);CHKERRQ(ierr);
   }
 
-  if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !fas->useGS)) {
+  if ((!fas->upsmooth) && (fas->level != 0) && ((smoothupflg || smoothflg) || !snes->usegs)) {
     const char     *prefix;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->upsmooth);CHKERRQ(ierr);
@@ -784,10 +780,15 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESMonitorSet(snes,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->upsmooth)   ierr = SNESMonitorSet(fas->upsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     if (fas->downsmooth) ierr = SNESMonitorSet(fas->downsmooth,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  } else {
+    /* unset the monitors on the coarse levels */
+    if (fas->level != fas->levels - 1) {
+      ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
+    }
   }
 
   /* recursive option setting for the smoothers */
-  if (fas->next) {ierr = SNESSetFromOptions_FAS(fas->next);CHKERRQ(ierr);}
+  if (fas->next) {ierr = SNESSetFromOptions(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -824,7 +825,7 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       } else {
         ierr = PetscViewerASCIIPrintf(viewer, "no down-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
       }
-      if (fas->useGS) {
+      if (snes->usegs) {
         ierr = PetscViewerASCIIPrintf(viewer, "Using user Gauss-Seidel on level %D\n",  fas->level);CHKERRQ(ierr);
       }
       if (fas->next) fas = (SNES_FAS *)fas->next->data;
@@ -874,7 +875,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-  } else if (snes->ops->computegs) {
+  } else if (snes->usegs && snes->ops->computegs) {
     if (fas->monitor) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
@@ -953,7 +954,7 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec X) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-    } else if (snes->ops->computegs) {
+    } else if (snes->usegs && snes->ops->computegs) {
       if (fas->monitor) {
         ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
