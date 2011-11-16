@@ -1,7 +1,7 @@
 #! /bin/csh
 #
 set MACH=xbox
-set USR=balay
+set USR=petsc
 set LOC=/home/balay/petsc-dev
 set CONF=arch-linux-dbg-quad
 set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
