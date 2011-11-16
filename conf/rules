@@ -277,12 +277,11 @@ treenodir: ${ACTION}
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
-	@-if [ "${DIRS}" != "" ]; then \
-	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
+	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
 	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done ; fi
+	done
 
 #This target goes through all the dirs that contains a makefile
 alltree_makefile: ${ACTION}
@@ -740,7 +739,7 @@ html: chk_c2html
               -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
               sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
               ${PETSC_DIR}/bin/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
