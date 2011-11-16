@@ -48,6 +48,7 @@
  47 SNES Function norm 0.00317321 
  48 SNES Function norm 0.00249259 
  49 SNES Function norm 0.00201019 
+ 50 SNES Function norm 0.00153067 
 SNES Object: 1 MPI processes
   type: ngmres
     line search variant: QUADRATIC
@@ -57,7 +58,7 @@ SNES Object: 1 MPI processes
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=0
-  total number of function evaluations=99
+  total number of function evaluations=101
   SNES Object:  (npc_)   1 MPI processes
     type: nrichardson
       richardson variant: unknown

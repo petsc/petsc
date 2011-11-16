@@ -368,8 +368,8 @@ runex5_5_nrichardson:
 	   ${RM} -f ex5_5_nrichardson.tmp
 
 runex5_5_ngmres_ngs:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_use_gs 1 -npc_snes_max_it ${N_SMOOTHS} \
-        > ex5_5_ngmres_ngs.tmp 2>&1; \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_use_gs \
+           > ex5_5_ngmres_ngs.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_ngs.out ex5_5_ngmres_ngs.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_ngs, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_ngmres_ngs.tmp
