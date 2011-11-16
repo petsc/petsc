@@ -23,7 +23,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
   /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
-  (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
   /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
