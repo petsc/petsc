@@ -219,10 +219,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (!snes->pc) {
-      ierr = VecCopy(F,Y);CHKERRQ(ierr);
-      ierr = VecScale(Y,-1.0);CHKERRQ(ierr);
-    } else {
+    if (snes->usegs && snes->ops->computegs) {
+      ierr = VecCopy(X, Y);CHKERRQ(ierr);
+      ierr = SNESComputeGS(snes, snes->vec_rhs, Y);CHKERRQ(ierr);
+      ierr = VecAXPY(Y, -1.0, X);CHKERRQ(ierr);
+    } else if (snes->pc) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
@@ -231,9 +232,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
         PetscFunctionReturn(0);
       }
       ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(F,Y);CHKERRQ(ierr);
+      ierr = VecScale(Y,-1.0);CHKERRQ(ierr);
     }
-
-      ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

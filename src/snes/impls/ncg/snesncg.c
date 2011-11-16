@@ -294,10 +294,11 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (!snes->pc) {
-      ierr = VecCopy(F,dX);CHKERRQ(ierr);
-      ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
-    } else {
+    if (snes->usegs && snes->ops->computegs) {
+      ierr = VecCopy(X, dX);CHKERRQ(ierr);
+      ierr = SNESComputeGS(snes, B, dX);CHKERRQ(ierr);
+      ierr = VecAXPY(dX, -1.0, X);CHKERRQ(ierr);
+    } else if (snes->pc) {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
@@ -306,6 +307,9 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
         PetscFunctionReturn(0);
       }
       ierr = VecAXPY(dX,-1.0,X);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(F,dX);CHKERRQ(ierr);
+      ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
     }
 
     /* compute the conjugate direction lX = dX + beta*lX with beta = ((F, dX) / (F_old, dX_old) (Fletcher-Reeves update)*/
