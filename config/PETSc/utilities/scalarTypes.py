@@ -85,8 +85,10 @@ class Configure(config.base.Configure):
     elif self.precision == 'double':
       self.addDefine('USE_REAL_DOUBLE', '1')
     elif self.precision == '__float128':  # supported by gcc 4.6
-      self.addDefine('USE_REAL___FLOAT128', '1')
-      self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
+      if self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);'):
+        self.addDefine('USE_REAL___FLOAT128', '1')
+      else:
+        raise RuntimeError('quadmath support not found. --with-precision=__float128 works with gcc-4.6 and newer compilers.')
     else:
       raise RuntimeError('--with-precision must be single, double, longdouble')
     self.framework.logPrint('Precision is '+str(self.precision))
