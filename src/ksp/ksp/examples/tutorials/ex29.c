@@ -29,7 +29,6 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 
 extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
 extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
@@ -61,7 +60,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
     user.rho    = 1.0;
     ierr        = PetscOptionsScalar("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
     user.nu     = 0.1;

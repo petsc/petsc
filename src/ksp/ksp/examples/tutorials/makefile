@@ -921,7 +921,7 @@ runex30:
 	   ${RM} -f ex30_1.tmp
 
 runex32:
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short  > ex32_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex32 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex32_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex32_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex32_1.tmp

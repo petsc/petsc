@@ -614,7 +614,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
   if (!mtype) mtype = MATAIJ;
   ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA options","Mat");CHKERRQ(ierr); 
-  ierr = PetscOptionsList("-da_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /*

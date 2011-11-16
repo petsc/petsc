@@ -780,7 +780,7 @@ runex19_superlu_dist_2:
 	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19.tmp
 runex19_cusp:
-	-@${MPIEXEC} -n 1 ./ex19 -da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_cusp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19.tmp
@@ -873,7 +873,7 @@ runex45_3:
 	   ${RM} -f ex45.tmp
 
 runex47cu:
-	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -da_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -dm_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex47cu_1.out ex47cu_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex47cu_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex47cu_1.tmp

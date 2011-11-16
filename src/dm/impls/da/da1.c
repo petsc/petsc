@@ -355,7 +355,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
-
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDASetRefinementFactor(),
