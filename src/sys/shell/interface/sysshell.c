@@ -805,13 +805,13 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
   if(shell->N >= shell->maxN) {
     /* No more empty component slots, therefore, expand the component array */
     PetscShell *new_components;
+    char **new_keys;
     ierr = PetscMalloc(sizeof(PetscShell)*(shell->maxN+CHUNKSIZE), &new_components);        CHKERRQ(ierr);
     ierr = PetscMemcpy(new_components, shell->component, sizeof(PetscShell)*(shell->maxN)); CHKERRQ(ierr);
     ierr = PetscMemzero(new_components+shell->maxN,sizeof(PetscShell)*(CHUNKSIZE));         CHKERRQ(ierr);
     ierr = PetscFree(shell->component);                                                     CHKERRQ(ierr);
     shell->component = new_components;
     /* Expand the key array */
-    char **new_keys;
     ierr = PetscMalloc(sizeof(char*)*(shell->maxN+CHUNKSIZE), &new_keys);  CHKERRQ(ierr);
     ierr = PetscMemcpy(new_keys, shell->key, sizeof(char*)*(shell->maxN)); CHKERRQ(ierr);
     ierr = PetscMemzero(new_keys+shell->maxN,sizeof(char*)*(CHUNKSIZE));   CHKERRQ(ierr);

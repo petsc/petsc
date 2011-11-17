@@ -28,8 +28,6 @@ typedef struct {
   PetscInt       max_up_it;                    /* number of pre-smooths */
   PetscInt       max_down_it;                  /* number of post-smooth cycles */
   PetscBool      usedmfornumberoflevels;       /* uses a DM to generate a number of the levels */
-  PetscBool      useGS;                        /* use the user Gauss-Seidel routine if available */
-
 } SNES_FAS;
 
 #endif

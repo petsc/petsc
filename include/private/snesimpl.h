@@ -58,6 +58,7 @@ struct _p_SNES {
   void *jacP;                    /* user-defined Jacobian context */
   void *initialguessP;           /* user-defined initial guess context */
   void *gsP;                     /* user-defined Gauss-Seidel context */
+  PetscBool usegs;               /* use a user-provided Gauss-Seidel routine */
   KSP  ksp;                      /* linear solver context */
   PetscBool usesksp;
   MatStructure matstruct;        /* Used by Picard solver */

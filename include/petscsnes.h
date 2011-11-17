@@ -372,6 +372,8 @@ extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,
 
 extern PetscErrorCode  SNESSetGS(SNES,SNESGS,void*);
 extern PetscErrorCode  SNESGetGS(SNES,SNESGS*,void**);
+extern PetscErrorCode  SNESSetUseGS(SNES,PetscBool);
+extern PetscErrorCode  SNESGetUseGS(SNES,PetscBool *);
 extern PetscErrorCode  SNESComputeGS(SNES,Vec,Vec);
 
 /* --------- Routines specifically for line search methods --------------- */
