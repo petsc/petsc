@@ -29,8 +29,8 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
 
 # Update download/index.html as well
-ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/petsc-as/download/index.html
-scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/download
+ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/download/index.html
+scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/download
 
 #######################################
 # M bin/maint/createpatch

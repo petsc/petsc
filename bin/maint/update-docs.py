@@ -30,12 +30,12 @@ def modifyfile(filename):
 
     outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
 
-    #fix http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/')
+    #fix http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/')
     outbuf = w.sub('',outbuf)
 
-    #fix  http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/include/ (for petscversion.h)
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/include/')
+    #fix  http://www.mcs.anl.gov/petsc/snapshots/petsc-current/include/ (for petscversion.h)
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/snapshots/petsc-current/include/')
     outbuf = w.sub('',outbuf)
 
     # Now overwrite the original file 
@@ -75,7 +75,7 @@ def main():
         if argv[3] == 'clean' :
           cleanfiles = 1
     
-    baseurl = 'http://www.mcs.anl.gov/petsc/petsc-as/documentation'
+    baseurl = 'http://www.mcs.anl.gov/petsc/documentation'
     baseurl = PETSC_DIR + '/src/docs/website/documentation/'
     htmlfiles = [
         'bugreporting.html',

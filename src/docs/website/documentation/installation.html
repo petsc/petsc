@@ -132,7 +132,7 @@
 
                   want MPI</a></li>
               <li> Check the <a
-href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/bugreporting.html">bug-reporting</a>
+href="http://www.mcs.anl.gov/petsc/documentation/bugreporting.html">bug-reporting</a>
                 section</li>
             </ul>
           </td>
@@ -1083,8 +1083,8 @@ this
               rgb(255, 0, 0);">
             <span style="color: rgb(255, 0, 0);">make ex19</span><br
               style="color: rgb(255, 0, 0);">
-            <span style="color: rgb(255, 0, 0);">./ex19 -da_vec_type
-              mpicusp -da_mat_type mpiaijcusp -pc_type none
+            <span style="color: rgb(255, 0, 0);">./ex19 -dm_vec_type
+              mpicusp -dm_mat_type mpiaijcusp -pc_type none
               -dmmg_nlevels 1 -da_grid_x 100 -da_grid_y 100 -log_summary
               -mat_no_inode -preload off&nbsp; -cusp_synchronize</span><br>
             <br>
@@ -1109,8 +1109,8 @@ this
               rgb(255, 0, 0);">
             <span style="color: rgb(255, 0, 0);">make ex19</span><br
               style="color: rgb(255, 0, 0);">
-            <span style="color: rgb(255, 0, 0);">./ex19 -da_vec_type
-              pthread -da_mat_type aijpthread -pc_type none
+            <span style="color: rgb(255, 0, 0);">./ex19 -dm_vec_type
+              pthread -dm_mat_type aijpthread -pc_type none
               -dmmg_nlevels 1 -da_grid_x 100 -da_grid_y 100 -log_summary
               -mat_no_inode -preload off&nbsp; -vec_threads 2</span><br>
             <br>

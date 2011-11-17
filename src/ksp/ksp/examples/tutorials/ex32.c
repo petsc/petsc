@@ -35,10 +35,9 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 
-extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -51,25 +50,22 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
+  KSP            ksp;
   DM             da;
   UserContext    user;
-  PetscReal      norm;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
-  PetscInt       l,bc;
+  PetscInt       bc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);  
   
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-    ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
-  }
+  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+
   
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
   user.nu     = 0.1;
@@ -78,36 +74,31 @@ int main(int argc,char **argv)
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
-  
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-  if (user.bcType == NEUMANN) {
-    ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
-  }
-  
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  
-  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetRHS(dmmg),-1.0,DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec x, Vec b)
 {
-  DM             da = dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext    *user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
   PetscScalar    Hx,Hy;
   PetscScalar    **array;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
@@ -124,29 +115,29 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  if (user->bcType == NEUMANN) 
-    {
-      MatNullSpace nullspace;
-      
-      ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
-      ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
-    }
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DM da, Vec x,Mat J,Mat jac,MatStructure *str)
 {
-  DM             da =  dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext    *user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num, numi, numj;
   PetscScalar    v[5],Hx,Hy,HydHx,HxdHy;
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx);
   Hy    = 1.0 / (PetscReal)(my);
@@ -203,5 +194,12 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

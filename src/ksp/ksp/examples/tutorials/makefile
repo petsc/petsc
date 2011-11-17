@@ -477,7 +477,7 @@ runex10:
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_1.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_2:
 	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type bicg \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_2.tmp 2>&1; \
@@ -508,7 +508,7 @@ runex10_6:
 	   if (${DIFF} output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_6.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 BS = 2 3 4 5 6 7 8
 runex10_7:
 	-@touch ex10_7.tmp
@@ -529,14 +529,14 @@ runex10_7:
 	-@if (${DIFF} output/ex10_7.out ex10_7.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_7, diffs above \n========================================="; fi;
 	-@${RM} -f ex10_7.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_8:
 	-@${MPIEXEC} -n 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -options_left no -mat_no_inode > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_8, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_8.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_9:
 	-@touch ex10_9.tmp
 	-@for type in gmres; do \
@@ -558,7 +558,7 @@ runex10_9:
 	-@if (${DIFF} output/ex10_9.out ex10_9.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_9, diffs above \n========================================="; fi;
 	-@${RM} -f ex10_9.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_10:
 	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type fgmres -pc_type ksp \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short> ex10_10.tmp 2>&1; \
@@ -604,7 +604,7 @@ runex10_18:
 	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_18, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_18.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 LEVELS = 0 2 4
 runex10_19:
 	-@touch ex10_19aij.tmp
@@ -616,11 +616,11 @@ runex10_19:
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_19, diffs above \n========================================="; fi; \
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 
 # Start a sequential user code [on 1 node, assembling seqaij] and then
 # spwan a parallel solver on 2 procs.
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_22:
 	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
 	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
@@ -642,7 +642,7 @@ runex10_24:
 # np=4] and then spwan a parallel sub-domain-solver on each node
 # [with np=2]. This emulates mixed MPI-shared memory model [MPI between
 # nodes, MPI within the nodes]
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
+# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_25:
 	-@${MPIEXEC} -n 8 ./ex10 -options_left no -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
 	   if (${DIFF} output/ex10_25.out ex10_25.tmp) then true; \
@@ -903,13 +903,13 @@ runex28:
 	   ${RM} -f ex28_1.tmp
 
 runex29:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex29 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 > ex29_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex29_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex29_1.tmp
 
 runex29_2:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short  -bc_type neumann -dmmg_nlevels 9 > ex29_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex29  -bc_type neumann -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex29_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex29_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex29_2.tmp
@@ -921,7 +921,7 @@ runex30:
 	   ${RM} -f ex30_1.tmp
 
 runex32:
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short  > ex32_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex32 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex32_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex32_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex32_1.tmp
