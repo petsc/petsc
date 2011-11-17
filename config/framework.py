@@ -443,8 +443,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.argDB['ignoreLinkOutput']:
       output = ''
     elif output:
+      hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
-      if self.argDB['ignoreWarnings']:
+      if self.argDB['ignoreWarnings'] and not hasIbmCrap:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)

@@ -1,6 +1,6 @@
 """ Patch utility to apply unified diffs
 
-    Brute-force line-by-line non-recursive parsing 
+    Brute-force line-by-line non-recursive parsing
 
     Copyright (c) 2008-2011 anatoly techtonik
     Available under the terms of MIT license
@@ -99,7 +99,7 @@ class Hunk(object):
 class Patch(object):
   """ Patch for a single file """
   def __init__(self):
-    self.source = None 
+    self.source = None
     self.target = None
     self.hunks = []
     self.hunkends = []
@@ -188,7 +188,7 @@ class PatchSet(object):
 
     # regexp to match start of hunk, used groups - 1,3,4,6
     re_hunk_start = re.compile("^@@ -(\d+)(,(\d+))? \+(\d+)(,(\d+))?")
-    
+
     errors = 0
     # temp buffers for header and filenames info
     header = []
@@ -224,7 +224,7 @@ class PatchSet(object):
               warning("warning: no patch data is found")
             else:
               info("%d unparsed bytes left at the end of stream" % len(''.join(header)))
-              # TODO check for \No new line at the end.. 
+              # TODO check for \No new line at the end..
               # TODO test for unparsed bytes
               # otherwise error += 1
             # this is actually a loop exit
@@ -249,7 +249,7 @@ class PatchSet(object):
               p.hunkends["lf"] += 1
             elif line.endswith("\r"):
               p.hunkends["cr"] += 1
-              
+
             if line.startswith("-"):
               hunkactual["linessrc"] += 1
             elif line.startswith("+"):
@@ -344,7 +344,7 @@ class PatchSet(object):
           headscan = True
         else:
           if tgtname != None:
-            # XXX seems to be a dead branch  
+            # XXX seems to be a dead branch
             warning("skipping invalid patch - double target at line %d" % lineno)
             errors += 1
             srcname = None
@@ -428,7 +428,7 @@ class PatchSet(object):
           warning("error: no patch data found!")
           # ? sys.exit(-1)
         else: # extra data at the end of file
-          pass 
+          pass
       else:
         warning("error: patch stream is incomplete!")
         errors += 1
@@ -453,7 +453,7 @@ class PatchSet(object):
     # --------
     if not self._normalize_filenames():
       errors += 1
-    
+
     return (errors == 0)
 
   def _detect_type(self, p):
@@ -545,7 +545,7 @@ class PatchSet(object):
           p.source = p.source.partition(os.sep)[2]
         if isabs(p.target):
           p.target = p.target.partition(os.sep)[2]
-    
+
       self.items[i].source = p.source
       self.items[i].target = p.target
 
@@ -600,7 +600,7 @@ class PatchSet(object):
         hist = "+"*int(iwidth) + "-"*int(dwidth)
       # -- /calculating +- histogram --
       output += (format % (names[i], insert[i] + delete[i], hist))
- 
+
     output += (" %d files changed, %d insertions(+), %d deletions(-)"
                % (len(names), sum(insert), sum(delete)))
     return output
@@ -777,7 +777,7 @@ class PatchSet(object):
 
   def patch_stream(self, instream, hunks):
     """ Generator that yields stream patched with hunks iterable
-    
+
         Converts lineends in hunk lines to the best suitable format
         autodetected from input
     """
@@ -830,7 +830,7 @@ class PatchSet(object):
             yield line2write.rstrip("\r\n")+newline
           else: # newlines are mixed
             yield line2write
-     
+
     for line in instream:
       yield line
 
