@@ -502,7 +502,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba; 
   PetscInt             *api,*apj,*coi,*coj; 
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend; 
-  PetscBool            dense_axpy=PETSC_FALSE;
+  PetscInt             sparse_axpy=0;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -541,8 +541,13 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   /* compute numeric C_seq=P_loc^T*A_loc*P */
   api = ap->abi; apj = ap->abj;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matptap_denaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (dense_axpy){  /* Perform dense axpy */
+  /* flag 'sparse_axpy' determines which implementations to be used:
+       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of a dense array apa; (default)
+       1: do one sparse axpy - uses same memory as sparse_axpy=0 and might execute less flops 
+          (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
+       2: do two sparse axpy in MatPtAPNumeric() - slowest, uses a sparse array apa */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
+  if (sparse_axpy < 2){  /* Perform one dense axpy */
     /***********************************************************************/
     /*
     PetscInt prid=1;
@@ -595,29 +600,41 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       for (j=0; j<pnz; j++) {
         row    = *pJ++; /* global index */
         if (row < pcstart || row >=pcend) { /* put the value into Co (off-diagonal part) */
+          cnz = coi[*poJ+1] - coi[*poJ];
           cj  = coj + coi[*poJ]; 
           ca  = coa + coi[*poJ++];
         } else {                            /* put the value into Cd (diagonal part) */
-          cj   = bj + bi[*pdJ]; 
-          ca   = ba + bi[*pdJ++];
+          cnz = bi[*pdJ+1] - bi[*pdJ];
+          cj  = bj + bi[*pdJ]; 
+          ca  = ba + bi[*pdJ++];
         } 
 
-        /* perform sparse axpy */
-        nextap = 0;
-        for (k=0; nextap<apnz; k++) {
-          if (cj[k]==apJ[nextap]) { /* global column index */
-            ca[k] += (*pA)*apa[cj[k]]; nextap++;
+        if (sparse_axpy < 1){
+          /* perform dense axpy */
+          nextap = 0;
+          for (k=0; k<cnz; k++) { 
+            ca[k] += pA[j]*apa[cj[k]]; 
           }
+          ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
+        } else {
+          /* perform sparse axpy */
+          nextap = 0;
+          for (k=0; nextap<apnz; k++) {
+            if (cj[k]==apJ[nextap]) { /* global column index */
+              ca[k] += pA[j]*apa[cj[k]]; nextap++;
+            }
+          }
+          ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
         }
-        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
-        pA++;
+
       }
+      pA += pnz;
       /* zero the current row info for A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
     }
     ierr = PetscFree(apa);CHKERRQ(ierr);
     /***********************************************************************/
-  } else {/* Perform sparse axpy */
+  } else if (sparse_axpy == 2){/* Perform two sparse axpy */
     
   /* malloc apa to store sparse row A[i,:]*P */ 
   ierr = PetscMalloc((ap->abnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
@@ -675,12 +692,11 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         ca   = ba + bi[*pdJ++];
       } 
       for (k=0; nextap<apnz; k++) {
-        if (cj[k]==apJ[nextap]) ca[k] += (*pA)*apa[nextap++]; 
+        if (cj[k]==apJ[nextap]) ca[k] += pA[j]*apa[nextap++]; 
       }
       ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
-      pA++;
     }
-
+    pA += pnz;
     /* zero the current row info for A*P */
     ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
   }
