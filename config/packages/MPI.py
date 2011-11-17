@@ -283,6 +283,7 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
+    self.addDefine('HAVE_MPI_IN_PLACE', 1)
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
