@@ -460,10 +460,12 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = PetscGetTime(&tf);CHKERRQ(ierr);
     etime1 += tf - t0;
 
-#if defined(PETSC_USE_INFO)    
+#if defined(PETSC_USE_INFO)
+    {
     Mat_SeqAIJ *c=(Mat_SeqAIJ*)(*C)->data;
     ierr = PetscInfo5(*C,"Bt_dense: %D,%D; Cnz %D / (cm*ncolors %D) = %g\n",A->cmap->n,matcoloring->ncolors,c->nz,A->rmap->n*matcoloring->ncolors,(PetscReal)(c->nz)/(A->rmap->n*matcoloring->ncolors));
     ierr = PetscInfo5(*C,"Sym = GetColor %g + ColorCreate %g + MatDenseCreate %g + non-colorSym %g = %g\n",etime0,etime01,etime1,etime2,etime0+etime01+etime1+etime2);
+    }
 #endif
   }
   /* clean up */

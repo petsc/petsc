@@ -687,6 +687,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->nonlinear_its += its; ts->linear_its += lits;
       } else {
+        Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
         ierr = TSComputeIFunction(ts,ros->stage_time,Zstage,Ydot,Y[i],PETSC_FALSE);CHKERRQ(ierr);
         ierr = VecScale(Y[i],-1.0);      
@@ -697,7 +698,6 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr); 
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         str = SAME_NONZERO_PATTERN;
-        Mat J,Jp;
         ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);
         ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);     
         ierr = MatMult(J,Zstage,Zdot);
