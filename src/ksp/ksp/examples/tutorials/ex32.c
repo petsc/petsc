@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
   
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   user.nu     = 0.1;
   ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
   bc          = (PetscInt)NEUMANN;
