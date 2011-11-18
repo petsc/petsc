@@ -107,7 +107,9 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
       }
     }
 
-#if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
+#if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE___INT64)
+    *a = _atoi64(name);
+#elif defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     *a = atoll(name);
 #else
     *a = (PetscInt)atoi(name);
