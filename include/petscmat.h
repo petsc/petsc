@@ -610,7 +610,6 @@ extern PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat,Mat);
 extern PetscErrorCode  MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
 extern PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 extern PetscErrorCode  MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
-extern PetscErrorCode  MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 #if defined (PETSC_USE_CTABLE)
 extern PetscErrorCode  MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);
 #else

@@ -5092,10 +5092,10 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetBrowsOfAoCols"
-/*@C
-    MatGetBrowsOfAoCols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
-    of the OFF-DIAGONAL portion of local A 
+#define __FUNCT__ "MatGetBrowsOfAoCols_MPIAIJ"
+/*
+    MatGetBrowsOfAoCols_MPIAIJ - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns 
+    of the OFF-DIAGONAL portion of local A
 
     Collective on Mat
 
@@ -5107,12 +5107,12 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
 -    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or PETSC_NULL) 
 
    Output Parameter:
-+    B_oth - the sequential matrix generated
++    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
 
     Level: developer
 
-@*/
-PetscErrorCode  MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscInt **startsj_r,MatScalar **bufa_ptr,Mat *B_oth) 
+*/
+PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscInt **startsj_r,MatScalar **bufa_ptr,Mat *B_oth) 
 {
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscErrorCode         ierr;
