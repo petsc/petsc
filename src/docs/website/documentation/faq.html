@@ -1167,11 +1167,14 @@ href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users
                       <li>Followed by MatScale(S,-1.0);</li>
                     </ul>
                     As you can see, this requires a great deal of work
-                    space and computation so is best avoided. For
-                    example if you want to solve S x = b, instead of
-                    forming S explicitly you can provide the action of S
-                    on a vector efficiently with a MATSHELL and pass
-                    this to a KSP solver.<br>
+                    space and computation so is best avoided.
+                    However, it is not necessary to assemble the Schur complement S in order to solve systems with it.
+                    Use MatCreateSchurComplement(Kaa,Kaa_pre,Kab,Kba,Kbb,&S) to create a matrix that applies the action of S (using Kaa_pre to solve with Kaa), but does not assemble.
+                    Alternatively, if you already have a block matrix K = [Kaa, Kab; Kba, Kbb] (in some ordering), then you can create index sets (IS) isa and isb to address each block, then use MatGetSchurComplement() to create the Schur complement and/or an approximation suitable for preconditioning.
+                    Since S is generally dense, standard preconditioning methods cannot typically be applied directly to Schur complements.
+                    There are many approaches to preconditioning Schur complements including using the SIMPLE approximation K_bb - Kba inv(diag(Kaa)) Kab to create a sparse matrix that approximates the Schur complement (this is returned by default for the optional "preconditioning" matrix in MatGetSchurComplement()).
+                    An alternative is to interpret the matrices as differential operators and apply approximate commutator arguments to find a spectrally equivalent operation that can be applied efficiently (see the "PCD" preconditioners from Elman, Silvester, and Wathen).
+                    A variant of this is the least squares commutator, which is closely related to the Moore-Penrose pseudoinverse, and is available in PCLSC which operates on matrices of type MATSCHURCOMPLEMENT.
                     <br>
                     <span style="color: rgb(255, 0, 0);"><a name="fem"></a>Do
 you
