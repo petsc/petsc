@@ -2,24 +2,27 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h>    /*I "petscmat.h" I*/
 
 /* 
-   Currently using ParMetis-2.0. The following include file has
-   to be changed to par_kmetis.h for ParMetis-1.0
+   Currently using ParMetis-4.0.2
 */
-EXTERN_C_BEGIN
+
 #include <parmetis.h>
-EXTERN_C_END
 
 /*
       The first 5 elements of this structure are the input control array to Metis
 */
 typedef struct {
-  int cuts;         /* number of cuts made (output) */
-  int foldfactor;
-  int parallel;     /* use parallel partitioner for coarse problem */
-  int indexing;     /* 0 indicates C indexing, 1 Fortran */
-  int printout;     /* indicates if one wishes Metis to print info */
+  PetscInt cuts;         /* number of cuts made (output) */
+  PetscInt foldfactor;
+  PetscInt parallel;     /* use parallel partitioner for coarse problem */
+  PetscInt indexing;     /* 0 indicates C indexing, 1 Fortran */
+  PetscInt printout;     /* indicates if one wishes Metis to print info */
   MPI_Comm comm_pmetis;
 } MatPartitioning_Parmetis;
+
+#define CHKERRQPARMETIS(n) \
+  if (n == METIS_ERROR_INPUT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options");} \
+  else if (n == METIS_ERROR_MEMORY) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory");} \
+  else if (n == METIS_ERROR) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error");} \
 
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
@@ -30,14 +33,15 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
   PetscErrorCode           ierr;
-  int                      *locals,size,rank;
-  int                      *vtxdist,*xadj,*adjncy,itmp = 0;
-  int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3],  i,j;
+  PetscMPIInt              size,rank;
+  PetscInt                 *locals,*vtxdist,*xadj,*adjncy,itmp = 0;
+  PetscInt                 wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[24], i, j;
   Mat                      mat = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   PetscBool                flg;
-  float                    *tpwgts,*ubvec;
+  PetscReal                *tpwgts,*ubvec;
   PetscInt                 bs = 1,nold;
+  int                      status;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
@@ -64,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 #if defined(PETSC_USE_DEBUG)
   /* check that matrix has no diagonal entries */
   {
-    int rstart;
+    PetscInt rstart;
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->rmap->n; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
@@ -74,7 +78,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   }
 #endif
 
-  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(int),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(PetscInt),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
@@ -91,9 +95,13 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   for (i=0; i<ncon; i++) {
     ubvec[i] = 1.05;
   }
+  /* This sets the defaults */
   options[0] = 0;
-  /* ParMETIS has no error conditions ??? */
-  ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&parmetis->cuts,locals,&parmetis->comm_pmetis);
+  for (i=1; i<24; i++) {
+    options[i] = -1;
+  }
+  status = ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&parmetis->cuts,locals,&parmetis->comm_pmetis);CHKERRQPARMETIS(status);
+
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
@@ -343,18 +351,18 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 {
   PetscErrorCode           ierr;
-  int                      *newxadj,*newadjncy;
-  int                      numflag=0;
+  PetscInt                 *newxadj,*newadjncy;
+  PetscInt                 numflag=0;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mesh->data,*newadj;
   PetscBool                flg;
+  int                      status;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
 
-  /* ParMETIS has no error conditions ??? */
   CHKMEMQ;
-  ParMETIS_V3_Mesh2Dual(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);
+  status = ParMETIS_V3_Mesh2Dual(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);CHKERRQPARMETIS(status);
   CHKMEMQ;
   ierr = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
   newadj = (Mat_MPIAdj *)(*dual)->data;

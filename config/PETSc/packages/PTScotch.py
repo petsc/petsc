@@ -89,7 +89,7 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
-      #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
+      #Scotch has a file identical to one in ParMETIS, remove it so ParMETIS will not use it by mistake
       try: # PTScotch installs parmetis.h by default, we need to remove it so it does not conflict with the ParMETIS native copy
         os.unlink(os.path.join(self.packageDir,'include','parmetis.h'))
       except: pass

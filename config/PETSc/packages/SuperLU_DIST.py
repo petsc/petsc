@@ -3,12 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.0.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_3.0-p1.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_3.0.a']]
-    #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
-    #  in the method configureLibrary()
     self.requires32bitint = 0
     self.complex          = 1
     # SuperLU_Dist does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
@@ -19,8 +17,8 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)    
-    self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
+    self.parmetis   = framework.require('PETSc.packages.parmetis',self)
     self.deps       = [self.mpi,self.blasLapack,self.parmetis]
     return
 
@@ -42,7 +40,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+' $(IMPI)\n') #build fails without $(IMPI)
     g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
-    g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
+    g.write('LOADER       = '+self.setCompilers.getLinker()+'\n')
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
     # set blas/lapack name mangling
@@ -73,13 +71,13 @@ class Configure(PETSc.package.NewPackage):
   def consistencyChecks(self):
     PETSc.package.NewPackage.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
-      if not self.blasLapack.checkForRoutine('slamch'): 
+      if not self.blasLapack.checkForRoutine('slamch'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
       self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('dlamch'): 
+      if not self.blasLapack.checkForRoutine('dlamch'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
       self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('xerbla'): 
+      if not self.blasLapack.checkForRoutine('xerbla'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
       self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return
