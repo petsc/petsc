@@ -36,7 +36,6 @@ static char help[] = "Solves 2D compressible Euler using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 
 typedef struct {
   Vec rho;     /* The mass solution \rho */
@@ -83,7 +82,7 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
     user.phi = 0.5;
     ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
     user.dt  = 0.1;
