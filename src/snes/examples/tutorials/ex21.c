@@ -86,6 +86,7 @@ int main(int argc,char **argv)
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&user.red1);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da1);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da2);CHKERRQ(ierr);
   ierr = DMDestroy(&user.packer);CHKERRQ(ierr);

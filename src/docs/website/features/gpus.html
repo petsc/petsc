@@ -44,22 +44,34 @@
               <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
               <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
               <li><a href="../miscellaneous/external.html"><strong>External
+
                     Software</strong></a></li>
               <li><a href="../developers/index.html"><strong>Developers
                     Site</strong></a></li>
             </ul>
           </td>
           <td valign="top" width="75%">PETSc algebraic solvers now run
-            on
-            Nvidia GPU systems. This sometimes provides an alternative
-            high
-            performance low cost solution technique. <br>
+            on Nvidia GPU systems. This sometimes provides an
+            alternative high performance low cost solution technique. <br>
             <br>
             Nvidia GPU usage of PETSc is currently available in the
             current release PETSc 3.2, but since things change rapidly
             in this arena we recommend working with <a
               href="../developers/index.html">petsc-dev</a> if you wish
             to utilize GPUs.<br>
+            <br>
+            If you use the PETSc GPU code in your published work please
+            cite the paper:<br>
+            @article{minden2010preliminary,<br>
+            &nbsp; title={Preliminary implementation of PETSc using
+            GPUs},<br>
+            &nbsp; author={Minden, V. and Smith, B.F. and Knepley,
+            M.G.},<br>
+            &nbsp; journal={Proceedings of the 2010 International
+            Workshop of GPU Solutions to Multiscale Problems in Science
+            and Engineering},<br>
+            &nbsp; year={2010}<br>
+            }<br>
             <br>
             <span style="color: rgb(255, 0, 0);">WARNING: Using GPUs
               effectively is difficult! You must be dedicated and
@@ -71,40 +83,38 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/installation.html#CU
 PETSc
 to
 use
+
                   the Nvidia GPUs</a></li>
               <li><a href="gpus.pdf">How the GPU solvers are implemented
-                  in
-                  PETSc.</a></li>
+                  in PETSc.</a></li>
               <li><a
 href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">Example
+
                   that uses CUSP directly in the user function
                   evaluation.</a></li>
               <li><a
 href="https://www.iwork.com/r/en/?a=p8902449&amp;d=PETSc-MATLAB-GPU.key&amp;u=sean%40seanfarley.org&amp;p=171573186BFE1BA16D16">Presentation
 on
+
                   some aspects of GPU usage from PETSc.</a><br>
               </li>
               <li>Quick summary of usage</li>
               <ul>
                 <li>The VecType VECSEQCUSP, VECMPICUSP, or VECCUSP maybe
-                  used
-                  with VecSetType() or -vec_type seqcusp,mpicusp, or
-                  cusp when
-                  VecSetFromOptions() is used.<br>
+                  used with VecSetType() or -vec_type seqcusp,mpicusp,
+                  or cusp when VecSetFromOptions() is used.<br>
                 </li>
                 <li>The MatType MATSEQAIJCUSP, MATMPIAIJCUSP, or
-                  MATAIJCUSP
-                  maybe used with MatSetType or -mat_type
-                  seqaijcusp,mpiaijcusp, or
-                  aijcusp when MatSetOptions() is used.<br>
+                  MATAIJCUSP maybe used with MatSetType or -mat_type
+                  seqaijcusp,mpiaijcusp, or aijcusp when MatSetOptions()
+                  is used.<br>
                 </li>
                 <li>If you are creating the vectors and matrices with a
-                  DM
-                  you can use -dm_vec_type cusp and -dm_mat_type cusp</li>
+                  DM you can use -dm_vec_type cusp and -dm_mat_type cusp</li>
                 <li>It is useful to develop your code with the default
                   vectors and then run production runs with the command
-                  line options to
-                  use the GPU since debugging on GPUs is difficult.</li>
+                  line options to use the GPU since debugging on GPUs is
+                  difficult.</li>
                 <li>All of the Krylov methods except KSPIBCGS run on the
                   GPU. We also provide PCBICGSTABCUSP, but it does not
                   appear more efficient than PCBICGSTAB.</li>
@@ -115,14 +125,11 @@ on
                   to run on the GPU.</li>
               </ul>
               <li>Some GPU systems (for example many laptops) only run
-                with
-                single precision, thus PETSc must be built with the
-                ./configure option
-                --with-precision=single<br>
+                with single precision, thus PETSc must be built with the
+                ./configure option --with-precision=single<br>
               </li>
               <li>We could use your help in further developing PETSc for
-                the
-                GPU, <a href="../developers/index.html">petsc-dev</a>.</li>
+                the GPU, <a href="../developers/index.html">petsc-dev</a>.</li>
             </ul>
           </td>
         </tr>
