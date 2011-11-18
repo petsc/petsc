@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
 
   def configureCMake(self):
     '''Check various things about cmake'''
-    self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName = 'cmake')
+    self.found = self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName = 'cmake')
     return
 
   def configure(self):
