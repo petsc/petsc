@@ -455,6 +455,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   B_mpi->assembled     = PETSC_FALSE; 
   B_mpi->ops->destroy  = MatDestroy_MPIAIJ_MatPtAP;  
   B_mpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP;
+  ierr = MatSetBlockSize_MPIAIJ(B_mpi,1);CHKERRQ(ierr);
 
   /* attach the supporting struct to B_mpi for reuse */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
@@ -502,7 +503,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba; 
   PetscInt             *api,*apj,*coi,*coj; 
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend; 
-  PetscInt             sparse_axpy=1;
+  PetscInt             sparse_axpy;
   PetscLogDouble       t0,tf,etime=0.0,t00,tff,time_matupdate=0.0,time_malloc=0.0,time_Cseq0=0.0,time_Cseq1=0.0,time_setvals=0.0;
 
   PetscFunctionBegin;
@@ -539,7 +540,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ap->B_loc)->data;
   p_oth = (Mat_SeqAIJ*)(ap->B_oth)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pJ=pj_loc; pa_loc=p_loc->a,pA=pa_loc;  
+  pi_loc=p_loc->i; pj_loc=p_loc->j; pJ=pj_loc; pa_loc=p_loc->a;   
   pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
   
   coi = merge->coi; coj = merge->coj;
@@ -559,9 +560,96 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
        1: do one sparse axpy - uses same memory as sparse_axpy=0 and might execute less flops 
           (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
        2: do two sparse axpy in MatPtAPNumeric() - slowest, uses a sparse array apa */
+  /* set default sparse_axpy */
+  sparse_axpy = 1; 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (sparse_axpy < 2){  /* Perform one dense axpy */
-    /***********************************************************************/
+  if (sparse_axpy == 0){  /* Do not perform sparse axpy */
+    /*--------------------------------------------------*/
+    /* malloc apa to store dense row A[i,:]*P */ 
+    ierr = PetscMalloc((P->cmap->N)*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
+    ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+
+    for (i=0; i<am; i++) {
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
+      /*------------------------------------------------------------*/
+      apJ = apj + api[i];
+
+      /* diagonal portion of A */
+      anz = adi[i+1] - adi[i];
+      adj = ad->j + adi[i];
+      ada = ad->a + adi[i];
+      for (j=0; j<anz; j++) {
+        row = adj[j]; 
+        pnz = pi_loc[row+1] - pi_loc[row];
+        pj  = pj_loc + pi_loc[row];
+        pa  = pa_loc + pi_loc[row];
+
+        /* perform dense axpy */
+        for (k=0; k<pnz; k++){
+          apa[pj[k]] += ada[j]*pa[k];
+        }
+        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
+      }
+
+      /* off-diagonal portion of A */
+      anz = aoi[i+1] - aoi[i];
+      aoj = ao->j + aoi[i];
+      aoa = ao->a + aoi[i];
+      for (j=0; j<anz; j++) {
+        row = aoj[j]; 
+        pnz = pi_oth[row+1] - pi_oth[row];
+        pj  = pj_oth + pi_oth[row];
+        pa  = pa_oth + pi_oth[row];
+
+        /* perform dense axpy */
+        for (k=0; k<pnz; k++){
+          apa[pj[k]] += aoa[j]*pa[k];
+        }
+        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
+      }
+      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+      time_Cseq0 += tf - t0;
+
+      /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
+      /*--------------------------------------------------------------*/
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      apnz = api[i+1] - api[i];
+      /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
+      pnz = po->i[i+1] - po->i[i];
+      pA  = po->a + po->i[i];
+      for (j=0; j<pnz; j++){ 
+        cnz = coi[*poJ+1] - coi[*poJ];
+        cj  = coj + coi[*poJ]; 
+        ca  = coa + coi[*poJ++];
+        /* perform dense axpy */
+        for (k=0; k<cnz; k++) { 
+          ca[k] += pA[j]*apa[cj[k]];
+        }
+        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);      
+      } 
+      
+      /* put the value into Cd (diagonal part) */
+      pnz = pd->i[i+1] - pd->i[i];
+      pA  = pd->a + pd->i[i];
+      for (j=0; j<pnz; j++){  
+        cnz = bi[*pdJ+1] - bi[*pdJ];
+        cj  = bj + bi[*pdJ]; 
+        ca  = ba + bi[*pdJ++];
+        /* perform dense axpy */
+        for (k=0; k<cnz; k++) { 
+          ca[k] += pA[j]*apa[cj[k]]; 
+        }
+        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);     
+      }
+     
+      /* zero the current row of A*P */
+      for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
+      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+      time_Cseq1 += tf - t0;
+    }
+  } else if (sparse_axpy == 1){  /* Perform one sparse axpy */
+    /*------------------------------------------------------*/
     /* malloc apa to store dense row A[i,:]*P */ 
     ierr = PetscMalloc((P->cmap->N)*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
     ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -612,55 +700,37 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
       apnz = api[i+1] - api[i];
-     
       /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
       pnz = po->i[i+1] - po->i[i];
+      pA  = po->a + po->i[i];
       for (j=0; j<pnz; j++){ 
-        cnz = coi[*poJ+1] - coi[*poJ];
         cj  = coj + coi[*poJ]; 
         ca  = coa + coi[*poJ++];
-
-        if (sparse_axpy < 1){
-          /* perform dense axpy */
-          for (k=0; k<cnz; k++) { 
-            ca[k] += (*(po->a+po->i[i]+j))*apa[cj[k]];
+        /* perform sparse axpy */
+        nextap = 0;
+        for (k=0; nextap<apnz; k++) {
+          if (cj[k]==apJ[nextap]) { /* global column index */
+            ca[k] += pA[j]*apa[cj[k]]; nextap++;
           }
-          ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);      
-        } else {
-          /* perform sparse axpy */
-          nextap = 0;
-          for (k=0; nextap<apnz; k++) {
-            if (cj[k]==apJ[nextap]) { /* global column index */
-              ca[k] += (*(po->a+po->i[i]+j))*apa[cj[k]]; nextap++;
-            }
-          }
-          ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
         }
-      } 
-      
+        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
+      }
+     
       /* put the value into Cd (diagonal part) */
       pnz = pd->i[i+1] - pd->i[i];
+      pA  = pd->a + pd->i[i];
       for (j=0; j<pnz; j++){  
-        cnz = bi[*pdJ+1] - bi[*pdJ];
         cj  = bj + bi[*pdJ]; 
-        ca  = ba + bi[*pdJ++];
-
-        if (sparse_axpy < 1){
-          /* perform dense axpy */
-          for (k=0; k<cnz; k++) { 
-            ca[k] += *(pd->a+pd->i[i]+j)*apa[cj[k]]; 
+        ca  = ba + bi[*pdJ++]; 
+        /* perform sparse axpy */
+        nextap = 0;
+        for (k=0; nextap<apnz; k++) {
+          if (cj[k]==apJ[nextap]) { /* global column index */
+            ca[k] += pA[j]*apa[cj[k]]; 
+            nextap++;
           }
-          ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
-        } else {
-          /* perform sparse axpy */
-          nextap = 0;
-          for (k=0; nextap<apnz; k++) {
-            if (cj[k]==apJ[nextap]) { /* global column index */
-              ca[k] += *(pd->a+pd->i[i]+j)*apa[cj[k]]; nextap++;
-              }
-          }
-          ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
         }
+        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
       }
      
       /* zero the current row of A*P */
@@ -668,105 +738,109 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ierr = PetscGetTime(&tf);CHKERRQ(ierr);
       time_Cseq1 += tf - t0;
     }
-    ierr = PetscFree(apa);CHKERRQ(ierr);
-    /***********************************************************************/
   } else if (sparse_axpy == 2){/* Perform two sparse axpy */
-    
-  /* malloc apa to store sparse row A[i,:]*P */ 
-  ierr = PetscMalloc((ap->abnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,ap->abnz_max*sizeof(MatScalar));CHKERRQ(ierr);
+    /*----------------------------------------------------*/
+    /* malloc apa to store sparse row A[i,:]*P */ 
+    ierr = PetscMalloc((ap->abnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
+    ierr = PetscMemzero(apa,ap->abnz_max*sizeof(MatScalar));CHKERRQ(ierr);
 
-  for (i=0; i<am; i++) {
-    /* form i-th sparse row of A*P */
-    apnz = api[i+1] - api[i];
-    apJ  = apj + api[i];
-    /* diagonal portion of A */
-    anz = adi[i+1] - adi[i];
-    adj = ad->j + adi[i];
-    ada = ad->a + adi[i];
-    for (j=0; j<anz; j++) {
-      row = adj[j]; 
-      pnz = pi_loc[row+1] - pi_loc[row];
-      pj  = pj_loc + pi_loc[row];
-      pa  = pa_loc + pi_loc[row];
-      nextp = 0;
-      for (k=0; nextp<pnz; k++) {
-        if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
-          apa[k] += ada[j]*pa[nextp++]; 
+    pA=pa_loc;
+    for (i=0; i<am; i++) {
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      /* form i-th sparse row of A*P */
+      apnz = api[i+1] - api[i];
+      apJ  = apj + api[i];
+      /* diagonal portion of A */
+      anz = adi[i+1] - adi[i];
+      adj = ad->j + adi[i];
+      ada = ad->a + adi[i];
+      for (j=0; j<anz; j++) {
+        row = adj[j]; 
+        pnz = pi_loc[row+1] - pi_loc[row];
+        pj  = pj_loc + pi_loc[row];
+        pa  = pa_loc + pi_loc[row];
+        nextp = 0;
+        for (k=0; nextp<pnz; k++) {
+          if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
+            apa[k] += ada[j]*pa[nextp++]; 
+          }
         }
+        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
-      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-    }
-    /* off-diagonal portion of A */
-    anz = aoi[i+1] - aoi[i];
-    aoj = ao->j + aoi[i];
-    aoa = ao->a + aoi[i];
-    for (j=0; j<anz; j++) {
-      row = aoj[j]; 
-      pnz = pi_oth[row+1] - pi_oth[row];
-      pj  = pj_oth + pi_oth[row];
-      pa  = pa_oth + pi_oth[row];
-      nextp = 0;
-      for (k=0; nextp<pnz; k++) {
-        if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
-          apa[k] += aoa[j]*pa[nextp++];
+      /* off-diagonal portion of A */
+      anz = aoi[i+1] - aoi[i];
+      aoj = ao->j + aoi[i];
+      aoa = ao->a + aoi[i];
+      for (j=0; j<anz; j++) {
+        row = aoj[j]; 
+        pnz = pi_oth[row+1] - pi_oth[row];
+        pj  = pj_oth + pi_oth[row];
+        pa  = pa_oth + pi_oth[row];
+        nextp = 0;
+        for (k=0; nextp<pnz; k++) {
+          if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
+            apa[k] += aoa[j]*pa[nextp++];
+          }
         }
+        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
-      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-    }
+      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+      time_Cseq0 += tf - t0;
 
-    /* Compute P_loc[i,:]^T*AP[i,:] using outer product */
-    pnz = pi_loc[i+1] - pi_loc[i];
-    pJ  = pj_loc + pi_loc[i];
-    for (j=0; j<pnz; j++) {
-      nextap = 0;
-      row    = pJ[j]; /* global index */
-      if (row < pcstart || row >=pcend) { /* put the value into Co */
-        cj  = coj + coi[*poJ]; 
-        ca  = coa + coi[*poJ++];
-      } else {                            /* put the value into Cd */
-        cj   = bj + bi[*pdJ]; 
-        ca   = ba + bi[*pdJ++];
-      } 
-      for (k=0; nextap<apnz; k++) {
-        if (cj[k]==apJ[nextap]) ca[k] += pA[j]*apa[nextap++]; 
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
+      /*--------------------------------------------------------------*/
+      pnz = pi_loc[i+1] - pi_loc[i];
+      pJ  = pj_loc + pi_loc[i];
+      for (j=0; j<pnz; j++) {
+        nextap = 0;
+        row    = pJ[j]; /* global index */
+        if (row < pcstart || row >=pcend) { /* put the value into Co */
+          cj  = coj + coi[*poJ]; 
+          ca  = coa + coi[*poJ++];
+        } else {                            /* put the value into Cd */
+          cj   = bj + bi[*pdJ]; 
+          ca   = ba + bi[*pdJ++];
+        } 
+        for (k=0; nextap<apnz; k++) {
+          if (cj[k]==apJ[nextap]) ca[k] += pA[j]*apa[nextap++]; 
+        }
+        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
       }
-      ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
+      pA += pnz;
+      /* zero the current row info for A*P */
+      ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+      time_Cseq1 += tf - t0;
     }
-    pA += pnz;
-    /* zero the current row info for A*P */
-    ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"sparse_axpy only takes values 0, 1 and 2");
   ierr = PetscFree(apa);CHKERRQ(ierr);
-  } 
   
-  /* send and recv matrix values */
-  /*-----------------------------*/
+  /* 3) send and recv matrix values coa */
+  /*------------------------------------*/
   buf_ri = merge->buf_ri;
   buf_rj = merge->buf_rj;
   len_s  = merge->len_s;
   ierr = PetscCommGetNewTag(comm,&taga);CHKERRQ(ierr);
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waits);CHKERRQ(ierr);
+  ierr = PetscMalloc2(merge->nsend+1,MPI_Request,&s_waits,size,MPI_Status,&status);CHKERRQ(ierr);
   for (proc=0,k=0; proc<size; proc++){  
     if (!len_s[proc]) continue;
     i = merge->owners_co[proc];
     ierr = MPI_Isend(coa+coi[i],len_s[proc],MPIU_MATSCALAR,proc,taga,comm,s_waits+k);CHKERRQ(ierr);
     k++;
   } 
-  ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
   if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);}
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);}
-  ierr = PetscFree(status);CHKERRQ(ierr);
 
-  ierr = PetscFree(s_waits);CHKERRQ(ierr);
+  ierr = PetscFree2(s_waits,status);CHKERRQ(ierr);
   ierr = PetscFree(r_waits);CHKERRQ(ierr);
   ierr = PetscFree(coa);CHKERRQ(ierr);
 
+  /* 4) insert local Cseq and received values into Cmpi */
+  /*------------------------------------------------------*/
   ierr = PetscGetTime(&t0);CHKERRQ(ierr); 
-  /* insert local and received values into C */
-  /*-----------------------------------------*/
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
 
   for (k=0; k<merge->nrecv; k++){
@@ -800,7 +874,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MatSetValues(C,1,&row,bnz,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr); 
     ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
   } 
-  ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
@@ -814,7 +887,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscGetTime(&tff);CHKERRQ(ierr);
   etime += tff - t00;
   /*
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PtAPNum time %g = matupdate %g + malloc %g + Cseq %g + %g + setvals %g\n",rank,etime,time_matupdate,time_malloc,time_Cseq0,time_Cseq1,time_setvals);
+  PetscInt prid=0;
+  if (rank == prid){
+   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PtAPNum time %g = matupdate %g + malloc %g + Cseq %g + %g + setvals %g\n",rank,etime,time_matupdate,time_malloc,time_Cseq0,time_Cseq1,time_setvals);
+  }
    */
   PetscFunctionReturn(0);
 }

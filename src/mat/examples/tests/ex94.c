@@ -81,7 +81,7 @@ int main(int argc,char **args)
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmatmult_");CHKERRQ(ierr); /* enable option '-matmatmult_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
+    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded); */
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
@@ -155,7 +155,7 @@ int main(int argc,char **args)
     ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmattrmult_");CHKERRQ(ierr); /* enable '-matmattrmult_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransposeMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
+    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransposeMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);*/
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ int main(int argc,char **args)
     ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatTransposeMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
+    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatTransposeMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);*/
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ int main(int argc,char **args)
         PetscReal norm;
         ierr = MatAXPY(RARt,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* RARt = -RARt + C */
         ierr = MatNorm(RARt,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-        if (norm > 1.e-13) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"|PtAP - RARt| = %g",norm);
+        if (norm > 1.e-12) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"|PtAP - RARt| = %g",norm);
       }
       ierr = MatDestroy(&R);CHKERRQ(ierr);
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);
