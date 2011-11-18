@@ -1,5 +1,5 @@
 !
-!  Demonstrates use of DMMGSetSNESLocal() from Fortran
+!  Demonstrates use of DMDASetLocalFunction() from Fortran
 !
 !    Note: the access to the entries of the local arrays below use the Fortran
 !   convention of starting at zero. However calls to MatSetValues()  start at 0.
@@ -12,7 +12,7 @@
       implicit none
 #include <finclude/petsc.h>
 
-      DMMG             dmmg
+      SNES             snes
       PetscErrorCode   ierr
       DM               da
       external         FormFunctionLocal
@@ -29,26 +29,24 @@
 
 !       Create solver object and associate it with the unknowns (on the grid)
 
-      call DMMGCreate(PETSC_COMM_WORLD,1,PETSC_NULL_OBJECT,dmmg,ierr)
-      call DMMGSetDM(dmmg,da,ierr)
-      call DMDestroy(da,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      call SNESSetDM(snes,da,ierr)
 
-      call DMMGSetSNESLocal(dmmg,FormFunctionLocal,                     &
-     &             PETSC_NULL_FUNCTION,0,0,ierr)
-      call DMMGSetFromOptions(dmmg,ierr)
+      call DMDASetLocalFunction(da,FormFunctionLocal,ierr)
+      call SNESSetFromOptions(snes,ierr)
 
 !      Solve the nonlinear system
 !
-      call DMMGSolve(dmmg,ierr)
+      call SNESSolve(snes,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
 
-      call DMMGDestroy(dmmg,ierr)
+      call SNESDestroy(snes,ierr)
+      call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
       end
 
 
-      subroutine FormFunctionLocal(in,x,f,dmmg,ierr)
+      subroutine FormFunctionLocal(in,x,f,ierr)
       implicit none
-      DMMG dmmg
       PetscInt i,j,k
       DMDALocalInfo in(DMDA_LOCAL_INFO_SIZE)
       PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                            &
@@ -63,7 +61,6 @@
          do j=in(DMDA_LOCAL_INFO_YS)+1,in(DMDA_LOCAL_INFO_YS)+in(DMDA_LOCAL_INFO_YM)
             do k=1,in(DMDA_LOCAL_INFO_DOF)
                f(k,i,j) = x(k,i,j)*x(k,i,j) - 2.0
-               CHKMEMQ
             enddo
          enddo
       enddo

@@ -3049,13 +3049,19 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
   PetscInt       grid;
+  Vec            xcreated = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  PetscCheckSameComm(snes,1,x,3);
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  if (x) PetscCheckSameComm(snes,1,x,3);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
+
+  if (!x && snes->dm) {
+    ierr = DMCreateGlobalVector(snes->dm,&xcreated);CHKERRQ(ierr);
+    x    = xcreated;
+  }
 
   for (grid=0; grid<snes->gridsequence; grid++) {ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm));CHKERRQ(ierr);}
   for (grid=0; grid<snes->gridsequence+1; grid++) {
@@ -3137,6 +3143,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm));CHKERRQ(ierr);
     }
   }
+  ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -838,6 +838,11 @@ runex32_3:
 	-@${MPIEXEC} -n 3 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd_operator -da_grid_x 10 -da_grid_y 10
 runex32_4:
 	-@${MPIEXEC} -n 3 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd -da_grid_x 10 -da_grid_y 10
+runex40f90:
+	-@${MPIEXEC} -n 1 ./ex40f90 -snes_monitor_short -snes_view  -da_refine 1 -pc_type mg  -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin  > ex40f90_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex40f90.out ex40f90_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex40f90_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex40f90_1.tmp
 
 runex42:
 	-@${MPIEXEC} -n 1 ./ex42 -snes_monitor_short -snes_max_it 1000 -snes_rtol 1.e-14  > ex42_1.tmp 2>&1;	  \
@@ -968,7 +973,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex50.PETSc runex50_6 runex50_fas ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
 TESTEXAMPLES_C_X11	       = 
-TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
