@@ -327,7 +327,7 @@ web-snapshot:
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
 	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
 	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
-              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/snapshots/petsc-dev ;\
+              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-dev ;\
 	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /mcs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi

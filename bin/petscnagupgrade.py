@@ -25,7 +25,7 @@ def currentversion(petscdir):
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(patchversion)
   try:
     import urllib
-    fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/include/petscversion.h")
+    fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/petsc-dev/include/petscversion.h")
     pv = fd.read()
     fd.close()
     amajorversion = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))

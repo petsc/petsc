@@ -30,12 +30,12 @@ def modifyfile(filename):
 
     outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
 
-    #fix http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/')
+    #fix http://www.mcs.anl.gov/petsc/petsc-current/docs/
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-current/docs/')
     outbuf = w.sub('',outbuf)
 
-    #fix  http://www.mcs.anl.gov/petsc/snapshots/petsc-current/include/ (for petscversion.h)
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/snapshots/petsc-current/include/')
+    #fix  http://www.mcs.anl.gov/petsc/petsc-current/include/ (for petscversion.h)
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-current/include/')
     outbuf = w.sub('',outbuf)
 
     # Now overwrite the original file 

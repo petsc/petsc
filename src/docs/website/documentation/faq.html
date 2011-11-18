@@ -566,7 +566,7 @@ MPI
               preconditioned Krylov methods run completely on the GPU.
               Preconditioners are a problem, we could do with some help
               for these. The example <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
               demonstates how the&nbsp; nonlinear function evaluation
               can be done on the GPU.<br>
             </p>
@@ -868,7 +868,7 @@ do
               Also, see the procedural interfaces in the manual pages,
               with names <b>PCASMxxxx()</b><br>
               and check the index of the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf">users
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf">users
 
 
                 manual</a> for <b>PCASMxxx</b>().<br>
@@ -922,7 +922,7 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf">users
               <li> Create the scatter context that will do the
                 communication </li>
               <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html">VecScatterCreateToAll</a>(v,&amp;ctx,&amp;w);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html">VecScatterCreateToAll</a>(v,&amp;ctx,&amp;w);</li>
             </ul>
             <table width="100%">
               <tbody>
@@ -932,15 +932,15 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/
                       repeatedly as needed</li>
                     <ul>
                       <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
                       <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
                     </ul>
                     <li> Remember to free the scatter context when no
                       longer needed</li>
                     <ul>
                       <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
                     </ul>
                     Note that this simply concatenates in the parallel
                     ordering of the vector. If you are using a vector
@@ -960,21 +960,21 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/
                         communication </li>
                       <ul>
                         <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterCreateToZero.html">VecScatterCreateToZero</a>(v,&amp;ctx,&amp;w);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToZero.html">VecScatterCreateToZero</a>(v,&amp;ctx,&amp;w);</li>
                       </ul>
                       <li> Actually do the communication; this can be
                         done repeatedly as needed</li>
                       <ul>
                         <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
                         <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
                       </ul>
                       <li> Remember to free the scatter context when no
                         longer needed</li>
                       <ul>
                         <li> <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
                       </ul>
                     </ul>
                     Note that this simply concatenates in the parallel
@@ -1050,7 +1050,7 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Vec/
                       compiling code, instead of using PETSc's?</span><br>
                     <br>
                     Yes, see the section of the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manual.pdf">users
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users
 
 
                       manual</a> called Makefiles <br>
@@ -1190,7 +1190,7 @@ you
                     2) manage the grid data structure yourself and use
                     PETSc IS and VecScatter to communicate the required
                     ghost point communication. See <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a><br>
+href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a><br>
                     <br>
                     <br>
                     <span style="color: rgb(255, 0, 0);"><a
@@ -1279,10 +1279,10 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/src/snes/examples/tut
                         automatically call MATLAB to perform some
                         specific computations. It does not allow MATLAB
                         to be used interactively by the user. See the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.</li>
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.</li>
                       <li>To save PETSc Mat and Vecs to files that can
                         be read from MATLAB use&nbsp; <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
                         viewer and VecView() or MatView() to save
                         objects for MATLAB and VecLoad() and MatLoad()
                         to get the objects that MATLAB has saved. See
@@ -1293,14 +1293,14 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manualpages/Viewer/P
                         MATLAB and PETSc to allow sending objects back
                         and forth between an interactive MATLAB session
                         and a running PETSc program. See <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
 
 
                         for access from the PETSc side and
                         PetscOpenSocket in bin/matlab for access from
                         the MATLAB side.</li>
                       <li>You can save PETSc Vecs (not Mats) with the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 
 
                         viewer that saves .mat files can then be loaded
@@ -1393,7 +1393,7 @@ matrices
                     name="slow"></a></font></font><a
                 name="efficient-assembly"> </a></p>
             <p>See the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 
 
                 chapter of the users manual</a> for many tips on this.</p>
@@ -1412,9 +1412,9 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf#nameddest
             <p>Preallocation of matrix memory is crucial for good
               performance for large problems, see <br>
               <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manual.pdf#sec_matsparse">http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manual.pdf#sec_matsparse</a><br>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse">http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse</a><br>
               <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html">http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html</a><br>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html">http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html</a><br>
               <br>
               If you can set several nonzeros in a block at the same
               time, this is faster than calling MatSetValues() for each
@@ -1429,7 +1429,7 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/Mat/
             <p><a name="log-summary"><font color="#ff0000">How can I
                   generate performance summaries with PETSc?</font> </a></p>
             <p>Use these options at runtime: -log_summary. See the <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 
 
                 chapter of the users manual</a> for information on
@@ -1505,12 +1505,12 @@ href="http://www.mcs.anl.gov/petsc/snapshots/petsc-dev/docs/manual.pdf#nameddest
                 more processes, this is particularly true for block
                 Jaccobi, the default parallel preconditioner, you can
                 try -pc_type asm (<a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
                 its iterations scale a bit better for more processes.
                 You may also consider multigrid preconditioners like <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
                 or BoomerAMG in <a
-href="http://www.mcs.anl.gov/petsc/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
+href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
             </ul>
             <p><font><a name="singleprecision"><font color="#ff0000">When
 using
