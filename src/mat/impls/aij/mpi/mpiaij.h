@@ -4,50 +4,12 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-typedef struct {
-  Mat           A,B;                   /* local submatrices: A (diag part),
-                                           B (off-diag part) */
-  PetscMPIInt   size;                   /* size of communicator */
-  PetscMPIInt   rank;                   /* rank of proc in communicator */ 
-
-  /* The following variables are used for matrix assembly */
-
-  PetscBool     donotstash;             /* PETSC_TRUE if off processor entries dropped */
-  MPI_Request   *send_waits;            /* array of send requests */
-  MPI_Request   *recv_waits;            /* array of receive requests */
-  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
-  PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
-  PetscInt      rmax;                   /* maximum message length */
-#if defined (PETSC_USE_CTABLE)
-  PetscTable    colmap;
-#else
-  PetscInt      *colmap;                /* local col number of off-diag col */
-#endif
-  PetscInt      *garray;                /* global index of all off-processor columns */
-
-  /* The following variables are used for matrix-vector products */
-
-  Vec           lvec;              /* local vector */
-  Vec           diag;
-  VecScatter    Mvctx;             /* scatter context for vector */
-  PetscBool     roworiented;       /* if true, row-oriented input, default true */
-
-  /* The following variables are for MatGetRow() */
-
-  PetscInt      *rowindices;       /* column indices for row */
-  PetscScalar   *rowvalues;        /* nonzero values in row */
-  PetscBool     getrowactive;      /* indicates MatGetRow(), not restored */
-
-  /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
-  PetscInt      *ld;               /* number of entries per row left of diagona block */
-} Mat_MPIAIJ;
-
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
   /* used by MatMatMult_MPIAIJ_MPIAIJ() */
   IS             isrowa,isrowb,iscolb; 
   Mat            B_seq,A_loc,C_seq;
 
-  /* used by MatPtAP_MPIAIJ_MPIAIJ */
+  /* used by MatPtAP_MPIAIJ_MPIAIJ - mv!*/
   PetscInt       *startsj,*startsj_r;
   PetscScalar    *bufa;
   Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
@@ -70,6 +32,56 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
 
+typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ */
+  PetscInt       *startsj,*startsj_r;
+  PetscScalar    *bufa;
+  Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt       *abi,*abj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscInt       abnz_max;     /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
+  MatReuse       reuse; 
+
+  Mat_Merge_SeqsToMPI *merge;
+  PetscErrorCode (*destroy)(Mat);
+} Mat_PtAPMPI;
+
+typedef struct {
+  Mat           A,B;                   /* local submatrices: A (diag part),
+                                           B (off-diag part) */
+  PetscMPIInt   size;                   /* size of communicator */
+  PetscMPIInt   rank;                   /* rank of proc in communicator */ 
+
+  /* The following variables are used for matrix assembly */
+  PetscBool     donotstash;             /* PETSC_TRUE if off processor entries dropped */
+  MPI_Request   *send_waits;            /* array of send requests */
+  MPI_Request   *recv_waits;            /* array of receive requests */
+  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
+  PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
+  PetscInt      rmax;                   /* maximum message length */
+#if defined (PETSC_USE_CTABLE)
+  PetscTable    colmap;
+#else
+  PetscInt      *colmap;                /* local col number of off-diag col */
+#endif
+  PetscInt      *garray;                /* global index of all off-processor columns */
+
+  /* The following variables are used for matrix-vector products */
+  Vec           lvec;              /* local vector */
+  Vec           diag;
+  VecScatter    Mvctx;             /* scatter context for vector */
+  PetscBool     roworiented;       /* if true, row-oriented input, default true */
+
+  /* The following variables are for MatGetRow() */
+  PetscInt      *rowindices;       /* column indices for row */
+  PetscScalar   *rowvalues;        /* nonzero values in row */
+  PetscBool     getrowactive;      /* indicates MatGetRow(), not restored */
+
+  /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
+  PetscInt      *ld;               /* number of entries per row left of diagona block */
+
+  /* Used by MatPtAP */
+  Mat_PtAPMPI   *ptap;
+} Mat_MPIAIJ;
+
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 extern PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
 extern PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);
@@ -91,10 +103,12 @@ extern PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*
 extern PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
 extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
