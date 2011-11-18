@@ -419,7 +419,7 @@ class Configure(config.base.Configure):
       if not self.checkRun():
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
         if self.isIntel(self.getCompiler()):
-          msg = msg + 'See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#libimf'
+          msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
         self.popLanguage()
         raise OSError(msg)
     self.popLanguage()
@@ -449,7 +449,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
