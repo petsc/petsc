@@ -1000,6 +1000,11 @@ runex49_3:
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || echo ${PWD} "\nPossible problem with with ex49_3, diffs above \n========================================="; \
 	   ${RM} -f ex49_3.tmp
 
+runex50:
+	-@${MPIEXEC} -n 1 ./ex50 -ksp_monitor_short -ksp_view -dmmg_nlevels 2 > ex50.tmp 2>&1;         \
+        ${DIFF} output/ex50.out ex50.tmp || echo ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; \
+        ${RM} -f ex50.tmp
+
 runex52_mumps:
 	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || echo ${PWD} "\nPossible problem with with ex52_mumps, diffs above \n========================================="; \
