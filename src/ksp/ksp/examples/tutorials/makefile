@@ -1001,7 +1001,7 @@ runex49_3:
 	   ${RM} -f ex49_3.tmp
 
 runex50:
-	-@${MPIEXEC} -n 1 ./ex50 -ksp_monitor_short -ksp_view -dmmg_nlevels 2 > ex50.tmp 2>&1;         \
+	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view  > ex50.tmp 2>&1;         \
         ${DIFF} output/ex50.out ex50.tmp || echo ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; \
         ${RM} -f ex50.tmp
 

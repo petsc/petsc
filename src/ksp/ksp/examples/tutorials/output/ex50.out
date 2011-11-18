@@ -1,7 +1,7 @@
-    0 KSP Residual norm 0.0238095 
-    1 KSP Residual norm 0.000386848 
-    2 KSP Residual norm 2.41354e-06 
-    3 KSP Residual norm 2.70784e-08 
+  0 KSP Residual norm 0.0238095 
+  1 KSP Residual norm 0.000386848 
+  2 KSP Residual norm 2.41354e-06 
+  3 KSP Residual norm 2.70784e-08 
 KSP Object: 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -27,7 +27,7 @@ PC Object: 1 MPI processes
       type: lu
         LU: out-of-place factorization
         tolerance for zero pivot 2.22045e-14
-        using Manteuffel shift
+        using diagonal shift to prevent zero pivot
         matrix ordering: nd
         factor fill ratio given 5, needed 3.17112
           Factored matrix follows:
