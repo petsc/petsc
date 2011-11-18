@@ -41,6 +41,12 @@ class Configure(config.base.Configure):
       self.framework.log.write(typeName+' found\n')
     return found
 
+  def check__int64(self):
+    '''Checks if __int64 exists. This is primarily for windows.'''
+    if self.check('__int64'):
+      self.addDefine('HAVE___INT64',1)
+    return
+
   def checkSizeTypes(self):
     '''Checks for types associated with sizes, such as size_t.'''
     self.check('size_t', 'int')
@@ -345,6 +351,7 @@ void (*signal())();
     return
 
   def configure(self):
+    self.executeTest(self.check__int64)
     self.executeTest(self.checkSizeTypes)
     self.executeTest(self.checkFileTypes)
     self.executeTest(self.checkIntegerTypes)
