@@ -1127,7 +1127,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %D relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
-  if (norm/prevnorm <= pow(asa->epsilon, asa->mu_initial)) {
+  if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu_initial)) {
     /* converges by relaxation alone */ 
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
 	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
@@ -1221,7 +1221,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
 	/* (i) Check if it already converges by itself */
-	if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) {
+	if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) {
 	  /* relaxation reduces error sufficiently */
 	  skip_steps_f_i = PETSC_TRUE;
 	}
@@ -1546,7 +1546,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       norm = PetscAbsScalar(tmp);
       ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 
-      if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) skip_steps_d_j = PETSC_TRUE;
+      if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) skip_steps_d_j = PETSC_TRUE;
    
       /* (j) update candidate B_{l+1} */
       ierr = PCAddCandidateToB_ASA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A);CHKERRQ(ierr);
