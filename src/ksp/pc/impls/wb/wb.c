@@ -152,8 +152,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* 
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
-  ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
   if (exotic->directSolve) {
     ierr = MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
@@ -426,8 +425,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* 
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
-  ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
 
   if (exotic->directSolve) {
