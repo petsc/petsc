@@ -1133,6 +1133,7 @@ extern PetscErrorCode    PetscMallocGetMaximumUsage(PetscLogDouble *);
 extern PetscErrorCode    PetscMallocDebug(PetscBool);
 extern PetscErrorCode    PetscMallocValidate(int,const char[],const char[],const char[]);
 extern PetscErrorCode    PetscMallocSetDumpLog(void);
+extern PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 
 /*E
