@@ -310,6 +310,11 @@ runex3_4:
 	   if (${DIFF} output/ex3_4.out ex3_4.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex3_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_4.tmp
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 -snes_monitor_short -snes_grid_sequence 1 -pc_type mg -pc_mg_type full -ksp_type fgmres -snes_converged_reason > ex4_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex4_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex4_1.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 \
                     -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full  > ex5_1.tmp 2>&1; \
@@ -952,7 +957,7 @@ runex58_2:
 	   ${RM} -f ex58.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
+                                 runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas \
