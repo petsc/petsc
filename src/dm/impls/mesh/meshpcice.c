@@ -405,8 +405,8 @@ namespace ALE {
       mesh->stratify();
       ALE::ISieveConverter::convertOrientation(*s, *sieve, renumbering, m->getArrowSection("orientation").ptr());
       ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coordinates);
-      if (cells) {ierr = PetscFree(cells);}
-      if (coordinates) {ierr = PetscFree(coordinates);}
+      if (cells) {ierr = PetscFree(cells);CHKERRXX(ierr);}
+      if (coordinates) {ierr = PetscFree(coordinates);CHKERRXX(ierr);}
       return mesh;
     };
     void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
@@ -427,7 +427,7 @@ namespace ALE {
       PetscReal     *coords;
       PetscErrorCode ierr;
 
-      ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);
+      ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);CHKERRXX(ierr);
       for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         const Mesh::real_section_type::value_type *array = coordSec->restrictPoint(*v_iter);
         const int                                  row   = vNumbering->getIndex(*v_iter);
@@ -463,7 +463,7 @@ namespace ALE {
       int           *v;
       PetscErrorCode ierr;
 
-      ierr = PetscMalloc(size*corners * sizeof(int), &v);
+      ierr = PetscMalloc(size*corners * sizeof(int), &v);CHKERRXX(ierr);
       for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         const Obj<Mesh::sieve_type::coneSequence>      cone  = sieve->cone(*e_iter);
         Mesh::sieve_type::coneSequence::const_iterator begin = cone->begin();
@@ -515,8 +515,8 @@ namespace ALE {
       mesh->setSieve(sieve);
       mesh->stratify();
       ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coordinates);
-      if (cells) {ierr = PetscFree(cells);}
-      if (coordinates) {ierr = PetscFree(coordinates);}
+      if (cells) {ierr = PetscFree(cells);CHKERRXX(ierr);}
+      if (coordinates) {ierr = PetscFree(coordinates);CHKERRXX(ierr);}
       return mesh;
     };
     // Creates boundary sections:
@@ -545,11 +545,11 @@ namespace ALE {
 #endif
         return;
       }
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
-      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRXX(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());CHKERRXX(ierr);
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRXX(ierr);
       // Create IBC section
       int  numBdFaces = atoi(strtok(fgets(buf, 2048, f), " "));
       int *tmpIBC     = new int[numBdFaces*4];
@@ -669,7 +669,7 @@ namespace ALE {
         values[4] = 0;
         ibndfs->updatePoint(values[0]-1+numElements, values);
       }
-      ierr = PetscViewerDestroy(&viewer);
+      ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
       // Create BNNV[NBN,2]
       const int dim = mesh->getDimension();
 
@@ -694,7 +694,7 @@ namespace ALE {
       double        *coords;
       PetscErrorCode ierr;
 
-      ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);
+      ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);CHKERRXX(ierr);
       for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         const DMMesh::real_section_type::value_type *array = coordSec->restrictPoint(*v_iter);
         const int                                  row   = vNumbering->getIndex(*v_iter);
@@ -730,7 +730,7 @@ namespace ALE {
       int           *v;
       PetscErrorCode ierr;
 
-      ierr = PetscMalloc(elements->size()*corners * sizeof(int), &v);
+      ierr = PetscMalloc(elements->size()*corners * sizeof(int), &v);CHKERRXX(ierr);
       for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         const Obj<Mesh::sieve_type::traits::coneSequence> cone  = sieve->cone(*e_iter);
         DMMesh::sieve_type::traits::coneSequence::iterator  begin = cone->begin();

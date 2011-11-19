@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.10.0.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.10.0-p1.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
@@ -19,7 +19,7 @@ class Configure(PETSc.package.NewPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.blacs      = framework.require('PETSc.packages.blacs',self)
     self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
-    self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
+    self.parmetis   = framework.require('PETSc.packages.parmetis',self)
     self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
     if self.framework.argDB.get('download-scotch') or self.framework.argDB.get('with-scotch'):
       self.scotch     = framework.require('PETSc.packages.PTScotch',self)
