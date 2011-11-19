@@ -1975,10 +1975,10 @@ static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,Pe
   This issue could be resolved by either (a) storing more edges from the original mesh or (b) communicating an extra
   layer of edges in this function.
 */
-static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,PetscInt **iconn)
+static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,const PetscInt *eptr,PetscInt *incell,PetscInt **iconn)
 {
   PetscErrorCode ierr;
-  PetscInt nnodes,nedge,ncell,acell,(*conn)[4],node0,node1,node2,node3,i,j,k,l,rowmax;
+  PetscInt ncell,acell,(*conn)[4],node0,node1,node2,node3,i,j,k,l,rowmax;
   PetscInt *ui,*uj,*utmp,*tmp1,*tmp2,*tmp3,ntmp1,ntmp2,ntmp3;
 #if defined(INTERLACING)
 #  define GetEdge(eptr,i,n1,n2) do { n1 = eptr[i*2+0]-1; n2 = eptr[i*2+1]-1; } while (0)
@@ -1991,14 +1991,12 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
   *iconn = PETSC_NULL;
   acell = 100000;                /* allocate for this many cells */
   ierr = PetscMalloc(acell*sizeof(*conn),&conn);CHKERRQ(ierr);
-  nnodes = grid->nvertices;
-  nedge = grid->nedgeLoc;
   ierr = PetscMalloc2(nnodes+1,PetscInt,&ui,nedge,PetscInt,&uj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnodes*sizeof(PetscInt),&utmp);CHKERRQ(ierr);
   ierr = PetscMemzero(utmp,nnodes*sizeof(PetscInt));CHKERRQ(ierr);
   /* count the number of edges in the upper-triangular matrix u */
   for (i=0; i<nedge; i++) {     /* count number of nonzeros in upper triangular matrix */
-    GetEdge(grid->eptr,i,node0,node1);
+    GetEdge(eptr,i,node0,node1);
     utmp[PetscMin(node0,node1)]++;
   }
   rowmax = 0;
@@ -2009,7 +2007,7 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
     utmp[i] = 0;
   }
   for (i=0; i<nedge; i++) {     /* assemble upper triangular matrix U */
-    GetEdge(grid->eptr,i,node0,node1);
+    GetEdge(eptr,i,node0,node1);
     SortInt2(&node0,&node1);
     uj[ui[node0] + utmp[node0]++] = node1;
   }
@@ -2070,6 +2068,22 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "GridCompleteOverlap"
+static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscInt *inedgeOv,PetscInt **eptrOv)
+{
+  PetscErrorCode ierr;
+  PetscInt nedgeOv;
+
+  PetscFunctionBegin;
+  nedgeOv = grid->nedgeLoc;
+  *invertices = grid->nvertices;
+  *inedgeOv = nedgeOv;
+  ierr = PetscMalloc(2*nedgeOv*sizeof(PetscInt),eptrOv);CHKERRQ(ierr);
+  ierr = PetscMemcpy(*eptrOv,grid->eptr,2*nedgeOv*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "WritePVTU"
 static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 {
@@ -2079,7 +2093,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   char pvtu_fname[PETSC_MAX_PATH_LEN],vtu_fname[PETSC_MAX_PATH_LEN];
   MPI_Comm comm;
   PetscMPIInt rank,size;
-  PetscInt i,nvertices,ncells,bs,nloc,boffset;
+  PetscInt i,nvertices,nedgeLoc,ncells,bs,nloc,boffset,*eptr;
   PetscErrorCode ierr;
   Vec Xloc,Xploc,Xuloc;
   unsigned char *celltype;
@@ -2088,6 +2102,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   PetscScalar *xu,*xp;
 
   PetscFunctionBegin;
+  ierr = GridCompleteOverlap(user->grid,&nvertices,&nedgeLoc,&eptr);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2148,7 +2163,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   }
   ierr = VecRestoreArrayRead(Xloc,&x);CHKERRQ(ierr);
 
-  ierr = InferLocalCellConnectivity(grid,&ncells,&conn);CHKERRQ(ierr);
+  ierr = InferLocalCellConnectivity(nvertices,nedgeLoc,eptr,&ncells,&conn);CHKERRQ(ierr);
 
   ierr = PetscFOpen(PETSC_COMM_SELF,vtu_fname,"w",&vtu);CHKERRQ(ierr);
   boffset = 0;
@@ -2226,6 +2241,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = VecRestoreArray(Xuloc,&xu);CHKERRQ(ierr);
   ierr = VecDestroy(&Xploc);CHKERRQ(ierr);
   ierr = VecDestroy(&Xuloc);CHKERRQ(ierr);
+  ierr = PetscFree(eptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
