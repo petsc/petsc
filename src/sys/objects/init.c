@@ -31,7 +31,10 @@
 #include <malloc.h>
 #endif
 #if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
+#  include <valgrind/valgrind.h>
+#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
+#else
+#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
 #endif
 
 /* ------------------------Nasty global variables -------------------------------*/
@@ -280,10 +283,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
-#if defined(PETSC_HAVE_VALGRIND)
-    if (flg2 || !(RUNNING_ON_VALGRIND)) {
+    if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
       /* turn off default -malloc if valgrind is being used */
-#endif
       ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
 #if defined(PETSC_HAVE_VALGRIND)
     }
@@ -303,6 +304,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg1,PETSC_NULL);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+  if (flg1 && !PETSC_RUNNING_ON_VALGRIND) {
+    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
+    ierr = PetscMallocSetDumpLog();CHKERRQ(ierr);
+    ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
+  }
+#endif
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg1,PETSC_NULL);CHKERRQ(ierr);

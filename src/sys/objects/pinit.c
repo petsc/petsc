@@ -8,6 +8,12 @@
 #if defined(PETSC_HAVE_CUSP)
 #include <cublas.h>
 #endif
+#if defined(PETSC_HAVE_VALGRIND)
+#  include <valgrind/valgrind.h>
+#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
+#else
+#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
+#endif
 
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
@@ -603,6 +609,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
 .  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
@@ -1125,6 +1132,13 @@ PetscErrorCode  PetscFinalize(void)
 
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
+    flg2 = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg2,PETSC_NULL);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+    if (PETSC_RUNNING_ON_VALGRIND) flg2 = PETSC_FALSE;
+#else
+    flg2 = PETSC_FALSE;         /* Skip reporting for optimized builds regardless of -malloc_test */
+#endif
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
 
@@ -1133,7 +1147,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-    } else if (flg1) {
+    } else if (flg1 || flg2) {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
