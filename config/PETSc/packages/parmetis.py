@@ -33,7 +33,10 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args = ['prefix='+self.installDir]
-    args.append('mpicc="'+self.framework.getCompiler()+'"')
+    args.append('cc="'+self.framework.getCompiler()+'"')
+    self.framework.pushLanguage('Cxx')
+    args.append('cxx="'+self.framework.getCompiler()+'"')
+    self.framework.popLanguage()
 
     if self.sharedLibraries.useShared:
       args.append('shared=1')
