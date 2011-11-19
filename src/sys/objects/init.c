@@ -286,9 +286,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
       /* turn off default -malloc if valgrind is being used */
       ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
-#if defined(PETSC_HAVE_VALGRIND)
     }
-#endif
   }
 #else
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
