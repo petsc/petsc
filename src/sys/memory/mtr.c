@@ -512,6 +512,31 @@ PetscErrorCode  PetscMallocSetDumpLog(void)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscMallocGetDumpLog"
+/*@C
+    PetscMallocGetDumpLog - Determine whether all calls to PetscMalloc() are being logged
+
+    Not Collective
+
+    Output Arguments
+.   logging - PETSC_TRUE if logging is active
+
+    Options Database Key:
+.  -malloc_log - Activates PetscMallocDumpLog()
+
+    Level: advanced
+
+.seealso: PetscMallocDump(), PetscMallocDumpLog()
+@*/
+PetscErrorCode PetscMallocGetDumpLog(PetscBool *logging)
+{
+
+  PetscFunctionBegin;
+  *logging = (PetscBool)(PetscLogMalloc >= 0);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscMallocDumpLog"
 /*@C
     PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls
