@@ -38,9 +38,6 @@ class Configure(PETSc.package.NewPackage):
     if self.setCompilers.isDarwin() or self.setCompilers.isPGI(self.framework.getCompiler()):
       args.append('cflags=-D__thread=\"\"')
     self.framework.popLanguage()
-    self.framework.pushLanguage('Cxx')
-    args.append('cxx="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
 
     if self.sharedLibraries.useShared:
       args.append('shared=1')
