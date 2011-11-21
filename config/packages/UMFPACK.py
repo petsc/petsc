@@ -9,7 +9,8 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACK-5.5.1.tar.gz']
-    self.liblist   = [['libumfpack.a','libamd.a']]
+    self.liblist   = [['libumfpack.a','libamd.a'],
+                      ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a']]
     self.functions = ['umfpack_di_report_info'] 
     self.includes  = ['umfpack.h']
     self.complex   = 1
