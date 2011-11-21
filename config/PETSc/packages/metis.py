@@ -29,9 +29,13 @@ class Configure(PETSc.package.NewPackage):
     if not self.cmake.found:
       raise RuntimeError('CMake > 2.8.5 is needed to build METIS')
 
-    self.framework.pushLanguage('C')
     args = ['prefix='+self.installDir]
+    self.framework.pushLanguage('C')
     args.append('cc="'+self.framework.getCompiler()+'"')
+    self.framework.popLanguage()
+    self.framework.pushLanguage('Cxx')
+    args.append('cxx="'+self.framework.getCompiler()+'"')
+    self.framework.popLanguage()
 
     if self.sharedLibraries.useShared:
       args.append('shared=1')

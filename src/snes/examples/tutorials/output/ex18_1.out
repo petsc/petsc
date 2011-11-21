@@ -1,0 +1,141 @@
+  0 SNES Function norm 0.83248 
+  1 SNES Function norm 0.254912 
+  2 SNES Function norm 0.0743307 
+  3 SNES Function norm 0.0156169 
+  4 SNES Function norm 0.000860012 
+  5 SNES Function norm 1.7228e-06 
+  6 SNES Function norm 1.277e-11 
+  0 SNES Function norm 0.83248 
+  1 SNES Function norm 0.254912 
+  2 SNES Function norm 0.0743307 
+  3 SNES Function norm 0.0156169 
+  4 SNES Function norm 0.000860012 
+  5 SNES Function norm 1.7228e-06 
+  6 SNES Function norm 1.277e-11 
+SNES Object: 1 MPI processes
+  type: ls
+    line search variant: CUBIC
+    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+    damping factor=1.000000000000e+00
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=24
+  total number of function evaluations=7
+  KSP Object:   1 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes
+    type: mg
+      MG: type is FULL, levels=3 cycles=v
+        Not using Galerkin computed coarse grid matrices
+    Coarse grid solver -- level -------------------------------
+      KSP Object:      (mg_coarse_)       1 MPI processes
+        type: preonly
+        maximum iterations=1, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object:      (mg_coarse_)       1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5, needed 1.99048
+            Factored matrix follows:
+              Matrix Object:               1 MPI processes
+                type: seqaij
+                rows=25, cols=25
+                package used to perform factorization: petsc
+                total: nonzeros=209, allocated nonzeros=209
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:         1 MPI processes
+          type: seqaij
+          rows=25, cols=25
+          total: nonzeros=105, allocated nonzeros=105
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Down solver (pre-smoother) on level 1 -------------------------------
+      KSP Object:      (mg_levels_1_)       1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=1
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using PRECONDITIONED norm type for convergence test
+      PC Object:      (mg_levels_1_)       1 MPI processes
+        type: ilu
+          ILU: out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          using diagonal shift to prevent zero pivot
+          matrix ordering: natural
+          factor fill ratio given 1, needed 1
+            Factored matrix follows:
+              Matrix Object:               1 MPI processes
+                type: seqaij
+                rows=81, cols=81
+                package used to perform factorization: petsc
+                total: nonzeros=369, allocated nonzeros=369
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:         1 MPI processes
+          type: seqaij
+          rows=81, cols=81
+          total: nonzeros=369, allocated nonzeros=369
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
+      KSP Object:      (mg_levels_2_)       1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=1
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using PRECONDITIONED norm type for convergence test
+      PC Object:      (mg_levels_2_)       1 MPI processes
+        type: ilu
+          ILU: out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          using diagonal shift to prevent zero pivot
+          matrix ordering: natural
+          factor fill ratio given 1, needed 1
+            Factored matrix follows:
+              Matrix Object:               1 MPI processes
+                type: seqaij
+                rows=289, cols=289
+                package used to perform factorization: petsc
+                total: nonzeros=1377, allocated nonzeros=1377
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:         1 MPI processes
+          type: seqaij
+          rows=289, cols=289
+          total: nonzeros=1377, allocated nonzeros=1377
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    linear system matrix = precond matrix:
+    Matrix Object:     1 MPI processes
+      type: seqaij
+      rows=289, cols=289
+      total: nonzeros=1377, allocated nonzeros=1377
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines
+Number of SNES iterations = 6
+Number of Linear iterations = 24
+Average Linear its / SNES = 4.000000e+00
