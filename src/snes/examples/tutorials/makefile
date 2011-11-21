@@ -9,7 +9,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex4tu.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex19tu.c ex20.c ex21.c ex22.c \
                 ex23.c ex24.c ex25.c ex26.c  ex28.c ex29.c ex30.c ex31.c \
                 ex32.c ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c ex49.c \
@@ -42,9 +42,6 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
 	${RM} ex4.o
-ex4tu: ex4tu.o  chkopts
-	-${CLINKER} -o ex4tu ex4tu.o ${PETSC_SNES_LIB}
-	${RM} ex4tu.o
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
@@ -74,7 +71,7 @@ ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o -lsimviewers ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 ex8: ex8.o chkopts
 	-${CLINKER} -o ex8 ex8.o -lsimviewers ${PETSC_SNES_LIB}
