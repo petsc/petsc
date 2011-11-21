@@ -1273,7 +1273,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
   for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
     ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
-    d_nnz[jj] = ncols/bs_in;
+    d_nnz[jj] = ncols;
     if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc; 
     nnz0 += d_nnz[jj];
     ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);    
