@@ -1156,8 +1156,9 @@ href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users
                       <li>forming a dense matrix Kba,&nbsp;</li>
                       <li>also create another dense matrix T of the same
                         size.&nbsp;</li>
-                      <li>Then factor the matrix Kaa&nbsp; with
-                        MatLUFactor() or MatCholeskyFactor(), call the
+                      <li>Then either factor the matrix Kaa&nbsp; directly with
+                        MatLUFactor() or MatCholeskyFactor(), or use MatGetFactor() followed by MatLUFactorSymbolic() followed by MatLUFactorNumeric() if you wish to use 
+                        and external solver package like SuperLU_Dist.  Call the
                         result A.</li>
                       <li>Then call MatMatSolve(A,Kba,T).&nbsp;</li>
                       <li>Then call
@@ -1166,6 +1167,8 @@ href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users
                         MatAXPY(S,-1.0,Kbb,MAT_SUBSET_NONZERO).</li>
                       <li>Followed by MatScale(S,-1.0);</li>
                     </ul>
+                    For computing Schur complements like this it does not make sense to use the KSP iterative solvers since for solving many moderate size problems using a direct factorization is 
+                    much faster than iterative solvers.
                     As you can see, this requires a great deal of work
                     space and computation so is best avoided.
                     However, it is not necessary to assemble the Schur complement S in order to solve systems with it.

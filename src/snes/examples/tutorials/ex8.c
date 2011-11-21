@@ -39,7 +39,6 @@ T*/
 #include <petscsys.h>
 #include <petscbag.h>
 #include <petscdmda.h>
-#include <petscdmmg.h>
 #include <petscsnes.h>
 
 /* 
@@ -69,26 +68,24 @@ static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormInitialGuess(DMMG,Vec);
+extern PetscErrorCode FormInitialGuess(DM,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 extern PetscErrorCode L_2Error(DM, Vec, double *, AppCtx *);
-extern PetscErrorCode PrintVector(DMMG, Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG                  *dmmg;                 /* hierarchy manager */
   DM                     da;
   SNES                   snes;                 /* nonlinear solver */
   AppCtx                *user;                 /* user-defined work context */
   PetscBag               bag;
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;
-  PetscBool              drawContours;         /* flag for drawing contours */
   PetscErrorCode         ierr;
   PetscReal              lambda_max = 6.81, lambda_min = 0.0, error;
+  Vec                    x;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -110,10 +107,7 @@ int main(int argc,char **argv)
     SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
   }
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create multilevel DM data structure (DMMG) to manage hierarchical solvers
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,1,user,&dmmg);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DA) to manage parallel grid and vectors
@@ -121,67 +115,39 @@ int main(int argc,char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes, (DM) da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set the discretization functions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, FormJacobianLocal, 0, 0);CHKERRQ(ierr);
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Evaluate initial guess
-     Note: The user should initialize the vector, x, with the initial guess
-     for the nonlinear solver prior to calling SNESSolve().  In particular,
-     to employ an initial guess of zero, the user should explicitly set
-     this vector to zero by calling VecSet().
-  */
-  ierr = DMMGSetInitialGuess(dmmg, FormInitialGuess);CHKERRQ(ierr);
+  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
+  ierr = DMSetInitialGuess(da,FormInitialGuess);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
-  snes = DMMGGetSNES(dmmg);
+  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
-  ierr = L_2Error(DMMGGetDM(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
+  ierr = L_2Error(da, x, &error, user);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %G\n", error);CHKERRQ(ierr);
-  ierr = PrintVector(dmmg[0], DMMGGetx(dmmg));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PrintVector"
-PetscErrorCode PrintVector(DMMG dmmg, Vec U)
-{
-  DM             da =  dmmg->dm;
-  PetscScalar  **u;
-  PetscInt       i,j,xs,ys,xm,ym;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  for(j = ys+ym-1; j >= ys; j--) {
-    for(i = xs; i < xs+xm; i++) {
-      printf("u[%d][%d] = %G ", j, i, u[j][i]);
-    }
-    printf("\n");
-  }
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -196,26 +162,16 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
-   FormInitialGuess - Forms initial approximation.
-
-   Input Parameters:
-   dmmg - The DMMG context
-   X - vector
-
-   Output Parameter:
-   X - vector
-*/
-PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuess(DM da,Vec X)
 {
-  AppCtx        *user = (AppCtx *) dmmg->user;
-  DM             da =  dmmg->dm;
+  AppCtx        *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    **x;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -262,7 +218,6 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   }
 
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = PrintVector(dmmg, X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +251,10 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearResidual"
+PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) 
+{
   PetscScalar rLocal[3] = {0.0, 0.0, 0.0};
   PetscScalar phi[3] = {0.0, 0.0, 0.0};
   PetscScalar res;
@@ -359,7 +317,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   }
 
   /* Zero the vector */
-  ierr = PetscMemzero((void *) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero((void *) &(f[info->ys][info->xs]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid. For each
      vertex (i,j), we consider the element below:
 
@@ -471,6 +429,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscFunctionReturn(0); 
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearJacobian"
 PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar J[]) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

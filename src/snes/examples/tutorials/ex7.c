@@ -225,7 +225,7 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
-   dmmg - The DMMG context
+   dm - The DM context
    X - vector
 
    Output Parameter:

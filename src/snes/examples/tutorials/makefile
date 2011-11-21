@@ -74,7 +74,7 @@ ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 ex8: ex8.o chkopts
-	-${CLINKER} -o ex8 ex8.o -lsimviewers ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_SNES_LIB}
 	${RM} ex8.o
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
