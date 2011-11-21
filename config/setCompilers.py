@@ -1269,6 +1269,8 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    if hasattr(self, 'CUDAC'):
+      languages.append('CUDA')
     for language in languages:
       flag = '-L'
       self.pushLanguage(language)
