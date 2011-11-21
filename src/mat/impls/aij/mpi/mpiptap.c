@@ -477,7 +477,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             *adi=ad->i,*aoi=ao->i,*adj,*aoj,*apJ,nextp;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pj;
   PetscInt             i,j,k,anz,pnz,apnz,nextap,row,*cj;
-  MatScalar            *ada,*aoa,*apa,*pa,*ca,*pa_loc,*pa_oth;
+  MatScalar            *ada,*aoa,*apa,*pa,*ca,*pa_loc,*pa_oth,valtmp;
   PetscInt             am=A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n; 
   MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
@@ -541,7 +541,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
        2: do two sparse axpy in MatPtAPNumeric() - slowest, uses a sparse array apa */
   /* set default sparse_axpy */
-  sparse_axpy = 1; 
+  sparse_axpy = 0; 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
   if (sparse_axpy == 0){  /* Do not perform sparse axpy */
     /*--------------------------------------------------*/
@@ -566,8 +566,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pa  = pa_loc + pi_loc[row];
 
         /* perform dense axpy */
+        valtmp = ada[j];
         for (k=0; k<pnz; k++){
-          apa[pj[k]] += ada[j]*pa[k];
+          apa[pj[k]] += valtmp*pa[k];
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
@@ -583,8 +584,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pa  = pa_oth + pi_oth[row];
 
         /* perform dense axpy */
+        valtmp = aoa[j];
         for (k=0; k<pnz; k++){
-          apa[pj[k]] += aoa[j]*pa[k];
+          apa[pj[k]] += valtmp*pa[k];
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
@@ -597,28 +599,34 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       apnz = api[i+1] - api[i];
       /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
       pnz = po->i[i+1] - po->i[i];
+      poJ = po->j + po->i[i];
       pA  = po->a + po->i[i];
       for (j=0; j<pnz; j++){ 
-        cnz = coi[*poJ+1] - coi[*poJ];
-        cj  = coj + coi[*poJ]; 
-        ca  = coa + coi[*poJ++];
+        row = poJ[j]; 
+        cnz = coi[row+1] - coi[row];
+        cj  = coj + coi[row]; 
+        ca  = coa + coi[row];
         /* perform dense axpy */
+        valtmp = pA[j];
         for (k=0; k<cnz; k++) { 
-          ca[k] += pA[j]*apa[cj[k]];
+          ca[k] += valtmp*apa[cj[k]];
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);      
       } 
       
       /* put the value into Cd (diagonal part) */
       pnz = pd->i[i+1] - pd->i[i];
+      pdJ = pd->j + pd->i[i];
       pA  = pd->a + pd->i[i];
       for (j=0; j<pnz; j++){  
-        cnz = bi[*pdJ+1] - bi[*pdJ];
-        cj  = bj + bi[*pdJ]; 
-        ca  = ba + bi[*pdJ++];
+        row = pdJ[j]; 
+        cnz = bi[row+1] - bi[row];
+        cj  = bj + bi[row]; 
+        ca  = ba + bi[row];
         /* perform dense axpy */
+        valtmp = pA[j];
         for (k=0; k<cnz; k++) { 
-          ca[k] += pA[j]*apa[cj[k]]; 
+          ca[k] += valtmp*apa[cj[k]]; 
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);     
       }
@@ -651,8 +659,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pa  = pa_loc + pi_loc[row];
 
         /* perform dense axpy */
+        valtmp = ada[j];
         for (k=0; k<pnz; k++){
-          apa[pj[k]] += ada[j]*pa[k];
+          apa[pj[k]] += valtmp*pa[k];
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
@@ -668,8 +677,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pa  = pa_oth + pi_oth[row];
 
         /* perform dense axpy */
+        valtmp = aoa[j];
         for (k=0; k<pnz; k++){
-          apa[pj[k]] += aoa[j]*pa[k];
+          apa[pj[k]] += valtmp*pa[k];
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
@@ -682,15 +692,18 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       apnz = api[i+1] - api[i];
       /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
       pnz = po->i[i+1] - po->i[i];
+      poJ = po->j + po->i[i];
       pA  = po->a + po->i[i];
       for (j=0; j<pnz; j++){ 
-        cj  = coj + coi[*poJ]; 
-        ca  = coa + coi[*poJ++];
+        row    = poJ[j]; 
+        cj     = coj + coi[row]; 
+        ca     = coa + coi[row];
+        valtmp = pA[j];
         /* perform sparse axpy */
         nextap = 0;
         for (k=0; nextap<apnz; k++) {
           if (cj[k]==apJ[nextap]) { /* global column index */
-            ca[k] += pA[j]*apa[cj[k]]; nextap++;
+            ca[k] += valtmp*apa[cj[k]]; nextap++;
           }
         }
         ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
@@ -698,15 +711,18 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
      
       /* put the value into Cd (diagonal part) */
       pnz = pd->i[i+1] - pd->i[i];
+      pdJ = pd->j + pd->i[i];
       pA  = pd->a + pd->i[i];
       for (j=0; j<pnz; j++){  
-        cj  = bj + bi[*pdJ]; 
-        ca  = ba + bi[*pdJ++]; 
+        row    = pdJ[j]; 
+        cj     = bj + bi[row]; 
+        ca     = ba + bi[row];
+        valtmp = pA[j];
         /* perform sparse axpy */
         nextap = 0;
         for (k=0; nextap<apnz; k++) {
           if (cj[k]==apJ[nextap]) { /* global column index */
-            ca[k] += pA[j]*apa[cj[k]]; 
+            ca[k] += valtmp*apa[cj[k]]; 
             nextap++;
           }
         }
@@ -739,10 +755,11 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pnz = pi_loc[row+1] - pi_loc[row];
         pj  = pj_loc + pi_loc[row];
         pa  = pa_loc + pi_loc[row];
-        nextp = 0;
+        valtmp = ada[j];
+        nextp  = 0;
         for (k=0; nextp<pnz; k++) {
           if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
-            apa[k] += ada[j]*pa[nextp++]; 
+            apa[k] += valtmp*pa[nextp++]; 
           }
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
@@ -756,10 +773,11 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         pnz = pi_oth[row+1] - pi_oth[row];
         pj  = pj_oth + pi_oth[row];
         pa  = pa_oth + pi_oth[row];
-        nextp = 0;
+        valtmp = aoa[j];
+        nextp  = 0;
         for (k=0; nextp<pnz; k++) {
           if (apJ[k] == pj[nextp]) { /* col of AP == col of P */
-            apa[k] += aoa[j]*pa[nextp++];
+            apa[k] += valtmp*pa[nextp++];
           }
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
@@ -776,14 +794,17 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         nextap = 0;
         row    = pJ[j]; /* global index */
         if (row < pcstart || row >=pcend) { /* put the value into Co */
-          cj  = coj + coi[*poJ]; 
-          ca  = coa + coi[*poJ++];
+          row = *poJ;
+          cj  = coj + coi[row]; 
+          ca  = coa + coi[row]; poJ++;
         } else {                            /* put the value into Cd */
-          cj   = bj + bi[*pdJ]; 
-          ca   = ba + bi[*pdJ++];
+          row  = *pdJ;
+          cj   = bj + bi[row]; 
+          ca   = ba + bi[row]; pdJ++;
         } 
+        valtmp = pA[j];
         for (k=0; nextap<apnz; k++) {
-          if (cj[k]==apJ[nextap]) ca[k] += pA[j]*apa[nextap++]; 
+          if (cj[k]==apJ[nextap]) ca[k] += valtmp*apa[nextap++]; 
         }
         ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
       }
