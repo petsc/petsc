@@ -37,6 +37,10 @@ class Configure(PETSc.package.NewPackage):
     args.append('cxx="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 
+    if self.setCompilers.isDarwin() or self.setCompilers.isPGI(self.framework.getCompiler()):
+      args.append('cflags=-D__thread=\"\"')
+    self.framework.popLanguage()
+
     if self.sharedLibraries.useShared:
       args.append('shared=1')
 
@@ -57,10 +61,6 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
 
     if self.installNeeded('metis'):
-      if self.setCompilers.isDarwin():
-        cflags = 'CFLAGS=-D__thread=\"\"'
-      else:
-        cflags = ''
       try:
         self.logPrintBox('Configuring METIS; this may take several minutes')
         output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make distclean && make config '+args, timeout=900, log = self.framework.log)
@@ -68,7 +68,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on METIS: '+str(e))
       try:
         self.logPrintBox('Compiling METIS; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+cflags+' make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on METIS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'metis')

@@ -3,6 +3,7 @@ static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
+#include <assert.h>
 #include <petscsnes.h>
 #include <petscao.h>
 #include "user.h"
@@ -1975,10 +1976,10 @@ static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,Pe
   This issue could be resolved by either (a) storing more edges from the original mesh or (b) communicating an extra
   layer of edges in this function.
 */
-static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,PetscInt **iconn)
+static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,const PetscInt *eptr,PetscInt *incell,PetscInt **iconn)
 {
   PetscErrorCode ierr;
-  PetscInt nnodes,nedge,ncell,acell,(*conn)[4],node0,node1,node2,node3,i,j,k,l,rowmax;
+  PetscInt ncell,acell,(*conn)[4],node0,node1,node2,node3,i,j,k,l,rowmax;
   PetscInt *ui,*uj,*utmp,*tmp1,*tmp2,*tmp3,ntmp1,ntmp2,ntmp3;
 #if defined(INTERLACING)
 #  define GetEdge(eptr,i,n1,n2) do { n1 = eptr[i*2+0]-1; n2 = eptr[i*2+1]-1; } while (0)
@@ -1991,14 +1992,12 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
   *iconn = PETSC_NULL;
   acell = 100000;                /* allocate for this many cells */
   ierr = PetscMalloc(acell*sizeof(*conn),&conn);CHKERRQ(ierr);
-  nnodes = grid->nvertices;
-  nedge = grid->nedgeLoc;
   ierr = PetscMalloc2(nnodes+1,PetscInt,&ui,nedge,PetscInt,&uj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnodes*sizeof(PetscInt),&utmp);CHKERRQ(ierr);
   ierr = PetscMemzero(utmp,nnodes*sizeof(PetscInt));CHKERRQ(ierr);
   /* count the number of edges in the upper-triangular matrix u */
   for (i=0; i<nedge; i++) {     /* count number of nonzeros in upper triangular matrix */
-    GetEdge(grid->eptr,i,node0,node1);
+    GetEdge(eptr,i,node0,node1);
     utmp[PetscMin(node0,node1)]++;
   }
   rowmax = 0;
@@ -2009,7 +2008,7 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
     utmp[i] = 0;
   }
   for (i=0; i<nedge; i++) {     /* assemble upper triangular matrix U */
-    GetEdge(grid->eptr,i,node0,node1);
+    GetEdge(eptr,i,node0,node1);
     SortInt2(&node0,&node1);
     uj[ui[node0] + utmp[node0]++] = node1;
   }
@@ -2029,32 +2028,36 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
     for (j=0; j<ntmp1; j++) {
       node1 = tmp1[j];
       if (node1 < 0 || nnodes <= node1) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node1,nnodes);
-      if (node1 <= node0) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should not be larger",node0,node1);
+      if (node1 <= node0) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node0,node1);
       ntmp2 = ui[node1+1] - ui[node1];
       ierr = PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = IntersectInt(ntmp1,tmp1,&ntmp2,tmp2);CHKERRQ(ierr);
       for (k=0; k<ntmp2; k++) {
         node2 = tmp2[k];
         if (node2 < 0 || nnodes <= node2) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node2,nnodes);
-        if (node2 <= node1) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should not be larger",node1,node2);
+        if (node2 <= node1) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node1,node2);
         ntmp3 = ui[node2+1] - ui[node2];
         ierr = PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt));CHKERRQ(ierr);
         ierr = IntersectInt(ntmp2,tmp2,&ntmp3,tmp3);CHKERRQ(ierr);
         for (l=0; l<ntmp3; l++) {
           node3 = tmp3[l];
           if (node3 < 0 || nnodes <= node3) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node3,nnodes);
-          if (node3 <= node2) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should not be larger",node2,node3);
+          if (node3 <= node2) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node2,node3);
           if (ncell > acell) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
+          if (ntmp3 < 3) continue;
           conn[ncell][0] = node0;
           conn[ncell][1] = node1;
           conn[ncell][2] = node2;
           conn[ncell][3] = node3;
-          if (0){
+          if (0) {
             PetscViewer viewer = PETSC_VIEWER_STDOUT_WORLD;
             PetscViewerASCIIPrintf(viewer,"created cell %d: %d %d %d %d\n",ncell,node0,node1,node2,node3);
             PetscIntView(ntmp1,tmp1,viewer);
             PetscIntView(ntmp2,tmp2,viewer);
             PetscIntView(ntmp3,tmp3,viewer);
+            /* uns3d.msh has a handful of "tetrahedra" that overlap by violating the following condition. As far as I
+             * can tell, that means it is an invalid mesh. I don't know what the intent was. */
+            if (ntmp3 > 2) SETERRQ(PETSC_COMM_SELF,1,"More than two ways to complete a tetrahedron using a common triangle");
           }
           ncell++;
         }
@@ -2064,8 +2067,171 @@ static PetscErrorCode InferLocalCellConnectivity(GRID *grid,PetscInt *incell,Pet
   ierr = PetscFree3(tmp1,tmp2,tmp3);CHKERRQ(ierr);
   ierr = PetscFree2(ui,uj);CHKERRQ(ierr);
 
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %D cells with nnodes=%D nedge=%D\n",ncell,nnodes,nedge);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   *incell = ncell;
   *iconn = (PetscInt*)conn;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GridCompleteOverlap"
+static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscInt *inedgeOv,PetscInt **ieptrOv)
+{
+  PetscErrorCode ierr;
+  PetscInt nedgeLoc,nedgeOv,i,j,cnt,node0,node1,node0p,node1p,nnodes,nnodesLoc,nvertices,rstart,nodeEdgeCountAll,nodeEdgeRstart;
+  PetscInt *nodeEdgeCount,*nodeEdgeOffset,*eIdxOv,*p2l,*eptrOv;
+  Vec VNodeEdge,VNodeEdgeInfo,VNodeEdgeInfoOv,VNodeEdgeOv;
+  PetscScalar *vne,*vnei;
+  IS isglobal,isedgeOv;
+  VecScatter nescat,neiscat;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  nnodes    = grid->nnodes;     /* Total number of global nodes */
+  nnodesLoc = grid->nnodesLoc;  /* Number of owned nodes */
+  nvertices = grid->nvertices;  /* Number of owned+ghosted nodes */
+  nedgeLoc  = grid->nedgeLoc;   /* Number of edges connected to owned nodes */
+
+  /* Count the number of neighbors of each owned node */
+  ierr = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  rstart -= nnodesLoc;
+  ierr = PetscMalloc2(nnodesLoc,PetscInt,&nodeEdgeCount,nnodesLoc,PetscInt,&nodeEdgeOffset);CHKERRQ(ierr);
+  ierr = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
+  for (i=0; i<nedgeLoc; i++) {
+    GetEdge(grid->eptr,i,node0,node1);
+    node0p = grid->loc2pet[node0];
+    node1p = grid->loc2pet[node1];
+    if (rstart <= node0p && node0p < rstart+nnodesLoc) nodeEdgeCount[node0p-rstart]++;
+    if (rstart <= node1p && node1p < rstart+nnodesLoc) nodeEdgeCount[node1p-rstart]++;
+  }
+  /* Get the offset in the node-based edge array */
+  nodeEdgeOffset[0] = 0;
+  for (i=0; i<nnodesLoc-1; i++) nodeEdgeOffset[i+1] = nodeEdgeOffset[i] + nodeEdgeCount[i];
+  nodeEdgeCountAll = nodeEdgeCount[nnodesLoc-1] + nodeEdgeOffset[nnodesLoc-1];
+
+  /* Pack a Vec by node of all the edges for that node. The nodes are stored by global index */
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,nodeEdgeCountAll,PETSC_DETERMINE,&VNodeEdge);CHKERRQ(ierr);
+  ierr = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
+  ierr = VecGetArray(VNodeEdge,&vne);CHKERRQ(ierr);
+  for (i=0; i<nedgeLoc; i++) {
+    GetEdge(grid->eptr,i,node0,node1);
+    node0p = grid->loc2pet[node0];
+    node1p = grid->loc2pet[node1];
+    if (rstart <= node0p && node0p < rstart+nnodesLoc) vne[nodeEdgeOffset[node0p-rstart] + nodeEdgeCount[node0p-rstart]++] = node1p;
+    if (rstart <= node1p && node1p < rstart+nnodesLoc) vne[nodeEdgeOffset[node1p-rstart] + nodeEdgeCount[node1p-rstart]++] = node0p;
+  }
+  ierr = VecRestoreArray(VNodeEdge,&vne);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,PETSC_NULL);CHKERRQ(ierr);
+
+  /* Move the count and offset into a Vec so that we can use VecScatter, translating offset from local to global */
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,2*nnodesLoc,2*nnodes,&VNodeEdgeInfo);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(VNodeEdgeInfo,2);CHKERRQ(ierr);
+  ierr = VecGetArray(VNodeEdgeInfo,&vnei);CHKERRQ(ierr);
+  for (i=0; i<nnodesLoc; i++) {
+    vnei[i*2+0] = nodeEdgeCount[i];                   /* Total number of edges from this vertex */
+    vnei[i*2+1] = nodeEdgeOffset[i] + nodeEdgeRstart; /* Now the global index in the next comm round */
+  }
+  ierr = VecRestoreArray(VNodeEdgeInfo,&vnei);CHKERRQ(ierr);
+  ierr = PetscFree2(nodeEdgeCount,nodeEdgeOffset);CHKERRQ(ierr);
+
+  /* Create a Vec to receive the edge count and global offset for each node in owned+ghosted, get them, and clean up */
+  ierr = VecCreateSeq(PETSC_COMM_SELF,2*nvertices,&VNodeEdgeInfoOv);CHKERRQ(ierr); /* To hold the count and offset of each ghosted node */
+  ierr = VecSetBlockSize(VNodeEdgeInfoOv,2);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr); /* Address the nodes in overlap to get info from */
+  ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,PETSC_NULL,&neiscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&neiscat);CHKERRQ(ierr);
+  ierr = VecDestroy(&VNodeEdgeInfo);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+
+  /* Create a Vec to receive the actual edges for all nodes (owned and ghosted), execute the scatter */
+  nedgeOv = 0;                  /* First count the number of edges in the complete overlap */
+  ierr = VecGetArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
+  for (i=0; i<nvertices; i++) nedgeOv += (PetscInt)vnei[2*i+0];
+  /* Allocate for the global indices in VNodeEdge of the edges to receive */
+  ierr = PetscMalloc(nedgeOv*sizeof(*eIdxOv),&eIdxOv);CHKERRQ(ierr);
+  for (i=0,cnt=0; i<nvertices; i++) {
+    for (j=0; j<(PetscInt)vnei[2*i+0]; j++) eIdxOv[cnt++] = (PetscInt)vnei[2*i+1] + j;
+  }
+  assert(nedgeOv == cnt);
+  ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nedgeOv,eIdxOv,PETSC_USE_POINTER,&isedgeOv);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nedgeOv,&VNodeEdgeOv);CHKERRQ(ierr);
+  ierr = VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,PETSC_NULL,&nescat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&nescat);CHKERRQ(ierr);
+  ierr = VecDestroy(&VNodeEdge);CHKERRQ(ierr);
+  ierr = ISDestroy(&isedgeOv);CHKERRQ(ierr);
+  ierr = PetscFree(eIdxOv);CHKERRQ(ierr);
+
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %D, half=%D\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
+
+  /* Create the non-scalable global-to-local index map. Yuck, but it has already been used elsewhere. */
+  ierr = PetscMalloc(nnodes*sizeof(PetscInt),&p2l);CHKERRQ(ierr);
+  for (i=0; i<nnodes; i++) p2l[i] = -1;
+  for (i=0; i<nvertices; i++) p2l[grid->loc2pet[i]] = i;
+  if (1) {
+    PetscInt m = 0;
+    for (i=0; i<nnodes; i++) m += (p2l[i] >= 0);
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %D; nvertices=%D nnodesLoc=%D nnodes=%D\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
+  }
+
+  /* Log each edge connecting nodes in owned+ghosted exactly once */
+  ierr = VecGetArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
+  ierr = VecGetArray(VNodeEdgeOv,&vne);CHKERRQ(ierr);
+  /* First count the number of edges to keep */
+  nedgeOv = 0;
+  for (i=0,cnt=0; i<nvertices; i++) {
+    PetscInt n = (PetscInt)vnei[2*i+0]; /* number of nodes connected to i */
+    node0 = i;
+    for (j=0; j<n; j++) {
+      node1p = vne[cnt++];
+      node1 = p2l[node1p];
+      if (node0 < node1) nedgeOv++;
+    }
+  }
+  /* Array of edges to keep */
+  ierr = PetscMalloc(2*nedgeOv*sizeof(PetscInt),&eptrOv);CHKERRQ(ierr);
+  nedgeOv = 0;
+  for (i=0,cnt=0; i<nvertices; i++) {
+    PetscInt n = (PetscInt)vnei[2*i+0]; /* number of nodes connected to i */
+    node0 = i;
+    for (j=0; j<n; j++) {
+      node1p = vne[cnt++];
+      node1 = p2l[node1p];
+      if (node0 < node1) {
+        eptrOv[2*nedgeOv+0] = node0;
+        eptrOv[2*nedgeOv+1] = node1;
+        nedgeOv++;
+      }
+    }
+  }
+  ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
+  ierr = VecRestoreArray(VNodeEdgeOv,&vne);CHKERRQ(ierr);
+  ierr = VecDestroy(&VNodeEdgeInfoOv);CHKERRQ(ierr);
+  ierr = VecDestroy(&VNodeEdgeOv);CHKERRQ(ierr);
+  ierr = PetscFree(p2l);CHKERRQ(ierr);
+
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%D nedgeOv=%D\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+  flg = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-complete_overlap",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    *invertices = grid->nvertices; /* We did not change the number of vertices */
+    *inedgeOv = nedgeOv;
+    *ieptrOv = eptrOv;
+  } else {
+    *invertices = grid->nvertices;
+    *inedgeOv = nedgeLoc;
+    ierr = PetscFree(eptrOv);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*nedgeLoc*sizeof(PetscInt),&eptrOv);CHKERRQ(ierr);
+    ierr = PetscMemcpy(eptrOv,grid->eptr,2*nedgeLoc*sizeof(PetscInt));CHKERRQ(ierr);
+    *ieptrOv = eptrOv;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2079,7 +2245,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   char pvtu_fname[PETSC_MAX_PATH_LEN],vtu_fname[PETSC_MAX_PATH_LEN];
   MPI_Comm comm;
   PetscMPIInt rank,size;
-  PetscInt i,nvertices,ncells,bs,nloc,boffset;
+  PetscInt i,nvertices,nedgeLoc,ncells,bs,nloc,boffset,*eptr;
   PetscErrorCode ierr;
   Vec Xloc,Xploc,Xuloc;
   unsigned char *celltype;
@@ -2088,6 +2254,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   PetscScalar *xu,*xp;
 
   PetscFunctionBegin;
+  ierr = GridCompleteOverlap(user->grid,&nvertices,&nedgeLoc,&eptr);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2132,8 +2299,8 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = VecGetBlockSize(Xloc,&bs);CHKERRQ(ierr);
   if (bs != 4) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %D",bs);CHKERRQ(ierr);
   ierr = VecGetSize(Xloc,&nloc);CHKERRQ(ierr);
-  nvertices = nloc / bs;
-  if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected nvertices=%D to match grid->nvertices=%D",nvertices,grid->nvertices);CHKERRQ(ierr);
+  if (nloc/bs != nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%D to match nvertices=%D",nloc/bs,nvertices);CHKERRQ(ierr);
+  if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%D to match grid->nvertices=%D",nvertices,grid->nvertices);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices*3,&Xuloc);CHKERRQ(ierr);
   ierr = VecSetBlockSize(Xuloc,3);CHKERRQ(ierr);
@@ -2148,7 +2315,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   }
   ierr = VecRestoreArrayRead(Xloc,&x);CHKERRQ(ierr);
 
-  ierr = InferLocalCellConnectivity(grid,&ncells,&conn);CHKERRQ(ierr);
+  ierr = InferLocalCellConnectivity(nvertices,nedgeLoc,eptr,&ncells,&conn);CHKERRQ(ierr);
 
   ierr = PetscFOpen(PETSC_COMM_SELF,vtu_fname,"w",&vtu);CHKERRQ(ierr);
   boffset = 0;
@@ -2226,6 +2393,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = VecRestoreArray(Xuloc,&xu);CHKERRQ(ierr);
   ierr = VecDestroy(&Xploc);CHKERRQ(ierr);
   ierr = VecDestroy(&Xuloc);CHKERRQ(ierr);
+  ierr = PetscFree(eptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

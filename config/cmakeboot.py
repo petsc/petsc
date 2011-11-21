@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement  # For python-2.5
+
 import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.path.abspath('config')))
@@ -117,8 +119,12 @@ class PETScMaker(script.Script):
    if retcode:
      self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
      cachetxt = os.path.join(archdir, 'CMakeCache.txt')
-     log.write('Contents of %s:\n' % cachetxt)
-     log.write(open(cachetxt, 'r').read())
+     try:
+       with open(cachetxt, 'r') as f:
+         log.write('Contents of %s:\n' % cachetxt)
+         log.write(f.read())
+     except IOError, e:
+       log.write('Could not read file %s: %r\n' % (cachetxt, e))
      return False
    else:
      return True # Configure successful

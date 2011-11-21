@@ -126,7 +126,7 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    int *loc2glo;                              /* local to global mapping     */
    int *v2p;				      /* Vertex to processor mapping */
    int *sface_bit, *vface_bit;
-   int nnodesLoc, nedgeLoc, nvertices;
+   int nnodesLoc, nedgeLoc, nvertices;        /* nnodesLoc=number of owned nodes, nedgeLoc=number of edges touching owned nodes, nvertices=includes ghost nodes */
    int nsnodeLoc, nvnodeLoc, nfnodeLoc;
    int nnfacetLoc, nvfacetLoc, nffacetLoc;
 
