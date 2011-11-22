@@ -3078,12 +3078,14 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
 
     if (!grid) {
-      PetscBool ig;
-      ierr = DMHasInitialGuess(snes->dm,&ig);CHKERRQ(ierr);
       if (snes->ops->computeinitialguess) {
         ierr = (*snes->ops->computeinitialguess)(snes,snes->vec_sol,snes->initialguessP);CHKERRQ(ierr);
-      } else if (ig) {
-        ierr = DMComputeInitialGuess(snes->dm,snes->vec_sol);CHKERRQ(ierr);
+      } else if (snes->dm) {
+        PetscBool ig;
+        ierr = DMHasInitialGuess(snes->dm,&ig);CHKERRQ(ierr);
+        if (ig) {
+          ierr = DMComputeInitialGuess(snes->dm,snes->vec_sol);CHKERRQ(ierr);
+        }
       }
     }
 
