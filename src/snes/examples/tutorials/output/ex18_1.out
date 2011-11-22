@@ -1,17 +1,10 @@
   0 SNES Function norm 0.83248 
   1 SNES Function norm 0.254912 
-  2 SNES Function norm 0.0743307 
+  2 SNES Function norm 0.0743308 
   3 SNES Function norm 0.0156169 
-  4 SNES Function norm 0.000860012 
-  5 SNES Function norm 1.7228e-06 
-  6 SNES Function norm 1.277e-11 
-  0 SNES Function norm 0.83248 
-  1 SNES Function norm 0.254912 
-  2 SNES Function norm 0.0743307 
-  3 SNES Function norm 0.0156169 
-  4 SNES Function norm 0.000860012 
-  5 SNES Function norm 1.7228e-06 
-  6 SNES Function norm 1.277e-11 
+  4 SNES Function norm 0.000860018 
+  5 SNES Function norm 1.72238e-06 
+  6 SNES Function norm 1.262e-11 
 SNES Object: 1 MPI processes
   type: ls
     line search variant: CUBIC
@@ -19,7 +12,7 @@ SNES Object: 1 MPI processes
     damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=24
+  total number of linear solver iterations=32
   total number of function evaluations=7
   KSP Object:   1 MPI processes
     type: fgmres
@@ -31,8 +24,9 @@ SNES Object: 1 MPI processes
     using UNPRECONDITIONED norm type for convergence test
   PC Object:   1 MPI processes
     type: mg
-      MG: type is FULL, levels=3 cycles=v
-        Not using Galerkin computed coarse grid matrices
+      MG: type is MULTIPLICATIVE, levels=3 cycles=v
+        Cycles per PCApply=1
+        Using Galerkin computed coarse grid matrices
     Coarse grid solver -- level -------------------------------
       KSP Object:      (mg_coarse_)       1 MPI processes
         type: preonly
@@ -45,20 +39,20 @@ SNES Object: 1 MPI processes
           LU: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5, needed 1.99048
+          factor fill ratio given 5, needed 1.59172
             Factored matrix follows:
               Matrix Object:               1 MPI processes
                 type: seqaij
                 rows=25, cols=25
                 package used to perform factorization: petsc
-                total: nonzeros=209, allocated nonzeros=209
+                total: nonzeros=269, allocated nonzeros=269
                 total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
+                  using I-node routines: found 17 nodes, limit used is 5
         linear system matrix = precond matrix:
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=25, cols=25
-          total: nonzeros=105, allocated nonzeros=105
+          total: nonzeros=169, allocated nonzeros=0
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
@@ -84,14 +78,14 @@ SNES Object: 1 MPI processes
                 type: seqaij
                 rows=81, cols=81
                 package used to perform factorization: petsc
-                total: nonzeros=369, allocated nonzeros=369
+                total: nonzeros=625, allocated nonzeros=625
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=81, cols=81
-          total: nonzeros=369, allocated nonzeros=369
+          total: nonzeros=625, allocated nonzeros=0
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -137,5 +131,5 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
 Number of SNES iterations = 6
-Number of Linear iterations = 24
-Average Linear its / SNES = 4.000000e+00
+Number of Linear iterations = 32
+Average Linear its / SNES = 5.333333e+00

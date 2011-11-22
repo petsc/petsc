@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
   /*
-     Create the nonlinear solver, and tell the DMMG structure to use it
+     Create the nonlinear solver, and tell it the functions to use
   */
   ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,FormJacobian,&user);CHKERRQ(ierr);

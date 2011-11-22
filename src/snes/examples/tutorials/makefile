@@ -567,6 +567,11 @@ runex50_ngmres_fas: #test ex50 with NGMRES preconditioned by FAS with pointwise 
 	   ${DIFF} output/ex50_ngmres_fas.out ex50_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
            ${RM} -f ex50_ngmres_fas.tmp
 
+runex18:
+	-@${MPIEXEC} -n 1 ./ex18 -snes_monitor_short -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view  > ex18_1.tmp 2>&1; \
+	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex18, diffs above \n========================================="; fi; \
+	   ${RM} -f ex18_1.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -960,7 +965,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_fas runex5_5_ngmres_fas \
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
-                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm \
+                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_2 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
