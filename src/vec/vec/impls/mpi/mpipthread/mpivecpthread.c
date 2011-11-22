@@ -155,7 +155,6 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   ierr = VecCreate_MPIPThread_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPIPthread *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-  if(!w->arrindex) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must set the number of threads for the first vector before duplicating it");
   ierr = VecSeqPThreadSetNThreads(*v,w->nthreads);CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
@@ -269,7 +268,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPIPThread, /* 1 */
             0,
             0,
             VecResetArray_MPI,
-            VecSetFromOptions_SeqPThread,
+            0,
             VecMaxPointwiseDivide_Seq,
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
@@ -291,6 +290,8 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
 {
   Vec_MPIPthread *s;
   PetscErrorCode ierr;
+  PetscInt       nthreads=PetscMaxThreads;
+  PetscBool      flg;
 
   PetscFunctionBegin;
 
@@ -319,6 +320,13 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
     ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
   }
   vecs_created++;
+
+  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecSeqPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecSeqPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
+  } else {
+    ierr = VecSeqPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
+  }
 
   /* By default parallel vectors do not have local representation */
   s->localrep    = 0;
