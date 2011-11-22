@@ -32,10 +32,6 @@ class Configure(PETSc.package.NewPackage):
     args = ['prefix='+self.installDir]
     self.framework.pushLanguage('C')
     args.append('cc="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
-    self.framework.pushLanguage('Cxx')
-    args.append('cxx="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
 
     if self.setCompilers.isDarwin() or self.setCompilers.isPGI(self.framework.getCompiler()):
       args.append('cflags=-D__thread=\"\"')
