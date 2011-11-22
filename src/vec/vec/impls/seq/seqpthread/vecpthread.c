@@ -76,7 +76,7 @@ void* VecDot_Kernel(void *arg)
   DoCoreAffinity();
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
-  n = data->n;.
+  n = data->n;
   bn = PetscBLASIntCast(n);
   data->result = BLASdot_(&bn,x,&one,y,&one);
   return(0);
