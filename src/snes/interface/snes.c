@@ -54,6 +54,7 @@ PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool  flg)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveBool(snes,flg,2);
   snes->errorifnotconverged = flg;
+
   PetscFunctionReturn(0);
 }
 

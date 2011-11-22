@@ -104,7 +104,6 @@ typedef struct {
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
   
-  PetscInt         matmult_denseaxpy;    /* used by MatMatMult(): <=0: use sparse axpy; otherwise: num of dense rows used in MatMatMultNumeric() */
   PetscScalar      *matmult_abdense;     /* used by MatMatMult() */
   Mat_PtAP         *ptap;                /* used by MatPtAP() */
 } Mat_SeqAIJ;

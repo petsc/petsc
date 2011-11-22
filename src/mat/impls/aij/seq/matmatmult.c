@@ -107,7 +107,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
   MatScalar      *ca;
   PetscReal      afill;
-  PetscInt       dense_axpy=1; /* <=0: use sparse axpy; otherwise: num of dense rows used in MatMatMultNumeric_SeqAIJ_SeqAIJ() */
+  PetscBool      dense_axpy; /* false: use sparse axpy; otherwise use dense axpy in MatMatMultNumeric_SeqAIJ_SeqAIJ() */
 
   PetscFunctionBegin;
   /* Get ci and cj */
@@ -129,15 +129,13 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqAIJ;
 
   /* Determine which MatMatMultNumeric_SeqAIJ_SeqAIJ() to be used */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matmatmult_denseaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (dense_axpy > 0){
-    if (dense_axpy != 2) dense_axpy = 1;
-    c->matmult_denseaxpy = dense_axpy;
-    ierr = PetscMalloc(dense_axpy*bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
+  dense_axpy = PETSC_TRUE; 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_denseaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
+  if (dense_axpy){
+    ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
     ierr = PetscMemzero(c->matmult_abdense,dense_axpy*bn*sizeof(PetscScalar));CHKERRQ(ierr);
     (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
   } else { /* slower, but use less memory */
-    c->matmult_denseaxpy = 0;
     (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
   }
 
@@ -173,7 +171,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   PetscInt       am=A->rmap->n,cm=C->rmap->n;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a,valtmp; 
   PetscScalar    *ab_dense=c->matmult_abdense;
   
   PetscFunctionBegin;  
@@ -182,104 +180,30 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   /* Traverse A row-wise. */
   /* Build the ith row in C by summing over nonzero columns in A, */
   /* the rows of B corresponding to nonzeros of A. */
-
-  if (c->matmult_denseaxpy == 2){ /* use two rows of AP for faster execution */
-    PetscScalar *ab_den0,*ab_den1;
-    ab_den0 = ab_dense;
-    ab_den1 = ab_dense + B->cmap->n;
-    for (i=0; i<am; i+=2) {
-      anzi = ai[i+1] - ai[i];
-      for (j=0;j<anzi;j++) {
-        brow = aj[j];
-        bnzi = bi[brow+1] - bi[brow];
-        bjj  = bj + bi[brow];
-        baj  = ba + bi[brow];
-        /* perform dense axpy */
-        for (k=0; k<bnzi; k++) {
-          ab_den0[bjj[k]] += aa[j]*baj[k];
-        }
-        flops += 2*bnzi;
+  for (i=0; i<am; i++) {
+    anzi = ai[i+1] - ai[i];
+    for (j=0; j<anzi; j++) {
+      brow = aj[j];
+      bnzi = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      baj  = ba + bi[brow];
+      /* perform dense axpy */
+      valtmp = aa[j];
+      for (k=0; k<bnzi; k++) {
+        ab_dense[bjj[k]] += valtmp*baj[k];
       }
-      aj += anzi; aa += anzi;
-
-      anzi = ai[i+2] - ai[i+1];
-      for (j=0;j<anzi;j++) {
-        brow = aj[j];
-        bnzi = bi[brow+1] - bi[brow];
-        bjj  = bj + bi[brow];
-        baj  = ba + bi[brow];
-        /* perform dense axpy */
-        for (k=0; k<bnzi; k++) {
-          ab_den1[bjj[k]] += aa[j]*baj[k];
-        }
-        flops += 2*bnzi;
-      }
-      aj += anzi; aa += anzi;
-
-      cnzi = ci[i+1] - ci[i];
-      for (k=0; k<cnzi; k++) {
-        ca[k]          += ab_den0[cj[k]];
-        ab_den0[cj[k]] = 0.0; /* zero ab_dense */
-      }
-      flops += cnzi;
-      cj += cnzi; ca += cnzi;
-
-      cnzi = ci[i+2] - ci[i+1];
-      for (k=0; k<cnzi; k++) {
-        ca[k]          += ab_den1[cj[k]];
-        ab_den1[cj[k]] = 0.0; /* zero ab_dense */
-      }
-      flops += cnzi;
-      cj += cnzi; ca += cnzi;
+      flops += 2*bnzi;
     }
+    aj += anzi; aa += anzi;
 
-    for (;i<am; i++){     /* over extra rows of A */
-      anzi = ai[i+1] - ai[i];
-      for (j=0; j<anzi; j++) {
-        brow = aj[j];
-        bnzi = bi[brow+1] - bi[brow];
-        bjj  = bj + bi[brow];
-        baj  = ba + bi[brow];
-        /* perform dense axpy */
-        for (k=0; k<bnzi; k++) {
-          ab_den0[bjj[k]] += aa[j]*baj[k];
-        }
-        flops += 2*bnzi;
-      }
-      aj += anzi; aa += anzi;
-      cnzi = ci[i+1] - ci[i];
-      for (k=0; k<cnzi; k++) {
-        ca[k]          += ab_dense[cj[k]];
-        ab_den0[cj[k]] = 0.0; /* zero ab_dense */
-      }
-      flops += cnzi;
-      cj += cnzi; ca += cnzi;
+    cnzi = ci[i+1] - ci[i];
+    for (k=0; k<cnzi; k++) {
+      ca[k]          += ab_dense[cj[k]];
+      ab_dense[cj[k]] = 0.0; /* zero ab_dense */
     }
-  } else { /* use a single row of AP */
-    for (i=0; i<am; i++) {
-      anzi = ai[i+1] - ai[i];
-      for (j=0; j<anzi; j++) {
-        brow = aj[j];
-        bnzi = bi[brow+1] - bi[brow];
-        bjj  = bj + bi[brow];
-        baj  = ba + bi[brow];
-        /* perform dense axpy */
-        for (k=0; k<bnzi; k++) {
-          ab_dense[bjj[k]] += aa[j]*baj[k];
-        }
-        flops += 2*bnzi;
-      }
-      aj += anzi; aa += anzi;
-
-      cnzi = ci[i+1] - ci[i];
-      for (k=0; k<cnzi; k++) {
-        ca[k]          += ab_dense[cj[k]];
-        ab_dense[cj[k]] = 0.0; /* zero ab_dense */
-      }
-      flops += cnzi;
-      cj += cnzi; ca += cnzi;
-    }
-  }
+    flops += cnzi;
+    cj += cnzi; ca += cnzi;
+  } 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
@@ -299,7 +223,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   PetscInt       am=A->rmap->N,cm=C->rmap->N;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a,valtmp; 
   PetscInt       nextb;
   
   PetscFunctionBegin;  
@@ -317,10 +241,11 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
       bjj  = bj + bi[brow];
       baj  = ba + bi[brow];
       /* perform sparse axpy */
-      nextb = 0;
+      valtmp = aa[j];
+      nextb  = 0;
       for (k=0; nextb<bnzi; k++) {
         if (cj[k] == bjj[nextb]){ /* ccol == bcol */
-          ca[k] += aa[j]*baj[nextb++];
+          ca[k] += valtmp*baj[nextb++];
         }
       }
       flops += 2*bnzi;
