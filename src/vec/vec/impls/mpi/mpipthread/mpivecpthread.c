@@ -155,7 +155,7 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   ierr = VecCreate_MPIPThread_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPIPthread *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-  ierr = VecSeqPThreadSetNThreads(*v,w->nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*v,w->nthreads);CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
@@ -321,11 +321,11 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   }
   vecs_created++;
 
-  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecSeqPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecSeqPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
+    ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
   } else {
-    ierr = VecSeqPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
+    ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
   }
 
   /* By default parallel vectors do not have local representation */

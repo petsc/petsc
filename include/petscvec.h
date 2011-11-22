@@ -561,7 +561,7 @@ extern PetscErrorCode  VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-extern PetscErrorCode VecSeqPThreadSetNThreads(Vec,PetscInt);
+extern PetscErrorCode VecPThreadSetNThreads(Vec,PetscInt);
 extern PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 

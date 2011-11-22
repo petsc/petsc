@@ -1327,7 +1327,7 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
   ierr = PetscObjectSetPrecision((PetscObject)*V,((PetscObject)win)->precision);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
-  ierr = VecSeqPThreadSetNThreads(*V,s->nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*V,s->nthreads);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
@@ -1338,9 +1338,9 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecSeqPThreadSetNThreads"
+#define __FUNCT__ "VecPThreadSetNThreads"
 /*@
-   VecSeqPThreadSetNThreads - Set the number of threads to be used for vector operations.
+   VecPThreadSetNThreads - Set the number of threads to be used for vector operations.
 
    Input Parameters
 +  v - the vector
@@ -1352,7 +1352,7 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
 
 .seealso: VecCreateSeqPThread()
 @*/
-PetscErrorCode VecSeqPThreadSetNThreads(Vec v,PetscInt nthreads)
+PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
 {
   PetscErrorCode ierr;
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
@@ -1471,11 +1471,11 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   }
   vecs_created++;
 
-  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecSeqPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecSeqPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
+    ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
   } else {
-    ierr = VecSeqPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
+    ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
   }
 
   if (v->map->bs == -1) v->map->bs = 1;
@@ -1543,6 +1543,6 @@ PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,Ve
   ierr = VecCreate(comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
   ierr = VecSetType(*v,VECSEQPTHREAD);CHKERRQ(ierr);
-  ierr = VecSeqPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
