@@ -38,7 +38,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices  = to->indices;
   sstarts  = to->starts;
 #if defined(PETSC_HAVE_CUSP)
-  if (!n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
+  if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
     if (!ctx->spptr) {
       PetscInt k,*tindices,n = sstarts[nsends],*sindices;
       ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
