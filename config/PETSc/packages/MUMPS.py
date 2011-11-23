@@ -21,11 +21,11 @@ class Configure(PETSc.package.NewPackage):
     self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
     self.parmetis   = framework.require('PETSc.packages.parmetis',self)
     self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
-    if self.framework.argDB.get('download-scotch') or self.framework.argDB.get('with-scotch'):
-      self.scotch     = framework.require('PETSc.packages.PTScotch',self)
-      self.deps.append(self.scotch)
+    if self.framework.argDB.get('download-ptscotch') or self.framework.argDB.get('with-ptscotch'):
+      self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
+      self.deps.append(self.ptscotch)
     else:
-      self.scotch = 0
+      self.ptscotch = 0
     return
 
   def Install(self):
@@ -44,9 +44,9 @@ class Configure(PETSc.package.NewPackage):
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
-    if self.scotch:
-      g.write('ISCOTCH = '+self.headers.toString(self.scotch.include)+'\n')
-      g.write('LSCOTCH = '+self.libraries.toString(self.scotch.lib)+'\n')
+    if self.ptscotch:
+      g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
+      g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
       orderingsc += ' -Dscotch  -Dptscotch'
       orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'scotch '+self.compilers.FortranDefineCompilerOption+'ptscotch'
 
