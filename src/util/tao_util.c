@@ -1,5 +1,5 @@
-#include "tao.h"
-#include "tao_util.h"
+#include "tao.h" /*I "tao.h" I*/
+#include "tao_util.h" /*I "tao_util.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPow"
@@ -184,7 +184,7 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 #undef __FUNCT__  
 #define __FUNCT__ "VecFischer"
 /*@
-   Fischer - Evaluates the Fischer-Burmeister function for complementarity 
+   VecFischer - Evaluates the Fischer-Burmeister function for complementarity 
    problems.
    
    Input Parameters:
@@ -288,7 +288,7 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 #undef __FUNCT__
 #define __FUNCT__ "VecSFischer"
 /*@
-   SFischer - Evaluates the Smoothed Fischer-Burmeister function for
+   VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
    complementarity problems.
 
    Input Parameters:

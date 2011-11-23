@@ -124,6 +124,7 @@ struct _p_TaoSolver {
     PetscBool viewjacobian;
     PetscViewer viewer;
 
+    PetscInt subset_type; 
     PetscInt hist_max;/* Number of iteration histories to keep */
     PetscReal *hist_obj; /* obj value at each iteration */
     PetscReal *hist_resid; /* residual at each iteration */

@@ -49,7 +49,6 @@ typedef struct {
 
   PetscInt n_free;       /* Number of free variables */
   PetscInt n_free_last;
-  PetscInt subset_type;
 
 } TAO_TRON;
 

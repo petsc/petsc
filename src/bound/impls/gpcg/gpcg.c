@@ -11,9 +11,6 @@
 static const char *GPCG_KSP[64] = {
     "nash","stcg","gltr"
 };
-static const char *TAOSUBSET[64] = {
-    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
-};
 
 static PetscErrorCode GPCGGradProjections(TaoSolver tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
@@ -50,19 +47,13 @@ static PetscErrorCode TaoSetFromOptions_GPCG(TaoSolver tao)
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode      ierr;
   PetscBool flg;
-  MPI_Comm   comm;
-  PetscMPIInt size;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
 
   ierr=PetscOptionsInt("-gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);
   CHKERRQ(ierr);
 
-  comm = ((PetscObject)tao)->comm;
-  gpcg->subset_type = TAOSUBSET_MASK;
-  ierr = MPI_Comm_size(comm,&size); CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TAOSUBSET, TAOSUBSET_TYPES,TAOSUBSET[gpcg->subset_type], &gpcg->subset_type, 0); CHKERRQ(ierr);
-
+  gpcg->subset_type = TAO_SUBSET_MASK;
 
   ierr = PetscOptionsEList("-tao_gpcg_ksp_type", "ksp type", "", GPCG_KSP, GPCG_KSP_NTYPES,
 			 GPCG_KSP[gpcg->ksp_type], &gpcg->ksp_type,0); CHKERRQ(ierr);
@@ -88,8 +79,6 @@ static PetscErrorCode TaoView_GPCG(TaoSolver tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %G \n",gpcg->pg_ftol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO GPCG",((PetscObject)viewer)->type_name);
@@ -217,10 +206,10 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 
     f=gpcg->f; gnorm=gpcg->gnorm; 
 
-    if (gpcg->subset_type != TAOSUBSET_REDISTRIBUTE) {
-      if (tao->ksp) {
-	ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
-      }
+    if (tao->ksp) {
+      //ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
+      ierr = KSPReset(tao->ksp); CHKERRQ(ierr);
+    } else {
       ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
       if (gpcg->ksp_type == GPCG_KSP_NASH) {
@@ -233,17 +222,18 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       if (tao->ksp->ops->setfromoptions) {
 	(*tao->ksp->ops->setfromoptions)(tao->ksp);
       }
+    }
 
-    }      
+
 
     if (gpcg->n_free > 0){
       
       /* Create a reduced linear system */
       ierr = VecDestroy(&gpcg->R); CHKERRQ(ierr);
       ierr = VecDestroy(&gpcg->DXFree); CHKERRQ(ierr);
-      ierr = VecGetSubVec(tao->gradient,gpcg->Free_Local, &gpcg->R); CHKERRQ(ierr);
+      ierr = VecGetSubVec(tao->gradient,gpcg->Free_Local, tao->subset_type, &gpcg->R); CHKERRQ(ierr);
       ierr = VecScale(gpcg->R, -1.0); CHKERRQ(ierr);
-      ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local, &gpcg->DXFree); CHKERRQ(ierr);
+      ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local,tao->subset_type, &gpcg->DXFree); CHKERRQ(ierr);
       ierr = VecSet(gpcg->DXFree,0.0); CHKERRQ(ierr);
 
       
@@ -256,8 +246,9 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 	  ierr = MatGetSubMatrix(tao->hessian_pre,  gpcg->Free_Local, gpcg->Free_Local, MAT_INITIAL_MATRIX,&gpcg->Hsub_pre); CHKERRQ(ierr);
       }
 
-      if (gpcg->subset_type == TAOSUBSET_REDISTRIBUTE) {
-          /* Need to create ksp each time  (really only if size changes...) */
+      ierr = KSPReset(tao->ksp); CHKERRQ(ierr);
+      /*
+      if (gpcg->subset_type == TAO_SUBSET_REDISTRIBUTE) {
 	  if (tao->ksp) {
 	      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
 	  }
@@ -275,6 +266,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 	  }
 
       }      
+      */
       
       ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr); 
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
@@ -438,7 +430,7 @@ PetscErrorCode TaoCreate_GPCG(TaoSolver tao)
   gpcg->n_free = 0;
   gpcg->n_upper=0;
   gpcg->n_lower=0;
-  gpcg->subset_type = TAOSUBSET_MASK;
+  gpcg->subset_type = TAO_SUBSET_MASK;
   gpcg->ksp_type = GPCG_KSP_STCG;
 
 

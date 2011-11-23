@@ -9,6 +9,11 @@ PetscClassId TAOSOLVER_CLASSID;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
 
 
+
+static const char *TAO_SUBSET[64] = {
+  "subvec","mask","matrixfree"
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate"
 /*@
@@ -321,6 +326,7 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
 . -tao_cmonitor - prints function value, residual, and constraint norm at each iteration
 . -tao_view_solution - prints solution vector at each iteration
 . -tao_view_separableobjective - prints separable objective vector at each iteration
+. -tao_view_step - prints step direction vector at each iteration
 . -tao_view_gradient - prints gradient vector at each iteration
 . -tao_draw_solution - graphically view solution vector at each iteration
 . -tao_draw_step - graphically view step vector at each iteration
@@ -412,6 +418,12 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	}
 
   
+	ierr = PetscOptionsString("-tao_view_stepdirection","view step direction vector after each iteration","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+	if (flg) {
+	  ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer); CHKERRQ(ierr);
+	  ierr = TaoSetMonitor(tao,TaoStepDirectionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy); CHKERRQ(ierr);
+	}
+
 	ierr = PetscOptionsString("-tao_view_separableobjective","view separable objective vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 	if (flg) {
 	  ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer); CHKERRQ(ierr);
@@ -458,6 +470,7 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	if (flg) {
 	  ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,PETSC_NULL); CHKERRQ(ierr);
 	}
+	ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TAO_SUBSET, TAO_SUBSET_TYPES,TAO_SUBSET[tao->subset_type], &tao->subset_type, 0); CHKERRQ(ierr);
 
 	if (tao->ops->setfromoptions) {
 	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
@@ -526,6 +539,9 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 	if (tao->ksp) {
 	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer,"KSP Solver"); CHKERRQ(ierr);
 	  ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_its); CHKERRQ(ierr);
+	}
+	if (tao->XL || tao->XU) {
+	  ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TAO_SUBSET[tao->subset_type]);
 	}
 	  
 	ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%G,",tao->fatol);CHKERRQ(ierr);
@@ -1568,6 +1584,40 @@ PetscErrorCode TaoGradientMonitor(TaoSolver tao, void *ctx)
     viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
   }
   ierr = VecView(tao->gradient, viewer); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoStepDirectionMonitor"
+/*@C
+   TaoStepDirectionMonitor - Views the gradient at each iteration
+   It can be turned on from the command line using the 
+   -tao_view_gradient option
+
+   Collective on TaoSolver
+
+   Input Parameters:
++  tao - the TaoSolver context
+-  ctx - PetscViewer context or PETSC_NULL
+
+   Options Database Keys:
+.  -tao_view_gradient
+
+   Level: advanced
+
+.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+@*/
+PetscErrorCode TaoStepDirectionMonitor(TaoSolver tao, void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscViewer viewer;
+  PetscFunctionBegin;
+  if (ctx) {
+    viewer = (PetscViewer)ctx;
+  } else {
+    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
+  }
+  ierr = VecView(tao->stepdirection, viewer); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

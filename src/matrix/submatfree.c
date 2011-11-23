@@ -1,7 +1,6 @@
-#include "submatfree.h"
+#include "tao_util.h"   /*I "tao_util.h" I*/
+#include "submatfree.h" /*I "submatfree.h" I*/
 
-PetscErrorCode ISCreateComplement(IS, Vec, IS *);
-PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
 
 
 #undef __FUNCT__  
@@ -14,8 +13,8 @@ PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
 
    Input Parameters:
 +  mat - matrix of arbitrary type
-.  RowMask - the rows that will be zero
--  ColMask - the columns that will be zero
+.  Rows - the rows that will be in the submatrix
+-  Cols - the columns that will be in the submatrix
 
    Output Parameters:
 .  J - New matrix
@@ -28,27 +27,33 @@ PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
 
 .seealso: MatCreate()
 @*/
-PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS RowMask, IS ColMask, Mat *J)
+PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
 {
   MPI_Comm     comm=((PetscObject)mat)->comm;
   MatSubMatFreeCtx ctx;
   PetscErrorCode ierr;
+  PetscMPIInt size;
   PetscInt mloc,nloc,m,n;
   PetscFunctionBegin;
 
   ierr = PetscNew(_p_MatSubMatFreeCtx,&ctx);CHKERRQ(ierr);
-
   ctx->A=mat;
-
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);
-
-  ierr = VecCreateMPI(comm,nloc,n,&ctx->VC);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    ierr = VecCreateSeq(comm,n,&ctx->VC); CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPI(comm,nloc,n,&ctx->VC);CHKERRQ(ierr);
+  }
   ctx->VR=ctx->VC;
   ierr =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-
-  ierr =ISCreateComplement(RowMask,ctx->VC,&ctx->RowComplement);CHKERRQ(ierr);
-  ierr =ISCreateComplement(ColMask,ctx->VC,&ctx->ColComplement);CHKERRQ(ierr);
+  
+  
+  ctx->Rows = Rows;
+  ctx->Cols = Cols;
+  ierr = PetscObjectReference((PetscObject)Rows); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Cols); CHKERRQ(ierr);
   ierr = MatCreateShell(comm,mloc,nloc,m,n,ctx,J);CHKERRQ(ierr);
 
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_SMF);CHKERRQ(ierr);
@@ -74,18 +79,18 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS RowMask, IS ColMask, Mat *J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSMFResetRowColumn"
-PetscErrorCode MatSMFResetRowColumn(Mat mat,IS RowMask,IS ColMask){
+PetscErrorCode MatSMFResetRowColumn(Mat mat,IS Rows,IS Cols){
   MatSubMatFreeCtx ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)RowMask);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)ColMask);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx->RowComplement);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx->ColComplement);CHKERRQ(ierr);
-  ctx->ColComplement=ColMask;
-  ctx->RowComplement=RowMask;
+  ierr = ISDestroy(&ctx->Rows);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx->Cols);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Rows);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Cols);CHKERRQ(ierr);
+  ctx->Cols=Cols;
+  ctx->Rows=Rows;
   PetscFunctionReturn(0);  
 }
 
@@ -99,9 +104,9 @@ PetscErrorCode MatMult_SMF(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VR);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->ColComplement,0.0,ctx->VR);CHKERRQ(ierr);
+  ierr = VecISSetToConstant(ctx->Cols,0.0,ctx->VR);CHKERRQ(ierr);
   ierr = MatMult(ctx->A,ctx->VR,y);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->RowComplement,0.0,y);CHKERRQ(ierr);
+  ierr = VecISSetToConstant(ctx->Rows,0.0,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,9 +120,9 @@ PetscErrorCode MatMultTranspose_SMF(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VC);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->RowComplement,0.0,ctx->VC);CHKERRQ(ierr);
+  ierr = VecISSetToConstant(ctx->Rows,0.0,ctx->VC);CHKERRQ(ierr);
   ierr = MatMultTranspose(ctx->A,ctx->VC,y);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->ColComplement,0.0,y);CHKERRQ(ierr);
+  ierr = VecISSetToConstant(ctx->Cols,0.0,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -146,11 +151,11 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
   if (ctx->A) {
     ierr =MatDestroy(&ctx->A);CHKERRQ(ierr);
   }
-  if (ctx->RowComplement) {
-    ierr =ISDestroy(&ctx->RowComplement);CHKERRQ(ierr);
+  if (ctx->Rows) {
+    ierr =ISDestroy(&ctx->Rows);CHKERRQ(ierr);
   }
-  if (ctx->ColComplement) {
-    ierr =ISDestroy(&ctx->ColComplement);CHKERRQ(ierr);
+  if (ctx->Cols) {
+    ierr =ISDestroy(&ctx->Cols);CHKERRQ(ierr);
   }
   if (ctx->VC) {
     ierr =VecDestroy(&ctx->VC);CHKERRQ(ierr);
@@ -196,7 +201,7 @@ PetscErrorCode MatDuplicate_SMF(Mat mat,MatDuplicateOption op,Mat *M)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrixFree(ctx->A,ctx->RowComplement,ctx->ColComplement,M);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrixFree(ctx->A,ctx->Rows,ctx->Cols,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -211,8 +216,8 @@ PetscErrorCode MatEqual_SMF(Mat A,Mat B,PetscBool *flg)
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void **)&ctx1);CHKERRQ(ierr);
   ierr = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(ierr);
-  ierr = ISEqual(ctx1->RowComplement,ctx2->RowComplement,&flg2);CHKERRQ(ierr);
-  ierr = ISEqual(ctx1->ColComplement,ctx2->ColComplement,&flg3);CHKERRQ(ierr);
+  ierr = ISEqual(ctx1->Rows,ctx2->Rows,&flg2);CHKERRQ(ierr);
+  ierr = ISEqual(ctx1->Cols,ctx2->Cols,&flg3);CHKERRQ(ierr);
   if (flg2==PETSC_FALSE || flg3==PETSC_FALSE){
     *flg=PETSC_FALSE;
   } else {
@@ -379,101 +384,3 @@ PetscErrorCode MatNorm_SMF(Mat mat,NormType type,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecISSetToConstant"
-/*@C
-   VecISSetToConstant - Sets the elements of a vector, specified by an index set, to a constant
-
-   Input Parameter:
-+  S -  a PETSc IS
-.  c - the constant
--  V - a Vec
-
-.seealso VecSet()
-
-   Level: advanced
-@*/
-PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
-  PetscErrorCode ierr;
-  PetscInt nloc,low,high,i;
-  const PetscInt *s;
-  PetscReal *v;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(V,VEC_CLASSID,3); 
-  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
-  PetscValidType(V,3);
-  PetscCheckSameComm(V,3,S,1);
-
-  ierr = VecGetOwnershipRange(V, &low, &high); CHKERRQ(ierr);
-  ierr = ISGetLocalSize(S,&nloc);CHKERRQ(ierr);
-
-  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
-  ierr = VecGetArray(V,&v); CHKERRQ(ierr);
-  for (i=0; i<nloc; i++){
-    v[s[i]-low] = c;
-  }
-  
-  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(V,&v); CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreateComplement"
-/*@C
-   ISCreateComplement - Creates the complement of the the index set
-
-   Input Parameter:
-+  S -  a PETSc IS
--  V - the reference vector space
-
-   Output Parameter:
-.  T -  the complement of S
-
-
-.seealso ISCreateGeneral()
-
-   Level: advanced
-@*/
-PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T){
-  PetscErrorCode ierr;
-  PetscInt i,nis,nloc,high,low,n=0;
-  const PetscInt *s;
-  PetscInt *tt,*ss;
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
-  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
-
-  ierr = VecGetOwnershipRange(V,&low,&high); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(V,&nloc); CHKERRQ(ierr);
-  ierr = ISGetLocalSize(S,&nis); CHKERRQ(ierr);
-  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&tt ); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&ss ); CHKERRQ(ierr);
-
-  for (i=low; i<high; i++){ tt[i-low]=i; }
-
-  for (i=0; i<nis; i++){ tt[s[i]-low] = -2; }
-  
-  for (i=0; i<nloc; i++){
-    if (tt[i]>-1){ ss[n]=tt[i]; n++; }
-  }
-
-  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
-  
-  ierr = PetscObjectGetComm((PetscObject)S,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n,ss,PETSC_COPY_VALUES,T);CHKERRQ(ierr);
-  
-  if (tt) {
-    ierr = PetscFree(tt); CHKERRQ(ierr);
-  }
-  if (ss) {
-    ierr = PetscFree(ss); CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}

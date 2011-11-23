@@ -1,8 +1,17 @@
+subset
+  - set subset_type to default
+  - make tests test each kind
+  - update solvers to use it
+    . gpcg
+    . asls
+    . blmvm
+    . bqpip
+
 tao_fd_gradient
-complimentarity
-chwirut1f
+complimentarity asils, asfls, isils, icp, rscs
+document isutil.c
 fd - plate2_fd_test, eptorsion2_fd_test
-document tao_util.c
+Check 'Collective' documentation
 
 Describe new features
   no more application object

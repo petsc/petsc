@@ -1,16 +1,27 @@
-#include "petscvec.h"
-#include "petscis.h"
-#include "tao.h"
+#include "tao.h" /*I "tao.h" I*/
+#include "private/matimpl.h"
+#include "src/matrix/submatfree.h"
+#include "tao_util.h" /*I "tao_util.h" I*/
 
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichEqual"
+/*@
+  VecWhichEqual - Creates an index set containing the indices 
+  where the vectors Vec1 and Vec2 have identical elements.
+  
+  Collective on S
+
+  Input Parameters:
+. Vec1, Vec2 - the two vectors to compare
+
+  OutputParameter:
+. S - The index set containing the indices i where vec1[i] == vec2[i]
+
+  Level: advanced
+@*/
 PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 {
-  /* 
-     Create an index set containing the indices of
-     the vectors Vec1 and Vec2 with identical elements.
-  */
   PetscErrorCode    ierr;
   PetscInt i,n_same=0;
   PetscInt n,low,high,low2,high2;
@@ -73,6 +84,20 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichLessThan"
+/*@
+  VecWhichLessThan - Creates an index set containing the indices 
+  where the vectors Vec1 < Vec2
+  
+  Collective on S
+
+  Input Parameters:
+. Vec1, Vec2 - the two vectors to compare
+
+  OutputParameter:
+. S - The index set containing the indices i where vec1[i] < vec2[i]
+
+  Level: advanced
+@*/
 PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 {
   int ierr;
@@ -133,6 +158,20 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichGreaterThan"
+/*@ 
+  VecWhichGreaterThan - Creates an index set containing the indices 
+  where the vectors Vec1 > Vec2
+  
+  Collective on S
+
+  Input Parameters:
+. Vec1, Vec2 - the two vectors to compare
+
+  OutputParameter:
+. S - The index set containing the indices i where vec1[i] > vec2[i]
+
+  Level: advanced
+@*/
 PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 {
   int    ierr;
@@ -194,13 +233,25 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichBetween"
-PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
+/*@
+  VecWhichBetween - Creates an index set containing the indices 
+  where  VecLow < V < VecHigh
+  
+  Collective on S
+
+  Input Parameters:
++ VecLow - lower bound
+. V - Vector to compare
+- VecHigh - higher bound
+
+  OutputParameter:
+. S - The index set containing the indices i where veclow[i] < v[i] < vechigh[i]
+
+  Level: advanced
+@*/
+PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 {
-  /* 
-     Creates an index set with the indices of V whose 
-     elements are stictly between the corresponding elements 
-     of the vector VecLow and the Vector VecHigh
-  */
+
   PetscErrorCode ierr;
   PetscInt n,low,high,low2,high2,low3,high3,n_vm=0;
   PetscInt *vm,i;
@@ -268,13 +319,25 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichBetweenOrEqual"
+/*@  
+  VecWhichBetweenOrEqual - Creates an index set containing the indices 
+  where  VecLow <= V <= VecHigh
+  
+  Collective on S
+
+  Input Parameters:
++ VecLow - lower bound
+. V - Vector to compare
+- VecHigh - higher bound
+
+  OutputParameter:
+. S - The index set containing the indices i where veclow[i] <= v[i] <= vechigh[i]
+
+  Level: advanced
+@*/
+
 PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 {
-  /* 
-     Creates an index set with the indices of V whose 
-     elements are stictly between the corresponding elements 
-     of the vector VecLow and the Vector VecHigh
-  */
   PetscErrorCode ierr;
   PetscInt n,low,high,low2,high2,low3,high3,n_vm=0,i;
   PetscInt *vm;
@@ -342,10 +405,13 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetSubVec"
-PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced) 
+PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, Vec *vreduced) 
 {
     PetscErrorCode ierr;
     PetscInt nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
+    PetscInt i,nlocal;
+    PetscReal *fv,*rv;
+    const PetscInt *s;
     IS ident;
     const VecType vtype;
     VecScatter scatter;
@@ -359,29 +425,65 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
     ierr = ISGetSize(is, &nreduced); CHKERRQ(ierr);
 
     if (nreduced == nfull) {
+
+      if (*vreduced == PETSC_NULL) {
 	ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
-	ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
-    } else {
-      
-	ierr = VecGetType(vfull,&vtype); CHKERRQ(ierr);
-	ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
-	ierr = ISGetLocalSize(is,&nreduced_local); CHKERRQ(ierr);
-	ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
-	if (*vreduced) {
-	  ierr = VecDestroy(vreduced); CHKERRQ(ierr);
+      }
+      ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
+      ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
+
+    } else { 
+     
+	switch (reduced_type) {
+	case TAO_SUBSET_SUBVEC:
+	  ierr = VecGetType(vfull,&vtype); CHKERRQ(ierr);
+	  ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
+	  ierr = ISGetLocalSize(is,&nreduced_local); CHKERRQ(ierr);
+	  ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
+	  if (*vreduced) {
+	    ierr = VecDestroy(vreduced); CHKERRQ(ierr);
+	  }
+	  ierr = VecCreate(comm,vreduced); CHKERRQ(ierr);
+	  ierr = VecSetType(*vreduced,vtype); CHKERRQ(ierr);
+
+	  
+	  ierr = VecSetSizes(*vreduced,nreduced_local,nreduced); CHKERRQ(ierr);
+	
+	  ierr = VecGetOwnershipRange(*vreduced,&rlow,&rhigh); CHKERRQ(ierr);
+	
+	  ierr = ISCreateStride(comm,nreduced_local,rlow,1,&ident); CHKERRQ(ierr);
+	  ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter); CHKERRQ(ierr);
+	  ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+	  ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+	  ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
+	  ierr = ISDestroy(&ident); CHKERRQ(ierr);
+	  break;
+
+	case TAO_SUBSET_MASK:
+	case TAO_SUBSET_MATRIXFREE:
+	  /* vr[i] = vf[i]   if i in is
+             vr[i] = 0       otherwise */
+	  if (*vreduced == PETSC_NULL) {
+	    ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
+	  }
+	  //ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
+	  ierr = VecSet(*vreduced,0.0); CHKERRQ(ierr);
+	  ierr = ISGetLocalSize(is,&nlocal); CHKERRQ(ierr);
+	  ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
+	  ierr = VecGetArray(vfull,&fv); CHKERRQ(ierr);
+	  ierr = VecGetArray(*vreduced,&rv); CHKERRQ(ierr);
+	  ierr = ISGetIndices(is,&s); CHKERRQ(ierr);
+	  if (nlocal > (fhigh-flow)) {
+	    SETERRQ2(PETSC_COMM_WORLD,1,"IS local size %d > Vec local size %d",nlocal,fhigh-flow);
+	  }
+	  for (i=0;i<nlocal;i++) {
+	    rv[s[i]-flow] = fv[s[i]-flow];
+	  }
+	  ierr = ISRestoreIndices(is,&s); CHKERRQ(ierr);
+	  ierr = VecRestoreArray(vfull,&fv); CHKERRQ(ierr);
+	  ierr = VecRestoreArray(*vreduced,&rv); CHKERRQ(ierr);
+	  break;
 	}
-	ierr = VecCreate(comm,vreduced); CHKERRQ(ierr);
-	ierr = VecSetType(*vreduced,vtype); CHKERRQ(ierr);
-	ierr = VecSetSizes(*vreduced,nreduced_local,nreduced); CHKERRQ(ierr);
-	
-	ierr = VecGetOwnershipRange(*vreduced,&rlow,&rhigh); CHKERRQ(ierr);
-	
-	ierr = ISCreateStride(comm,nreduced_local,rlow,1,&ident); CHKERRQ(ierr);
-	ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter); CHKERRQ(ierr);
-	ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
-	ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
     
@@ -404,21 +506,222 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
     ierr = VecGetSize(vfull,&nfull); CHKERRQ(ierr);
     ierr = VecGetSize(vreduced,&nreduced); CHKERRQ(ierr);
     
-    if (nfull == nreduced) {
-	ierr = VecAXPY(vfull,1.0,vreduced); CHKERRQ(ierr);
+    if (nfull == nreduced) { /* Also takes care of masked vectors */
+      ierr = VecAXPY(vfull,1.0,vreduced); CHKERRQ(ierr);
     } else {
-	ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
-	ierr = VecGetOwnershipRange(vreduced,&rlow,&rhigh); CHKERRQ(ierr);
-	ierr = ISCreateStride(comm,rhigh-rlow,rlow,1,&ident); CHKERRQ(ierr);
-	ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter); CHKERRQ(ierr);
-	ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
-	ierr = ISDestroy(&ident); CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(vreduced,&rlow,&rhigh); CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,rhigh-rlow,rlow,1,&ident); CHKERRQ(ierr);
+      ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter); CHKERRQ(ierr);
+      ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+      ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
+      ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     
     PetscFunctionReturn(0);
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateComplement"
+/*@
+   ISCreateComplement - Creates the complement of the the index set
 
+   Collective on IS
+
+   Input Parameter:
++  S -  a PETSc IS
+-  V - the reference vector space
+
+   Output Parameter:
+.  T -  the complement of S
+
+
+.seealso ISCreateGeneral()
+
+   Level: advanced
+@*/
+PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T){
+  PetscErrorCode ierr;
+  PetscInt i,nis,nloc,high,low,n=0;
+  const PetscInt *s;
+  PetscInt *tt,*ss;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
+
+  ierr = VecGetOwnershipRange(V,&low,&high); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(V,&nloc); CHKERRQ(ierr);
+  ierr = ISGetLocalSize(S,&nis); CHKERRQ(ierr);
+  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt),&tt ); CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt),&ss ); CHKERRQ(ierr);
+
+  for (i=low; i<high; i++){ tt[i-low]=i; }
+
+  for (i=0; i<nis; i++){ tt[s[i]-low] = -2; }
+  
+  for (i=0; i<nloc; i++){
+    if (tt[i]>-1){ ss[n]=tt[i]; n++; }
+  }
+
+  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
+  
+  ierr = PetscObjectGetComm((PetscObject)S,&comm);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n,ss,PETSC_COPY_VALUES,T);CHKERRQ(ierr);
+  
+  if (tt) {
+    ierr = PetscFree(tt); CHKERRQ(ierr);
+  }
+  if (ss) {
+    ierr = PetscFree(ss); CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/*
+#undef __FUNCT__
+#define __FUNCT__ "TaoKSPReset"
+  TaoResetKSP - reset the TaoSolver's KSP object, but keeps the type
+  PC type, and tolerance options. Useful in active set methods when the 
+  size of the active set changes.
+
+  Input Parameters:
+. tao - the TaoSolver context
+
+  Note: On output the TaoSolver will have a new KSP object (tao->ksp).
+@ */
+/*PetscErrorCode TaoKSPReset(KSP *ksp)
+{
+  PetscErrorCode ierr;
+  KSP newksp;
+  PC pc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(*ksp,KSP_CLASSID,1); 
+  ierr = KSPCreate(((PetscObject)tao)->comm, &newksp); CHKERRQ(ierr);
+  newksp->pc_side = (*ksp)->pc_side;
+  newksp->rtol = (*ksp)->rtol;
+  newksp->max_it = (*ksp)->max_it;
+  ierr = KSPSetType(newksp,((PetscObject)(*ksp))->type_name); CHKERRQ(ierr);
+  ierr = KSPGetPC(*ksp, &pc); CHKERRQ(ierr);
+  if (pc != PETSC_NULL && ((PetscObject)pc)->type_name) {
+    PC newpc;
+    ierr = KSPGetPC(newksp,&newpc); CHKERRQ(ierr);
+    ierr = PCSetType(newpc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
+  }
+  ierr = KSPDestroy(ksp); CHKERRQ(ierr);
+  *ksp = newksp;
+  ierr = KSPSetFromOptions(*ksp); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+*/  
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecISSetToConstant"
+/*@
+   VecISSetToConstant - Sets the elements of a vector, specified by an index set, to a constant
+
+   Input Parameter:
++  S -  a PETSc IS
+.  c - the constant
+-  V - a Vec
+
+.seealso VecSet()
+
+   Level: advanced
+@*/
+PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
+  PetscErrorCode ierr;
+  PetscInt nloc,low,high,i;
+  const PetscInt *s;
+  PetscReal *v;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(V,VEC_CLASSID,3); 
+  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
+  PetscValidType(V,3);
+  PetscCheckSameComm(V,3,S,1);
+
+  ierr = VecGetOwnershipRange(V, &low, &high); CHKERRQ(ierr);
+  ierr = ISGetLocalSize(S,&nloc);CHKERRQ(ierr);
+
+  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
+  ierr = VecGetArray(V,&v); CHKERRQ(ierr);
+  for (i=0; i<nloc; i++){
+    v[s[i]-low] = c;
+  }
+  
+  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
+  ierr = VecRestoreArray(V,&v); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetSubMat"
+/*@ 
+  TaoGetSubMat - Gets a submatrix using the IS
+
+  Input Parameters:
++ M - the full matrix (n x n)
+. is - the index set for the submatrix (both row and column index sets need to be the same)
+. v1 - work vector of dimension n, needed for TAO_SUBSET_MASK option
+- subset_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,
+  TAO_SUBSET_MATRIXFREE)
+
+  Output Parameters:
+. Msub - the submatrix
+@*/
+PetscErrorCode TaoGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
+{
+  PetscErrorCode ierr;
+  IS iscomp;
+  PetscBool flg;
+  PetscFunctionBegin;
+  if (*Msub) {
+    ierr = MatDestroy(Msub); CHKERRQ(ierr); *Msub=PETSC_NULL;
+  }
+  switch (subset_type) {
+    case TAO_SUBSET_SUBVEC:
+      ierr = MatGetSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub); CHKERRQ(ierr);
+      break;
+
+    case TAO_SUBSET_MASK:
+      /* Get Reduced Hessian 
+	 Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
+	 Msub[i,j] = 0      if i!=j and i or j not in Free_Local
+      */
+      ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,PETSC_NULL);
+      if (flg == PETSC_TRUE) {
+	ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub); CHKERRQ(ierr);
+      } else {
+	/* Act on hessian directly (default) */
+	ierr = PetscObjectReference((PetscObject)M); CHKERRQ(ierr);
+	*Msub = M;
+      }
+      /* Save the diagonal to temporary vector */
+      ierr = MatGetDiagonal(*Msub,v1); CHKERRQ(ierr);
+    
+      /* Zero out rows and columns */
+      ierr = ISCreateComplement(is,v1,&iscomp); CHKERRQ(ierr);
+
+      /* Use v1 instead of 0 here because of PETSc bug */
+      ierr = MatZeroRowsColumnsIS(*Msub,iscomp,1.0,v1,v1); CHKERRQ(ierr);
+
+      ierr = ISDestroy(&iscomp); CHKERRQ(ierr);
+      break;
+    case TAO_SUBSET_MATRIXFREE:
+      ierr = ISCreateComplement(is,v1,&iscomp); CHKERRQ(ierr);
+      ierr = MatCreateSubMatrixFree(M,iscomp,iscomp,Msub); CHKERRQ(ierr);
+      ierr = ISDestroy(&iscomp); CHKERRQ(ierr);
+      break;
+  }      
+  PetscFunctionReturn(0);
+}

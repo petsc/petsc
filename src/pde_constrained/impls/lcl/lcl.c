@@ -1,6 +1,5 @@
 #include "lcl.h"
 #include "src/matrix/lmvmmat.h"
-#include "src/matrix/submatfree.h"
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLScatter(TAO_LCL*,Vec,Vec,Vec);

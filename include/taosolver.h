@@ -153,6 +153,7 @@ extern PetscErrorCode TaoDefaultCMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolutionMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSeparableObjectiveMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoGradientMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoStepDirectionMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoDrawSolutionMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoDrawStepMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoDrawGradientMonitor(TaoSolver, void*);
