@@ -703,11 +703,11 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   IS is_from_d;
   IS is_from_y;
   PetscInt lo,hi,hi2,lo2,ysubnlocal,dsubnlocal;
-  PetscInt *remap;
   const PetscInt *ranges, *subranges;
   PetscMPIInt mpisize,mpirank;
   PetscReal xri,yri,zri,xim,yim,zim,dx1,dx2,dy1,dy2,dz1,dz2,Dx,Dy,Dz;
   PetscScalar v,vx,vy,vz;
+  PetscInt offset,subindex,subvec,nrank,kk;
   /* Data locations */
   PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,     
 			0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
@@ -856,19 +856,11 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   /*
   ierr = PetscMalloc((mpisize+1)*sizeof(PetscInt),&ranges); CHKERRQ(ierr);
   ierr = PetscMalloc((mpisize+1)*sizeof(PetscInt),&subranges); CHKERRQ(ierr); */
-  ierr = PetscMalloc((user->m)*sizeof(PetscInt),&remap); CHKERRQ(ierr);
   ierr = VecGetOwnershipRanges(user->q,&ranges); CHKERRQ(ierr);
   ierr = VecGetOwnershipRanges(user->u,&subranges); CHKERRQ(ierr);
-
-  linear_index=0;
-  for (i=0;i<user->ns;i++) {
-    for (j=0;j<mpisize;j++) {
-      for (k=0;k<subranges[j+1]-subranges[j];k++) {
-	remap[linear_index++] = ranges[j]+i*(subranges[j+1]-subranges[j]) + k;
-      }
-    }
-  }
-
+  
+  ierr = VecGetOwnershipRange(user->q,&lo2,&hi2); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(user->u,&lo,&hi); CHKERRQ(ierr);
   /* Generate 3D grid, and collect ns (1<=ns<=8) right-hand-side vectors into user->q */
   h = 1.0/user->mx;
   hinv = user->mx;
@@ -891,8 +883,17 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 	  ls = is*4 + js*2 + ks;
 	  if (ls<user->ns){
 	    l =ls*n + linear_index;
-	    l = remap[ls*n + linear_index]; 
-	    v = 100*PetscSinScalar(2*PI*(vx+0.25*is))*PetscSinScalar(2*PI*(vy+0.25*js))*PetscSinScalar(2*PI*(vz+0.25*ks));
+	    /* remap */
+	    subindex = l%n;
+	    subvec = l/n;
+	    nrank=0;
+	    while (subindex >= subranges[nrank+1]) nrank++;
+	    offset = subindex - subranges[nrank];
+	    istart=0;
+	    for (kk=0;kk<nrank;kk++) istart+=user->ns*(subranges[kk+1]-subranges[kk]);
+	    istart += (subranges[nrank+1]-subranges[nrank])*subvec;
+	    l = istart+offset;
+	    v = 100*PetscSinScalar(2*PI*(vx+0.25*is))*sin(2*PI*(vy+0.25*js))*sin(2*PI*(vz+0.25*ks));
 	    ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES); CHKERRQ(ierr);
 	  }
 	}
@@ -908,7 +909,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecAssemblyEnd(ZZ); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(user->q); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(user->q); CHKERRQ(ierr);  
-  ierr = PetscFree(remap); CHKERRQ(ierr);
   
   /* Compute true parameter function
      ut = exp(-((x-0.25)^2+(y-0.25)^2+(z-0.25)^2)/0.05) - exp((x-0.75)^2-(y-0.75)^2-(z-0.75))^2/0.05) */
