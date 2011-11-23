@@ -252,7 +252,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
       ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
       ierr = PetscStrallocpy(typeName,&dm->mattype);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
     if (dm->ops->setfromoptions) {
       ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
     }
