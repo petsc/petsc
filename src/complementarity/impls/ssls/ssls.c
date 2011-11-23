@@ -100,29 +100,3 @@ PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "Tao_ASLS_FunctionGradient"
-PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, 
-                              Vec G, void *ptr)
-{
-  TaoSolver tao = (TaoSolver)ptr;
-  TAO_SSLS *sslsP = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-
-  ierr = TaoComputeConstraints(tao, X, tao->constraints); CHKERRQ(ierr);
-  ierr = VecFischer(X,tao->constraints,tao->XL,tao->XU,sslsP->ff); CHKERRQ(ierr);
-  ierr = VecNorm(sslsP->ff, NORM_2, &sslsP->merit); CHKERRQ(ierr);
-  *fcn = 0.5*sslsP->merit*sslsP->merit;
-
-  ierr = TaoComputeJacobian(tao, X, &tao->jacobian, &tao->jacobian_pre, &sslsP->matflag); CHKERRQ(ierr);
-  ierr = D_Fischer(tao->jacobian,X,tao->constraints,tao->XL,tao->XU,sslsP->t1,sslsP->t2,
-		   sslsP->da, sslsP->db); CHKERRQ(ierr);
-  ierr = VecPointwiseMult(sslsP->t1,sslsP->ff,sslsP->db); CHKERRQ(ierr);
-  ierr = MatMultTranspose(tao->jacobian,sslsP->t1,G); CHKERRQ(ierr);
-  ierr = VecPointwiseMult(sslsP->t1,sslsP->ff,sslsP->da); CHKERRQ(ierr);
-  ierr = VecAXPY(G,1.0,sslsP->t1); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

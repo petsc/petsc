@@ -119,7 +119,7 @@ PetscErrorCode TaoCreate_SSILS(TaoSolver tao)
   
   tao->max_it = 2000;
   tao->max_funcs = 4000;
-  tao->fatol = 0; tao->frtol = 0; tao->grtol=0; tao->grtol=0;
+  tao->fatol = 0; tao->frtol = 0; tao->gttol=0; tao->grtol=0;
   tao->gatol = 1.0e-16;
   tao->fmin = 1.0e-8;
 
