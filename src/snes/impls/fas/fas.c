@@ -15,6 +15,7 @@ extern PetscErrorCode SNESSetFromOptions_FAS(SNES snes);
 extern PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer);
 extern PetscErrorCode SNESSolve_FAS(SNES snes);
 extern PetscErrorCode SNESReset_FAS(SNES snes);
+extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES, Vec, Vec, void *);
 
 EXTERN_C_BEGIN
 
@@ -46,6 +47,7 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->upsmooth               = PETSC_NULL;
   fas->downsmooth             = PETSC_NULL;
   fas->next                   = PETSC_NULL;
+  fas->previous               = PETSC_NULL;
   fas->interpolate            = PETSC_NULL;
   fas->restrct                = PETSC_NULL;
   fas->inject                 = PETSC_NULL;
@@ -224,7 +226,7 @@ PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*g
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
   snes->usegs = use_gs;
   if (gsfunc) {
-    ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
+    ierr = SNESSetGS(cur_snes, gsfunc, ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -293,9 +295,10 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
   PetscErrorCode ierr;
   PetscInt i;
   SNES_FAS * fas = (SNES_FAS *)snes->data;
+  SNES prevsnes;
   MPI_Comm comm;
   PetscFunctionBegin;
-   comm = ((PetscObject)snes)->comm;
+  comm = ((PetscObject)snes)->comm;
   if (levels == fas->levels) {
     if (!comms)
       PetscFunctionReturn(0);
@@ -305,6 +308,8 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
   /* destroy any coarser levels if necessary */
   if (fas->next) SNESDestroy(&fas->next);CHKERRQ(ierr);
   fas->next = PETSC_NULL;
+  fas->previous = PETSC_NULL;
+  prevsnes = snes;
   /* setup the finest level */
   for (i = levels - 1; i >= 0; i--) {
     if (comms) comm = comms[i];
@@ -316,7 +321,9 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
       ierr = SNESSetOptionsPrefix(fas->next,((PetscObject)snes)->prefix);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
-      fas = (SNES_FAS *)fas->next->data;
+      ((SNES_FAS *)fas->next->data)->previous = prevsnes;
+      prevsnes = fas->next;
+      fas = (SNES_FAS *)prevsnes->data;
     }
   }
   PetscFunctionReturn(0);
@@ -599,7 +606,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   VecScatter     injscatter;
   PetscInt       dm_levels;
 
-
   PetscFunctionBegin;
 
   if (fas->usedmfornumberoflevels && (fas->level == fas->levels - 1)) {
@@ -640,14 +646,18 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   }
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->next) {
-    if (snes->ops->computefunction && !fas->next->ops->computefunction) {
-      ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
-    }
-    if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
-      ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
-    }
-   if (snes->ops->computegs && !fas->next->ops->computegs) {
-      ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+    if (fas->galerkin) {
+      ierr = SNESSetFunction(fas->next, PETSC_NULL, SNESFASGalerkinDefaultFunction, fas->next);CHKERRQ(ierr);
+    } else {
+      if (snes->ops->computefunction && !fas->next->ops->computefunction) {
+        ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+      }
+      if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
+        ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+      }
+      if (snes->ops->computegs && !fas->next->ops->computegs) {
+        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+      }
     }
   }
   if (snes->dm) {
@@ -673,6 +683,12 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     /* set the DMs of the pre and post-smoothers here */
     if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
     if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
+  }
+
+  /* setup FAS work vectors */
+  if (fas->galerkin) {
+    ierr = VecDuplicate(snes->vec_sol, &fas->Xg);CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &fas->Fg);CHKERRQ(ierr);
   }
 
   if (fas->next) {
@@ -727,6 +743,8 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smooth iterations","SNESFASSetNumberSmoothUp",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smooth iterations","SNESFASSetNumberSmoothUp",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&fas->n_cycles,&flg);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFAS",fas->galerkin,&fas->galerkin,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
 

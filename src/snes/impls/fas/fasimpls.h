@@ -17,7 +17,8 @@ typedef struct {
   SNES           downsmooth;                   /* the SNES for postsmoothing */
 
   /* coarse grid correction objects */
-  SNES           next;                         /* the SNES instance for the next level in the hierarchy */
+  SNES           next;                         /* the SNES instance for the next coarser level in the hierarchy */
+  SNES           previous;                     /* the SNES instance for the next finer level in the hierarchy */
   Mat            interpolate;                  /* interpolation */
   Mat            inject;                       /* injection operator (unscaled) */
   Mat            restrct;                      /* restriction operator */
@@ -28,6 +29,12 @@ typedef struct {
   PetscInt       max_up_it;                    /* number of pre-smooths */
   PetscInt       max_down_it;                  /* number of post-smooth cycles */
   PetscBool      usedmfornumberoflevels;       /* uses a DM to generate a number of the levels */
+
+  /* Galerkin FAS state */
+  PetscBool      galerkin;                     /* use Galerkin formation of the coarse problem */
+  Vec            Xg;                           /* Galerkin solution projection */
+  Vec            Fg;                           /* Galerkin function projection */
+
 } SNES_FAS;
 
 #endif

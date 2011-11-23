@@ -14,7 +14,7 @@ typedef struct {
 PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 
   PetscErrorCode ierr;
-  
+
   QNContext * qn = (QNContext *)snes->data;
 
   Vec * dX = qn->dX;
@@ -81,7 +81,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscBool lssucceed;
 
   PetscScalar rhosc;
-  
+
   Vec * dX = qn->dX;
   Vec * dF = qn->dF;
   PetscScalar * rho = qn->rho;
@@ -183,7 +183,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_QN"
 static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
@@ -218,7 +218,7 @@ static PetscErrorCode SNESReset_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_QN"
 static PetscErrorCode SNESDestroy_QN(SNES snes)
 {
@@ -229,7 +229,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_QN"
 static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 {
