@@ -188,7 +188,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
 
-  if( s_avoid_repart ) { 
+  if( s_avoid_repart || npe==1 ) { 
     *a_Amat_crs = Cmat; /* output */
   }
   else {
