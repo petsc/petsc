@@ -601,6 +601,13 @@ extern PetscErrorCode  TSGLSetType(TS,const TSGLType);
 extern PetscErrorCode  TSGLGetAdapt(TS,TSGLAdapt*);
 extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 
+/*J
+    TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
+
+   Level: beginner
+
+.seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
+J*/
 #define TSARKIMEXType char*
 #define TSARKIMEX2D     "2d"
 #define TSARKIMEX2E     "2e"
@@ -619,6 +626,13 @@ extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
 extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
+/*J
+    TSRosWType - String with the name of a Rosenbrock-W method.
+
+   Level: beginner
+
+.seealso: TSRosWSetType(), TS, TSROSW, TSRosWRegister()
+J*/
 #define TSRosWType char*
 #define TSROSW2M          "2m"
 #define TSROSW2P          "2p"
