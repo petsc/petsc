@@ -61,5 +61,19 @@ class Configure(PETSc.package.NewPackage):
       self.framework.logPrint("Not checking numdiff on user request\n")
       return
 
-   self.framework.argDB['download-numdiff'] = 1
-   PETSc.package.NewPackage.configure(self)
+   # If download option is specified always build sowing
+   if self.framework.argDB['download-numdiff']:
+     PETSc.package.NewPackage.configure(self)
+
+   # autodetect if numdiff is required
+   if self.petscdir.isClone:
+     self.framework.logPrint('PETSc clone, checking for numdiff or if it is needed\n')
+
+     self.getExecutable('numdiff', getFullPath = 1)
+
+     if hasattr(self, 'numdiff'):
+       self.framework.logPrint('Found numdiff, not installing numdiff')
+     else:
+       self.framework.logPrint('numdiff not found. Installing numdiff')
+       self.framework.argDB['download-numdiff'] = 1
+       PETSc.package.NewPackage.configure(self)
