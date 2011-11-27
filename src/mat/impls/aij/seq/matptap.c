@@ -264,7 +264,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
-  PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*api,*apj;
+  PetscInt           *pti,*ptj,*ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*api,*apj;
   PetscInt           *ci,*cj,ndouble_ap,ndouble_ptap;
   PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N;
   MatScalar          *ca;
@@ -285,7 +285,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Get ij structure of Pt = P^T */
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-  ptJ=ptj;
 
   /* Get structure of AP = A*P */
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,an,pn,pi,pj,fill,&api,&apj,&ndouble_ap);CHKERRQ(ierr);
