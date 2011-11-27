@@ -188,7 +188,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
 
-  if( s_avoid_repart || npe==1 ) { 
+  if( s_avoid_repart) { 
     *a_Amat_crs = Cmat; /* output */
   }
   else {
@@ -198,7 +198,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     const PetscInt  stride0=ncrs0*a_ndata_rows;
     PetscInt        is_sz,*isnewproc_idx,ii,jj,kk,strideNew,*tidx;
     /* create sub communicator  */
-    MPI_Comm        cm,new_comm;
+    MPI_Comm        cm;
     MPI_Group       wg, g2;
     PetscInt       *counts,inpe;
     PetscMPIInt    *ranks;
@@ -238,13 +238,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
     ierr = MPI_Group_incl( wg, nactive, ranks, &g2 ); CHKERRQ(ierr); 
     ierr = MPI_Comm_create( wcomm, g2, &cm ); CHKERRQ(ierr); 
-
-    if( cm != MPI_COMM_NULL ) {
-      assert(ncrs0 != 0);
-      ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
-      ierr = MPI_Comm_free( &cm );                             CHKERRQ(ierr);
-    }
-    else assert(ncrs0 == 0);
 
     ierr = MPI_Group_free( &wg );                            CHKERRQ(ierr);
     ierr = MPI_Group_free( &g2 );                            CHKERRQ(ierr);
@@ -316,7 +309,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       }
       adj->rmap->range[nactive] = adj->rmap->range[npe];
 
-      ierr = MatPartitioningCreate( new_comm, &mpart ); CHKERRQ(ierr);
+      ierr = MatPartitioningCreate( cm, &mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
       ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
       ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
@@ -336,7 +329,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       }
       ierr = ISRestoreIndices( isnewproc, &is_idx );     CHKERRQ(ierr);
       ierr = ISDestroy( &isnewproc );                    CHKERRQ(ierr);
-      ierr = PetscCommDestroy( &new_comm );              CHKERRQ(ierr);  
+      ierr = MPI_Comm_free( &cm );              CHKERRQ(ierr);  
 
       is_sz *= a_cbs;
     }
