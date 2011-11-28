@@ -211,7 +211,7 @@ PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(X,&x);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(x,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
