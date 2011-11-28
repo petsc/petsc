@@ -15,6 +15,7 @@ namespace PETSc {
     ~Exception() throw () {}
   public:
     const std::string msg() const {return this->_txt.str();}
+    const char *message()   const {return this->_txt.str().c_str();}
     /* Message input */
     template<typename Input>
     Exception& operator<<(const Input& in) {
