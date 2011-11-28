@@ -1052,8 +1052,13 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
 
   */
  /* MC
-     PCGAMG - Use algebraic multigrid preconditioning. This preconditioner requires you provide
-       fine grid discretization matrix and coordinates on the fine grid.
+     PCGAMG - Geometric algebraic multigrid (AMG) preconditioning. This preconditioner currently has two 
+           AMG methods: 1) an unstructured geometric method, which requires that you provide coordinates for each 
+           vertex, and 2) smoothed aggregation.  Smoothed aggregation (SA) can work without coordinates but it 
+           will generate some common non-trivial null spaces if coordinates are provided.  The input fine grid matrix  
+           must have the block size set for 'system' problems (with multiple dof per vertex/cell) to work properly.  
+           SA will generate rotational rigid body mode null space vectors, in addition to the trivial translational 
+           modes, when coordinates are provide in 2D and 3D.
 
    Options Database Key:
    Multigrid options(inherited)
