@@ -1042,36 +1042,27 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
 }
 
 /* -------------------------------------------------------------------------- */
-/*
- PCCreate_GAMG - Creates a GAMG preconditioner context, PC_GAMG
+/*MC
+ PCGAMG - An algebraic multigrid preconditioner. This preconditioner requires you to provide
+       a fine grid discretization matrix and coordinates on the fine grid.
 
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCCreate()
-
-  */
- /* MC
-     PCGAMG - Use algebraic multigrid preconditioning. This preconditioner requires you provide
-       fine grid discretization matrix and coordinates on the fine grid.
-
-   Options Database Key:
+   Options Database Keys:
    Multigrid options(inherited)
-+  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
-.  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
-.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
-   -pc_mg_type <multiplicative>: (one of) additive multiplicative full cascade kascade
-   GAMG options:
++  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (PCMGSetCycleType)
+.  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
+.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
+-  -pc_mg_type <multiplicative>: (one of) additive multiplicative full cascade kascade
 
-   Level: intermediate
+  Level: intermediate
+
   Concepts: multigrid
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType,
-           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetNumberSmoothDown(),
+           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
            PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
-M */
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
