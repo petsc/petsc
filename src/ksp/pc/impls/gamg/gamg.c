@@ -69,7 +69,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->m_data==0 || (pc_gamg->m_data_sz != arrsz)) {
     ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
-    ierr = PetscMalloc((arrsz+1)*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz+1)*sizeof(PetscReal), &pc_gamg->m_data ); CHKERRQ(ierr);
   }
   for(kk=0;kk<arrsz;kk++)pc_gamg->m_data[kk] = -999.;
   pc_gamg->m_data[arrsz] = -99.;
