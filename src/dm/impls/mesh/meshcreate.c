@@ -198,9 +198,10 @@ PetscErrorCode DMCreate_Mesh(DM dm)
 
   new(&mesh->m) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
 
-  mesh->globalScatter = PETSC_NULL;
-  mesh->lf            = PETSC_NULL;
-  mesh->lj            = PETSC_NULL;
+  mesh->globalScatter  = PETSC_NULL;
+  mesh->defaultSection = PETSC_NULL;
+  mesh->lf             = PETSC_NULL;
+  mesh->lj             = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Mesh;

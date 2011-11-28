@@ -8,6 +8,7 @@
 typedef struct {
   ALE::Obj<PETSC_MESH_TYPE> m;
 
+  PetscSection         defaultSection;
   VecScatter           globalScatter;
   DMMeshLocalFunction1 lf;
   DMMeshLocalJacobian1 lj;

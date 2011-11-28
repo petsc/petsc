@@ -187,7 +187,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscFunctionBegin;
   if (dim != SPATIAL_DIM_0) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);}
   ierr = DMMeshCreateSection(dm, dim, 1, numComp, numDof_0, numBC, PETSC_NULL, PETSC_NULL, &section);CHKERRQ(ierr);
-  ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
+  ierr = DMMeshSetDefaultSection(dm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +225,6 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
