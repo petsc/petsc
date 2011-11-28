@@ -81,7 +81,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr = PetscMalloc((mat->rmap->n+1)*sizeof(PetscInt),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
+  ierr = PetscMalloc(ncon*nparts*sizeof(PetscReal),&tpwgts);CHKERRQ(ierr);
   for (i=0; i<ncon; i++) {
     for (j=0; j<nparts; j++) {
       if (part->part_weights) {
@@ -91,7 +91,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
       }
     }
   }
-  ierr = PetscMalloc(ncon*sizeof(float),&ubvec);CHKERRQ(ierr);
+  ierr = PetscMalloc(ncon*sizeof(PetscReal),&ubvec);CHKERRQ(ierr);
   for (i=0; i<ncon; i++) {
     ubvec[i] = 1.05;
   }
