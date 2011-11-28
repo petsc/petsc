@@ -27,6 +27,18 @@ class PETSc(object):
     '''Return the path to the executable for a given example number'''
     return os.path.join(self.dir(), self.arch(), 'lib', 'ex'+str(num)+'-obj', 'ex'+str(num))
 
+  def source(self, library, num):
+    '''Return the path to the sources for a given example number'''
+    d = os.path.join(self.dir(), 'src', library.lower(), 'examples', 'tutorials')
+    name = 'ex'+str(num)
+    sources = []
+    for f in os.listdir(d):
+      if f == name+'.c':
+        sources.append(f)
+      elif f.startswith(name) and f.endswith('.cu'):
+        sources.append(f)
+    return map(lambda f: os.path.join(d, f), sources)
+
 class PETScExample(object):
   def __init__(self, library, num, **defaultOptions):
     self.petsc   = PETSc()
@@ -76,7 +88,7 @@ class PETScExample(object):
       if ret:
         print err
         print out
-    return
+    return out
 
 def processSummary(moduleName, defaultStage, eventNames, times, events):
   '''Process the Python log summary into plot data'''
