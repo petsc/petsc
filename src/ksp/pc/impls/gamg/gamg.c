@@ -28,7 +28,7 @@ typedef struct gamg_TAG {
   PetscBool      m_avoid_repart;
   PetscInt       m_min_eq_proc;
   PetscReal      m_threshold;
-  PetscBool      verbose;
+  PetscBool      m_verbose;
 } PC_GAMG;
 
 /* -------------------------------------------------------------------------- */
@@ -234,7 +234,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
 
     if (nactive < new_npe) new_npe = nactive; /* this can happen with empty input procs */
 
-    if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
+    if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
 
     *a_nactive_proc = new_npe; /* output */
     
@@ -563,7 +563,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-  if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+  if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
 	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
 	      (int)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
@@ -578,7 +578,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #endif
     ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_method,
                               level, pc_gamg->m_threshold, &bs, &Parr[level1], &coarse_data, &isOK, 
-                              &emaxs[level] );
+                              &emaxs[level], pc_gamg->m_verbose );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
@@ -598,13 +598,13 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #endif
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-      if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
+      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
 		  mype,__FUNCT__,(int)level1,N,pc_gamg->m_data_cols,
 		  (int)(info.nz_used/(PetscReal)N),nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method should gaurrentee this does not happen! */
 
-      if (pc_gamg->verbose) {
+      if (pc_gamg->m_verbose) {
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
         v = 1.e-10; /* LU factor has hard wired numbers for small diags so this needs to match (yuk) */
         ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr);
@@ -638,7 +638,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   if( coarse_data ) {
     ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
   }
-  if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
+  if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;
   fine_level = level;
@@ -667,7 +667,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }
       ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "eigen_estimate_");         CHKERRQ(ierr);
       ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr);
+      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
       ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
@@ -682,7 +684,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = VecDestroy( &xx );       CHKERRQ(ierr);
       ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
-      if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
     }
     { 
       PetscInt N1, N0, tt;
@@ -998,7 +1000,9 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
         SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "PCSetFromOptions called of PCSetCoordinates (with new method, after data was created)"); 
       }
     }
-    ierr = PetscOptionsBool("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none",pc_gamg->verbose,&pc_gamg->verbose,PETSC_NULL);CHKERRQ(ierr);
+
+    /* -pc_gamg_verbose */
+    ierr = PetscOptionsBool("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none",pc_gamg->m_verbose,&pc_gamg->m_verbose,PETSC_NULL);CHKERRQ(ierr);
 
     if (flag && strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
     else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;

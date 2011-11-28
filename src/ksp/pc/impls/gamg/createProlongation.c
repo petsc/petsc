@@ -1243,7 +1243,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    Mat *a_P_out,
                                    PetscReal **a_data_out,
                                    PetscBool *a_isOK,
-                                   PetscReal *a_emax
+                                   PetscReal *a_emax,
+                                   const PetscBool a_verbose
                                    )
 {
   PetscErrorCode ierr;
@@ -1339,9 +1340,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-#ifdef VERBOSE 
-    PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
-#endif
+    if( a_verbose ) {
+      PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
+    }
   }
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_FILTER],0,0,0,0);   CHKERRQ(ierr);
@@ -1491,9 +1492,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   if( jj==0 ) {
     assert(0);
     *a_isOK = PETSC_FALSE;
-#ifdef VERBOSE
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
-#endif
+    if( a_verbose ) {
+      PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
+    }
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
     ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
     ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
@@ -1551,15 +1552,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       
       if( metric > 1. ) { /* needs to be globalized - should not happen */
         *a_isOK = PETSC_FALSE;
-#ifdef VERBOSE
-        PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
-#endif
+        if( a_verbose ) {
+          PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
+        }
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       }
       else if( metric > .0 ) {
-#ifdef VERBOSE
-        PetscPrintf(PETSC_COMM_SELF,"[%d]%s metric for coarse grid = %e\n",mype,__FUNCT__,metric);
-#endif
+        if( a_verbose ) {
+          PetscPrintf(PETSC_COMM_SELF,"[%d]%s metric for coarse grid = %e\n",mype,__FUNCT__,metric);
+        }
       }
     } else {
       SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented");
@@ -1677,6 +1678,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       }  
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
       ierr = KSPSetType( eksp, KSPCG );                         CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "eigen_estimate_");         CHKERRQ(ierr);
+      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
       ierr = KSPSetOperators( eksp, a_Amat, a_Amat, SAME_NONZERO_PATTERN );
       CHKERRQ( ierr );
@@ -1688,9 +1691,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-#ifdef VERBOSE
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
-#endif
+      if( a_verbose ) {
+        PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+      }
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
