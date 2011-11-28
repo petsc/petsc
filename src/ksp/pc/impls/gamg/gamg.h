@@ -18,7 +18,6 @@ extern PetscLogEvent gamg_setup_events[NUM_SET];
 #endif
 
 #define PETSC_GAMG_SMOOTHER PCJACOBI
-/* #define VERBOSE 1 */
 
 #endif
 
