@@ -117,8 +117,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Request          *swaits,*rwaits; 
   MPI_Status           *sstatus,rstatus;
   Mat_Merge_SeqsToMPI  *merge;
-  PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0;
-  PetscMPIInt          j;
+  PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -128,7 +127,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
   ptap->abi=PETSC_NULL; ptap->abj=PETSC_NULL; 
   ptap->abnz_max = 0; 
-  ptap->reuse     = MAT_INITIAL_MATRIX;
+  ptap->reuse    = MAT_INITIAL_MATRIX;
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj,&ptap->startsj_r,&ptap->bufa,&ptap->B_oth);CHKERRQ(ierr);
