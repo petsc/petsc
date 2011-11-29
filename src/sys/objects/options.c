@@ -730,8 +730,8 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  size_t         len = 1,lent;
-  char           *coptions;
+  size_t         len = 1,lent = 0;
+  char           *coptions = PETSC_NULL;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -754,7 +754,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
     if (options->values[i]) {
       ierr = PetscStrcat(coptions,options->values[i]);CHKERRQ(ierr);
       ierr = PetscStrcat(coptions," ");CHKERRQ(ierr);
-    } 
+    }
   }
   *copts = coptions;
   PetscFunctionReturn(0);

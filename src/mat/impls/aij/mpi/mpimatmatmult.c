@@ -139,7 +139,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscScalar        *pa_loc,*pa_oth,*pa,*apa,valtmp,*ca;
   PetscInt           cm=C->rmap->n,anz,pnz;
   Mat_PtAPMPI        *ptap=c->ptap;
-  PetscInt           *api,*apj,*apJ,cnz,i,j,k,row;
+  PetscInt           *api,*apj,*apJ,i,j,k,row;
   PetscInt           rstart=C->rmap->rstart,cstart=C->cmap->rstart;
   PetscInt           cdnz,conz,k0,k1;
 
@@ -203,7 +203,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     api = ptap->api;
     apj = ptap->apj; 
     apJ = apj + api[i];
-    cnz = api[i+1] - api[i];
     cdnz = cd->i[i+1] - cd->i[i]; 
     conz = co->i[i+1] - co->i[i];
 
