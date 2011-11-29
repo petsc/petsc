@@ -1,5 +1,4 @@
 subset
-  - set subset_type to default
   - make tests test each kind
   - update solvers to use it
     . gpcg
@@ -9,7 +8,6 @@ subset
 
 tao_fd_gradient
 complimentarity asils, asfls, isils, icp, rscs
-document isutil.c
 fd - plate2_fd_test, eptorsion2_fd_test
 Check 'Collective' documentation
 

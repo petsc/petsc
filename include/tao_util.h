@@ -45,5 +45,5 @@ PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, Vec*);
 PetscErrorCode VecReducedXPY(Vec, Vec, IS); 
 PetscErrorCode ISCreateComplement(IS, Vec, IS *);
 PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
-PetscErrorCode TaoGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
+PetscErrorCode MatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
 #endif /* defined __TAOUTIL_H */

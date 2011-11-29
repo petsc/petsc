@@ -176,13 +176,13 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
     CHKERRQ(ierr);
     ierr = VecSet(tron->DXFree,0.0); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
-    ierr = TaoGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub); CHKERRQ(ierr);
+    ierr = MatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub); CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       ierr = MatDestroy(&tron->Hpre_sub); CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tron->H_sub)); CHKERRQ(ierr);
       tron->Hpre_sub = tron->H_sub;
     } else {
-      ierr = TaoGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);
+      ierr = MatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);
       CHKERRQ(ierr);
     }
     ierr = KSPReset(tao->ksp); CHKERRQ(ierr);

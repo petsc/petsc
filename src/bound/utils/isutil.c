@@ -405,6 +405,18 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetSubVec"
+/*@ 
+  VecGetSubVec - Gets a subvector using the IS
+
+  Input Parameters:
++ vfull - the full matrix 
+. is - the index set for the subvector
+- reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,
+  TAO_SUBSET_MATRIXFREE)
+
+  Output Parameters:
+. vreduced - the subvector
+@*/
 PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, Vec *vreduced) 
 {
     PetscErrorCode ierr;
@@ -491,6 +503,17 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, Vec *vreduc
 
 #undef __FUNCT__
 #define __FUNCT__ "VecReducedXPY"
+/*@ 
+  VecReducedXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
+
+  Input Parameters:
++ vfull - the full-space vector
+. vreduced - the reduced-space vector
+- is - the index set for the reduced space
+
+  Output Parameters:
+. vfull - the sum of the full-space vector and reduced-space vector
+@*/
 PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 {
     VecScatter scatter;
@@ -583,46 +606,6 @@ PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T){
   PetscFunctionReturn(0);
 }
 
-/*
-#undef __FUNCT__
-#define __FUNCT__ "TaoKSPReset"
-  TaoResetKSP - reset the TaoSolver's KSP object, but keeps the type
-  PC type, and tolerance options. Useful in active set methods when the 
-  size of the active set changes.
-
-  Input Parameters:
-. tao - the TaoSolver context
-
-  Note: On output the TaoSolver will have a new KSP object (tao->ksp).
-@ */
-/*PetscErrorCode TaoKSPReset(KSP *ksp)
-{
-  PetscErrorCode ierr;
-  KSP newksp;
-  PC pc;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(*ksp,KSP_CLASSID,1); 
-  ierr = KSPCreate(((PetscObject)tao)->comm, &newksp); CHKERRQ(ierr);
-  newksp->pc_side = (*ksp)->pc_side;
-  newksp->rtol = (*ksp)->rtol;
-  newksp->max_it = (*ksp)->max_it;
-  ierr = KSPSetType(newksp,((PetscObject)(*ksp))->type_name); CHKERRQ(ierr);
-  ierr = KSPGetPC(*ksp, &pc); CHKERRQ(ierr);
-  if (pc != PETSC_NULL && ((PetscObject)pc)->type_name) {
-    PC newpc;
-    ierr = KSPGetPC(newksp,&newpc); CHKERRQ(ierr);
-    ierr = PCSetType(newpc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
-  }
-  ierr = KSPDestroy(ksp); CHKERRQ(ierr);
-  *ksp = newksp;
-  ierr = KSPSetFromOptions(*ksp); CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-*/  
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecISSetToConstant"
 /*@
@@ -665,9 +648,9 @@ PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoGetSubMat"
+#define __FUNCT__ "MatGetSubMat"
 /*@ 
-  TaoGetSubMat - Gets a submatrix using the IS
+  MatGetSubMat - Gets a submatrix using the IS
 
   Input Parameters:
 + M - the full matrix (n x n)
@@ -679,7 +662,7 @@ PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
   Output Parameters:
 . Msub - the submatrix
 @*/
-PetscErrorCode TaoGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
+PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
 {
   PetscErrorCode ierr;
   IS iscomp;
