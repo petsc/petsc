@@ -53,8 +53,6 @@ static PetscErrorCode TaoSetFromOptions_GPCG(TaoSolver tao)
   ierr=PetscOptionsInt("-gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);
   CHKERRQ(ierr);
 
-  gpcg->subset_type = TAO_SUBSET_MASK;
-
   ierr = PetscOptionsEList("-tao_gpcg_ksp_type", "ksp type", "", GPCG_KSP, GPCG_KSP_NTYPES,
 			 GPCG_KSP[gpcg->ksp_type], &gpcg->ksp_type,0); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -237,37 +235,17 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       ierr = VecSet(gpcg->DXFree,0.0); CHKERRQ(ierr);
 
       
-      ierr = MatGetSubMatrix(tao->hessian, gpcg->Free_Local, gpcg->Free_Local, MAT_INITIAL_MATRIX,&gpcg->Hsub); CHKERRQ(ierr);
+      ierr = MatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub); CHKERRQ(ierr);
 
       if (tao->hessian_pre == tao->hessian) {
-	  gpcg->Hsub_pre = gpcg->Hsub;
-	  ierr = PetscObjectReference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
+	ierr = MatDestroy(&gpcg->Hsub_pre); CHKERRQ(ierr);
+	ierr = PetscObjectReference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
+	gpcg->Hsub_pre = gpcg->Hsub;
       }	 else {
-	  ierr = MatGetSubMatrix(tao->hessian_pre,  gpcg->Free_Local, gpcg->Free_Local, MAT_INITIAL_MATRIX,&gpcg->Hsub_pre); CHKERRQ(ierr);
+      ierr = MatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre); CHKERRQ(ierr);
       }
 
       ierr = KSPReset(tao->ksp); CHKERRQ(ierr);
-      /*
-      if (gpcg->subset_type == TAO_SUBSET_REDISTRIBUTE) {
-	  if (tao->ksp) {
-	      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
-	  }
-	  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-
-	  if (gpcg->ksp_type == GPCG_KSP_NASH) {
-	      ierr = KSPSetType(tao->ksp,KSPNASH); CHKERRQ(ierr);
-	  }	else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-	      ierr = KSPSetType(tao->ksp,KSPSTCG); CHKERRQ(ierr);
-	  } else {
-	      ierr = KSPSetType(tao->ksp,KSPGLTR); CHKERRQ(ierr);
-	  }	  
-	  if (tao->ksp->ops->setfromoptions) {
-	      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-	  }
-
-      }      
-      */
-      
       ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr); 
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub_pre); CHKERRQ(ierr);
