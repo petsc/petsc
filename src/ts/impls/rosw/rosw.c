@@ -14,7 +14,7 @@
 
 #include <../src/mat/blockinvert.h>
 
-static const TSRosWType TSRosWDefault = TSROSW2P;
+static const TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool TSRosWRegisterAllCalled;
 static PetscBool TSRosWPackageInitialized;
 
