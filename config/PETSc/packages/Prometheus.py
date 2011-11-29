@@ -72,6 +72,14 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
 
     if self.installNeeded('makefile.petsc'):
+      self.framework.logClear()
+      self.logPrint("**************************************************************************************************", debugSection='screen')
+      self.logPrint('Prometheus is scheduled to be decommissioned.  Interested parties are encouraged to switch to the ', debugSection='screen')
+      self.logPrint('native AMG implementation GAMG using -pc_type gamg -pc_gamg_type sa to get smoothed aggregation as', debugSection='screen')
+      self.logPrint('is implemented in Prometheus.  GAMG provides almost all of the functionality of Prometheus and    ', debugSection='screen')
+      self.logPrint('should have better performance.  We are actively developing GAMG and welcome requests for new     ', debugSection='screen')
+      self.logPrint('functionality and reports of any performance problems.                                            ', debugSection='screen')
+      self.logPrint("**************************************************************************************************\n", debugSection='screen')
       fd = file(os.path.join(self.packageDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()
