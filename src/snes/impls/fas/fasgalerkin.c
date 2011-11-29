@@ -5,7 +5,6 @@
 /*
 SNESFASGalerkinDefaultFunction
 
-
  */
 PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ctx) {
   /* the Galerkin FAS function evalutation is defined as
@@ -26,10 +25,6 @@ PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ct
   ierr = MatInterpolate(prevfas->interpolate, X, prevfas->Xg);CHKERRQ(ierr);
   ierr = SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg);CHKERRQ(ierr);
   /* restrict up the function */
-  if (prevfas->inject) {
-    ierr = MatRestrict(prevfas->inject, prevfas->Fg, F);CHKERRQ(ierr);
-  } else {
-    ierr = MatRestrict(prevfas->restrct, prevfas->Fg, F);CHKERRQ(ierr);
-  }
+  ierr = MatRestrict(prevfas->restrct, prevfas->Fg, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
