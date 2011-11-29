@@ -594,8 +594,16 @@ class PatchSet(object):
         dratio = (float(delete[i]) / maxdiff) * histwidth
 
         # make sure every entry gets at least one + or -
-        iwidth = 1 if 0 < iratio < 1 else int(iratio)
-        dwidth = 1 if 0 < dratio < 1 else int(dratio)
+        #iwidth = 1 if 0 < iratio < 1 else int(iratio)
+        if 0 < iratio and iratio < 1:
+          iwidth = 1
+        else:
+          iwidth = int(iratio)
+        #dwidth = 1 if 0 < dratio < 1 else int(dratio)
+        if 0 < dratio and dratio < 1:
+          dwidth = 1
+        else:
+          dwidth = int(dratio)
         #print iratio, dratio, iwidth, dwidth, histwidth
         hist = "+"*int(iwidth) + "-"*int(dwidth)
       # -- /calculating +- histogram --
