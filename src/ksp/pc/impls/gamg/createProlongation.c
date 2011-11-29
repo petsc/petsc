@@ -1663,9 +1663,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       KSP eksp; 
       Vec bb, xx; 
       PC pc;
-
+      
 #if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif 
       ierr = MatGetVecs( a_Amat, &bb, 0 );         CHKERRQ(ierr);
       ierr = MatGetVecs( a_Amat, &xx, 0 );         CHKERRQ(ierr);
@@ -1678,7 +1678,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       }  
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
       ierr = KSPSetType( eksp, KSPCG );                         CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix( eksp, "eigen_estimate_");         CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
       ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
       ierr = KSPSetOperators( eksp, a_Amat, a_Amat, SAME_NONZERO_PATTERN );
