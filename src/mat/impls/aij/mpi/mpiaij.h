@@ -4,7 +4,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ */
+typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ_32 - implementation used in PETSc-3.2 */
   /* used by MatMatMult_MPIAIJ_MPIAIJ() */
   IS             isrowa,isrowb,iscolb; 
   Mat            B_seq,A_loc,C_seq;
@@ -12,7 +12,7 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ */
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
 
-typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
+typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix - implementation used in PETSc-3.2 */
   PetscLayout    rowmap;
   PetscInt       **buf_ri,**buf_rj;
   PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
@@ -23,11 +23,11 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
 
-typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ and MatMatMult_MPIAIJ_MPIAIJ */
+typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ() */
   PetscInt       *startsj,*startsj_r;
   PetscScalar    *bufa;
-  Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt       *abi,*abj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
+  Mat            P_loc,P_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt       *api,*apj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
   PetscInt       abnz_max;     /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
   MatReuse       reuse; 
   PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
@@ -71,7 +71,7 @@ typedef struct {
   /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
   PetscInt      *ld;               /* number of entries per row left of diagona block */
 
-  /* Used by MatPtAP */
+  /* Used by MatMatMult() and MatPtAP() */
   Mat_PtAPMPI   *ptap;
 } Mat_MPIAIJ;
 
@@ -104,7 +104,7 @@ extern PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
-extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult_new(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult_32(Mat);
 extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
 extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
