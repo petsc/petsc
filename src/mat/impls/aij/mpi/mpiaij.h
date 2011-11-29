@@ -23,7 +23,7 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
 
-typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ */
+typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ and MatMatMult_MPIAIJ_MPIAIJ */
   PetscInt       *startsj,*startsj_r;
   PetscScalar    *bufa;
   Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
@@ -34,6 +34,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ */
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_PtAPMPI;
 
 typedef struct {

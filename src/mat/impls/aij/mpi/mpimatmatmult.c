@@ -110,11 +110,26 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatMatMult_new"
+PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult_new(Mat A, MatDuplicateOption op, Mat *M)
+{
+  PetscErrorCode     ierr;
+  Mat_MPIAIJ         *a=(Mat_MPIAIJ*)A->data;
+  Mat_PtAPMPI        *ptap=a->ptap;
+  
+  PetscFunctionBegin;
+  ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = ptap->destroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's special structure! */
+  (*M)->ops->duplicate = ptap->duplicate; /* = MatDuplicate_MPIAIJ */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_new"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
 {
   PetscErrorCode     ierr;
-  Mat_MPIAIJ         *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
+  Mat_MPIAIJ         *a=(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ         *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ         *cd=(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
   PetscInt           *adi=ad->i,*adj,*aoi=ao->i,*aoj;
@@ -125,9 +140,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
   PetscInt           cm=C->rmap->n,anz,pnz;
   Mat_PtAPMPI        *ptap=c->ptap;
   PetscInt           *api,*apj,*apJ,cnz,i,j,k,row;
-  MPI_Comm           comm=((PetscObject)A)->comm;
-  PetscMPIInt        rank;
-  PetscInt           rstart=C->rmap->rstart,cstart=C->cmap->rstart,cend=C->cmap->rend;
+  PetscInt           rstart=C->rmap->rstart,cstart=C->cmap->rstart;
   PetscInt           cdnz,conz,k0,k1;
 
   PetscFunctionBegin;
@@ -238,16 +251,16 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,M
   Mat                  B_mpi; 
   Mat_PtAPMPI          *ptap;
   PetscFreeSpaceList   free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
+  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*c;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ           *p_loc,*p_oth;
-  PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pdti,*pdtj,*poti,*potj,*ptJ,*dnz,*onz;
-  PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz,rstart=A->rmap->rstart; 
-  PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,k,pnz,row;
+  PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
+  PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart; 
+  PetscInt             nlnk,*lnk,i,pnz,row;
   PetscInt             am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n;  
   PetscBT              lnkbt;
-  PetscInt             nzi,*bi,*bj; 
-  PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j;
+  PetscInt             nzi; 
+  PetscInt             *api,*apj,*Jptr,apnz,nspacedouble=0,j;
   PetscScalar          *apa;
 
   PetscFunctionBegin;
@@ -352,11 +365,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,M
   }
   ierr = MatAssemblyBegin(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatView(B_mpi,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ptap->destroy              = B_mpi->ops->destroy;
+  ptap->duplicate            = B_mpi->ops->duplicate;
   B_mpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_new;
   B_mpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult_new;  
+  B_mpi->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult_new;
 
   /* attach the supporting struct to B_mpi for reuse */
   c = (Mat_MPIAIJ*)B_mpi->data;
