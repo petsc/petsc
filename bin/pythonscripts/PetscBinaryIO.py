@@ -308,7 +308,7 @@ class PetscBinaryIO(object):
     @decorate_with_conf
     def readMatSciPy(self, fh):
         from scipy.sparse import csr_matrix
-        (M, N), (I, J, V) = readMatSparse(fh)
+        (M, N), (I, J, V) = self.readMatSparse(fh)
         return csr_matrix((V, J, I), shape=(M, N))
 
     @decorate_with_conf
@@ -331,11 +331,11 @@ class PetscBinaryIO(object):
         """
 
         if mattype == 'sparse':
-            return readMatSparse(fh)
+            return self.readMatSparse(fh)
         elif mattype == 'dense':
-            return readMatDense(fh)
+            return self.readMatDense(fh)
         elif mattype == 'scipy.sparse':
-            return readMatSciPy(fh)
+            return self.readMatSciPy(fh)
         else:
             raise RuntimeError('Invalid matrix type requested: choose sparse/dense')
 

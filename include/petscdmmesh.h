@@ -70,6 +70,7 @@ extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt, PetscInt [], P
 extern PetscErrorCode DMMeshGetSection(DM, const char [], PetscSection *);
 extern PetscErrorCode DMMeshSetSection(DM, const char [], PetscSection);
 extern PetscErrorCode DMMeshGetDefaultSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshSetDefaultSection(DM, PetscSection);
 extern PetscErrorCode DMMeshGetCoordinateSection(DM, PetscSection *);
 extern PetscErrorCode DMMeshGetCoordinateVec(DM, Vec *);
 extern PetscErrorCode DMMeshComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);

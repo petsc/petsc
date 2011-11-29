@@ -360,6 +360,7 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
 
   PetscFunctionBegin;
   mesh->m = PETSC_NULL;
+  ierr = PetscSectionDestroy(&mesh->defaultSection);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&mesh->globalScatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2005,11 +2006,33 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetDefaultSection"
+/*
+  Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
+*/
 PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section) {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshGetSection(dm, "default", section);CHKERRQ(ierr);
+  if (!mesh->defaultSection) {
+    ierr = DMMeshGetSection(dm, "default", &mesh->defaultSection);CHKERRQ(ierr);
+  }
+  *section = mesh->defaultSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetDefaultSection"
+/*
+  Note: This reference will be stolen, so the user should not destroy this PetscSection.
+*/
+PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section) {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  mesh->defaultSection = section;
+  ierr = DMMeshSetSection(dm, "default", mesh->defaultSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2088,6 +2111,8 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
     }
     *values = rV.getValues();
   } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  } catch(PETSc::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
 #endif

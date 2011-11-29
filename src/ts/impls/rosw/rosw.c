@@ -14,7 +14,7 @@
 
 #include <../src/mat/blockinvert.h>
 
-static const TSRosWType TSRosWDefault = TSROSW2P;
+static const TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool TSRosWRegisterAllCalled;
 static PetscBool TSRosWPackageInitialized;
 
@@ -931,9 +931,9 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 +  ts - timestepping context
 -  rostype - type of Rosenbrock-W scheme
 
-  Level: intermediate
+  Level: beginner
 
-.seealso: TSRosWGetType()
+.seealso: TSRosWGetType(), TSROSW, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3, TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWARK3
 @*/
 PetscErrorCode TSRosWSetType(TS ts,const TSRosWType rostype)
 {
@@ -1050,7 +1050,7 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------ */
 /*MC
-      TSRosW - ODE solver using Rosenbrock-W schemes
+      TSROSW - ODE solver using Rosenbrock-W schemes
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
@@ -1105,7 +1105,7 @@ $  g(x_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRosWRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister()
 
 M*/
 EXTERN_C_BEGIN

@@ -46,6 +46,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->ltogmap      = PETSC_NULL;
   v->ltogmapb     = PETSC_NULL;
   v->bs           = 1;
+  v->coloringtype = IS_COLORING_GLOBAL;
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -201,6 +202,7 @@ PetscErrorCode  DMSetUp(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (dm->setupcalled) PetscFunctionReturn(0);
   if (dm->ops->setup) {
     ierr = (*dm->ops->setup)(dm);CHKERRQ(ierr);
@@ -222,7 +224,8 @@ PetscErrorCode  DMSetUp(DM dm)
     Options Database:
 +   -dm_preallocate_only: Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 .   -dm_vec_type <type>  type of vector to create inside DM
--   -dm_mat_type <type>  type of matrix to create inside DM
+.   -dm_mat_type <type>  type of matrix to create inside DM
+-   -dm_coloring_type <global or ghosted> 
 
     Level: developer
 
@@ -236,6 +239,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   char           typeName[256] = MATAIJ;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
@@ -248,6 +252,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
       ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
       ierr = PetscStrallocpy(typeName,&dm->mattype);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
     if (dm->ops->setfromoptions) {
       ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
     }
@@ -281,6 +286,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
  if (!v) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)dm)->comm,&v);CHKERRQ(ierr);
   }
@@ -313,6 +319,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->createglobalvector)(dm,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -340,6 +347,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -482,6 +490,8 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   ierr = (*dm1->ops->getinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -513,6 +523,8 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,VecScatter *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   ierr = (*dm1->ops->getinjection)(dm1,dm2,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -542,6 +554,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,const MatType mtype,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!dm->ops->getcoloring) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No coloring for this type of DM yet");
   ierr = (*dm->ops->getcoloring)(dm,ctype,mtype,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -584,6 +597,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,const MatType mtype,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
@@ -742,6 +756,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->globaltolocalbegin)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -770,6 +785,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->globaltolocalend)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -802,6 +818,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->localtoglobalbegin)(dm,l,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -830,6 +847,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->localtoglobalend)(dm,l,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -856,7 +874,9 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *stflag = SAME_NONZERO_PATTERN;
   ierr  = MatFDColoringApply(B,dm->fd,x,stflag,dm);CHKERRQ(ierr);
   if (A != B) {
@@ -890,6 +910,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   (*dmc)->ops->initialguess = dm->ops->initialguess;
   (*dmc)->ops->function     = dm->ops->function;
@@ -927,6 +948,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (nlevels < 0) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   if (dm->ops->refinehierarchy) {
@@ -968,6 +990,7 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (nlevels < 0) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dmc,3);
@@ -1012,6 +1035,8 @@ PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmc,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dmf,DM_CLASSID,2);
   ierr = (*dmc->ops->getaggregates)(dmc, dmf, rest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1035,6 +1060,7 @@ PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
 PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(void**))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ctxdestroy = destroy;
   PetscFunctionReturn(0);
 }
@@ -1058,6 +1084,7 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
 PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -1083,6 +1110,7 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
 PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *(void**)ctx = dm->ctx;
   PetscFunctionReturn(0);
 }
@@ -1106,6 +1134,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->initialguess = f;
   PetscFunctionReturn(0);
 }
@@ -1133,6 +1162,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->function = f;
   if (f) {
     dm->ops->functionj = f;
@@ -1160,6 +1190,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->jacobian = f;
   PetscFunctionReturn(0);
 }
@@ -1184,6 +1215,7 @@ PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!dm->ops->initialguess) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
   ierr = (*dm->ops->initialguess)(dm,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1210,6 +1242,7 @@ PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
 PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1235,6 +1268,7 @@ PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
 PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *flg =  (dm->ops->function) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1260,6 +1294,7 @@ PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
 PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1286,6 +1321,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!dm->ops->function) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
   PetscStackPush("DM user function");
   ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
@@ -1318,11 +1354,12 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!dm->ops->jacobian) {
     ISColoring     coloring;
     MatFDColoring  fd;
 
-    ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,MATAIJ,&coloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(dm,dm->coloringtype,MATAIJ,&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
@@ -1635,6 +1672,7 @@ PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
   DMMatlabContext   *sctx;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* currently sctx is memory bleed */
   ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   if (!sctx) {
@@ -1705,6 +1743,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
   DMMatlabContext   *sctx;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* currently sctx is memory bleed */
   ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   if (!sctx) {

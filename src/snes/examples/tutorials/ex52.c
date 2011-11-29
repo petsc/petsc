@@ -179,52 +179,15 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   /* These can be generated using config/PETSc/FEM.py */
-  PetscInt       dim              = user->dim;
-  PetscInt       numDof_Lap_0[2]  = {1, 0};
-  PetscInt       numDof_Lap_1[3]  = {1, 0, 0};
-  PetscInt       numDof_Lap_2[4]  = {1, 0, 0, 0};
-  PetscInt       numDof_Elas_0[2] = {dim, 0};
-  PetscInt       numDof_Elas_1[3] = {dim, 0, 0};
-  PetscInt       numDof_Elas_2[4] = {dim, 0, 0, 0};
-  const char    *bcLabel          = PETSC_NULL;
-  PetscInt       markers[1]       = {1};
-  PetscInt      *numDof;
+  PetscInt       dim        = user->dim;
+  PetscInt       numBC      = 0;
+  PetscInt       numComp[1] = {NUM_BASIS_COMPONENTS_0};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch(user->op) {
-  case LAPLACIAN:
-    switch(user->dim) {
-    case 1:
-      numDof = numDof_Lap_0;break;
-    case 2:
-      numDof = numDof_Lap_1;break;
-    case 3:
-      numDof = numDof_Lap_2;break;
-    default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
-    }
-    break;
-  case ELASTICITY:
-    switch(user->dim) {
-    case 1:
-      numDof = numDof_Elas_0;break;
-    case 2:
-      numDof = numDof_Elas_1;break;
-    case 3:
-      numDof = numDof_Elas_2;break;
-    default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
-  }
-  //if (user->bcType == DIRICHLET) {
-  //  bcLabel = "marker";
-  //}
-  ierr = DMMeshCreateSection(dm, dim, 1, PETSC_NULL, numDof, bcLabel, 1, markers, &section);CHKERRQ(ierr);
-  ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
+  if (dim != SPATIAL_DIM_0) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);}
+  ierr = DMMeshCreateSection(dm, dim, 1, numComp, numDof_0, numBC, PETSC_NULL, PETSC_NULL, &section);CHKERRQ(ierr);
+  ierr = DMMeshSetDefaultSection(dm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +225,6 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);

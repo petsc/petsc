@@ -134,8 +134,8 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   PetscScalar   *coords;
   PetscScalar   *elem;
   PetscViewer    viewer;
-  PetscInt       numNodes, numLocalNodes, firstNode, numElems, numLocalElems, firstElem, nmat, ndm, numDof, numCorners;
-  size_t         coordLineSize, elemLineSize;
+  PetscInt       numNodes, numLocalNodes, firstNode, numElems, numLocalElems, firstElem, nmat, ndm, numDof, numCorners, tmp;
+  size_t         coordLineSize = 0, elemLineSize = 0;
   off_t          offset;
   PetscMPIInt    rank;
   const PetscInt dim   = 3;
@@ -184,7 +184,9 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     //ierr = PetscBinarySeek(fd, -coordLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -coordLineSize, SEEK_CUR);
   }
+  tmp = coordLineSize;
   ierr = MPI_Bcast(&coordLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  coordLineSize = tmp;
   // Read coordinates
   ierr = VecGetLocalSize(*coordinates, &numLocalNodes);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*coordinates, &firstNode, PETSC_NULL);CHKERRQ(ierr);
@@ -220,7 +222,9 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     //ierr = PetscBinarySeek(fd, -elemLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -elemLineSize, SEEK_CUR);
   }
+  tmp = elemLineSize;
   ierr = MPI_Bcast(&elemLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  elemLineSize = tmp;
   // Read in elements
   ierr = VecGetLocalSize(*elements, &numLocalElems);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*elements, &firstElem, PETSC_NULL);CHKERRQ(ierr);
@@ -267,33 +271,28 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
   ierr = ReadFEAPMesh(comm, filename, user, &coordinates, &elements);CHKERRQ(ierr);
   try {
     typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
-    PetscInt *cells, *cone, *coneO;
-    PetscInt  dim, numVertices, numCells, numTotalCells, numCorners, newV = 0;
+    PetscInt *cells, *cone, *coneO, *idx;
+    PetscInt  dim, numCells, numTotalCells, numCorners, newV = 0;
 
     ierr = DMMeshCreate(comm, dm);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(coordinates, &numVertices);CHKERRQ(ierr);
     ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
     ierr = VecGetSize(elements,         &numTotalCells);CHKERRQ(ierr);
     ierr = VecGetLocalSize(elements,    &numCells);CHKERRQ(ierr);
     ierr = VecGetBlockSize(elements,    &numCorners);CHKERRQ(ierr);
-    numVertices   /= dim;
     numCells      /= numCorners;
     numTotalCells /= numCorners;
     ierr = PetscMalloc(numCells*numCorners * sizeof(PetscInt), &cells);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(elements,    &elems);CHKERRQ(ierr);
     for(PetscInt c = 0; c < numCells*numCorners; ++c) {
       cells[c] = elems[c];
     }
+    ierr = VecRestoreArray(elements,    &elems);CHKERRQ(ierr);
     ALE::Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, 0);
     ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0);
     PETSC_MESH_TYPE::renumbering_type     renumbering;
 
-    sieve->setChart(PETSC_MESH_TYPE::sieve_type::chart_type(0, numCells+numVertices));
-    // Set cone and support sizes
+    // Renumber vertices
     for (PetscInt c = 0; c < numCells; ++c) {
-      sieve->setConeSize(c, numCorners);
-      // Renumber vertices
       for(PetscInt v = 0; v < numCorners; ++v) {
         PetscInt vertex = cells[c*numCorners+v]+numTotalCells;
 
@@ -302,7 +301,20 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
         }
       }
     }
-    assert(newV == numVertices);
+    ierr = PetscMalloc(newV*dim * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+    for (PetscInt c = 0; c < numCells; ++c) {
+      for(PetscInt v = 0; v < numCorners; ++v) {
+        PetscInt vertex = cells[c*numCorners+v]+numTotalCells;
+
+        idx[renumbering[vertex] - numCells] = vertex;
+      }
+    }
+    // Set chart
+    sieve->setChart(PETSC_MESH_TYPE::sieve_type::chart_type(0, numCells+newV));
+    // Set cone and support sizes
+    for (PetscInt c = 0; c < numCells; ++c) {
+      sieve->setConeSize(c, numCorners);
+    }
     sieve->symmetrizeSizes(numCells, numCorners, cells, numCells);
     // Allocate point storage
     sieve->allocate();
@@ -319,14 +331,31 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
       sieve->setConeOrientation(coneO, c);
     }
     ierr = PetscFree2(cone, coneO);CHKERRQ(ierr);
+    ierr = PetscFree(cells);CHKERRQ(ierr);
     // Symmetrize to fill up supports
     sieve->symmetrize();
     mesh->setSieve(sieve);
     mesh->stratify();
+    // Get ghosted coordinates
+    Vec        ghostedCoordinates;
+    VecScatter scatter;
+    IS         is;
+
+    ierr = VecCreate(PETSC_COMM_SELF, &ghostedCoordinates);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(ghostedCoordinates, dim);CHKERRQ(ierr);
+    ierr = VecSetSizes(ghostedCoordinates, newV*dim, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(ghostedCoordinates);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, newV*dim, idx, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+    ierr = VecScatterCreate(coordinates, is, ghostedCoordinates, PETSC_NULL, &scatter);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter, coordinates, ghostedCoordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter, coordinates, ghostedCoordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+    // Put coordinates in the mesh
+    ierr = VecGetArray(ghostedCoordinates, &coords);CHKERRQ(ierr);
     ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coords, numTotalCells);
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(elements,    &elems);CHKERRQ(ierr);
-    ierr = PetscFree(cells);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ghostedCoordinates, &coords);CHKERRQ(ierr);
+    ierr = VecDestroy(&ghostedCoordinates);CHKERRQ(ierr);
     {
       typedef PETSC_MESH_TYPE::point_type point_type;
       PETSc::Log::Event("CreateOverlap").begin();
@@ -369,17 +398,17 @@ int main(int argc, char *argv[])
     ierr = ReadMesh(comm, user.filename, &user, &dm);CHKERRQ(ierr);
   } else {
     ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
-  }
-  {
-    DM          distributedMesh = PETSC_NULL;
-    const char *partitioner     = user.partitioner;
+    {
+      DM          distributedMesh = PETSC_NULL;
+      const char *partitioner     = user.partitioner;
 
-    /* Distribute mesh over processes */
-    ierr = DMMeshDistribute(dm, partitioner, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm  = distributedMesh;
-      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+      /* Distribute mesh over processes */
+      ierr = DMMeshDistribute(dm, partitioner, &distributedMesh);CHKERRQ(ierr);
+      if (distributedMesh) {
+        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        dm  = distributedMesh;
+        ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscFinalize();

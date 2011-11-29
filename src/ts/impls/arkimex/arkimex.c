@@ -842,7 +842,7 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSARKIMEXGetType()
+.seealso: TSARKIMEXGetType(), TSARKIMEX, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEXPRSSP2, TSARKIMEX3, TSARKIMEXBPR3, TSARKIMEXARS443, TSARKIMEX4, TSARKIMEX5
 @*/
 PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType arktype)
 {

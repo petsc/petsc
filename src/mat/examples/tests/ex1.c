@@ -110,11 +110,11 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
   ierr = MatMatSolve(F,RHS,SOLU);CHKERRQ(ierr);
+  ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
+  ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
   for (j=0; j<nrhs; j++){
-    ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
-    ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
-    ierr = VecPlaceArray(y,solu_array);CHKERRQ(ierr);
-    ierr = VecPlaceArray(b,rhs_array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(y,solu_array+j*m);CHKERRQ(ierr);
+    ierr = VecPlaceArray(b,rhs_array+j*m);CHKERRQ(ierr);
 
     ierr = MatMult(mat,y,ytmp);CHKERRQ(ierr); 
     ierr = VecAXPY(ytmp,-1.0,b);CHKERRQ(ierr); /* ytmp = mat*SOLU[:,j] - RHS[:,j] */
@@ -125,9 +125,9 @@ int main(int argc,char **argv)
     
     ierr = VecResetArray(b);CHKERRQ(ierr);
     ierr = VecResetArray(y);CHKERRQ(ierr);
-    ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
-    ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
   }
+  ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
+  ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
 
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   /* out-place LU */

@@ -387,7 +387,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     ierr  = DMMeshGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
   ierr = DMMeshCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
-  ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
+  ierr = DMMeshSetDefaultSection(dm, section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   }
@@ -578,7 +578,6 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
 
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
   if (user->showInitial) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
@@ -641,7 +640,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
     PetscInt     pStart, pEnd, p;
     PetscScalar *a;
 
-    ierr = DMMeshGetSection(dm, "default", &section);CHKERRQ(ierr);
+    ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
     for(p = pStart; p < pEnd; ++p) {

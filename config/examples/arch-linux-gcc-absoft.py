@@ -12,6 +12,7 @@ configure_options = [
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
   '--download-prometheus=1',
+  '--download-metis=1',
   '--download-parmetis=1',
   '--with-matlab=0'
   ]
