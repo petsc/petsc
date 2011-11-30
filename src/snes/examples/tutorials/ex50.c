@@ -411,6 +411,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   Vec            localX, localB;
   DM             da;
   PetscInt       xints,xinte,yints,yinte,i,j,k,l;
+  PetscInt       n_pointwise = 10;
+  PetscInt       n_sweeps = 3;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
@@ -510,11 +512,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
     }
   }
 
-  for (k=0; k < 3; k++) {
+  for (k=0; k < n_sweeps; k++) {
     for (j=info.ys; j<info.ys + info.ym; j++) {
       for (i=info.xs; i<info.xs + info.xm; i++) {
         if (i != 0 && i != info.mx - 1 && j != 0 && j != info.my-1) {
-          for (l = 0; l < 10; l++) {
+          for (l = 0; l < n_pointwise; l++) {
           /* U velocity */
           ptnorm = 0.0;
           u          = x[j][i].u;
@@ -636,6 +638,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = PetscLogFlops(n_sweeps*n_pointwise*(84.0 + 41)*info->ym*info->xm);CHKERRQ(ierr);
   if (B) {
     ierr = DMLocalToGlobalBegin(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);

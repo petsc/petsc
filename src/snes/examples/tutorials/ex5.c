@@ -258,7 +258,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
   /*
      Compute function over the locally owned part of the grid
@@ -276,8 +276,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
     }
   }
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
@@ -296,11 +296,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
 
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. 
@@ -450,15 +450,14 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
      Get local grid boundaries (for 2-dimensional DMDA):
      xs, ys   - starting grid indices (no ghost points)
      xm, ym   - widths of local grid (no ghost points)
-     
      */
     ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-    
+
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
           /* boundary conditions are all zero Dirichlet */
-          x[j][i] = 0.0; 
+          x[j][i] = 0.0;
         } else {
           if (B) {
             bij = b[j][i];
@@ -477,7 +476,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
         }
       }
     }
-    
     /*
      Restore vector
      */
@@ -485,6 +483,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
     ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   }
+  ierr = PetscLogFlops((11.0 + 5)*ym*xm);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
