@@ -693,11 +693,11 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
 #if defined(PETSC_USE_REAL_SINGLE)
-    scalartype = H5T_NATIVE_FLOAT;
+  scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
 #else
-    scalartype = H5T_NATIVE_DOUBLE;
+  scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
   /* Create the dataset with default properties and close filespace */
@@ -794,6 +794,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
   status = H5Dclose(dset_id);CHKERRQ(status);
+  ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
