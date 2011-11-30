@@ -1327,8 +1327,8 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
   ierr = PetscObjectSetPrecision((PetscObject)*V,((PetscObject)win)->precision);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
-  ierr = VecPThreadSetNThreads(*V,s->nthreads);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*V,s->nthreads);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
 
@@ -1471,6 +1471,9 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   }
   vecs_created++;
 
+  if (v->map->bs == -1) v->map->bs = 1;
+  ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
+
   ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
@@ -1478,8 +1481,6 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
     ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
   }
 
-  if (v->map->bs == -1) v->map->bs = 1;
-  ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQPTHREAD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

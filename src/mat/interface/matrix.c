@@ -8178,7 +8178,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 +  A - the matrix
 .  P - the projection matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/nnz(A) 
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P))
 
    Output Parameters:
 .  C - the product matrix

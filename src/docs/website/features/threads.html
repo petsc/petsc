@@ -53,7 +53,7 @@
             use pthreads on Vec and Mat operations. This sometimes
             provides an alternative to the all MPI approach.<br>
             <br>
-            Thread usage in PETSc is available in the release 3.2 but because things are changing rapidly we recommend working with <a
+            Thread usage in PETSc is available in release 3.2, but because things are changing rapidly, we recommend working with <a
               href="../developers/index.html">petsc-dev</a> if you want to explore this feature.<br>
             <ul>
               <li><a
@@ -63,7 +63,7 @@ to
 use
                   the pthreads<br>
                 </a></li>
-              <li>Quick summary of usage</li>
+              <li>Quick summary of usage:</li>
               <ul>
                 <li>The VecType VECSEQPTHREAD or VECPTHREAD maybe used
                   with VecSetType() or -vec_type seqpthread or pthread
@@ -76,7 +76,7 @@ use
                   aijpthread when MatSetOptions() is used.<br>
                 </li>
                 <li>If you are creating the vectors and matrices with a
-                  DM
+                  DM,
                   you can use -dm_vec_type pthread and -dm_mat_type
                   pthread</li>
                 <li>It is useful to develop your code with the default
@@ -85,7 +85,7 @@ use
                   use the pthread classes.</li>
               </ul>
               <li>We could use your help in further developing PETSc
-                with threads, <a href="../developers/index.html">petsc-dev</a>.</li>
+                with threads; see <a href="../developers/index.html">petsc-dev</a>.</li>
             </ul>
           </td>
         </tr>

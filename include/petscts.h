@@ -644,6 +644,9 @@ J*/
 #define TSROSWLASSP3P4S2C "lassp3p4s2c"
 #define TSROSWLLSSP3P4S2C "llssp3p4s2c"
 #define TSROSWARK3        "ark3"
+#define TSROSWTHETA1      "theta1"
+#define TSROSWTHETA2      "theta2"
+
 
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);

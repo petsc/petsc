@@ -270,7 +270,9 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MatScalar          *ca;
   Mat_PtAP           *ptap;
   PetscInt           sparse_axpy=0;
-
+  //#if defined(PROFILE_MatPtAPSymbolic)
+  PetscLogDouble  t0,tf,time_Trans=0.0,time_GetSymbolic1=0.0,time_GetSymbolic2=0.0;
+  //#endif
   PetscFunctionBegin;
   /* flag 'sparse_axpy' determines which implementations to be used:
        0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; (default)
@@ -284,13 +286,22 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   /* Get ij structure of Pt = P^T */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_Trans += tf - t0;
 
   /* Get structure of AP = A*P */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,an,pn,pi,pj,fill,&api,&apj,&ndouble_ap);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_GetSymbolic1 += tf - t0;
 
   /* Get structure of C = Pt*AP */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(pn,pti,ptj,am,pn,api,apj,fill,&ci,&cj,&ndouble_ptap);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_GetSymbolic2 += tf - t0;
 
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -341,6 +352,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
 #endif
+
+  printf("MatPtAPSymbolic_SeqAIJ_SeqAIJ time %g + %g + %g\n",time_Trans,time_GetSymbolic1,time_GetSymbolic2);
   PetscFunctionReturn(0);
 }
 

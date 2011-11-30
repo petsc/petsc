@@ -18,13 +18,13 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
-    /* ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); */
+    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
-    /* ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   
   }
-  /* ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
   ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
-  /* ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -54,13 +54,11 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
-  for (i=0;i<am;i++) {
+  for (i=0; i<am; i++) {
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
-    j    = anzi;
     aj   = Aj + ai[i];
-    while (j){/* assume cols are almost in increasing order, starting from its end saves computation */
-      j--;
+    for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];

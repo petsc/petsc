@@ -5105,13 +5105,13 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
 
    Input Parameters:
 +    A,B - the matrices in mpiaij format
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-.    startsj - starting point in B's sending and receiving j-arrays, saved for MAT_REUSE (or PETSC_NULL) 
-.    startsj_r - similar to startsj for receives
--    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or PETSC_NULL) 
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
-+    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
++    startsj - starting point in B's sending and receiving j-arrays, saved for MAT_REUSE (or PETSC_NULL) 
+.    startsj_r - similar to startsj for receives
+.    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or PETSC_NULL) 
+-    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
 
     Level: developer
 
