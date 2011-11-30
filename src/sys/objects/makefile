@@ -15,7 +15,7 @@ OBJSC	  = gcomm.o   gtype.o   olist.o    pname.o  tagm.o \
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  = pthread
 LOCDIR	  = src/sys/objects/
 
 include ${PETSC_DIR}/conf/variables
