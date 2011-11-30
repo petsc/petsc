@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   TaoSolverTerminationReason reason;
   AppCtx user;
   IS is_allstate,is_alldesign;
-  PetscInt lo,hi,hi2,lo2;
+  PetscInt lo,hi,hi2,lo2,ksp_old;
   PetscBool flag;
   PetscInt ntests = 1;
   PetscLogDouble v1,v2;
@@ -151,13 +151,13 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,&flag); CHKERRQ(ierr);
 
   user.tola = 1e-4;
-  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",user.tola,&user.tola,&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tola,&user.tola,&flag); CHKERRQ(ierr);
   user.tolb = 1e-4;
-  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",user.tolb,&user.tolb,&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tolb,&user.tolb,&flag); CHKERRQ(ierr);
   user.tolc = 1e-4;
-  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",user.tolc,&user.tolc,&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tolc,&user.tolc,&flag); CHKERRQ(ierr);
   user.told = 1e-4;
-  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.nt; /*  number of constraints */
   user.n = user.mx*user.mx*3*user.nt; /*  number of variables */
@@ -232,11 +232,13 @@ int main(int argc, char **argv)
   ierr = PetscLogStageRegister("Trials",&stages[0]); CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]); CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
+  ksp_old = user.ksp_its;
   for (i=0; i<ntests; i++){
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
+    PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its-ksp_old); CHKERRQ(ierr);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
     user.solve_type = 3;
