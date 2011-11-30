@@ -43,7 +43,7 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     alpha[k] = t*rho[k];
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "k: %d alpha:        %14.12e\n", k, alpha[k]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "k: %d alpha:        %14.12e\n", k, PetscRealPart(alpha[k]));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     ierr = VecAXPY(z, -alpha[k], dF[k]);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     ierr = VecAXPY(z, (alpha[k] - beta[k]), dX[k]);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "k: %d alpha - beta: %14.12e\n", k, alpha[k] - beta[k]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "k: %d alpha - beta: %14.12e\n", k, PetscRealPart(alpha[k] - beta[k]));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
   }
