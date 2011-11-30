@@ -1870,9 +1870,10 @@ namespace ALE {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 2;
-      double v0[2], J[4], invJ[4], detJ;
+      typename real_section_type::value_type v0[2], J[4], invJ[4], detJ;
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        std::cout << "Checking cell " << *c_iter << std::endl;
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
         double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
@@ -1881,14 +1882,18 @@ namespace ALE {
           return *c_iter;
         }
       }
-      throw ALE::Exception("Could not locate point");
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << point[0] <<","<< point[1] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
     };
     //   Assume a simplex and 3D
     point_type locatePoint_3D(const typename real_section_type::value_type point[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 3;
-      double v0[3], J[9], invJ[9], detJ;
+      typename real_section_type::value_type v0[3], J[9], invJ[9], detJ;
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
@@ -1900,7 +1905,11 @@ namespace ALE {
           return *c_iter;
         }
       }
-      throw ALE::Exception("Could not locate point");
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << point[0] <<","<< point[1] <<","<< point[2] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
     };
     point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
