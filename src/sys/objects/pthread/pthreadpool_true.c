@@ -62,6 +62,8 @@ typedef struct {
 sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,NULL,0,0,PETSC_FALSE};
 #endif
 
+static pthread_cond_t main_cond = PTHREAD_COND_INITIALIZER; 
+
 /* external Functions */
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
