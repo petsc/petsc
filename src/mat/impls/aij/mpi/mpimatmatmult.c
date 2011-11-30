@@ -269,7 +269,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr); 
-  ptap->abnz_max = 0; 
 
   /* malloc apa to store dense row A[i,:]*P */ 
   ierr = PetscMalloc(pN*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
@@ -324,7 +323,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     }
 
     api[i+1] = api[i] + apnz;
-    if (ptap->abnz_max < apnz) ptap->abnz_max = apnz;
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
