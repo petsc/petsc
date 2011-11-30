@@ -62,7 +62,7 @@ typedef struct {
 sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,NULL,0,0,PETSC_FALSE};
 #endif
 
-static pthread_cond_t main_cond = PTHREAD_COND_INITIALIZER; 
+static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER; 
 
 /* external Functions */
 extern void*          (*PetscThreadFunc)(void*);
@@ -95,7 +95,7 @@ void* PetscThreadFunc_True(void* arg) {
   ierr = pthread_mutex_lock(&job_true.mutex);
   job_true.iNumReadyThreads++;
   if(job_true.iNumReadyThreads==PetscMaxThreads) {
-    ierr = pthread_cond_signal(&main_cond);
+    ierr = pthread_cond_signal(&main_cond_true);
   }
   /*the while loop needs to have an exit
     the 'main' thread can terminate all the threads by performing a broadcast
@@ -135,7 +135,7 @@ void* PetscThreadFunc_True(void* arg) {
       job_true.iNumReadyThreads++;
       if(job_true.iNumReadyThreads==PetscMaxThreads) {
 	/* signal the 'main' thread that the job is done! (only done once) */
-	ierr = pthread_cond_signal(&main_cond);
+	ierr = pthread_cond_signal(&main_cond_true);
       }
     }
   }
@@ -190,7 +190,7 @@ void MainWait_True() {
   int ierr;
   ierr = pthread_mutex_lock(&job_true.mutex);
   while(job_true.iNumReadyThreads<PetscMaxThreads||job_true.startJob==PETSC_TRUE) {
-    ierr = pthread_cond_wait(&main_cond,&job_true.mutex);
+    ierr = pthread_cond_wait(&main_cond_true,&job_true.mutex);
   }
   ierr = pthread_mutex_unlock(&job_true.mutex);
 }

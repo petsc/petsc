@@ -58,7 +58,7 @@ typedef struct {
 } sjob_tree;
 sjob_tree job_tree;
 
-static pthread_cond_t main_cond = PTHREAD_COND_INITIALIZER; 
+static pthread_cond_t main_cond_tree = PTHREAD_COND_INITIALIZER; 
 static char* arrmutex;
 static char* arrcond1;
 static char* arrcond2;
@@ -119,7 +119,7 @@ void* PetscThreadFunc_Tree(void* arg) {
   if(ThreadId==0) {
     job_tree.eJobStat = JobCompleted;
     /* ignal main */
-    ierr = pthread_cond_signal(&main_cond);
+    ierr = pthread_cond_signal(&main_cond_tree);
   }
   else {
     /* tell your boss that you're ready to work */
@@ -187,7 +187,7 @@ void* PetscThreadFunc_Tree(void* arg) {
       if(ThreadId==0) {
 	job_tree.eJobStat = JobCompleted; /* oot thread: last thread to complete, guaranteed! */
         /* root thread signals 'main' */
-        ierr = pthread_cond_signal(&main_cond);
+        ierr = pthread_cond_signal(&main_cond_tree);
       }
       else {
         /* signal your boss before you go to sleep */
@@ -291,7 +291,7 @@ void MainWait_Tree() {
   int ierr;
   ierr = pthread_mutex_lock(job_tree.mutexarray[0]);
   while(job_tree.eJobStat<JobCompleted||job_tree.startJob==PETSC_TRUE) {
-    ierr = pthread_cond_wait(&main_cond,job_tree.mutexarray[0]);
+    ierr = pthread_cond_wait(&main_cond_tree,job_tree.mutexarray[0]);
   }
   ierr = pthread_mutex_unlock(job_tree.mutexarray[0]);
 }
