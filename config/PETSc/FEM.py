@@ -24,7 +24,10 @@ class QuadratureGenerator(script.Script):
   def setup(self):
     script.Script.setup(self)
     self.setupPaths()
-    import Cxx, CxxHelper
+    try:
+      import Cxx, CxxHelper
+    except ImportError:
+      raise RuntimeError('Unable to find Generator package!\nReconfigure PETSc using --download-generator.')
     self.Cxx = CxxHelper.Cxx()
     if len(self.debugSections) == 0:
       self.debugSections = ['screen']

@@ -119,7 +119,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j,ap_rmax=0;
   PetscReal            afill=1.0,afill_tmp;
-  PetscLogDouble       t0,tf,etime=0.0,t00,tff,time_matupdate=0.0,time_Cd=0.0,time_AP=0.0,time_Co=0.0,time_setvals=0.0;
+  PetscLogDouble       t0,tf,etime=0.0,t00,tff,time_matupdate=0.0,time_Cd=0.0,time_AP=0.0,time_Co=0.0;
 
   PetscFunctionBegin;
   ierr = PetscGetTime(&t00);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       pnz  = pi_loc[row+1] - pi_loc[row];
       Jptr = pj_loc + pi_loc[row];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAdd(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       apnz += nlnk;
     }
     /* off-diagonal portion of A */
@@ -179,7 +179,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       row = aj[j]; 
       pnz = pi_oth[row+1] - pi_oth[row];
       Jptr  = pj_oth + pi_oth[row];  
-      ierr = PetscLLAdd(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       apnz += nlnk;
     }
 
@@ -233,7 +233,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       apnz = api[row+1] - api[row];
       Jptr = apj + api[row];
       /* add non-zero cols of AP into the sorted linked list lnk */
-      ierr = PetscLLAdd(apnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(apnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       nnz += nlnk;
     }
 
@@ -401,7 +401,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       apnz = api[row+1] - api[row];
       Jptr = apj + api[row];
       /* add non-zero cols of AP into the sorted linked list lnk */
-      ierr = PetscLLAdd(apnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(apnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       nnz += nlnk;
     }
     /* add received col data into lnk */
@@ -409,7 +409,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       if (i == *nextrow[k]) { /* i-th row */
         nzi = *(nextci[k]+1) - *nextci[k]; 
         Jptr  = buf_rj[k] + *nextci[k];
-        ierr = PetscLLAdd(nzi,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+        ierr = PetscLLAddSorted(nzi,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
         nnz += nlnk;
         nextrow[k]++; nextci[k]++;
       }

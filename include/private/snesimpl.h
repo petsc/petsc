@@ -197,6 +197,6 @@ PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,P
 extern PetscBool  SNESRegisterAllCalled;
 extern PetscFList SNESList;
 
-extern PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+extern PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #endif

@@ -6,7 +6,7 @@ PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID;
-PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDMComputeJacobian"
@@ -1551,11 +1551,13 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
   if(b) PetscCheckSameComm(snes,1,b,3);
+  ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   if (snes->ops->computegs) {
     PetscStackPush("SNES user GS");
     ierr = (*snes->ops->computegs)(snes,x,b,snes->gsP);CHKERRQ(ierr);
     PetscStackPop;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
+  ierr = PetscLogEventEnd(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

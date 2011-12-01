@@ -1,12 +1,12 @@
-
+#requirespackage 'PETSC_HAVE_PTHREADCLASSES'
 ALL: lib
 
 CFLAGS   = ${VALGRIND_INCLUDE}
 FFLAGS   =
-SOURCEC  = pthread.c
+SOURCEC  = pthread.c pthreadpool_main.c pthreadpool_chain.c pthreadpool_tree.c pthreadpool_true.c
 SOURCEF  =
 SOURCEH  = ../../../include/petscoptions.h
-OBJSC    = pthread.o
+OBJSC    = pthread.o pthreadpool_main.o pthreadpool_chain.o pthreadpool_tree.o pthreadpool_true.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
