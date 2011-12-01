@@ -5,14 +5,13 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ_32 - implementation used in PETSc-3.2 */
-  /* used by MatMatMult_MPIAIJ_MPIAIJ() */
   IS             isrowa,isrowb,iscolb; 
   Mat            B_seq,A_loc,C_seq;
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
 
-typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix - implementation used in PETSc-3.2 */
+typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscLayout    rowmap;
   PetscInt       **buf_ri,**buf_rj;
   PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
