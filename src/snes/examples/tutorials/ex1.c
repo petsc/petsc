@@ -183,14 +183,15 @@ int main(int argc,char **argv)
  */
 PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xx,*ff;
-  AppCtx         *user = (AppCtx*)ctx;
-  Vec            xloc=user->xloc,floc=user->rloc;
-  VecScatter     scatter=user->scatter;
-  MPI_Comm       comm;
-  PetscMPIInt    size,rank;
-  PetscInt       rstart,rend;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *ff;
+  AppCtx            *user = (AppCtx*)ctx;
+  Vec               xloc=user->xloc,floc=user->rloc;
+  VecScatter        scatter=user->scatter;
+  MPI_Comm          comm;
+  PetscMPIInt       size,rank;
+  PetscInt          rstart,rend;
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -224,7 +225,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
     */
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
     /* Compute function */
@@ -232,7 +233,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
     ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
 
     /* Restore vectors */
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
   }
   return 0;

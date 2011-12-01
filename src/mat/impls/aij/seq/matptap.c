@@ -523,12 +523,12 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
       cjj    = cj + ci[crow];
       caj    = ca + ci[crow];
       pvalj  = pval[j];
-      nextap = 0;
+      nextap = 1;
       apcol  = apj[nextap];
       for (k=0; nextap<apnz; k++) {
         if (cjj[k] == apcol) {
           caj[k] += pvalj*apa[apcol];
-          apcol   = apj[++nextap];
+          apcol   = apj[nextap++];
         }
       }
       ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);

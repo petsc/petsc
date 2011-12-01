@@ -1331,7 +1331,7 @@ PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStru
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetPicard"
 /*@C
-   SNESSetPicard - Use SNES to solve the semilinear-system A(x) x = b(x) via a Picard type iteration
+   SNESSetPicard - Use SNES to solve the semilinear-system A(x) x = b(x) via a Picard type iteration (Picard linearization) 
 
    Logically Collective on SNES
 
@@ -1370,7 +1370,8 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
      Run with -snes_mf_operator to solve the system with Newton's method using A(x^{n}) to construct the preconditioner.
 
-   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used.
+   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used then 
+   the direct Picard iteration A(x^n) x^{n+1} = b(x^n)
 
    There is some controversity over the definition of a Picard iteration for nonlinear systems but almost everyone agrees that it involves a linear solve and some
    believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration 
@@ -1380,7 +1381,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
 .keywords: SNES, nonlinear, set, function
 
-.seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetPicard()
+.seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESGetPicard(), SNESLineSearchPreCheckPicard()
 @*/
 PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),Mat jmat, Mat mat, PetscErrorCode (*mfunc)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
