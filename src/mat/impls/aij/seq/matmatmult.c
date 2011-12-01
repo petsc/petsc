@@ -54,18 +54,16 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
-  for (i=0;i<am;i++) {
+  for (i=0; i<am; i++) {
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
-    j    = anzi;
     aj   = Aj + ai[i];
-    while (j){/* assume cols are almost in increasing order, starting from its end saves computation */
-      j--;
+    for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLAdd(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       cnzi += nlnk;
     }
 

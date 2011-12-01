@@ -60,6 +60,26 @@ typedef struct {
 } TS_RosW;
 
 /*MC
+     TSROSWTHETA1 - One stage first order L-stable Rosenbrock-W scheme (aka theta method).
+
+     Only an approximate Jacobian is needed.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
+
+/*MC
+     TSROSWTHETA2 - One stage second order A-stable Rosenbrock-W scheme (aka theta method).
+
+     Only an approximate Jacobian is needed.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
+
+/*MC
      TSROSW2M - Two stage second order L-stable Rosenbrock-W scheme.
 
      Only an approximate Jacobian is needed. By default, it is only recomputed once per step. This method is a reflection of TSROSW2P.
@@ -207,6 +227,22 @@ PetscErrorCode TSRosWRegisterAll(void)
   PetscFunctionBegin;
   if (TSRosWRegisterAllCalled) PetscFunctionReturn(0);
   TSRosWRegisterAllCalled = PETSC_TRUE;
+
+  {
+    const PetscReal
+      A = 0,
+      Gamma = 1,
+      b = 1;
+    ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  {
+    const PetscReal
+      A= 0,
+      Gamma = 0.5,
+      b = 1;
+    ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   {
     const PetscReal g = 1. + 1./PetscSqrtReal(2.0);

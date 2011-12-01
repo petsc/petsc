@@ -111,7 +111,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,PetscReal f
       pnzj = pi[prow+1] - pi[prow];
       pjj  = pj + pi[prow];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAdd(pnzj,pjj,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnzj,pjj,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       cnzi += nlnk;
     }
    
@@ -270,7 +270,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MatScalar          *ca;
   Mat_PtAP           *ptap;
   PetscInt           sparse_axpy=0;
-
+  PetscLogDouble     t0,tf,time_Trans=0.0,time_GetSymbolic1=0.0,time_GetSymbolic2=0.0;
+  
   PetscFunctionBegin;
   /* flag 'sparse_axpy' determines which implementations to be used:
        0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; (default)
@@ -284,13 +285,22 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   /* Get ij structure of Pt = P^T */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_Trans += tf - t0;
 
   /* Get structure of AP = A*P */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,an,pn,pi,pj,fill,&api,&apj,&ndouble_ap);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_GetSymbolic1 += tf - t0;
 
   /* Get structure of C = Pt*AP */
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(pn,pti,ptj,am,pn,api,apj,fill,&ci,&cj,&ndouble_ptap);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  time_GetSymbolic2 += tf - t0;
 
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -341,6 +351,9 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
 #endif
+  /*
+  printf("MatPtAPSymbolic_SeqAIJ_SeqAIJ time %g + %g + %g\n",time_Trans,time_GetSymbolic1,time_GetSymbolic2);
+   */
   PetscFunctionReturn(0);
 }
 
@@ -349,20 +362,20 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) 
 {
-  PetscErrorCode  ierr;
-  Mat_SeqAIJ      *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ      *p  = (Mat_SeqAIJ *) P->data; 
-  Mat_SeqAIJ      *c  = (Mat_SeqAIJ *) C->data;
-  PetscInt        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
-  PetscScalar     *aa=a->a,*pa=p->a;
-  PetscInt        *apj,*pcol,*cjj,cnz;
-  PetscInt        am=A->rmap->N,cm=C->rmap->N;
-  PetscInt        i,j,k,anz,apnz,pnz,prow,crow;
-  PetscScalar     *apa,*pval,*ca=c->a,*caj,pvalj;
-  Mat_PtAP        *ptap = c->ptap;
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ *) A->data;
+  Mat_SeqAIJ        *p  = (Mat_SeqAIJ *) P->data; 
+  Mat_SeqAIJ        *c  = (Mat_SeqAIJ *) C->data;
+  const PetscInt    *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
+  const PetscScalar *aa=a->a,*pa=p->a,*pval;
+  const PetscInt    *apj,*pcol,*cjj;
+  const PetscInt    am=A->rmap->N,cm=C->rmap->N;
+  PetscInt          i,j,k,anz,apnz,pnz,prow,crow,cnz;
+  PetscScalar       *apa,*ca=c->a,*caj,pvalj;
+  Mat_PtAP          *ptap = c->ptap;
 #if defined(PROFILE_MatPtAPNumeric)
-  PetscLogDouble  t0,tf,time_Cseq0=0.0,time_Cseq1=0.0;
-  PetscInt        flops0=0,flops1=0;
+  PetscLogDouble    t0,tf,time_Cseq0=0.0,time_Cseq1=0.0;
+  PetscInt          flops0=0,flops1=0;
 #endif
 
   PetscFunctionBegin;
@@ -445,20 +458,20 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C) 
 {
-  PetscErrorCode  ierr;
-  Mat_SeqAIJ      *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ      *p  = (Mat_SeqAIJ *) P->data; 
-  Mat_SeqAIJ      *c  = (Mat_SeqAIJ *) C->data;
-  PetscInt        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
-  PetscScalar     *aa=a->a,*pa=p->a;
-  PetscInt        *apj,*pcol,*cjj;
-  PetscInt        am=A->rmap->N,cm=C->rmap->N;
-  PetscInt        i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
-  PetscScalar     *apa,*pval,*ca=c->a,*caj,pvalj;
-  Mat_PtAP        *ptap = c->ptap;
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ *) A->data;
+  Mat_SeqAIJ        *p  = (Mat_SeqAIJ *) P->data; 
+  Mat_SeqAIJ        *c  = (Mat_SeqAIJ *) C->data;
+  const PetscInt    *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
+  const PetscScalar *aa=a->a,*pa=p->a,*pval;
+  const PetscInt    *apj,*pcol,*cjj;
+  const PetscInt    am=A->rmap->N,cm=C->rmap->N;
+  PetscInt          i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
+  PetscScalar       *apa,*ca=c->a,*caj,pvalj;
+  Mat_PtAP          *ptap = c->ptap;
 #if defined(PROFILE_MatPtAPNumeric)
-  PetscLogDouble  t0,tf,time_Cseq0=0.0,time_Cseq1=0.0;
-  PetscInt        flops0=0,flops1=0;
+  PetscLogDouble    t0,tf,time_Cseq0=0.0,time_Cseq1=0.0;
+  PetscInt          flops0=0,flops1=0;
 #endif
 
   PetscFunctionBegin;
@@ -515,7 +528,8 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
       for (k=0; nextap<apnz; k++) {
         if (cjj[k] == apcol) {
           caj[k] += pvalj*apa[apcol];
-          apcol   = apj[++nextap];
+          nextap++;
+          apcol   = apj[nextap]; /* apj is size of AP->i[m]+1, an extra space is available in case nextap=apnz */
         }
       }
       ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);

@@ -36,7 +36,7 @@ class PETSc(object):
     sources = []
     for f in os.listdir(d):
       if f == name+'.c':
-        sources.append(f)
+        sources.insert(0, f)
       elif f.startswith(name) and f.endswith('.cu'):
         sources.append(f)
     return map(lambda f: os.path.join(d, f), sources)

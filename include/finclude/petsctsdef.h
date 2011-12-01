@@ -66,5 +66,7 @@
 #define TSROSWLASSP3P4S2C 'lassp3p4s2c'
 #define TSROSWLLSSP3P3S2C 'llssp3p3s2c'
 #define TSROSWARK3        'ark3'
+#define TSROSWTHETA1      'theta1'
+#define TSROSWTHETA2      'theta2'
 
 #endif
