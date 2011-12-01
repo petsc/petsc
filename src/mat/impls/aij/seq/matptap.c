@@ -111,7 +111,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,PetscReal f
       pnzj = pi[prow+1] - pi[prow];
       pjj  = pj + pi[prow];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAdd(pnzj,pjj,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnzj,pjj,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       cnzi += nlnk;
     }
    

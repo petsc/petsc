@@ -63,7 +63,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLAdd(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       cnzi += nlnk;
     }
 

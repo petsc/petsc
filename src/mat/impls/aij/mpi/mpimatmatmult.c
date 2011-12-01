@@ -309,7 +309,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       pnz = pi_loc[row+1] - pi_loc[row];
       Jptr  = pj_loc + pi_loc[row];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAdd(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       apnz += nlnk;
     }
     /* off-diagonal portion of A */
@@ -318,7 +318,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       row = *aoj++; 
       pnz = pi_oth[row+1] - pi_oth[row];
       Jptr  = pj_oth + pi_oth[row];  
-      ierr = PetscLLAdd(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       apnz += nlnk;
     }
 
