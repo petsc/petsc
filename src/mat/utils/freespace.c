@@ -116,8 +116,10 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
     ierr  = PetscFree(*head);CHKERRQ(ierr);
     *head = a;
   }
-  bi[n] = bi[n-1] + nnzL;
-  bdiag[n] = bdiag[n-1]-1;
+  if (n) {
+    bi[n] = bi[n-1] + nnzL;
+    bdiag[n] = bdiag[n-1]-1;
+  }
   PetscFunctionReturn(0);
 }
 
