@@ -1,15 +1,14 @@
 subset
   - make tests test each kind
+    . fix plate2_5 (matrix free tron)
   - update solvers to use it
-    . gpcg
     . asls
-    . blmvm
-    . bqpip
 
 tao_fd_gradient
 complimentarity asils, asfls, isils, icp, rscs
 fd - plate2_fd_test, eptorsion2_fd_test
 Check 'Collective' documentation
+
 
 Describe new features
   no more application object
@@ -24,6 +23,7 @@ Describe new features
   
 update manual
   add pounders section
+  put docs back in
 
 Check fortran stubs 
 
@@ -62,5 +62,5 @@ POUNDer
 add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 make install to put libs/headers in separate location
-
+one library
 

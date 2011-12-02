@@ -218,6 +218,17 @@ class TaoExamples(ExampleList):
         self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2",method="tron",tags=["bound","plate","single","c","tron","dm"],name="plate2",section="bound"))
         self.add(Example(example="plate2",nprocs=2,options="-tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3",method="blmvm",tags=["bound","plate","multiprocessor","c","blmvm","dm"],name="plate2_2",section="bound"))
         self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm"],name="plate2_3",section="bound"))
+        # test subset types
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm"],name="plate2_4",section="bound"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm","matrixfree"],name="plate2_5",section="bound"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","single","c","tron","dm","matrixfree"],name="plate2_6",section="bound"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree",method="gpcg",tags=["bound","plate","multiprocessor","c","gpcg","dm","matrixfree"],name="plate2_7",section="bound"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask",method="gpcg",tags=["bound","plate","multiprocessor","c","gpcg","dm","mask"],name="plate2_8",section="bound"))
+        self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","single","c","tron","dm","matrixfree"],name="plate2_9",section="bound"))
+        self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask -mask",method="tron",tags=["bound","plate","single","c","tron","dm","mask"],name="plate2_10",section="bound"))
+
+
+
         self.add(Example(example="plate2f",nprocs=1,options="-tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2",method="blmvm",tags=["bound","plate","single","fortran","tron","dm"],name="plate2f",section="bound"))
         self.add(Example(example="plate2f",nprocs=2,options="-tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2",method="blmvm",tags=["bound","plate","multiprocessor","fortran","blmvm","dm"],name="plate2f_2",section="bound"))
 

@@ -16,6 +16,7 @@ If multiple tags with no dash(-) are given, the example must match all tags.
 -m     : only print example names that match tags (also --match)
 -c     : compile only, do not execute (also --compile)
 -l     : list all examples and their tags (also --list)
+-p     : print executables that match tags (also --print)
 -d     : compare results against output in $TAO_DIR/tests/ouptut directory (also --diff)
 
 """)
@@ -26,7 +27,7 @@ if __name__=="__main__":
     match = False
     showdiff = False        
     compileonly = False
-    
+    printexec = False
     examples = TaoExamples.TaoExamples()
     args = sys.argv[1:]
     
@@ -38,7 +39,10 @@ if __name__=="__main__":
         if arg in args:
             args.remove(arg)
             match = True
-            
+    for arg in ['--print','-p']:
+        if arg in args:
+            args.remove(arg)
+            printexec = True
     for arg in ['--help','-h']:
         if arg in args:
             args.remove(arg)
@@ -81,7 +85,9 @@ if __name__=="__main__":
         if match:
             sys.stdout.write(ex.name+"\n")
             continue
-
+        if printexec:
+            sys.stdout.write(" ".join(ex.runCommand())+"\n")
+            continue
         #os.environ.update(TAO)
         #cwd = os.path.join(TAO['TAO_DIR'],"tests")
         if ex.section is None:
