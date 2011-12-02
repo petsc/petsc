@@ -60,6 +60,29 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMeshFromAdjacency"
+/*@
+  DMMeshCreateMeshFromAdjacency - Create an unstrctured mesh from a list of the vertices for each cell, and the coordinates for each vertex.
+
+ Collective on comm
+
+  Input Parameters:
++ comm - An MPI communicator
+. dim - The dimension of the cells, e.g. triangles have dimension 2
+. numCells - The number of cells in the mesh
+. numCorners - The number of vertices in each cell
+. cellVertices - An array of the vertices for each cell, numbered 0 to numVertices-1
+. spatialDim - The dimension for coordinates, e.g. for a triangle in 3D this would be 3
+. numVertices - The number of mesh vertices
+. coordinates - An array of the coordinates for each vertex
+- interpolate - Flag to create faces and edges
+
+  Output Parameter:
+. dm - The DMMesh object
+
+  Level: beginner
+
+.seealso DMMESH, DMMeshCreateMeshFromAdjacencyHybrid(), DMMeshCreateBoxMesh()
+@*/
 PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) {
   PetscInt       debug = 0;
   PetscErrorCode ierr;
@@ -71,21 +94,22 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dmmesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
-  Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+  Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
   mesh->setSieve(sieve);
   for(PetscInt c = 0; c < numCells; ++c) {
     sieve->setConeSize(c, numCorners);
   }
-  sieve->symmetrizeSizes(numCells, numCorners, cones);
+  sieve->symmetrizeSizes(numCells, numCorners, cellVertices);
   sieve->allocate();
   for(PetscInt c = 0; c < numCells; ++c) {
-    sieve->setCone(&cones[c*numCorners], c);
+    // Need to add numCells
+    sieve->setCone(&cellVertices[c*numCorners], c);
   }
   sieve->symmetrize();
   mesh->stratify();
   /* Handle orientation */
-  ALE::SieveBuilder::buildCoordinates(mesh, spatialDim, coordinates, numCells);
+  ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, spatialDim, coordinates, numCells);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMMESH);CHKERRQ(ierr);
   ierr = DMMeshSetMesh(*dm, mesh);CHKERRQ(ierr);
@@ -94,7 +118,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMeshFromAdjacencyHybrid"
-PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) {
   PetscInt       debug = 0;
   PetscErrorCode ierr;
 
@@ -106,16 +130,16 @@ PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, 
   if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dmmesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
-  Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+  Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
   mesh->setSieve(sieve);
   for(PetscInt c = 0; c < numCells; ++c) {
     sieve->setConeSize(c, numCorners[c]);
   }
-  //sieve->symmetrizeSizes(numCells, numCorners, cones);
+  //sieve->symmetrizeSizes(numCells, numCorners, cellVertices);
   sieve->allocate();
   for(PetscInt c = 0, offset = 0; c < numCells; offset += numCorners[c], ++c) {
-    sieve->setCone(&cones[offset], c);
+    sieve->setCone(&cellVertices[offset], c);
   }
   sieve->symmetrize();
   PetscFunctionReturn(0);

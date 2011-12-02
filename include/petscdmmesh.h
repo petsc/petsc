@@ -35,6 +35,7 @@ S*/
 extern PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
 
 extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
+extern PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt [], PetscInt, PetscInt, const PetscReal [], PetscBool, DM*);
 extern PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
