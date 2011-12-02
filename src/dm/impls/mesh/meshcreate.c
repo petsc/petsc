@@ -15,7 +15,7 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
     /* Handle DMMesh refinement */
     /* Handle associated vectors */
     /* Handle viewing */
-    ierr = PetscOptionsBool("-mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
 
@@ -26,16 +26,12 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
       ierr = DMView(dm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsBool("-mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ALE::Obj<PETSC_MESH_TYPE> mesh;
 
       ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
       mesh->view("Mesh");
-    }
-    ierr = PetscOptionsBool("-mesh_view_simple", "Simple mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -84,6 +80,8 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 .seealso DMMESH, DMMeshCreateMeshFromAdjacencyHybrid(), DMMeshCreateBoxMesh()
 @*/
 PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) {
+  PetscInt      *cone;
+  PetscInt      *coneO;
   PetscInt       debug = 0;
   PetscErrorCode ierr;
 
@@ -100,12 +98,20 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   for(PetscInt c = 0; c < numCells; ++c) {
     sieve->setConeSize(c, numCorners);
   }
-  sieve->symmetrizeSizes(numCells, numCorners, cellVertices);
+  sieve->symmetrizeSizes(numCells, numCorners, cellVertices, numCells);
   sieve->allocate();
-  for(PetscInt c = 0; c < numCells; ++c) {
-    // Need to add numCells
-    sieve->setCone(&cellVertices[c*numCorners], c);
+  ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
+  for(PetscInt v = 0; v < numCorners; ++v) {
+    coneO[v] = 1;
   }
+  for(PetscInt c = 0; c < numCells; ++c) {
+    for(PetscInt v = 0; v < numCorners; ++v) {
+      cone[v] = cellVertices[c*numCorners+v]+numCells;
+    }
+    sieve->setCone(cone, c);
+    sieve->setConeOrientation(coneO, c);
+  }
+  ierr = PetscFree2(cone,coneO);CHKERRQ(ierr);
   sieve->symmetrize();
   mesh->stratify();
   /* Handle orientation */
