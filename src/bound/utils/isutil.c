@@ -668,8 +668,10 @@ PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat
   IS iscomp;
   PetscBool flg;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(M,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   if (*Msub) {
-    ierr = MatDestroy(Msub); CHKERRQ(ierr); *Msub=PETSC_NULL;
+    ierr = MatDestroy(Msub); CHKERRQ(ierr);
   }
   switch (subset_type) {
     case TAO_SUBSET_SUBVEC:

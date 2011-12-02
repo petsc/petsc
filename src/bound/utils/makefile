@@ -9,7 +9,7 @@ OBJSC    = projection.o  isutil.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = 
-LOCDIR   = src/bound/utils
+LOCDIR   = src/bound/utils/
 
 include ${TAO_DIR}/conf/tao_base
 
