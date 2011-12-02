@@ -420,14 +420,20 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_32(Mat A,Mat B,Mat C)
   PetscContainer     container;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
+
+  if (mult->skipNumeric){ /* first numeric product is done during symbolic product */
+    mult->skipNumeric = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
 #if defined(DEBUG_MATMATMULT)
   PetscMPIInt rank;
   ierr = MPI_Comm_rank(((PetscObject)C)->comm,&rank);CHKERRQ(ierr);
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultNumeric_MPIAIJ_MPIAIJ_32()...\n",rank);
 #endif
-  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
+
   seq = &mult->B_seq;
   ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);
   mult->B_seq = *seq;
@@ -459,7 +465,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32(Mat A,Mat B,PetscReal fill,Ma
 #endif
 
   PetscFunctionBegin;
-  #if defined(DEBUG_MATMATMULT)
+#if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultSymbolic_MPIAIJ_MPIAIJ_32()...\n",rank);
 #endif
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
@@ -514,6 +520,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32(Mat A,Mat B,PetscReal fill,Ma
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)AB,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  mult->skipNumeric  = PETSC_TRUE; /* a numeric product is done here */
   mult->destroy      = AB->ops->destroy;
   mult->duplicate    = AB->ops->duplicate;
   AB->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_32;

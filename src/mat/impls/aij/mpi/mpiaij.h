@@ -6,7 +6,8 @@
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ_32 - implementation used in PETSc-3.2 */
   IS             isrowa,isrowb,iscolb; 
-  Mat            B_seq,A_loc,C_seq;
+  Mat            B_seq,A_loc,C_seq; 
+  PetscBool      skipNumeric;    /* skip 1st call of MatMatMultNumeric_MPIAIJ_MPIAIJ_32() because it is done in symbolic phase */
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
