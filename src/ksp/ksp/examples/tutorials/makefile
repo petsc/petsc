@@ -1034,7 +1034,7 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg  -ksp_norm_type unpreconditioned > ex54.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -ksp_norm_type unpreconditioned > ex54.tmp 2>&1;	  \
          ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_0, diffs above \n========================================="; \
 	   ${RM} -f ex54.tmp
 
@@ -1044,7 +1044,7 @@ runex54_SA:
 	   ${RM} -f ex54_sa.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg  -ksp_norm_type unpreconditioned > ex55.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -ksp_norm_type unpreconditioned > ex55.tmp 2>&1;	  \
          ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_0, diffs above \n========================================="; \
 	   ${RM} -f ex55.tmp
 
