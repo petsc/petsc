@@ -31,6 +31,12 @@ class Configure(PETSc.package.NewPackage):
     self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
+  def setupHelp(self, help):
+    import nargs
+    PETSc.package.NewPackage.setupHelp(self, help)
+    help.addArgument('CUDA', '-with-cuda-arch=<arch>', nargs.Arg(None, None, 'Target architecture for nvcc, e.g. sm_13'))
+    return
+
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers',self)
