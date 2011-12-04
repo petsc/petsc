@@ -2047,6 +2047,16 @@ PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshSetCoordinateSection"
+PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshSetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateVec"
 PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
