@@ -1,5 +1,5 @@
 static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
-We solve the  Stokes problem in a rectangular\n\
+We solve the Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMMESH) to discretize it.\n\
 The command line options include:\n\
   -visc_model <name>, the viscosity model\n\n\n";

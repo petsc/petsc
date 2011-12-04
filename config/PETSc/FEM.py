@@ -837,5 +837,12 @@ class QuadratureGenerator(script.Script):
     self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
     return
 
+  def runTensorProduct(self, elements, numBlocks, operator, filename = ''):
+    # Nothing is finished here
+    import os
+    self.outputElementSource(self.getElementSource(elements), filename)
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
+    return
+
 if __name__ == '__main__':
   QuadratureGenerator().run()
