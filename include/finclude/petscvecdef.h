@@ -22,6 +22,10 @@
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'
+#define VECSTANDARD 'standard'
+#define VECSEQCUSP 'seqcusp'
+#define VECMPICUSP 'mpicusp'
+#define VECCUSP 'cusp'
 #define VECSHARED 'shared'
 #define VECESI 'esi'
 #define VECPETSCESI 'petscesi'
