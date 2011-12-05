@@ -109,7 +109,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt             am=A->rmap->n,pN=P->cmap->N,pm=P->rmap->n,pn=P->cmap->n;  
   PetscBT              lnkbt;
   MPI_Comm             comm=((PetscObject)A)->comm;
-  PetscMPIInt          size,rank,tag,*len_si,*len_s,*len_ri; 
+  PetscMPIInt          size,rank,tagi,tagj,*len_si,*len_s,*len_ri; 
   PetscInt             **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt             len,proc,*dnz,*onz,*owners;
   PetscInt             nzi,*bi,*bj; 
@@ -301,15 +301,13 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);      
 
   /* post the Irecv and Isend of coj */
-  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
-  ierr = PetscPostIrecvInt(comm,tag,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
-
+  ierr = PetscCommGetNewTag(comm,&tagj);CHKERRQ(ierr);
+  ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&swaits);CHKERRQ(ierr);
-
   for (proc=0, k=0; proc<size; proc++){  
     if (!len_s[proc]) continue;
     i = owners_co[proc];
-    ierr = MPI_Isend(coj+coi[i],len_s[proc],MPIU_INT,proc,tag,comm,swaits+k);CHKERRQ(ierr);
+    ierr = MPI_Isend(coj+coi[i],len_s[proc],MPIU_INT,proc,tagj,comm,swaits+k);CHKERRQ(ierr);
     k++;
   } 
 
@@ -323,8 +321,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   
   /* send and recv coi */
   /*-------------------*/  
-  ierr = PetscPostIrecvInt(comm,tag,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
-    
+  ierr = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
+  ierr = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
   ierr = PetscMalloc((len+1)*sizeof(PetscInt),&buf_s);CHKERRQ(ierr); 
   buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
   for (proc=0,k=0; proc<size; proc++){  
@@ -346,7 +344,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       buf_si[nrows+1] =prmap[i] -owners[proc]; /* local row index */
       nrows++;
     }
-    ierr = MPI_Isend(buf_si,len_si[proc],MPIU_INT,proc,tag,comm,swaits+k);CHKERRQ(ierr);
+    ierr = MPI_Isend(buf_si,len_si[proc],MPIU_INT,proc,tagi,comm,swaits+k);CHKERRQ(ierr);
     k++;
     buf_si += len_si[proc];
   } 
