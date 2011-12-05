@@ -792,10 +792,10 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
 	ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       } else {
-	Mat pmat;
+	Mat mat;
 	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(mat,&vecr,PETSC_NULL);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
@@ -814,10 +814,10 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
 	ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       } else {
-	Mat pmat;
+	Mat mat;
 	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+	ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(mat,PETSC_NULL,&vecl);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
