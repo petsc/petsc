@@ -564,7 +564,6 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     
   }
 
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"Convergence in %D iterations\n",iter);
    ierr = MatDestroy(&lclP->R); CHKERRQ(ierr);
 
    PetscFunctionReturn(0);
