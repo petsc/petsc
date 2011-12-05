@@ -2,6 +2,8 @@
 #define __PETSCSNESFAS_H
 #include "petscsnes.h"
 
+typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE } SNESFASType;
+
 extern PetscErrorCode SNESFASSetLevels(SNES, PetscInt, MPI_Comm *);
 extern PetscErrorCode SNESFASGetLevels(SNES, PetscInt *);
 
