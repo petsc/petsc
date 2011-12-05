@@ -48,4 +48,5 @@
 #define KSPPYTHON 'python'
 #define KSPBROYDEN 'broyden'
 #define KSPGCR 'gcr'
+#define KSPGCR 'specest'
 #endif

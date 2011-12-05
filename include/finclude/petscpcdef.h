@@ -60,10 +60,11 @@
 #define PCPFMG 'pfmg'
 #define PCSYSPFMG 'syspfmg'
 #define PCREDISTRIBUTE 'redistribute'
+#define PCSVD 'svd'
+#define PCGAMG 'gamg'
 #define PCSACUSP 'sacusp'
 #define PCSACUSPPOLY 'sacusppoly'
 #define PCBICGSTABCUSP 'bicgstabcusp'
-#define PCSVD 'svd'
 #define PCAINVCUSP 'ainvcusp'
 
 #endif

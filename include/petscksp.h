@@ -57,7 +57,6 @@ J*/
 #define KSPPYTHON     "python"
 #define KSPBROYDEN    "broyden"
 #define KSPGCR        "gcr"
-#define KSPNGMRES     "ngmres"
 #define KSPSPECEST    "specest"
 
 /* Logging support */
