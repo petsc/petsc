@@ -1165,7 +1165,6 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
   PetscReal      error;                /* L_2 error in the solution */
-  PetscBool      isNull;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
@@ -1186,8 +1185,6 @@ int main(int argc, char **argv)
   ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
-  if (!isNull) {SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");}
 
   ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
@@ -1229,8 +1226,11 @@ int main(int argc, char **argv)
     {
       Vec          b;
       MatStructure flag;
+      PetscBool    isNull;
 
       ierr = SNESDMMeshComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
+      if (!isNull) {SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");}
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESDMMeshComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
@@ -1257,6 +1257,7 @@ int main(int argc, char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
+  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (A != J) {
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }

@@ -275,6 +275,57 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
   ierr = PetscFree2(cone,coneO);CHKERRQ(ierr);
   sieve->symmetrize();
   mesh->stratify();
+  /* Create boundary marker */
+  {
+    const Obj<PETSC_MESH_TYPE::label_type>& boundary = mesh->createLabel("marker");
+
+    for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
+      for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+        if (info.xs == 0) {
+          PetscInt globalV = (k*N + j)*M + info.xs + numGlobalCells;
+
+          mesh->setValue(boundary, renumbering[globalV], 1);
+        }
+        if (info.gxs+info.gxm-1 == M-1) {
+          PetscInt globalV = (k*N + j)*M + info.gxs+info.gxm-1 + numGlobalCells;
+
+          mesh->setValue(boundary, renumbering[globalV], 1);
+        }
+      }
+    }
+    if (dim > 1) {
+      for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
+        for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+          if (info.ys == 0) {
+            PetscInt globalV = (k*N + info.ys)*M + i + numGlobalCells;
+
+            mesh->setValue(boundary, renumbering[globalV], 1);
+          }
+          if (info.gys+info.gym-1 == N-1) {
+            PetscInt globalV = (k*N + info.gys+info.gym-1)*M + i + numGlobalCells;
+
+            mesh->setValue(boundary, renumbering[globalV], 1);
+          }
+        }
+      }
+    }
+    if (dim > 2) {
+      for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+        for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+          if (info.zs == 0) {
+            PetscInt globalV = (info.zs*N + j)*M + i + numGlobalCells;
+
+            mesh->setValue(boundary, renumbering[globalV], 1);
+          }
+          if (info.gzs+info.gzm-1 == P-1) {
+            PetscInt globalV = ((info.gzs+info.gzm-1)*N + j)*M + i + numGlobalCells;
+
+            mesh->setValue(boundary, renumbering[globalV], 1);
+          }
+        }
+      }
+    }
+  }
   /* Create new DM */
   ierr = DMMeshCreate(((PetscObject) dm)->comm, dmNew);CHKERRQ(ierr);
   ierr = DMMeshSetMesh(*dmNew, mesh);CHKERRQ(ierr);

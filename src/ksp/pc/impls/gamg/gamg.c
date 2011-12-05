@@ -1,8 +1,8 @@
 /*
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
-#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include "private/matimpl.h"
+#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 
 #if defined PETSC_USE_LOG 
 PetscLogEvent gamg_setup_events[NUM_SET];
@@ -13,23 +13,6 @@ PetscLogEvent gamg_setup_events[NUM_SET];
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
 static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 #endif
-
-/* Private context for the GAMG preconditioner */
-typedef struct gamg_TAG {
-  PetscInt       m_dim;
-  PetscInt       m_Nlevels;
-  PetscInt       m_data_sz;
-  PetscInt       m_data_rows;
-  PetscInt       m_data_cols;
-  PetscInt       m_count;
-  PetscInt       m_method; /* 0: geomg; 1: plain agg 'pa'; 2: smoothed agg 'sa' */
-  PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
-  char           m_type[64];
-  PetscBool      m_avoid_repart;
-  PetscInt       m_min_eq_proc;
-  PetscReal      m_threshold;
-  PetscBool      m_verbose;
-} PC_GAMG;
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -145,32 +128,31 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_fine - matrix on this fine (k) level
    . a_ndata_rows - size of data to move (coarse grid)
    . a_ndata_cols - size of data to move (coarse grid)
+   . a_pc_gamg - parameters
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-1)
    . a_coarse_data - data that need to be moved
    . a_nactive_proc - number of active procs
    Output Parameter:
    . a_Amat_crs - coarse matrix that is created (k-1)
-   . a_avoid_repart - 
-   . a_min_eq_proc - goal for number of eqs. to have per proc. after proc reduction
 */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGPartitionLevel"
 PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
-                               PetscInt a_ndata_rows,
-                               PetscInt a_ndata_cols,
-			       PetscInt a_cbs,
-                               Mat *a_P_inout,
-                               PetscReal **a_coarse_data,
-                               PetscMPIInt *a_nactive_proc,
-                               Mat *a_Amat_crs,
-                               PetscBool a_avoid_repart,
-                               PetscInt a_min_eq_proc
-                               )
+                                    PetscInt a_ndata_rows,
+                                    PetscInt a_ndata_cols,
+                                    PetscInt a_cbs,
+                                    Mat *a_P_inout,
+                                    PetscReal **a_coarse_data,
+                                    PetscMPIInt *a_nactive_proc,
+                                    Mat *a_Amat_crs
+                                    )
 {
-  PC_MG            *mg = (PC_MG*)pc->data;
+  PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  const PetscBool  avoid_repart = pc_gamg->m_avoid_repart;
+  const PetscInt   min_eq_proc = pc_gamg->m_min_eq_proc, coarse_max = pc_gamg->m_coarse_eq_limit;
   PetscErrorCode   ierr;
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
@@ -196,7 +178,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
 
-  if( a_avoid_repart) { 
+  if( avoid_repart) { 
     *a_Amat_crs = Cmat; /* output */
   }
   else {
@@ -219,8 +201,8 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
 
     /* get number of PEs to make active, reduce */
     ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
-    new_npe = neq/a_min_eq_proc; /* hardwire min. number of eq/proc */
-    if( new_npe == 0 || neq < 2*a_min_eq_proc ) new_npe = 1; 
+    new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
+    if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
     else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
 
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
@@ -571,7 +553,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
 	      (int)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
-        level < (GAMG_MAXLEVELS-1) && (level==0 || M>2*pc_gamg->m_min_eq_proc); /* && (npe==1 || nactivepe>1); */
+        level < (GAMG_MAXLEVELS-1) && (level==0 || M>pc_gamg->m_coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
         level++ ){
     level1 = level + 1;
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
@@ -580,9 +562,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
-    ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_method,
-                              level, pc_gamg->m_threshold, &bs, &Parr[level1], &coarse_data, &isOK, 
-                              &emaxs[level], pc_gamg->m_verbose );
+    ierr = createProlongation(Aarr[level], data, level, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level], pc_gamg );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
@@ -594,8 +574,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
       ierr = PCGAMGPartitionLevel(a_pc, Aarr[level], (pc_gamg->m_method != 0) ? bs : 1, pc_gamg->m_data_cols, bs,
-                             &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1], 
-                             pc_gamg->m_avoid_repart, pc_gamg->m_min_eq_proc );
+                             &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1] );
       CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
       ierr = PetscLogEventEnd(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
@@ -863,6 +842,50 @@ PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 EXTERN_C_END
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetCoarseEqLim"
+/*@
+   PCGAMGSetCoarseEqLim - Set max number of equations on coarse grids.
+
+ Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_gamg_coarse_eq_limit
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: ()
+ @*/
+PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetCoarseEqLim_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetCoarseEqLim_GAMG"
+PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
+{
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  
+  PetscFunctionBegin;
+  if(n>0) pc_gamg->m_coarse_eq_limit = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCGAMGAvoidRepartitioning"
 /*@
    PCGAMGAvoidRepartitioning - Do not repartition the coarse grids
@@ -1052,6 +1075,16 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            &pc_gamg->m_min_eq_proc, 
                            &flag ); 
     CHKERRQ(ierr);
+  
+    /* -pc_gamg_coarse_eq_limit */
+    pc_gamg->m_coarse_eq_limit = 1500;
+    ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit",
+                           "Limit on number of equations for the coarse grid",
+                           "PCGAMGSetCoarseEqLim",
+                           pc_gamg->m_coarse_eq_limit,
+                           &pc_gamg->m_coarse_eq_limit, 
+                           &flag );
+    CHKERRQ(ierr);
 
     /* -pc_gamg_threshold */
     pc_gamg->m_threshold = 0.05;
@@ -1138,6 +1171,12 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCGAMGSetProcEqLim_C",
 					    "PCGAMGSetProcEqLim_GAMG",
 					    PCGAMGSetProcEqLim_GAMG);
+  CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
+					    "PCGAMGSetCoarseEqLim_C",
+					    "PCGAMGSetCoarseEqLim_GAMG",
+					    PCGAMGSetCoarseEqLim_GAMG);
   CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
