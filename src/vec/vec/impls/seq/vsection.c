@@ -399,6 +399,58 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionView_ASCII"
+PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
+{
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (s->atlasLayout.numDof != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);}
+  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+    if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
+      PetscInt b;
+
+      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d constrained", p, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      for(b = 0; b < s->bc->atlasDof[p]; ++b) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d\n", p, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionView"
+PetscErrorCode  PetscSectionView(PetscSection s, PetscViewer viewer)
+{
+  PetscBool      isascii;
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  if (isascii) {
+    if (s->numFields) {
+      ierr = PetscViewerASCIIPrintf(viewer, "PetscSection with %d fields\n", s->numFields);CHKERRQ(ierr);
+      for(f = 0; f < s->numFields; ++f) {
+        ierr = PetscViewerASCIIPrintf(viewer, "  field %d with %d components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
+        ierr = PetscSectionView_ASCII(s->field[f], viewer);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "PetscSection\n");CHKERRQ(ierr);
+      ierr = PetscSectionView_ASCII(s, viewer);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported by this section object", ((PetscObject) viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
 
