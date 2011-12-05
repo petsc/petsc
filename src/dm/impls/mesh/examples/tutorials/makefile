@@ -33,6 +33,10 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex2f: ex2f.o   chkopts
+	-${CLINKER} -o ex2f ex2f.o  ${PETSC_DM_LIB}
+	${RM} -f ex2.o
+
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o

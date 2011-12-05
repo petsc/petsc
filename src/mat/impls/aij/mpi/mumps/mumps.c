@@ -693,7 +693,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
  
   if (lu->size > 1){
     /* distributed solution */
-    lu->id.ICNTL(21) = 1; 
     if (!lu->nSolve){
       /* Create x_seq=sol_loc for repeated use */ 
       PetscInt    lsol_loc;
@@ -747,12 +746,10 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     }
   } 
   
-  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&icntl,&flg);CHKERRQ(ierr);
-  if (flg) mumps->id.ICNTL(8) = icntl;
-
+  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&mumps->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",mumps->id.ICNTL(10),&mumps->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",mumps->id.ICNTL(11),&mumps->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3)","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),PETSC_NULL);CHKERRQ(ierr);
@@ -808,14 +805,14 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   mumps->scat_sol     = PETSC_NULL;
   mumps->nSolve       = 0;
 
-  /* set PETSc-MUMPS default options */
+  /* set PETSc-MUMPS default options - override MUMPS default */
   mumps->id.ICNTL(3) = 0;
   mumps->id.ICNTL(4) = 0;
-
   if (mumps->size == 1){
     mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {
     mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
+    mumps->id.ICNTL(21) = 1;   /* distributed solution */
   }
   PetscFunctionReturn(0);
 }  

@@ -1563,7 +1563,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
         }
       }
     } else {
-      SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented");
+      SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented for 'geo' AMG");
     }
     { /* create next coords - output */
       PetscReal *crs_crds;
@@ -1661,7 +1661,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       Mat tMat; 
       Vec diag;    
       KSP eksp; 
-      Vec bb, xx; 
+      Vec bb, xx;  
       PC pc;
       
 #if defined PETSC_USE_LOG
