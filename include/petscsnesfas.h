@@ -2,7 +2,23 @@
 #define __PETSCSNESFAS_H
 #include "petscsnes.h"
 
+
+/*E
+    SNESFASType - Determines the type of multigrid method that is run.
+
+   Level: beginner
+
+   Values:
++  SNES_FAS_MULTIPLICATIVE (default) - traditional V or W cycle as determined by SNESFASSetCycles()
+-  SNES_FAS_ADDITIVE - the additive multigrid preconditioner where all levels are
+
+.seealso: PCMGSetType(), PCMGType
+
+E*/
 typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE } SNESFASType;
+extern const char * SNESFASTypes[];
+
+extern PetscErrorCode SNESFASSetType(SNES, SNESFASType);
 
 extern PetscErrorCode SNESFASSetLevels(SNES, PetscInt, MPI_Comm *);
 extern PetscErrorCode SNESFASGetLevels(SNES, PetscInt *);

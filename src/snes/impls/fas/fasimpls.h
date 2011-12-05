@@ -3,6 +3,7 @@
 
 #include <private/snesimpl.h>
 #include <private/dmimpl.h>
+#include <petscsnesfas.h>
 
 typedef struct {
 
@@ -26,6 +27,7 @@ typedef struct {
 
   /* method parameters */
   PetscInt       n_cycles;                     /* number of cycles on this level */
+  SNESFASType    fastype;                      /* FAS type */
   PetscInt       max_up_it;                    /* number of pre-smooths */
   PetscInt       max_down_it;                  /* number of post-smooth cycles */
   PetscBool      usedmfornumberoflevels;       /* uses a DM to generate a number of the levels */
