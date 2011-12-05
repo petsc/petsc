@@ -13,7 +13,7 @@ TaoSolver: 3 MPI processes
   KSP Solver:   3 MPI processes  
     type: gmres
   total KSP iterations: 36
-  Active Set subset type: subvec
+  Active Set subset type: mask
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=1e-12,   gttol=0
   Residual in Function/Gradient:=7.27737e-08

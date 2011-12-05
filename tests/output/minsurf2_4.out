@@ -12,6 +12,7 @@ TaoSolver: 2 MPI processes
       Rejected matrix updates: 0
   KSP Solver:   2 MPI processes  
     type: stcg
+  total KSP iterations: 87
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=7.88627e-06

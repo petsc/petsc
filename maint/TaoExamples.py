@@ -222,7 +222,7 @@ class TaoExamples(ExampleList):
         self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm"],name="plate2_4",section="bound"))
         self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm","matrixfree"],name="plate2_5",section="bound"))
         self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","single","c","tron","dm","matrixfree"],name="plate2_6",section="bound"))
-        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree",method="gpcg",tags=["bound","plate","multiprocessor","c","gpcg","dm","matrixfree"],name="plate2_7",section="bound"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -pc_type none",method="gpcg",tags=["bound","plate","multiprocessor","c","gpcg","dm","matrixfree"],name="plate2_7",section="bound"))
         self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask",method="gpcg",tags=["bound","plate","multiprocessor","c","gpcg","dm","mask"],name="plate2_8",section="bound"))
         self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none",method="tron",tags=["bound","plate","single","c","tron","dm","matrixfree"],name="plate2_9",section="bound"))
         self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask -mask",method="tron",tags=["bound","plate","single","c","tron","dm","mask"],name="plate2_10",section="bound"))
@@ -276,6 +276,6 @@ class TaoExamples(ExampleList):
 
         # PDE-constrained
         self.add(Example(example="elliptic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","elliptic","single","c"],name="elliptic",section="pde_constrained"))
-        self.add(Example(example="elliptic",nprocs=2,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","elliptic","multiprocessor","c"],name="elliptic2",section="pde_constrained" ))
-        self.add(Example(example="parabolic",nprocs=1,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","parabolic","single","c"],name="parabolic",section="pde_constrained"))
-        self.add(Example(example="hyperbolic",nprocs=1,options="-tao_cmonitor -tao_max_it 10",method="lcl",tags=["pde","hyperbolic","single","c"],name="hyperbolic",section="pde_constrained"))
+        self.add(Example(example="elliptic",nprocs=2,options="-tao_cmonitor -tao_max_it 10 -use_ptap -use_lrc",method="lcl",tags=["pde","elliptic","multiprocessor","c"],name="elliptic2",section="pde_constrained" ))
+        self.add(Example(example="parabolic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","parabolic","single","c"],name="parabolic",section="pde_constrained"))
+        self.add(Example(example="hyperbolic",nprocs=1,options="-tao_cmonitor -tao_max_funcs 10",method="lcl",tags=["pde","hyperbolic","single","c"],name="hyperbolic",section="pde_constrained"))
