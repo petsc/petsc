@@ -396,12 +396,188 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComputeVertexFunction"
+/*
+  DMComputeVertexFunction - This calls a function with the coordinates of each vertex, and stores the result in a vector.
+
+  Input Parameters:
++ dm - The DM
+. mode - The insertion mode for values
+. numComp - The number of components (functions)
+- func - The coordinate functions to evaluate
+
+  Output Parameter:
+. X - vector
+*/
+PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), AppCtx *user)
+{
+  Vec            localX, coordinates;
+  PetscSection   section, cSection;
+  PetscInt       vStart, vEnd;
+  PetscScalar   *values;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMMeshGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+  for(PetscInt v = vStart; v < vEnd; ++v) {
+    PetscScalar *coords;
+
+    ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
+    for(PetscInt c = 0; c < numComp; ++c) {
+      values[c] = (*funcs[c])(coords);
+    }
+    ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
+  }
+  // Temporary bullshit
+  {
+    ALE::Obj<PETSC_MESH_TYPE> mesh;
+    PetscScalar *coordsE;
+    PetscInt     eStart = 0, eEnd = 0, dim;
+
+    ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
+    if (mesh->depth() > 1) {ierr = DMMeshGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
+    ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
+
+    for(PetscInt e = eStart; e < eEnd; ++e) {
+      mesh->getSieve()->cone(e, pV);
+      const PetscInt *points = pV.getPoints();
+      PetscScalar    *coordsA, *coordsB;
+
+      if (pV.getSize() != 2) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", pV.getSize(), e);}
+      ierr = VecGetValuesSection(coordinates, cSection, points[0], &coordsA);CHKERRQ(ierr);
+      ierr = VecGetValuesSection(coordinates, cSection, points[1], &coordsB);CHKERRQ(ierr);
+      for(PetscInt d = 0; d < dim; ++d) {
+        coordsE[d] = 0.5*(coordsA[d] + coordsB[d]);
+      }
+      for(PetscInt c = 0; c < numComp; ++c) {
+        values[c] = (*funcs[c])(coordsE);
+      }
+      ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
+      pV.clear();
+    }
+    ierr = PetscFree(coordsE);CHKERRQ(ierr);
+  }
+
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
+  if (user->showInitial) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
+    for(int p = 0; p < user->numProcs; ++p) {
+      if (p == user->rank) {ierr = VecView(localX, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreatePressureNullSpace"
+PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
+  Vec            pressure, localP;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetGlobalVector(dm, &pressure);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localP);CHKERRQ(ierr);
+  ierr = VecSet(pressure, 0.0);CHKERRQ(ierr);
+  // Put a constant in for all pressures
+  // Could change this to project the constant function onto the pressure space (when that is finished)
+  {
+    PetscSection section;
+    PetscInt     pStart, pEnd, p;
+    PetscScalar *a;
+
+    ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt fDim, off, d;
+
+      ierr = PetscSectionGetFieldDof(section, p, 1, &fDim);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldOffset(section, p, 1, &off);CHKERRQ(ierr);
+      for(d = 0; d < fDim; ++d) {
+        a[off+d] = 1.0;
+      }
+    }
+    ierr = VecRestoreArray(localP, &a);CHKERRQ(ierr);
+  }
+  ierr = DMLocalToGlobalBegin(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localP);CHKERRQ(ierr);
+  if (user->debug) {
+    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
+    ierr = VecView(pressure, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &pressure, nullSpace);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &pressure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
+/*
+  FormFunctionLocal - Form the local residual F from the local input X
+
+  Input Parameters:
++ dm - The mesh
+. X  - Local input vector
+- user - The user context
+
+  Output Parameter:
+. F  - Local output vector
+
+  Note:
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+.seealso: FormJacobianLocal()
+*/
+PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
+{
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobianLocal"
+/*
+  FormJacobianLocal - Form the local portion of the Jacobian matrix J from the local input X.
+
+  Input Parameters:
++ dm - The mesh
+. X  - Local input vector
+- user - The user context
+
+  Output Parameter:
+. Jac  - Jacobian matrix
+
+  Note:
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+.seealso: FormFunctionLocal()
+*/
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
+{
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;                 /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
+  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
@@ -421,7 +597,28 @@ int main(int argc, char **argv)
   ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
   ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
+  ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
+  ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, SNESDMMeshComputeFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+  ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, SNESDMMeshComputeFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
+
+  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+  if (A != J) {
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
