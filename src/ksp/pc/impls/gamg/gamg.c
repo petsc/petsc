@@ -1,8 +1,8 @@
 /*
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
-#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include "private/matimpl.h"
+#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 
 #if defined PETSC_USE_LOG 
 PetscLogEvent gamg_setup_events[NUM_SET];
@@ -13,23 +13,6 @@ PetscLogEvent gamg_setup_events[NUM_SET];
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
 static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 #endif
-
-/* Private context for the GAMG preconditioner */
-typedef struct gamg_TAG {
-  PetscInt       m_dim;
-  PetscInt       m_Nlevels;
-  PetscInt       m_data_sz;
-  PetscInt       m_data_rows;
-  PetscInt       m_data_cols;
-  PetscInt       m_count;
-  PetscInt       m_method; /* 0: geomg; 1: plain agg 'pa'; 2: smoothed agg 'sa' */
-  PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
-  char           m_type[64];
-  PetscBool      m_avoid_repart;
-  PetscInt       m_min_eq_proc;
-  PetscReal      m_threshold;
-  PetscBool      m_verbose;
-} PC_GAMG;
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -57,7 +40,9 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
  
   pc_gamg->m_data_rows = 1;
-  if(a_coords==0 && pc_gamg->m_method==0) pc_gamg->m_method = 2; /* use SA if no coords */
+  if(a_coords==0 && pc_gamg->m_method==0) {
+    SETERRQ(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  }
   if( pc_gamg->m_method==0 ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
   else{ /* SA: null space vectors */
     if(a_coords != 0 && bs==1 ) pc_gamg->m_data_cols = 1; /* scalar w/ coords and SA (not needed) */
@@ -143,32 +128,31 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_fine - matrix on this fine (k) level
    . a_ndata_rows - size of data to move (coarse grid)
    . a_ndata_cols - size of data to move (coarse grid)
+   . a_pc_gamg - parameters
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-1)
    . a_coarse_data - data that need to be moved
    . a_nactive_proc - number of active procs
    Output Parameter:
    . a_Amat_crs - coarse matrix that is created (k-1)
-   . a_avoid_repart - 
-   . a_min_eq_proc - goal for number of eqs. to have per proc. after proc reduction
 */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGPartitionLevel"
 PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
-                               PetscInt a_ndata_rows,
-                               PetscInt a_ndata_cols,
-			       PetscInt a_cbs,
-                               Mat *a_P_inout,
-                               PetscReal **a_coarse_data,
-                               PetscMPIInt *a_nactive_proc,
-                               Mat *a_Amat_crs,
-                               PetscBool a_avoid_repart,
-                               PetscInt a_min_eq_proc
-                               )
+                                    PetscInt a_ndata_rows,
+                                    PetscInt a_ndata_cols,
+                                    PetscInt a_cbs,
+                                    Mat *a_P_inout,
+                                    PetscReal **a_coarse_data,
+                                    PetscMPIInt *a_nactive_proc,
+                                    Mat *a_Amat_crs
+                                    )
 {
-  PC_MG            *mg = (PC_MG*)pc->data;
+  PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  const PetscBool  avoid_repart = pc_gamg->m_avoid_repart;
+  const PetscInt   min_eq_proc = pc_gamg->m_min_eq_proc, coarse_max = pc_gamg->m_coarse_eq_limit;
   PetscErrorCode   ierr;
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
@@ -179,6 +163,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
   PetscFunctionBegin;  
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
+
   /* RAP */
 #ifdef USE_R
   /* make R wih brute force for now */
@@ -193,7 +178,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
 
-  if( a_avoid_repart) { 
+  if( avoid_repart) { 
     *a_Amat_crs = Cmat; /* output */
   }
   else {
@@ -216,8 +201,8 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
 
     /* get number of PEs to make active, reduce */
     ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
-    new_npe = neq/a_min_eq_proc; /* hardwire min. number of eq/proc */
-    if( new_npe == 0 || neq < 2*a_min_eq_proc ) new_npe = 1; 
+    new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
+    if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
     else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
 
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
@@ -527,7 +512,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
     }
 
-#define PRINT_MATS !PETSC_TRUE
+#define PRINT_MATS PETSC_FALSE
     /* plot levels - A */
     if( PRINT_MATS ) {
       for (lidx=0, level=pc_gamg->m_Nlevels-1; level>0 ; level--,lidx++){
@@ -547,6 +532,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
     PetscFunctionReturn(0);
   }
+
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   /* GAMG requires input of fine-grid matrix. It determines nlevels. */
@@ -567,7 +553,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
 	      (int)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
-        level < (GAMG_MAXLEVELS-1) && (level==0 || M>2*pc_gamg->m_min_eq_proc); /* && (npe==1 || nactivepe>1); */
+        level < (GAMG_MAXLEVELS-1) && (level==0 || M>pc_gamg->m_coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
         level++ ){
     level1 = level + 1;
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
@@ -576,9 +562,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
-    ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_method,
-                              level, pc_gamg->m_threshold, &bs, &Parr[level1], &coarse_data, &isOK, 
-                              &emaxs[level], pc_gamg->m_verbose );
+    ierr = createProlongation(Aarr[level], data, level, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level], pc_gamg );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
@@ -590,8 +574,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
       ierr = PCGAMGPartitionLevel(a_pc, Aarr[level], (pc_gamg->m_method != 0) ? bs : 1, pc_gamg->m_data_cols, bs,
-                             &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1], 
-                             pc_gamg->m_avoid_repart, pc_gamg->m_min_eq_proc );
+                             &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1] );
       CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
       ierr = PetscLogEventEnd(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
@@ -649,57 +632,75 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
         lidx <= fine_level;
         lidx++, level--) {
     PetscReal emax, emin;
-    KSP smoother; PC subpc;
+    KSP smoother; PC subpc; 
+    PetscBool isCheb;
+    /* set defaults */
     ierr = PCMGGetSmoother( a_pc, lidx, &smoother ); CHKERRQ(ierr);
     ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
-    if( emaxs[level] > 0.0 ) emax=emaxs[level];
-    else{ /* eigen estimate 'emax' */
-      KSP eksp; Mat Lmat = Aarr[level];
-      Vec bb, xx; PC pc;
-
-      ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
-      ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
-      {
-	PetscRandom    rctx;
-	ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
-	ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-	ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
-	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
-      }
-      ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
-      ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr);
-      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
-      ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
-      ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
-      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr); /* should be same as eigen estimates op. */
-      ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
-      CHKERRQ(ierr);
-      ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
- 
-      ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
-      ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
-      ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-      ierr = VecDestroy( &xx );       CHKERRQ(ierr);
-      ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
-      ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
-      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
-    }
-    { 
-      PetscInt N1, N0, tt;
-      ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
-      ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
-      emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
-      emax *= 1.05;
-    }
-
-    ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );
-    ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
-    /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
     ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+    /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+    /* overide defaults with input parameters */
+    ierr = KSPSetFromOptions( smoother ); CHKERRQ(ierr);
+
+    ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
+    /* do my own cheby */
+    ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &isCheb ); CHKERRQ(ierr);
+    if( isCheb ) {
+      ierr = PetscTypeCompare( (PetscObject)subpc, PETSC_GAMG_SMOOTHER, &isCheb ); CHKERRQ(ierr);
+      if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
+      else{ /* eigen estimate 'emax' */
+        KSP eksp; Mat Lmat = Aarr[level];
+        Vec bb, xx; PC pc;
+        const PCType type;
+        
+        ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
+        ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
+        ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
+        {
+          PetscRandom    rctx;
+          ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
+          ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+          ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
+          ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
+        }
+        ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+        ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr);
+        ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
+        CHKERRQ(ierr);
+        ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+        
+        ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
+        ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
+        
+        ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
+        ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
+        ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
+        ierr = PCSetType( pc, type ); CHKERRQ(ierr); /* should be same as eigen estimates op. */
+        
+        ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+        ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
+        ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+        ierr = VecDestroy( &xx );       CHKERRQ(ierr);
+        ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
+        ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
+
+        if (pc_gamg->m_verbose) {
+          PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",
+                      __FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+        }
+      }
+      { 
+        PetscInt N1, N0, tt;
+        ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
+        ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
+        /* heuristic - is this crap? */
+        emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
+        emax *= 1.05;
+      }
+      ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
+    }
   }
   {
     /* coarse grid */
@@ -836,6 +837,50 @@ PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
   
   PetscFunctionBegin;
   if(n>0) pc_gamg->m_min_eq_proc = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetCoarseEqLim"
+/*@
+   PCGAMGSetCoarseEqLim - Set max number of equations on coarse grids.
+
+ Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_gamg_coarse_eq_limit
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: ()
+ @*/
+PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetCoarseEqLim_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetCoarseEqLim_GAMG"
+PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
+{
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  
+  PetscFunctionBegin;
+  if(n>0) pc_gamg->m_coarse_eq_limit = n;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1003,11 +1048,14 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
 
     /* -pc_gamg_verbose */
     ierr = PetscOptionsBool("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none",pc_gamg->m_verbose,&pc_gamg->m_verbose,PETSC_NULL);CHKERRQ(ierr);
-
-    if (flag && strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
-    else if (flag && strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
-    else pc_gamg->m_method = 0;
-
+    
+    pc_gamg->m_method = 1; /* default to plane aggregation */
+    if (flag ) {
+      if( strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
+      else if( strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
+      else if( strcmp(pc_gamg->m_type,"geo") == 0) pc_gamg->m_method = 0;
+      else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Invalid gamg type: %s",pc_gamg->m_type); 
+    }
     /* -pc_gamg_avoid_repartitioning */
     pc_gamg->m_avoid_repart = PETSC_FALSE;
     ierr = PetscOptionsBool("-pc_gamg_avoid_repartitioning",
@@ -1026,6 +1074,16 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            pc_gamg->m_min_eq_proc,
                            &pc_gamg->m_min_eq_proc, 
                            &flag ); 
+    CHKERRQ(ierr);
+  
+    /* -pc_gamg_coarse_eq_limit */
+    pc_gamg->m_coarse_eq_limit = 1500;
+    ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit",
+                           "Limit on number of equations for the coarse grid",
+                           "PCGAMGSetCoarseEqLim",
+                           pc_gamg->m_coarse_eq_limit,
+                           &pc_gamg->m_coarse_eq_limit, 
+                           &flag );
     CHKERRQ(ierr);
 
     /* -pc_gamg_threshold */
@@ -1113,6 +1171,12 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCGAMGSetProcEqLim_C",
 					    "PCGAMGSetProcEqLim_GAMG",
 					    PCGAMGSetProcEqLim_GAMG);
+  CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
+					    "PCGAMGSetCoarseEqLim_C",
+					    "PCGAMGSetCoarseEqLim_GAMG",
+					    PCGAMGSetCoarseEqLim_GAMG);
   CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,

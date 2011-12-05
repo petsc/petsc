@@ -488,6 +488,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
   ierr = PetscLogFlops((11.0 + 5)*ym*xm);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
+    ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

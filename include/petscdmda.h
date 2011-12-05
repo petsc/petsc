@@ -35,13 +35,17 @@ M*/
 M*/
 
 /*E
-    DMDABoundaryType - Describes the choice for fill of ghost cells on domain boundaries.
+    DMDABoundaryType - Describes the choice for fill of ghost cells on physical domain boundaries.
 
    Level: beginner
 
    A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes 
-   exist but aren't filled), DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
+   exist but aren't filled, you can put values into them and then apply a stencil that uses those ghost locations),
+   DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
    (ghost nodes filled by the opposite edge of the domain).
+
+   Note: This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between 
+     processes, that width is always determined by the stencil width, see DMDASetStencilWidth().
 
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/

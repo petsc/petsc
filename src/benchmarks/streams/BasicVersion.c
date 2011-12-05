@@ -20,6 +20,7 @@ struct timezone { int	tz_minuteswest;
 # include <stdio.h>
 # include <math.h>
 # include <limits.h>
+# include <float.h>
 # include <sys/time.h>
 
 /*
@@ -98,7 +99,6 @@ extern double second();
 int main(int argc,char **args)
    {
    int          quantum, checktick();
-   int          BytesPerWord;
    register int j, k;
    double       scalar, t, times[4][NTIMES],irate[4],rate[4];
    int          rank,size;

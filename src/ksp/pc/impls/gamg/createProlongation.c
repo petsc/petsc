@@ -1217,11 +1217,10 @@ int compare (const void *a, const void *b)
   Input Parameter:
    . a_Amat - matrix on this fine level
    . a_data[nloc*a_data_sz(in)]
-   . a_dim - dimention
-   . a_data_cols - number of colums in data (rows is infered from 
-   . a_method - flag for: smoothed aggregation (2), plain agg (1) or geometric (0)
    . a_level - 0 for finest, +L-1 for coarsest
-   . a_threshold - Relative threshold to use for dropping edges in aggregation graph
+   . a_pc_gamg - parameters (data_cols: number of colums in data)
+       - method - flag for: smoothed aggregation (2), plain agg (1) or geometric (0)
+       - threshold - Relative threshold to use for dropping edges in aggregation graph
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
   Output Parameter:
@@ -1234,28 +1233,26 @@ int compare (const void *a, const void *b)
 #define __FUNCT__ "createProlongation"
 PetscErrorCode createProlongation( const Mat a_Amat,
                                    const PetscReal a_data[],
-                                   const PetscInt a_dim,
-                                   const PetscInt a_data_cols,
-                                   const PetscInt a_method,
                                    const PetscInt a_level,
-                                   const PetscReal a_threshold,
 				   PetscInt *a_bs,
                                    Mat *a_P_out,
                                    PetscReal **a_data_out,
                                    PetscBool *a_isOK,
                                    PetscReal *a_emax,
-                                   const PetscBool a_verbose
+                                   const PC_GAMG *a_pc_gamg
                                    )
 {
+  const PetscBool verbose = a_pc_gamg->m_verbose;
+  const PetscInt  dim = a_pc_gamg->m_dim, data_cols = a_pc_gamg->m_data_cols, method = a_pc_gamg->m_method;
+  const PetscReal vfilter = a_pc_gamg->m_threshold;
   PetscErrorCode ierr;
   PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1;
   Mat            Prol, Gmat, AuxMat;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
   IS             rankIS, permIS, llist_1, selected_1, selected_2;
-  const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_method!=0 ? a_data_cols : bs_in);
+  const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(method!=0 ? data_cols : bs_in);
   const PetscScalar *vals;
-  PetscReal       vfilter;
   PetscInt       *d_nnz;
 
   PetscFunctionBegin;
@@ -1314,10 +1311,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_FILTER],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-  /* filter Gmat */
-  vfilter = a_threshold;
-  /* for(jj=0;jj<a_level;jj++) vfilter *= .01; very fast decay for SA */
-
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
   {
     Mat Gmat2; 
@@ -1340,7 +1333,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-    if( a_verbose ) {
+    if( verbose ) {
       PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
     }
   }
@@ -1349,7 +1342,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_SQR],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* square matrix - SA */  
-  if( a_method != 0 ){
+  if( method != 0 ){
     Mat Gmat2;
     if( npe==1 ){
       ierr = MatMatTransposeMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
@@ -1459,9 +1452,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-  ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, (PetscBool)(a_method != 0), &selected_1, &llist_1 );
+  ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, (PetscBool)(method != 0), &selected_1, &llist_1 );
   CHKERRQ(ierr);
-  if( a_method != 0 ) {
+  if( method != 0 ) {
     ierr = MatDestroy( &AuxMat );  CHKERRQ(ierr); 
   }
 #if defined PETSC_USE_LOG
@@ -1483,7 +1476,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MatCreateMPIAIJ(wcomm, 
                          nloc*bs_in, nLocalSelected*col_bs,
                          PETSC_DETERMINE, PETSC_DETERMINE,
-                         a_data_cols, PETSC_NULL, a_data_cols, PETSC_NULL,
+                         data_cols, PETSC_NULL, data_cols, PETSC_NULL,
                          &Prol );
   CHKERRQ(ierr);
   
@@ -1492,7 +1485,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   if( jj==0 ) {
     assert(0);
     *a_isOK = PETSC_FALSE;
-    if( a_verbose ) {
+    if( verbose ) {
       PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
     }
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
@@ -1504,13 +1497,13 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
 
   /* switch for SA or GAMG */
-  if( a_method == 0 ) {
+  if( method == 0 ) {
     PetscReal *coords; 
     PetscInt nnodes;
     PetscInt  *crsGID;
     Mat        Gmat2;
 
-    assert(a_dim==a_data_cols); 
+    assert(dim==data_cols); 
     /* grow ghost data for better coarse grid cover of fine grid */
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
@@ -1524,7 +1517,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #endif
     /* create global vector of coorindates in 'coords' */
     if (npe > 1) {
-      ierr = getDataWithGhosts( Gmat2, a_dim, a_data, &nnodes, &coords );
+      ierr = getDataWithGhosts( Gmat2, dim, a_data, &nnodes, &coords );
       CHKERRQ(ierr);
     }
     else {
@@ -1534,7 +1527,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatDestroy( &Gmat2 );  CHKERRQ(ierr);
 
     /* triangulate */
-    if( a_dim == 2 ) {
+    if( dim == 2 ) {
       PetscReal metric=0.0;
 #if defined PETSC_USE_LOG
       ierr = PetscLogEventBegin(gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
@@ -1552,27 +1545,27 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       
       if( metric > 1. ) { /* needs to be globalized - should not happen */
         *a_isOK = PETSC_FALSE;
-        if( a_verbose ) {
+        if( verbose ) {
           PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
         }
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       }
       else if( metric > .0 ) {
-        if( a_verbose ) {
+        if( verbose ) {
           PetscPrintf(PETSC_COMM_SELF,"[%d]%s metric for coarse grid = %e\n",mype,__FUNCT__,metric);
         }
       }
     } else {
-      SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented");
+      SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented for 'geo' AMG");
     }
     { /* create next coords - output */
       PetscReal *crs_crds;
-      ierr = PetscMalloc( a_dim*nLocalSelected*sizeof(PetscReal), &crs_crds ); 
+      ierr = PetscMalloc( dim*nLocalSelected*sizeof(PetscReal), &crs_crds ); 
       CHKERRQ(ierr);
       ierr = ISGetIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
       for(kk=0;kk<nLocalSelected;kk++){/* grab local select nodes to promote - output */
         PetscInt lid = selected_idx[kk];
-        for(jj=0;jj<a_dim;jj++) crs_crds[jj*nLocalSelected + kk] = a_data[jj*nloc + lid];
+        for(jj=0;jj<dim;jj++) crs_crds[jj*nLocalSelected + kk] = a_data[jj*nloc + lid];
       }
       ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
       *a_data_out = crs_crds; /* out */
@@ -1594,7 +1587,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       PetscReal *tmp_gdata,*tmp_ldata,*tp2;
 
       ierr = PetscMalloc( nloc*sizeof(PetscReal), &tmp_ldata ); CHKERRQ(ierr);
-      for( jj = 0 ; jj < a_data_cols ; jj++ ){
+      for( jj = 0 ; jj < data_cols ; jj++ ){
         for( kk = 0 ; kk < bs_in ; kk++) {
           PetscInt ii,nnodes;
 	  const PetscReal *tp = a_data + jj*bs_in*nloc + kk;
@@ -1604,7 +1597,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 	  ierr = getDataWithGhosts( Gmat, 1, tmp_ldata, &nnodes, &tmp_gdata );
 	  CHKERRQ(ierr);
 	  if(jj==0 && kk==0) { /* now I know how many todal nodes - allocate */
-	    ierr = PetscMalloc( nnodes*bs_in*a_data_cols*sizeof(PetscReal), &data_w_ghost ); CHKERRQ(ierr);
+	    ierr = PetscMalloc( nnodes*bs_in*data_cols*sizeof(PetscReal), &data_w_ghost ); CHKERRQ(ierr);
 	    nbnodes = bs_in*nnodes;
 	  }
 	  tp2 = data_w_ghost + jj*bs_in*nnodes + kk;
@@ -1649,7 +1642,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscLogEventEnd(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-    ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,
+    ierr = formProl0(selected_1,llist_1,bs_in,data_cols,myCrs0,nbnodes,
 		     data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
 
@@ -1657,11 +1650,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
  
     /* smooth P0 */
-    if( a_method == 2 ) {
+    if( method == 2 ) {
       Mat tMat; 
       Vec diag;    
       KSP eksp; 
-      Vec bb, xx; 
+      Vec bb, xx;  
       PC pc;
       
 #if defined PETSC_USE_LOG
@@ -1691,7 +1684,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-      if( a_verbose ) {
+      if( verbose ) {
         PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
       }
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
@@ -1717,7 +1710,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     else {
       *a_emax = -1.0; /* no estimate */
     }
-    *a_bs = a_data_cols;
+    *a_bs = data_cols;
   } /* aggregation method */
   *a_P_out = Prol;  /* out */
 

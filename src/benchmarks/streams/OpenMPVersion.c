@@ -43,6 +43,7 @@
 # include <stdio.h>
 # include <math.h>
 # include <limits.h>
+# include <float.h>
 # include <sys/time.h>
 
 /* INSTRUCTIONS:

@@ -693,7 +693,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
  
   if (lu->size > 1){
     /* distributed solution */
-    lu->id.ICNTL(21) = 1; 
     if (!lu->nSolve){
       /* Create x_seq=sol_loc for repeated use */ 
       PetscInt    lsol_loc;
@@ -712,73 +711,70 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
+/* Sets MUMPS options from the options database */
 #undef __FUNCT__
-#define __FUNCT__ "PetscSetMUMPSOptions"
-PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
+#define __FUNCT__ "PetscSetMUMPSFromOptions"
+PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 {
-  Mat_MUMPS        *lu = (Mat_MUMPS*)F->spptr;
+  Mat_MUMPS        *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode   ierr;
   PetscInt         icntl;
   PetscBool        flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
-  if (lu->size == 1){
-    lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
-  } else {
-    lu->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
-  }
+  ierr = PetscOptionsInt("-mat_mumps_icntl_1","ICNTL(1): output stream for error messages","None",mumps->id.ICNTL(1),&icntl,&flg);CHKERRQ(ierr);
+  if (flg) mumps->id.ICNTL(1) = icntl;
+  ierr = PetscOptionsInt("-mat_mumps_icntl_2","ICNTL(2): output stream for diagnostic printing, statistics, and warning","None",mumps->id.ICNTL(2),&icntl,&flg);CHKERRQ(ierr);
+  if (flg) mumps->id.ICNTL(2) = icntl;
+  ierr = PetscOptionsInt("-mat_mumps_icntl_3","ICNTL(3): output stream for global information, collected on the host","None",mumps->id.ICNTL(3),&icntl,&flg);CHKERRQ(ierr);
+  if (flg) mumps->id.ICNTL(3) = icntl;
 
-  icntl=-1;
-  lu->id.ICNTL(4) = 0;  /* level of printing; overwrite mumps default ICNTL(4)=2 */
-  ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",lu->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
-  if ((flg && icntl > 0) || PetscLogPrintInfo) {
-    lu->id.ICNTL(4)=icntl; /* and use mumps default icntl(i), i=1,2,3 */
-  } else { /* no output */
-    lu->id.ICNTL(1) = 0;  /* error message, default= 6 */
-    lu->id.ICNTL(2) = 0;  /* output stream for diagnostic printing, statistics, and warning. default=0 */
-    lu->id.ICNTL(3) = 0; /* output stream for global information, default=6 */
-  }
-  ierr = PetscOptionsInt("-mat_mumps_icntl_6","ICNTL(6): column permutation and/or scaling to get a zero-free diagonal (0 to 7)","None",lu->id.ICNTL(6),&lu->id.ICNTL(6),PETSC_NULL);CHKERRQ(ierr);
-  icntl=-1;
-  ierr = PetscOptionsInt("-mat_mumps_icntl_7","ICNTL(7): sequential matrix ordering (0 to 7) 3 = Scotch, 5 = Metis","None",lu->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",mumps->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
+  if (flg) mumps->id.ICNTL(4) = icntl; 
+  if (mumps->id.ICNTL(4) || PetscLogPrintInfo ) mumps->id.ICNTL(3) = 6; /* resume MUMPS default id.ICNTL(3) = 6 */
+  
+  ierr = PetscOptionsInt("-mat_mumps_icntl_6","ICNTL(6): permuting and/or scaling the matrix (0 to 7)","None",mumps->id.ICNTL(6),&icntl,&flg);CHKERRQ(ierr);
+  if (flg) mumps->id.ICNTL(6) = icntl;
+
+  ierr = PetscOptionsInt("-mat_mumps_icntl_7","ICNTL(7): matrix ordering (0 to 7). 3=Scotch, 4=PORD, 5=Metis","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (icntl== 1 && lu->size > 1){
+    if (icntl== 1 && mumps->size > 1){
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
     } else {
-      lu->id.ICNTL(7) = icntl;
+      mumps->id.ICNTL(7) = icntl;
     }
   } 
   
-  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 7 or 77)","None",lu->id.ICNTL(8),&lu->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",lu->id.ICNTL(10),&lu->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3","None",lu->id.ICNTL(12),&lu->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",lu->id.ICNTL(13),&lu->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",lu->id.ICNTL(19),&lu->id.ICNTL(19),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&mumps->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",mumps->id.ICNTL(10),&mumps->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",mumps->id.ICNTL(11),&mumps->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3)","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",lu->id.ICNTL(22),&lu->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",lu->id.ICNTL(23),&lu->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",lu->id.ICNTL(24),&lu->id.ICNTL(24),PETSC_NULL);CHKERRQ(ierr);
-  if (lu->id.ICNTL(24)){
-    lu->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
+  ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",mumps->id.ICNTL(22),&mumps->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",mumps->id.ICNTL(23),&mumps->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",mumps->id.ICNTL(24),&mumps->id.ICNTL(24),PETSC_NULL);CHKERRQ(ierr);
+  if (mumps->id.ICNTL(24)){
+    mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
   }
 
-  ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",lu->id.ICNTL(25),&lu->id.ICNTL(25),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",lu->id.ICNTL(26),&lu->id.ICNTL(26),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",lu->id.ICNTL(27),&lu->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",lu->id.ICNTL(28),&lu->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",lu->id.ICNTL(29),&lu->id.ICNTL(29),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",lu->id.ICNTL(30),&lu->id.ICNTL(30),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): factors can be discarded in the solve phase","None",lu->id.ICNTL(31),&lu->id.ICNTL(31),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",lu->id.ICNTL(33),&lu->id.ICNTL(33),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): factors can be discarded in the solve phase","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",lu->id.CNTL(3),&lu->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",lu->id.CNTL(4),&lu->id.CNTL(4),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",lu->id.CNTL(5),&lu->id.CNTL(5),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",mumps->id.CNTL(1),&mumps->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",mumps->id.CNTL(2),&mumps->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",mumps->id.CNTL(3),&mumps->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",mumps->id.CNTL(4),&mumps->id.CNTL(4),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",mumps->id.CNTL(5),&mumps->id.CNTL(5),PETSC_NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -808,6 +804,16 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   mumps->scat_rhs     = PETSC_NULL;
   mumps->scat_sol     = PETSC_NULL;
   mumps->nSolve       = 0;
+
+  /* set PETSc-MUMPS default options - override MUMPS default */
+  mumps->id.ICNTL(3) = 0;
+  mumps->id.ICNTL(4) = 0;
+  if (mumps->size == 1){
+    mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
+  } else {
+    mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
+    mumps->id.ICNTL(21) = 1;   /* distributed solution */
+  }
   PetscFunctionReturn(0);
 }  
   
@@ -826,8 +832,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   PetscFunctionBegin;
   lu->matstruc = DIFFERENT_NONZERO_PATTERN;
 
-  /* Set MUMPS options */
-  ierr = PetscSetMUMPSOptions(F,A);CHKERRQ(ierr);
+  /* Set MUMPS options from the options database */
+  ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
  
   reuse = MAT_INITIAL_MATRIX;
   ierr = (*lu->ConvertToTriples)(A, 1, reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
@@ -917,8 +923,8 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   PetscFunctionBegin;
   lu->matstruc = DIFFERENT_NONZERO_PATTERN;
 
-  /* Set MUMPS options */
-  ierr = PetscSetMUMPSOptions(F,A);CHKERRQ(ierr);
+  /* Set MUMPS options from the options database */
+  ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
   reuse = MAT_INITIAL_MATRIX;
   ierr = (*lu->ConvertToTriples)(A, 1, reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
@@ -995,8 +1001,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   PetscFunctionBegin;
   lu->matstruc = DIFFERENT_NONZERO_PATTERN;
 
-  /* Set MUMPS options */
-  ierr = PetscSetMUMPSOptions(F,A);CHKERRQ(ierr);
+  /* Set MUMPS options from the options database */
+  ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
   reuse = MAT_INITIAL_MATRIX;
   ierr = (*lu->ConvertToTriples)(A, 1 , reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);

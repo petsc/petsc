@@ -1889,6 +1889,14 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
     ierr = PetscFree(indices);CHKERRQ(ierr);
   }
   ierr = PetscFree2(numDofTot,maxConstraints);CHKERRQ(ierr);
+  {
+    PetscBool view = PETSC_FALSE;
+
+    ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-section_view", &view);CHKERRQ(ierr);
+    if (view) {
+      ierr = PetscSectionView(*section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2043,6 +2051,16 @@ PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
 
   PetscFunctionBegin;
   ierr = DMMeshGetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetCoordinateSection"
+PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshSetSection(dm, "coordinates", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

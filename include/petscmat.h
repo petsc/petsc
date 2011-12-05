@@ -1348,7 +1348,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
        http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
 
    Level: beginner
-
+dm
 .seealso: MatPartitioningCreate(), MatPartitioning
 J*/
 #define MatPartitioningType char*
