@@ -398,6 +398,13 @@ runex5_5_fas:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_fas.tmp
 
+runex5_5_fas_additive:
+	-@./ex5 -snes_fas_coarse_smoother_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor -snes_type fas \
+           -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive \
+           > ex5_5_fas_additive.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas_additive, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
 	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly \
