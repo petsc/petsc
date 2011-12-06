@@ -61,11 +61,12 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-openmpi=<no,yes,filename>',               nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',          nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
+    help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',        nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
-    help.addArgument('MPI', '-download-mpich-mpe=<bool>',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
-    help.addArgument('MPI', '-download-mpich-shared=<bool>',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-download-mpich-mpe=<bool>',                        nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
+    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-with-mpiuni-fortran-binding=<bool>',               nargs.ArgBool(None, 1, 'Build the MPIUni Fortran bindings'))
     return
 
   def setupDependencies(self, framework):
@@ -284,11 +285,11 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
-    if self.argDB.get('with-mpiuni-namespace'):
+    if not self.argDB['with-mpiuni-fortran-binding']:
       self.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
-      self.usingMPIUniNamespace = 1
+      self.usingMPIUniFortranBinding = 0
     else:
-      self.usingMPIUniNamespace = 0
+      self.usingMPIUniFortranBinding = 1
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
