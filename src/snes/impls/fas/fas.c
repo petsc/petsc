@@ -20,6 +20,33 @@ extern PetscErrorCode SNESReset_FAS(SNES snes);
 extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES, Vec, Vec, void *);
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetType_FAS"
+PetscErrorCode  SNESLineSearchSetType_FAS(SNES snes, SNESLineSearchType type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  switch (type) {
+  case SNES_LS_BASIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_BASIC_NONORMS:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_QUADRATIC:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type.");
+    break;
+  }
+  snes->ls_type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_FAS"
@@ -55,6 +82,11 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->inject                 = PETSC_NULL;
   fas->monitor                = PETSC_NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
+  fas->fastype                = SNES_FAS_MULTIPLICATIVE;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_FAS",SNESLineSearchSetType_FAS);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -643,7 +675,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
     ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   } else {
-    ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESDefaultGetWork(snes, 4);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   }
 
   /* setup the pre and post smoothers and set their function, jacobian, and gs evaluation routines if the user has neglected this */
@@ -1073,15 +1105,19 @@ With the coarse RHS (defect correction) as below.
  */
 PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
   Vec                 F, B, Xhat;
-  Vec                 X_c, Xo_c, F_c, B_c;
+  Vec                 X_c, Xo_c, F_c, B_c, G, W;
   PetscErrorCode      ierr;
   SNES_FAS *          fas = (SNES_FAS *)snes->data;
   SNESConvergedReason reason;
+  PetscReal           xnorm = 0., fnorm = 0., gnorm = 0., ynorm = 0.;
+  PetscBool           lssucceed;
   PetscFunctionBegin;
 
   F = snes->vec_func;
   B = snes->vec_rhs;
   Xhat = snes->work[1];
+  G    = snes->work[2];
+  W    = snes->work[3];
   ierr = VecCopy(X, Xhat);CHKERRQ(ierr);
   /* recurse first */
   if (fas->next) {
@@ -1128,12 +1164,15 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
 
     /* correct as x <- x + I(x^c - Rx)*/
     ierr = VecAXPY(X_c, -1.0, Xo_c);CHKERRQ(ierr);
-    ierr = MatInterpolateAdd(fas->interpolate, X_c, Xhat, Xhat);CHKERRQ(ierr);
+    ierr = MatInterpolate(fas->interpolate, X_c, Xhat);CHKERRQ(ierr);
 
-    /* additive correction */
-    ierr = VecAXPY(Xhat, -1.0, X);CHKERRQ(ierr);
-    ierr = VecAXPY(X, 0.5, Xhat);CHKERRQ(ierr);
-
+    /* additive correction of the coarse direction*/
+    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Xhat,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = VecCopy(W, X);CHKERRQ(ierr);
+    ierr = VecCopy(G, F);CHKERRQ(ierr);
+    fnorm = gnorm;
   } else {
     ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
   }
