@@ -5,7 +5,8 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.10.0-p1.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
-                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a']]
+                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
+                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a']]
     self.functions = ['dmumps_c']
     self.includes  = ['dmumps_c.h']
     #
@@ -13,14 +14,23 @@ class Configure(PETSc.package.NewPackage):
     self.complex   = 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    PETSc.package.NewPackage.setupHelp(self, help)
+    help.addArgument('MUMPS', '-with-mumps-serial', nargs.ArgBool(None, 0, 'Use serial build of MUMPS'))
+    return
+
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.blacs      = framework.require('PETSc.packages.blacs',self)
-    self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
-    self.parmetis   = framework.require('PETSc.packages.parmetis',self)
-    self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
+    self.mpi          = framework.require('config.packages.MPI',self)
+    if self.framework.argDB['with-mumps-serial']:
+      self.deps       = [self.blasLapack]
+    else:
+      self.blasLapack = framework.require('config.packages.BlasLapack',self)
+      self.blacs      = framework.require('PETSc.packages.blacs',self)
+      self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
+      self.parmetis   = framework.require('PETSc.packages.parmetis',self)
+      self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
     if self.framework.argDB.get('download-ptscotch') or self.framework.argDB.get('with-ptscotch'):
       self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
       self.deps.append(self.ptscotch)
@@ -28,11 +38,22 @@ class Configure(PETSc.package.NewPackage):
       self.ptscotch = 0
     return
 
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-mumps-serial']:
+      if not self.mpi.usingMPIUni:
+        raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
+      elif not self.mpi.usingMPIUniNamespace:
+        raise RuntimeError('Serial MUMPS version is only compatible with MPIUni in a custom namespace\nReconfigure using --with-mpiuni-namespace')
+    return
+
   def Install(self):
     import os
 
     if not self.compilers.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
+    if self.framework.argDB['with-mumps-serial']:
+      raise RuntimeError('Cannot automatically install the serial version of MUMPS.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
