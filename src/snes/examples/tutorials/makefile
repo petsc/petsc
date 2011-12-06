@@ -969,7 +969,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
-                                 runex5_5_fas runex5_5_ngmres_fas \
+                                 runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm ex18.PETSc runex18 ex18.rm \
