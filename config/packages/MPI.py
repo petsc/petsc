@@ -284,6 +284,11 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    if self.argDB.get('with-mpiuni-namespace'):
+      self.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
+      self.usingMPIUniNamespace = 1
+    else:
+      self.usingMPIUniNamespace = 0
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
