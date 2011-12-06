@@ -290,23 +290,133 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateTensorQuadrature"
+PetscErrorCode CreateTensorQuadrature(PetscInt dim, PetscInt numQuadPoints, const PetscReal quadPoints[], const PetscReal quadWeights[], PetscInt *numTensorQuadPoints, PetscReal **tensorQuadPoints, PetscReal **tensorQuadWeights) {
+  PetscInt Nq  = 1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for(PetscInt d = 0; d < dim; ++d) {
+    Nq *= numQuadPoints;
+  }
+  ierr = PetscMalloc2(Nq*dim,PetscReal,tensorQuadPoints,Nq,PetscReal,tensorQuadWeights);CHKERRQ(ierr);
+  switch(dim) {
+  case 2:
+    for(PetscInt q = 0; q < numQuadPoints; ++q) {
+      for(PetscInt r = 0; r < numQuadPoints; ++r) {
+        (*tensorQuadPoints)[(q*numQuadPoints+r)*dim+0] = quadPoints[q];
+        (*tensorQuadPoints)[(q*numQuadPoints+r)*dim+1] = quadPoints[r];
+        (*tensorQuadWeights)[q*numQuadPoints+r]        = quadWeights[q]*quadWeights[r];
+      }
+    }
+    break;
+  case 3:
+    for(PetscInt q = 0; q < numQuadPoints; ++q) {
+      for(PetscInt r = 0; r < numQuadPoints; ++r) {
+        for(PetscInt s = 0; s < numQuadPoints; ++s) {
+          (*tensorQuadPoints)[((q*numQuadPoints+r)*numQuadPoints+s)*dim+0] = quadPoints[q];
+          (*tensorQuadPoints)[((q*numQuadPoints+r)*numQuadPoints+s)*dim+1] = quadPoints[r];
+          (*tensorQuadPoints)[((q*numQuadPoints+r)*numQuadPoints+s)*dim+2] = quadPoints[s];
+          (*tensorQuadWeights)[(q*numQuadPoints+r)*numQuadPoints+s]        = quadWeights[q]*quadWeights[r]*quadWeights[s];
+        }
+      }
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %d not supported", dim);
+  }
+  *numTensorQuadPoints = Nq;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateTensorBasis"
+  PetscErrorCode CreateTensorBasis(PetscInt dim, PetscInt numQuadPoints, PetscInt numBasisFuncs, PetscInt numBasisComps, const PetscReal basis[], const PetscReal basisDer[], PetscInt *numTensorBasisFuncs, PetscReal **tensorBasis, PetscReal **tensorBasisDer) {
+  PetscInt Nq  = 1;
+  PetscInt Nb  = 1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for(PetscInt d = 0; d < dim; ++d) {
+    Nq *= numQuadPoints;
+  }
+  for(PetscInt d = 0; d < dim; ++d) {
+    Nb *= numBasisFuncs;
+  }
+  ierr = PetscMalloc2(Nb*numBasisComps*Nq,PetscReal,tensorBasis,Nb*numBasisComps*Nq*dim,PetscReal,tensorBasisDer);CHKERRQ(ierr);
+  switch(dim) {
+  case 2:
+    for(PetscInt q = 0; q < numQuadPoints; ++q) {
+      for(PetscInt r = 0; r < numQuadPoints; ++r) {
+        for(PetscInt b1 = 0; b1 < numBasisFuncs; ++b1) {
+          for(PetscInt b2 = 0; b2 < numBasisFuncs; ++b2) {
+            for(PetscInt c = 0; c < numBasisComps; ++c) {
+              (*tensorBasis)[((q*numQuadPoints+r)*Nb + (b1*numBasisFuncs+b2))*numBasisComps+c] = basis[(q*numBasisFuncs+b1)*numBasisComps+c]*basis[(r*numBasisFuncs+b2)*numBasisComps+c];
+              (*tensorBasisDer)[(((q*numQuadPoints+r)*Nb + (b1*numBasisFuncs+b2))*numBasisComps+c)*dim+0] = basisDer[(q*numBasisFuncs+b1)*numBasisComps+c+0]*basis[(r*numBasisFuncs+b2)*numBasisComps+c];
+              (*tensorBasisDer)[(((q*numQuadPoints+r)*Nb + (b1*numBasisFuncs+b2))*numBasisComps+c)*dim+1] = basis[(q*numBasisFuncs+b1)*numBasisComps+c]*basisDer[(r*numBasisFuncs+b2)*numBasisComps+c+0];
+            }
+          }
+        }
+      }
+    }
+    break;
+  case 3:
+    for(PetscInt q = 0; q < numQuadPoints; ++q) {
+      for(PetscInt r = 0; r < numQuadPoints; ++r) {
+        for(PetscInt s = 0; s < numQuadPoints; ++s) {
+          for(PetscInt b1 = 0; b1 < numBasisFuncs; ++b1) {
+            for(PetscInt b2 = 0; b2 < numBasisFuncs; ++b2) {
+              for(PetscInt b3 = 0; b3 < numBasisFuncs; ++b3) {
+                for(PetscInt c = 0; c < numBasisComps; ++c) {
+                  (*tensorBasis)[(((q*numQuadPoints+r)*numQuadPoints+s)*Nb + ((b1*numBasisFuncs+b2)*numBasisFuncs+b3))*numBasisComps+c] =
+                    basis[(q*numBasisFuncs+b1)*numBasisComps+c]*basis[(r*numBasisFuncs+b2)*numBasisComps+c]*basis[(s*numBasisFuncs+b3)*numBasisComps+c];
+                  (*tensorBasisDer)[((((q*numQuadPoints+r)*numQuadPoints+s)*Nb + ((b1*numBasisFuncs+b2)*numBasisFuncs+b3))*numBasisComps+c)*dim+0] =
+                    basisDer[(q*numBasisFuncs+b1)*numBasisComps+c+0]*basis[(r*numBasisFuncs+b2)*numBasisComps+c]*basis[(s*numBasisFuncs+b3)*numBasisComps+c];
+                  (*tensorBasisDer)[((((q*numQuadPoints+r)*numQuadPoints+s)*Nb + ((b1*numBasisFuncs+b2)*numBasisFuncs+b3))*numBasisComps+c)*dim+0] =
+                    basis[(q*numBasisFuncs+b1)*numBasisComps+c]*basisDer[(r*numBasisFuncs+b2)*numBasisComps+c+0]*basis[(s*numBasisFuncs+b3)*numBasisComps+c];
+                  (*tensorBasisDer)[((((q*numQuadPoints+r)*numQuadPoints+s)*Nb + ((b1*numBasisFuncs+b2)*numBasisFuncs+b3))*numBasisComps+c)*dim+0] =
+                    basis[(q*numBasisFuncs+b1)*numBasisComps+c]*basis[(r*numBasisFuncs+b2)*numBasisComps+c]*basisDer[(s*numBasisFuncs+b3)*numBasisComps+c+0];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %d not supported", dim);
+  }
+  *numTensorBasisFuncs = Nb;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
+  PetscInt       dim = user->dim;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
-  user->q[0].quadPoints    = points_0;
-  user->q[0].quadWeights   = weights_0;
-  user->q[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
+  //user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
+  //user->q[0].quadPoints    = points_0;
+  //user->q[0].quadWeights   = weights_0;
+  ierr = CreateTensorQuadrature(dim, NUM_QUADRATURE_POINTS_0, points_0, weights_0, &user->q[0].numQuadPoints, (PetscReal**) &user->q[0].quadPoints, (PetscReal **) &user->q[0].quadWeights);CHKERRQ(ierr);
+  //user->q[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
   user->q[0].numComponents = NUM_BASIS_COMPONENTS_0;
-  user->q[0].basis         = Basis_0;
-  user->q[0].basisDer      = BasisDerivatives_0;
-  user->q[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
-  user->q[1].quadPoints    = points_1;
-  user->q[1].quadWeights   = weights_1;
-  user->q[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
+  //user->q[0].basis         = Basis_0;
+  //user->q[0].basisDer      = BasisDerivatives_0;
+  ierr = CreateTensorBasis(dim, NUM_QUADRATURE_POINTS_0, NUM_BASIS_FUNCTIONS_0, NUM_BASIS_COMPONENTS_0, Basis_0, BasisDerivatives_0, &user->q[0].numBasisFuncs, (PetscReal **) &user->q[0].basis, (PetscReal **) &user->q[0].basisDer);CHKERRQ(ierr);
+
+  //user->q[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
+  //user->q[1].quadPoints    = points_1;
+  //user->q[1].quadWeights   = weights_1;
+  ierr = CreateTensorQuadrature(dim, NUM_QUADRATURE_POINTS_1, points_1, weights_1, &user->q[1].numQuadPoints, (PetscReal **) &user->q[1].quadPoints, (PetscReal **) &user->q[1].quadWeights);CHKERRQ(ierr);
+  //user->q[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
   user->q[1].numComponents = NUM_BASIS_COMPONENTS_1;
-  user->q[1].basis         = Basis_1;
-  user->q[1].basisDer      = BasisDerivatives_1;
+  //user->q[1].basis         = Basis_1;
+  //user->q[1].basisDer      = BasisDerivatives_1;
+  ierr = CreateTensorBasis(dim, NUM_QUADRATURE_POINTS_1, NUM_BASIS_FUNCTIONS_1, NUM_BASIS_COMPONENTS_1, Basis_1, BasisDerivatives_1, &user->q[1].numBasisFuncs, (PetscReal **) &user->q[1].basis, (PetscReal **) &user->q[1].basisDer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -392,6 +502,76 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeError"
+PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
+  PetscScalar   (**exactFuncs)(const PetscReal []) = user->exactFuncs;
+  const PetscInt   debug         = user->debug;
+  const PetscInt   dim           = user->dim;
+  Vec              localX;
+  PetscReal       *coords, *v0, *J, *invJ, detJ;
+  PetscReal        localError;
+  PetscInt         cStart, cEnd;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = DMMeshGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for(PetscInt c = cStart; c < cEnd; ++c) {
+    const PetscScalar *x;
+    PetscReal          elemError = 0.0;
+
+    ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
+    ierr = DMMeshVecGetClosure(user->dm, localX, c, &x);CHKERRQ(ierr);
+
+    for(PetscInt field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
+      const PetscInt   numQuadPoints = user->q[field].numQuadPoints;
+      const PetscReal *quadPoints    = user->q[field].quadPoints;
+      const PetscReal *quadWeights   = user->q[field].quadWeights;
+      const PetscInt   numBasisFuncs = user->q[field].numBasisFuncs;
+      const PetscInt   numBasisComps = user->q[field].numComponents;
+      const PetscReal *basis         = user->q[field].basis;
+
+      if (debug) {
+        char title[1024];
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
+        ierr = DMMeshPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
+      }
+      for(PetscInt q = 0; q < numQuadPoints; ++q) {
+        for(PetscInt d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for(PetscInt e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        for(PetscInt fc = 0; fc < numBasisComps; ++fc) {
+          const PetscScalar funcVal     = (*exactFuncs[comp+fc])(coords);
+          PetscReal         interpolant = 0.0;
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            const PetscInt fidx = f*numBasisComps+fc;
+            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
+          }
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d error %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemError += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
+        }
+      }
+      comp        += numBasisComps;
+      fieldOffset += numBasisFuncs*numBasisComps;
+    }
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d error %g\n", c, elemError);CHKERRQ(ierr);}
+    localError += elemError;
+  }
+  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->dm, &localX);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&localError, error, 1, MPIU_REAL, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  *error = PetscSqrtReal(*error);
   PetscFunctionReturn(0);
 }
 
@@ -579,6 +759,8 @@ int main(int argc, char **argv)
   Mat            A,J;                  /* Jacobian matrix */
   MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
+  PetscInt       its;                  /* iterations for convergence */
+  PetscReal      error;                /* L_2 error in the solution */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
@@ -611,6 +793,70 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
+  if (user.runType == RUN_FULL) {
+    PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
+
+    for(PetscInt c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
+    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, numComponents, initialGuess, &user);CHKERRQ(ierr);
+    if (user.debug) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
+      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
+    ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  } else {
+    PetscReal res;
+
+    /* Check discretization error */
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
+    ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
+    /* Check residual */
+    ierr = SNESDMMeshComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
+    ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
+    /* Check Jacobian */
+    {
+      Vec          b;
+      MatStructure flag;
+      PetscBool    isNull;
+
+      ierr = SNESDMMeshComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
+      if (!isNull) {SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");}
+      ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
+      ierr = VecSet(r, 0.0);CHKERRQ(ierr);
+      ierr = SNESDMMeshComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = MatMult(A, u, r);CHKERRQ(ierr);
+      ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
+      ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
+    }
+  }
+
+  if (user.runType == RUN_FULL) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
+    /*ierr = PetscViewerSetType(viewer, PETSCVIEWERDRAW);CHKERRQ(ierr);
+      ierr = PetscViewerDrawSetInfo(viewer, PETSC_NULL, "Solution", PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr); */
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "ex56_sol.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = DMView(user.dm, viewer);CHKERRQ(ierr);
+    ierr = VecView(u, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
 
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (A != J) {
