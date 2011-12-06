@@ -101,3 +101,5 @@ src/snes/examples/tutorials/ex52\.h
 src/snes/examples/tutorials/ex52_inline\.h
 src/snes/examples/tutorials/ex56_inline\.h
 src/snes/examples/tutorials/ex56\.h
+src/snes/examples/tutorials/ex57_inline\.h
+src/snes/examples/tutorials/ex57\.h
