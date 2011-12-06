@@ -560,9 +560,13 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   Output Parameters:
     lnk       - list initialized
     bt        - PetscBT (bitarray) with all bits set to false
+    lnk_empty - flg indicating the list is empty
 */
 #define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
   (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
+
+#define PetscLLCreate_new(idx_start,lnk_max,nlnk,lnk,bt,lnk_empty)\
+  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk_empty = PETSC_TRUE,0) ||(lnk[idx_start] = lnk_max,0))
 
 /*
   Add an index set into a sorted linked list
@@ -672,6 +676,53 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
       _lnkdata = _entry; /* next search starts from here */\
     }\
   }\
+}
+
+#define PetscLLAddSorted_new(nidx,indices,idx_start,lnk_empty,nlnk,lnk,bt) 0; \
+{\
+  PetscInt _k,_entry,_location,_lnkdata;\
+  if (lnk_empty){\
+    _lnkdata  = idx_start;                      \
+    for (_k=0; _k<nidx; _k++){                  \
+      _entry = indices[_k];                             \
+      PetscBTSet(bt,_entry);  /* mark the new entry */          \
+          _location = _lnkdata;                                 \
+          _lnkdata  = lnk[_location];                           \
+        /* insertion location is found, add entry into lnk */   \
+        lnk[_location] = _entry;                                \
+        lnk[_entry]    = _lnkdata;                              \
+        _lnkdata = _entry; /* next search starts from here */   \
+    }                                                           \
+    /*\
+    lnk[indices[nidx-1]] = lnk[idx_start];\
+    lnk[idx_start]       = indices[0];\
+    PetscBTSet(bt,indices[0]);  \
+    for (_k=1; _k<nidx; _k++){                  \
+      PetscBTSet(bt,indices[_k]);                                          \
+      lnk[indices[_k-1]] = indices[_k];                                  \
+    }                                                           \
+     */\
+    nlnk      = nidx;\
+    lnk_empty = PETSC_FALSE;\
+  } else {\
+    nlnk      = 0;                              \
+    _lnkdata  = idx_start;                      \
+    for (_k=0; _k<nidx; _k++){                  \
+      _entry = indices[_k];                             \
+      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */       \
+        /* search for insertion location */                     \
+        do {                                                    \
+          _location = _lnkdata;                                 \
+          _lnkdata  = lnk[_location];                           \
+        } while (_entry > _lnkdata);                            \
+        /* insertion location is found, add entry into lnk */   \
+        lnk[_location] = _entry;                                \
+        lnk[_entry]    = _lnkdata;                              \
+        nlnk++;                                                 \
+        _lnkdata = _entry; /* next search starts from here */   \
+      }                                                         \
+    }                                                           \
+  }                                                             \
 }
 
 /*
