@@ -13,7 +13,8 @@ PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char
   char           work[PETSC_MAX_PATH_LEN],*lfunction;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
+  ierr = PetscStrncpy(work,name,sizeof work);CHKERRQ(ierr);
+  work[sizeof work - 1] = 0;
   ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work && lfunction && lfunction[1] != ':') {
     lfunction[0] = 0;

@@ -239,7 +239,7 @@ acfindx:
       if libraryDir:
         self.lib     = ['-L'+libraryDir,'-lX11']
       else:
-        self.lib     = '-lX11'
+        self.lib     = ['-lX11']
 
       self.addSubstitution('X_CFLAGS',     self.include)
       self.addSubstitution('X_LIBS',       self.lib)
