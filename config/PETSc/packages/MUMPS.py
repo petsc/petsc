@@ -43,8 +43,8 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-      elif not self.mpi.usingMPIUniNamespace:
-        raise RuntimeError('Serial MUMPS version is only compatible with MPIUni in a custom namespace\nReconfigure using --with-mpiuni-namespace')
+      elif self.mpi.usingMPIUniFortranBinding:
+        raise RuntimeError('Serial MUMPS version is incompatible with the MPIUni Fortran bindings\nReconfigure using --with-mpiuni-fortran-binding=0')
     return
 
   def Install(self):
