@@ -725,6 +725,8 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 */
 PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 {
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -748,6 +750,8 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 */
 PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
 {
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

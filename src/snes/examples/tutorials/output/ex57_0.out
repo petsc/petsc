@@ -1,0 +1,75 @@
+Local function
+Vector Object: 1 MPI processes
+  type: seq
+0
+0
+-1
+0.25
+0.5
+-0.5
+1
+2
+0
+0.25
+0
+-0.5
+0.5
+0
+0
+1.25
+1
+0.5
+1
+0
+0
+1.25
+-0.5
+0.5
+2
+0
+1
+Initial guess
+Vector Object: 1 MPI processes
+  type: seq
+-1
+-0.5
+0
+-0.5
+0.5
+0
+0
+0.5
+0
+0.5
+1
+L_2 Error: 0.176777
+Initial Residual
+Vector Object: 1 MPI processes
+  type: seq
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+L_2 Residual: 0
+Au - b = Au + F(0)
+Vector Object: 1 MPI processes
+  type: seq
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Linear L_2 Residual: 0
