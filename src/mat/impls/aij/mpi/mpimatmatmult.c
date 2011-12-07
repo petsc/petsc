@@ -303,7 +303,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ierr = PetscMemzero(apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);
   ptap->apa = apa;
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Malloc apa is done...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Malloc apa pN %D is done...\n",rank,pN);
+  //if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Annz %D\n",rank,ad->i[am]+ao->i[am]);
 #endif
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
@@ -320,7 +321,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] P_loc is done...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] P_loc is done, Annz %D * P_locnnz %D = %D...\n",rank,ad->i[am]+ao->i[am],p_loc->rmax,(ad->i[am]+ao->i[am])*p_loc->rmax);
 #endif
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
@@ -489,6 +490,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fil
   Mat_MPIAIJ         *a=(Mat_MPIAIJ*)A->data;
   PetscInt           *idx,i,start,ncols,nzA,nzB,*cmap,imark;
 #if defined(DEBUG_MATMATMULT)
+  MPI_Comm             comm = ((PetscObject)A)->comm;
   PetscMPIInt          rank=a->rank;
 #endif
 
@@ -536,14 +538,18 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fil
   mult->A_loc = *seq;
   ierr = PetscFree(seq);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A_seq is done...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A_loc is done...\n",rank);
 #endif
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,fill,&mult->C_seq);CHKERRQ(ierr);
-  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(mult->A_loc,mult->B_seq,fill,&mult->C_seq);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq is done...\n",rank);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq Symbolic is done...\n",rank);
+#endif  
+  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
+#if defined(DEBUG_MATMATMULT)
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq Numeric is done...\n",rank);
 #endif
  
   /* create mpi matrix C by concatinating C_seq */

@@ -222,9 +222,11 @@ extern PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 extern PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 extern PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,Mat);
 extern PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscReal,PetscInt*[],PetscInt*[],PetscInt*);
+extern PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscReal,PetscInt*[],PetscInt*[],PetscInt*);
 
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);

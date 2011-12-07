@@ -8,7 +8,9 @@
 #include <../src/mat/utils/freespace.h>
 #include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-
+/*
+#define DEBUG_MATMATMULT
+ */
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
@@ -29,6 +31,17 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 }
 EXTERN_C_END
 
+/*
+ MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ - Get symbolic structure of C=A*B
+  Input Parameter:
+.    am, Ai, Aj - number of rows and structure of A
+.    bm, bn, Bi, Bj - number of rows, columns, and structure of B
+.    fill - filll ratio See MatMatMult()
+
+  Output Parameter:
+.    Ci, Cj - structure of C = A*B
+.    nspacedouble - number of extra mallocs
+ */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ"
 PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
@@ -96,6 +109,85 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy"
+PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
+{
+  PetscErrorCode ierr;
+  PetscInt       *ai=Ai,*aj=Aj,*bi=Bi,*bj=Bj,*bjj,*ci,*cj,rmax=0,*abj,*cj_tmp,nextabj;
+  PetscInt       i,j,anzi,brow,bnzj,cnzi,k;
+  PetscBT        bt;
+
+  PetscFunctionBegin;
+  /* Allocate ci array, arrays for fill computation and */
+  /* free space for accumulating nonzero column info */
+  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+
+  /* Get ci and rmax for C */
+  ierr = PetscBTCreate(bn,bt);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
+  for (i=0; i<am; i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = 0;
+    aj   = Aj + ai[i];
+    for (j=0; j<anzi; j++){ 
+      brow = aj[j]; 
+      bnzj = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      for (k=0; k<bnzj; k++){
+        if (!PetscBTLookupSet(bt,bjj[k])){  /* new entry */
+          cnzi++;
+        }
+      }
+    }
+    ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr); /* optimize this? */
+    ci[i+1] = ci[i] + cnzi;
+    if (rmax < cnzi) rmax = cnzi;
+  }
+
+  /* Allocate space for cj */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+
+  /* allocate a temp array for storing column indices of A*B */
+  ierr = PetscMalloc((rmax+1)*sizeof(PetscInt),&abj);CHKERRQ(ierr);
+
+  /* Determine cj */
+  for (i=0; i<am; i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = 0;
+    nextabj=0;
+    aj   = Aj + ai[i];
+    for (j=0; j<anzi; j++){ 
+      brow = aj[j]; 
+      bnzj = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      for (k=0; k<bnzj; k++){
+        if (!PetscBTLookupSet(bt,bjj[k])){  /* new entry */
+          abj[nextabj] = bjj[k]; nextabj++;
+        }
+      }
+    }
+
+    /* sort abj, then copy it to cj */
+    cnzi = ci[i+1] - ci[i];
+    ierr = PetscSortInt(cnzi,abj);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
+    cj_tmp = cj + ci[i];
+    for (k=0; k< cnzi; k++){
+      cj_tmp[k] = abj[k];
+    }
+  }
+
+  ierr = PetscBTDestroy(bt);CHKERRQ(ierr);
+  ierr = PetscFree(abj);CHKERRQ(ierr);
+    
+  *Ci           = ci;
+  *Cj           = cj;
+  *nspacedouble = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
@@ -110,6 +202,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFunctionBegin;
   /* Get ci and cj */
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
+#if defined(DEBUG_MATMATMULT)
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ() is done \n");CHKERRQ(ierr);
+#endif
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -134,6 +229,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     ierr = PetscMemzero(c->matmult_abdense,dense_axpy*bn*sizeof(PetscScalar));CHKERRQ(ierr);
     (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
   } else { /* slower, but use less memory */
+#if defined(DEBUG_MATMATMULT)
+  ierr = PetscPrintf(PETSC_COMM_SELF,"call  MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy \n");
+#endif
     (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
   }
 
@@ -225,6 +323,9 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
   PetscInt       nextb;
   
   PetscFunctionBegin;  
+#if defined(DEBUG_MATMATMULT)
+  //ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy...\n");CHKERRQ(ierr);
+#endif
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
@@ -257,6 +358,63 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*ci,*cj;
+  PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
+  MatScalar      *ca;
+  PetscReal      afill;
+
+  PetscFunctionBegin;
+#if defined(DEBUG_MATMATMULT)
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy \n");CHKERRQ(ierr);
+#endif
+  /* Get ci and cj */
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
+#if defined(DEBUG_MATMATMULT)
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy() is done \n");CHKERRQ(ierr);
+#endif
+    
+  /* Allocate space for ca */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  
+  /* put together the new symbolic matrix */
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->free_a   = PETSC_TRUE;
+  c->free_ij  = PETSC_TRUE;
+  c->nonew    = 0;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
+  
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am]; 
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = nspacedouble;
+  (*C)->info.fill_ratio_given  = fill;               
+  (*C)->info.fill_ratio_needed = afill; 
+
+#if defined(PETSC_USE_INFO)
+  if (ci[am]) {
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
 
 /* This routine is not used. Should be removed! */
 #undef __FUNCT__
