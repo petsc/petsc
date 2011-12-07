@@ -17,11 +17,17 @@ EXTERN_C_BEGIN
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
+  PetscBool      scalable=PETSC_FALSE;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
+    if (scalable){
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+    } else {
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
@@ -109,12 +115,12 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
 }
 
 /*
- MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy - same as MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ()
+ MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable - same as MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ()
    but replaces O(bn) array 'lnkbt' with a scalable array 'abj' of size Crmax.
  */
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy"
-PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
+#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable"
+PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
 {
   PetscErrorCode ierr;
   PetscInt       *aj=Aj,*bi=Bi,*bj,*ci,*cj,rmax=0,*abj,*cj_tmp,nextabj;
@@ -198,7 +204,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
   MatScalar      *ca;
   PetscReal      afill;
-  PetscBool      dense_axpy; /* false: use sparse axpy; otherwise use dense axpy in MatMatMultNumeric_SeqAIJ_SeqAIJ() */
 
   PetscFunctionBegin;
   /* Get ci and cj */
@@ -222,20 +227,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->nonew    = 0;
   (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqAIJ;
 
-  /* Determine which MatMatMultNumeric_SeqAIJ_SeqAIJ() to be used */
-  dense_axpy = PETSC_TRUE; 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_denseaxpy",&dense_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (dense_axpy){
-    ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
-    ierr = PetscMemzero(c->matmult_abdense,dense_axpy*bn*sizeof(PetscScalar));CHKERRQ(ierr);
-    (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
-  } else { /* slower, but use less memory */
-#if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"call  MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy \n");
-#endif
-    (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
-  }
-
+  ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
+  ierr = PetscMemzero(c->matmult_abdense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
+  (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
+   
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
@@ -309,8 +304,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
-PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable"
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
   PetscLogDouble flops=0.0;
@@ -325,7 +320,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
   
   PetscFunctionBegin;  
 #if defined(DEBUG_MATMATMULT)
-  //ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy...\n");CHKERRQ(ierr);
+  //ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable...\n");CHKERRQ(ierr);
 #endif
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -361,8 +356,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy"
-PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
@@ -373,12 +368,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,PetscReal
 
   PetscFunctionBegin;
 #if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy \n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable \n");CHKERRQ(ierr);
 #endif
   /* Get ci and cj */
-  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy() is done \n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable() is done \n");CHKERRQ(ierr);
 #endif
     
   /* Allocate space for ca */
@@ -394,7 +389,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat B,PetscReal
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* slower, less memory */
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable; /* slower, less memory */
   
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;

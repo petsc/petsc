@@ -285,9 +285,9 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_32(A,P,fill,C);;CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult-dev_old",&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable",&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
   if (matmatmult_old){
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(A,P,fill,C);;CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,P,fill,C);;CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   
@@ -440,8 +440,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 /* implementation used in PETSc-3.2 */
 /* This routine is called ONLY in the case of reusing previously computed symbolic C */
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev"
-PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable"
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,Mat C)
 {
   PetscErrorCode     ierr;
   Mat                *seq;
@@ -460,7 +460,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,Mat C)
 #if defined(DEBUG_MATMATMULT)
   PetscMPIInt rank;
   ierr = MPI_Comm_rank(((PetscObject)C)->comm,&rank);CHKERRQ(ierr);
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev()...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable()...\n",rank);
 #endif
 
   seq = &mult->B_seq;
@@ -471,7 +471,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,Mat C)
   ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);
   mult->A_loc = *seq;
 
-  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr);
   ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
@@ -480,8 +480,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,Mat C)
 
 /* numeric product is computed as well */
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev"
-PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable"
+PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_MatMatMultMPI  *mult;
@@ -496,7 +496,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fil
 
   PetscFunctionBegin;
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev()...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable()...\n",rank);
 #endif
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
     SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
@@ -542,12 +542,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fil
 #endif
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(mult->A_loc,mult->B_seq,fill,&mult->C_seq);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(mult->A_loc,mult->B_seq,fill,&mult->C_seq);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq Symbolic is done...\n",rank);
 #endif  
-  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_SparseAxpy(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(mult->A_loc,mult->B_seq,mult->C_seq);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq Numeric is done...\n",rank);
 #endif
@@ -569,7 +569,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_32_dev(Mat A,Mat B,PetscReal fil
   mult->skipNumeric  = PETSC_TRUE; /* a numeric product is done here */
   mult->destroy      = AB->ops->destroy;
   mult->duplicate    = AB->ops->duplicate;
-  AB->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_32_dev;
+  AB->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable;
   AB->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult_32;
   AB->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult_32;
   AB->ops->matmult        = MatMatMult_MPIAIJ_MPIAIJ;
