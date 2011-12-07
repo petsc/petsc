@@ -108,39 +108,40 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   PetscFunctionReturn(0);
 }
 
+/*
+ MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy - same as MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ()
+   but replaces O(bn) array 'lnkbt' with a scalable array 'abj' of size Crmax.
+ */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy"
 PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
 {
   PetscErrorCode ierr;
-  PetscInt       *ai=Ai,*aj=Aj,*bi=Bi,*bj=Bj,*bjj,*ci,*cj,rmax=0,*abj,*cj_tmp,nextabj;
+  PetscInt       *aj=Aj,*bi=Bi,*bj,*ci,*cj,rmax=0,*abj,*cj_tmp,nextabj;
   PetscInt       i,j,anzi,brow,bnzj,cnzi,k;
   PetscBT        bt;
 
   PetscFunctionBegin;
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
+  /* Allocate ci array and bt */
   ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
-  /* Get ci and rmax for C */
+  /* Get ci and count rmax of C */
   ierr = PetscBTCreate(bn,bt);CHKERRQ(ierr);
   ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
   for (i=0; i<am; i++) {
-    anzi = ai[i+1] - ai[i];
+    anzi = Ai[i+1] - Ai[i];
     cnzi = 0;
-    aj   = Aj + ai[i];
+    aj   = Aj + Ai[i];
     for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
-      bjj  = bj + bi[brow];
+      bj   = Bj + bi[brow];
       for (k=0; k<bnzj; k++){
-        if (!PetscBTLookupSet(bt,bjj[k])){  /* new entry */
-          cnzi++;
-        }
+        if (!PetscBTLookupSet(bt,bj[k])) cnzi++;  /* new entry */
       }
     }
-    ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr); /* optimize this? */
+    ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr); 
     ci[i+1] = ci[i] + cnzi;
     if (rmax < cnzi) rmax = cnzi;
   }
@@ -148,33 +149,33 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_SparseAxpy(PetscInt am,Pet
   /* Allocate space for cj */
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
 
-  /* allocate a temp array for storing column indices of A*B */
+  /* Allocate a temp array for storing column indices of A*B */
   ierr = PetscMalloc((rmax+1)*sizeof(PetscInt),&abj);CHKERRQ(ierr);
 
   /* Determine cj */
   for (i=0; i<am; i++) {
-    anzi = ai[i+1] - ai[i];
-    cnzi = 0;
-    nextabj=0;
-    aj   = Aj + ai[i];
+    anzi    = Ai[i+1] - Ai[i];
+    cnzi    = 0;
+    nextabj = 0;
+    aj      = Aj + Ai[i];
     for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
-      bjj  = bj + bi[brow];
+      bj   = Bj + bi[brow];
       for (k=0; k<bnzj; k++){
-        if (!PetscBTLookupSet(bt,bjj[k])){  /* new entry */
-          abj[nextabj] = bjj[k]; nextabj++;
+        if (!PetscBTLookupSet(bt,bj[k])){  /* new entry */
+          abj[nextabj] = bj[k]; nextabj++;
         }
       }
     }
 
-    /* sort abj, then copy it to cj */
+    /* Sort abj, then copy it to cj */
     cnzi = ci[i+1] - ci[i];
     ierr = PetscSortInt(cnzi,abj);CHKERRQ(ierr);
-    ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
     cj_tmp = cj + ci[i];
     for (k=0; k< cnzi; k++){
       cj_tmp[k] = abj[k];
+      ierr = PetscBTClear(bt,abj[k]);CHKERRQ(ierr);
     }
   }
 
