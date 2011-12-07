@@ -691,11 +691,13 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     }
     for(PetscInt q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar u[dim+1]           = {0.0, 0.0, 0.0};
-      PetscScalar gradU[dim*(dim+1)] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+      PetscScalar u[dim+1];
+      PetscScalar gradU[dim*(dim+1)];
       PetscInt    fOffset            = 0;
       PetscInt    dOffset            = cOffset;
 
+      for(PetscInt d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
+      for(PetscInt d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
       for(PetscInt f = 0; f < numFields; ++f) {
         const PetscInt   Nb       = quad[f].numBasisFuncs;
         const PetscInt   Ncomp    = quad[f].numComponents;
@@ -879,7 +881,6 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateJacobianBatchCPU"
 /*
@@ -928,11 +929,13 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
 
         for(PetscInt q = 0; q < Nq; ++q) {
           if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-          PetscScalar u[dim+1]           = {0.0, 0.0, 0.0};
-          PetscScalar gradU[dim*(dim+1)] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+          PetscScalar u[dim+1];
+          PetscScalar gradU[dim*(dim+1)];
           PetscInt    fOffset            = 0;       // Offset into u[] for field_q (like offsetI)
           PetscInt    dOffset            = cOffset; // Offset into coefficients[] for field_q
 
+          for(PetscInt d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
+          for(PetscInt d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
           for(PetscInt field_q = 0; field_q < numFields; ++field_q) {
             const PetscInt   Nb          = quad[field_q].numBasisFuncs;
             const PetscInt   Ncomp       = quad[field_q].numComponents;
