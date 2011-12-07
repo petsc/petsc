@@ -411,13 +411,17 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   Input Parameters:
 + vfull - the full matrix 
 . is - the index set for the subvector
-- reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,
-  TAO_SUBSET_MATRIXFREE)
+. reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,  TAO_SUBSET_MATRIXFREE)
+- maskvalue - the value to set the unused vector elements to (for TAO_SUBSET_MASK or TAO_SUBSET_MATRIXFREE)
+
 
   Output Parameters:
 . vreduced - the subvector
+
+  Note:
+  maskvalue should usually be 0.0, unless a pointwise divide will be used.
 @*/
-PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, Vec *vreduced) 
+PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced) 
 {
     PetscErrorCode ierr;
     PetscInt nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
@@ -478,8 +482,8 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, Vec *vreduc
 	  if (*vreduced == PETSC_NULL) {
 	    ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
 	  }
-	  //ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
-	  ierr = VecSet(*vreduced,0.0); CHKERRQ(ierr);
+
+	  ierr = VecSet(*vreduced,maskvalue); CHKERRQ(ierr);
 	  ierr = ISGetLocalSize(is,&nlocal); CHKERRQ(ierr);
 	  ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
 	  ierr = VecGetArray(vfull,&fv); CHKERRQ(ierr);

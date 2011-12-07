@@ -270,6 +270,9 @@ class TaoExamples(ExampleList):
         self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor",method="ssfls",tags=["complementarity","single","blackscholes","c"],name="blackscholes_2",section="complementarity"))
         self.add(Example(example="minsurf1",nprocs=1,options="-tao_monitor -tao_view",method="ssils",tags=["complementarity","single","minsurf","c"],name="comp_minsurf1",section="complementarity"))
         self.add(Example(example="minsurf1",nprocs=1,options="-tao_monitor -tao_view",method="ssfls",tags=["complementarity","single","minsurf","c"],name="comp_minsurf2",section="complementarity"))
+        self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor -tao_subset_type subset",method="asils",tags=["complementarity","single","blackscholes","c"],name="blackscholes_3",section="complementarity"))
+        self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor -tao_subset_type mask",method="asils",tags=["complementarity","single","blackscholes","c"],name="blackscholes_3",section="complementarity"))
+        self.add(Example(example="blackscholes",nprocs=1,options="-tao_monitor -tao_subset_type matrixfree -pc_type jacobi",method="asils",tags=["complementarity","single","blackscholes","c"],name="blackscholes_3",section="complementarity"))
 
 
 

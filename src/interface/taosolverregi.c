@@ -25,6 +25,7 @@ extern PetscErrorCode TaoCreate_LCL(TaoSolver);
 
 extern PetscErrorCode TaoCreate_SSILS(TaoSolver);
 extern PetscErrorCode TaoCreate_SSFLS(TaoSolver);
+extern PetscErrorCode TaoCreate_ASILS(TaoSolver);
 
 EXTERN_C_END
 
@@ -98,6 +99,7 @@ PetscErrorCode TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_lcl",path,"TaoCreate_LCL",TaoCreate_LCL); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_ssils",path,"TaoCreate_SSILS",TaoCreate_SSILS); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_ssfls",path,"TaoCreate_SSFLS",TaoCreate_SSFLS); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_asils",path,"TaoCreate_ASILS",TaoCreate_ASILS); CHKERRQ(ierr);
 
 
 

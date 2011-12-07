@@ -5,7 +5,7 @@ subset
     . asls
 
 tao_fd_gradient
-complimentarity asils, asfls, isils, icp, rscs
+complimentarity asfls, isils, icp, rscs
 fd - plate2_fd_test, eptorsion2_fd_test
 Check 'Collective' documentation
 

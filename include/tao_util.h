@@ -41,7 +41,7 @@ PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
 PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 
-PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, Vec*);
+PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, PetscReal, Vec*);
 PetscErrorCode VecReducedXPY(Vec, Vec, IS); 
 PetscErrorCode ISCreateComplement(IS, Vec, IS *);
 PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);

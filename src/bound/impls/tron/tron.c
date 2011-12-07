@@ -170,9 +170,9 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
     }
     /* use free_local to mask/submat gradient, hessian, stepdirection */
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,&tron->R);
+    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);
     CHKERRQ(ierr);
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,&tron->DXFree);
+    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->DXFree);
     CHKERRQ(ierr);
     ierr = VecSet(tron->DXFree,0.0); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);

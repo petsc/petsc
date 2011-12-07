@@ -53,18 +53,18 @@
 #include "private/taosolver_impl.h"
 
 typedef struct {
-  Vec g;
-  Vec w;
-
   Vec ff;	/* fischer function */
   Vec dpsi;	/* gradient of psi */
   
   Vec da;	/* work vector for subdifferential calculation (diag pert) */
   Vec db;	/* work vector for subdifferential calculation (row scale) */
   Vec dm;   /* work vector for subdifferential calculation (mu vector) */
+  Vec dxfree;
 
   Vec t1;	/* work vector */
   Vec t2;	/* work vector */
+
+  Vec r1,r2,r3,w; /* work vectors */
 
   PetscReal merit; /* merit function value (norm(fischer)) */
   PetscReal merit_eqn;
@@ -78,26 +78,27 @@ typedef struct {
 
   PetscReal identifier;	/* Active-set identification */
 
-  // Interior-point method data
+  /* Interior-point method data */
   PetscReal mu_init; /* initial smoothing parameter value */
   PetscReal mu;      /* smoothing parameter */
   PetscReal dmu;     /* direction in smoothing parameter */
   PetscReal mucon;   /* smoothing parameter constraint */
   PetscReal d_mucon; /* derivative of smoothing constraint with respect to mu */
   PetscReal g_mucon; /* gradient of merit function with respect to mu */
+
+  Mat J_sub, Jpre_sub; /* subset of jacobian */
   MatStructure matflag; 
   Vec f;	/* constraint function */
+  
+  IS fixed;
+  IS free;
 } TAO_SSLS;
 
-PetscErrorCode TaoSetUp_SSLS(TaoSolver);
-PetscErrorCode TaoDestroy_SSLS(TaoSolver);
 PetscErrorCode TaoSetFromOptions_SSLS(TaoSolver);
 PetscErrorCode TaoView_SSLS(TaoSolver,PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);
-PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);
-PetscErrorCode Tao_ISLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec);
 
 #endif
 

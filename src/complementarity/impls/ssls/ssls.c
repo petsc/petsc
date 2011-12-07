@@ -1,27 +1,6 @@
 #include "ssls.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "TaoDestroy_SSLS"
-PetscErrorCode TaoDestroy_SSLS(TaoSolver tao)
-{
-  TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-
-  ierr = VecDestroy(&ssls->ff); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->w); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->dpsi); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->da); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->db); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t1); CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t2); CHKERRQ(ierr);
-  ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSetFromOptions_SSLS"

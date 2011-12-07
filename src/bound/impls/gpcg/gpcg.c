@@ -214,9 +214,9 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       /* Create a reduced linear system */
       ierr = VecDestroy(&gpcg->R); CHKERRQ(ierr);
       ierr = VecDestroy(&gpcg->DXFree); CHKERRQ(ierr);
-      ierr = VecGetSubVec(tao->gradient,gpcg->Free_Local, tao->subset_type, &gpcg->R); CHKERRQ(ierr);
+      ierr = VecGetSubVec(tao->gradient,gpcg->Free_Local, tao->subset_type, 0.0, &gpcg->R); CHKERRQ(ierr);
       ierr = VecScale(gpcg->R, -1.0); CHKERRQ(ierr);
-      ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local,tao->subset_type, &gpcg->DXFree); CHKERRQ(ierr);
+      ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local,tao->subset_type, 0.0, &gpcg->DXFree); CHKERRQ(ierr);
       ierr = VecSet(gpcg->DXFree,0.0); CHKERRQ(ierr);
 
       

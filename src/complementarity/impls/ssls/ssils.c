@@ -11,7 +11,6 @@ PetscErrorCode TaoSetUp_SSILS(TaoSolver tao)
 
   ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->w); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&ssls->ff); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&ssls->dpsi); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&ssls->da); CHKERRQ(ierr);
@@ -21,6 +20,26 @@ PetscErrorCode TaoSetUp_SSILS(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "TaoDestroy_SSILS"
+PetscErrorCode TaoDestroy_SSILS(TaoSolver tao)
+{
+  TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = VecDestroy(&ssls->ff); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->dpsi); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->da); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->db); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->t1); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->t2); CHKERRQ(ierr);
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  tao->data = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolve_SSILS"
@@ -55,7 +74,7 @@ static PetscErrorCode TaoSolve_SSILS(TaoSolver tao)
 
 
   while (1) {
-    ierr=PetscInfo3(tao, "TaoSolve_SSILS: %D: merit: %G, ndpsi: %G\n",
+    ierr=PetscInfo3(tao, "iter: %D, merit: %G, ndpsi: %G\n",
 		       iter, ssls->merit, ndpsi); CHKERRQ(ierr);
     /* Check the termination criteria */
     ierr = TaoMonitor(tao,iter++,ssls->merit,ndpsi,0.0,t,&reason); 
@@ -106,7 +125,7 @@ PetscErrorCode TaoCreate_SSILS(TaoSolver tao)
   tao->ops->setup=TaoSetUp_SSILS;
   tao->ops->view=TaoView_SSLS;
   tao->ops->setfromoptions=TaoSetFromOptions_SSLS;
-  tao->ops->destroy = TaoDestroy_SSLS;
+  tao->ops->destroy = TaoDestroy_SSILS;
 
   ssls->delta = 1e-10;
   ssls->rho = 2.1;

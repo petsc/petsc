@@ -63,7 +63,7 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
 
 
   while (1) {
-    ierr=PetscInfo3(tao, "TaoSolve_SSFLS: %D: merit: %G, ndpsi: %G\n",
+    ierr=PetscInfo3(tao, "iter: %D, merit: %G, ndpsi: %G\n",
 		       iter, ssls->merit, ndpsi); CHKERRQ(ierr);
     /* Check the termination criteria */
     ierr = TaoMonitor(tao,iter++,ssls->merit,ndpsi,0.0,t,&reason); 
@@ -102,6 +102,27 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TaoDestroy_SSFLS"
+PetscErrorCode TaoDestroy_SSFLS(TaoSolver tao)
+{
+  TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = VecDestroy(&ssls->ff); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->w); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->dpsi); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->da); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->db); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->t1); CHKERRQ(ierr);
+  ierr = VecDestroy(&ssls->t2); CHKERRQ(ierr);
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  tao->data = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -119,7 +140,7 @@ PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
   tao->ops->setup=TaoSetUp_SSFLS;
   tao->ops->view=TaoView_SSLS;
   tao->ops->setfromoptions=TaoSetFromOptions_SSLS;
-  tao->ops->destroy = TaoDestroy_SSLS;
+  tao->ops->destroy = TaoDestroy_SSFLS;
 
   ssls->delta = 1e-10;
   ssls->rho = 2.1;
