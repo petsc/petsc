@@ -567,10 +567,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = VecZeroEntries(W);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
+        ierr = VecScale(W, ark->shift);CHKERRQ(ierr);
+
         /* Ydot = shift*(Y-Z) */
         ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = -h*At[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
+
         /* Initial guess taken from last stage */
         ierr = VecCopy(i>0?Y[i-1]:ts->vec_sol,Y[i]);CHKERRQ(ierr);
         ierr = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
