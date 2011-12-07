@@ -9144,7 +9144,7 @@ PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTransposeColoringDestroy"
-/*@
+/*@C
     MatTransposeColoringDestroy - Destroys a coloring context for matrix product C=A*B^T that was created
     via MatTransposeColoringCreate().
 
@@ -9178,7 +9178,7 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTransColoringApplySpToDen"
-/*@
+/*@C
     MatTransColoringApplySpToDen - Given a symbolic matrix product C=A*B^T for which 
     a MatTransposeColoring context has been created, computes a dense B^T by Apply 
     MatTransposeColoring to sparse B.
@@ -9220,7 +9220,7 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTransColoringApplyDenToSp"
-/*@
+/*@C
     MatTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which 
     a MatTransposeColoring context has been created and a dense matrix Cden=A*Btdense
     in which Btdens is obtained from MatTransColoringApplySpToDen(), recover sparse matrix 
@@ -9262,7 +9262,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatTransposeColoringCreate"
-/*@
+/*@C
    MatTransposeColoringCreate - Creates a matrix coloring context for matrix product C=A*B^T.
 
    Collective on Mat
