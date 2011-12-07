@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerVTKAddField"
-/*@
+/*@C
    PetscViewerVTKAddField - Add a field to the viewer
 
    Collective
