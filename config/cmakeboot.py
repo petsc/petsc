@@ -46,7 +46,7 @@ class PETScMaker(script.Script):
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
    self.make          = self.framework.require('config.programs',        None)
-   self.cmake         = self.framework.require('PETSc.utilities.CMake',       None)
+   self.cmake         = self.framework.require('PETSc.packages.cmake',       None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
