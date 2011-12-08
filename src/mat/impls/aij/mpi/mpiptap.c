@@ -9,6 +9,10 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscbt.h>
 
+/*
+#define DEBUG_MATPTAP
+ */
+
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJ_PtAP"
@@ -136,8 +140,16 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+#if defined(DEBUG_MATPTAP)
+   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] P_oth is done...\n",rank);
+#endif
+
   /* get P_loc by taking all local rows of P */
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] P_loc is done...\n",rank);
+#endif
 
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data; 
   p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
@@ -155,7 +167,15 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* create and initialize a linked list */
   nlnk = pN+1;
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call PetscLLCreate(), pN %D, P_rmax %D %D; Annz %D\n",rank,pN,p_loc->rmax,p_oth->rmax,adi[am]+aoi[am]);
+#endif
   ierr = PetscLLCreate(pN,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call PetscLLCreate() is done\n",rank);
+#endif
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
@@ -209,6 +229,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   time_AP += tf-t0;
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] AP is done\n",rank);
+#endif
 
   /* determine symbolic Co=(p->B)^T*AP - send to others */
   /*----------------------------------------------------*/
@@ -257,6 +281,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]);
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
+
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local Co is done\n",rank);
+#endif
 
   /* send j-array (coj) of Co to other processors */
   /*----------------------------------------------*/
@@ -368,6 +397,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   ierr = PetscGetTime(&tf);CHKERRQ(ierr);
   time_Co += tf-t0;
+
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Co is done\n",rank);
+#endif
 
   /* compute the local portion of C (mpi mat) */
   /*------------------------------------------*/
@@ -507,6 +541,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PtAPSym time %g = matsetup %g + AP %g + Co %g + Cd %g\n",rank,etime,time_matupdate,time_AP,time_Co,time_Cd);
   }
    */
+#if defined(DEBUG_MATPTAP)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] exit  MatPtAPSymbolic_MPIAIJ_MPIAIJ\n",rank);
+#endif
   PetscFunctionReturn(0);
 }
 

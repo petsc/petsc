@@ -459,7 +459,9 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,Mat C)
   }
 #if defined(DEBUG_MATMATMULT)
   PetscMPIInt rank;
-  ierr = MPI_Comm_rank(((PetscObject)C)->comm,&rank);CHKERRQ(ierr);
+  MPI_Comm    comm = ((PetscObject)C)->comm;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable()...\n",rank);
 #endif
 
@@ -475,6 +477,10 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,Mat C)
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr);
   ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+#if defined(DEBUG_MATMATMULT)
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] exit MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable()...\n",rank);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -566,7 +572,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,PetscReal f
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)AB,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  mult->skipNumeric  = PETSC_TRUE; /* a numeric product is done here */
+  mult->skipNumeric  = PETSC_FALSE; /*TRUE; */ /* a numeric product is done here */
   mult->destroy      = AB->ops->destroy;
   mult->duplicate    = AB->ops->duplicate;
   AB->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable;
@@ -575,7 +581,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat B,PetscReal f
   AB->ops->matmult        = MatMatMult_MPIAIJ_MPIAIJ;
   *C                      = AB;
 #if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] exit MatMatMultSymbolic_MPIAIJ_MPIAIJ_32()...\n",rank);
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] exit MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable()...\n",rank);
 #endif
   PetscFunctionReturn(0);
 }
