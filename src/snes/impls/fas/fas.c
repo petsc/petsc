@@ -882,36 +882,33 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   SNES_FAS   *fas = (SNES_FAS *) snes->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  PetscInt levels = fas->levels;
-  PetscInt i;
 
   PetscFunctionBegin;
+  if (fas->level != fas->levels - 1) PetscFunctionReturn(0);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "FAS, levels = %d\n",  fas->levels);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);
-    for (i = levels - 1; i >= 0; i--) {
-      ierr = PetscViewerASCIIPrintf(viewer, "level: %d\n",  fas->level);CHKERRQ(ierr);
-      if (fas->upsmooth) {
-        ierr = PetscViewerASCIIPrintf(viewer, "up-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);
-        ierr = SNESView(fas->upsmooth, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "no up-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
-      }
-      if (fas->downsmooth) {
-        ierr = PetscViewerASCIIPrintf(viewer, "down-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);
-        ierr = SNESView(fas->downsmooth, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "no down-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
-      }
-      if (snes->usegs) {
-        ierr = PetscViewerASCIIPrintf(viewer, "Using user Gauss-Seidel on level %D\n",  fas->level);CHKERRQ(ierr);
-      }
-      if (fas->next) fas = (SNES_FAS *)fas->next->data;
+    ierr = PetscViewerASCIIPrintf(viewer, "level: %d\n",  fas->level);CHKERRQ(ierr);
+    if (fas->upsmooth) {
+      ierr = PetscViewerASCIIPrintf(viewer, "up-smoother on level %D:\n",  fas->level);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);
+      ierr = SNESView(fas->upsmooth, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "no up-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
+    }
+    if (fas->downsmooth) {
+      ierr = PetscViewerASCIIPrintf(viewer, "down-smoother on level %D:\n",  fas->level);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);
+      ierr = SNESView(fas->downsmooth, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "no down-smoother on level %D\n",  fas->level);CHKERRQ(ierr);
+    }
+    if (snes->usegs) {
+      ierr = PetscViewerASCIIPrintf(viewer, "Using user Gauss-Seidel on level %D -- smoothdown=%D, smoothup=%D\n",
+                                    fas->level, fas->max_down_it, fas->max_up_it);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);
   } else {
@@ -1035,7 +1032,7 @@ with correction:
 
 
  */
-PetscErrorCode FASCoarseCorrection(SNES snes, Vec B, Vec X, Vec F, Vec X_new) {
+PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
   PetscErrorCode      ierr;
   Vec                 X_c, Xo_c, F_c, B_c;
   SNES_FAS            *fas = (SNES_FAS *)snes->data;
@@ -1207,7 +1204,7 @@ PetscErrorCode FASCycle_Multiplicative(SNES snes, Vec X) {
   /* pre-smooth -- just update using the pre-smoother */
   ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
 
-  ierr = FASCoarseCorrection(snes, B, X, F, X);CHKERRQ(ierr);
+  ierr = FASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
 
   if (fas->level != 0) {
     ierr = FASUpSmooth(snes, B, X, F);CHKERRQ(ierr);

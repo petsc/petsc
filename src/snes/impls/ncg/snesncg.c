@@ -251,7 +251,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    ierr = VecAXPY(dX,-1.0,X);CHKERRQ(ierr);
+    ierr = VecAXPY(lX,-1.0,X);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(F, lX);CHKERRQ(ierr);
     ierr = VecScale(lX,-1.0);CHKERRQ(ierr);
