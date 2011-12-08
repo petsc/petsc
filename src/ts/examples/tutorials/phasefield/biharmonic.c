@@ -202,7 +202,9 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&uh);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
+#if defined(f00)
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
+#endif
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);      
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
