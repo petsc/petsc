@@ -46,6 +46,7 @@
       PetscEnum PETSC_VIEWER_DRAW_LG
       PetscEnum PETSC_VIEWER_DRAW_CONTOUR
       PetscEnum PETSC_VIEWER_DRAW_PORTS
+      PetscEnum PETSC_VIEWER_VTK_VTS
       PetscEnum PETSC_VIEWER_NATIVE
       PetscEnum PETSC_VIEWER_NOFORMAT
 
@@ -70,8 +71,9 @@
       parameter (PETSC_VIEWER_DRAW_LG = 18)
       parameter (PETSC_VIEWER_DRAW_CONTOUR = 19)
       parameter (PETSC_VIEWER_DRAW_PORTS = 20)
-      parameter (PETSC_VIEWER_NATIVE = 21)
-      parameter (PETSC_VIEWER_NOFORMAT = 22)
+      parameter (PETSC_VIEWER_VTK_VTS = 21)
+      parameter (PETSC_VIEWER_NATIVE = 22)
+      parameter (PETSC_VIEWER_NOFORMAT = 23)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 
