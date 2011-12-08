@@ -938,7 +938,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   user->ksp_its_initial = 0;
 
   n = user->mx * user->mx;
-  m = 3 * user->mx * (user->mx-1);
 
   h = 1.0/user->mx;
   hinv = user->mx;
