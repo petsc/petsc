@@ -29,7 +29,7 @@ extern PetscErrorCode PCReset_MG(PC);
 extern PetscErrorCode createProlongation( const Mat, const PetscReal [], const PetscInt, 
                                           PetscInt*, Mat *, PetscReal **, PetscBool *, PetscReal *, const PC_GAMG* );
 #if defined PETSC_USE_LOG
-enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,NUM_SET};
+enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
 extern PetscLogEvent gamg_setup_events[NUM_SET];
 #endif
 

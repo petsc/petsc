@@ -178,7 +178,13 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
 
-  if( avoid_repart) { 
+  /* get number of PEs to make active, reduce */
+  ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
+  new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
+  if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
+  else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
+
+  if( avoid_repart && !(new_npe == 1 && *a_nactive_proc != 1) ) { 
     *a_Amat_crs = Cmat; /* output */
   }
   else {
@@ -198,12 +204,6 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     PetscReal      *data = *a_coarse_data;
     VecScatter      vecscat;
     IS  isnewproc;
-
-    /* get number of PEs to make active, reduce */
-    ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
-    new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
-    if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
-    else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
 
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
     ierr = PetscMalloc( npe*sizeof(PetscInt), &counts ); CHKERRQ(ierr); 
@@ -345,6 +345,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     strideNew = ncrs_new*a_ndata_rows;
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate( wcomm, &dest_crd );
@@ -379,6 +380,10 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     }
     ierr = VecAssemblyBegin(src_crd); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(src_crd); CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);   CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
+#endif
     /*
       Scatter the element vertex information (still in the original vertex ordering)
       to the correct processor
@@ -409,6 +414,10 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     }
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
     ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET14],0,0,0,0);   CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
+#endif
     /*
       Invert for MatGetSubMatrix
     */
@@ -444,6 +453,9 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
     ierr = PetscFree( counts );  CHKERRQ(ierr);
     ierr = PetscFree( ranks );  CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET15],0,0,0,0);   CHKERRQ(ierr);
+#endif
   }
 
   PetscFunctionReturn(0);
@@ -1214,6 +1226,11 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
     PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_events[SET9]);
     PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
     PetscLogEventRegister("  PL repartition", cookie, &gamg_setup_events[SET12]);
+
+    PetscLogEventRegister("  PL 1", cookie, &gamg_setup_events[SET13]);
+    PetscLogEventRegister("  PL 2", cookie, &gamg_setup_events[SET14]);
+    PetscLogEventRegister("  PL 3", cookie, &gamg_setup_events[SET15]);
+
     /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_events[SET13]); */
     /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_events[SET10]); */
     /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_events[SET11]); */
