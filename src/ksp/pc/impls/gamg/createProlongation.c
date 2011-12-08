@@ -1341,6 +1341,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_FILTER],0,0,0,0);   CHKERRQ(ierr);
   ierr = PetscLogEventBegin(gamg_setup_events[GRAPH_SQR],0,0,0,0);CHKERRQ(ierr);
 #endif
+
   /* square matrix - SA */  
   if( method != 0 ){
     Mat Gmat2;
@@ -1353,6 +1354,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     CHKERRQ(ierr);
     AuxMat = Gmat;
     Gmat = Gmat2;
+
     /* force compressed row storage for B matrix in AuxMat */
     if (npe > 1) {
       Mat_MPIAIJ *mpimat = (Mat_MPIAIJ*)AuxMat->data;
@@ -1363,6 +1365,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       assert( Bmat->compressedrow.use );
     }
   }
+
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(gamg_setup_events[GRAPH_SQR],0,0,0,0);   CHKERRQ(ierr);
 #endif
@@ -1444,6 +1447,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( permute );  CHKERRQ(ierr);
     ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
+
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(gamg_setup_events[GRAPH],0,0,0,0);   CHKERRQ(ierr);
 #endif

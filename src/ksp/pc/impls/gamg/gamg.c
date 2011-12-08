@@ -286,6 +286,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
 
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
+
     if( ncrs0 != 0 ){
       const PetscInt *is_idx;
       MatPartitioning  mpart;
@@ -296,7 +297,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
 	}
       }
       adj->rmap->range[nactive] = adj->rmap->range[npe];
-
+      
       ierr = MatPartitioningCreate( cm, &mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
       ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
@@ -325,6 +326,7 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
       isnewproc_idx = 0;
       is_sz = 0;
     }
+
     ierr = MatDestroy( &adj );                       CHKERRQ(ierr);
     ierr = ISCreateGeneral( wcomm, is_sz, isnewproc_idx, PETSC_COPY_VALUES, &isnewproc );
     if( isnewproc_idx != 0 ) {
