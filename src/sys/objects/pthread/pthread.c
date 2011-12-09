@@ -72,6 +72,15 @@ extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 /* NO Thread Pool Function */
 PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void**,PetscInt);
 
+/* True Thread Pool Functions */
+extern void*          PetscThreadFunc_LockFree(void*);
+extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
+extern PetscErrorCode PetscThreadFinalize_LockFree(void);
+extern void           MainWait_LockFree(void);
+extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt);
+
+
+
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
@@ -103,7 +112,8 @@ PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId
 }
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-void PetscPthreadSetAffinity(PetscInt icorr)
+/* Set CPU affinity for the main thread */
+void PetscSetMainThreadAffinity(PetscInt icorr)
 {
   cpu_set_t mset;
   int ncorr = get_nprocs();
@@ -111,6 +121,17 @@ void PetscPthreadSetAffinity(PetscInt icorr)
   CPU_ZERO(&mset);
   CPU_SET(icorr%ncorr,&mset);
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+}
+
+/* Set CPU affinity for individual threads */
+void PetscPthreadSetAffinity(PetscInt icorr)
+{
+  cpu_set_t mset;
+  int ncorr = get_nprocs();
+
+  CPU_ZERO(&mset);
+  CPU_SET(icorr%ncorr,&mset);
+  pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
 }
 #endif
 
@@ -148,10 +169,10 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
-    PetscInt icorr;
+    PetscInt icorr=0;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-    PetscPthreadSetAffinity(icorr);
+    PetscSetMainThreadAffinity(icorr);
 #endif
   }
 
@@ -233,11 +254,20 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 #endif
     }
   } else {
-    /* need to define these in the case on 'no threads' or 'thread create/destroy'
-     could take any of the above versions 
-    */
-    MainJob               = &MainJob_Spawn;
-    PetscInfo1(PETSC_NULL,"Using No thread pool with %d threads\n",PetscMaxThreads);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-use_lock_free",&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      PetscThreadFunc       = &PetscThreadFunc_LockFree;
+      PetscThreadInitialize = &PetscThreadInitialize_LockFree;
+      PetscThreadFinalize   = &PetscThreadFinalize_LockFree;
+      MainWait              = &MainWait_LockFree;
+      MainJob               = &MainJob_LockFree;
+    } else {
+      /* need to define these in the case on 'no threads' or 'thread create/destroy'
+	 could take any of the above versions 
+      */
+      MainJob               = &MainJob_Spawn;
+      PetscInfo1(PETSC_NULL,"Using No thread pool with %d threads\n",PetscMaxThreads);
+    }
   }
 
   PetscFunctionReturn(0);
