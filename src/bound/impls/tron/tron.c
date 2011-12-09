@@ -128,6 +128,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
 
   /*   Project the current point onto the feasible set */
+  ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
   

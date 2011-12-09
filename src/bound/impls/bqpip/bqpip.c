@@ -69,6 +69,7 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, TaoSolver tao)
 
   PetscFunctionBegin;
   /* Compute function, Gradient R=Hx+b, and Hessian */
+  ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution); CHKERRQ(ierr);
   ierr = MatMult(tao->hessian, tao->solution, tao->gradient); CHKERRQ(ierr);
   ierr = VecCopy(qp->C0, qp->Work); CHKERRQ(ierr);

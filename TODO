@@ -4,7 +4,6 @@ subset
   - update solvers to use it
     . asls
 
-push TaoComputeVariableBounds to solvers
 tao_fd_gradient
 complimentarity isils, icp, rscs
 fd - plate2_fd_test, eptorsion2_fd_test

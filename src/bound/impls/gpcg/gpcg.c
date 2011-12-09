@@ -174,6 +174,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
   gpcg->Hsub=PETSC_NULL;
   gpcg->Hsub_pre=PETSC_NULL;
   
+  ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
   
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
