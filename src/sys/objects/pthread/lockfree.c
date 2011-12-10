@@ -37,7 +37,7 @@ extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 
 PetscErrorCode ithreaderr_lockfree = 0;
-int*           pVal;
+int*           pVal_lockfree;
 
 extern int* ThreadCoreAffinity;
 
@@ -73,7 +73,7 @@ void* FuncFinish_LockFree(void* arg) {
 */
 void* PetscThreadFunc_LockFree(void* arg) 
 {
-  int ierr,iVal;
+  int iVal;
   PetscErrorCode iterr;
 
   iVal = *(int*)arg;
@@ -91,6 +91,7 @@ void* PetscThreadFunc_LockFree(void* arg)
       __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
     }
   }
+  __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
   return NULL;
 }
 
@@ -101,7 +102,7 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   PetscInt i,status;
 
   PetscFunctionBegin;
-  pVal = (int*)malloc(N*sizeof(int));
+  pVal_lockfree = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   job_lockfree.pdata = (void**)malloc(N*sizeof(void*));
@@ -111,10 +112,10 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   job_lockfree.iNumReadyThreads = 0;
   /* Create threads */
   for(i=0; i<N; i++) {
-    pVal[i] = i;
+    pVal_lockfree[i] = i;
     job_lockfree.my_job_status[i] = 1;
     job_lockfree.pdata[i] = NULL;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_lockfree[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -159,9 +160,8 @@ void MainWait_LockFree()
 #define __FUNCT__ "MainJob_LockFree"
 PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n) 
 {
-  int ierr,i;
+  int i;
   PetscErrorCode ijoberr = 0;
-  int job_done;
 
   job_lockfree.pfunc = pFunc;
   for(i=0;i<PetscMaxThreads;i++) {
@@ -171,7 +171,8 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n)
     __sync_bool_compare_and_swap(&(job_lockfree.my_job_status[i]),1,0);
   }
   /* Wait for all threads to finish their job */
-  MainWait();
+  if(pFunc != FuncFinish_LockFree)
+    MainWait();
 
   if(ithreaderr_lockfree) {
     ijoberr = ithreaderr_lockfree;
