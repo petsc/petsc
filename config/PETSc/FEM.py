@@ -265,7 +265,7 @@ class QuadratureGenerator(script.Script):
       numDofs[0]   = numDofDims[0]
       numDofs[1]   = numDofDims[1]
       for d in range(2, tensor+1):
-        numDofs[d] = numDofDims[d-1]**2
+        numDofs[d] = numDofs[d-1]**2
       basisDimName    = name+'BasisDim'+ext
       basisDerDimName = name+'BasisDerivativesDim'+ext
       # BROKEN
