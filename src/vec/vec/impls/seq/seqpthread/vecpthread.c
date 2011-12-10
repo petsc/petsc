@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 /* Global variables */
-extern PetscBool    PetscUseThreadPool;
+extern PetscBool    PetscCheckCoreAffinity;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 extern int*         ThreadCoreAffinity;
@@ -34,7 +34,7 @@ extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 PETSC_STATIC_INLINE void DoCoreAffinity(void)
 {
-  if (!PetscUseThreadPool) return;
+  if (!PetscCheckCoreAffinity) return;
   else {
     int       i,icorr=0; 
     cpu_set_t mset;
@@ -1502,10 +1502,11 @@ PetscErrorCode VecCreate_SeqPThread(Vec V)
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQPTHREAD on more than one process");
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  /*  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr); */
   ierr = VecCreate_SeqPThread_Private(V,array);CHKERRQ(ierr);
+  ierr = VecSet_SeqPThread(V,0.0);CHKERRQ(ierr);
   s    = (Vec_SeqPthread*)V->data;
-  s->array_allocated = (PetscScalar*)array;
+  s->array_allocated = (PetscScalar*)s->array;
 
   PetscFunctionReturn(0);
 }

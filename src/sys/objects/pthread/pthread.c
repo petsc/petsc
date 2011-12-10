@@ -32,7 +32,7 @@
 #include <valgrind/valgrind.h>
 #endif
 
-PetscBool    PetscUseThreadPool    = PETSC_FALSE;
+PetscBool    PetscCheckCoreAffinity    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
@@ -202,7 +202,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
    */
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    PetscUseThreadPool = PETSC_TRUE;
+    PetscCheckCoreAffinity = PETSC_TRUE;
     /* get the thread pool type */
     PetscInt ipool = 0;
     const char *choices[4] = {"true","tree","main","chain"};
@@ -256,6 +256,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   } else {
     ierr = PetscOptionsHasName(PETSC_NULL,"-use_lock_free",&flg1);CHKERRQ(ierr);
     if (flg1) {
+      PetscCheckCoreAffinity = PETSC_TRUE;
       PetscThreadFunc       = &PetscThreadFunc_LockFree;
       PetscThreadInitialize = &PetscThreadInitialize_LockFree;
       PetscThreadFinalize   = &PetscThreadFinalize_LockFree;

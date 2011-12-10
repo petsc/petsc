@@ -59,7 +59,7 @@ y
   */
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+
   /*
      Duplicate more work vectors (of the same format and
      partitioning as the initial vector).  Here we duplicate
@@ -86,8 +86,6 @@ y
      PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
      (when using real numbers) it is undefined.
   */
-  //printf("Size Of Void* =  %ld, Size Of PetscErrorCode =  %ld\n",sizeof(void*),sizeof(PetscErrorCode));
-  //printf("Size of PetscBool = %ld\n",sizeof(PetscBool));
 
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt) (PetscRealPart(dot)));CHKERRQ(ierr);
@@ -98,25 +96,11 @@ y
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
                              (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
 #endif
-  //struct timeval t1, t2, result;
-  //gettimeofday(&t1,NULL);
   ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
-  //gettimeofday(&t2,NULL);
-  //timersub(&t2,&t1,&result);
-  //printf("Time for VecMax = %lf\n",result.tv_sec+result.tv_usec/1000000.0);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",(double)maxval,maxind);CHKERRQ(ierr);
 
   ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMin %g, VecInd %D\n",(double)maxval,maxind);CHKERRQ(ierr);
-  /*
-  const PetscInt ix_kds[] = {3,7,14};
-  const PetscScalar y_kds[] = {13.2,69.3,-8.7};
-  ierr = VecSetValues(x,3,ix_kds,y_kds,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
-  ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
-   */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRQ(ierr);
 
 
@@ -176,7 +160,6 @@ y
   ierr = VecNorm(z[2],NORM_2,&norm);CHKERRQ(ierr);
   v2 = norm-3.0*sqrt((double)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",(double)v,(double)v1,(double)v2);CHKERRQ(ierr);
-  
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
