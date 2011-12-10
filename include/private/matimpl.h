@@ -1068,6 +1068,116 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* 
+  Create and initialize a condensed linked list - 
+    same as PetscLLCreate(), but uses a scalable array 'lnk' with size of max number of entries, not O(N).
+    Barry suggested this approach (Dec. 6, 2011):
+      I've thought of an alternative way of representing a linked list that is efficient but doesn't have the O(N) scaling issue 
+      (it may be faster than the O(N) even sequentially due to less crazy memory access).
+
+      Instead of having some like  a  2  -> 4 -> 11 ->  22  list that uses slot 2  4 11 and 22 in a big array use a small array with two slots 
+      for each entry for example  [ 2 1 | 4 3 | 22 -1 | 11 2]   so the first number (of the pair) is the value while the second tells you where 
+      in the list the next entry is. Inserting a new link means just append another pair at the end. For example say we want to insert 13 into the 
+      list it would then become [2 1 | 4 3 | 22 -1 | 11 4 | 13 2 ] you just add a pair at the end and fix the point for the one that points to it. 
+      That is 11 use to point to the 2 slot, after the change 11 points to the 4th slot which has the value 13. Note that values are always next 
+      to each other so memory access is much better than using the big array.
+
+  Example:
+     nlnk_max=5, lnk_max=36:
+     Initial list: [0, 0 | 0, 0 | 0, 0 | 0, 0 | 0, 0 | 36, 10 | 0, 0]
+     here, head_node has index 2*nlnk_max=10 with value lnk_max=36. _nlnk=2*(nlnk_max+1)-th entry is used to store the number of entries in the list.
+     The initial lnk represents head -> tail(marked by 36) with number of entries = lnk[2*(nlnk_max+1)]=lnk[12]=0.
+    
+     Now adding a sorted set {2,4}, the list becomes
+     [2, 2 | 4, 10 | 0, 0 | 0, 0 | 0, 0 | 36, 0 | 2, 0]
+     represents head -> 2 -> 4 -> tail with number of entries = lnk[12]=2.
+
+     Then adding a sorted set {0,3,35}, the list
+     [2, 6 | 4, 8 | 0, 0 | 3, 2 | 35, 10 | 36, 4 | 5, 0]
+     represents head -> 0 -> 2 -> 3 -> 4 -> 35 -> tail with number of entries = lnk[12]=5.
+ 
+  Input Parameters:
+    nlnk_max  - max length of the list
+    lnk_max   - max value of the entries
+  Output Parameters:
+    lnk       - list created and initialized
+    nlnk      - number of entries on the list
+    bt        - PetscBT (bitarray) with all bits set to false. Note: bt must have size lnk_max, not nln_max!
+*/
+#define PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt) 0;        \
+{\
+  PetscInt _head,_nlnk;\
+  PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),&lnk);\
+  PetscBTCreate(lnk_max,bt);\
+  PetscBTMemzero(lnk_max,bt);\
+  _head = 2*nlnk_max;\
+  lnk[_head] = lnk_max;\
+  lnk[_head+1] = _head;\
+  _nlnk      = 2*(nlnk_max+1);\
+  lnk[2*(nlnk_max+1)] = 0; /* nlnk: number of entries on the list */\
+  nlnk       = lnk + _nlnk;\
+}
+
+/*
+  Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted interger array 
+    head      - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscLLCondensedAddSorted(nlnk_max,lnk_max,nidx,indices,nlnk,lnk,bt) 0; \
+{\
+  PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk;                    \
+  _nlnk     = lnk[2*(nlnk_max+1)]; /* num of entries on the input lnk */\
+  _location = 2*nlnk_max; /* head */ \
+  for (_k=0; _k<nidx; _k++){\
+    _entry = indices[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _next     = _location + 1; /* link from previous node to the current node */\
+        _location = lnk[_next];    /* idx of the current node */\
+        _lnkdata  = lnk[_location];/* value of the current node */      \
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[2*_nlnk]   = _entry;\
+      lnk[2*_nlnk+1] = _location; /* idx of the current  node */\
+      lnk[_next]     = 2*_nlnk;   /* corrent previous node to this new node */\
+      _location      = 2*_nlnk;   /* next search starts from here */\
+      _nlnk++;\
+    }\
+  }\
+  lnk[2*(nlnk_max+1)] = _nlnk; /* number of entries on the list */\
+}
+
+#define PetscLLCondensedClean(nlnk_max,lnk_max,nidx,indices,nlnk,lnk,bt) 0;\
+{\
+  PetscInt _j,_idx,_nlnk;                            \
+  _idx  = lnk[2*nlnk_max + 1]; /* idx of 1st node */\
+  _nlnk = lnk[2*(nlnk_max+1)]; /* num of entries on lnk */\
+  for (_j=0; _j<_nlnk; _j++){\
+    indices[_j] = lnk[_idx];\
+    _idx        = lnk[_idx + 1]; /* idx of next node*/  \
+    ierr = PetscBTClear(bt,indices[_j]);CHKERRQ(ierr);\
+  }\
+  _j          = 2*nlnk_max; /* initialize head node */              \
+  lnk[_j]     = lnk_max;\
+  lnk[_j + 1] = _j;\
+  lnk[_j + 2] = 0; /* set num of entries as 0 */\
+}
+
+/*
+  Free memories used by the list
+*/
+#define PetscLLCondensedDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
+
+
 extern PetscLogEvent  MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 extern PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
