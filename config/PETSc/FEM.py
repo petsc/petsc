@@ -73,34 +73,76 @@ class QuadratureGenerator(script.Script):
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
 
-  def getQuadratureStructs(self, degree, quadrature, num):
+  def getQuadratureStructs(self, degree, quadrature, num, tensor = 0):
     '''Return C arrays with the quadrature points and weights
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
+    import numpy as np
 
     self.logPrint('Generating quadrature structures for degree '+str(degree), debugSection = 'codegen')
     ext = '_'+str(num)
-    numPoints = Define()
-    numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
-    numPoints.replacementText = str(len(quadrature.get_points()))
-    return [numPoints,
-            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
-            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'PetscReal')]
+    if tensor:
+      numPointsDim = Define()
+      numPointsDim.identifier = 'NUM_QUADRATURE_POINTS_DIM'+ext
+      numPointsDim.replacementText = str(len(quadrature.get_points()))
+      numPoints = Define()
+      numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
+      numPoints.replacementText = str(len(quadrature.get_points())**tensor)
+      points = quadrature.get_points()
+      weights = quadrature.get_weights()
+      for d in range(2, tensor+1):
+        points  = np.outer(points, quadrature.get_points())
+        weights = np.outer(weights, quadrature.get_weights())
+      code = [numPointsDim, numPoints,
+              self.getArray(self.Cxx.getVar('points_dim'+ext), quadrature.get_points(), 'Quadrature points along each dimension\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
+              self.getArray(self.Cxx.getVar('weights_dim'+ext), quadrature.get_weights(), 'Quadrature weights along each dimension\n   - (v1,v2,...)', 'PetscReal'),
+              self.getArray(self.Cxx.getVar('points'+ext), points, 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
+              self.getArray(self.Cxx.getVar('weights'+ext), weights, 'Quadrature weights\n   - (v1,v2,...)', 'PetscReal')]
+    else:
+      numPoints = Define()
+      numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
+      numPoints.replacementText = str(len(quadrature.get_points()))
+      code = [numPoints,
+              self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
+              self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'PetscReal')]
+    return code
 
-  def getQuadratureStructsInline(self, degree, quadrature, num):
+  def getQuadratureStructsInline(self, degree, quadrature, num, tensor = 0):
     '''Return C arrays with the quadrature points and weights
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Declarator
+    import numpy as np
 
     self.logPrint('Generating quadrature structures for degree '+str(degree), debugSection = 'codegen')
     ext = '_'+str(num)
-    numPoints = Declarator()
-    numPoints.identifier  = 'numQuadraturePoints'+ext
-    numPoints.type        = self.Cxx.typeMap['const int']
-    numPoints.initializer = self.Cxx.getInteger(len(quadrature.get_points()))
-    return [self.Cxx.getDecl(numPoints),
-            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
-            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'const PetscReal', static = False)]
+    if tensor:
+      numPointsDim = Declarator()
+      numPointsDim.identifier  = 'numQuadraturePointsDim'+ext
+      numPointsDim.type        = self.Cxx.typeMap['const int']
+      numPointsDim.initializer = self.Cxx.getInteger(len(quadrature.get_points()))
+      numPoints = Declarator()
+      numPoints.identifier  = 'numQuadraturePoints'+ext
+      numPoints.type        = self.Cxx.typeMap['const int']
+      numPoints.initializer = self.Cxx.getInteger(len(quadrature.get_points())**tensor)
+      points = quadrature.get_points()
+      weights = quadrature.get_weights()
+      for d in range(2, tensor+1):
+        points  = np.outer(points, quadrature.get_points())
+        weights = np.outer(weights, quadrature.get_weights())
+      code = [self.Cxx.getDecl(numPointsDim), self.Cxx.getDecl(numPoints),
+              self.getArray(self.Cxx.getVar('points_dim'+ext), quadrature.get_points(), 'Quadrature points along each dimension\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
+              self.getArray(self.Cxx.getVar('weights_dim'+ext), quadrature.get_weights(), 'Quadrature weights along each dimension\n   - (v1,v2,...)', 'const PetscReal', static = False),
+              self.getArray(self.Cxx.getVar('points'+ext), points, 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
+              self.getArray(self.Cxx.getVar('weights'+ext), weights, 'Quadrature weights\n   - (v1,v2,...)', 'const PetscReal', static = False)]
+    else:
+      numPoints = Declarator()
+      numPoints.identifier  = 'numQuadraturePoints'+ext
+      numPoints.type        = self.Cxx.typeMap['const int']
+      numPoints.initializer = self.Cxx.getInteger(len(quadrature.get_points()))
+      code = [self.Cxx.getDecl(numPoints),
+              self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
+              self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'const PetscReal', static = False)]
+    return code
 
   def getBasisFuncOrder(self, element):
     '''Map from FIAT order to Sieve order
@@ -189,7 +231,7 @@ class QuadratureGenerator(script.Script):
       elemMats.append(elemMat)
     return elemMats
 
-  def getBasisStructs(self, name, element, quadrature, num):
+  def getBasisStructs(self, name, element, quadrature, num, tensor = 0):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from FIAT.polynomial_set import mis
@@ -200,11 +242,82 @@ class QuadratureGenerator(script.Script):
     points  = quadrature.get_points()
     numComp = getattr(element, 'numComponents', 1)
     code    = []
-    # Handles vector elements which just repeat scalar values
-    for i in range(1):
-      basis = element.get_nodal_basis()
-      dim = element.get_reference_element().get_spatial_dimension()
-      ext = '_'+str(num+i)
+    basis   = element.get_nodal_basis()
+    dim     = element.get_reference_element().get_spatial_dimension()
+    ext     = '_'+str(num)
+    if tensor:
+      spatialDim = Define()
+      spatialDim.identifier = 'SPATIAL_DIM'+ext
+      spatialDim.replacementText = str(tensor)
+      numFunctionsDim = Define()
+      numFunctionsDim.identifier = 'NUM_BASIS_FUNCTIONS_DIM'+ext
+      numFunctionsDim.replacementText = str(basis.get_num_members())
+      numFunctions = Define()
+      numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
+      numFunctions.replacementText = str(basis.get_num_members()**tensor)
+      numComponents = Define()
+      numComponents.identifier = 'NUM_BASIS_COMPONENTS'+ext
+      numComponents.replacementText = str(numComp)
+      numDofDimName= 'numDofDim'+ext
+      numDofDims   = [numComp*len(ids[0]) for d, ids in element.entity_dofs().items()]
+      numDofName   = 'numDof'+ext
+      numDofs      = numpy.zeros((tensor+1,), dtype=int)
+      numDofs[0]   = numDofDims[0]
+      numDofs[1]   = numDofDims[1]
+      for d in range(2, tensor+1):
+        numDofs[d] = numDofDims[d-1]**2
+      basisDimName    = name+'BasisDim'+ext
+      basisDerDimName = name+'BasisDerivativesDim'+ext
+      # BROKEN
+      # perm            = self.getBasisFuncOrder(element)
+      perm            = None
+      evals           = basis.tabulate(points, 1)
+      basisDimTab     = numpy.array(evals[mis(dim, 0)[0]]).transpose()
+      basisDerDimTab  = numpy.array([evals[alpha] for alpha in mis(dim, 1)]).transpose()
+      basisName       = name+'Basis'+ext
+      basisDerName    = name+'BasisDerivatives'+ext
+      basisTab        = numpy.zeros((len(points)**tensor,basisDimTab.shape[1]**tensor))
+      basisDerTab     = numpy.zeros((len(points)**tensor,basisDimTab.shape[1]**tensor,tensor))
+      if tensor == 2:
+        for q in range(len(points)):
+          for r in range(len(points)):
+            for b1 in range(basisDimTab.shape[1]):
+              for b2 in range(basisDimTab.shape[1]):
+                basisTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2] = basisDimTab[q][b1]*basisDimTab[r][b2]
+                basisDerTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2][0] = basisDerDimTab[q][b1][0]*basisDimTab[r][b2]
+                basisDerTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2][1] = basisDimTab[q][b1]*basisDerDimTab[r][b2][0]
+      elif tensor == 3:
+        for q in range(len(points)):
+          for r in range(len(points)):
+            for s in range(len(points)):
+              for b1 in range(basisDimTab.shape[1]):
+                for b2 in range(basisDimTab.shape[1]):
+                  for b3 in range(basisDimTab.shape[1]):
+                    basisTab[(q*len(points)+r)*len(points)+s][(b1*basisDimTab.shape[1]+b2)*basisDimTab.shape[1]+b3] = basisDimTab[q][b1]*basisDimTab[r][b2]*basisDimTab[s][b3]
+                    basisDerTab[(q*len(points)+r)*len(points)+s][(b1*basisDimTab.shape[1]+b2)*basisDimTab.shape[1]+b3][0] = basisDerDimTab[q][b1][0]*basisDimTab[r][b2]*basisDimTab[s][b3]
+                    basisDerTab[(q*len(points)+r)*len(points)+s][(b1*basisDimTab.shape[1]+b2)*basisDimTab.shape[1]+b3][1] = basisDimTab[q][b1]*basisDerDimTab[r][b2][0]*basisDimTab[s][b3]
+                    basisDerTab[(q*len(points)+r)*len(points)+s][(b1*basisDimTab.shape[1]+b2)*basisDimTab.shape[1]+b3][2] = basisDimTab[q][b1]*basisDimTab[r][b2]*basisDerDimTab[s][b3][0]
+      else:
+        raise RuntimeError('Cannot handle tensor dimension '+str(tensor))
+      if numComp > 1:
+        newShape          = list(basisDimTab.shape)
+        newShape[1]       = newShape[1]*numComp
+        basisDimTabNew    = numpy.zeros(newShape)
+        newShape          = list(basisDerDimTab.shape)
+        newShape[1]       = newShape[1]*numComp
+        basisDerDimTabNew = numpy.zeros(newShape)
+        for q in range(basisDimTab.shape[0]):
+          for i in range(basisDimTab.shape[1]):
+            for c in range(numComp):
+              basisDimTabNew[q][i*numComp+c]    = basisDimTab[q][i]
+              basisDerDimTabNew[q][i*numComp+c] = basisDerDimTab[q][i]
+        basisDimTab    = basisDimTabNew
+        basisDerDimTab = basisDerDimTabNew
+      code.extend([spatialDim, numFunctionsDim, numFunctions, numComponents,
+                   self.getArray(self.Cxx.getVar(numDofDimName), numDofDims, 'Number of degrees of freedom for each dimension', 'int'),
+                   self.getArray(self.Cxx.getVar(basisDimName), basisDimTab, 'Nodal basis function evaluations along eaach dimension\n    - basis function is fastest varying, then point', 'PetscReal'),
+                   self.getArray(self.Cxx.getVar(basisDerDimName), basisDerDimTab, 'Nodal basis function derivative evaluations along eaach dimension,\n    - derivative direction fastest varying, then basis function, then point')])
+    else:
       spatialDim = Define()
       spatialDim.identifier = 'SPATIAL_DIM'+ext
       spatialDim.replacementText = str(dim)
@@ -222,34 +335,34 @@ class QuadratureGenerator(script.Script):
       evals        = basis.tabulate(points, 1)
       basisTab     = numpy.array(evals[mis(dim, 0)[0]]).transpose()
       basisDerTab  = numpy.array([evals[alpha] for alpha in mis(dim, 1)]).transpose()
-      if not perm is None:
-        basisTabOld    = numpy.array(basisTab)
-        basisDerTabOld = numpy.array(basisDerTab)
-        for q in range(len(points)):
-          for i,pi in enumerate(perm):
-            basisTab[q][i]    = basisTabOld[q][pi]
-            basisDerTab[q][i] = basisDerTabOld[q][pi]
-      if numComp > 1:
-        newShape       = list(basisTab.shape)
-        newShape[1]    = newShape[1]*numComp
-        basisTabNew    = numpy.zeros(newShape)
-        newShape       = list(basisDerTab.shape)
-        newShape[1]    = newShape[1]*numComp
-        basisDerTabNew = numpy.zeros(newShape)
-        for q in range(basisTab.shape[0]):
-          for i in range(basisTab.shape[1]):
-            for c in range(numComp):
-              basisTabNew[q][i*numComp+c]    = basisTab[q][i]
-              basisDerTabNew[q][i*numComp+c] = basisDerTab[q][i]
-        basisTab    = basisTabNew
-        basisDerTab = basisDerTabNew
-      code.extend([spatialDim, numFunctions, numComponents,
-                   self.getArray(self.Cxx.getVar(numDofName), numDofs, 'Number of degrees of freedom for each dimension', 'int'),
-                   self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
-                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
+      code.extend([spatialDim, numFunctions, numComponents])
+    if not perm is None:
+      basisTabOld    = numpy.array(basisTab)
+      basisDerTabOld = numpy.array(basisDerTab)
+      for q in range(basisTab.shape[0]):
+        for i,pi in enumerate(perm):
+          basisTab[q][i]    = basisTabOld[q][pi]
+          basisDerTab[q][i] = basisDerTabOld[q][pi]
+    if numComp > 1:
+      newShape       = list(basisTab.shape)
+      newShape[1]    = newShape[1]*numComp
+      basisTabNew    = numpy.zeros(newShape)
+      newShape       = list(basisDerTab.shape)
+      newShape[1]    = newShape[1]*numComp
+      basisDerTabNew = numpy.zeros(newShape)
+      for q in range(basisTab.shape[0]):
+        for i in range(basisTab.shape[1]):
+          for c in range(numComp):
+            basisTabNew[q][i*numComp+c]    = basisTab[q][i]
+            basisDerTabNew[q][i*numComp+c] = basisDerTab[q][i]
+      basisTab    = basisTabNew
+      basisDerTab = basisDerTabNew
+    code.extend([self.getArray(self.Cxx.getVar(numDofName), numDofs, 'Number of degrees of freedom for each dimension', 'int'),
+                 self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
+                 self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
     return code
 
-  def getBasisStructsInline(self, name, element, quadrature, num):
+  def getBasisStructsInline(self, name, element, quadrature, num, tensor = 0):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from FIAT.polynomial_set import mis
@@ -766,7 +879,7 @@ class QuadratureGenerator(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, elements, numBlocks = 1, operator = None, inline = False):
+  def getElementSource(self, elements, numBlocks = 1, operator = None, inline = False, tensor = 0):
     from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module', debugSection = 'codegen')
@@ -783,13 +896,13 @@ class QuadratureGenerator(script.Script):
         else:
           quadrature = self.createQuadrature(shape, self.quadDegree)
         if inline:
-          defns.extend(self.getQuadratureStructsInline(2*len(quadrature.pts)-1, quadrature, n))
-          defns.extend(self.getBasisStructsInline(name, element, quadrature, n))
+          defns.extend(self.getQuadratureStructsInline(2*len(quadrature.pts)-1, quadrature, n, tensor))
+          defns.extend(self.getBasisStructsInline(name, element, quadrature, n, tensor))
           defns.extend(self.getPhysicsRoutines(operator))
           defns.extend(self.getComputationLayoutStructs(numBlocks))
         else:
-          defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
-          defns.extend(self.getBasisStructs(name, element, quadrature, n))
+          defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n, tensor))
+          defns.extend(self.getBasisStructs(name, element, quadrature, n, tensor))
           #defns.extend(self.getIntegratorPoints(n, element))
           #defns.extend(self.getIntegratorSetup(n, element))
           #defns.extend(self.getIntegratorSetup(n, element, True))
@@ -837,11 +950,11 @@ class QuadratureGenerator(script.Script):
     self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
     return
 
-  def runTensorProduct(self, elements, numBlocks, operator, filename = ''):
+  def runTensorProduct(self, dim, elements, numBlocks, operator, filename = ''):
     # Nothing is finished here
     import os
-    self.outputElementSource(self.getElementSource(elements), filename)
-    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, tensor = dim), filename)
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True, tensor = dim), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
     return
 
 if __name__ == '__main__':
