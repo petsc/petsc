@@ -490,19 +490,19 @@ PetscScalar cubic_2d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
-PetscScalar nonlinear_3d(const double x[]) {
+PetscScalar nonlinear_3d(const PetscReal x[]) {
   return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
 };
 
-PetscScalar linear_3d(const double x[]) {
+PetscScalar linear_3d(const PetscReal x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
 };
 
-PetscScalar quadratic_3d(const double x[]) {
+PetscScalar quadratic_3d(const PetscReal x[]) {
   return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 };
 
-PetscScalar cubic_3d(const double x[]) {
+PetscScalar cubic_3d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
 };
 
@@ -789,17 +789,6 @@ int main(int argc, char **argv)
   ierr = SetupExactSolution(&user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(&user);CHKERRQ(ierr);
-  if (user.bcType == NEUMANN) {
-    /* With Neumann conditions, we tell DMMG that constants are in the null space of the operator
-         Should have a nice one like DMMG that sets it for all MG PCs */
-    KSP          ksp;
-    MatNullSpace nullsp;
-
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-  }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DM; then duplicate for remaining
@@ -823,6 +812,12 @@ int main(int argc, char **argv)
   ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
   ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
+  if (user.bcType == NEUMANN) {
+    MatNullSpace nullsp;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(J, nullsp);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
