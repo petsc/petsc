@@ -812,12 +812,6 @@ int main(int argc, char **argv)
   ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
   ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
-  if (user.bcType == NEUMANN) {
-    MatNullSpace nullsp;
-
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J, nullsp);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
@@ -1157,5 +1151,11 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullsp;
+
+    ierr = MatNullSpaceCreate(((PetscObject) Jac)->comm, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(Jac, nullsp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
