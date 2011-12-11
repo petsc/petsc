@@ -798,6 +798,11 @@ runex19_cusp:
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_cusp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19.tmp
+runex20:
+	-@${MPIEXEC} -n 4 ./ex20 -snes_view -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin  > ex20_1.tmp 2>&1; \
+	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex20_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex20_1.tmp
 runex21:
 	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
@@ -978,7 +983,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 \
                                  runex19_10 runex19_14 runex19_15 runex19_15a runex19_16 runex19_16a ex19.rm \
-                                 ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
+                                 ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \

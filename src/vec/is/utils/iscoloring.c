@@ -392,7 +392,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
 
 
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering(),
-        MatPartitioningSetNParts()
+        MatPartitioningSetNParts(), MatPartitioningApply()
 
 @*/
 PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
