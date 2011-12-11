@@ -264,13 +264,13 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
-  PetscInt           *pti,*ptj,*ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*api,*apj;
+  PetscInt           *pti,*ptj,*ai=a->i,*pi=p->i,*api,*apj;
   PetscInt           *ci,*cj,ndouble_ap,ndouble_ptap;
-  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N;
+  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N,pm=P->rmap->N;
   MatScalar          *ca;
   Mat_PtAP           *ptap;
   PetscInt           sparse_axpy=0;
-  PetscLogDouble     t0,tf,time_Trans=0.0,time_GetSymbolic1=0.0,time_GetSymbolic2=0.0;
+  Mat                Pt,AP;
   
   PetscFunctionBegin;
   /* flag 'sparse_axpy' determines which implementations to be used:
@@ -285,22 +285,15 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   /* Get ij structure of Pt = P^T */
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_Trans += tf - t0;
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,pn,pm,pti,ptj,PETSC_NULL,&Pt);CHKERRQ(ierr);
 
   /* Get structure of AP = A*P */
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,an,pn,pi,pj,fill,&api,&apj,&ndouble_ap);CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_GetSymbolic1 += tf - t0;
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(A,P,fill,&api,&apj,&ndouble_ap);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,pn,api,apj,PETSC_NULL,&AP);CHKERRQ(ierr);
 
   /* Get structure of C = Pt*AP */
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(pn,pti,ptj,am,pn,api,apj,fill,&ci,&cj,&ndouble_ptap);CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_GetSymbolic2 += tf - t0;
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Pt,AP,fill,&ci,&cj,&ndouble_ptap);CHKERRQ(ierr);
 
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -335,6 +328,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
+  ierr = MatDestroy(&Pt);CHKERRQ(ierr);
+  ierr = MatDestroy(&AP);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
   if (ci[pn] != 0) {
     PetscReal apfill,ptapfill;
@@ -351,9 +346,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
 #endif
-  /*
-  printf("MatPtAPSymbolic_SeqAIJ_SeqAIJ time %g + %g + %g\n",time_Trans,time_GetSymbolic1,time_GetSymbolic2);
-   */
   PetscFunctionReturn(0);
 }
 

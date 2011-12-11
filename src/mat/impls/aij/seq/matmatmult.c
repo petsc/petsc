@@ -10,7 +10,7 @@
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 /*
 #define DEBUG_MATMATMULT
- */
+ */ 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
@@ -50,11 +50,14 @@ EXTERN_C_END
  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ"
-PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,PetscInt *Aj,PetscInt bm,PetscInt bn,PetscInt *Bi,PetscInt *Bj,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
+PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
 {
   PetscErrorCode     ierr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
-  PetscInt           *ai=Ai,*aj=Aj,*bi=Bi,*bj=Bj,*bjj,*ci,*cj;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
+  const PetscInt     *Ai=a->i,*Aj=a->j,*Bi=b->i,*Bj=b->j,am=A->rmap->N,bm=B->rmap->N,bn=B->cmap->N; 
+  const PetscInt     *aj=Aj,*bi=Bi,*bj=Bj,*bjj;
+  PetscInt           *ci,*cj;
   PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,ndouble=0;
   PetscBT            lnkbt;
 
@@ -69,14 +72,14 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(PetscInt am,PetscInt *Ai,P
   ierr = PetscLLCreate(bn,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine ci and cj */
   for (i=0; i<am; i++) {
-    anzi = ai[i+1] - ai[i];
+    anzi = Ai[i+1] - Ai[i];
     cnzi = 0;
-    aj   = Aj + ai[i];
+    aj   = Aj + Ai[i];
     for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
@@ -127,7 +130,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
   const PetscInt     *Ai=a->i,*Aj=a->j,*Bi=b->i,*Bj=b->j,am=A->rmap->N,bm=B->rmap->N,bn=B->cmap->N; 
   const PetscInt     *aj=Aj,*bi=Bi,*bj;
-  PetscInt           *ci,*cj; //,rmax=0,*abj,*cj_tmp,nextabj;
+  PetscInt           *ci,*cj; 
   PetscInt           i,j,anzi,brow,bnzj,cnzi,crmax,ndouble=0;
   PetscBT            bt;
   PetscInt           nlnk_max,lnk_max=bn,*lnk,*nlnk;
@@ -199,17 +202,17 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*ci,*cj;
+  PetscInt       *ai=a->i,*bi=b->i,*ci,*cj;
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
   MatScalar      *ca;
   PetscReal      afill;
 
   PetscFunctionBegin;
-  /* Get ci and cj */
-  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ() is done \n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ...\n");CHKERRQ(ierr);
 #endif
+  /* Get ci and cj */
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -228,7 +231,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
   ierr = PetscMemzero(c->matmult_abdense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
-  (*C)->ops->matmultnumeric =  MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
    
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -318,7 +321,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
   
   PetscFunctionBegin;  
 #if defined(DEBUG_MATMATMULT)
-  //ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable...\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable...\n");CHKERRQ(ierr);
 #endif
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -369,11 +372,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable Armax %d, Brmax %d\n",a->rmax,b->rmax);CHKERRQ(ierr);
 #endif
   /* Get ci and cj */
-  //ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(am,ai,aj,bm,bn,bi,bj,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
-#if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable() is done \n");CHKERRQ(ierr);
-#endif
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
