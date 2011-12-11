@@ -1968,6 +1968,35 @@ namespace ALE {
         PetscLogFlopsNoError(5.0);
       }
     };
+    void computeRectangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 2;
+      typename real_section_type::value_type invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0]*J[3] - J[1]*J[2];
+        PetscLogFlopsNoError(8.0 + 3.0);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+        PetscLogFlopsNoError(5.0);
+      }
+      detJ *= 2.0;
+    };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       const PetscReal *coords = this->restrictClosure(coordinates, e);
       const int        dim    = 3;
@@ -2004,11 +2033,55 @@ namespace ALE {
         PetscLogFlopsNoError(37.0);
       }
     };
+    void computeHexahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 3;
+      typename real_section_type::value_type invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          J[d*dim+0] = 0.5*(coords[(0+1)*dim+d] - coords[0*dim+d]);
+          J[d*dim+1] = 0.5*(coords[(1+1)*dim+d] - coords[0*dim+d]);
+          J[d*dim+2] = 0.5*(coords[(3+1)*dim+d] - coords[0*dim+d]);
+        }
+        detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+        PetscLogFlopsNoError(18.0 + 12.0);
+      }
+      if (invJ) {
+        invDet  = -1.0/detJ;
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+        invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+        PetscLogFlopsNoError(37.0);
+      }
+      detJ *= 8.0;
+    };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       if (this->_dim == 2) {
-        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        if (this->getSieve()->getMaxConeSize() == 3) {
+          computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          computeRectangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        }
       } else if (this->_dim == 3) {
-        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        if (this->getSieve()->getMaxConeSize() == 4) {
+          computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          computeHexahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        }
       } else {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
