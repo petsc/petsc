@@ -45,10 +45,9 @@ extern int* ThreadCoreAffinity;
 typedef struct {
   void* (*pfunc)(void*);
   void** pdata;
-  int iNumReadyThreads;
   int *my_job_status;
 } sjob_lockfree;
-sjob_lockfree job_lockfree = {NULL,NULL,0,0};
+sjob_lockfree job_lockfree = {NULL,NULL,0};
 
 /* external Functions */
 extern void*          (*PetscThreadFunc)(void*);
@@ -108,8 +107,6 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   job_lockfree.pdata = (void**)malloc(N*sizeof(void*));
   job_lockfree.my_job_status = (int*)malloc(N*sizeof(int));
 
-  /* All threads available, set the iNumReadyThreads counter to PetscMaxThreads */
-  job_lockfree.iNumReadyThreads = 0;
   /* Create threads */
   for(i=0; i<N; i++) {
     pVal_lockfree[i] = i;
