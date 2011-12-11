@@ -1736,16 +1736,16 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 #endif
 
+  ierr = PetscLogEventBegin(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesbatch) {
-    ierr = PetscLogEventBegin(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*mat->ops->setvaluesbatch)(mat,nb,bs,rows,v);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
   } else {
     PetscInt b;
     for(b = 0; b < nb; ++b) {
       ierr = MatSetValues(mat, bs, &rows[b*bs], bs, &rows[b*bs], &v[b*bs*bs], ADD_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
