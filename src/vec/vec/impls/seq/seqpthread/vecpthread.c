@@ -41,15 +41,23 @@ void* VecDot_Kernel(void *arg)
 {
   Kernel_Data *data = (Kernel_Data*)arg;
   const PetscScalar *x, *y;
-  PetscBLASInt one = 1, bn;
   PetscInt    n;
 
   DoCoreAffinity();
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
   n = data->n;
-  bn = PetscBLASIntCast(n);
+#if defined(PETSC_USE_COMPLEX)
+  PetscInt i;
+  PetscScalar sum = 0.0;
+  for(i=0;i < n; i++) {
+    sum += x[i]*PetscConj(y[i]);
+  }
+  data->result = sum;
+# else
+  PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
   data->result = BLASdot_(&bn,x,&one,y,&one);
+#endif
   return(0);
 }
 
