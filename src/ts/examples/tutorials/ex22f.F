@@ -7,7 +7,7 @@
 !   a2 = 0, k2 = 2*k1, s2 = 1
 !
 !   Initial conditions:
-!   u(x,0) = 1 * s2*x
+!   u(x,0) = 1 + s2*x
 !   v(x,0) = k0/k1*u(x,0) + s1/k1
 !
 !   Upstream boundary conditions:
