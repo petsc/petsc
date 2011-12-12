@@ -77,6 +77,9 @@ public:
 
     ierr = PetscFree(this->insertOffset);CHKERRXX(ierr);
   };
+  index_type getNumRanks() {
+    return this->numRanks;
+  };
   /* setNumRanks - Set the number of partner processes
 
      This allocates storage for the ranks and must only be called once. 
@@ -93,6 +96,10 @@ public:
         pointsOffset[r] = 0;
       }
     }
+  };
+  index_type getRank(index_type r) {
+    assert(r >= 0 && r < numRanks);
+    return ranks[r];
   };
   /* getRankIndex - Map from a process rank to an index in [0, numRanks) */
   index_type getRankIndex(index_type rank) {
@@ -127,8 +134,12 @@ public:
       pointsOffset[s] += numPoints;
     }
   };
+  index_type getNumPoints() {
+    return this->pointsOffset[numRanks] - this->pointsOffset[0];
+  };
   /* getNumPoints - Return the number of points matched to partner process index 'r' */
   index_type getNumPoints(index_type r) {
+    assert(r >= 0 && r < numRanks);
     return this->pointsOffset[r+1] - this->pointsOffset[r];
   };
   /* getNumPointsByRank - Return the number of points matched to partner process 'rank' */
