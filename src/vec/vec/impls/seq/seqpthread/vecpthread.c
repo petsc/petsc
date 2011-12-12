@@ -380,7 +380,7 @@ void* VecNorm_Kernel(void *arg)
   }
   else {
     PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
-    data->result = BLASnrm2_(&bn,x,&one);
+    data->result = BLASdot_(&bn,x,&one,x,&one);
   }
   return(0);
 }
@@ -415,16 +415,17 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
     }
     ierr = MainJob(VecNorm_Kernel,(void**)pdata,x->nthreads);
     /* collect results */
-    *z = 0.0;
+    *z = (PetscReal)kerneldatap[0].result;
     if(type == NORM_1) {
-      for(i=0; i<x->nthreads; i++) {
-        *z += kerneldatap[i].result;
+      for(i=1; i<x->nthreads; i++) {
+        *z += (PetscReal)kerneldatap[i].result;
       }
       ierr = PetscLogFlops(PetscMax(xin->map->n-1.0,0.0));CHKERRQ(ierr);
     }
     else if(type == NORM_2 || type == NORM_FROBENIUS) {
-      for(i=0; i<x->nthreads; i++) {
-        *z += kerneldatap[i].result*kerneldatap[i].result;
+      *z = (PetscReal)kerneldatap[0].result;
+      for(i=1; i<x->nthreads; i++) {
+        *z += (PetscReal)kerneldatap[i].result;
       }
       *z = PetscSqrtReal(*z);
       ierr = PetscLogFlops(PetscMax(2.0*xin->map->n-1,0.0));CHKERRQ(ierr);
@@ -432,7 +433,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
     else {
       PetscReal    maxv = 0.0,tmp;
       for(i=0; i<x->nthreads; i++) {
-        tmp = kerneldatap[i].result;
+        tmp = (PetscReal)kerneldatap[i].result;
         if(tmp>maxv) {
           maxv = tmp;
         }

@@ -45,8 +45,6 @@ static pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
 #define CACHE_LINE_SIZE 64
 extern int* ThreadCoreAffinity;
 
-typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_tree;
-
 /* true thread pool data structure */
 #if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
 typedef struct {
