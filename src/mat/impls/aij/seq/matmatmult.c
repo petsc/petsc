@@ -165,7 +165,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
       /* add non-zero cols of B into the condensed sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted(nlnk_max,lnk_max,bnzj,bj,nlnk,lnk,bt);CHKERRQ(ierr);
     }
-    cnzi = lnk[2*(nlnk_max+1)];
+    cnzi    = *nlnk;
     ci[i+1] = ci[i] + cnzi;
 
     /* If free space is not available, make more free space */
@@ -184,8 +184,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   }
 
   /* Column indices are in the list of free space */
-  /* Allocate space for cj, initialize cj, and */
-  /* destroy list of free space and other temporary array(s) */
+  /* Allocate and copy column indices to cj, then destroy list of free space, lnk and bt */
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscLLCondensedDestroy(lnk,bt);CHKERRQ(ierr);
