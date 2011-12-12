@@ -30,7 +30,12 @@ extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
 #define CHKERRQP(ierr) if (ierr) return (void*)(long int)ierr
+
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void DoCoreAffinity(void);
+#else
+#define DoCoreAffinity()
+#endif
 
 void* VecDot_Kernel(void *arg)
 {
