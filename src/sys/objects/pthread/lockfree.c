@@ -35,6 +35,8 @@
 extern PetscBool    PetscThreadGo;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
+extern PetscInt     PetscMainThreadShareWork;
+extern PetscInt     MainThreadCoreAffinity;
 
 PetscErrorCode ithreaderr_lockfree = 0;
 int*           pVal_lockfree;
@@ -58,6 +60,7 @@ extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern PetscPthreadSetAffinity(PetscInt);
+extern PetscSetMainThreadAffinity(PetscInt);
 #endif
 
 void* FuncFinish_LockFree(void* arg) {
@@ -80,13 +83,13 @@ void* PetscThreadFunc_LockFree(void* arg)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   int* pId      = (int*)arg;
   int  ThreadId = *pId; 
-  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId+PetscMainThreadShareWork]);
 #endif
 
   /* Spin loop */
   while(PetscThreadGo) {
     if(job_lockfree.my_job_status[iVal] == 0) {
-      iterr = (PetscErrorCode)(long int)job_lockfree.pfunc(job_lockfree.pdata[iVal]);
+      iterr = (PetscErrorCode)(long int)job_lockfree.pfunc(job_lockfree.pdata[iVal+PetscMainThreadShareWork]);
       __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
     }
   }
@@ -104,7 +107,7 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   pVal_lockfree = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-  job_lockfree.pdata = (void**)malloc(N*sizeof(void*));
+  job_lockfree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_lockfree.my_job_status = (int*)malloc(N*sizeof(int));
 
   /* Create threads */
@@ -132,7 +135,10 @@ PetscErrorCode PetscThreadFinalize_LockFree() {
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);
   }
+
+  free(job_lockfree.my_job_status);
   free(PetscThreadPoint);
+  free(pVal_lockfree);
 
   PetscFunctionReturn(0);
 }
@@ -159,6 +165,7 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n)
 {
   int i;
   PetscErrorCode ijoberr = 0;
+  pthread_t      main_thread_id = pthread_self();
 
   job_lockfree.pfunc = pFunc;
   for(i=0;i<PetscMaxThreads;i++) {
@@ -167,9 +174,18 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n)
     /* signal thread i to start the job */
     __sync_bool_compare_and_swap(&(job_lockfree.my_job_status[i]),1,0);
   }
-  /* Wait for all threads to finish their job */
-  if(pFunc != FuncFinish_LockFree)
+  
+  if(pFunc != FuncFinish_LockFree) {
+    /* If the MainThreadShareWork flag is on then have the main thread also do the work */
+    if(PetscMainThreadShareWork) {
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+      //      PetscPthreadSetAffinity(MainThreadCoreAffinity);
+#endif
+      ijoberr = (PetscErrorCode)(long int)job_lockfree.pfunc(job_lockfree.pdata[0]);
+    }
+    /* Wait for all threads to finish their job */
     MainWait();
+  }
 
   if(ithreaderr_lockfree) {
     ijoberr = ithreaderr_lockfree;

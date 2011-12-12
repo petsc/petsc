@@ -18,11 +18,11 @@ extern PetscBool    PetscCheckCoreAffinity;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 extern int*         ThreadCoreAffinity;
+extern PetscInt     PetscMainThreadShareWork;
 
 PetscInt vecs_created=0;
 Kernel_Data *kerneldatap;
 Kernel_Data **pdata;
-
 
 /* Global function pointer */
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
@@ -30,30 +30,7 @@ extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
 #define CHKERRQP(ierr) if (ierr) return (void*)(long int)ierr
-
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-PETSC_STATIC_INLINE void DoCoreAffinity(void)
-{
-  if (!PetscCheckCoreAffinity) return;
-  else {
-    int       i,icorr=0; 
-    cpu_set_t mset;
-    pthread_t pThread = pthread_self();
-
-    for (i=0; i<PetscMaxThreads; i++) {
-      if (pthread_equal(pThread,PetscThreadPoint[i])) {
-        icorr = ThreadCoreAffinity[i];
-      }
-    }
-    CPU_ZERO(&mset);
-    CPU_SET(icorr,&mset);
-    sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-  }
-  return(0);
-}
-#else
-#define DoCoreAffinity()
-#endif
+extern void DoCoreAffinity(void);
 
 void* VecDot_Kernel(void *arg)
 {
@@ -192,7 +169,6 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 
   PetscFunctionBegin;
 
-  /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -750,14 +726,14 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   PetscInt          i,j=0;
   Vec               *yy = (Vec *)yin;
   PetscScalar       *xa;
-  PetscInt          n=xin->map->n,Q = nv/(PetscMaxThreads);
-  PetscInt          R = nv-Q*(PetscMaxThreads);
+  PetscInt          n=xin->map->n,Q = nv/(PetscMaxThreads+PetscMainThreadShareWork);
+  PetscInt          R = nv-Q*(PetscMaxThreads+PetscMainThreadShareWork);
   PetscBool         S;
 
   PetscFunctionBegin;
 
   ierr   = VecGetArray(xin,&xa);CHKERRQ(ierr);
-  for (i=0; i<PetscMaxThreads; i++) {
+  for (i=0; i<PetscMaxThreads+PetscMainThreadShareWork; i++) {
     S = (PetscBool)(i<R);
     kerneldatap[i].x       = xa;
     kerneldatap[i].yvec    = &yy[j];
@@ -1328,7 +1304,7 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
-  ierr = VecPThreadSetNThreads(*V,s->nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*V,s->nthreads-PetscMainThreadShareWork);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
 
@@ -1356,23 +1332,23 @@ PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
 {
   PetscErrorCode ierr;
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
-  PetscInt       Q = v->map->n/nthreads;
-  PetscInt       R = v->map->n-Q*nthreads;
+  PetscInt       Q,R;
   PetscBool      S;
   PetscInt       i,iIndex=0;
-
 
   PetscFunctionBegin;
   if(nthreads > PetscMaxThreads) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthreads,PetscMaxThreads);
   if(s->nthreads != 0) {
     ierr = PetscFree2(s->arrindex,s->nelem);CHKERRQ(ierr);
   }
-  s->nthreads = nthreads;
+  s->nthreads = nthreads+PetscMainThreadShareWork;
+  Q = v->map->n/s->nthreads;
+  R = v->map->n-Q*s->nthreads;
 
   /* Set array portion for each thread */
-  ierr = PetscMalloc2(nthreads,PetscInt,&s->arrindex,nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
+  ierr = PetscMalloc2(s->nthreads,PetscInt,&s->arrindex,s->nthreads,PetscInt,&s->nelem);CHKERRQ(ierr);
   s->arrindex[0] = 0;
-  for (i=0; i<nthreads; i++) {
+  for (i=0; i< s->nthreads; i++) {
     s->arrindex[i] = iIndex;
     S = (PetscBool)(i<R);
     s->nelem[i] = S?Q+1:Q;
@@ -1466,8 +1442,8 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
 
   /* If this is the first vector being created then also create the common Kernel data structure */
   if(vecs_created == 0) {
-    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
-    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
   }
   vecs_created++;
 
@@ -1502,7 +1478,6 @@ PetscErrorCode VecCreate_SeqPThread(Vec V)
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQPTHREAD on more than one process");
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
-  /*  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr); */
   ierr = VecCreate_SeqPThread_Private(V,array);CHKERRQ(ierr);
   ierr = VecSet_SeqPThread(V,0.0);CHKERRQ(ierr);
   s    = (Vec_SeqPthread*)V->data;

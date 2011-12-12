@@ -1,6 +1,3 @@
-/* The code is active only when the flag PETSC_USE_PTHREAD is set */
-
-
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 #ifndef _GNU_SOURCE
@@ -37,6 +34,8 @@ PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
 int*         ThreadCoreAffinity;
+PetscInt     PetscMainThreadShareWork = 1; /* Flag to indicate whether the main thread shares work along with the worker threads, 1 by default, can be switched off using option -mainthread_no_share_work */
+PetscInt     MainThreadCoreAffinity=0;
 
 /* Function Pointers */
 void*          (*PetscThreadFunc)(void*) = NULL;
@@ -79,13 +78,59 @@ extern PetscErrorCode PetscThreadFinalize_LockFree(void);
 extern void           MainWait_LockFree(void);
 extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt);
 
-
-
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }
 
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+/* Set CPU affinity for the main thread */
+void PetscSetMainThreadAffinity(PetscInt icorr)
+{
+  cpu_set_t mset;
+  int ncorr = get_nprocs();
+
+  CPU_ZERO(&mset);
+  CPU_SET(icorr%ncorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+}
+
+/* Set CPU affinity for individual threads */
+void PetscPthreadSetAffinity(PetscInt icorr)
+{
+  cpu_set_t mset;
+  int ncorr = get_nprocs();
+
+  CPU_ZERO(&mset);
+  CPU_SET(icorr%ncorr,&mset);
+  pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
+}
+
+void DoCoreAffinity(void)
+{
+  if (!PetscCheckCoreAffinity) return;
+  else {
+    int       i,icorr=0; 
+    cpu_set_t mset;
+    pthread_t pThread = pthread_self();
+
+    for (i=0; i<PetscMaxThreads; i++) {
+      if (pthread_equal(pThread,PetscThreadPoint[i])) {
+        icorr = ThreadCoreAffinity[i];
+	CPU_ZERO(&mset);
+	CPU_SET(icorr,&mset);
+	pthread_setaffinity_np(pThread,sizeof(cpu_set_t),&mset);
+      }
+    }
+  }
+}
+#endif
+
+/* 
+   -----------------------------
+     'NO' THREAD POOL FUNCTION 
+   -----------------------------
+*/
 PetscErrorCode PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThreads,pthread_t* ThreadId,void** data) 
 {
   PetscErrorCode    ierr;
@@ -111,35 +156,6 @@ PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-/* Set CPU affinity for the main thread */
-void PetscSetMainThreadAffinity(PetscInt icorr)
-{
-  cpu_set_t mset;
-  int ncorr = get_nprocs();
-
-  CPU_ZERO(&mset);
-  CPU_SET(icorr%ncorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-}
-
-/* Set CPU affinity for individual threads */
-void PetscPthreadSetAffinity(PetscInt icorr)
-{
-  cpu_set_t mset;
-  int ncorr = get_nprocs();
-
-  CPU_ZERO(&mset);
-  CPU_SET(icorr%ncorr,&mset);
-  pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
-}
-#endif
-
-/* 
-   -----------------------------
-     'NO' THREAD POOL FUNCTION 
-   -----------------------------
-*/
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_Spawn"
 PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void** data,PetscInt n) {
@@ -169,12 +185,14 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
-    PetscInt icorr=0;
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&MainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-    PetscSetMainThreadAffinity(icorr);
+    PetscSetMainThreadAffinity(MainThreadCoreAffinity);
 #endif
   }
+  /* Check to see if the user wants the main thread not to share work with the other threads */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
+  if(flg1) PetscMainThreadShareWork = 0;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscInt N_CORES;
@@ -183,6 +201,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   char tstr[9];
   char tbuf[2];
   PetscInt i;
+
   strcpy(tstr,"-thread");
   for(i=0;i<PetscMaxThreads;i++) {
     ThreadCoreAffinity[i] = i;
