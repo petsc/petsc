@@ -37,7 +37,7 @@ extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 
 PetscErrorCode ithreaderr_true = 0;
-int*           pVal;
+int*           pVal_true;
 #if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
 static pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
 #endif
@@ -72,7 +72,7 @@ extern void           (*MainWait)(void);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern PetscPthreadSetAffinity(PetscInt);
+extern void PetscPthreadSetAffinity(PetscInt);
 #endif
 
 extern void* FuncFinish(void*);
@@ -149,14 +149,14 @@ PetscErrorCode PetscThreadInitialize_True(PetscInt N)
   PetscInt i,status;
 
   PetscFunctionBegin;
-  pVal = (int*)malloc(N*sizeof(int));
+  pVal_true = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); /* BarrPoint[0] makes no sense, don't use it! */
   job_true.pdata = (void**)malloc(N*sizeof(void*));
   for(i=0; i<N; i++) {
-    pVal[i] = i;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    pVal_true[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);
     /* error check to ensure proper thread creation */
     status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
     /* should check error */
@@ -180,6 +180,7 @@ PetscErrorCode PetscThreadFinalize_True() {
   }
   free(BarrPoint);
   free(PetscThreadPoint);
+  free(pVal_true);
 
   PetscFunctionReturn(0);
 }

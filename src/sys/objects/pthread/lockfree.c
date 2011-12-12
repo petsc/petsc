@@ -59,8 +59,8 @@ extern void           (*MainWait)(void);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern PetscPthreadSetAffinity(PetscInt);
-extern PetscSetMainThreadAffinity(PetscInt);
+extern void PetscPthreadSetAffinity(PetscInt);
+extern void PetscSetMainThreadAffinity(PetscInt);
 #endif
 
 void* FuncFinish_LockFree(void* arg) {

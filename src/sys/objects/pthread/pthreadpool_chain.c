@@ -37,7 +37,7 @@ extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 
 PetscErrorCode ithreaderr_chain = 0;
-int*           pVal;
+int*           pVal_chain;
 
 #define CACHE_LINE_SIZE 64
 extern int* ThreadCoreAffinity;
@@ -72,7 +72,7 @@ extern void           (*MainWait)(void);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern PetscPthreadSetAffinity(PetscInt);
+extern void PetscPthreadSetAffinity(PetscInt);
 #endif
 
 extern void* FuncFinish(void*);
@@ -234,13 +234,13 @@ PetscErrorCode PetscThreadInitialize_Chain(PetscInt N)
   job_chain.pdata = (void**)malloc(N*sizeof(void*));
   job_chain.startJob = PETSC_FALSE;
   job_chain.eJobStat = JobInitiated;
-  pVal = (int*)malloc(N*sizeof(int));
+  pVal_chain = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   /* create threads */
   for(i=0; i<N; i++) {
-    pVal[i] = i;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+    pVal_chain[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_chain[i]);
     /* should check error */
   }
   PetscFunctionReturn(0);
@@ -267,7 +267,7 @@ PetscErrorCode PetscThreadFinalize_Chain() {
   free(arrstart);
   free(arrready);
   free(job_chain.pdata);
-  free(pVal);
+  free(pVal_chain);
 
   PetscFunctionReturn(0);
 }
