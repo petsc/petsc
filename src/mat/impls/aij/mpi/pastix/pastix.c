@@ -31,9 +31,9 @@ EXTERN_C_END
              iparm, dparm);                               \
   } else {                                                \
     c_pastix(pastix_data, pastix_comm,                    \
-             n, colptr, row, (complex*)val,               \
+             n, colptr, row, (float complex*)val,         \
              perm, invp,                                  \
-             (complex*)rhs, rhsnbr,                       \
+             (float complex*)rhs, rhsnbr,                 \
              iparm, dparm);                               \
   }
 
@@ -49,7 +49,7 @@ EXTERN_C_END
   } else {                                                              \
     c_pastix_checkMatrix(comm,                                          \
                          verb,sym, realloc,                             \
-                         n, colptr, rows, (complex**)values,            \
+                         n, colptr, rows, (float complex**)values,      \
                          l2g, dof);                                     \
   }
 
