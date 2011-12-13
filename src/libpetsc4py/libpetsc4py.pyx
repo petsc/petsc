@@ -1722,6 +1722,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
+    PetscErrorCode SNESSetFromOptions(PetscSNES)
 
 
 #@cython.internal
@@ -2192,6 +2193,7 @@ cdef PetscErrorCode TSSetFromOptions_Python(
     cdef setFromOptions = PyTS(ts).setFromOptions
     if setFromOptions is not None:
         setFromOptions(TS_(ts))
+    CHKERR( SNESSetFromOptions(ts.snes) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSView_Python(
