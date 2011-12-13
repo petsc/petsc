@@ -13,82 +13,37 @@
 #include <string.h>
 #endif
 
+#if defined(PETSC_USE_COMPLEX) && defined(__cplusplus)
+#define _H_COMPLEX
+#endif
+
 EXTERN_C_BEGIN
 #include <pastix.h>
 EXTERN_C_END
 
 #ifdef PETSC_USE_COMPLEX
-#define PASTIX_CALL(pastix_data, pastix_comm,             \
-                    n, colptr, row, val,                  \
-                    perm, invp,                           \
-                    rhs, rhsnbr,                          \
-                    iparm, dparm)                         \
-  if (sizeof(PetscScalar) == sizeof(double complex)) {    \
-    z_pastix(pastix_data, pastix_comm,                    \
-             n, colptr, row, (double complex*)val,        \
-             perm, invp,                                  \
-             (double complex *)rhs, rhsnbr,               \
-             iparm, dparm);                               \
-  } else {                                                \
-    c_pastix(pastix_data, pastix_comm,                    \
-             n, colptr, row, (float complex*)val,         \
-             perm, invp,                                  \
-             (float complex*)rhs, rhsnbr,                 \
-             iparm, dparm);                               \
-  }
-
-#define PASTIX_CHECKMATRIX(comm,                                        \
-                           verb,sym, realloc,                           \
-                           n, colptr, rows, values,                     \
-                           l2g, dof)                                    \
-  if (sizeof(PetscScalar) == sizeof(double complex)) {                  \
-    z_pastix_checkMatrix(comm,                                          \
-                         verb,sym, realloc,                             \
-                         n, colptr, rows, (double complex **)values,    \
-                         l2g, dof);                                     \
-  } else {                                                              \
-    c_pastix_checkMatrix(comm,                                          \
-                         verb,sym, realloc,                             \
-                         n, colptr, rows, (float complex**)values,      \
-                         l2g, dof);                                     \
-  }
+#ifdef PETSC_USE_REAL_SINGLE
+#define PASTIX_CALL c_pastix
+#define PASTIX_CHECKMATRIX c_pastix_checkMatrix
+#define PastixScalar COMPLEX
+#else
+#define PASTIX_CALL z_pastix
+#define PASTIX_CHECKMATRIX z_pastix_checkMatrix
+#define PastixScalar DCOMPLEX
+#endif
 
 #else /* PETSC_USE_COMPLEX */
 
-#define PASTIX_CALL(pastix_data, pastix_comm,           \
-                    n, colptr, row, val,                \
-                    perm, invp,                         \
-                    rhs, rhsnbr,                        \
-                    iparm, dparm)                       \
-  if (sizeof(PetscScalar) == sizeof(double)) {          \
-    d_pastix(pastix_data, pastix_comm,                  \
-             n, colptr, row, (double *)val,             \
-             perm, invp,                                \
-             (double *)rhs, rhsnbr,                     \
-             iparm, dparm);                             \
-  } else {                                              \
-    s_pastix(pastix_data, pastix_comm,                  \
-             n, colptr, row, (float*)val,               \
-             perm, invp,                                \
-             (float *)rhs, rhsnbr,                      \
-             iparm, dparm);                             \
-  }
+#ifdef PETSC_USE_REAL_SINGLE
+#define PASTIX_CALL s_pastix
+#define PASTIX_CHECKMATRIX s_pastix_checkMatrix
+#define PastixScalar float
+#else
+#define PASTIX_CALL d_pastix
+#define PASTIX_CHECKMATRIX d_pastix_checkMatrix
+#define PastixScalar double
+#endif
 
-#define PASTIX_CHECKMATRIX(comm,                                        \
-                           verb,sym, realloc,                           \
-                           n, colptr, rows, values,                     \
-                           l2g, dof)                                    \
-  if (sizeof(PetscScalar) == sizeof(double)) {                          \
-    d_pastix_checkMatrix(comm,                                          \
-                         verb,sym, realloc,                             \
-                         n, colptr, rows, (double **)values,            \
-                         l2g, dof);                                     \
-  } else {                                                              \
-    s_pastix_checkMatrix(comm,                                          \
-                         verb,sym, realloc,                             \
-                         n, colptr, rows, (float **)values,             \
-                         l2g, dof);                                     \
-  }
 #endif /* PETSC_USE_COMPLEX */
 
 typedef struct Mat_Pastix_ {
@@ -263,7 +218,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
     if ((flg && icntl >= 0) || PetscLogPrintInfo) {
       verb =  icntl;
     }
-    PASTIX_CHECKMATRIX(MPI_COMM_WORLD,verb,((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,*n,&tmpcolptr,&tmprows,&tmpvalues,NULL,1);
+    PASTIX_CHECKMATRIX(MPI_COMM_WORLD,verb,((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,*n,&tmpcolptr,&tmprows,(PastixScalar**)&tmpvalues,NULL,1);
 
     ierr = PetscMemcpy(*colptr,tmpcolptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMalloc(((*colptr)[*n]-1)*sizeof(PetscInt),row);CHKERRQ(ierr);
@@ -309,10 +264,10 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
                 lu->n,
                 lu->colptr,
                 lu->row,
-                lu->val,
+                (PastixScalar*)lu->val,
                 lu->perm,
                 lu->invp,
-                lu->rhs,
+                (PastixScalar*)lu->rhs,
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
@@ -375,10 +330,10 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
               lu->n,
               lu->colptr,
               lu->row,
-              lu->val,
+              (PastixScalar*)lu->val,
               lu->perm,
               lu->invp,
-              lu->rhs,
+              (PastixScalar*)lu->rhs,
               lu->rhsnbr,
               lu->iparm,
               lu->dparm);
@@ -443,10 +398,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->n,
                 lu->colptr,
                 lu->row,
-                lu->val,
+                (PastixScalar*)lu->val,
                 lu->perm,
                 lu->invp,
-                lu->rhs,
+                (PastixScalar*)lu->rhs,
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
@@ -524,10 +479,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->n,
                 lu->colptr,
                 lu->row,
-                lu->val,
+                (PastixScalar*)lu->val,
                 lu->perm,
                 lu->invp,
-                lu->rhs,
+                (PastixScalar*)lu->rhs,
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
@@ -540,10 +495,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->n,
                 lu->colptr,
                 lu->row,
-                lu->val,
+                (PastixScalar*)lu->val,
                 lu->perm,
                 lu->invp,
-                lu->rhs,
+                (PastixScalar*)lu->rhs,
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
