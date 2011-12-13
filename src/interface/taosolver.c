@@ -228,7 +228,6 @@ PetscErrorCode TaoSetUp(TaoSolver tao)
   if (!tao->solution) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetInitialVector");
   }
-  ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   if (tao->ops->setup) {
     ierr = (*tao->ops->setup)(tao); CHKERRQ(ierr);
   }

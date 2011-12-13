@@ -22,6 +22,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
   PetscFunctionBegin;
   
   /*  Project initial point onto bounds */
+  ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
   /* Check convergence criteria */

@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = asils.c #asfls.c
+SOURCEC  = asils.c asfls.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = asils.o #asfls.o
+OBJSC    = asils.o asfls.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = solver
