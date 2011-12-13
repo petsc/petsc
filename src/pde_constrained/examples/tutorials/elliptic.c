@@ -141,7 +141,7 @@ int main(int argc, char **argv)
   TaoInitialize(&argc, &argv, (char*)0,help);
   user.mx = 8;
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag); CHKERRQ(ierr);
-  user.ns = 1;
+  user.ns = 6;
   ierr = PetscOptionsInt("-ns","Number of data samples (1<=ns<=8)","",user.ns,&user.ns,&flag); CHKERRQ(ierr);
   user.ndata = 64;
   ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,&flag); CHKERRQ(ierr);
