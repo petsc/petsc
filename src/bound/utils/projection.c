@@ -2,6 +2,23 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecBoundGradientProjection"
+/*@C
+  VecBoundGradientProjection - Projects  vector according to this definition.
+  If XL[i] < X[i] < XU[i], then GP[i] = G[i];
+  If X[i]<=XL[i], then GP[i] = min(G[i],0);   
+  If X[i]>=XU[i], then GP[i] = max(G[i],0);
+
+  Input Parameters:
++ G - current gradient vector
+. X - current solution vector
+. XL - lower bounds
+- XU - upper bounds
+
+  Output Parameter:
+. GP - gradient projection vector
+
+  Level: advanced
+@*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
 
   PetscErrorCode ierr;
