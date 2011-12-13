@@ -1146,7 +1146,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
       PetscBTSet(bt,_entry);     /* mark new entry */\
       _next     = _location + 1; /* link from previous node to next node */\
       _location = lnk[_next];    /* idx of next node */\
-      _lnkdata  = lnk[_location];/* value of next node */      \       
+      _lnkdata  = lnk[_location];/* value of next node */      \
       /* insertion location is found, add entry into lnk */\
       lnk[_next]   = 2*_nlnk;      /* connect previous node to the new node */\
       _next        = 2*_nlnk;\
