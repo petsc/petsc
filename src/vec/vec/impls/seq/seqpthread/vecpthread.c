@@ -14,10 +14,7 @@
 #include <unistd.h>
 
 /* Global variables */
-extern PetscBool    PetscCheckCoreAffinity;
 extern PetscMPIInt  PetscMaxThreads;
-extern pthread_t*   PetscThreadPoint;
-extern int*         ThreadCoreAffinity;
 extern PetscInt     PetscMainThreadShareWork;
 
 PetscInt vecs_created=0;
