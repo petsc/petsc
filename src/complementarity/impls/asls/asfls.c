@@ -258,7 +258,7 @@ static PetscErrorCode TaoSolve_ASFLS(TaoSolver tao)
 
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
-    ierr = KSPReset(tao->ksp);
+    ierr = KSPReset(tao->ksp); CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub,  asls->matflag); CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree); CHKERRQ(ierr);
 
@@ -303,9 +303,9 @@ PetscErrorCode TaoCreate_ASFLS(TaoSolver tao)
 {
   TAO_SSLS *asls;
   PetscErrorCode  ierr;
+  const char *armijo_type = TAOLINESEARCH_ARMIJO;
 
   PetscFunctionBegin;
-  const char *armijo_type = TAOLINESEARCH_ARMIJO;
   ierr = PetscNewLog(tao,TAO_SSLS,&asls); CHKERRQ(ierr);
   tao->data = (void*)asls;
   tao->ops->solve = TaoSolve_ASFLS;
