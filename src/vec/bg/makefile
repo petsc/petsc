@@ -7,7 +7,7 @@ SOURCEC  = dlregisbg.c bg.c
 OBJSC	 = $(SOURCEC:.c=.o)
 OBJSF	 =
 LIBBASE	 = libpetscvec
-DIRS	 =
+DIRS	 = examples
 LOCDIR   = src/vec/bg/
 MANSEC   = PetscBG
 
