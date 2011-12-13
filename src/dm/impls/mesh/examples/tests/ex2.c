@@ -1,5 +1,6 @@
 static char help[] = "Test of Sieve vs. New Mesh and Field Distribution.\n\n";
 #include <petscdmmesh.h>
+#include <petscbg.h>
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -77,11 +78,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
-
-typedef struct {
-  PetscInt rank;                /* Rank of owner */
-  PetscInt index;               /* Index of node on rank */
-} PetscBGNode;
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshConvertOverlapToBG"
