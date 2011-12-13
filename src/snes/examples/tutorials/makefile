@@ -396,7 +396,7 @@ runex5_5_fas:
            > ex5_5_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas, diffs above \n========================================="; fi; \
-	   #${RM} -f ex5_5_fas.tmp
+	   ${RM} -f ex5_5_fas.tmp
 
 runex5_5_fas_additive:
 	-@./ex5 -snes_fas_coarse_smoother_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas \
@@ -404,7 +404,7 @@ runex5_5_fas_additive:
            > ex5_5_fas_additive.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas_additive, diffs above \n========================================="; fi; \
-	   #${RM} -f ex5_5_fas_additive.tmp
+	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
 	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly \
@@ -412,7 +412,7 @@ runex5_5_ngmres_fas:
            > ex5_5_ngmres_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_fas, diffs above \n========================================="; fi; \
-	   #${RM} -f ex5_5_ngmres_fas.tmp
+	   ${RM} -f ex5_5_ngmres_fas.tmp
 
 runex5_6:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
