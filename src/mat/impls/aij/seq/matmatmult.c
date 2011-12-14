@@ -10,7 +10,7 @@
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 /*
 #define DEBUG_MATMATMULT
- */ 
+ */
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
@@ -180,7 +180,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
-    ci[i+1] = ci[i] + cnzi;
   }
 
   /* Column indices are in the list of free space */
