@@ -344,9 +344,9 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 .   A - the matrix
 
    Output Parameter:
-+   fin - (optional) input vector of forward FFTW
--   fout - (optional) output vector of forward FFTW
--   bout - (optional) output vector of backward FFTW
++   x - (optional) input vector of forward FFTW
+-   y - (optional) output vector of forward FFTW
+-   z - (optional) output vector of backward FFTW
 
   Level: advanced
 
