@@ -347,7 +347,6 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     strideNew = ncrs_new*a_ndata_rows;
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate( wcomm, &dest_crd );
@@ -382,10 +381,6 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     }
     ierr = VecAssemblyBegin(src_crd); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(src_crd); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);   CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
-#endif
     /*
       Scatter the element vertex information (still in the original vertex ordering)
       to the correct processor
@@ -416,10 +411,6 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     }
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
     ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET14],0,0,0,0);   CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
-#endif
     /*
       Invert for MatGetSubMatrix
     */
@@ -455,9 +446,6 @@ PetscErrorCode PCGAMGPartitionLevel(PC pc, Mat a_Amat_fine,
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
     ierr = PetscFree( counts );  CHKERRQ(ierr);
     ierr = PetscFree( ranks );  CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET15],0,0,0,0);   CHKERRQ(ierr);
-#endif
   }
 
   PetscFunctionReturn(0);
@@ -496,6 +484,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
   PetscFunctionBegin;
   pc_gamg->m_count++;
+
   if( a_pc->setupcalled > 0 ) {
     /* just do Galerkin grids */
     Mat B,dA,dB;
@@ -1229,9 +1218,9 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
     PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
     PetscLogEventRegister("  PL repartition", cookie, &gamg_setup_events[SET12]);
 
-    PetscLogEventRegister("  PL 1", cookie, &gamg_setup_events[SET13]);
-    PetscLogEventRegister("  PL 2", cookie, &gamg_setup_events[SET14]);
-    PetscLogEventRegister("  PL 3", cookie, &gamg_setup_events[SET15]);
+    /* PetscLogEventRegister("  PL 1", cookie, &gamg_setup_events[SET13]); */
+    /* PetscLogEventRegister("  PL 2", cookie, &gamg_setup_events[SET14]); */
+    /* PetscLogEventRegister("  PL 3", cookie, &gamg_setup_events[SET15]); */
 
     /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_events[SET13]); */
     /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_events[SET10]); */
