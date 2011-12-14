@@ -241,6 +241,8 @@ PetscErrorCode  VecFinalizePackage(void) {
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PetscBGInitializePackage(const char *path);
+
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -261,6 +263,7 @@ PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscBGInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

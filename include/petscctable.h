@@ -23,7 +23,7 @@ extern PetscErrorCode  PetscTableCreateCopy(const PetscTable,PetscTable*);
 extern PetscErrorCode  PetscTableDestroy(PetscTable*);
 extern PetscErrorCode  PetscTableGetCount(const PetscTable,PetscInt*);
 extern PetscErrorCode  PetscTableIsEmpty(const PetscTable,PetscInt*);
-extern PetscErrorCode  PetscTableAddExpand(PetscTable,PetscInt,PetscInt);
+extern PetscErrorCode  PetscTableAddExpand(PetscTable,PetscInt,PetscInt,InsertMode);
 extern PetscErrorCode  PetscTableAddCountExpand(PetscTable,PetscInt);
 extern PetscErrorCode  PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
 extern PetscErrorCode  PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
@@ -31,7 +31,7 @@ extern PetscErrorCode  PetscTableRemoveAll(PetscTable);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableAdd"
-PETSC_STATIC_INLINE PetscErrorCode  PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data)
+PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0,hash = (PetscInt)HASHT(ta,key);
@@ -44,18 +44,30 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAdd(PetscTable ta,PetscInt key,Pet
   if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
       if (ta->keytable[hash] == key) {
-	ta->table[hash] = data; /* over write */
+        switch (imode) {
+        case INSERT_VALUES:
+          ta->table[hash] = data; /* over write */
+          break;
+        case ADD_VALUES:
+          ta->table[hash] += data;
+          break;
+        case MAX_VALUES:
+          ta->table[hash] = PetscMax(ta->table[hash],data);
+          break;
+        default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
+        }
 	PetscFunctionReturn(0); 
       } else if (!ta->keytable[hash]) {
 	ta->count++; /* add */
-	ta->keytable[hash] = key; ta->table[hash] = data;
+	ta->keytable[hash] = key;
+        ta->table[hash] = data;
 	PetscFunctionReturn(0);
       }
       hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
     }  
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   } else {
-    ierr = PetscTableAddExpand(ta,key,data);CHKERRQ(ierr);
+    ierr = PetscTableAddExpand(ta,key,data,imode);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

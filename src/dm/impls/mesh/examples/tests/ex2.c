@@ -102,9 +102,9 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
     ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
     ierr = PetscMalloc(numPoints * sizeof(PetscBGNode), &remote);CHKERRQ(ierr);
     for(PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
-      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(r);
-      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cEnd   = overlap->supportEnd(r);
       const PetscInt                                                      rank   = overlap->getRank(r);
+      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
+      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cEnd   = overlap->supportEnd(rank);
 
       for(PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter, ++i) {
         local[i]        = *c_iter;
@@ -112,7 +112,8 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
         remote[i].index = c_iter.color();
       }
     }
-    ierr = PetscBGSetGraph(*bg, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscBGSetGraph(*bg, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscBGView(*bg, PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

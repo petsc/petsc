@@ -135,6 +135,7 @@ public:
     }
   };
   index_type getNumPoints() {
+    if (!numRanks) return 0;
     return this->pointsOffset[numRanks] - this->pointsOffset[0];
   };
   /* getNumPoints - Return the number of points matched to partner process index 'r' */
