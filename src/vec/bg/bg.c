@@ -583,7 +583,7 @@ PetscErrorCode PetscBGBcastBegin(PetscBG bg,MPI_Datatype unit,const void *owned,
   ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscBGGetWindow(bg,unit,(void*)owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     ierr = MPI_Get(ghosted,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
   }
@@ -616,7 +616,78 @@ PetscErrorCode PetscBGBcastEnd(PetscBG bg,MPI_Datatype unit,const void *owned,vo
 
   PetscFunctionBegin;
   ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGReduceBegin"
+/*@C
+   PetscBGReduceBegin - begin reduce of ghost copies into global, to be completed with call to PetscBGReduceEnd()
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+.  ghosted - values to reduce
+-  op - reduction operation
+
+   Output Arguments:
+.  owned - result of reduction
+
+   Level: intermediate
+
+.seealso: PetscBGBcastBegin()
+@*/
+PetscErrorCode PetscBGReduceBegin(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+{
+  PetscErrorCode     ierr;
+  PetscInt           i,nranks;
+  const PetscMPIInt  *ranks;
+  const MPI_Datatype *mine,*remote;
+  MPI_Win            win;
+
+  PetscFunctionBegin;
+  ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscBGGetWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  for (i=0; i<nranks; i++) {
+    ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGReduceEnd"
+/*@C
+   PetscBGReduceEnd - end a reduction operation started with PetscBGReduceBegin()
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+.  ghosted - values to reduce
+-  op - reduction operation
+
+   Output Arguments:
+.  owned - result of reduction
+
+   Level: intermediate
+
+.seealso: PetscBGSetGraph(), PetscBGBcastEnd()
+@*/
+PetscErrorCode PetscBGReduceEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+{
+  PetscErrorCode ierr;
+  MPI_Win win;
+
+  PetscFunctionBegin;
+  ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
   ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

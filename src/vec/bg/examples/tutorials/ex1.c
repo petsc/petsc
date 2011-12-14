@@ -20,10 +20,18 @@ int main(int argc,char **argv)
   PetscBGNode    *remote;
   PetscMPIInt    rank,size;
   PetscBG        bg;
+  PetscBool      test_bcast,test_reduce;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+
+  test_bcast = PETSC_FALSE;
+  test_reduce = PETSC_FALSE;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscBG Test Options","none");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nowned = 2 + (PetscInt)(rank == 0);
   nlocal = 2 + (PetscInt)(rank > 0);
@@ -42,15 +50,32 @@ int main(int argc,char **argv)
   ierr = PetscBGView(bg,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nowned,PetscInt,&owned,nlocal,PetscInt,&local);CHKERRQ(ierr);
-  for (i=0; i<nowned; i++) owned[i] = 100*(rank+1) + i;
-  ierr = PetscBGBcastBegin(bg,MPIU_INT,owned,local);CHKERRQ(ierr);
-  ierr = PetscBGBcastEnd(bg,MPIU_INT,owned,local);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Owned\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nowned,owned,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Local\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nlocal,local,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscFree2(owned,local);CHKERRQ(ierr);
 
+  if (test_bcast) {
+    for (i=0; i<nowned; i++) owned[i] = 100*(rank+1) + i;
+    for (i=0; i<nlocal; i++) local[i] = -1;
+    ierr = PetscBGBcastBegin(bg,MPIU_INT,owned,local);CHKERRQ(ierr);
+    ierr = PetscBGBcastEnd(bg,MPIU_INT,owned,local);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Owned\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nowned,owned,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Local\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nlocal,local,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  if (test_reduce) {
+    for (i=0; i<nowned; i++) owned[i] = 100*(rank+1) + i;
+    for (i=0; i<nlocal; i++) local[i] = 1000*(rank+1) + 10*i;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Owned\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nowned,owned,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscBGReduceBegin(bg,MPIU_INT,local,owned,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscBGReduceEnd(bg,MPIU_INT,local,owned,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Local\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nlocal,local,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Owned\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nowned,owned,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  ierr = PetscFree2(owned,local);CHKERRQ(ierr);
   ierr = PetscBGDestroy(&bg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
