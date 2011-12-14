@@ -39,6 +39,8 @@ struct _p_PetscBG {
   PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBGDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
   PetscBGWinLink  wins;         /* List of active windows */
+  PetscInt        *degree;      /* Degree of each owned vertex */
+  PetscInt        *degreetmp;   /* Temporary local array for computing degree */
 };
 
 #endif

@@ -23,6 +23,10 @@ runex1_2:
 	-@${MPIEXEC} -n 4 ./ex1 -test_reduce > ex1_2.tmp 2>&1; \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || echo "${PWD}\n Possible problem with with ex1_2, diffs above \n========================================="; \
 	   ${RM} -f ex1_2.tmp
+runex1_3:
+	-@${MPIEXEC} -n 4 ./ex1 -test_degree > ex1_3.tmp 2>&1; \
+	   ${DIFF} output/ex1_3.out ex1_3.tmp || echo "${PWD}\n Possible problem with with ex1_3, diffs above \n========================================="; \
+	   ${RM} -f ex1_3.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm
 TESTEXAMPLES_C_X11	    =

@@ -55,8 +55,8 @@ extern PetscErrorCode PetscBGBcastEnd(PetscBG,MPI_Datatype,const void *owned,voi
 extern PetscErrorCode PetscBGReduceBegin(PetscBG,MPI_Datatype,const void *ghosted,void *owned,MPI_Op);
 extern PetscErrorCode PetscBGReduceEnd(PetscBG,MPI_Datatype,const void *ghosted,void *owned,MPI_Op);
 /* Compute the degree of every owned point */
-extern PetscErrorCode PetscBGComputeDegreeBegin(PetscBG,PetscInt *degree);
-extern PetscErrorCode PetscBGComputeDegreeEnd(PetscBG,PetscInt *degree);
+extern PetscErrorCode PetscBGComputeDegreeBegin(PetscBG,const PetscInt **degree);
+extern PetscErrorCode PetscBGComputeDegreeEnd(PetscBG,const PetscInt **degree);
 /* Concatenate data from all ghosted copies of each point, owned data first at each entry */
 extern PetscErrorCode PetscBGGatherBegin(PetscBG,MPI_Datatype,const void *ghosted,void *multi);
 extern PetscErrorCode PetscBGGatherEnd(PetscBG,MPI_Datatype,const void *ghosted,void *multi);

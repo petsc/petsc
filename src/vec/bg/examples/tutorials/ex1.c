@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscBGNode    *remote;
   PetscMPIInt    rank,size;
   PetscBG        bg;
-  PetscBool      test_bcast,test_reduce;
+  PetscBool      test_bcast,test_reduce,test_degree;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscBG Test Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nowned = 2 + (PetscInt)(rank == 0);
@@ -86,6 +87,14 @@ int main(int argc,char **argv)
     ierr = PetscIntView(nlocal,local,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Owned\n");CHKERRQ(ierr);
     ierr = PetscIntView(nowned,owned,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  if (test_degree) {
+    const PetscInt *degree;
+    ierr = PetscBGComputeDegreeBegin(bg,&degree);CHKERRQ(ierr);
+    ierr = PetscBGComputeDegreeEnd(bg,&degree);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Degree Owned\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nowned,degree,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Clean up local space and storage for bipartite graph. */

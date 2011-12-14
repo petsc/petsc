@@ -58,6 +58,7 @@ PetscErrorCode PetscBGReset(PetscBG bg)
   bg->remote = PETSC_NULL;
   ierr = PetscFree(bg->remote_alloc);CHKERRQ(ierr);
   ierr = PetscFree4(bg->ranks,bg->roffset,bg->rmine,bg->rremote);CHKERRQ(ierr);
+  ierr = PetscFree(bg->degree);CHKERRQ(ierr);
   for (link=bg->link; link; link=next) {
     next = link->next;
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
@@ -689,5 +690,71 @@ PetscErrorCode PetscBGReduceEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted
   ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
   ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGComputeDegreeBegin"
+/*@C
+   PetscBGComputeDegreeBegin - begin computation of degree for each owned vertex, to be completed with PetscBGComputeDegreeEnd()
+
+   Collective
+
+   Input Arguments:
+.  bg - bipartite graph
+
+   Output Arguments:
+.  degree - degree of each owned vertex
+
+   Level: advanced
+
+.seealso: PetscBGGatherBegin()
+@*/
+PetscErrorCode PetscBGComputeDegreeBegin(PetscBG bg,const PetscInt **degree)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidPointer(degree,2);
+  if (!bg->degree) {
+    PetscInt i;
+    ierr = PetscMalloc(bg->nowned*sizeof(PetscInt),&bg->degree);CHKERRQ(ierr);
+    ierr = PetscMalloc(bg->nlocal*sizeof(PetscInt),&bg->degreetmp);CHKERRQ(ierr);
+    for (i=0; i<bg->nowned; i++) bg->degree[i] = 0;
+    for (i=0; i<bg->nlocal; i++) bg->degreetmp[i] = 1;
+    ierr = PetscBGReduceBegin(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
+  }
+  *degree = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGComputeDegreeEnd"
+/*@C
+   PetscBGComputeDegreeEnd - complete computation of vertex degree that was started with PetscBGComputeDegreeBegin()
+
+   Collective
+
+   Input Arguments:
+.  bg - bipartite graph
+
+   Output Arguments:
+.  degree - degree of each owned vertex
+
+   Level: developer
+
+.seealso:
+@*/
+PetscErrorCode PetscBGComputeDegreeEnd(PetscBG bg,const PetscInt **degree)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (bg->degreetmp) {
+    ierr = PetscBGReduceEnd(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscFree(bg->degreetmp);CHKERRQ(ierr);
+  }
+  *degree = bg->degree;
   PetscFunctionReturn(0);
 }
