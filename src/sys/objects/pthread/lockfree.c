@@ -83,7 +83,7 @@ void* PetscThreadFunc_LockFree(void* arg)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   int* pId      = (int*)arg;
   int  ThreadId = *pId; 
-  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId+PetscMainThreadShareWork]);
+  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
 
   /* Spin loop */
