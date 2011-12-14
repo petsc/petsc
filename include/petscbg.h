@@ -38,11 +38,15 @@ extern PetscErrorCode PetscBGFinalizePackage(void);
 extern PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG*);
 extern PetscErrorCode PetscBGDestroy(PetscBG*);
 extern PetscErrorCode PetscBGView(PetscBG,PetscViewer);
-extern PetscErrorCode PetscBGSetGraph(PetscBG,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode modelocal,const PetscBGNode *remote,PetscCopyMode moderemote);
+extern PetscErrorCode PetscBGSetGraph(PetscBG,PetscInt nowned,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode modelocal,const PetscBGNode *remote,PetscCopyMode moderemote);
 extern PetscErrorCode PetscBGCreateArray(PetscBG,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscBGDestroyArray(PetscBG,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscBGReset(PetscBG);
-extern PetscErrorCode PetscBGGetDataTypes(PetscBG,MPI_Datatype,PetscInt*,const PetscInt**,const MPI_Datatype**,const MPI_Datatype**);
+extern PetscErrorCode PetscBGGetRanks(PetscBG,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
+extern PetscErrorCode PetscBGGetDataTypes(PetscBG,MPI_Datatype,const MPI_Datatype**,const MPI_Datatype**);
+extern PetscErrorCode PetscBGGetWindow(PetscBG,MPI_Datatype,void*,MPI_Win*);
+extern PetscErrorCode PetscBGFindWindow(PetscBG,MPI_Datatype,const void*,MPI_Win*);
+extern PetscErrorCode PetscBGRestoreWindow(PetscBG,MPI_Datatype,const void*,MPI_Win*);
 
 /* Provide an owned buffer, updates ghosted space */
 extern PetscErrorCode PetscBGBcastBegin(PetscBG,MPI_Datatype,const void *owned,void *ghosted);

@@ -16,8 +16,8 @@ ex1: ex1.o chkopts
 
 #------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1  ./ex1  > ex1.tmp 2>&1; \
-	   ${DIFF} output/ex1.out ex1.tmp || echo "${PWD}\n Possible problem with with ex1, diffs above \n========================================="; \
+	-@${MPIEXEC} -n 4 ./ex1 > ex1.tmp 2>&1; \
+	   ${DIFF} output/ex1_1.out ex1.tmp || echo "${PWD}\n Possible problem with with ex1, diffs above \n========================================="; \
 	   ${RM} -f ex1.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm
