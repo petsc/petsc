@@ -112,7 +112,7 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
         remote[i].index = c_iter.color();
       }
     }
-    ierr = PetscBGSetGraph(*bg, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscBGSetGraph(*bg, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
