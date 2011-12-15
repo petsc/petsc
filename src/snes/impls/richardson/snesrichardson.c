@@ -109,7 +109,7 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
   PetscFunctionBegin;
   norms[0]  = fnorm;
   for(i=1; i < 3; ++i) {
-    ierr = VecWAXPY(W, alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
+    ierr = VecWAXPY(W, -alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, &norms[i]);CHKERRQ(ierr);
   }
@@ -145,7 +145,7 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
     ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   if (alpha != 1.0) {
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
@@ -234,7 +234,6 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
-      ierr = VecScale(Y,-1.0);CHKERRQ(ierr);
     }
     ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {

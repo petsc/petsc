@@ -263,7 +263,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
-      ierr = VecScale(Y, -1.0);CHKERRQ(ierr);
       ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,FM,XM,&ynorm,&fMnorm,&lssucceed);CHKERRQ(ierr);
       if (!lssucceed) {
         if (++snes->numFailures >= snes->maxFailures) {
@@ -369,7 +368,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         ierr = PetscViewerASCIIPrintf(ngmres->monitor, "||F_A||_2 = %e, ||F_M||_2 = %e\n", fAnorm, fMnorm);CHKERRQ(ierr);
       }
       ierr = VecCopy(XA, Y);CHKERRQ(ierr);
-      ierr = VecAXPY(Y, -1.0, X);CHKERRQ(ierr);
+      ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
       ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,FA,XA,&ynorm,&fnorm,&lssucceed);CHKERRQ(ierr);
       if (!lssucceed) {
         if (++snes->numFailures >= snes->maxFailures) {

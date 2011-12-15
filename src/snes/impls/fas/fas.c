@@ -1166,6 +1166,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     /* additive correction of the coarse direction*/
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    ierr = VecScale(Xhat, -1.0);CHKERRQ(ierr);
     ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Xhat,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = VecCopy(W, X);CHKERRQ(ierr);
     ierr = VecCopy(G, F);CHKERRQ(ierr);
