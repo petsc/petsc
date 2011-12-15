@@ -118,6 +118,79 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGCreateSectionBG"
+PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG *sectionBG)
+{
+  PetscInt           numRanks;
+  const PetscInt    *ranks, *rankOffsets;
+  const PetscMPIInt *localPoints, *remotePoints;
+  PetscInt           numPoints, numIndices = 0;
+  PetscInt          *localOffsets;
+  PetscInt          *remoteOffsets;
+  PetscInt          *localIndices;
+  PetscBGNode       *remoteIndices;
+  PetscInt           i, r, ind;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscBGGetRanks(bg, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
+  numPoints = rankOffsets[numRanks];
+  for(i = 0; i < numPoints; ++i) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(section, localPoints[i], &dof);CHKERRQ(ierr);
+    numIndices += dof;
+  }
+  /* Communicate offsets for ghosted points */
+#if 0
+  ierr = PetscMalloc2(numPoints,PetscInt,&localOffsets,numPoints,PetscInt,&remoteOffsets);CHKERRQ(ierr);
+  for(i = 0; i < numPoints; ++i) {
+    ierr = PetscSectionGetOffset(section, localPoints[i], &localOffsets[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscBGBcastBegin(bg, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscBGBcastEnd(bg, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
+  for(i = 0; i < numPoints; ++i) {
+    ierr = PetscSynchronizedPrintf(((PetscObject) bg)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i]);CHKERRQ(ierr);
+  }
+#else
+  ierr = PetscMalloc((section->atlasLayout.pEnd - section->atlasLayout.pStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscBGBcastBegin(bg, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
+  ierr = PetscBGBcastEnd(bg, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
+  for(i = section->atlasLayout.pStart; i < section->atlasLayout.pEnd; ++i) {
+    ierr = PetscSynchronizedPrintf(((PetscObject) bg)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i-section->atlasLayout.pStart]);CHKERRQ(ierr);
+  }
+#endif
+  ierr = PetscSynchronizedFlush(((PetscObject) bg)->comm);CHKERRQ(ierr);
+  ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(numIndices * sizeof(PetscBGNode), &remoteIndices);CHKERRQ(ierr);
+  /* Create new index graph */
+  for(r = 0, ind = 0; r < numRanks; ++r) {
+    PetscInt rank = ranks[r];
+
+    for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
+      PetscInt localPoint   = localPoints[i];
+      PetscInt remoteOffset = remoteOffsets[localPoint-section->atlasLayout.pStart];
+      PetscInt localOffset, dof, d;
+
+      ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d, ++ind) {
+        localIndices[ind]        = localOffset+d;
+        remoteIndices[ind].rank  = rank;
+        remoteIndices[ind].index = remoteOffset+d;
+      }
+    }
+  }
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+  if (numIndices != ind) {SETERRQ2(((PetscObject) bg)->comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
+  ierr = PetscBGCreate(((PetscObject) bg)->comm, sectionBG);CHKERRQ(ierr);
+  ierr = PetscBGSetGraph(*sectionBG, numIndices, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscBGView(*sectionBG, PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
@@ -134,6 +207,18 @@ int main(int argc, char *argv[])
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
   ierr = DMMeshConvertOverlapToBG(dm, &bg);CHKERRQ(ierr);
+  {
+    PetscSection section;
+    PetscBG      sectionBG;
+
+    ierr = DMMeshGetCoordinateSection(dm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscBGCreateSectionBG(bg, section, &sectionBG);CHKERRQ(ierr);
+    ierr = PetscBGDestroy(&sectionBG);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  }
+  ierr = PetscBGDestroy(&bg);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
