@@ -556,7 +556,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,
 	      (int)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
-        level < (GAMG_MAXLEVELS-1) && (level==0 || M>pc_gamg->m_coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
+        level < (pc_gamg->m_Nlevels-1) && (level==0 || M>pc_gamg->m_coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
         level++ ){
     level1 = level + 1;
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
@@ -933,6 +933,50 @@ PetscErrorCode PCGAMGAvoidRepartitioning_GAMG(PC pc, PetscBool n)
 EXTERN_C_END
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetNlevels"
+/*@
+   PCGAMGSetNlevels - 
+
+   Not collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_mg_levels
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGSetNlevels(PC pc, PetscInt n)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetNlevels_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetNlevels_GAMG"
+PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
+{
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  
+  PetscFunctionBegin;
+  pc_gamg->m_Nlevels = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCGAMGSetThreshold"
 /*@
    PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
@@ -1098,6 +1142,14 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                             &pc_gamg->m_threshold, 
                             &flag ); 
     CHKERRQ(ierr);
+
+    pc_gamg->m_Nlevels = GAMG_MAXLEVELS;
+    ierr = PetscOptionsInt("-pc_mg_levels",
+                           "Set number of MG levels",
+                           "PCGAMGSetNlevels",
+                           pc_gamg->m_Nlevels,
+                           &pc_gamg->m_Nlevels, 
+                           &flag ); 
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
