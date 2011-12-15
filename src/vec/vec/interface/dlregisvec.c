@@ -263,7 +263,9 @@ PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_BG
   ierr = PetscBGInitializePackage(path);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
