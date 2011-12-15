@@ -1222,14 +1222,13 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
   PetscInt       i, maxits;
-  Vec            X, B, F;
+  Vec            X, F;
   PetscReal      fnorm;
   SNES_FAS       *fas = (SNES_FAS *)snes->data;
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
   X = snes->vec_sol;
-  B = snes->vec_rhs;
   F = snes->vec_func;
 
   /*norm setup */
