@@ -22,6 +22,7 @@ typedef struct {
   PetscScalar  *xi;            /* the dot-product of the current and previous res. */
 
   /* Selection constants */
+  PetscBool    additive;       /* use additive variant instead of selection */
   PetscReal    gammaA;         /* Criterion A residual tolerance */
   PetscReal    epsilonB;       /* Criterion B difference tolerance */
   PetscReal    deltaB;         /* Criterion B residual tolerance */
