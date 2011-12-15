@@ -441,7 +441,7 @@ extern PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 extern PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
 extern PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
-extern PetscErrorCode PCGAMGAvoidRepartitioning(PC,PetscBool);
+extern PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 extern PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 extern PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 extern PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
