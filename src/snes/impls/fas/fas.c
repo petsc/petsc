@@ -4,7 +4,8 @@
 const char *SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","SNESFASType","SNES_FAS",0};
 
 /*MC
-Full Approximation Scheme nonlinear multigrid solver.
+
+SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
 
 The nonlinear problem is solved via the repeated application of nonlinear preconditioners and coarse-grid corrections
 
