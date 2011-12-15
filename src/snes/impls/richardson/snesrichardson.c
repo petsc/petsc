@@ -222,7 +222,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->usegs && snes->ops->computegs) {
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
       ierr = SNESComputeGS(snes, snes->vec_rhs, Y);CHKERRQ(ierr);
-      ierr = VecAXPY(Y, -1.0, X);CHKERRQ(ierr);
+      ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
     } else if (snes->pc) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
@@ -231,7 +231,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
+      ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
