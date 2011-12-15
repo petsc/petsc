@@ -144,8 +144,14 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   /* create and initialize a condensed linked list */
   crmax = a->rmax*b->rmax;
   nlnk_max = PetscMin(crmax,bn);
+  if (!nlnk_max && bn) {
+    nlnk_max = bn; /* in case rmax is not defined for A or B */
+#if defined(PETSC_USE_DEBUGGING)
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: Armax or Brmax is not defined in MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable!\n");
+#endif
+  }
 #if defined(DEBUG_MATMATMULT)
-  printf("LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
+  ierr = (PETSC_COMM_SELF,"LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
 #endif
   ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt);CHKERRQ(ierr);
 
@@ -225,11 +231,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
-  (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqAIJ;
-
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, needs non-scalable O(bn) array 'abdense' */
   ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
   ierr = PetscMemzero(c->matmult_abdense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
    
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
