@@ -17,8 +17,8 @@ struct _DMOps {
   PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
-  PetscErrorCode (*getmatrix)(DM, const MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);
+  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
 

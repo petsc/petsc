@@ -262,7 +262,7 @@ PetscErrorCode  DMCreate_Sliced(DM p)
 
   ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
-  p->ops->getmatrix          = DMCreateMatrix_Sliced;
+  p->ops->creatematrix          = DMCreateMatrix_Sliced;
   p->ops->destroy            = DMDestroy_Sliced;
   PetscFunctionReturn(0);
 }

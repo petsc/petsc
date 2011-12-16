@@ -398,7 +398,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->view               = DMView_Redundant;
   dm->ops->createglobalvector = DMCreateGlobalVector_Redundant;
   dm->ops->createlocalvector  = DMCreateLocalVector_Redundant;
-  dm->ops->getmatrix          = DMCreateMatrix_Redundant;
+  dm->ops->creatematrix          = DMCreateMatrix_Redundant;
   dm->ops->destroy            = DMDestroy_Redundant;
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Redundant;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Redundant;
@@ -406,7 +406,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Redundant;
   dm->ops->refine             = DMRefine_Redundant;
   dm->ops->coarsen            = DMCoarsen_Redundant;
-  dm->ops->getinterpolation   = DMCreateInterpolation_Redundant;
+  dm->ops->createinterpolation   = DMCreateInterpolation_Redundant;
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
   ierr = PetscStrallocpy(VECSTANDARD,&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);

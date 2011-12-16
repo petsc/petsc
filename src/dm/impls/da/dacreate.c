@@ -189,9 +189,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
   da->ops->createglobalvector = DMCreateGlobalVector_DA;
   da->ops->createlocalvector  = DMCreateLocalVector_DA;
-  da->ops->getinterpolation   = DMCreateInterpolation_DA;
+  da->ops->createinterpolation   = DMCreateInterpolation_DA;
   da->ops->getcoloring        = DMCreateColoring_DA;
-  da->ops->getmatrix          = DMCreateMatrix_DA;
+  da->ops->creatematrix          = DMCreateMatrix_DA;
   da->ops->refine             = DMRefine_DA;
   da->ops->coarsen            = DMCoarsen_DA;
   da->ops->refinehierarchy    = DMRefineHierarchy_DA;

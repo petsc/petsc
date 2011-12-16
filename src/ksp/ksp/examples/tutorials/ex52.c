@@ -166,7 +166,7 @@ int main(int argc,char **args)
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    ierr = PCFactorCreatematrix(pc,&F);CHKERRQ(ierr);
     icntl=7; ival = 2;
     ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
   }
@@ -195,7 +195,7 @@ int main(int argc,char **args)
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    ierr = PCFactorCreatematrix(pc,&F);CHKERRQ(ierr);
     ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
   }
 #endif
@@ -224,7 +224,7 @@ int main(int argc,char **args)
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    ierr = PCFactorCreatematrix(pc,&F);CHKERRQ(ierr);
 
     /* Test MatGetDiagonal() */
     Vec diag;

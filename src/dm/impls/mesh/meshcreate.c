@@ -441,8 +441,8 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = DMCreateMatrix_Mesh;
-  dm->ops->getinterpolation   = DMCreateInterpolation_Mesh;
+  dm->ops->creatematrix          = DMCreateMatrix_Mesh;
+  dm->ops->createinterpolation   = DMCreateInterpolation_Mesh;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

@@ -492,7 +492,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  ierr = (*dm1->ops->getinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
+  ierr = (*dm1->ops->createinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -604,9 +604,9 @@ PetscErrorCode  DMCreateMatrix(DM dm,const MatType mtype,Mat *mat)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   if (dm->mattype) {
-    ierr = (*dm->ops->getmatrix)(dm,dm->mattype,mat);CHKERRQ(ierr);
+    ierr = (*dm->ops->creatematrix)(dm,dm->mattype,mat);CHKERRQ(ierr);
   } else {
-    ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
+    ierr = (*dm->ops->creatematrix)(dm,mtype,mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

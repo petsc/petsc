@@ -1257,8 +1257,8 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
   ierr = DMDACreate3d(((PetscObject)dac)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
-  daf->ops->getmatrix        = dac->ops->getmatrix;
-  daf->ops->getinterpolation = dac->ops->getinterpolation;
+  daf->ops->creatematrix        = dac->ops->creatematrix;
+  daf->ops->createinterpolation = dac->ops->createinterpolation;
   daf->ops->getcoloring      = dac->ops->getcoloring;
   ddf = (DM_DA*)daf->data;
   ddc = (DM_DA*)dac->data;
@@ -1490,7 +1490,7 @@ int main(int argc,char *argv[])
     if (thi->coarse2d) {
       ierr = DMDACreate2d(comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,N,M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
       da->ops->refinehierarchy  = DMRefineHierarchy_THI;
-      da->ops->getinterpolation = DMCreateInterpolation_DA_THI;
+      da->ops->createinterpolation = DMCreateInterpolation_DA_THI;
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);
     } else {
       ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
@@ -1501,7 +1501,7 @@ int main(int argc,char *argv[])
     ierr = DMDestroy(&da);CHKERRQ(ierr);
   }
   if (thi->tridiagonal) {
-    (DMMGGetDM(dmmg))->ops->getmatrix = DMCreateMatrix_THI_Tridiagonal;
+    (DMMGGetDM(dmmg))->ops->creatematrix = DMCreateMatrix_THI_Tridiagonal;
   }
   {
     /* Use the user-defined matrix type on all but the coarse level */
