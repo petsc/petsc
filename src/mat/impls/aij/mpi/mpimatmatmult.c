@@ -280,16 +280,19 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend){
     SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
   } 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_32",&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
-  if (matmatmult_old){
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_32(A,P,fill,C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable",&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
-  if (matmatmult_old){
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,P,fill,C);;CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-matmatmult_32","Use PETSc-3.2","",matmatmult_old,&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
+    if (matmatmult_old){
+      ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_32(A,P,fill,C);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",matmatmult_old,&matmatmult_old,PETSC_NULL);CHKERRQ(ierr);
+    if (matmatmult_old){
+      ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,P,fill,C);;CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] call MatMatMultSymbolic_MPIAIJ_MPIAIJ()...\n",rank);
