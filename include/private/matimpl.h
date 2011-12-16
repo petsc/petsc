@@ -1225,7 +1225,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   lnk[0]   = _nlnk;   /* number of entries in the list */\
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_new(PetscInt lnk_max,PetscInt nidx,PetscInt indices[],PetscInt lnk[])
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_new(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   
   _nlnk     = lnk[0]; /* num of entries on the input lnk */

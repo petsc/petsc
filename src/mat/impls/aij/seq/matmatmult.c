@@ -250,7 +250,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
       bj   = Bj + bi[brow];
       /* add non-zero cols of B into the condensed sorted linked list lnk */
       /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr); */
-      ierr = PetscLLCondensedAddSorted_new(lnk_max,bnzj,bj,lnk);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted_new(bnzj,bj,lnk);CHKERRQ(ierr);
     }
     cnzi    = *lnk;
     ci[i+1] = ci[i] + cnzi;
