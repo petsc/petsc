@@ -313,6 +313,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   fftw_destroy_plan(fftw->p_backward);
   ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
   ierr = PetscFree(fft->data);CHKERRQ(ierr);
+  fftw_mpi_cleanup();
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +413,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
     fftw_complex   *data_fin,*data_bout;
 #else
     double         *data_finr,*data_boutr;
-    PetscInt       n1,N1,vsize;
+    PetscInt       n1,N1;
     ptrdiff_t      temp;
 #endif
 
@@ -452,7 +453,6 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (bout) {
         data_boutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
-        ierr = VecGetSize(*bout,&vsize);CHKERRQ(ierr);
         (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
