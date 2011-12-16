@@ -412,13 +412,13 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d constrained", p, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d constrained", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for(b = 0; b < s->bc->atlasDof[p]; ++b) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d\n", p, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d\n", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -433,6 +433,8 @@ PetscErrorCode  PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
     if (s->numFields) {
