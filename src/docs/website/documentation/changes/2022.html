@@ -1,205 +1,372 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 2.0.22</title>
+  </head>
+  <body>
 
-<head>
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<title>PETSc: Docs:&nbsp; Changes: 2.0.22</title>
-</head>
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
 
-<body  bgcolor="#D5EAFF">
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 2.0.22<!--end--></h1>
+    </div>
 
-<table width="100%">
-  <tr>
-    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <ul>
-      <li><a href="../exercises/index.html"><strong>Home</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%">
-    <!--##begin-->
-    <h1>Docs:&nbsp; Changes: 2.0.22</h1>
-    <!--##end-->
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-  <tr>
-    <td width="25%" valign="top"><ul>
-      <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-      <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
-          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
-          <li><a href="../referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
-          <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-          <li><strong><a href="../installation.html">Installation</a> </strong></li>
-          <li><strong><a href="../zope.html">Zope</a></strong></li>
-	  <li><strong><a href="index.html">Changes</a></strong><ul>
-              <li><a href="2028.html">2.0.28</a></li>
-              <li><a href="2024.html">2.0.24</a></li>
-              <li><font color="#FF0000">2.0.22</font></li>
-              <li><a href="2918-21.html">2.0.18-21</a></li>
-              <li><a href="2017.html">2.0.17</a></li>
-              <li><a href="2016.html">2.0.16</a></li>
-              <li><a href="2015.html">2.0.15</a></li>
-            </ul>
-          </li>
-          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-          <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
-        </ul>
-      </li>
-      <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-      <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%" valign="top">
-    <!--##begin-->
-    <p align="center"><font color="#FF0000" size="5">NEW FEATURES
-    and CHANGES in PETSc 2.0.22</font><font size="5"> </font></p>
-    <p><font size="4"><strong><u>General:</u></strong></font> <ul>
-      <li><font size="3">The Fortran90-specific routines such as <strong>VecGetArrayF90()</strong>
-        now work with the IBM Fortran compiler, the SGI Fortran 90 compiler, and the Cray T3E
-        Fortran compiler.</font></li>
-      <li><font size="3">The third argument for the Fortran versions of the routines <strong>VecGetArray()/VecRestoreArray(),</strong>
-        <strong>ISGetIndices()/ISRestoreIndices(), MatGetArray()/MatRestoreArray()</strong> and <strong>DAGetGlobalIndices()
-        </strong>has been changed from <strong>integer</strong> to <strong>PetscOffset</strong>.
-        See src/snes/examples/tutorials/ex5f.F for example usage.</font></li>
-      <li><font size="3">Changed the location of the manual pages from docs/www/www.html and
-        docs/www to <strong>docs/manualpages/manualpages.html</strong>&nbsp; and <strong>docs/manualpages</strong>.</font></li>
-      <li><font size="3">The location of the mpiuni include files (used in the base.site file when
-        not compiling with an MPI) has moved from <strong>src/mpiuni </strong>to s<strong>rc/sys/src/mpiuni</strong></font></li>
-      <li><font size="3">Added the option -log_summary_exclude &lt;vec,mat,sles,snes&gt; to limit
-        the information printed in the summary table</font></li>
-      <li><font size="3">Added the option -log_info_exclude &lt;vec,mat,sles,snes&gt; </font></li>
-      <li><font size="3">Changed the calling sequences of <strong>PetscGetTime(),
-        PetscGetCPUTime(), PetscGetFlops()</strong> to return error codes like all other PETSc
-        functions.</font></li>
-      <li><font size="3">Changed the internal structure of the PETSc objects. This will not effect
-        most users but makes PETSc more extensible for the future.</font></li>
-      <li><font size="3">Removed the PETSc object child support and replaced it with</font></li>
-    </ul>
-    <blockquote>
-      <p><font size="3"><strong>PetscObjectCompose(PetscObject,char *name,PetscObject);<br>
-      PetscObjectQuery(PetscObject,char *name,PetscObject *);<br>
-      PetscObjectComposeFunction(PetscObject,char *name, void *);<br>
-      PetscObjectQueryFunction(PetscObject,char *name,void **);</strong></font></p>
-    </blockquote>
-    <blockquote>
-      <p><font size="3">These allow the user to attach objects and functions to any PETSc
-      object.</font></p>
-    </blockquote>
-    <ul>
-      <li><font size="3">Added a feeble example that demonstrates how to manage partitioning a
-        grid in parallel in <strong>src/mat/examples/tutorials/ex2.c</strong></font></li>
-      <li><font size="3">The build command 'make all' in ${PETSC_DIR} will build the PETSc
-        libraries, including the fortran interface.</font></li>
-    </ul>
-    <p><font size="4"><strong><u>AO (Application Orderings):</u></strong></font></p>
-    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font> <ul>
-      <li><font size="3">The calling sequence of&nbsp; <strong>TSSetType() </strong>has changed;
-        see the manual page.</font></li>
-      <li><font size="3"><strong>TSType</strong> is now a string, rather than enum type</font></li>
-    </ul>
-    <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
-      <li><font size="3">The calling sequence of&nbsp; <strong>SNESSetType() </strong>has changed;
-        see the manual page.</font></li>
-      <li><font size="3"><strong>SNESType</strong> is now a string, rather than enum type</font></li>
-    </ul>
-    <p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> <ul>
-      <li>See PC and KSP </li>
-    </ul>
-    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font> <ul>
-      <li><font size="3">The calling sequence of&nbsp; <strong>KSPSetType() </strong>has changed;
-        see the manual page.</font></li>
-      <li><font size="3"><strong>KSPType</strong> is now a string, rather than enum type.</font></li>
-    </ul>
-    <p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font><ul>
-      <li><font size="3">Added two new PC classes, <strong>PCSLES</strong> and <strong>PCCOMPOSITE</strong>
-        that allow use of any <strong>SLES</strong> object as a preconditioner and enable
-        combining several preconditioners.</font></li>
-      <li><font size="3">The calling sequence of&nbsp; <strong>PCSetType() </strong>has changed;
-        see the manual page.</font></li>
-      <li><font size="3"><strong>PCType</strong> is now a string, rather than enum type.</font></li>
-    </ul>
-    <p><font size="4"><strong><u>MAT (Matrices): </u></strong></font><ul>
-      <li><font size="3">Added support for partitioning using the ParMETIS parallel partitioning
-        package, see the manual page for <strong>PartitioningCreate</strong>()</font></li>
-      <li><font size="3">Added <strong>MatGetColumnVector()</strong></font></li>
-      <li><font size="3">Added argument column size to<strong> MatGetSubMatrix()</strong></font></li>
-      <li><font size="3">Changed the memory allocation algorithm in<strong> MatLUFactorSymbolic() </strong>and<strong>
-        MatILUFactorSymbolic() </strong>based on a suggestion by David Hysom of ODU.</font></li>
-      <li><font size="3">The third argument for the Fortran version of the routines <strong>MatGetArray()/MatRestoreArray()</strong>
-        has been changed from <strong>integer</strong> to <strong>PetscOffset</strong>. </font></li>
-    </ul>
-    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font><ul>
-      <li><font size="3">Changed <strong>DAGetDistributedVector()</strong> and <strong>DAGetLocalVector()</strong>
-        to <strong>DACreateGlobalVector()</strong> and<strong><u> </u>DACreateLocalVector().</strong>
-        You should destroy these vectors with a usual call to <strong>VecDestroy().</strong></font></li>
-      <li><font size="3">The third argument for the Fortran version of the routine <strong>DAGetGlobalIndices()</strong>
-        has been changed from <strong>integer</strong> to <strong>PetscOffset</strong>. </font></li>
-    </ul>
-    <p><font size="4"><strong><u>VEC (Vectors):</u></strong></font> <ul>
-      <li><font size="3">Added <strong>VecSetBlockSize(), VecSetValuesBlocked(),
-        VecSetValuesBlockedLocal(), VecSetLocalToGlobalMappingBlocked()</strong></font></li>
-      <li><font size="3">Added<strong> VecCreatedShared(),</strong> which creates a parallel
-        vector in shared memory on the SGI machines</font></li>
-      <li><font size="3">Changed <strong>VEC_IGNORE_OFF_PROCESSOR_ENTRIES</strong> to <strong>VEC_IGNORE_OFF_PROC_ENTRIES</strong></font></li>
-      <li><font size="3">The third argument for the Fortran versions of the routines <strong>VecGetArray()/VecRestoreArray(),</strong>
-        &nbsp; has been changed from <strong>integer</strong> to <strong>PetscOffset</strong>. See
-        src/snes/examples/tutorials/ex5f.F for example usage.</font></li>
-      <li><font size="3"><strong>VecGetArray(), VecRestoreArray() </strong>now work from Fortran
-        on all machines, finally after 3 long years!</font></li>
-      <li><font size="3">Changed the calling sequence of <strong>VecCreate()</strong>, now takes
-        both local and global size, see the manual page.</font></li>
-    </ul>
-    <p><font size="4"><strong><u>IS (Index Sets): </u></strong></font><ul>
-      <li><font size="3">The third argument for the Fortran versions of the routines&nbsp; <strong>ISGetIndices()/ISRestoreIndices()
-        </strong>has been changed from <strong>integer</strong> to <strong>PetscOffset</strong>. </font></li>
-    </ul>
-    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font></p>
-    <p><font size="4"><strong><u>Viewers: </u></strong></font></p>
-    <p><font size="4"><strong><u>System:</u></strong></font></p>
-    <p><font size="4"><strong><u>Error Handling:</u></strong></font></p>
-    <p><font size="4"><strong><u>Event Logging:</u></strong></font></p>
-    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> <ul>
-      <li><font size="3"><strong>PETSC_NULL</strong> has been replaced with <strong>PETSC_NULL_INTEGER</strong>,
-        <strong>PETSC_NULL_SCALAR</strong>, <strong>PETSC_NULL_DOUBLE</strong> or <strong>PETSC_NULL_CHARACTER</strong>
-        depending on the context for usage. If the function expects an integer, a scalar (double
-        or complex depending if you compile with BOPT=*_complex), a double precision array, or a
-        string.</font></li>
-      <li><font size="3">The Fortran include files are now located in the directory
-        &quot;include/finclude/*.&quot;, rather than &quot;include/FINCLUDE/*.h&quot;. The include
-        files that used to be in &quot;include/finclude/*.h (not recommended) are now in
-        &quot;include/foldinclude/*.h&quot;</font></li>
-      <li><font size="3">If&nbsp; you have stored PETSc objects in Fortran integer arrays, such as
-        <font color="#FF0000">user(3) = vec </font>you have to declare those arrays to be of type <strong>PetscFortranAddr</strong>
-        instead of as integer. Note that <strong>PetscFortranAddr</strong> is simply integer on 32
-        bit machines and integer*8 on 64 bit machines.</font></li>
-      <li><font size="3">The Fortran90-specific routines such as <strong>VecGetArrayF90()</strong>
-        now work with the IBM Fortran compiler, the SGI Fortran 90 compiler, and the Cray T3E
-        Fortran compiler.</font></li>
-      <li>PETSc objects can now be passed between C and Fortran directly. You do not have to use
-        the commands <strong>PetscCObjectToFortranObject()</strong> and <strong>PetscFortranObjectToCObject()</strong>
-        to translate the objects between languages.</li>
-      <li>Changed&nbsp; Fortran object argument from type int to type PetscFortranAddr in the
-        routines <strong>PetscCObjectToFortranObject()</strong> and &nbsp; <strong>PetscFortranObjectToCObject().</strong></li>
-      <li>Added the routine <strong>PetscInitializeFortran()</strong> to assist in mixed-language
-        use of PETSc.&nbsp; See the manual page for details.<br>
-      </li>
-    </ul>
-    <!--##end-->
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-</table>
-</body>
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><span class="current">2.0.22</span></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><a href="2016.html">2.0.16</a></li>
+                <li><a href="2015.html">2.0.15</a></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2>NEW FEATURES and <a name="CHANGES">CHANGES</a> in PETSc 2.0.22</h2>
+      </div>
+
+      <h4>General:</h4>
+
+      <ul>
+        <li>
+          The Fortran90-specific routines such as <code>VecGetArrayF90()</code>
+          now work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
+          and the Cray T3E Fortran compiler.
+        </li>
+
+        <li>
+          The third argument for the Fortran versions of the routines
+          <code>VecGetArray()/VecRestoreArray(),</code>
+          <code>ISGetIndices()/ISRestoreIndices(),
+            MatGetArray()/MatRestoreArray()</code> and
+          <code>DAGetGlobalIndices()</code> has been changed from
+          <code>integer</code> to <code>PetscOffset</code>.  See
+          src/snes/examples/tutorials/ex5f.F for example usage.
+        </li>
+
+        <li>
+          Changed the location of the manual pages from docs/www/www.html and
+          docs/www to <code>docs/manualpages/manualpages.html</code> and
+          <code>docs/manualpages</code>.
+        </li>
+
+        <li>
+          The location of the mpiuni include files (used in the base.site file
+          when not compiling with an MPI) has moved from
+          <code>src/mpiuni</code> to <code>src/sys/src/mpiuni</code>
+        </li>
+
+        <li>
+          Added the option <code>-log_summary_exclude &lt;vec,mat,sles,snes&gt;</code> to
+          limit the information printed in the summary table
+        </li>
+
+        <li>Added the option <code>-log_info_exclude &lt;vec,mat,sles,snes&gt;</code></li>
+
+        <li>
+          Changed the calling sequences of <code>PetscGetTime(),
+            PetscGetCPUTime(), PetscGetFlops()</code> to return error codes
+          like all other PETSc functions.
+        </li>
+
+        <li>
+          Changed the internal structure of the PETSc objects. This will not
+          effect most users but makes PETSc more extensible for the
+          future.
+        </li>
+
+        <li>
+          Removed the PETSc object child support and replaced it with
+
+          <ul>
+            <li><code>PetscObjectCompose(PetscObject,char *name,PetscObject);</code></li>
+            <li><code>PetscObjectQuery(PetscObject,char *name,PetscObject *);</code></li>
+            <li><code>PetscObjectComposeFunction(PetscObject,char *name, void *);</code></li>
+            <li><code>PetscObjectQueryFunction(PetscObject,char *name,void **);</code></li>
+          </ul>
+          These allow the user to attach objects and functions to any PETSc object.
+        </li>
+
+        <li>
+          Added a feeble example that demonstrates how to manage partitioning
+          a grid in parallel in <code>src/mat/examples/tutorials/ex2.c</code>
+        </li>
+
+        <li>
+          The build command 'make all' in ${PETSC_DIR} will build the PETSc
+          libraries, including the fortran interface.
+        </li>
+      </ul>
+
+      <h4>AO (Application Orderings):</h4>
+      <h4>TS (Timestepping Solvers):</h4>
+
+      <ul>
+        <li>The calling sequence of <code>TSSetType()</code> has changed; see the manual page.</li>
+        <li><code>TSType</code> is now a string, rather than enum type</li>
+      </ul>
+
+      <h4>SNES (Nonlinear Solvers):</h4>
+
+      <ul>
+        <li>The calling sequence of <code>SNESSetType()</code> has changed; see the manual page.</li>
+        <li><code>SNESType</code> is now a string, rather than enum type</li>
+      </ul>
+
+      <h4>SLES (Linear Solvers):</h4>
+
+      <ul>
+        <li>See PC and KSP</li>
+      </ul>
+
+      <h4>KSP (Krylov Subspace Methods):</h4>
+
+      <ul>
+        <li>The calling sequence of <code>KSPSetType()</code> has changed; see the manual page.</li>
+        <li><code>KSPType</code> is now a string, rather than enum type.</li>
+      </ul>
+
+      <h4>PC (Preconditioners):</h4>
+
+      <ul>
+        <li>
+          Added two new PC classes, <code>PCSLES</code> and
+          <code>PCCOMPOSITE</code> that allow use of any
+          <code>SLES</code> object as a preconditioner and enable combining
+          several preconditioners.
+        </li>
+        <li>The calling sequence of <code>PCSetType()</code> has changed; see the manual page.</li>
+        <li><code>PCType</code> is now a string, rather than enum type.</li>
+      </ul>
+
+      <h4>MAT (Matrices):</h4>
+
+      <ul>
+        <li>
+          Added support for partitioning using the ParMETIS parallel
+          partitioning package, see the manual page for
+          <code>PartitioningCreate()</code>
+        </li>
+
+        <li>Added <code>MatGetColumnVector()</code></li>
+        <li>Added argument column size to <code>MatGetSubMatrix()</code></li>
+
+        <li>
+          Changed the memory allocation algorithm in
+          <code>MatLUFactorSymbolic()</code> and
+          <code>MatILUFactorSymbolic()</code> based on a suggestion by David
+          Hysom of ODU.
+        </li>
+
+        <li>
+          The third argument for the Fortran version of the routines
+          <code>MatGetArray()/MatRestoreArray()</code> has been changed from
+          <code>integer</code> to <code>PetscOffset</code>.
+        </li>
+      </ul>
+
+      <h4>DA (Distributed Arrays):</h4>
+
+      <ul>
+        <li>
+          Changed <code>DAGetDistributedVector()</code> and
+          <code>DAGetLocalVector()</code> to
+          <code>DACreateGlobalVector()</code> and
+          <code>DACreateLocalVector()</code>. You should destroy these
+          vectors with a usual call to <code>VecDestroy()</code>.
+        </li>
+
+        <li>
+          The third argument for the Fortran version of the routine
+          <code>DAGetGlobalIndices()</code> has been changed from
+          <code>integer</code> to <code>PetscOffset</code>.
+        </li>
+      </ul>
+
+      <h4>VEC (Vectors):</h4>
+
+      <ul>
+        <li>
+          Added <code>VecSetBlockSize(), VecSetValuesBlocked(),
+            VecSetValuesBlockedLocal(),
+            VecSetLocalToGlobalMappingBlocked()</code>
+        </li>
+
+        <li>
+          Added<code> VecCreatedShared(),</code> which creates
+          a parallel vector in shared memory on the SGI machines
+        </li>
+
+        <li>
+          Changed
+          <code>VEC_IGNORE_OFF_PROCESSOR_ENTRIES</code> to
+          <code>VEC_IGNORE_OFF_PROC_ENTRIES</code>
+        </li>
+
+        <li>
+          The third argument for the Fortran versions of the routines
+          <code>VecGetArray()/VecRestoreArray(),</code> has been changed from
+          <code>integer</code> to <code>PetscOffset</code>. See
+          src/snes/examples/tutorials/ex5f.F for example usage.
+        </li>
+
+        <li>
+          <code>VecGetArray(), VecRestoreArray()</code> now work from Fortran on
+          all machines, finally after 3 long years!
+        </li>
+
+        <li>
+          Changed the calling sequence of
+          <code>VecCreate()</code>, now takes both local and global size,
+          see the manual page.
+        </li>
+      </ul>
+
+      <h4>IS (Index Sets):</h4>
+
+      <ul>
+        <li>
+          The third argument for the Fortran versions of the routines
+          <code>ISGetIndices()/ISRestoreIndices()</code> has been changed from
+          <code>integer</code> to <code>PetscOffset</code>.
+        </li>
+      </ul>
+
+      <h4>Draw (Graphics):</h4>
+      <h4>Viewers:</h4>
+      <h4>System:</h4>
+      <h4>Error Handling:</h4>
+      <h4>Event Logging:</h4>
+      <h4>Fortran Interface:</h4>
+
+      <ul>
+        <li>
+          <code>PETSC_NULL</code> has been replaced with
+          <code>PETSC_NULL_INTEGER</code>,
+          <code>PETSC_NULL_SCALAR</code>,
+          <code>PETSC_NULL_DOUBLE</code> or
+          <code>PETSC_NULL_CHARACTER</code> depending on the context for
+          usage. If the function expects an integer, a scalar (double or
+          complex depending if you compile with BOPT=*_complex), a double
+          precision array, or a string.
+        </li>
+
+        <li>
+          The Fortran include files are now located in the
+          directory &quot;include/finclude/*.&quot;, rather than
+          &quot;include/FINCLUDE/*.h&quot;. The include files that used to be
+          in &quot;include/finclude/*.h&quot; (not recommended) are now in
+          &quot;include/foldinclude/*.h&quot;
+        </li>
+
+        <li>
+          If you have stored PETSc objects in Fortran integer
+          arrays, such as <code>user(3) = vec</code> you have
+          to declare those arrays to be of type
+          <code>PetscFortranAddr</code> instead of as integer. Note that
+          <code>PetscFortranAddr</code> is simply integer on 32 bit
+          machines and integer*8 on 64 bit machines.
+        </li>
+
+        <li>
+          The Fortran90-specific routines such as
+          <code>VecGetArrayF90()</code> now work with the IBM Fortran
+          compiler, the SGI Fortran 90 compiler, and the Cray T3E Fortran
+          compiler.
+        </li>
+
+        <li>
+          PETSc objects can now be passed between C and Fortran directly. You do
+          not have to use the commands
+          <code>PetscCObjectToFortranObject()</code> and
+          <code>PetscFortranObjectToCObject()</code> to translate the objects
+          between languages.
+        </li>
+
+        <li>
+          Changed Fortran object argument from type int to type PetscFortranAddr
+          in the routines <code>PetscCObjectToFortranObject()</code> and
+          <code>PetscFortranObjectToCObject().</code>
+        </li>
+
+        <li>
+          Added the routine <code>PetscInitializeFortran()</code> to assist
+          in mixed-language use of PETSc. See the manual page for details.
+        </li>
+      </ul>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

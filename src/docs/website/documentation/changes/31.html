@@ -1,50 +1,41 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <title>PETSc: Docs:&nbsp; Changes: Development</title>
-</head>
-<body style="background-color: rgb(213, 234, 255);">
-<table width="100%">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 3.1</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 3.1<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%"><!--##begin-->
-      <h1> Docs:&nbsp;Changes: 3.1</h1>
-<!--##end--> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
-      <ul>
-        <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../index.html"><strong>Documentation</strong></a>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
           <ul>
-            <li><a href="../index.html#Manual"><strong>Manual pages and
-Users Manual</strong></a></li>
-            <li><a href="../referencing.html"><strong>Referencing&nbsp;
-PETSc</strong></a></li>
-            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-            <li><strong><a href="../installation.html">Installation</a>
-              </strong></li>
-            <li><strong><a href="index.html">Changes</a></strong>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
               <ul>
-                <li><a href="dev.html"><span
- style="color: rgb(255, 0, 0);"></span></a><a href="dev.html">Development</a><br>
-                  <span style="text-decoration: underline;"></span></li>
-                <li><span style="color: rgb(255, 0, 0);">3.1</span><br>
-                </li>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><span class="current">3.1</span></li>
                 <li><a href="300.html">3.0.0</a></li>
                 <li><a href="233.html">2.3.3</a></li>
                 <li><a href="232.html">2.3.2</a></li>
@@ -62,232 +53,296 @@ PETSc</strong></a></li>
                 <li><a href="2028.html">2.0.28</a></li>
                 <li><a href="2024.html">2.0.24</a></li>
                 <li><a href="2022.html">2.0.22</a></li>
-                <li><a href="2918-21.html">2.0.21</a></li>
-                <li><a href="2918-21.html">2.0.18-20</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
                 <li><a href="2017.html">2.0.17</a></li>
                 <li><a href="2016.html">2.0.16</a></li>
                 <li><a href="2015.html">2.0.15</a></li>
               </ul>
             </li>
-            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="../copyright.html">Copyright</a></strong>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2><a name="CHANGES">CHANGES in PETSc 3.1</a></h2>
+      </div>
+
+      <h4>General:</h4>
+
+      <ul>
+        <li>
+          PetscOptionsHasName() and PetscOptionsName() now return PETSC_TRUE if
+          the options are set to any value, include false or 0. You may need to
+          change some of your PetscOptionsXXName() to PetscOptionsXXTruth()
+        </li>
+
+        <li>
+          Added configure option --with-single-library that causes all PETSc
+          code to be compiled into the single library libpetsc.XXX
+        </li>
+
+        <li>
+          PetscMap changed to PetscLayout and PetscMapInitialize() changed to
+          PetscLayoutCreate() and it now allocates the space of the
+          object.
+        </li>
+
+        <li>
+          In makefiles include ${PETSC_DIR}/conf/base is replaced with two
+          lines include ${PETSC_DIR}/conf/variables and&nbsp; include
+          ${PETSC_DIR}/conf/rules
+        </li>
+
+        <li>BlockSolve95 interface is removed</li>
+
+        <li>
+          petsc.h and petscdef.h are replaced with petscsys.h and
+          petscsysdef.h; while petsc.h now includes ALL PETSc include
+          files.
+        </li>
+
+        <li>
+          win32fe [used for MS/Intel compiler builds on windows] now defaults
+          to 'noautodetect' mode. However the previous behavior can be restored
+          by using the option '--autodetect'. For eg: '--withcc=win32fe cl
+          --autodetect'. This works primarily with old VC6/VC7/Intel8 etc
+          compilers anyway.
+        </li>
+      </ul>
+
+      <h4>Logging:</h4>
+
+      <ul>
+        <li>PetscLogFlops(int) -&gt;PetscLogFlops(PetscLogDouble). [check fortran usage]</li>
+      </ul>
+
+      <h4>config/configure.py:</h4>
+
+      <ul>
+        <li>
+          All ./configure options that state known values, so that ./configure
+          doesn't try to test for them. Often used with the --with-batch option
+          now begin with --known-
+        </li>
+      </ul>
+
+      <h4>IS:</h4>
+      <h4>Vec:</h4>
+      <h4>VecScatter:</h4>
+      <h4>Mat:</h4>
+
+      <ul>
+        <li>
+          MatGetSubMatrix:
+          <ul>
+            <li>
+              Now takes a parallel IS for the columns, the csize argument has been
+              dropped. The local part of this IS corresponds to the local columns of
+              the new submatrix.
             </li>
           </ul>
         </li>
-        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External
-Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-      </ul>
-      </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
-in the PETSc 3.1</font></p>
-      <p><u><b>General:</b></u></p>
-      <ul>
-        <li>PetscOptionsHasName() and PetscOptionsName() now return
-PETSC_TRUE if the options are set to any value, include false or 0. You
-may need to change some of your PetscOptionsXXName() to
-PetscOptionsXXTruth()</li>
-        <li>Added configure option --with-single-library that causes
-all PETSc code to be compiled into the single library libpetsc.XXX</li>
-        <li>PetscMap changed to PetscLayout and PetscMapInitialize()
-changed to PetscLayoutCreate() and it now allocates the space of
-the object.</li>
-        <li>In makefiles include ${PETSC_DIR}/conf/base is replaced
-with two lines include ${PETSC_DIR}/conf/variables and&nbsp; include
-${PETSC_DIR}/conf/rules</li>
-        <li>BlockSolve95 interface is removed</li>
-        <li>petsc.h and petscdef.h are replaced with petscsys.h and
-petscsysdef.h; while petsc.h now includes ALL PETSc include files.</li>
-        <li>win32fe [used for MS/Intel compiler builds on windows] now
-defaults to 'noautodetect' mode. However the previous behavior can be
-restored by using the option '--autodetect'. For eg: '--withcc=win32fe
-cl --autodetect'. This works primarily with old VC6/VC7/Intel8 etc
-compilers anyway.</li>
-      </ul>
-      <ul>
-      </ul>
-      <u><b>Logging:<br>
-      </b></u>
-      <ul>
-        <li>PetscLogFlops(int) -&gt;PetscLogFlops(PetscLogDouble).
-[check fortran usage]<br>
+
+        <li>
+          MatGetSubMatrixRaw
+          <ul>
+            <li>Removed, use MatGetSubMatrix</li>
+          </ul>
         </li>
-      </ul>
-      <u><b>config/configure.py:<br>
-      </b></u>
-      <ul>
-        <li>All ./configure options that state known values, so that
-./configure doesn't try to test for them. Often used with the
---with-batch
-option now begin with --known-</li>
-      </ul>
-      <u><b></b></u>
-      <ul>
-      </ul>
-      <p><u><b>IS:</b></u></p>
-      <p><u><b>Vec: <br>
-      </b></u></p>
-      <p><u><b>VecScatter:<br>
-      </b></u></p>
-      <ul>
-      </ul>
-      <p><u><b>Mat:</b></u></p>
-      <ul>
-        <li>MatGetSubMatrix
-          <dl>
-Now takes a parallel IS for the columns, the csize argument has been
-dropped. The local part of this IS corresponds to the local columns of
-the new submatrix.
-          </dl>
+
+        <li>
+          Changed name of option MAT_KEEP_ZEROED_ROWS to
+          MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.
         </li>
-        <li>MatGetSubMatrixRaw
-          <dl>
-Removed, use MatGetSubMatrix
-          </dl>
+
+        <li>
+          Added MAT_SHARE_NONZERO_PATTERN as option for MatDuplicate() this
+          allows several matrices to share the same data structures for the
+          nonzeros and thus save memory.
         </li>
-        <li>Changed name of option MAT_KEEP_ZEROED_ROWS to
-MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
-        <li>Added MAT_SHARE_NONZERO_PATTERN as option for
-MatDuplicate() this allows several matrices to share the same data
-structures for the nonzeros and thus save memory.</li>
-        <li>The function provided to MatNullSpaceSetFunction() now
-takes a MatNullSpace() as the first argument. Added Fortran interface
-for this function as well.</li>
-        <li>Removed MatPBRelax() merged its functionality into
-MatRelax()</li>
-        <li>Changed MatRelax() to MatSOR() to match MatSORType() and
-PCSOR</li>
-        <li>Removed requirement that rows be sorted in
-MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().</li>
-        <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
-function name MatDiagonalSet().</li>
+
+        <li>
+          The function provided to MatNullSpaceSetFunction() now takes
+          a MatNullSpace() as the first argument. Added Fortran interface for
+          this function as well.
+        </li>
+
+        <li>Removed MatPBRelax() merged its functionality into MatRelax()</li>
+        <li>Changed MatRelax() to MatSOR() to match MatSORType() and PCSOR</li>
+
+        <li>
+          Removed requirement that rows be sorted in
+          MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().
+        </li>
+        <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match function name MatDiagonalSet().</li>
         <li>MATMPIROWBS i.e BlockSolve95 interface is now removed.</li>
       </ul>
-      <u><b>PC:</b></u>
-      <ul>
-        <li>PCShell All user-provided functions now have PC as first
-argument instead of
-the
-application context. Users should obtain the context with
-PCShellGetContext, similar to MatShell.</li>
-        <li>Removed -pc_asm_in_place and PCASMSetUseInPlace() since the
-option made no sense</li>
-        <li>PCApplyRichardson() has an additional argument indicating
-if the initial guess being passed in is nonzero. SOR will save some
-work if it is zero.</li>
-        <li>MatSetBlockSize() is no longer an error for BAIJ matrices,
-but the argument must be the same as when the matrix was preallocated. </li>
-        <li>PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()</li>
-        <li>Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd()
-and PCFactorSetShiftInBlocks()
-with PCFactorSetShiftType() and PCFactorSetShiftAmount(). Replaced
--pc_factor_shift_nonzero, -pc_factor_shift_positive_definite and
--pc_factor_shift_in_blocks
-with -pc_factor_shift_type <shifttype> and -pc_factor_shift_amount <shiftamount>.
 
-          </shiftamount></shifttype></li>
+      <h4>PC:</h4>
+
+      <ul>
+        <li>
+          PCShell All user-provided functions now have PC as first argument
+          instead of the application context. Users should obtain the context
+          with PCShellGetContext, similar to MatShell.
+        </li>
+
+        <li>Removed -pc_asm_in_place and PCASMSetUseInPlace() since the option made no sense</li>
+
+        <li>
+          PCApplyRichardson() has an additional argument indicating if the
+          initial guess being passed in is nonzero. SOR will save some work if
+          it is zero.
+        </li>
+
+        <li>
+          MatSetBlockSize() is no longer an error for BAIJ matrices, but the
+          argument must be the same as when the matrix was preallocated.
+        </li>
+
+        <li>PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()</li>
+
+        <li>
+          Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd() and
+          PCFactorSetShiftInBlocks() with PCFactorSetShiftType() and
+          PCFactorSetShiftAmount(). Replaced -pc_factor_shift_nonzero,
+          -pc_factor_shift_positive_definite and -pc_factor_shift_in_blocks
+          with -pc_factor_shift_type &lt;shifttype&gt; and -pc_factor_shift_amount
+          &lt;shiftamount&gt;.
+        </li>
+
         <li>Added PCREDISTRIBUTE for load balancing and removal of Dirichlet degrees of freedom.</li>
       </ul>
-      <p><u><b>KSP:</b></u></p>
+
+      <h4>KSP:</h4>
+
       <ul>
-        <li>Added KSPCGUseSingleReduction() -ksp_cg_single_reduction ;
-recommended for use with many processors when VecDot() starts to take a
-large amount of time, Requires 2 extra work vectors.<br>
+        <li>
+          Added KSPCGUseSingleReduction() -ksp_cg_single_reduction; recommended
+          for use with many processors when VecDot() starts to take a large
+          amount of time, Requires 2 extra work vectors.
         </li>
-        <li>Added KSPGCR (Generalized Conjugate Residuals), a flexible
-method (like FGMRES) providing inexpensive residuals.</li>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>SNES:</b></u></p>
-      <p><u><b>TS:</b></u></p>
-      <ul>
-        <li>Rename TS_EULER, TS_BEULER, etc like TSEULER for
-consistency with other packages.</li>
-        <li>Add Theta and General Linear time integrators (TSTHETA,
-TSGL). These can be used for solving differential algebraic equations
-(DAE) using the new TSSetIFunction() and TSSetIJacobian().</li>
-        <li>Add TSSSP which implements optimal strong stability
-preserving time integrators of order 2, 3, and 4 using a low-storage
-explicit Runge-Kutta scheme.</li>
-        <li>Change TSSetPreStep() and TSSetPostStep() to run before and
-after each step instead of before and after each solve.</li>
-      </ul>
-      <p><u><b>DA:</b></u></p>
-      <ul>
-        <li>DAGetColoring() now takes a MatType as an additional
-argument, should be MATAIJ or MATBAIJ</li>
-        <li>Added DARefineHierarchy(), DMMG now always uses
-DMRefineHierarchy to generate refined grids. Added options
--da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels of
-the hierarchy.</li>
-        <li>DASetCoordinates() now references the vector, so the user
-should release their reference by calling VecDestroy().</li>
-      </ul>
-      <p><u><b>DMMG:</b></u></p>
-      <ul>
-      </ul>
-      <u><b>PetscViewer: &nbsp;<br>
-      </b></u>
-      <ul>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>SYS:</b></u></p>
-      <ul>
-        <li>PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause()
-now take PetscReal instead of int. Also, -draw_pause takes a real value.</li>
-        <li>PetscRandomGetValueImaginary() is removed. To get a complex
-number with only a random imaginary part first call
-PetscRandomSetInterval() with the same low and high real part.
-Similarly one can obtain a complex number with only a random real part
-by setting the low and high imaginary part to be the same.</li>
-      </ul>
-      <p><u><b>AO:<br>
-      </b></u></p>
-      <p><u><b>Sieve:</b></u></p>
-      <p><u><b>Fortran:<br>
-      </b></u></p>
-      <ul>
-        <li>Removed the old compiler dependent implementation of f90
-interface sources in favor of the new compiler independent
-implementation. Consequently the configure option --with-f90-interface
-is removed. And the f90 interface is automatically built - if an f90
-compiler is detected. [this is the default behavior before this change
-aswell]<br>
-        </li>
-        <li>use petsc and use petscdef are now use petscsys and use
-petscsysdef<br>
+
+        <li>
+          Added KSPGCR (Generalized Conjugate Residuals), a flexible method
+          (like FGMRES) providing inexpensive residuals.
         </li>
       </ul>
-      <p> </p>
-      <br>
-      <p></p>
+
+      <h4>SNES:</h4>
+      <h4>TS:</h4>
+
       <ul>
+        <li>Rename TS_EULER, TS_BEULER, etc like TSEULER for consistency with other packages.</li>
+
+        <li>
+          Add Theta and General Linear time integrators (TSTHETA, TSGL). These
+          can be used for solving differential algebraic equations (DAE) using
+          the new TSSetIFunction() and TSSetIJacobian().
+        </li>
+
+        <li>
+          Add TSSSP which implements optimal strong stability preserving time
+          integrators of order 2, 3, and 4 using a low-storage explicit
+          Runge-Kutta scheme.
+        </li>
+
+        <li>
+          Change TSSetPreStep() and TSSetPostStep() to run before and after
+          each step instead of before and after each solve.
+        </li>
       </ul>
-      <p><u><b><a
- href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
+
+      <h4>DA:</h4>
+
       <ul>
-        <li>Added MATORDERING_AMD for Tim Davis' Approximate Minimum
-Degree package.</li>
+        <li>DAGetColoring() now takes a MatType as an additional argument, should be MATAIJ or MATBAIJ</li>
+
+        <li>
+          Added DARefineHierarchy(), DMMG now always uses DMRefineHierarchy to
+          generate refined grids. Added options -da_refine_hierarchy_[xyz] to
+          allow semi-coarsening at some levels of the hierarchy.
+        </li>
+
+        <li>
+          DASetCoordinates() now references the vector, so the user should
+          release their reference by calling VecDestroy().
+        </li>
       </ul>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+      <h4>DMMG:</h4>
+      <h4>PetscViewer:</h4>
+
+      <h4>SYS:</h4>
+
+      <ul>
+        <li>
+          PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause() now take
+          PetscReal instead of int. Also, -draw_pause takes a real value.
+        </li>
+
+        <li>
+          PetscRandomGetValueImaginary() is removed. To get a complex number
+          with only a random imaginary part first call PetscRandomSetInterval()
+          with the same low and high real part.  Similarly one can obtain
+          a complex number with only a random real part by setting the low and
+          high imaginary part to be the same.
+        </li>
+      </ul>
+
+      <h4>AO:</h4>
+      <h4>Sieve:</h4>
+      <h4>Fortran:</h4>
+
+      <ul>
+        <li>
+          Removed the old compiler dependent implementation of f90 interface
+          sources in favor of the new compiler independent implementation.
+          Consequently the configure option --with-f90-interface is removed.
+          And the f90 interface is automatically built - if an f90 compiler is
+          detected. [this is the default behavior before this change
+          aswell]
+        </li>
+
+        <li>use petsc and use petscdef are now use petscsys and use petscsysdef</li>
+      </ul>
+
+      <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
+
+      <ul>
+        <li>Added MATORDERING_AMD for Tim Davis' Approximate Minimum Degree package.</li>
+      </ul>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

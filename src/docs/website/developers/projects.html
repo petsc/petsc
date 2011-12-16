@@ -1,279 +1,140 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <title>PETSc: The Portable, Extensible Toolkit for Scientific
-Computation</title>
-</head>
-<body bgcolor="#d5eaff">
-&gt;
-<table style="width: 775px;">
-  <tbody>
-    <tr>
-      <td valign="top" width="218">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
-      <ul>
-        <li><a href="../index.html"><strong>Home</strong></a></li>
-      </ul>
-&nbsp; </td>
-      <td width="549">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: The Portable, Extensible Toolkit for Scientific Computation</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
       <h1>Projects: Big and Small</h1>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="771">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="218">
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-        <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><strong><a href="../miscellaneous/external.html"><strong>External
-Software</strong></a></strong></li>
-        <li><strong><font color="#ff0000"><a href="index.html">Developers
-Site</a></font></strong>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li>
+          <span class="current">Developers Site</span>
           <ul>
-            <li><strong><font color="#ff0000"><a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
-copy
-of
-documentation</a></font></strong></li>
-            <li><strong></strong><strong><font color="#ff0000"><a
- href="developers.pdf">Developers Instructions</a></font></strong></li>
-            <li><strong><font color="#ff0000">Proposed projects</font></strong></li>
+            <li><a href="index.html">Getting started</a></li>
+            <li><a href="../documentation/changes/dev.html">Changes</a></li>
+            <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/index.html">Development copy of documentation</a></li>
+            <li><a href="developers.pdf">Developers Instructions</a></li>
+            <li><span class="current">Proposed projects</span></li>
           </ul>
         </li>
       </ul>
-      <p>&nbsp;</p>
-      </td>
-      <td style="width: 549px; vertical-align: top;"> &nbsp; &nbsp;
-This is the PETSc to-do list; any help on these would be greatly
-appreciated. Each of the first few projects could be done by a graduate
-student or advanced undergraduate in a couple of months.<br>
-      <br>
+    </div>
+
+    <div id="main">
+
+      This is the PETSc to-do list; any help on these would be greatly
+      appreciated. Each of the first few projects could be done by a graduate
+      student or advanced undergraduate in a couple of months.
+
       <ul>
         <li>MatSOR() should used blocks when bs > 0 for AIJ matrices and no inodes        </li>
+
         <li>
-          <h3>Daniel Szyld suggests a refined way of computing overlap
-for additive Schwarz. Instead of taking all rows/columns connected to
-the block take those with "strong" coupling.&nbsp; I think this could
-be easily added to PETSc. <br>
-          </h3>
+          Daniel Szyld suggests a refined way of computing overlap for additive
+          Schwarz. Instead of taking all rows/columns connected to the block
+          take those with "strong" coupling. I think this could be easily added
+          to PETSc.
         </li>
+
+        <li> Add optional scalar value argument to VecMAXPY(), fix all places in code that depend on it.  </li>
+
         <li>
-          <h3>Add optional scalar value argument to VecMAXPY(), fix all
-places in code that depend on it. </h3>
+          Develop the parallel PETSc interface for the new FFTW parallel codes
+          being developed, based on the sequential interfaces in
+          src/mat/impls/fftw
         </li>
+
         <li>
-          <h3>Develop the parallel PETSc interface for the new
-FFTW parallel codes being developed, based on the sequential interfaces
-in src/mat/impls/fftw<br>
-          </h3>
+          Developing fast (FFT based) solvers (underneath src/ksp/pc/impls for
+          "the model problems", sort of like a modern FISHPACK in PETSc. For
+          parallel this requires the FFTW parallel interface.
         </li>
+
         <li>
-          <h3>Developing fast (FFT based) solvers (underneath
-src/ksp/pc/impls for "the model
-problems", sort of like a modern FISHPACK in PETSc. For parallel this
-requires the FFTW parallel interface.<br>
-          </h3>
+          Converting PetscLogViewPython() to generate JSON instead and
+          developing Python parsers for quickly generating nice tables of
+          performance details from runs or groups of runs.
         </li>
+
         <li>
-          <h3>&nbsp;Converting PetscLogViewPython() to generate JSON
-instead and developing Python parsers for quickly generating nice
-tables of performance details from runs or groups of runs.</h3>
+          Extend PetscWebServe() that allows accessing running PETSc jobs via
+          a browser and looking at what is going on (this uses the AMS inside).
+          See src/sys/viewer/impls/socket/send.c
         </li>
-        <li>
-          <h3>Extend PetscWebServe() that allows accessing running
-PETSc jobs via a browser and looking at what is going on (this uses the
-AMS inside). See src/sys/viewer/impls/socket/send.c<br>
-          </h3>
-        </li>
-        <li>
-          <h3>&nbsp;GPU based preconditiones</h3>
-        </li>
-        <li>Add PCApplyHermitianTranpose() and
-KSPSolveHermitianTranspose()</li>
-      </ul>
-      <ul>
+
+        <li>GPU based preconditiones </li>
+        <li>Add PCApplyHermitianTranpose() and KSPSolveHermitianTranspose()</li>
         <li>Interface to CUBLAS for dense linear algebra on GPUs</li>
-        <li>Improve the PETSc website so that searchs for, for example MatGetSubMatrix() at google always go to the latest PETSc docs and not some out of date stuff on another site http://www.google.com/support/webmasters/bin/answer.py?answer=183668</li>
-        <li>Interface to <a href="http://code.google.com/p/elemental/">Elemental</a>
-for modern distributed-memory dense linear algebra</li>
+
+        <li>
+          Improve the PETSc website so that searchs for, for example
+          MatGetSubMatrix() at google always go to the latest PETSc docs and
+          not some out of date stuff on another site. See
+          <a href="http://www.google.com/support/webmasters/bin/answer.py?answer=183668">here</a>.
+        </li>
+
+        <li>
+          Interface to
+          <a href="http://code.google.com/p/elemental/">Elemental</a> for modern
+          distributed-memory dense linear algebra
+        </li>
+
         <li>Vec and Mat class based on pthreads parallelism</li>
-        <li>Turn MPICH, Open MPI and then PETSc into an Apple Framework.</li>
-        <li>Make a Mat subclass for tridiagonal matrix (and block
-tridiagonal) and write fast sequential solvers for them. Also do fast
-parallel tridiagonal solvers.</li>
-        <li>Convert KSPSPECEST to something like -ksp_type chebychev
--ksp_chebychev_precompute_parameters -ksp_chebychev_precompute_ksp_type
-cg -ksp_chebychev_precompute_minfactor .95</li>
+
+        <li>
+          Turn MPICH, Open MPI and then PETSc into an Apple Framework.
+        </li>
+
+        <li>
+          Make a Mat subclass for tridiagonal matrix (and block tridiagonal)
+          and write fast sequential solvers for them. Also do fast parallel
+          tridiagonal solvers.
+        </li>
+
+        <li>
+          Convert KSPSPECEST to something like -ksp_type chebychev
+          -ksp_chebychev_precompute_parameters
+          -ksp_chebychev_precompute_ksp_type cg
+          -ksp_chebychev_precompute_minfactor .95
+        </li>
+
         <li>MatSOR() should used blocks when bs > for AIJ matrices and no inodes        </li>
-        <li>KSPSolve and SNESSolve should return bounds on the errors
-and some measure of sensitivity of the solution to the something</li>
-        <li>The MatCreateSeqCUFFT() and MatCreateSeqFFTW() should be
-both made subclasses of an abstract Mat class for FFTs. Allowing
-command line switching between them etc so that user code makes no
-mention of the particular FFT package being used.<br>
+
+        <li>
+          KSPSolve and SNESSolve should return bounds on the errors and some
+          measure of sensitivity of the solution to the something
+        </li>
+
+        <li>
+          The MatCreateSeqCUFFT() and MatCreateSeqFFTW() should be both made
+          subclasses of an abstract Mat class for FFTs. Allowing command line
+          switching between them etc so that user code makes no mention of the
+          particular FFT package being used.  
         </li>
       </ul>
-&nbsp; Below is a bunch of random ideas of things that need to be done.<br>
-      <br>
-Rewrite BlasLapack.py to handle --download-f-blas-lapack
-with seperate package file and cleanup like
-totally<br>
-      <br>
-Rewrite MPI.py to handle the --download-mpich --download-openmpi as
-seperate package files and cleanup like totally.<br>
-      <br>
-Make a new matrix type MPIMSBAIJ that works like MPISBAIJ but stores
-the off -diagonal portions twice (like AIJ). This would have better
-load balance for work and storage.<br>
-      <br>
-Change the numbering of vector elements for DA ordering to run over the
-z then y then x &nbsp;rather than the current x, then y, then z. This
-is to match the way the MPI &nbsp;cartesian communicator orders things.
-See petsc-users mail from Sean Dettrick. Should not change the user
-interface.<br>
-      <br>
-      <br>
-&nbsp; Fix all MatPartitioners to optionally turn on edge weights from
-the matrix values. Currently the are ignored for all partitioners
-except parmetis, where they are incorrectly always used.<br>
-      <br>
-&nbsp; Provide support for shared libraries with gcc on cygwin: &nbsp;<a
- href="http://cygwin.com/cygwin-ug-net/dll.html">http://cygwin.com/cygwin-ug-net/dll.html</a><br>
-      <br>
-&nbsp;
-      <br>
-      <br>
-When solving F(x) = 0, I would like to be able to scale both the
-solution<br>
-vector x and the residual function vector F, simply by specifying
-scaling<br>
-vectors, sx and sf, say. (These vectors would be the diagonal entries of<br>
-scaling matrices Dx and Df.)<br>
-I realize this can be achieved, at least in part, within the user
-residual<br>
-function.<br>
-This is what I had been doing, until I looked at Denis and Schnabel
-(sp?),<br>
-Brown and Saad, and the KINSOL user guide. It seems one has to take the<br>
-scaling matrices into account when computing various norms, when
-applying the<br>
-preconditioner, and when computing the step size, \sigma. No doubt there<br>
-are other things I have missed that also need to be done.<br>
-      <br>
-&nbsp; Make PetscBagLoad() machine independent by requiring the user to
-register the<br>
-entire bag before calling PetscBagLoad()<br>
-      <br>
-&nbsp; add GMRESR<br>
-      <br>
-&nbsp; Add PCCreate_LRC() see MatCreateLRC()<br>
-      <br>
-&nbsp; (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a
-long time ago?<br>
-      <br>
-      <br>
-&nbsp;&nbsp; (Priority 1) Add new KSP that allows reordering unknowns
-(parallel or sequential) for better performance and then calls regular
-KSP. Or should this be PC?<br>
-      <br>
-&nbsp;&nbsp; (Priority 2) General mechanism for DMGetMatrix() etc
-...for composite matrices<br>
-      <br>
-&nbsp; Make all KSP (if possible) use either preconditioned or
-unpreconditioned norms for monitoring &amp; convergence (e.g. BCGSL)<br>
-      <br>
-&nbsp; I like the idea of having an optional usage logging facility in
-PetscInitialize() and PetscFinalize().&nbsp; A mysql database on a
-server somewhere sounds good. Kind of like how we use FLEXLM for
-licensed software. <br>
-&nbsp; &nbsp;* this could be used to log -log_summary, -snes_view etc
-results.<br>
-      <br>
-      <br>
-&nbsp; Fix GMRES and SYMMLQ so that if they detect happy breakdown the
-proper cleanup is done and the converged reason is set to
-KSP_CONVERGED_HAPPY_BREAKDOWN. Currently it is done in ad hoc ways.<br>
-      <br>
-&nbsp; <br>
-      <br>
-&nbsp;&nbsp;&nbsp; Make LSQR properly handle nonzero initial guess by
-simply computing the residual right hand side; solving that and then
-adding back the initial guess.<br>
-      <br>
-&nbsp;&nbsp;&nbsp; Add support for point block diagonal scaling the
-matrix before calling KSPSolve.<br>
-      <br>
-&nbsp;&nbsp; An almost linear time LU solver for second order elliptic<br>
-&nbsp;&nbsp; operators
-(http://www.math.uni-leipzig.de/~bebendorf/AHMED.html)<br>
-&nbsp;&nbsp; Another software library on Hierarchical Matrices for
-Elliptic<br>
-&nbsp;&nbsp; Differential equations (AHMED)<br>
-&nbsp;&nbsp; An approximate LU decomposition can be computed in the
-algebra of<br>
-&nbsp;&nbsp; hierarchical matrices with almost linear time complexity
-and with<br>
-&nbsp;&nbsp; the same robustness as the classical LU decomposition
-method.<br>
-      <br>
-&nbsp;&nbsp; DUNE, the Distributed and Unified Numerics Environment <br>
-&nbsp;&nbsp; (http://hal.iwr.uni-heidelberg.de/dune)<br>
-&nbsp;&nbsp; DUNE aims to reach the following goals:<br>
-&nbsp;&nbsp;&nbsp; - Distributed development<br>
-&nbsp;&nbsp;&nbsp; - Unified access to different grid managers (ALBERTA
-, UG),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; visualization tools (Grape), solvers,
-etc.<br>
-&nbsp;&nbsp;&nbsp; - high level abstraction through Operator concept<br>
-      <br>
-&nbsp;&nbsp;&nbsp; ILUPACK www.math.tu-berlin.de/ilupack<br>
-      <br>
-&nbsp; &nbsp;QHULL<br>
-      <br>
-&nbsp; &nbsp;OpenDX<br>
-      <span style="font-weight: bold;"><br>
-      </span>&nbsp; add support to lgrind to map char string tokens
-with htmlmap.
-Cannot do it before applying lgrind cause it cannot parse tex. Cannot
-do it after lgrind because maplatexnames.py cannot&nbsp; handle the
-yucky latex lgrind generates. Should be easy cannibalizing stuff from
-Bill's sowing.<br>
-      <br>
-&nbsp; keywords in maual pages should get listed in help topic list<br>
-      <br>
-&nbsp; need python tool to find all manual page functions that are
-missing in the users manual.<br>
-      <br>
-&nbsp;&nbsp; Add troubleshooting entries and error messages with web
-address for common errors.<br>
-      <br>
-      <h3>.</h3>
-      <br>
-      <p align="left">&nbsp;&nbsp;&nbsp; </p>
-      <p align="left">&nbsp;</p>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="771">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="771"> <br>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="771"> <br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+    </div>
+
+    <hr>
+
+  </body>
 </html>

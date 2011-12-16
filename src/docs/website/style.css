@@ -20,13 +20,15 @@ body {
 }
 
 /* make all "a" tags float to the right */
-#header a {
+#header > a {
   float: right;
+  margin-right: 15%;
 }
 
 /* except for the first first "a" tag, make this one float left */
-#header a:first-child {
+#header > a:first-child {
   float: left;
+  margin-left: 15%;
 }
 
 /* all img tags under the "header" div */
@@ -47,6 +49,11 @@ body {
 
 .version, .date, .current, .warning {
   color: red;
+}
+
+.warning {
+  font-size: large;
+  font-weight: bold;
 }
 
 /* the clear:both makes the hr clear the floating divs */
@@ -70,4 +77,24 @@ hr {
 
 #searchbox {
   clear: both;
+}
+
+.devs td {
+  width: 10em;
+  padding: .2em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.devs img {
+  width: 75px;
+}
+
+#mail {
+  margin-left: 1em;
+}
+
+#mail td:nth-child(2) {
+  width: 13em;
+  font-weight: bold;
 }
