@@ -1107,7 +1107,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 */
 #define PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt) 0; \
 {\
-  PetscInt _head,_nlnk;\
   PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),&lnk);\
   PetscBTCreate(lnk_max,bt);                   \
   PetscBTMemzero(lnk_max,bt);                  \

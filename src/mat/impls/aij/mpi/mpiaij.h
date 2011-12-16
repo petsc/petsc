@@ -28,7 +28,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscScalar    *bufa;
   Mat            P_loc,P_oth;  /* partial B_seq -- intend to replace B_seq */
   PetscInt       *api,*apj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt       abnz_max;     /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq 
+  PetscInt       apnz_max;     /* max num of nnz in a local row of A*P 
                                 - used by MatPtAPNumeric_MPIAIJ_MPIAIJ in sparse_axpy=2 */
   MatReuse       reuse; 
   PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
