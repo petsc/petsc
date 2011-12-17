@@ -261,6 +261,8 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
 #endif
 
+#define foo 1
+#if !defined(foo)
   /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
 
@@ -340,8 +342,12 @@ int main(int argc,char **args)
 #endif
   }
   
+#endif
+
   /* Free work space */
+#if !defined(foo)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+#endif
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);

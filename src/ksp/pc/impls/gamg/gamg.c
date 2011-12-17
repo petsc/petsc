@@ -580,6 +580,11 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
+#define foo 1
+#if defined(foo)
+    PetscFunctionReturn(0);
+#endif
+
 #endif
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
     if( isOK ) {

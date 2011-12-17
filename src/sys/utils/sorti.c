@@ -423,35 +423,7 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscMergeIntArrays" 
-/*@
-   PetscMergeIntArray - Merges n SORTED integer arrays 
 
-   Not Collective
-
-   Input Parameters:
-+   n - number of arrays
-.   lens - length of each array
--   arr - pointer to each array
-
-   Output Parameters:
-+  N - number of sorted values
--  values - sorted values
-
-   Level: intermediate
-
-   Concepts: merging^arrays
-
-   Developer Notes: How do we estimate how many entries there are in the sorted list? When an input arr[i] runs out how do we avoid checking repeatedly again?
-
-.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
-@*/
-PetscErrorCode  PetscMergeIntArrays(PetscInt n,const PetscInt lens[], const PetscInt **arr, PetscInt *N, PetscInt **values)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMergeIntArrayPair" 

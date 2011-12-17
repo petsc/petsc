@@ -520,7 +520,7 @@ PetscErrorCode  VecPointwiseDivide(Vec w,Vec x,Vec y)
 .  newv - location to put new vector
 
    Notes:
-   VecDuplicate() does not copy the vector, but rather allocates storage
+   VecDuplicate() DOES NOT COPY the vector entries, but rather allocates storage
    for the new vector.  Use VecCopy() to copy a vector.
 
    Use VecDestroy() to free the space. Use VecDuplicateVecs() to get several
