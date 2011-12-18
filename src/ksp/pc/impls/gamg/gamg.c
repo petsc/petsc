@@ -295,6 +295,7 @@ PetscErrorCode createLevel( const PC a_pc,
     if( ncrs0 != 0 ){
       const PetscInt *is_idx;
       MatPartitioning  mpart;
+      IS proc_is;
       /* hack to fix global data that pmetis.c uses in 'adj' */
       for( nactive = jj = 0 ; jj < npe ; jj++ ) {
 	if( counts[jj] != 0 ) {
@@ -305,20 +306,20 @@ PetscErrorCode createLevel( const PC a_pc,
       
       if( new_npe == 1 ) {
         ierr = MatGetLocalSize( adj, &is_sz, &ii );  CHKERRQ(ierr);
-        ierr = ISCreateStride( wcomm, is_sz, 0, 0, &isnewproc );  CHKERRQ(ierr);
+        ierr = ISCreateStride( cm, is_sz, 0, 0, &proc_is );  CHKERRQ(ierr);
       }
       else {
         ierr = MatPartitioningCreate( cm, &mpart ); CHKERRQ(ierr);
         ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
         ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
         ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
-        ierr = MatPartitioningApply( mpart, &isnewproc ); CHKERRQ(ierr);
+        ierr = MatPartitioningApply( mpart, &proc_is ); CHKERRQ(ierr);
         ierr = MatPartitioningDestroy( &mpart );          CHKERRQ(ierr);
       }
       /* collect IS info */
-      ierr = ISGetLocalSize( isnewproc, &is_sz );       CHKERRQ(ierr);
+      ierr = ISGetLocalSize( proc_is, &is_sz );       CHKERRQ(ierr);
       ierr = PetscMalloc( a_cbs*is_sz*sizeof(PetscInt), &newproc_idx ); CHKERRQ(ierr);
-      ierr = ISGetIndices( isnewproc, &is_idx );        CHKERRQ(ierr);
+      ierr = ISGetIndices( proc_is, &is_idx );        CHKERRQ(ierr);
       /* spread partitioning across machine - best way ??? */
       NN = 1; /*npe/new_npe;*/
       for( kk = jj = 0 ; kk < is_sz ; kk++ ){
@@ -326,8 +327,8 @@ PetscErrorCode createLevel( const PC a_pc,
           newproc_idx[jj] = is_idx[kk] * NN; /* distribution */
         }
       }
-      ierr = ISRestoreIndices( isnewproc, &is_idx );     CHKERRQ(ierr);
-      ierr = ISDestroy( &isnewproc );                    CHKERRQ(ierr);
+      ierr = ISRestoreIndices( proc_is, &is_idx );     CHKERRQ(ierr);
+      ierr = ISDestroy( &proc_is );                    CHKERRQ(ierr);
       ierr = MPI_Comm_free( &cm );              CHKERRQ(ierr);  
 
       is_sz *= a_cbs;
@@ -580,10 +581,6 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PetscFree( data ); CHKERRQ( ierr );
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
-#define foo 1
-#if defined(foo)
-    PetscFunctionReturn(0);
-#endif
 
 #endif
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
