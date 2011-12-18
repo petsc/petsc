@@ -199,8 +199,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   PetscFunctionReturn(0);
 }
 
-#define foo
-#if !defined(foo)
 /*
      Does not use bitarray
  */
@@ -283,92 +281,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
   *nspacedouble = ndouble;
   PetscFunctionReturn(0);
 }
-
-#else
-#include "private/sysimpl.h"
-/*
-     Does not use bitarray
- */
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new"
-PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
-{
-  PetscErrorCode     ierr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
-  const PetscInt     *Ai=a->i,*Aj=a->j,*Bi=b->i,*Bj=b->j,am=A->rmap->N,bm=B->rmap->N,bn=B->cmap->N; 
-  const PetscInt     *aj=Aj,*bi=Bi,*bj;
-  PetscInt           *ci,*cj; 
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,crmax,ndouble=0;
-  PetscInt           lnk_max=bn,*lnk;
-
-  PetscFunctionBegin;
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
-  ci[0] = 0;
-
-  /* create and initialize a condensed linked list */
-  crmax = a->rmax*b->rmax;
-  lnk_max = PetscMin(crmax,bn);
-  if (!lnk_max && bn) {
-    lnk_max = bn; /* in case rmax is not defined for A or B */
-#if defined(PETSC_USE_DEBUGGING)
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: Armax or Brmax is not defined in MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable!\n");
-#endif
-  }
-#if defined(DEBUG_MATMATMULT)
-  ierr = (PETSC_COMM_SELF,"LLCondensedCreate lnk_max=%d, bn %d, crmax %d\n",lnk_max,bn,crmax); 
-#endif
-  ierr = PetscHeapMergeCreate(lnk_max,lnk);CHKERRQ(ierr);
-
-  /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
-  current_space = free_space;
-
-  /* Determine ci and cj */
-  for (i=0; i<am; i++) {
-    anzi = Ai[i+1] - Ai[i];
-    cnzi = 0;
-    aj   = Aj + Ai[i];
-    for (j=0; j<anzi; j++){ 
-      brow = aj[j]; 
-      bnzj = bi[brow+1] - bi[brow];
-      bj   = Bj + bi[brow];
-      /* add non-zero cols of B into the condensed sorted linked list lnk */
-      /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr); */
-      ierr = PetscHeapMergeAddSorted(bnzj,bj,lnk);CHKERRQ(ierr);
-    }
-    cnzi    = *lnk;
-    ci[i+1] = ci[i] + cnzi;
-
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<cnzi) {
-      ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
-      ndouble++;
-    }
-
-    /* Copy data into free space, then initialize lnk */
-    /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr);  */
-    ierr = PetscHeapMergeClean(lnk_max,cnzi,current_space->array,lnk);CHKERRQ(ierr);
-    current_space->array           += cnzi;
-    current_space->local_used      += cnzi;
-    current_space->local_remaining -= cnzi;    
-  }
-
-  /* Column indices are in the list of free space */
-  /* Allocate and copy column indices to cj, then destroy list of free space, lnk and bt */
-  ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
-  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscHeapMergeDestroy(lnk);CHKERRQ(ierr);
-    
-  *Ci           = ci;
-  *Cj           = cj;
-  *nspacedouble = ndouble;
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
