@@ -261,6 +261,7 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
 #endif
 
+
 #if !defined(foo)
   /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);

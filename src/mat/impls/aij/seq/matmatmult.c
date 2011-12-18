@@ -17,7 +17,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE,scalable_new;
+  PetscBool      scalable=PETSC_FALSE,scalable_new=PETSC_FALSE;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
@@ -256,7 +256,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
       /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr); */
       ierr = PetscLLCondensedAddSorted_new(bnzj,bj,lnk);CHKERRQ(ierr);
     }
-    cnzi    = *lnk;
+    cnzi    = lnk[0]; // lnk[1];
     ci[i+1] = ci[i] + cnzi;
 
     /* If free space is not available, make more free space */
@@ -269,6 +269,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
     /* Copy data into free space, then initialize lnk */
     /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr);  */
     ierr = PetscLLCondensedClean_new(cnzi,current_space->array,lnk);CHKERRQ(ierr);
+    PetscIntView(cnzi,current_space->array,0);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
