@@ -237,7 +237,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
 #if defined(DEBUG_MATMATMULT)
   ierr = (PETSC_COMM_SELF,"LLCondensedCreate lnk_max=%d, bn %d, crmax %d\n",lnk_max,bn,crmax); 
 #endif
-  ierr = PetscLLCondensedCreate_new(lnk_max,lnk);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate_new(lnk_max,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,P
 
     /* Copy data into free space, then initialize lnk */
     /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr);  */
-    ierr = PetscLLCondensedClean_new(lnk_max,cnzi,current_space->array,lnk);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean_new(cnzi,current_space->array,lnk);CHKERRQ(ierr);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
