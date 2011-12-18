@@ -22,15 +22,19 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable_new",&scalable_new,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    scalable=PETSC_FALSE;
+    ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
+    if (scalable){
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsBool("-matmatmult_scalable_new","Use a scalable but slower C=A*B","",scalable_new,&scalable_new,PETSC_NULL);CHKERRQ(ierr);
     if (scalable_new){
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_new(A,B,fill,C);CHKERRQ(ierr);
-    } else if (scalable) {
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
     }else {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 

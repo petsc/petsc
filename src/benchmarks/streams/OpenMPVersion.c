@@ -58,7 +58,7 @@
 #   define N    2000000
 #endif
 #ifndef NTIMES
-#   define NTIMES       10
+#   define NTIMES       50
 #endif
 #ifndef OFFSET
 #   define OFFSET       0

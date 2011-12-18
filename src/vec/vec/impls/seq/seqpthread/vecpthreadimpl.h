@@ -18,6 +18,7 @@ typedef struct {
   PetscInt      n;
   PetscScalar   result;
   PetscScalar   alpha;
+  PetscScalar   beta;
   NormType      typeUse;
   Vec*          yvec;
   PetscInt      nvec;

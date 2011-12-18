@@ -1349,6 +1349,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = MatMatTransposeMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     }
     else {
+      ierr = MatSetOptionsPrefix(Gmat,"GmatGmat_");CHKERRQ(ierr); /* enable option '-GmatGmat_matmatmult_scalable' */
       ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     }
     CHKERRQ(ierr);
