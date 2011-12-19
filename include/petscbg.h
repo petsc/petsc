@@ -63,7 +63,7 @@ extern PetscErrorCode PetscBGGatherEnd(PetscBG,MPI_Datatype,const void *ghosted,
 /* Distribute separate values for each point to each ghosted point */
 extern PetscErrorCode PetscBGScatterBegin(PetscBG,MPI_Datatype,const void *multi,void *ghosted);
 extern PetscErrorCode PetscBGScatterEnd(PetscBG,MPI_Datatype,const void *multi,void *ghosted);
-/* Provide owned values, ghosted values sent to their owners and combined with op, values prior to prior returned in result */
+/* Provide owned values, ghosted values sent to their owners and combined with op, values prior to op returned in result */
 extern PetscErrorCode PetscBGFetchAndOpBegin(PetscBG,MPI_Datatype,void *owned,const void *ghosted,void *result,MPI_Op);
 extern PetscErrorCode PetscBGFetchAndOpEnd(PetscBG,MPI_Datatype,void *owned,const void *ghosted,void *result,MPI_Op);
 

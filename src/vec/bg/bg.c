@@ -21,6 +21,7 @@
 PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG *bg)
 {
   PetscErrorCode ierr;
+  PetscBG        b;
 
   PetscFunctionBegin;
   PetscValidPointer(bg,2);
@@ -28,7 +29,11 @@ PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG *bg)
   ierr = PetscBGInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*bg,_p_PetscBG,struct _PetscBGOps,PETSCBG_CLASSID,-1,"PetscBG","Bipartite Graph","PetscBG",comm,PetscBGDestroy,PetscBGView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(b,_p_PetscBG,struct _PetscBGOps,PETSCBG_CLASSID,-1,"PetscBG","Bipartite Graph","PetscBG",comm,PetscBGDestroy,PetscBGView);CHKERRQ(ierr);
+  b->nowned = -1;
+  b->nlocal = -1;
+  b->nranks = -1;
+  *bg = b;
   PetscFunctionReturn(0);
 }
 
@@ -584,7 +589,7 @@ PetscErrorCode PetscBGBcastBegin(PetscBG bg,MPI_Datatype unit,const void *owned,
   ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscBGGetWindow(bg,unit,(void*)owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     ierr = MPI_Get(ghosted,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
   }
@@ -617,7 +622,7 @@ PetscErrorCode PetscBGBcastEnd(PetscBG bg,MPI_Datatype unit,const void *owned,vo
 
   PetscFunctionBegin;
   ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
   ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -654,7 +659,7 @@ PetscErrorCode PetscBGReduceBegin(PetscBG bg,MPI_Datatype unit,const void *ghost
   ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscBGGetWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(MPI_MODE_NOPRECEDE,win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
   }
@@ -688,7 +693,7 @@ PetscErrorCode PetscBGReduceEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted
 
   PetscFunctionBegin;
   ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = MPI_Win_fence(0,win);CHKERRQ(ierr);
+  ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
   ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
