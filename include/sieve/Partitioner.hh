@@ -1408,6 +1408,74 @@ namespace ALE {
       delete [] values;
       PETSc::Log::Event("PartitionClosure").end();
     }
+    template<typename Mesh>
+    static PetscErrorCode createPartitionClosureV(const Obj<Mesh>& mesh, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition, const int height = 0) {
+      typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
+      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
+      const PetscInt                       *partArray;
+      PetscInt                             *allPoints;
+      PetscInt                              rStart, rEnd, size;
+      PetscErrorCode                        ierr;
+
+      PetscFunctionBegin;
+      PETSc::Log::Event("PartitionClosure").begin();
+      ierr = PetscSectionGetChart(pointSection, &rStart, &rEnd);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(mesh->comm(), section);CHKERRQ(ierr);
+      ierr = PetscSectionSetChart(*section, rStart, rEnd);CHKERRQ(ierr);
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(PetscInt p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionSetDof(*section, rank, cV.getPoints().size());CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(*section, &size);CHKERRQ(ierr);
+      ierr = PetscMalloc(size * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
+
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset, newOffset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(int p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionGetOffset(*section, rank, &newOffset);CHKERRQ(ierr);
+
+          for(typename std::set<typename Mesh::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++newOffset) {
+            allPoints[newOffset] = *p_iter;
+          }
+        }
+      }
+      ierr = ISRestoreIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(mesh->comm(), size, allPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+      PETSc::Log::Event("PartitionClosure").end();
+      PetscFunctionReturn(0);
+    }
     // Create a section mapping points to partitions
     template<typename Section, typename MapSection>
     static void createPartitionMap(const Obj<Section>& partition, const Obj<MapSection>& partitionMap) {
