@@ -89,7 +89,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
 typedef struct {
   PetscInt       n;                                        /* size of vectors in the reduced DM space */
   IS             inactive;
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
+  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   DM             dm;                                      /* when destroying this object we need to reset the above function into the base DM */
@@ -136,7 +136,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVIRSAUG(DM dm1,DM dm2,Mat *mat,Vec *ve
   if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
   
-  ierr = (*dmsnesvi1->getinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
+  ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
   *vec = 0;
@@ -232,7 +232,7 @@ PetscErrorCode DMDestroy_SNESVIRSAUG(DM_SNESVI *dmsnesvi)
   
   PetscFunctionBegin;
   /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
-  dmsnesvi->dm->ops->getinterpolation   = dmsnesvi->getinterpolation;
+  dmsnesvi->dm->ops->createinterpolation   = dmsnesvi->createinterpolation;
   dmsnesvi->dm->ops->coarsen            = dmsnesvi->coarsen;
   dmsnesvi->dm->ops->createglobalvector = dmsnesvi->createglobalvector;
   /* need to clear out this vectors because some of them may not have a reference to the DM
@@ -270,8 +270,8 @@ PetscErrorCode  DMSetVIRSAUG(DM dm,IS inactive)
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
-    dmsnesvi->getinterpolation   = dm->ops->getinterpolation;
-    dm->ops->getinterpolation    = DMCreateInterpolation_SNESVIRSAUG;
+    dmsnesvi->createinterpolation   = dm->ops->createinterpolation;
+    dm->ops->createinterpolation    = DMCreateInterpolation_SNESVIRSAUG;
     dmsnesvi->coarsen            = dm->ops->coarsen;
     dm->ops->coarsen             = DMCoarsen_SNESVIRSAUG;
     dmsnesvi->createglobalvector = dm->ops->createglobalvector;
@@ -291,7 +291,7 @@ PetscErrorCode  DMSetVIRSAUG(DM dm,IS inactive)
 #define __FUNCT__ "DMDestroyVIRSAUG"
 /*
      DMDestroyVIRSAUG - Frees the DM_SNESVI object contained in the DM 
-         - also resets the function pointers in the DM for getinterpolation() etc to use the original DM 
+         - also resets the function pointers in the DM for createinterpolation() etc to use the original DM 
 */
 PetscErrorCode  DMDestroyVIRSAUG(DM dm)
 {
@@ -2514,7 +2514,7 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESLineSearchSet(), 
+.seealso:  SNESVISetVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESTR, SNESLineSearchSet(), 
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 

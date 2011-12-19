@@ -182,7 +182,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   /*
       Determine whether user specified maximum number of threads
    */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&MainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);

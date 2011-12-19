@@ -152,7 +152,10 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
-  
+
+  /* change type_name appropriately */
+  ierr = PetscObjectChangeTypeName((PetscObject)(*v),VECMPICUSP);CHKERRQ(ierr);
+
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
   (*v)->map->bs    = win->map->bs;

@@ -776,8 +776,8 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
   dm->ops->view = DMView;
   dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
   dm->ops->getcoloring = DMCreateColoring_ADDA;
-  dm->ops->getmatrix = DMCreateMatrix_ADDA;
-  dm->ops->getinterpolation = DMCreateInterpolation_ADDA;
+  dm->ops->creatematrix = DMCreateMatrix_ADDA;
+  dm->ops->createinterpolation = DMCreateInterpolation_ADDA;
   dm->ops->refine = DMRefine_ADDA;
   dm->ops->coarsen = DMCoarsen_ADDA;
   dm->ops->getinjection = DMCreateInjection_ADDA;

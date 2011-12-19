@@ -55,8 +55,8 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = DMCreateMatrix_IGA;
-  dm->ops->getinterpolation   = 0 /* DMCreateInterpolation_IGA */;
+  dm->ops->creatematrix          = DMCreateMatrix_IGA;
+  dm->ops->createinterpolation   = 0 /* DMCreateInterpolation_IGA */;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

@@ -604,6 +604,14 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Concepts: block Jacobi
 
+   Developer Notes: This preconditioner does not currently work with CUDA/CUSP for a couple of reasons. 
+       (1) It creates seq vectors as work vectors that should be cusp
+       (2) The use of VecPlaceArray() is not handled properly by CUSP (that is it will not know where 
+           the ownership of the vector is so may use wrong values) even if it did know the ownership 
+           it may induce extra copy ups and downs. Satish suggests a VecTransplantArray() to handle two
+           vectors sharing the same pointer and handling the CUSP side as well instead of VecGetArray()/VecPlaceArray().
+
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCBJacobiSetUseTrueLocal(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()

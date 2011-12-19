@@ -167,7 +167,7 @@ int main(int Argc,char **Args)
 
   /* permutation matrix to check whether H and HtH are identical to the ones in the paper */
 /*   Mat perm; */
-/*   ierr = ADDAGetMatrix(adda, MATSEQAIJ, &perm);CHKERRQ(ierr); */
+/*   ierr = ADDACreatematrix(adda, MATSEQAIJ, &perm);CHKERRQ(ierr); */
 /*   PetscInt row, col; */
 /*   PetscScalar one = 1.0; */
 /*   for(PetscInt i=0; i<n; i++) { */

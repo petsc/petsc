@@ -499,7 +499,7 @@ PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->ops->getmatrix = f;
+  da->ops->creatematrix = f;
   PetscFunctionReturn(0);
 }
 
@@ -647,8 +647,8 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2 = (DM_DA*)da2->data;
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
-  da2->ops->getmatrix        = da->ops->getmatrix;
-  /* da2->ops->getinterpolation = da->ops->getinterpolation; this causes problem with SNESVI */
+  da2->ops->creatematrix        = da->ops->creatematrix;
+  /* da2->ops->createinterpolation = da->ops->createinterpolation; this causes problem with SNESVI */
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
@@ -751,8 +751,8 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   dd2 = (DM_DA*)da2->data;
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones; why are only some inherited and not all? */
-  /* da2->ops->getinterpolation = da->ops->getinterpolation; copying this one causes trouble for DMSetVI */
-  da2->ops->getmatrix        = da->ops->getmatrix;
+  /* da2->ops->createinterpolation = da->ops->createinterpolation; copying this one causes trouble for DMSetVI */
+  da2->ops->creatematrix        = da->ops->creatematrix;
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   

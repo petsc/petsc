@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+  ierr = PCFactorCreatematrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank){

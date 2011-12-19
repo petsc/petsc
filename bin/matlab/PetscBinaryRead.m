@@ -15,6 +15,9 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %  Argument may be file name (string), socket number (integer)
 %  or any Matlab class that provides the read() and close() methods
 %  [We provide PetscOpenFile() and PetscOpenSocket() for binary files and sockets]
+%  For example: fd = PetscOpenFile('filename');
+%                a = PetscBinaryRead(fd);
+%                b = PetscBinaryRead(fd);
 %
 %  'complex', true indicates the numbers in the file are complex, that is PETSc was built with --with-scalar-type=complex
 %  'indices','int64' indicates the PETSc program was built with --with-64-bit-indices

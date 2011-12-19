@@ -1517,8 +1517,13 @@ namespace ALE {
 
       this->_sieve->leaves(l);
       this->_sieve->roots(r);
-      this->setHeight(1);
-      this->setDepth(1);
+      if (this->_sieve->numRoots()) {
+        this->setHeight(1);
+        this->setDepth(1);
+      } else {
+        this->setHeight(0);
+        this->setDepth(0);
+      }
     };
     void computeHeights() {
       const Obj<label_type>& label = this->createLabel(std::string("height"));

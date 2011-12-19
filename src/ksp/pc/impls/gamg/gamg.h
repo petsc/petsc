@@ -17,7 +17,7 @@ typedef struct gamg_TAG {
   PetscInt       m_method; /* 0: geomg; 1: plain agg 'pa'; 2: smoothed agg 'sa' */
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
   char           m_type[64];
-  PetscBool      m_avoid_repart;
+  PetscBool      m_repart;
   PetscInt       m_min_eq_proc;
   PetscInt       m_coarse_eq_limit;
   PetscReal      m_threshold;

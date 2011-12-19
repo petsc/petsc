@@ -27,7 +27,7 @@ int main(int argc,char **args)
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
-  PetscBool       flg,viewMats,viewIS;
+  PetscBool       flg,viewMats,viewIS,viewVecs;
   PetscInt        ierr,*nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;
@@ -40,6 +40,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_is", &viewIS);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
 
   /* 
      Determine file from which we read the matrix
@@ -64,6 +65,10 @@ int main(int argc,char **args)
   if (viewMats){
     if (!rank) printf("Original matrix:\n");
     ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
+  if (viewVecs){
+    if (!rank) printf("Original vector:\n");
+    ierr = VecView(xin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Partition the graph of the matrix */
@@ -108,7 +113,7 @@ int main(int argc,char **args)
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout);CHKERRQ(ierr);
-  ierr = VecScatterCreate(xin,PETSC_NULL,xout,is,&scat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(xin,is,xout,PETSC_NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
@@ -116,6 +121,10 @@ int main(int argc,char **args)
   if (viewMats){
     if (!rank) printf("Partitioned matrix:\n");
     ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
+  if (viewVecs){
+    if (!rank) printf("Mapped vector:\n");
+    ierr = VecView(xout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   {

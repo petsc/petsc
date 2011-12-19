@@ -10,24 +10,31 @@
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 /*
 #define DEBUG_MATMATMULT
- */ 
+ */
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE;
+  PetscBool      scalable=PETSC_FALSE,scalable_new;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-matmatmult_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    scalable=PETSC_FALSE;
+    ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
     if (scalable){
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
-    } else {
+    }
+    ierr = PetscOptionsBool("-matmatmult_scalable_new","Use a scalable but slower C=A*B","",scalable_new,&scalable_new,PETSC_NULL);CHKERRQ(ierr);
+    if (scalable_new){
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_new(A,B,fill,C);CHKERRQ(ierr);
+    }else {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
@@ -117,10 +124,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
   PetscFunctionReturn(0);
 }
 
-/*
- MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable - same as MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ()
-   but replaces O(bn) array 'lnkbt' with a scalable array 'abj' of size Crmax, or with a condensed list.
- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable"
 PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
@@ -144,8 +147,14 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   /* create and initialize a condensed linked list */
   crmax = a->rmax*b->rmax;
   nlnk_max = PetscMin(crmax,bn);
+  if (!nlnk_max && bn) {
+    nlnk_max = bn; /* in case rmax is not defined for A or B */
+#if defined(PETSC_USE_DEBUGGING)
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: Armax or Brmax is not defined in MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable!\n");
+#endif
+  }
 #if defined(DEBUG_MATMATMULT)
-  printf("LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
+  ierr = (PETSC_COMM_SELF,"LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
 #endif
   ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt);CHKERRQ(ierr);
 
@@ -180,7 +189,6 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
-    ci[i+1] = ci[i] + cnzi;
   }
 
   /* Column indices are in the list of free space */
@@ -188,6 +196,89 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscLLCondensedDestroy(lnk,bt);CHKERRQ(ierr);
+    
+  *Ci           = ci;
+  *Cj           = cj;
+  *nspacedouble = ndouble;
+  PetscFunctionReturn(0);
+}
+
+/*
+     Does not use bitarray
+ */
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new"
+PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,PetscReal fill,PetscInt *Ci[],PetscInt *Cj[],PetscInt *nspacedouble)
+{
+  PetscErrorCode     ierr;
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
+  const PetscInt     *Ai=a->i,*Aj=a->j,*Bi=b->i,*Bj=b->j,am=A->rmap->N,bm=B->rmap->N,bn=B->cmap->N; 
+  const PetscInt     *aj=Aj,*bi=Bi,*bj;
+  PetscInt           *ci,*cj; 
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,crmax,ndouble=0;
+  PetscInt           lnk_max=bn,*lnk;
+
+  PetscFunctionBegin;
+  /* Allocate ci array, arrays for fill computation and */
+  /* free space for accumulating nonzero column info */
+  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+
+  /* create and initialize a condensed linked list */
+  crmax = a->rmax*b->rmax;
+  lnk_max = PetscMin(crmax,bn);
+  if (!lnk_max && bn) {
+    lnk_max = bn; /* in case rmax is not defined for A or B */
+#if defined(PETSC_USE_DEBUGGING)
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: Armax or Brmax is not defined in MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable!\n");
+#endif
+  }
+#if defined(DEBUG_MATMATMULT)
+  ierr = (PETSC_COMM_SELF,"LLCondensedCreate lnk_max=%d, bn %d, crmax %d\n",lnk_max,bn,crmax); 
+#endif
+  ierr = PetscLLCondensedCreate_Scalable(lnk_max,&lnk);CHKERRQ(ierr);
+
+  /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+
+  /* Determine ci and cj */
+  for (i=0; i<am; i++) {
+    anzi = Ai[i+1] - Ai[i];
+    cnzi = 0;
+    aj   = Aj + Ai[i];
+    for (j=0; j<anzi; j++){ 
+      brow = aj[j]; 
+      bnzj = bi[brow+1] - bi[brow];
+      bj   = Bj + bi[brow];
+      /* add non-zero cols of B into the condensed sorted linked list lnk */
+      /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr); */
+      ierr = PetscLLCondensedAddSorted_Scalable(bnzj,bj,lnk);CHKERRQ(ierr);
+    }
+    cnzi    = *lnk;
+    ci[i+1] = ci[i] + cnzi;
+
+    /* If free space is not available, make more free space */
+    /* Double the amount of total space in the list */
+    if (current_space->local_remaining<cnzi) {
+      ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ndouble++;
+    }
+
+    /* Copy data into free space, then initialize lnk */
+    /* ierr = PetscLLCondensedView(lnk_max,lnk_max,lnk,lnk);CHKERRQ(ierr);  */
+    ierr = PetscLLCondensedClean_Scalable(cnzi,current_space->array,lnk);CHKERRQ(ierr);
+    current_space->array           += cnzi;
+    current_space->local_used      += cnzi;
+    current_space->local_remaining -= cnzi;    
+  }
+
+  /* Column indices are in the list of free space */
+  /* Allocate and copy column indices to cj, then destroy list of free space, lnk and bt */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
     
   *Ci           = ci;
   *Cj           = cj;
@@ -226,11 +317,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
-  (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqAIJ;
-
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, needs non-scalable O(bn) array 'abdense' */
   ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
   ierr = PetscMemzero(c->matmult_abdense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, takes additional dense_axpy*bn*sizeof(PetscScalar) space */
    
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -354,6 +443,60 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_new"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_new(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  PetscInt       *ai=a->i,*bi=b->i,*ci,*cj;
+  PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
+  MatScalar      *ca;
+  PetscReal      afill;
+
+  PetscFunctionBegin;
+#if defined(DEBUG_MATMATMULT)
+  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable Armax %d, Brmax %d\n",a->rmax,b->rmax);CHKERRQ(ierr);
+#endif
+  /* Get ci and cj */
+  ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable_new(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
+    
+  /* Allocate space for ca */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  
+  /* put together the new symbolic matrix */
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->free_a   = PETSC_TRUE;
+  c->free_ij  = PETSC_TRUE;
+  c->nonew    = 0;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable; /* slower, less memory */
+  
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am]; 
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = nspacedouble;
+  (*C)->info.fill_ratio_given  = fill;               
+  (*C)->info.fill_ratio_needed = afill; 
+
+#if defined(PETSC_USE_INFO)
+  if (ci[am]) {
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable"

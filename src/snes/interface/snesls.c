@@ -629,7 +629,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
     if (fabs((lambda - lambda_old) / lambda) < snes->steptol) break;
 
     ierr = VecCopy(X, W);CHKERRQ(ierr);
-    ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
+    ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, &fnrm);CHKERRQ(ierr);
     ierr = VecDot(G, Y, &fty);CHKERRQ(ierr);
@@ -653,7 +653,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
     fty_old = fty;
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (snes->ls_monitor) {
@@ -721,13 +721,13 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
 
   /* compute the norm at the midpoint */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha_mid, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha_mid, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecDot(G, G, &fnrm_mid);CHKERRQ(ierr);
 
   /* compute the norm at alpha */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecDot(G, G, &fnrm);CHKERRQ(ierr);
 
@@ -763,7 +763,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
       alpha_old = alpha_mid;
       alpha_mid = 0.5*(alpha_old + alpha);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, alpha_mid, Y);CHKERRQ(ierr);
+      ierr = VecAXPY(W, -alpha_mid, Y);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
       ierr = VecDot(G, G, &fnrm_mid);CHKERRQ(ierr);
       delAlpha    = alpha - alpha_old;
@@ -793,7 +793,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
     alpha_mid = 0.5*(alpha + alpha_old);
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (snes->ls_monitor) {

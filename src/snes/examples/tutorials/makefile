@@ -356,7 +356,7 @@ runex5_5_ngmres_nrichardson:
 	   ${RM} -f ex5_5_ngmres_richardson.tmp
 
 runex5_5_ncg:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ncg_type fr \
         > ex5_5_ncg.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ncg.out ex5_5_ncg.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ncg, diffs above \n========================================="; fi; \
@@ -809,7 +809,7 @@ runex21:
 	   else  echo  ${PWD} "\nPossible problem with with ex21_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_monitor_short -ksp_monitor_short -dmmg_view > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_monitor_short -ksp_monitor_short  > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex22_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp

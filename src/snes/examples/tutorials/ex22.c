@@ -6,7 +6,7 @@ static char help[] = "Solves PDE optimization problem.\n\n";
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 #include <petscsnes.h>
-#include <petscdmmg.h>
+#include <private/dmimpl.h>
 
 /*
 
@@ -43,7 +43,7 @@ typedef struct {
   PetscViewer  fu_lambda_viewer;
 } UserCtx;
 
-extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode ComputeFunction(DM,Vec,Vec);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
@@ -53,8 +53,9 @@ extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
   entry for the control variable is zero which means default SOR will not work.
 
 */
-char  common_options[]      = "-dmmg_grid_sequence \
-                               -dmmg_nlevels 5 \
+char  common_options[]      = "-ksp_type fgmres\
+                               -snes_grid_sequence 5 \
+                               -pc_type mg\
                                -mg_levels_pc_type none \
                                -mg_coarse_pc_type none \
                                -pc_mg_type full \
@@ -64,23 +65,10 @@ char  common_options[]      = "-dmmg_grid_sequence \
                                -mg_levels_ksp_max_it 3";
 
 char  matrix_free_options[] = "-mat_mffd_compute_normu no \
-                               -mat_mffd_type wp \
-                               -dmmg_jacobian_mf_fd";
+                               -mat_mffd_type wp";
 
-/*
-    Currently only global coloring is supported with DMComposite
-*/
-char  matrix_based_options[] = "-dmmg_iscoloring_type global \
-                                -mg_coarse_ksp_type gmres \
-                                -ksp_type fgmres ";
-
-/*
-     The -use_matrix_based version does not work! This is because the DMComposite code cannot determine the nonzero
-  pattern of the Jacobian since the coupling between the boundary condition (array variable) and DMDA variables is problem 
-  dependent. To get the explicit Jacobian correct you would need to use the DMCompositeSetCoupling() to indicate the extra nonzero 
-  pattern and run with -dmmg_coloring_from_mat.
-*/
-
+extern PetscErrorCode DMCreateMatrix_MF(DM,const MatType,Mat*);
+extern PetscErrorCode DMComputeJacobian_MF(DM,Vec,Mat,Mat,MatStructure *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -89,22 +77,16 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   UserCtx        user;
   DM             red,da;
-  DMMG           *dmmg;
+  SNES           snes;
   DM             packer;
-  PetscBool      use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
-  PetscInt       i;
+  PetscBool      use_monitor = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsInsertString(common_options);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_matrix_based",&use_matrix_based,PETSC_IGNORE);CHKERRQ(ierr);
-  if (use_matrix_based) {
-    ierr = PetscOptionsInsertString(matrix_based_options);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
@@ -114,25 +96,25 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
-
+  ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
+  ierr = DMSetFunction(packer,ComputeFunction);CHKERRQ(ierr);
+  ierr = DMSetJacobian(packer,DMComputeJacobian_MF);CHKERRQ(ierr);
+  packer->ops->creatematrix = DMCreateMatrix_MF;
 
   /* create nonlinear multi-level solver */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
-  ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,(DM)packer);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   if (use_monitor) {
     /* create graphics windows */
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
-    for (i=0; i<DMMGGetLevels(dmmg); i++) {
-      ierr = SNESMonitorSet(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr); 
-    }
+    ierr = SNESMonitorSet(snes,Monitor,0,0);CHKERRQ(ierr); 
   }
 
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
   ierr = DMDestroy(&red);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -141,8 +123,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&user.fu_lambda_viewer);CHKERRQ(ierr);
   }
-
-  ierr = PetscFinalize();
+  PetscFinalize();
   return 0;
 }
 
@@ -152,7 +133,7 @@ typedef struct {
 } ULambda;
 
 #undef __FUNCT__  
-#define __FUNCT__ "FormFunction"
+#define __FUNCT__ "ComputeFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -160,16 +141,14 @@ typedef struct {
    DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeGetAccess()).
 
 */
-PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode ComputeFunction(DM packer,Vec U,Vec FU)
 {
-  DMMG           dmmg = (DMMG)dummy;
   PetscErrorCode ierr;
   PetscInt       xs,xm,i,N;
   ULambda        *u_lambda,*fu_lambda;
   PetscScalar    d,h,*w,*fw;
   Vec            vw,vfw,vu_lambda,vfu_lambda;
   DM             red,da;
-  DM             packer = (DM)dmmg->dm;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
@@ -265,17 +244,18 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
-  DMMG           dmmg = (DMMG)dummy;
-  UserCtx        *user = (UserCtx*)dmmg->user;
+  UserCtx        *user;
   PetscErrorCode ierr;
   PetscInt       m,N;
   PetscScalar    *w,*dw;
   Vec            u_lambda,U,F,Uexact;
-  DM             packer = (DM)dmmg->dm;
+  DM             packer;
   PetscReal      norm;
   DM             da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&packer);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(packer,&user);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->u_lambda_viewer); 
@@ -294,14 +274,41 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/sqrt(N-1.);
-  if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
+  if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(&Uexact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateMatrix_MF"
+PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A )
+{
+  PetscErrorCode ierr;
+  DM             da,red;
+  PetscInt       m,M,dof;
 
+  PetscFunctionBegin;
+  ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
+  ierr = DMRedundantGetSize(red,PETSC_NULL,&m);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(PETSC_COMM_WORLD,m+M*dof,m+M*dof,PETSC_DETERMINE,PETSC_DETERMINE,A);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*, Vec,Vec))DMComputeFunction,packer);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMComputeJacobian_MF"
+PetscErrorCode DMComputeJacobian_MF(DM packer,Vec x,Mat A,Mat B,MatStructure *str )
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMFFDSetBase(A,x,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

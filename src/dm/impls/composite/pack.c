@@ -884,6 +884,9 @@ PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  if (!comm) {
+    ierr = PetscObjectGetComm((PetscObject)dmi,&comm);CHKERRQ(ierr);
+  }
   next = com->next;
   ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
 
@@ -905,7 +908,7 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   PetscInt               m,n,M,N,nDM,i;
   struct DMCompositeLink *nextc;
   struct DMCompositeLink *nextf;
-  Vec                    gcoarse,gfine;
+  Vec                    gcoarse,gfine,*vecs;
   DM_Composite           *comcoarse = (DM_Composite*)coarse->data;
   DM_Composite           *comfine = (DM_Composite*)fine->data;
   Mat                    *mats;
@@ -927,14 +930,29 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   if (nDM != comcoarse->nDM) SETERRQ2(((PetscObject)fine)->comm,PETSC_ERR_ARG_INCOMP,"Fine DMComposite has %D entries, but coarse has %D",nDM,comcoarse->nDM);
   ierr = PetscMalloc(nDM*nDM*sizeof(Mat),&mats);CHKERRQ(ierr);
   ierr = PetscMemzero(mats,nDM*nDM*sizeof(Mat));CHKERRQ(ierr);
+  if (v) {
+    ierr = PetscMalloc(nDM*sizeof(Vec),&vecs);CHKERRQ(ierr);
+    ierr = PetscMemzero(vecs,nDM*sizeof(Vec));CHKERRQ(ierr);
+  }
 
   /* loop over packed objects, handling one at at time */
   for (nextc=comcoarse->next,nextf=comfine->next,i=0; nextc; nextc=nextc->next,nextf=nextf->next,i++) {
-    ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],PETSC_NULL);CHKERRQ(ierr);
+    if (!v) {
+      ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],PETSC_NULL);CHKERRQ(ierr);
+    } else {
+      ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],&vecs[i]);CHKERRQ(ierr);
+    }
   }
   ierr = MatCreateNest(((PetscObject)fine)->comm,nDM,PETSC_NULL,nDM,PETSC_NULL,mats,A);CHKERRQ(ierr);
+  if (v) {
+    ierr = VecCreateNest(((PetscObject)fine)->comm,nDM,PETSC_NULL,vecs,v);CHKERRQ(ierr);
+  }
   for (i=0; i<nDM*nDM; i++) {ierr = MatDestroy(&mats[i]);CHKERRQ(ierr);}
   ierr = PetscFree(mats);CHKERRQ(ierr);
+  if (v) {
+    for (i=0; i<nDM; i++) {ierr = VecDestroy(&vecs[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(vecs);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1083,8 +1101,8 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
-  p->ops->getinterpolation                = DMCreateInterpolation_Composite;
-  p->ops->getmatrix                       = DMCreateMatrix_Composite;
+  p->ops->createinterpolation                = DMCreateInterpolation_Composite;
+  p->ops->creatematrix                       = DMCreateMatrix_Composite;
   p->ops->getcoloring                     = DMCreateColoring_Composite;
   p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
   p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;
