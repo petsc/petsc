@@ -763,3 +763,78 @@ PetscErrorCode PetscBGComputeDegreeEnd(PetscBG bg,const PetscInt **degree)
   *degree = bg->degree;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGFetchAndOpBegin"
+/*@C
+   PetscBGFetchAndOpBegin - begin operation that fetches values from owner and updates atomically by applying operation using local value, to be completed with PetscBGFetchAndOpEnd()
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+.  ghosted - ghosted value to use in reduction
+-  op - operation to use for reduction
+
+   Output Arguments:
++  owned - owned values to be updated, input state is seen by first process to perform an update
+-  result - ghosted array with state in owned at time of update using our ghosted values
+
+   Level: advanced
+
+.seealso: PetscBGComputeDegreeBegin(), PetscBGReduceBegin(), PetscBGSetGraph()
+@*/
+PetscErrorCode PetscBGFetchAndOpBegin(PetscBG bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+{
+  PetscErrorCode ierr;
+  PetscInt           i,nranks;
+  const PetscMPIInt  *ranks;
+  const MPI_Datatype *mine,*remote;
+  MPI_Win            win;
+
+  PetscFunctionBegin;
+  ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscBGGetWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  for (i=0; i<bg->nranks; i++) {
+    ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,bg->ranks[i],0,win);CHKERRQ(ierr);
+    ierr = MPI_Get(result,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
+    ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
+    ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGFetchAndOpEnd"
+/*@C
+   PetscBGFetchAndOpEnd - end operation started in matching call to PetscBGFetchAndOpBegin() to fetch values from owner and update atomically by applying operation using local value
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+.  ghosted - ghosted value to use in reduction
+-  op - operation to use for reduction
+
+   Output Arguments:
++  owned - owned values to be updated, input state is seen by first process to perform an update
+-  result - ghosted array with state in owned at time of update using our ghosted values
+
+   Level: advanced
+
+.seealso: PetscBGComputeDegreeEnd(), PetscBGReduceEnd(), PetscBGSetGraph()
+@*/
+PetscErrorCode PetscBGFetchAndOpEnd(PetscBG bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+{
+  PetscErrorCode ierr;
+  MPI_Win        win;
+
+  PetscFunctionBegin;
+  ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscBGFetchAndOpBegin(). */
+  ierr = PetscBGRestoreWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

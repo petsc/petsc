@@ -20,18 +20,21 @@ int main(int argc,char **argv)
   PetscBGNode    *remote;
   PetscMPIInt    rank,size;
   PetscBG        bg;
-  PetscBool      test_bcast,test_reduce,test_degree;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  test_bcast = PETSC_FALSE;
-  test_reduce = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscBG Test Options","none");CHKERRQ(ierr);
+  test_bcast = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
+  test_reduce = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
+  test_degree = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
+  test_fetchandop = PETSC_FALSE;
+  ierr = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nowned = 2 + (PetscInt)(rank == 0);
@@ -95,6 +98,21 @@ int main(int argc,char **argv)
     ierr = PetscBGComputeDegreeEnd(bg,&degree);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Degree Owned\n");CHKERRQ(ierr);
     ierr = PetscIntView(nowned,degree,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  if (test_fetchandop) {
+    /* Cannot use text compare here because token ordering is not deterministic */
+    PetscInt    *outgoing,*token,*incoming;
+    ierr = PetscMalloc3(nlocal,PetscInt,&outgoing,nlocal,PetscInt,&token,nowned,PetscInt,&incoming);CHKERRQ(ierr);
+    for (i=0; i<nlocal; i++) outgoing[i] = 1;
+    for (i=0; i<nowned; i++) incoming[i] = 0;
+    ierr = PetscBGFetchAndOpBegin(bg,MPIU_INT,incoming,outgoing,token,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscBGFetchAndOpEnd(bg,MPIU_INT,incoming,outgoing,token,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Incoming Count\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nowned,incoming,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Outgoing Token\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nlocal,token,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscFree3(outgoing,token,incoming);CHKERRQ(ierr);
   }
 
   /* Clean up local space and storage for bipartite graph. */
