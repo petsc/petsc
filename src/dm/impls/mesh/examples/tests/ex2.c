@@ -127,7 +127,6 @@ PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG 
   const PetscInt    *ranks, *rankOffsets;
   const PetscMPIInt *localPoints, *remotePoints;
   PetscInt           numPoints, numIndices = 0;
-  PetscInt          *localOffsets;
   PetscInt          *remoteOffsets;
   PetscInt          *localIndices;
   PetscBGNode       *remoteIndices;
@@ -145,6 +144,7 @@ PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG 
   }
   /* Communicate offsets for ghosted points */
 #if 0
+  PetscInt *localOffsets;
   ierr = PetscMalloc2(numPoints,PetscInt,&localOffsets,numPoints,PetscInt,&remoteOffsets);CHKERRQ(ierr);
   for(i = 0; i < numPoints; ++i) {
     ierr = PetscSectionGetOffset(section, localPoints[i], &localOffsets[i]);CHKERRQ(ierr);
