@@ -328,7 +328,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       dXolddotdXold = dXdotdX;
       ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDot(dXold, dX, &dXdotdXold);CHKERRQ(ierr);
-      beta = PetscRealPart(((dXdotdXold - dXdotdX) / dXolddotdXold));
+      beta = PetscRealPart(((dXdotdX - dXdotdXold) / dXolddotdXold));
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
     case 2: /* Hestenes-Stiefel */
@@ -398,7 +398,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->monitor = PETSC_NULL;
-  neP->betatype = 1;
+  neP->betatype = 4;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
