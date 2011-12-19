@@ -262,12 +262,13 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_loc,*p_oth;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart; 
-  PetscInt             nlnk,*lnk,i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi;
+  PetscInt             *nlnk,*lnk,i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi;
   PetscInt             am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;  
   PetscBT              lnkbt;
   PetscScalar          *apa;
   PetscReal            afill;
   PetscBool            scalable=PETSC_FALSE;
+  PetscInt             nlnk_max,armax,prmax;
 #if defined(DEBUG_MATMATMULT)
   PetscMPIInt          rank=a->rank;
 #endif
@@ -298,14 +299,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr); 
 
-  /* malloc apa to store dense row A[i,:]*P */ 
-  ierr = PetscMalloc(pN*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);
-  ptap->apa = apa;
-#if defined(DEBUG_MATMATMULT)
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Malloc apa pN %D is done...\n",rank,pN);
-#endif
-
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
@@ -330,8 +323,14 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  nlnk = pN+1;
-  ierr = PetscLLCreate(pN,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+  armax = ad->rmax+ao->rmax;
+  prmax = PetscMax(p_loc->rmax,p_oth->rmax);
+  nlnk_max = armax*prmax;
+  if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
+#if defined(DEBUG_MATMATMULT)
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] pN %d; nlnk_max %d; Armax %d+%d=%d; Prmax Max(%d,%d)=%d\n",rank,pN,nlnk_max,ad->rmax,ao->rmax,armax,p_loc->rmax,p_oth->rmax,prmax);
+#endif
+  ierr = PetscLLCondensedCreate(nlnk_max,pN,lnk,nlnk,lnkbt);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
@@ -347,8 +346,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       pnz = pi_loc[row+1] - pi_loc[row];
       Jptr  = pj_loc + pi_loc[row];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-      apnz += nlnk;
+      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     }
     /* off-diagonal portion of A */
     nzi = aoi[i+1] - aoi[i];
@@ -356,10 +354,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       row = *aoj++; 
       pnz = pi_oth[row+1] - pi_oth[row];
       Jptr  = pj_oth + pi_oth[row];  
-      ierr = PetscLLAddSorted(pnz,Jptr,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-      apnz += nlnk;
+      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     }
 
+    apnz     = *nlnk;
     api[i+1] = api[i] + apnz;
 
     /* if free space is not available, double the total space in the list */
@@ -369,7 +367,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLClean(pN,pN,apnz,lnk,current_space->array,lnkbt);CHKERRQ(ierr); 
+    ierr = PetscLLCondensedClean(nlnk_max,pN,apnz,current_space->array,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+rstart,apnz,current_space->array,dnz,onz);CHKERRQ(ierr);
     current_space->array           += apnz;
     current_space->local_used      += apnz;
@@ -384,6 +382,14 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] AP is done...\n",rank);
+#endif
+
+  /* malloc apa to store dense row A[i,:]*P */ 
+  ierr = PetscMalloc(pN*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);
+  ptap->apa = apa;
+#if defined(DEBUG_MATMATMULT)
+  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Malloc apa pN %D is done...\n",rank,pN);
 #endif
 
   /* create and assemble symbolic parallel matrix Cmpi */
@@ -898,10 +904,9 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_loc,*p_oth;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart; 
-  PetscInt             i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*nlnk,*lnk,apnz_max=0;
+  PetscInt             i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=0;
   PetscInt             am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;  
   PetscInt             nlnk_max,armax,prmax;
-  PetscBT              lnkbt;
   PetscReal            afill;
   PetscScalar          *apa;
 #if defined(DEBUG_MATMATMULT)
@@ -948,7 +953,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] pN %d; nlnk_max %d; Armax %d+%d=%d; Prmax Max(%d,%d)=%d\n",rank,pN,nlnk_max,ad->rmax,ao->rmax,armax,p_loc->rmax,p_oth->rmax,prmax);
 #endif
-  ierr = PetscLLCondensedCreate(nlnk_max,pN,lnk,nlnk,lnkbt);
+  ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
@@ -964,7 +969,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
       pnz = pi_loc[row+1] - pi_loc[row];
       Jptr  = pj_loc + pi_loc[row];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
     }
     /* off-diagonal portion of A */
     nzi = aoi[i+1] - aoi[i];
@@ -972,10 +977,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
       row = *aoj++; 
       pnz = pi_oth[row+1] - pi_oth[row];
       Jptr  = pj_oth + pi_oth[row];  
-      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
     }
 
-    apnz     = *nlnk;
+    apnz     = *lnk;
     api[i+1] = api[i] + apnz;
     if (apnz > apnz_max) apnz_max = apnz;
     
@@ -986,7 +991,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(nlnk_max,pN,apnz,current_space->array,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean_Scalable(apnz,current_space->array,lnk);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+rstart,apnz,current_space->array,dnz,onz);CHKERRQ(ierr);
     current_space->array           += apnz;
     current_space->local_used      += apnz;
@@ -998,7 +1003,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
   ierr = PetscMalloc((api[am]+1)*sizeof(PetscInt),&ptap->apj);CHKERRQ(ierr);
   apj  = ptap->apj;
   ierr = PetscFreeSpaceContiguous(&free_space,ptap->apj);CHKERRQ(ierr);
-  ierr = PetscLLCondensedDestroy(lnk,lnkbt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] AP is done..., apnz_max %d\n",rank,apnz_max);
 #endif

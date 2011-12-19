@@ -1189,8 +1189,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 
 /* -------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLLCondensedCreate_new"
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_new(PetscInt lnk_max,PetscInt **lnk)
+#define __FUNCT__ "PetscLLCondensedCreate_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt lnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
 
@@ -1202,7 +1202,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_new(PetscInt lnk_max,P
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_new(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedAddSorted_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   
   _nlnk     = lnk[0]; /* num of entries on the input lnk */
@@ -1229,7 +1231,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_new(PetscInt nidx,c
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_new(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedClean_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
 {
   PetscInt _k,_next,_nlnk;
   _next = lnk[3];       /* head node */
@@ -1243,7 +1247,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_new(PetscInt nidx,Petsc
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_new(PetscInt *lnk)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedDestroy_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 {
   return PetscFree(lnk);
 }
