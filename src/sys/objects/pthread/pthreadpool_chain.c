@@ -35,6 +35,7 @@
 extern PetscBool    PetscThreadGo;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
+extern PetscInt     PetscMainThreadShareWork;
 
 PetscErrorCode ithreaderr_chain = 0;
 int*           pVal_chain;
@@ -150,7 +151,7 @@ void* PetscThreadFunc_Chain(void* arg) {
       iterr = (PetscErrorCode)(long int)job_chain.pfunc(job_chain.pdata);
     }
     else {
-      iterr = (PetscErrorCode)(long int)job_chain.pfunc(job_chain.pdata[ThreadId]);
+      iterr = (PetscErrorCode)(long int)job_chain.pfunc(job_chain.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(iterr!=0) {
       ithreaderr_chain = 1;
@@ -231,7 +232,7 @@ PetscErrorCode PetscThreadInitialize_Chain(PetscInt N)
     *(job_chain.arrThreadReady[i])    = PETSC_FALSE;
   }
   job_chain.pfunc = NULL;
-  job_chain.pdata = (void**)malloc(N*sizeof(void*));
+  job_chain.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_chain.startJob = PETSC_FALSE;
   job_chain.eJobStat = JobInitiated;
   pVal_chain = (int*)malloc(N*sizeof(int));
@@ -299,6 +300,9 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
   job_chain.eJobStat = JobInitiated;
   ierr = pthread_cond_signal(job_chain.cond2array[0]);
   if(pFunc!=FuncFinish) {
+    if(PetscMainThreadShareWork) {
+      ijoberr = (PetscErrorCode)(long int)job_chain.pfunc(job_chain.pdata[0]);
+    }
     MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
