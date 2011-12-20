@@ -1247,8 +1247,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,
   return 0;
 }
 
-
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_new(PetscInt *lnk)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedDestroy_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 {
   return PetscFree(lnk);
 }
