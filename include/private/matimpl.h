@@ -1275,23 +1275,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_new(PetscInt *lnk)
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt lnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
+  PetscInt       *llnk;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(3*(lnk_max+3)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
-  (*lnk)[0] = 0;   /* nlnk: number of entries on the list */
-  (*lnk)[1] = 0;          /* number of integer entries represented in list */
-  (*lnk)[3] = PETSC_MIN_INT+1;   /* value in the first node */ 
-  (*lnk)[4] = 1;           /* count for the first node */
-  (*lnk)[5] = 6;         /* next for the first node */
-  (*lnk)[6] = PETSC_MAX_INT-1;   /* value in the last node */ 
-  (*lnk)[7] = 1;           /* count for the last node */
-  (*lnk)[8] = 0;         /* next valid node to be used */
+  llnk = *lnk;
+  llnk[0] = 0;   /* nlnk: number of entries on the list */
+  llnk[1] = 0;          /* number of integer entries represented in list */
+  llnk[3] = PETSC_MIN_INT+1;   /* value in the first node */ 
+  llnk[4] = 1;           /* count for the first node */
+  llnk[5] = 6;         /* next for the first node */
+  llnk[6] = PETSC_MAX_INT-1;   /* value in the last node */ 
+  llnk[7] = 1;           /* count for the last node */
+  llnk[8] = 0;         /* next valid node to be used */
   PetscFunctionReturn(0);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
-  PetscInt k,entry,prev,next,newnode;
+  PetscInt k,entry,prev,next;
   prev      = 3;      /* first value */ 
   next      = lnk[prev+2];
   for (k=0; k<nidx; k++){
@@ -1324,14 +1326,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
       continue;
     }
     /*  add entry into lnk */
-    newnode        = 3*(lnk[8]+3);   /* index for this new node */
-    lnk[prev+2]    = newnode;      /* connect previous node to the new node */
-    lnk[newnode]   = entry;        /* set value of the new node */
-    lnk[newnode+1] = 1;             /* number of values in contiquous string is one to start */
-    lnk[newnode+2] = next;          /* connect new node to next node */
+    lnk[prev+2]    = 3*((lnk[8]++)+3);      /* connect previous node to the new node */
+    prev           = lnk[prev+2];
+    lnk[prev]      = entry;        /* set value of the new node */
+    lnk[prev+1]    = 1;             /* number of values in contiquous string is one to start */
+    lnk[prev+2]    = next;          /* connect new node to next node */
     lnk[0]++;
-    lnk[8]++;
-    prev           = newnode;
   }
   return 0;
 }
