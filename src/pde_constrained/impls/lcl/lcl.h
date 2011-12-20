@@ -3,6 +3,10 @@
 
 #include "private/taosolver_impl.h"
 #include "petscis.h"
+#define LCL_FORWARD1        0
+#define LCL_ADJOINT1        1
+#define LCL_FORWARD2        2
+#define LCL_ADJOINT2        3
 
 typedef struct {
   Mat M;    /* Quasi-newton hessian matrix */
@@ -66,6 +70,7 @@ typedef struct {
   PetscReal rho; /* Penalty parameter */
   PetscReal aug,aug0,lgn,lgn0;
   PetscInt    subset_type;
+  PetscInt    solve_type;
   MatStructure statematflag,designmatflag;
   PetscBool recompute_jacobian_flag;
   PetscInt phase2_niter;

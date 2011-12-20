@@ -1,4 +1,5 @@
 #include "private/taosolver_impl.h"
+#include "src/pde_constrained/impls/lcl/lcl.h"
 #include "petsctime.h"
 
 
@@ -92,7 +93,7 @@ typedef struct {
   PetscBool use_ptap;
   PetscBool use_lrc;
   PetscReal tau[4];
-  PetscInt solve_type;
+  TAO_LCL* lcl;
 
 } AppCtx;
 
@@ -159,13 +160,19 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",PETSC_FALSE,&user.use_ptap,&flag); CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",PETSC_FALSE,&user.use_lrc,&flag); CHKERRQ(ierr);
-  user.solve_type=2;
 
   user.m = user.ns*user.mx*user.mx*user.mx; /* number of constraints */
   user.nstate =  user.m;
   user.ndesign = user.mx*user.mx*user.mx;
   user.n = user.nstate + user.ndesign; /* number of variables */
 
+
+
+
+  /* Create TAO solver and set desired solution method */
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_lcl"); CHKERRQ(ierr);
+  user.lcl = (TAO_LCL*)(tao->data); 
 
   /* Set up initial vectors and matrices */
   ierr = EllipticInitialize(&user); CHKERRQ(ierr);
@@ -174,11 +181,7 @@ int main(int argc, char **argv)
   ierr = Gather(user.x,user.y,user.state_scatter,user.u,user.design_scatter); CHKERRQ(ierr);
   ierr = VecDuplicate(user.x,&x0); CHKERRQ(ierr);
   ierr = VecCopy(user.x,x0); CHKERRQ(ierr);
-
-
-  /* Create TAO solver and set desired solution method */
-  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lcl"); CHKERRQ(ierr);
+  
 
 
   /* Set solution vector with an initial guess */
@@ -192,7 +195,7 @@ int main(int argc, char **argv)
 
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
-
+  
 
 
   /* SOLVE THE APPLICATION */
@@ -206,8 +209,6 @@ int main(int argc, char **argv)
     PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
     PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its); CHKERRQ(ierr);
     ierr = VecCopy(x0,user.x); CHKERRQ(ierr);
-
-    user.solve_type = 2;
   }
   ierr = PetscLogStagePop(); CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)user.x); CHKERRQ(ierr);
@@ -433,8 +434,14 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
-  tau = user->tau[user->solve_type];
-  ierr = KSPSetTolerances(user->solver,tau,1e-20,1e3,500);CHKERRQ(ierr);
+
+  if (Y == user->ytrue) {
+    KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else if (user->lcl) {
+    tau = user->tau[user->lcl->solve_type];
+    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  }
+
   if (user->ns == 1) {
     ierr = KSPSolve(user->solver,X,Y); CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
@@ -450,8 +457,6 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0); CHKERRQ(ierr);
     }    
   }
-  user->solve_type++; 
-  if (user->solve_type==4) user->solve_type=0;
   
 
   PetscFunctionReturn(0);
@@ -1228,7 +1233,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
 
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
-
+  user->lcl->solve_type = LCL_FORWARD1;
   ierr = MatMult(user->JsInv,user->q,user->ytrue); CHKERRQ(ierr);
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
@@ -1250,6 +1255,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
 
   /* Now solve for y */
+  user->lcl->solve_type = LCL_FORWARD1;
   ierr = MatMult(user->JsInv,user->q,user->y); CHKERRQ(ierr);
 
   user->ksp_its_initial = user->ksp_its;
@@ -1360,7 +1366,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatMult(user->MQ,user->ywork,user->d); CHKERRQ(ierr);
 
   /* Now that initial conditions have been set, let the user pass tolerance options to the KSP solver */
-  user->solve_type = 0;
   ierr = PetscFree(x); CHKERRQ(ierr);
   ierr = PetscFree(y); CHKERRQ(ierr);
   ierr = PetscFree(z); CHKERRQ(ierr);
