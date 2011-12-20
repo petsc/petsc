@@ -40,7 +40,12 @@ typedef struct {
   Vec workxvec;
   PetscMPIInt mpisize;
 
+
   PetscReal delta; /* Trust region radius (>0) */
+  PetscBool usebqpip;
+  Mat Hs;
+  Vec b;
+  
   PetscReal deltamax;
   PetscReal deltamin;
   PetscReal c1; /* Factor for checking validity */

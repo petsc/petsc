@@ -1,18 +1,90 @@
 #include "pounders.h"
 
+#undef __FUNCT__ 
+#define __FUNCT__ "pounders_h"
+static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
+{
+  PetscFunctionBegin;
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__ 
+#define __FUNCT__ "pounders_fg"
+static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g, void *ctx)
+{
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)ctx;
+  PetscReal d1,d2;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /* g = A*x  (add b later)*/
+  ierr = MatMult(mfqP->Hs,x,g); CHKERRQ(ierr);
+
+
+  /* f = 1/2 * x'*(Ax) + b'*x  */
+  ierr = VecDot(x,g,&d1); CHKERRQ(ierr);
+  ierr = VecDot(mfqP->b,x,&d2); CHKERRQ(ierr);
+  *f = 0.5 *d1 + d2;
+
+  /* now  g = g + b */
+  ierr = VecAXPY(g, 1.0, mfqP->b); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 #undef __FUNCT__
 #define __FUNCT__ "gqtwrap"
-PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
+PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) 
+{
+    PetscErrorCode ierr;
     PetscReal atol=1.0e-10;
     PetscInt info,its;
     PetscFunctionBegin;
 
-    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
+    if (mfqP->usebqpip) {
+      TaoSolver subtao;
+      Vec       x,xl,xu;
+      PetscInt i,j;
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Xsubproblem,&x); CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Gres,&mfqP->b); CHKERRQ(ierr);
+      ierr = VecDuplicate(x,&xl); CHKERRQ(ierr);
+      ierr = VecDuplicate(x,&xu); CHKERRQ(ierr);
+      ierr = VecSet(x,0.0); CHKERRQ(ierr);
+      ierr = VecSet(xl,-mfqP->delta); CHKERRQ(ierr);
+      ierr = VecSet(xu,mfqP->delta); CHKERRQ(ierr);
+      for (i=0;i<mfqP->n;i++) {
+	for (j=i;j<mfqP->n;j++) {
+	    mfqP->Hres[j+mfqP->n*i] = mfqP->Hres[mfqP->n*j+i];
+	}
+      }
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Hres,&mfqP->Hs); CHKERRQ(ierr);
+      ierr = TaoCreate(PETSC_COMM_SELF,&subtao); CHKERRQ(ierr);
+      ierr = TaoSetType(subtao,"tao_bqpip"); CHKERRQ(ierr);
+      ierr = TaoSetOptionsPrefix(subtao,"pounders_subsolver_"); CHKERRQ(ierr);
+      ierr = TaoSetObjectiveAndGradientRoutine(subtao,pounders_fg,(void*)mfqP); CHKERRQ(ierr);
+      ierr = TaoSetInitialVector(subtao,x); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(subtao,mfqP->Hs,mfqP->Hs,pounders_h,(void*)mfqP); CHKERRQ(ierr);
+      ierr = TaoSetTolerances(subtao,PETSC_NULL,PETSC_NULL,*gnorm,*gnorm,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoSetMaximumIterations(subtao,mfqP->gqt_maxits); CHKERRQ(ierr);
+      ierr = TaoSetVariableBounds(subtao,xl,xu); CHKERRQ(ierr);
+      ierr = TaoSetFromOptions(subtao); CHKERRQ(ierr);
+      ierr = TaoSolve(subtao); CHKERRQ(ierr);
+      ierr = TaoGetSolutionStatus(subtao,PETSC_NULL,qmin,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      ierr = VecDestroy(&x); CHKERRQ(ierr);
+      ierr = VecDestroy(&xl); CHKERRQ(ierr);
+      ierr = VecDestroy(&xu); CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->b); CHKERRQ(ierr);
+      ierr = MatDestroy(&mfqP->Hs); CHKERRQ(ierr);
+      ierr = TaoDestroy(&subtao); CHKERRQ(ierr);
+      
+      
+
+    } else {
+      gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
 	mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
 	mfqP->work,mfqP->work2, mfqP->work3);
-    /*dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
+      /*dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
 	&mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
 	mfqP->work,mfqP->work2, mfqP->work3);*/
+    }
     *qmin *= -1;
     PetscFunctionReturn(0);
 }
@@ -957,6 +1029,8 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("POUNDERS method for least-squares optimization"); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta,0); CHKERRQ(ierr);
+  mfqP->usebqpip = PETSC_FALSE;
+  ierr = PetscOptionsBool("-tao_pounders_bqpip","use internal bqpip solver for subproblem","",mfqP->usebqpip,&mfqP->usebqpip,0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
