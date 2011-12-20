@@ -168,7 +168,7 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n)
 
   job_lockfree.pfunc = pFunc;
   for(i=0;i<PetscMaxThreads;i++) {
-    if(pFunc == FuncFinish_LockFree) job_lockfree.pdata[i] = NULL;
+    if(pFunc == FuncFinish_LockFree) job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
     else job_lockfree.pdata = data;
     /* signal thread i to start the job */
     __sync_bool_compare_and_swap(&(job_lockfree.my_job_status[i]),1,0);
