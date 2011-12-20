@@ -35,6 +35,7 @@
 extern PetscBool    PetscThreadGo;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
+extern PetscInt     PetscMainThreadShareWork;
 
 static PetscErrorCode ithreaderr = 0;
 static int*         pVal_main;
@@ -111,7 +112,7 @@ void* PetscThreadFunc_Main(void* arg) {
       iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata);
     }
     else {
-      iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata[ThreadId]);
+      iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(iterr!=0) {
       ithreaderr = 1;
@@ -170,7 +171,7 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
   job_main.pfunc = NULL;
-  job_main.pdata = (void**)malloc(N*sizeof(void*));
+  job_main.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   pVal_main = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
@@ -238,6 +239,9 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
     ierr = pthread_cond_signal(job_main.cond2array[i]);
   }
   if(pFunc!=FuncFinish) {
+    if(PetscMainThreadShareWork) {
+      ijoberr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata[0]);
+    }
     MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
