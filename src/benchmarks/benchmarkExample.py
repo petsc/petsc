@@ -111,7 +111,7 @@ def processSummary(moduleName, defaultStage, eventNames, times, events):
       events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
   return
 
-def plotSummaryLine(library, num, sizes, times, events):
+def plotSummaryLine(library, num, eventNames, sizes, times, events):
   from pylab import legend, plot, show, title, xlabel, ylabel
   import numpy as np
   showTime       = False
@@ -135,7 +135,7 @@ def plotSummaryLine(library, num, sizes, times, events):
   if showEventTime:
     data  = []
     names = []
-    for event, color in [('VecMDot', 'b'), ('VecMAXPY', 'g'), ('MatMult', 'r')]:
+    for event, color in zip(eventName, ['b', 'g', 'r', 'y']:
       for arch, style in zip(arches, ['-', ':']):
         names.append(arch+' '+event)
         data.append(sizes[arch])
@@ -152,7 +152,7 @@ def plotSummaryLine(library, num, sizes, times, events):
   if showEventFlops:
     data  = []
     names = []
-    for event, color in [('VecMDot', 'b'), ('VecMAXPY', 'g'), ('MatMult', 'r')]:
+    for event, color in zip(eventName, ['b', 'g', 'r', 'y']:
       for arch, style in zip(arches, ['-', ':']):
         names.append(arch+' '+event)
         data.append(sizes[arch])
@@ -166,12 +166,11 @@ def plotSummaryLine(library, num, sizes, times, events):
     show()
   return
 
-def plotSummaryBar(library, num, sizes, times, events):
+def plotSummaryBar(library, num, eventNames, sizes, times, events):
   import numpy as np
   import matplotlib.pyplot as plt
 
-  eventNames  = ['VecMDot', 'VecMAXPY', 'MatMult']
-  eventColors = ['b',       'g',        'r']
+  eventColors = ['b', 'g', 'r', 'y']
   arches = sizes.keys()
   names  = []
   N      = len(sizes[arches[0]])
@@ -297,7 +296,7 @@ if __name__ == '__main__':
   print('sizes',sizes)
   print('times',times)
   print('events',events)
-  if not args.batch: plotSummaryLine(args.library, args.num, sizes, times, events)
+  if not args.batch: plotSummaryLine(args.library, args.num, args.events, sizes, times, events)
 # Benchmark for ex50
 # ./src/benchmarks/benchmarkExample.py --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --num 50 DMDA --size 10 20 50 100 --comp 4 CPU='pc_type=none mat_no_inode dm_vec_type=seq dm_mat_type=seqaij' GPU='pc_type=none mat_no_inode dm_vec_type=seqcusp dm_mat_type=seqaijcusp cusp_synchronize'
 # Benchmark for ex52
