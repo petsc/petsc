@@ -1102,16 +1102,14 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     lnk_max   - max value of the entries
   Output Parameters:
     lnk       - list created and initialized
-    nlnk      - number of entries on the list
     bt        - PetscBT (bitarray) with all bits set to false. Note: bt has size lnk_max, not nln_max!
 */
-#define PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt) 0; \
+#define PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,bt) 0; \
 {\
   PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),&lnk);\
   PetscBTCreate(lnk_max,bt);                   \
   PetscBTMemzero(lnk_max,bt);                  \
-  lnk[0] = 0;   /* nlnk: number of entries on the list */\
-  nlnk   = lnk;    \
+  lnk[0] = 0;         /* number of entries on the list */\
   lnk[2] = lnk_max;   /* value in the head node */\
   lnk[3] = 2;         /* next for the head node */\
 }
@@ -1126,11 +1124,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     lnk       - condensed linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
-    nlnk      - number of indices on the list
     lnk       - the sorted(increasing order) linked list containing previous and newly added non-redundate indices
     bt        - updated PetscBT (bitarray) 
 */
-#define PetscLLCondensedAddSorted(nlnk_max,lnk_max,nidx,indices,nlnk,lnk,bt) 0; \
+#define PetscLLCondensedAddSorted(nlnk_max,lnk_max,nidx,indices,lnk,bt) 0; \
 {\
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   \
   _nlnk     = lnk[0]; /* num of entries on the input lnk */\
@@ -1157,11 +1154,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 }
 
 
-#define PetscLLCondensedClean(nlnk_max,lnk_max,nidx,indices,nlnk,lnk,bt) 0;\
+#define PetscLLCondensedClean(nlnk_max,lnk_max,nidx,indices,lnk,bt) 0;\
 {\
   PetscInt _k,_next,_nlnk;\
-  _next = lnk[3];       /* head node */\
-  _nlnk = *nlnk;        /* =lnk[2*(nlnk_max+1)], num of entries on the list */\
+  _next = lnk[3];        /* head node */\
+  _nlnk = lnk[0];        /* num of entries on the list */\
   for (_k=0; _k<_nlnk; _k++){\
     indices[_k] = lnk[_next];\
     _next       = lnk[_next + 1];\
@@ -1173,7 +1170,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 }
 
 
-#define PetscLLCondensedView(nlnk_max,lnk_max,lnk,nlnk) 0;\
+#define PetscLLCondensedView(nlnk_max,lnk_max,lnk) 0;\
 {\
   PetscInt _k;\
   ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed: size %d first %d\n",lnk[0],lnk[3]-4); \

@@ -134,7 +134,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   PetscInt           *ci,*cj; 
   PetscInt           i,j,anzi,brow,bnzj,cnzi,crmax,ndouble=0;
   PetscBT            bt;
-  PetscInt           nlnk_max,lnk_max=bn,*lnk,*nlnk;
+  PetscInt           nlnk_max,lnk_max=bn,*lnk;
 
   PetscFunctionBegin;
   /* Allocate ci array, arrays for fill computation and */
@@ -154,7 +154,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
 #if defined(DEBUG_MATMATMULT)
   ierr = (PETSC_COMM_SELF,"LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
 #endif
-  ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,nlnk,bt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,bt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
@@ -170,9 +170,9 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
       bnzj = bi[brow+1] - bi[brow];
       bj   = Bj + bi[brow];
       /* add non-zero cols of B into the condensed sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(nlnk_max,lnk_max,bnzj,bj,nlnk,lnk,bt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted(nlnk_max,lnk_max,bnzj,bj,lnk,bt);CHKERRQ(ierr);
     }
-    cnzi    = *nlnk;
+    cnzi    = lnk[0];
     ci[i+1] = ci[i] + cnzi;
 
     /* If free space is not available, make more free space */
@@ -183,7 +183,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(nlnk_max,lnk_max,cnzi,current_space->array,nlnk,lnk,bt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean(nlnk_max,lnk_max,cnzi,current_space->array,lnk,bt);CHKERRQ(ierr);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
