@@ -1,4 +1,5 @@
-#include "taosolver.h"
+#include "private/taosolver_impl.h"
+#include "src/pde_constrained/impls/lcl/lcl.h"
 #include "petsctime.h"
 
 /*T
@@ -80,8 +81,8 @@ typedef struct {
   KSP solver;
   PC prec;
 
-  PetscInt solve_type;
-  PetscReal tola,tolb,tolc,told;
+  TAO_LCL *lcl;
+  PetscReal tau[4];
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 
@@ -155,14 +156,11 @@ int main(int argc, char **argv)
   user.noise = 0.01;
   ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag); CHKERRQ(ierr);
 
-  user.tola = 1e-4;
-  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tola,&user.tola,&flag); CHKERRQ(ierr);
-  user.tolb = 1e-4;
-  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tolb,&user.tolb,&flag); CHKERRQ(ierr);
-  user.tolc = 1e-4;
-  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tolc,&user.tolc,&flag); CHKERRQ(ierr);
-  user.told = 1e-4;
-  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
+  user.tau[0] = user.tau[1] = user.tau[2] = user.tau[3] = 1.0e-4;
+  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tau[0],&user.tau[0],&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tau[1],&user.tau[1],&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tau[2],&user.tau[2],&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.tau[3],&user.tau[3],&flag); CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.mx; /*  number of constraints per time step */
   user.n = user.m*(user.nt+1); /*  number of variables */
@@ -205,17 +203,18 @@ int main(int argc, char **argv)
   ierr = ISDestroy(&is_alldesign); CHKERRQ(ierr);
   ierr = ISDestroy(&is_allstate); CHKERRQ(ierr);
 
+
+
+  /* Create TAO solver and set desired solution method */
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_lcl"); CHKERRQ(ierr);
+  user.lcl = (TAO_LCL*)(tao->data); 
   /* Set up initial vectors and matrices */
   ierr = ParabolicInitialize(&user); CHKERRQ(ierr);
 
   ierr = Gather(x,user.y,user.state_scatter,user.u,user.design_scatter); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&x0); CHKERRQ(ierr);
   ierr = VecCopy(x,x0); CHKERRQ(ierr);
-
-
-  /* Create TAO solver and set desired solution method */
-  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lcl"); CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
@@ -244,7 +243,6 @@ int main(int argc, char **argv)
     PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its-ksp_old); CHKERRQ(ierr);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
-    user.solve_type = 3;
   }
   ierr = PetscLogStagePop(); CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)x); CHKERRQ(ierr);
@@ -643,29 +641,17 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   PetscErrorCode ierr;
   void *ptr;
   AppCtx *user;
+  PetscReal tau;
   PetscInt its,i;
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
 
-  switch(user->solve_type) {
-  case -1:
-    break;
-  case 0:
-    ierr = KSPSetTolerances(user->solver,user->tola,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-    
-  case 1:
-    ierr = KSPSetTolerances(user->solver,user->tolb,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-    
-  case 2:
-    ierr = KSPSetTolerances(user->solver,user->tolc,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-
-  case 3:
-    ierr = KSPSetTolerances(user->solver,user->told,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
+  if (Y == user->ytrue) {
+    KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else if (user->lcl) {
+    tau = user->tau[user->lcl->solve_type];
+    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt); CHKERRQ(ierr);
@@ -687,9 +673,6 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 
   ierr = Gather_i(Y,user->yiwork,user->yi_scatter,user->nt); CHKERRQ(ierr);
 
-  if (user->solve_type >= 0){
-    user->solve_type = (user->solve_type+1) % 4;
-  }
 
   PetscFunctionReturn(0);
 }
@@ -700,32 +683,18 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   void *ptr;
+  PetscReal tau;
   AppCtx *user;
   PetscInt its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
-
-  switch(user->solve_type) {
-  case -1:
-    break;
-  case 0:
-    ierr = KSPSetTolerances(user->solver,user->tola,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-    
-  case 1:
-    ierr = KSPSetTolerances(user->solver,user->tolb,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-    
-  case 2:
-    ierr = KSPSetTolerances(user->solver,user->tolc,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
-
-  case 3:
-    ierr = KSPSetTolerances(user->solver,user->told,1e-20,1e3,500); CHKERRQ(ierr);
-    break;
+  if (user->lcl) {
+    tau = user->tau[user->lcl->solve_type];
+    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
+
 
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt); CHKERRQ(ierr);
   
@@ -745,11 +714,6 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   }
 
   ierr = Gather_i(Y,user->yiwork,user->yi_scatter,user->nt); CHKERRQ(ierr);
-
-  if (user->solve_type >= 0){
-    user->solve_type = (user->solve_type+1) % 4;
-  }
-
   PetscFunctionReturn(0);
 }
 
@@ -1202,7 +1166,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE); CHKERRQ(ierr);
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500); CHKERRQ(ierr);
-  user->solve_type = -1;
   ierr = KSPGetPC(user->solver,&user->prec); CHKERRQ(ierr);
   ierr = PCSetType(user->prec,PCSHELL); CHKERRQ(ierr);
 
@@ -1313,6 +1276,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatShift(user->DSG,1.0); CHKERRQ(ierr);
 
   /* Now solve for y */
+  user->lcl->solve_type = LCL_FORWARD1;
   ierr = StateMatInvMult(user->Js,user->q,user->y); CHKERRQ(ierr);
   
   /* Construct projection matrix Q, a block diagonal matrix consisting of nt copies of Qblock along the diagonal */
@@ -1429,7 +1393,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* Now that initial conditions have been set, let the user pass tolerance options to the KSP solver */
   ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
-  user->solve_type = 3;
   ierr = PetscFree(x); CHKERRQ(ierr);
   ierr = PetscFree(y); CHKERRQ(ierr);
   ierr = PetscFree(z); CHKERRQ(ierr);

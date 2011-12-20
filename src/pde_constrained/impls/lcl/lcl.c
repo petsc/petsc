@@ -243,6 +243,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   else
     symmetric = PETSC_FALSE;
 
+  lclP->solve_type = LCL_ADJOINT2;
   if (tao->jacobian_state_inv) {
     if (symmetric) {
       ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr); } else {
@@ -299,6 +300,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
        point is the Newton direction */
     
     /* Solve r = A\con */
+    lclP->solve_type = LCL_FORWARD1;
     ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
     
     if (tao->jacobian_state_inv) {
@@ -406,6 +408,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* Compute multipliers */
       /* p1 */
       ierr = VecSet(lclP->lamda,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      lclP->solve_type = LCL_ADJOINT1;
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag); CHKERRQ(ierr);
       if (tao->jacobian_state_pre) {
 	ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag); CHKERRQ(ierr);
@@ -454,6 +457,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* Recover the full space direction */ 
       ierr = MatMult(tao->jacobian_design,lclP->s,lclP->WU); CHKERRQ(ierr);
       //ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      lclP->solve_type = LCL_FORWARD2;
       if (tao->jacobian_state_inv) {
 	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r); CHKERRQ(ierr);
       } else {
@@ -507,7 +511,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       else
 	symmetric = PETSC_FALSE;
 
-      
+      lclP->solve_type = LCL_ADJOINT2;
       if (tao->jacobian_state_inv) {
 	if (symmetric) {
 	  ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda); CHKERRQ(ierr);
