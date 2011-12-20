@@ -330,7 +330,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] pN %d; nlnk_max %d; Armax %d+%d=%d; Prmax Max(%d,%d)=%d\n",rank,pN,nlnk_max,ad->rmax,ao->rmax,armax,p_loc->rmax,p_oth->rmax,prmax);
 #endif
-  ierr = PetscLLCondensedCreate(nlnk_max,pN,lnk,lnkbt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate(nlnk_max,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);

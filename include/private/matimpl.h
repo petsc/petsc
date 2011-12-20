@@ -1068,6 +1068,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* -------------------------------------------------------------------------------------------------------*/
+#include <petscbt.h>
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedCreate"
 /* 
   Create and initialize a condensed linked list - 
     same as PetscLLCreate(), but uses a scalable array 'lnk' with size of max number of entries, not O(N).
@@ -1104,16 +1108,24 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     lnk       - list created and initialized
     bt        - PetscBT (bitarray) with all bits set to false. Note: bt has size lnk_max, not nln_max!
 */
-#define PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,bt) 0; \
-{\
-  PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),&lnk);\
-  PetscBTCreate(lnk_max,bt);                   \
-  PetscBTMemzero(lnk_max,bt);                  \
-  lnk[0] = 0;         /* number of entries on the list */\
-  lnk[2] = lnk_max;   /* value in the head node */\
-  lnk[3] = 2;         /* next for the head node */\
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt) 
+{
+  PetscErrorCode ierr;
+  PetscInt       *llnk;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscBTCreate(lnk_max,*bt);CHKERRQ(ierr);                
+  ierr = PetscBTMemzero(lnk_max,*bt);CHKERRQ(ierr); 
+  llnk = *lnk;
+  llnk[0] = 0;         /* number of entries on the list */   
+  llnk[2] = lnk_max;   /* value in the head node */
+  llnk[3] = 2;         /* next for the head node */
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedAddSorted"
 /*
   Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
   Input Parameters:
@@ -1127,62 +1139,85 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     lnk       - the sorted(increasing order) linked list containing previous and newly added non-redundate indices
     bt        - updated PetscBT (bitarray) 
 */
-#define PetscLLCondensedAddSorted(nlnk_max,lnk_max,nidx,indices,lnk,bt) 0; \
-{\
-  PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   \
-  _nlnk     = lnk[0]; /* num of entries on the input lnk */\
-  _location = 2; /* head */ \
-    for (_k=0; _k<nidx; _k++){\
-      _entry = indices[_k];\
-      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */  \
-        /* search for insertion location */\
-        do {\
-          _next     = _location + 1; /* link from previous node to next node */\
-          _location = lnk[_next];    /* idx of next node */\
-          _lnkdata  = lnk[_location];/* value of next node */      \
-        } while (_entry > _lnkdata);\
-        /* insertion location is found, add entry into lnk */\
-        _newnode        = 2*(_nlnk+2);   /* index for this new node */\
-        lnk[_next]      = _newnode;      /* connect previous node to the new node */ \
-        lnk[_newnode]   = _entry;        /* set value of the new node */       \
-        lnk[_newnode+1] = _location;     /* connect new node to next node */ \
-        _location       = _newnode;      /* next search starts from the new node */\
-        _nlnk++;\
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nlnk_max,PetscInt lnk_max,PetscInt nidx,const PetscInt indices[],PetscInt lnk[],PetscBT bt)
+{
+  PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   
+
+  PetscFunctionBegin;
+  _nlnk     = lnk[0]; /* num of entries on the input lnk */
+  _location = 2; /* head */ 
+    for (_k=0; _k<nidx; _k++){
+      _entry = indices[_k];
+      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */  
+        /* search for insertion location */
+        do {
+          _next     = _location + 1; /* link from previous node to next node */
+          _location = lnk[_next];    /* idx of next node */
+          _lnkdata  = lnk[_location];/* value of next node */      
+        } while (_entry > _lnkdata);
+        /* insertion location is found, add entry into lnk */
+        _newnode        = 2*(_nlnk+2);   /* index for this new node */
+        lnk[_next]      = _newnode;      /* connect previous node to the new node */ 
+        lnk[_newnode]   = _entry;        /* set value of the new node */       
+        lnk[_newnode+1] = _location;     /* connect new node to next node */ 
+        _location       = _newnode;      /* next search starts from the new node */
+        _nlnk++;
       }   \
     }\
-  lnk[0]   = _nlnk;   /* number of entries in the list */\
+  lnk[0]   = _nlnk;   /* number of entries in the list */
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedClean"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt nlnk_max,PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt) 
+{
+  PetscErrorCode ierr;
+  PetscInt       _k,_next,_nlnk;
 
-#define PetscLLCondensedClean(nlnk_max,lnk_max,nidx,indices,lnk,bt) 0;\
-{\
-  PetscInt _k,_next,_nlnk;\
-  _next = lnk[3];        /* head node */\
-  _nlnk = lnk[0];        /* num of entries on the list */\
-  for (_k=0; _k<_nlnk; _k++){\
-    indices[_k] = lnk[_next];\
-    _next       = lnk[_next + 1];\
-    ierr = PetscBTClear(bt,indices[_k]);CHKERRQ(ierr);      \
-  }\
-  lnk[0] = 0;          /* num of entries on the list */\
-  lnk[2] = lnk_max;    /* initialize head node */\
-  lnk[3] = 2;          /* head node */\
+  PetscFunctionBegin;
+  _next = lnk[3];       /* head node */
+  _nlnk = lnk[0];       /* num of entries on the list */
+  for (_k=0; _k<_nlnk; _k++){
+    indices[_k] = lnk[_next];
+    _next       = lnk[_next + 1];
+    ierr = PetscBTClear(bt,indices[_k]);CHKERRQ(ierr);      
+  }
+  lnk[0] = 0;          /* num of entries on the list */
+  lnk[2] = lnk_max;    /* initialize head node */
+  lnk[3] = 2;          /* head node */
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedView"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt nlnk_max,PetscInt lnk_max,PetscInt *lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       k;
 
-#define PetscLLCondensedView(nlnk_max,lnk_max,lnk) 0;\
-{\
-  PetscInt _k;\
-  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed: size %d first %d\n",lnk[0],lnk[3]-4); \
-  for (_k=2; _k< lnk[0] + 2; _k++){\
-    PetscPrintf(PETSC_COMM_SELF," %D: value %D, location of next %D)\n",2*_k-4,lnk[2*_k],lnk[2*_k+1]-4); \
-  }\
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]); 
+  for (k=2; k< lnk[0]+2; k++){
+    PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]); 
+  }
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedDestroy"
 /*
   Free memories used by the list
 */
-#define PetscLLCondensedDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(lnk);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(bt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
