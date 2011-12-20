@@ -154,7 +154,8 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
 #if defined(DEBUG_MATMATMULT)
   ierr = (PETSC_COMM_SELF,"LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
 #endif
-  ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,lnk,bt);CHKERRQ(ierr);
+  
+  ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,&lnk,&bt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
