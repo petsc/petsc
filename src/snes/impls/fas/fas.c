@@ -4,7 +4,8 @@
 const char *SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","SNESFASType","SNES_FAS",0};
 
 /*MC
-Full Approximation Scheme nonlinear multigrid solver.
+
+SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
 
 The nonlinear problem is solved via the repeated application of nonlinear preconditioners and coarse-grid corrections
 
@@ -1166,6 +1167,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     /* additive correction of the coarse direction*/
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    ierr = VecScale(Xhat, -1.0);CHKERRQ(ierr);
     ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Xhat,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = VecCopy(W, X);CHKERRQ(ierr);
     ierr = VecCopy(G, F);CHKERRQ(ierr);
@@ -1221,14 +1223,13 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
   PetscInt       i, maxits;
-  Vec            X, B, F;
+  Vec            X, F;
   PetscReal      fnorm;
   SNES_FAS       *fas = (SNES_FAS *)snes->data;
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
   X = snes->vec_sol;
-  B = snes->vec_rhs;
   F = snes->vec_func;
 
   /*norm setup */

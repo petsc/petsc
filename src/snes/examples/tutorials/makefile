@@ -356,7 +356,7 @@ runex5_5_ngmres_nrichardson:
 	   ${RM} -f ex5_5_ngmres_richardson.tmp
 
 runex5_5_ncg:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ncg_type fr \
         > ex5_5_ncg.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ncg.out ex5_5_ncg.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ncg, diffs above \n========================================="; fi; \

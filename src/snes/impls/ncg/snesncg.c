@@ -187,9 +187,9 @@ EXTERN_C_END
 PetscErrorCode SNESSolve_NCG(SNES snes)
 {
   SNES_NCG            *ncg = (SNES_NCG *)snes->data;
-  Vec                 X, dX, lX, F, W, B, G, Fold;
+  Vec                 X, dX, lX, F, W, B, G, dXold;
   PetscReal           fnorm, gnorm, dummyNorm, beta = 0.0;
-  PetscScalar         dXdotF, dXolddotFold, dXdotFold, lXdotF, lXdotFold;
+  PetscScalar         dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
   PetscInt            maxits, i;
   PetscErrorCode      ierr;
   SNESConvergedReason reason;
@@ -199,7 +199,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   maxits = snes->max_its;            /* maximum number of iterations */
   X      = snes->vec_sol;            /* X^n */
-  Fold   = snes->work[0];            /* The previous iterate of X */
+  dXold  = snes->work[0];            /* The previous iterate of X */
   dX     = snes->work[1];            /* the steepest direction */
   lX     = snes->vec_sol_update;     /* the conjugate direction */
   F      = snes->vec_func;           /* residual vector */
@@ -236,32 +236,33 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   /* Call general purpose update function */
   if (snes->ops->update) {
     ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
-  }
+ }
 
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
   if (snes->usegs && snes->ops->computegs) {
-    ierr = VecCopy(X, lX);CHKERRQ(ierr);
-    ierr = SNESComputeGS(snes, B, lX);CHKERRQ(ierr);
-    ierr = VecAXPY(lX, -1.0, X);CHKERRQ(ierr);
+    ierr = VecCopy(X, dX);CHKERRQ(ierr);
+    ierr = SNESComputeGS(snes, B, dX);CHKERRQ(ierr);
+    ierr = VecAYPX(dX, -1.0, X);CHKERRQ(ierr);
   } else if (snes->pc) {
-    ierr = VecCopy(X,lX);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc, B, lX);CHKERRQ(ierr);
+    ierr = VecCopy(X, dX);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    ierr = VecAXPY(lX,-1.0,X);CHKERRQ(ierr);
+    ierr = VecAYPX(dX,-1.0,X);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(F, lX);CHKERRQ(ierr);
-    ierr = VecScale(lX,-1.0);CHKERRQ(ierr);
+    ierr = VecCopy(F, dX);CHKERRQ(ierr);
   }
-
-  ierr = VecDot(lX, F, &dXdotF);CHKERRQ(ierr);
+  ierr = VecCopy(dX, lX);CHKERRQ(ierr);
+  ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
   for(i = 1; i < maxits + 1; i++) {
     lsSuccess = PETSC_TRUE;
-    /* some update types require the old residual */
-    ierr = VecCopy(F, Fold);CHKERRQ(ierr);
+    /* some update types require the old update direction or conjugate direction */
+    if (ncg->betatype == 1 || ncg->betatype == 2 || ncg->betatype == 3 || ncg->betatype == 4) { /* prp, hs, dy, cd need dXold*/
+      ierr = VecCopy(dX, dXold);CHKERRQ(ierr);
+    }
     ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, lX, fnorm, 0.0, G, W, &dummyNorm, &gnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
@@ -302,7 +303,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->usegs && snes->ops->computegs) {
       ierr = VecCopy(X, dX);CHKERRQ(ierr);
       ierr = SNESComputeGS(snes, B, dX);CHKERRQ(ierr);
-      ierr = VecAXPY(dX, -1.0, X);CHKERRQ(ierr);
+      ierr = VecAYPX(dX,-1.0,X);CHKERRQ(ierr);
     } else if (snes->pc) {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
@@ -311,43 +312,42 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = VecAXPY(dX,-1.0,X);CHKERRQ(ierr);
+      ierr = VecAYPX(dX,-1.0,X);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(F,dX);CHKERRQ(ierr);
-      ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
     }
 
-    /* compute the conjugate direction lX = dX + beta*lX with beta = ((F, dX) / (F_old, dX_old) (Fletcher-Reeves update)*/
+    /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
     switch(ncg->betatype) {
     case 0: /* Fletcher-Reeves */
-      dXolddotFold = dXdotF;
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotF / dXolddotFold);
+      dXolddotdXold = dXdotdX;
+      ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / dXolddotdXold);
       break;
     case 1: /* Polak-Ribiere-Poylak */
-      dXolddotFold = dXdotF;
-      ierr = VecDot(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      beta = PetscRealPart(((dXdotF - dXdotFold) / dXolddotFold));
+      dXolddotdXold = dXdotdX;
+      ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDot(dXold, dX, &dXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(((dXdotdXold - dXdotdX) / dXolddotdXold));
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
     case 2: /* Hestenes-Stiefel */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart((dXdotF - dXdotFold) / (lXdotF - lXdotFold));
+      ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDot(dX, dXold, &dXdotdXold);CHKERRQ(ierr);
+      ierr = VecDot(lX, dX, &lXdotdX);CHKERRQ(ierr);
+      ierr = VecDot(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart((dXdotdX - dXdotdXold) / (lXdotdX - lXdotdXold));
       break;
     case 3: /* Dai-Yuan */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotF / (lXdotFold - lXdotF));CHKERRQ(ierr);
+      ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDot(lX, dX, &lXdotdXold);CHKERRQ(ierr);
+      ierr = VecDot(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));CHKERRQ(ierr);
       break;
     case 4: /* Conjugate Descent */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotF / lXdotFold);CHKERRQ(ierr);
+      ierr = VecDot(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / lXdotdXold);CHKERRQ(ierr);
       break;
     }
     if (ncg->monitor) {
@@ -398,7 +398,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->monitor = PETSC_NULL;
-  neP->betatype = 0;
+  neP->betatype = 1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

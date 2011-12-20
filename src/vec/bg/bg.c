@@ -127,8 +127,8 @@ PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
-  if (ilocal) PetscValidIntPointer(ilocal,4);
-  PetscValidPointer(iremote,6);
+  if (nlocal && ilocal) PetscValidIntPointer(ilocal,4);
+  if (nlocal) PetscValidPointer(iremote,6);
   ierr = PetscBGReset(bg);CHKERRQ(ierr);
   bg->nowned = nowned;
   bg->nlocal = nlocal;
