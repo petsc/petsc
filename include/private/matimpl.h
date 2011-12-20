@@ -1197,9 +1197,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt nlnk_max,PetscI
   PetscInt       k;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]); 
+  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
   for (k=2; k< lnk[0]+2; k++){
-    PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]); 
+    ierr = PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
