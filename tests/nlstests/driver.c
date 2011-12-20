@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
     datfile = fopen("dfo.dat","r");
     user.nrun=0;
-    fscanf(datfile,"%D %D %D %D\n",&nprob,&n,&m,&nstart);
+    fscanf(datfile,"%d %d %d %d\n",&nprob,&n,&m,&nstart);
     while (nprob != 0) {
 
 	user.nprob = nprob;
@@ -83,9 +83,9 @@ int main(int argc, char **argv)
 	ierr = VecCreateSeq(PETSC_COMM_SELF,n,&X); CHKERRQ(ierr);
 	ierr = VecCreateSeq(PETSC_COMM_SELF,m,&F); CHKERRQ(ierr);
 	ierr = FormStartingPoint(X,&user); CHKERRQ(ierr);
-	printf(" Problem %D: %30s\n",nprob,dfonames[nprob]);
-	printf(" Number of components: %D\n",user.n);
-	printf(" Number of variables: %D\n",user.m);
+	printf(" Problem %d: %30s\n",nprob,dfonames[nprob]);
+	printf(" Number of components: %d\n",user.n);
+	printf(" Number of variables: %d\n",user.m);
 
 	wallclock_(&wctime1);
 	ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
@@ -103,9 +103,9 @@ int main(int argc, char **argv)
 	ierr = VecDestroy(&F); CHKERRQ(ierr);
 	wallclock_(&wctime2);
 	wctime = wctime2 - wctime1;
-	printf("time = %G\n",wctime);
+	printf("time = %g\n",wctime);
 
-	fscanf(datfile,"%D %D %D %D\n",&nprob,&n,&m,&nstart);
+	fscanf(datfile,"%d %d %d %d\n",&nprob,&n,&m,&nstart);
     }
 
     TaoFinalize();
@@ -117,7 +117,6 @@ int main(int argc, char **argv)
 #define __FUNCT__ "FormStartingPoint"
 PetscErrorCode FormStartingPoint(Vec X, AppCtx *ctx) {
     double *x;
-    char str[32];
     PetscErrorCode ierr;
     PetscFunctionBegin;
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);
