@@ -160,6 +160,8 @@ PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS parti
   for(p = 0; p < numRemoteRanks; ++p) {
     ierr = PetscPrintf(comm, "offset for rank %d: %d\n", p, partOffsets[p]);CHKERRQ(ierr);
   }
+  ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
+  ierr = PetscBGDestroy(&bgCount);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -218,6 +220,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
 
   ierr = PetscBGConvertPartition(dm, partSection, part, PETSC_NULL);CHKERRQ(ierr);
 
+#if 0
   /* Create the remote bases -- We probably do not need this BG, only ones buikt on this. We do need to know how many points we are getting */
   {
     PetscBG         bg;
@@ -258,6 +261,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
     ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
     ierr = PetscBGDestroy(&bg);CHKERRQ(ierr);
   }
+#endif
 #if 0
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
       const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
