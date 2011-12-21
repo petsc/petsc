@@ -47,7 +47,7 @@ typedef void* (*pfunc)(void*);
 
 /* lock-free data structure */
 typedef struct {
-  pfunc* funcArr;
+  pfunc *funcArr;
   void** pdata;
   int *my_job_status;
 } sjob_lockfree;
@@ -111,7 +111,7 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   pVal_lockfree = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-  job_lockfree.funcArr = malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
+  job_lockfree.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_lockfree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_lockfree.my_job_status = (int*)malloc(N*sizeof(int));
 
