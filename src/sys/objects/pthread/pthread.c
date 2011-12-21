@@ -213,13 +213,16 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   }
 #endif
 
+  /* Check to see if the user wants the main thread not to share work with the other threads */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
+  if(flg1) PetscMainThreadShareWork = 0;
+
   /*
       Determine whether to use thread pool
    */
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscCheckCoreAffinity = PETSC_TRUE;
-    PetscMainThreadShareWork = 0;
     /* get the thread pool type */
     PetscInt ipool = 0;
     const char *choices[4] = {"true","tree","main","chain"};
@@ -274,9 +277,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     ierr = PetscOptionsHasName(PETSC_NULL,"-use_lock_free",&flg1);CHKERRQ(ierr);
     if (flg1) {
       PetscCheckCoreAffinity = PETSC_TRUE;
-      /* Check to see if the user wants the main thread not to share work with the other threads */
-      ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
-      if(flg1) PetscMainThreadShareWork = 0;
 
       PetscThreadFunc       = &PetscThreadFunc_LockFree;
       PetscThreadInitialize = &PetscThreadInitialize_LockFree;

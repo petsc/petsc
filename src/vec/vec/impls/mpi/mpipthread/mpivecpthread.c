@@ -3,6 +3,7 @@
 #include <petscblaslapack.h>
 
 extern PetscMPIInt  PetscMaxThreads;
+extern PetscInt     PetscMainThreadShareWork;
 
 extern PetscInt     vecs_created;
 extern Kernel_Data  *kerneldatap;
@@ -47,18 +48,14 @@ PetscErrorCode VecMDot_MPIPThread(Vec xin,PetscInt nv,const Vec y[],PetscScalar 
 PetscErrorCode VecNorm_MPIPThread(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
-  PetscScalar    *xx = *(PetscScalar**)xin->data;
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    work  = BLASnrm2_(&bn,xx,&one);
+    ierr = VecNorm_SeqPThread(xin,type,&work);CHKERRQ(ierr);
     work *= work;
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = PetscSqrtReal(sum);
-    ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_SeqPThread(xin,NORM_1,&work);CHKERRQ(ierr);
@@ -155,7 +152,7 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   ierr = VecCreate_MPIPThread_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPIPthread *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-  ierr = VecPThreadSetNThreads(*v,w->nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*v,w->nthreads-PetscMainThreadShareWork);CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
@@ -311,13 +308,11 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr               = PetscMemzero(s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    s->array_allocated = s->array;
   }
 
   if(!vecs_created) {
-    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
-    ierr = PetscMalloc(PetscMaxThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
   }
   vecs_created++;
 
@@ -327,6 +322,9 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   } else {
     ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
   }
+
+  ierr = VecSet_SeqPThread(v,0.0);CHKERRQ(ierr);
+  s->array_allocated = (PetscScalar*)s->array;
 
   /* By default parallel vectors do not have local representation */
   s->localrep    = 0;
