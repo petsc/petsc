@@ -111,6 +111,59 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscBGConvertPartition"
+PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS partition, PetscBG *bg)
+{
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscBG        bgCount;
+  PetscBGNode   *remoteRanks;
+  PetscInt       numRemoteRanks = 0;
+  PetscInt       localSize, *partSizes = PETSC_NULL, *partOffsets = PETSC_NULL;
+  PetscMPIInt    numProcs, rank, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  /*
+   1. Count the number of ranks that your points should be sent to (nranks)
+   2. Create a PetscBG that maps from nranks local points to (rank, 0). That is, each process has only one "owned" point. Call this bgcount.
+   3. Put the number of points destined to each rank in outgoing, create another array outoffset of same size (nranks)
+   4. incoming[0] = 0
+   5. PetscBGFetchAndOpBegin/End(bg,MPIU_INT,incoming,outgoing,outoffset,MPIU_SUM);
+
+   Now, incoming[0] holds the number of points you will receive and outoffset[i] holds the offset on rank[i] at which to place outgoing[i] points.
+
+   6. Call PetscBGSetGraph() to build this new graph that communicates all your currently owned points to the remote processes at the offsets above.
+   7. PetscBGReduceBegin/End(newbg,MPIU_POINT,outgoing_points,incoming_points,MPI_REPLACE);
+
+   I would typically make MPIU_POINT just represent a PetscBGNode() indicating where the point data is in my local space. That would have successfully inverted the communication graph: now I have two-sided knowledge and local-to-global now maps from newowner-to-oldowner.
+   */
+  /* Assume all processes participate in the partition */
+  if (!rank) { /* Could check for IS length here */
+    numRemoteRanks = numProcs;
+  }
+  ierr = PetscMalloc(numRemoteRanks * sizeof(PetscBGNode), &remoteRanks);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numRemoteRanks,PetscInt,&partSizes,numRemoteRanks,PetscInt,&partOffsets);CHKERRQ(ierr);
+  for(p = 0; p < numRemoteRanks; ++p) {
+    remoteRanks[p].rank  = p;
+    remoteRanks[p].index = 0;
+    ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
+  }
+  ierr = PetscBGCreate(comm, &bgCount);CHKERRQ(ierr);
+  ierr = PetscBGSetGraph(bgCount, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscBGView(bgCount, PETSC_NULL);CHKERRQ(ierr);
+  localSize = 0;
+  ierr = PetscBGFetchAndOpBegin(bgCount, MPIU_INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(comm, "localSize %d\n", localSize);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  for(p = 0; p < numRemoteRanks; ++p) {
+    ierr = PetscPrintf(comm, "offset for rank %d: %d\n", p, partOffsets[p]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DistributeMesh"
 PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
 {
@@ -162,6 +215,9 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   ierr = ALE::Partitioner<>::createPartitionClosureV(mesh, cellPartSection, cellPart, &partSection, &part, 0);CHKERRQ(ierr);
   ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscBGConvertPartition(dm, partSection, part, PETSC_NULL);CHKERRQ(ierr);
+
   /* Create the remote bases -- We probably do not need this BG, only ones buikt on this. We do need to know how many points we are getting */
   {
     PetscBG         bg;
