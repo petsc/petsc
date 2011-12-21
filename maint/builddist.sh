@@ -38,7 +38,7 @@ make tao_htmlpages
 
 echo "Building tarball $BUILDDIR/tao-$VERSION.tar.gz"
 cd $BUILDDIR
-tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION --exclude="sqpcon"
+tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION --exclude="sqpcon" --exclude="lm" --exclude="pounder" --exclude="taodm"
 
 echo "mv tao-$VERSION.tar.gz $HERE"
 mv tao-$VERSION.tar.gz $HERE

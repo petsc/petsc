@@ -1,11 +1,4 @@
-subset
-  - make tests test each kind
-    . fix plate2_5 (matrix free tron)
-  - update solvers to use it
-    . asls
-
 tao_fd_gradient
-complimentarity isils, icp, rscs
 fd - plate2_fd_test, eptorsion2_fd_test
 Check 'Collective' documentation
 
@@ -23,7 +16,7 @@ Describe new features
   
 update manual
   add pounders section
-  put docs back in
+  put complementarity docs back in
 
 Check fortran stubs 
 
@@ -31,14 +24,6 @@ Check documentation
 
 Links in examples are wrong?
 
-take out of distribution:
-  taodm
-  pounder
-  levenberg-marquardt unless fixed
-  sqpcon
-
-Examples/tests
-  remake output
 
 Test on arches
   Visual Studio -- ps3
@@ -60,6 +45,7 @@ add web pages to repository, not distribution
 Levenberg-Marquardt
 POUNDer
 add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+complimentarity isils, icp, rscs
 
 make install to put libs/headers in separate location
 one library
