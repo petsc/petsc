@@ -346,7 +346,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       pnz = pi_loc[row+1] - pi_loc[row];
       Jptr  = pj_loc + pi_loc[row];
       /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
     }
     /* off-diagonal portion of A */
     nzi = aoi[i+1] - aoi[i];
@@ -354,7 +354,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       row = *aoj++; 
       pnz = pi_oth[row+1] - pi_oth[row];
       Jptr  = pj_oth + pi_oth[row];  
-      ierr = PetscLLCondensedAddSorted(nlnk_max,pN,pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
     }
 
     apnz     = lnk[0];
@@ -367,7 +367,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(nlnk_max,pN,apnz,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean(pN,apnz,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+rstart,apnz,current_space->array,dnz,onz);CHKERRQ(ierr);
     current_space->array           += apnz;
     current_space->local_used      += apnz;

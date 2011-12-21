@@ -62,8 +62,8 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
   const PetscInt     *Ai=a->i,*Aj=a->j,*Bi=b->i,*Bj=b->j,am=A->rmap->N,bm=B->rmap->N,bn=B->cmap->N; 
   const PetscInt     *aj=Aj,*bi=Bi,*bj=Bj,*bjj;
-  PetscInt           *ci,*cj;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,ndouble=0;
+  PetscInt           *ci,*cj,nlnk_max;
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,*lnk,ndouble=0;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -73,8 +73,9 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
   ci[0] = 0;
   
   /* create and initialize a linked list */
-  nlnk = bn+1;
-  ierr = PetscLLCreate(bn,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+  nlnk_max = a->rmax*b->rmax;
+  if (!nlnk_max || nlnk_max > bn) nlnk_max = bn;
+  ierr = PetscLLCondensedCreate(nlnk_max,bn,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
@@ -83,16 +84,15 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
   /* Determine ci and cj */
   for (i=0; i<am; i++) {
     anzi = Ai[i+1] - Ai[i];
-    cnzi = 0;
     aj   = Aj + Ai[i];
     for (j=0; j<anzi; j++){ 
       brow = aj[j]; 
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLAddSorted(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-      cnzi += nlnk;
+      ierr = PetscLLCondensedAddSorted(bnzj,bjj,lnk,lnkbt);CHKERRQ(ierr);
     }
+    cnzi = lnk[0];
 
     /* If free space is not available, make more free space */
     /* Double the amount of total space in the list */
@@ -102,7 +102,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean(bn,cnzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
@@ -114,7 +114,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedDestroy(lnk,lnkbt);CHKERRQ(ierr);
     
   *Ci           = ci;
   *Cj           = cj;
@@ -133,8 +133,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   const PetscInt     *aj=Aj,*bi=Bi,*bj;
   PetscInt           *ci,*cj; 
   PetscInt           i,j,anzi,brow,bnzj,cnzi,crmax,ndouble=0;
-  PetscBT            bt;
-  PetscInt           nlnk_max,lnk_max=bn,*lnk;
+  PetscInt           nlnk_max,*lnk;
 
   PetscFunctionBegin;
   /* Allocate ci array, arrays for fill computation and */
@@ -155,7 +154,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   ierr = (PETSC_COMM_SELF,"LLCondensedCreate nlnk_max=%d, bn %d, crmax %d\n",nlnk_max,bn,crmax); 
 #endif
   
-  ierr = PetscLLCondensedCreate(nlnk_max,lnk_max,&lnk,&bt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(Ai[am]+Bi[bm])),&free_space);CHKERRQ(ierr);
@@ -171,7 +170,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
       bnzj = bi[brow+1] - bi[brow];
       bj   = Bj + bi[brow];
       /* add non-zero cols of B into the condensed sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(nlnk_max,lnk_max,bnzj,bj,lnk,bt);CHKERRQ(ierr);
+      ierr = PetscLLCondensedAddSorted_Scalable(bnzj,bj,lnk);CHKERRQ(ierr);
     }
     cnzi    = lnk[0];
     ci[i+1] = ci[i] + cnzi;
@@ -184,7 +183,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(nlnk_max,lnk_max,cnzi,current_space->array,lnk,bt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean_Scalable(cnzi,current_space->array,lnk);CHKERRQ(ierr);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;    
@@ -194,7 +193,7 @@ PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Petsc
   /* Allocate and copy column indices to cj, then destroy list of free space, lnk and bt */
   ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscLLCondensedDestroy(lnk,bt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
     
   *Ci           = ci;
   *Cj           = cj;
@@ -298,9 +297,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscReal      afill;
 
   PetscFunctionBegin;
-#if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ...\n");CHKERRQ(ierr);
-#endif
   /* Get ci and cj */
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
     
@@ -510,9 +506,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   PetscReal      afill;
 
   PetscFunctionBegin;
-#if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable Armax %d, Brmax %d\n",a->rmax,b->rmax);CHKERRQ(ierr);
-#endif
   /* Get ci and cj */
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
     
