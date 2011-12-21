@@ -17,6 +17,7 @@ struct _n_PetscBGWinLink {
   size_t         bytes;
   void           *addr;
   MPI_Win        win;
+  PetscBool      epoch;
   PetscBGWinLink next;
 };
 
@@ -41,6 +42,11 @@ struct _p_PetscBG {
   PetscBGWinLink  wins;         /* List of active windows */
   PetscInt        *degree;      /* Degree of each owned vertex */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
+  PetscBGSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */
+  PetscBool       rankorder;    /* Sort ranks for gather and scatter operations */
+  MPI_Group       ingroup;
+  MPI_Group       outgroup;
+  PetscBG         multi;        /* Internal graph used to implement gather and scatter operations */
 };
 
 #endif

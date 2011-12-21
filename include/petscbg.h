@@ -33,20 +33,39 @@ typedef struct {
   PetscInt index;               /* Index of node on rank */
 } PetscBGNode;
 
+/*E
+    PetscBGSynchronizationType - Type of synchronization for PetscBG
+
+$  PETSCBG_SYNCHRONIZATION_FENCE - simplest model, synchronizing across communicator
+$  PETSCBG_SYNCHRONIZATION_LOCK - passive model, less synchronous, requires less setup than PETSCBG_SYNCHRONIZATION_ACTIVE, but may require more handshakes
+$  PETSCBG_SYNCHRONIZATION_ACTIVE - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCBG_SYNCHRONIZATION_LOCK)
+
+   Level: beginner
+
+.seealso: PetscBGSetSynchronizationType()
+E*/
+typedef enum {PETSCBG_SYNCHRONIZATION_FENCE,PETSCBG_SYNCHRONIZATION_LOCK,PETSCBG_SYNCHRONIZATION_ACTIVE} PetscBGSynchronizationType;
+extern const char *const PetscBGSynchronizationTypes[];
+
 extern PetscErrorCode PetscBGInitializePackage(const char*);
 extern PetscErrorCode PetscBGFinalizePackage(void);
 extern PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG*);
 extern PetscErrorCode PetscBGDestroy(PetscBG*);
 extern PetscErrorCode PetscBGView(PetscBG,PetscViewer);
+extern PetscErrorCode PetscBGSetFromOptions(PetscBG);
+extern PetscErrorCode PetscBGSetSynchronizationType(PetscBG,PetscBGSynchronizationType);
+extern PetscErrorCode PetscBGSetRankOrder(PetscBG,PetscBool);
 extern PetscErrorCode PetscBGSetGraph(PetscBG,PetscInt nowned,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode modelocal,const PetscBGNode *remote,PetscCopyMode moderemote);
 extern PetscErrorCode PetscBGCreateArray(PetscBG,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscBGDestroyArray(PetscBG,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscBGReset(PetscBG);
 extern PetscErrorCode PetscBGGetRanks(PetscBG,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
 extern PetscErrorCode PetscBGGetDataTypes(PetscBG,MPI_Datatype,const MPI_Datatype**,const MPI_Datatype**);
-extern PetscErrorCode PetscBGGetWindow(PetscBG,MPI_Datatype,void*,MPI_Win*);
+extern PetscErrorCode PetscBGGetWindow(PetscBG,MPI_Datatype,void*,PetscBool,PetscMPIInt,PetscMPIInt,PetscMPIInt,MPI_Win*);
 extern PetscErrorCode PetscBGFindWindow(PetscBG,MPI_Datatype,const void*,MPI_Win*);
-extern PetscErrorCode PetscBGRestoreWindow(PetscBG,MPI_Datatype,const void*,MPI_Win*);
+extern PetscErrorCode PetscBGRestoreWindow(PetscBG,MPI_Datatype,const void*,PetscBool,PetscMPIInt,MPI_Win*);
+extern PetscErrorCode PetscBGGetGroups(PetscBG,MPI_Group*,MPI_Group*);
+extern PetscErrorCode PetscBGGetMultiBG(PetscBG,PetscBG*);
 
 /* Provide an owned buffer, updates ghosted space */
 extern PetscErrorCode PetscBGBcastBegin(PetscBG,MPI_Datatype,const void *owned,void *ghosted);

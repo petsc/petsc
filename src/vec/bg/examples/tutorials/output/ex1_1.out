@@ -1,5 +1,6 @@
 Bipartite Graph Object: 4 MPI processes
   type not yet set
+  synchronization=FENCE sort=rank-order
   [0] Number of outgoing edges=2, remote ranks=2
   [0] 0 -> (3,1)
   [0] 1 -> (1,0)

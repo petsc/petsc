@@ -27,8 +27,12 @@ runex1_3:
 	-@${MPIEXEC} -n 4 ./ex1 -test_degree > ex1_3.tmp 2>&1; \
 	   ${DIFF} output/ex1_3.out ex1_3.tmp || echo "${PWD}\n Possible problem with with ex1_3, diffs above \n========================================="; \
 	   ${RM} -f ex1_3.tmp
+runex1_4:
+	-@${MPIEXEC} -n 4 ./ex1 -test_gather > ex1_4.tmp 2>&1; \
+	   ${DIFF} output/ex1_4.out ex1_4.tmp || echo "${PWD}\n Possible problem with with ex1_4, diffs above \n========================================="; \
+	   ${RM} -f ex1_4.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm
+TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 ex1.rm
 TESTEXAMPLES_C_X11	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =

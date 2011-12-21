@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscBGNode    *remote;
   PetscMPIInt    rank,size;
   PetscBG        bg;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -35,6 +35,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
   test_fetchandop = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
+  test_gather = PETSC_FALSE;
+  ierr = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nowned = 2 + (PetscInt)(rank == 0);
@@ -53,6 +55,7 @@ int main(int argc,char **argv)
 
   /* Create a bipartite graph for communication. In this example, the local space is dense, so we pass PETSC_NULL. */
   ierr = PetscBGCreate(PETSC_COMM_WORLD,&bg);CHKERRQ(ierr);
+  ierr = PetscBGSetFromOptions(bg);CHKERRQ(ierr);
   ierr = PetscBGSetGraph(bg,nowned,nlocal,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* View graph, mostly useful for debugging purposes. */
@@ -113,6 +116,21 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Outgoing Token\n");CHKERRQ(ierr);
     ierr = PetscIntView(nlocal,token,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree3(outgoing,token,incoming);CHKERRQ(ierr);
+  }
+
+  if (test_gather) {
+    const PetscInt *degree;
+    PetscInt inedges,*indata,*outdata;
+    ierr = PetscBGComputeDegreeBegin(bg,&degree);CHKERRQ(ierr);
+    ierr = PetscBGComputeDegreeEnd(bg,&degree);CHKERRQ(ierr);
+    for (i=0,inedges=0; i<nowned; i++) inedges += degree[i];
+    ierr = PetscMalloc2(inedges,PetscInt,&indata,nlocal,PetscInt,&outdata);CHKERRQ(ierr);
+    for (i=0; i<nlocal; i++) outdata[i] = 1000*(rank+1) + i;
+    ierr = PetscBGGatherBegin(bg,MPIU_INT,outdata,indata);CHKERRQ(ierr);
+    ierr = PetscBGGatherEnd(bg,MPIU_INT,outdata,indata);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data from incoming edges\n");CHKERRQ(ierr);
+    ierr = PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
   }
 
   /* Clean up local space and storage for bipartite graph. */
