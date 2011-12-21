@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = sectioncopy.c
+SOURCEC	  = # sectioncopy.c
 SOURCEF	  =
 SOURCEH	  =
 OBJSC	  = ${SOURCEC:.c=.o}
