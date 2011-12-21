@@ -1167,7 +1167,7 @@ PetscErrorCode PetscBGGatherBegin(PetscBG bg,MPI_Datatype unit,const void *ghost
 #undef __FUNCT__
 #define __FUNCT__ "PetscBGGatherEnd"
 /*@C
-   PetscBGGatherEnd - ends pointwise gather operation that was started with with PetscBGGatherBegin()
+   PetscBGGatherEnd - ends pointwise gather operation that was started with PetscBGGatherBegin()
 
    Collective
 
@@ -1191,5 +1191,65 @@ PetscErrorCode PetscBGGatherEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted
   PetscFunctionBegin;
   ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
   ierr = PetscBGReduceEnd(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGScatterBegin"
+/*@C
+   PetscBGScatterBegin - begin pointwise scatter operation, to be completed with PetscBGScatterEnd()
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+-  owned - owned values to scatter
+
+   Output Argument:
+.  ghosted - ghosted data to scatter into
+
+   Level: intermediate
+
+.seealso: PetscBGComputeDegreeBegin(), PetscBGScatterBegin()
+@*/
+PetscErrorCode PetscBGScatterBegin(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+{
+  PetscErrorCode ierr;
+  PetscBG        multi;
+
+  PetscFunctionBegin;
+  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscBGBcastBegin(multi,unit,owned,ghosted);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBGScatterEnd"
+/*@C
+   PetscBGScatterEnd - ends pointwise scatter operation that was started with PetscBGScatterBegin()
+
+   Collective
+
+   Input Arguments:
++  bg - bipartite graph
+.  unit - data type
+-  owned - owned values to scatter
+
+   Output Argument:
+.  ghosted - ghosted data to scatter into
+
+   Level: intermediate
+
+.seealso: PetscBGComputeDegreeEnd(), PetscBGScatterEnd()
+@*/
+PetscErrorCode PetscBGScatterEnd(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+{
+  PetscErrorCode ierr;
+  PetscBG        multi;
+
+  PetscFunctionBegin;
+  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscBGBcastEnd(multi,unit,owned,ghosted);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

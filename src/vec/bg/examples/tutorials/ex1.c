@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscBGNode    *remote;
   PetscMPIInt    rank,size;
   PetscBG        bg;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -37,6 +37,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
   test_gather = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
+  test_scatter = PETSC_FALSE;
+  ierr = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nowned = 2 + (PetscInt)(rank == 0);
@@ -130,6 +132,26 @@ int main(int argc,char **argv)
     ierr = PetscBGGatherEnd(bg,MPIU_INT,outdata,indata);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data from incoming edges\n");CHKERRQ(ierr);
     ierr = PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
+  }
+
+  if (test_scatter) {
+    const PetscInt *degree;
+    PetscInt j,count,inedges,*indata,*outdata;
+    ierr = PetscBGComputeDegreeBegin(bg,&degree);CHKERRQ(ierr);
+    ierr = PetscBGComputeDegreeEnd(bg,&degree);CHKERRQ(ierr);
+    for (i=0,inedges=0; i<nowned; i++) inedges += degree[i];
+    ierr = PetscMalloc2(inedges,PetscInt,&indata,nlocal,PetscInt,&outdata);CHKERRQ(ierr);
+    for (i=0,count=0; i<nowned; i++) {
+      for (j=0; j<degree[i]; j++) indata[count++] = 1000*(rank+1) + 100*i + j;
+    }
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Data at incoming edges, to scatter\n");CHKERRQ(ierr);
+    ierr = PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    ierr = PetscBGScatterBegin(bg,MPIU_INT,indata,outdata);CHKERRQ(ierr);
+    ierr = PetscBGScatterEnd(bg,MPIU_INT,indata,outdata);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Scattered data to outgoing edges\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nlocal,outdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
   }
 
