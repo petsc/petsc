@@ -1,5 +1,3 @@
- msa_plate
- msa_plate
 Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is
 0 (1.e-8), the hand-coded gradient is probably correct.
 Run with -tao_fd_test_display to show difference
