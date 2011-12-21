@@ -155,6 +155,7 @@ PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS parti
   ierr = PetscBGView(bgCount, PETSC_NULL);CHKERRQ(ierr);
   localSize = 0;
   ierr = PetscBGFetchAndOpBegin(bgCount, MPIU_INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscBGFetchAndOpEnd(bgCount, MPIU_INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(comm, "localSize %d\n", localSize);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   for(p = 0; p < numRemoteRanks; ++p) {
