@@ -124,7 +124,6 @@ int main(int argc,char **args)
 
   /* Test MatTransposeMatMult() and MatMatTransposeMult() */
   /*------------------------------------------------------*/
-  if (size>1) Test_MatMatTr = PETSC_FALSE;
   if (Test_MatMatTr){
     /* Create P */
     PetscInt PN;
@@ -153,41 +152,46 @@ int main(int argc,char **args)
     
     /* C = P^T*B */
     ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"matmattrmult_");CHKERRQ(ierr); /* enable '-matmattrmult_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransposeMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);*/
-
+    
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
    
-    /* Check */
+    /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
     ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
     if (!flg){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatTransposeMatMult()\n");
+      /* Check norm of C1 = (-1.0)*C + C1 */
+      PetscReal nrm;
+      ierr = MatAXPY(C1,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(C1,NORM_INFINITY,&nrm);CHKERRQ(ierr);
+      if (nrm > 1.e-14){
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatTransposeMatMult(): %g\n",nrm);
+      }
     }
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* C = B*R^T */
-    ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
-    ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatTransposeMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);*/
-
-    /* Test MAT_REUSE_MATRIX - reuse symbolic C */
-    ierr = MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    if (size == 1){
+      ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
+      ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
+      
+      /* Test MAT_REUSE_MATRIX - reuse symbolic C */
+      ierr = MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     
-    /* Check */
-    ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
-    ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
-    if (!flg){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatMatTransposeMult()\n");
+      /* Check */
+      ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
+      ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
+      if (!flg){
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatMatTransposeMult()\n");
+      }
+      ierr = MatDestroy(&C1);CHKERRQ(ierr);  
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&C1);CHKERRQ(ierr);  
     ierr = MatDestroy(&P);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 
   /* Test MatPtAP() */

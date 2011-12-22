@@ -28,8 +28,9 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
-    ierr = PetscFree(ptap->api);CHKERRQ(ierr);
-    ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
+    ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
+    if (ptap->api){ierr = PetscFree(ptap->api);CHKERRQ(ierr);}
+    if (ptap->apj){ierr = PetscFree(ptap->apj);CHKERRQ(ierr);}
   }
   if (ptap->merge) {
     Mat_Merge_SeqsToMPI  *merge=ptap->merge;
@@ -127,6 +128,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscScalar          *vals;
 
   PetscFunctionBegin;
+  /* check if matrix local sizes are compatible */
+  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend){
+    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  }
+  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend){
+    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%D, %D) != Prow (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
+  }
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -537,15 +546,11 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             *api,*apj,*coi,*coj; 
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend; 
   PetscInt             sparse_axpy;
-  PetscLogDouble       t0,tf,etime=0.0,t00,tff,time_matupdate=0.0,time_malloc=0.0,time_Cseq0=0.0,time_Cseq1=0.0,time_setvals=0.0;
 
   PetscFunctionBegin;
-  /* ierr = MPI_Barrier(comm);CHKERRQ(ierr); */
-  ierr = PetscGetTime(&t00);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ptap  = c->ptap;
   merge = ptap->merge;
 
@@ -558,10 +563,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MatMPIAIJGetLocalMat(P,MAT_REUSE_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
   }
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_matupdate += tf-t0;
-
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr); 
   /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
   /*--------------------------------------------------------------*/
   /* get data from symbolic products */
@@ -578,9 +579,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   owners = merge->rowmap->range;
   ierr   = PetscMalloc((bi[cm]+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
   ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_malloc += tf-t0;
-
+ 
   api = ptap->api; apj = ptap->apj;
   /* flag 'sparse_axpy' determines which implementations to be used:
        0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of a dense array apa; (default)
@@ -597,7 +596,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     for (i=0; i<am; i++) {
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
       /*------------------------------------------------------------*/
       apJ = apj + api[i];
@@ -637,12 +635,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq0 += tf - t0;
-
+      
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       apnz = api[i+1] - api[i];
       /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
       pnz = po->i[i+1] - po->i[i];
@@ -680,8 +675,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
      
       /* zero the current row of A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq1 += tf - t0;
     }
   } else if (sparse_axpy == 1){  /* Perform one sparse axpy */
     /*------------------------------------------------------*/
@@ -690,7 +683,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     for (i=0; i<am; i++) {
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
       /*------------------------------------------------------------*/
       apJ = apj + api[i];
@@ -730,10 +722,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq0 += tf - t0;
-
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
       apnz = api[i+1] - api[i];
@@ -778,8 +767,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
      
       /* zero the current row of A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq1 += tf - t0;
     }
   } else if (sparse_axpy == 2){/* Perform two sparse axpy */
     /*----------------------------------------------------*/
@@ -789,7 +776,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
     pA=pa_loc;
     for (i=0; i<am; i++) {
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       /* form i-th sparse row of A*P */
       apnz = api[i+1] - api[i];
       apJ  = apj + api[i];
@@ -829,10 +815,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq0 += tf - t0;
-
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
       pnz = pi_loc[i+1] - pi_loc[i];
@@ -858,8 +841,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       pA += pnz;
       /* zero the current row info for A*P */
       ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
-      ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-      time_Cseq1 += tf - t0;
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"sparse_axpy only takes values 0, 1 and 2");
   ierr = PetscFree(apa);CHKERRQ(ierr);
@@ -888,9 +869,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   /* 4) insert local Cseq and received values into Cmpi */
   /*------------------------------------------------------*/
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr); 
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
-
   for (k=0; k<merge->nrecv; k++){
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
@@ -917,28 +896,17 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           }
         }
         nextrow[k]++; nextci[k]++;
+        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
       } 
     }
     ierr = MatSetValues(C,1,&row,bnz,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
   } 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_setvals += tf-t0;
 
   ierr = PetscFree(ba);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
-
-  ierr = PetscGetTime(&tff);CHKERRQ(ierr);
-  etime += tff - t00;
-  /*
-  PetscInt prid=0;
-  if (rank == prid){
-   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PtAPNum time %g = matupdate %g + malloc %g + Cseq %g + %g + setvals %g\n",rank,etime,time_matupdate,time_malloc,time_Cseq0,time_Cseq1,time_setvals);
-  }
-   */
   PetscFunctionReturn(0);
 }
