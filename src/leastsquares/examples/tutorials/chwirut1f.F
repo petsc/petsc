@@ -43,6 +43,7 @@
       PetscReal      zero
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
+      PetscReal      cnorm(100)! cnorm history
       TaoSolverTerminationReason reason
 
       
@@ -101,7 +102,7 @@
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetHistory(tao,hist,resid,PETSC_NULL_INTEGER,             &
+      call TaoSetHistory(tao,hist,resid,cnorm,                          &
      &     100,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
