@@ -1084,15 +1084,12 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
-  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
+  Mat_MPIAIJ           *p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ           *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
-  Mat_SeqAIJ           *p_loc,*p_oth; 
   Mat_PtAPMPI          *ptap;
-  PetscInt             *adi=ad->i,*aoi=ao->i,*adj,*aoj,*apJ,nextp;
-  PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pj;
-  PetscInt             i,j,k,anz,pnz,apnz,nextap,row,*cj;
-  MatScalar            *ada,*aoa,*apa,*pa,*ca,*pa_loc,*pa_oth,valtmp;
+  PetscInt             *adj,*apJ;
+  PetscInt             i,j,k,anz,pnz,row,*cj;
+  MatScalar            *ada,*apa,*ca,valtmp;
   PetscInt             am=A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n; 
   MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
@@ -1103,7 +1100,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   MPI_Status           *status;
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba; 
   PetscInt             *api,*apj,*coi,*coj; 
-  PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend; 
+  PetscInt             *poJ=po->j,*pdJ=pd->j; 
   PetscInt             sparse_axpy;
   Mat                  A_loc;
   Mat_SeqAIJ           *a_loc;
@@ -1268,7 +1265,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscInt             *pdti,*pdtj,*poti,*potj,*ptJ;
   PetscInt             nnz; 
   PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,k,pnz,row;
-  PetscInt             am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n;  
+  PetscInt             am=A->rmap->n,pn=P->cmap->n;  
   PetscBT              lnkbt;
   MPI_Comm             comm=((PetscObject)A)->comm;
   PetscMPIInt          size,rank,tagi,tagj,*len_si,*len_s,*len_ri; 
