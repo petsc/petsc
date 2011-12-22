@@ -17,7 +17,6 @@ extern PetscErrorCode TaoCreate_GPCG(TaoSolver);
 extern PetscErrorCode TaoCreate_BQPIP(TaoSolver);
 
 extern PetscErrorCode TaoCreate_POUNDERS(TaoSolver);
-extern PetscErrorCode TaoCreate_POUNDER(TaoSolver);
 
 extern PetscErrorCode TaoCreate_FD(TaoSolver);
 
@@ -93,7 +92,6 @@ PetscErrorCode TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoCreate_NM",TaoCreate_NM); CHKERRQ(ierr);
 
   ierr = TaoSolverRegisterDynamic("tao_pounders",path,"TaoCreate_POUNDERS",TaoCreate_POUNDERS); CHKERRQ(ierr);
-  ierr = TaoSolverRegisterDynamic("tao_pounder",path,"TaoCreate_POUNDER",TaoCreate_POUNDER); CHKERRQ(ierr);
 
 
 

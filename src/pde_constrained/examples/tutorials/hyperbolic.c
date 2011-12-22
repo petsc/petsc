@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   AppCtx user;
   IS is_allstate,is_alldesign;
   PetscInt lo,hi,hi2,lo2,ksp_old;
-  PetscBool flag;
+  PetscBool flag,showtime;
   PetscInt ntests = 1;
   PetscLogDouble v1,v2;
   PetscInt i;
@@ -140,6 +140,8 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
   TaoInitialize(&argc, &argv, (char*)0,help);
 
+  showtime = PETSC_FALSE;
+  ierr = PetscOptionsBool("-showtime","Display time elapsed","",showtime,&showtime,&flag); CHKERRQ(ierr);
   user.mx = 32;
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag); CHKERRQ(ierr);
   user.nt = 16;
@@ -150,6 +152,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,&flag); CHKERRQ(ierr);
   user.T = 1.0/32.0;
   ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,&flag); CHKERRQ(ierr);
+
 
   user.tau[0] = 1e-4;
   ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tau[0],&user.tau[0],&flag); CHKERRQ(ierr);
@@ -239,7 +242,9 @@ int main(int argc, char **argv)
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
+    if (showtime) {
+      PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1); CHKERRQ(ierr);
+    }
     PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its-ksp_old); CHKERRQ(ierr);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);

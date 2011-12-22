@@ -302,9 +302,9 @@ PetscErrorCode TaoCreate_ASILS(TaoSolver tao)
 {
   TAO_SSLS *asls;
   PetscErrorCode  ierr;
+  const char *armijo_type = TAOLINESEARCH_ARMIJO;
 
   PetscFunctionBegin;
-  const char *armijo_type = TAOLINESEARCH_ARMIJO;
   ierr = PetscNewLog(tao,TAO_SSLS,&asls); CHKERRQ(ierr);
   tao->data = (void*)asls;
   tao->ops->solve = TaoSolve_ASILS;

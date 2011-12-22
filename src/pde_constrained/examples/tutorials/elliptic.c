@@ -132,7 +132,7 @@ int main(int argc, char **argv)
   TaoSolver tao;
   TaoSolverTerminationReason reason;
   AppCtx user;
-  PetscBool flag;
+  PetscBool flag,showtime;
   PetscInt ntests = 1;
   PetscLogDouble v1,v2;
   PetscInt i;
@@ -140,6 +140,8 @@ int main(int argc, char **argv)
 
   PetscInitialize(&argc, &argv, (char*)0,help);
   TaoInitialize(&argc, &argv, (char*)0,help);
+  showtime = PETSC_FALSE;
+  ierr = PetscOptionsBool("-showtime","Display time elapsed","",showtime,&showtime,&flag); CHKERRQ(ierr);
   user.mx = 8;
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag); CHKERRQ(ierr);
   user.ns = 6;
@@ -206,7 +208,9 @@ int main(int argc, char **argv)
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
+    if (showtime) {
+      PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1); CHKERRQ(ierr);
+    }
     PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its); CHKERRQ(ierr);
     ierr = VecCopy(x0,user.x); CHKERRQ(ierr);
   }

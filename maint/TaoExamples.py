@@ -187,7 +187,6 @@ class TaoExamples(ExampleList):
 
 
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="rosenbrock1",section="unconstrained"))
-        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor -tao_frtol 0 -tao_fatol 0",method="pounder",tags=["rosenbrock","single","unconstrained","c","pounder"],name="rosenbrock1_2",section="unconstrained"))
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="ntr",tags=["rosenbrock","single","unconstrained","c","ntr"],name="rosenbrock1_3",section="unconstrained"))
         self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="rosenbrock1f",section="unconstrained"))
 
