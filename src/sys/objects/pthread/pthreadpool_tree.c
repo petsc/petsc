@@ -45,12 +45,14 @@ extern int* ThreadCoreAffinity;
 
 typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_tree;
 
+typedef void* (*pfunc)(void*);
+
 /* Tree thread pool data structure */
 typedef struct {
   pthread_mutex_t** mutexarray;
   pthread_cond_t**  cond1array;
   pthread_cond_t** cond2array;
-  void* (*pfunc)(void*);
+  pfunc* funcArr;
   void** pdata;
   PetscBool startJob;
   estat_tree eJobStat;
@@ -155,11 +157,8 @@ void* PetscThreadFunc_Tree(void* arg) {
       }
     }
     /* do your job */
-    if(job_tree.pdata==NULL) {
-      iterr = (PetscErrorCode)(long int)job_tree.pfunc(job_tree.pdata);
-    }
-    else {
-      iterr = (PetscErrorCode)(long int)job_tree.pfunc(job_tree.pdata[ThreadId+PetscMainThreadShareWork]);
+    if(job_tree.funcArr[ThreadId+PetscMainThreadShareWork]) {
+      iterr = (PetscErrorCode)(long int)job_tree.funcArr[ThreadId+PetscMainThreadShareWork](job_tree.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(iterr!=0) {
       ithreaderr_tree = 1;
@@ -244,7 +243,7 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
     *(job_tree.arrThreadStarted[i])  = PETSC_FALSE;
     *(job_tree.arrThreadReady[i])    = PETSC_FALSE;
   }
-  job_tree.pfunc = NULL;
+  job_tree.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_tree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_tree.startJob = PETSC_FALSE;
   job_tree.eJobStat = JobInitiated;
@@ -254,6 +253,8 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_tree[i] = i;
+    job_tree.funcArr[i+PetscMainThreadShareWork] = NULL;
+    job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
     status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_tree[i]);
     /* should check status */
   }
@@ -280,6 +281,7 @@ PetscErrorCode PetscThreadFinalize_Tree() {
   free(arrcond2);
   free(arrstart);
   free(arrready);
+  free(job_tree.funcArr);
   free(job_tree.pdata);
   free(pVal_tree);
 
@@ -304,17 +306,35 @@ PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n) {
   PetscErrorCode ijoberr = 0;
 
   MainWait();
-  job_tree.pfunc = pFunc;
-  job_tree.pdata = data;
   job_tree.startJob = PETSC_TRUE;
   for(i=0; i<PetscMaxThreads; i++) {
+    if(pFunc == FuncFinish) {
+      job_tree.funcArr[i+PetscMainThreadShareWork] = pFunc;
+      job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
+    } else {
+      /* Currently this model assumes that the first n threads will be only doing the useful work while
+	 the remaining threads will be just spinning.
+	 Need to modify this model when threads with specific affinities, e.g., n threads pinned to only
+	 one socket,or n threads spread across different sockets, are requested.
+      */
+      if (i < n-PetscMainThreadShareWork) {
+	job_tree.funcArr[i+PetscMainThreadShareWork] = pFunc;
+	job_tree.pdata[i+PetscMainThreadShareWork] = data[i+PetscMainThreadShareWork];
+      }
+      else {
+	job_tree.funcArr[i+PetscMainThreadShareWork] = NULL;
+	job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
+      }
+    }
     *(job_tree.arrThreadStarted[i]) = PETSC_FALSE;
   }
   job_tree.eJobStat = JobInitiated;
   ierr = pthread_cond_signal(job_tree.cond2array[0]);
   if(pFunc!=FuncFinish) {
     if(PetscMainThreadShareWork) {
-      ijoberr = (PetscErrorCode)(long int)job_tree.pfunc(job_tree.pdata[0]);
+      job_tree.funcArr[0] = pFunc;
+      job_tree.pdata[0] = data[0];
+      ijoberr = (PetscErrorCode)(long int)job_tree.funcArr[0](job_tree.pdata[0]);
     }
     MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
