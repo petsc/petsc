@@ -22,6 +22,10 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 
+/*
+    GLOBAL - The sparse matrix and right hand side are all stored initially on process 0. Should be called centralized
+    DISTRIBUTED - The sparse matrix and right hand size are initially stored across the entire MPI communicator.
+*/
 typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 const char *SuperLU_MatInputModes[] = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
 

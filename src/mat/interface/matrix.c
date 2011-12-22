@@ -3168,6 +3168,11 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
    See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
    at a time.
 
+   When using SuperLU_Dist as a parallel solver PETSc will use the SuperLU_Dist functionality to solve multiple right hand sides simultaneously. For MUMPS 
+   it calls a separate solve for each right hand side since MUMPS does not yet support distributed right hand sides.
+
+   Since the resulting matrix X must always be dense we do not support sparse representation of the matrix B.
+
    Level: developer
 
    Concepts: matrices^triangular solves
