@@ -2504,25 +2504,25 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVI - Various solvers for variational inequalities based on Newton's method
+      SNESVIRSAUG - Reduced space active set solver that augments the Jacobian with additional variables to enforce constraints instead of by eliminating, for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with 
-                                additional variables that enforce the constraints
++   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
 
    Level: beginner
 
-.seealso:  SNESVISetVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESTR, SNESLineSearchSet(), 
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_VI"
-PetscErrorCode  SNESCreate_VI(SNES snes)
+PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_VIRSAUG      *vi;
@@ -2547,6 +2547,8 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   vi->const_tol              =  2.2204460492503131e-16;
   vi->checkredundancy        = PETSC_NULL;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VIRSAUG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
 
