@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = gpcglinesearch.h
 OBJSC    = gpcglinesearch.o
 OBJSF    = 
-LIBBASE  = libtaolinesearch
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/linesearch/impls/gpcglinesearch/
 

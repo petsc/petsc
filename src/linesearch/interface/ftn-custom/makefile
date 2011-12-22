@@ -7,7 +7,7 @@ OBJSC =ztaolinesearchf.o
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtaosolver
+LIBBASE=libtao
 LOCDIR=src/linesearch/interface/ftn-custom/
 
 include ${TAO_DIR}/conf/tao_base 

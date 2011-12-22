@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = cg.h
 OBJSC    = cg.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/unconstrained/impls/cg/
 

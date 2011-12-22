@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = bqpip.h
 OBJSC    = bqpip.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/bound/impls/bqpip/
 

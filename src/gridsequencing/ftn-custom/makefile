@@ -8,7 +8,7 @@ OBJSC =ztaodmf.o
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtaodm
+LIBBASE=libtao
 LOCDIR=src/gridsequencing/ftn-custom/
 
 include ${TAO_DIR}/conf/tao_base 

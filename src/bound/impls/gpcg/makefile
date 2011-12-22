@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = gpcg.h
 OBJSC    = gpcg.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/bound/impls/gpcg/
 

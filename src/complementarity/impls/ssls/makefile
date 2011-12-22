@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = ssls.h
 OBJSC    = ssls.o ssils.o ssfls.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/complementarity/impls/ssls/
 

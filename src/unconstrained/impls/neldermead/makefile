@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = neldermead.h
 OBJSC    = neldermead.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/unconstrained/impls/neldermead/
 

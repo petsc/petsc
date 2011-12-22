@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = lcl.h
 OBJSC    = lcl.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/pde_constrained/impls/lcl/
 

@@ -47,6 +47,4 @@ POUNDer
 add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 complimentarity isils, icp, rscs
 
-make install to put libs/headers in separate location
-one library
 

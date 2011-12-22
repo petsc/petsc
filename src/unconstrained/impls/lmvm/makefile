@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = lmvm.h
 OBJSC    = lmvm.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/unconstrained/impls/lmvm/
 

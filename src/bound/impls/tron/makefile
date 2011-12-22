@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = tron.h
 OBJSC    = tron.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/bound/impls/tron/
 

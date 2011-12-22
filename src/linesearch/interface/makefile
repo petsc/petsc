@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = linesearch.o dlregis_taolinesearch.o
 OBJSF    =
-LIBBASE  = libtaolinesearch
+LIBBASE  = libtao
 MANSEC   = taolinesearch
 LOCDIR   = src/linesearch/interface/
 

@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = armijo.h
 OBJSC    = armijo.o
 OBJSF    = 
-LIBBASE  = libtaolinesearch
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/linesearch/impls/armijo/
 

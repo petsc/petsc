@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = lmvmmat.h adamat.h submatfree.h
 OBJSC    =  lmvmmat.o adamat.o submatfree.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = taosolver
 LOCDIR   = src/matrix/
 

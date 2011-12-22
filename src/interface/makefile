@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  =
 OBJSC    = taosolver.o taosolver_fg.o taosolverregi.o taosolver_hj.o taosolver_bounds.o dlregistaosolver.o tao_init.o fdiff.o fdtest.o
 OBJSF    =
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = taosolver
 LOCDIR   = src/interface/
 

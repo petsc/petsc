@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = pounder.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/unconstrained/impls/pounder/
 

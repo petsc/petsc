@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = ntr.h
 OBJSC    = ntr.o
 OBJSF    = 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/unconstrained/impls/ntr/
 

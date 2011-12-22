@@ -8,7 +8,7 @@ OBJSC =ztaosolverf.o ztaof.o
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtaosolver
+LIBBASE=libtao
 LOCDIR=src/interface/ftn-custom/
 
 include ${TAO_DIR}/conf/tao_base 

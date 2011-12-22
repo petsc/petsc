@@ -29,8 +29,8 @@
 # Get values for OOQP_LIB, APPSPACK_LIB
 # ??include ${TAO_DIR}/bmake/packages
 
-INSTALL_LIB_DIR	= ${TAO_DIR}/lib/${PETSC_ARCH}
-TAO_LIB_DIR     = ${TAO_DIR}/lib/${PETSC_ARCH}
+INSTALL_LIB_DIR	= ${TAO_DIR}/${PETSC_ARCH}/lib
+TAO_LIB_DIR     = ${TAO_DIR}/${PETSC_ARCH}/lib
 TAO_INCLUDE	= -I${TAO_DIR} -I${TAO_DIR}/include 
 CPP_FLAGS	= ${TAO_INCLUDE} 
 
@@ -46,7 +46,7 @@ F_SH_LIB_PATH	= ${FC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_F_SH_LIB_PATH} ${PETSC_C
 # is important!
 #
 # ??TAO_BLIB	= -L${TAO_LIB_DIR} -ltao ${PETSC_SYS_LIB}
-TAO_LIB		= -L${TAO_LIB_DIR}  -ltaosolver -ltaolinesearch -ltaosolver -ltao
+TAO_LIB		= -L${TAO_LIB_DIR}  -ltao
 
 #
 # Link if you are using the TAO Fortran interface.
@@ -55,9 +55,7 @@ TAO_LIB		= -L${TAO_LIB_DIR}  -ltaosolver -ltaolinesearch -ltaosolver -ltao
 #
 # Some variables used to build shared libraries
 #
-SHLIBS       = libtao libtaosolver libtaolinesearch
-
-#??libtaoga libappspacktao libooqptao libesitao taoadic ${SIDL_SHLIBS} ${CCA_SHLIBS}
+SHLIBS       = libtao
 
 LIBNAME = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 
