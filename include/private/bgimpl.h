@@ -14,6 +14,7 @@ struct _n_PetscBGDataLink {
 };
 
 struct _n_PetscBGWinLink {
+  PetscBool      inuse;
   size_t         bytes;
   void           *addr;
   MPI_Win        win;
