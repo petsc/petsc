@@ -119,8 +119,8 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
   for(i=0; i<N; i++) {
     pVal_lockfree[i] = i;
     job_lockfree.my_job_status[i] = 1;
-    job_lockfree.funcArr[i] = NULL;
-    job_lockfree.pdata[i] = NULL;
+    job_lockfree.funcArr[i+PetscMainThreadShareWork] = NULL;
+    job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
     status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_lockfree[i]);
   }
   PetscFunctionReturn(0);
