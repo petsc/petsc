@@ -1970,15 +1970,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
 
-  if (!snes->vec_func) {
-    if (snes->vec_rhs) {
-      ierr = VecDuplicate(snes->vec_rhs,&snes->vec_func);CHKERRQ(ierr);
-    } else if (snes->vec_sol) {
-      ierr = VecDuplicate(snes->vec_sol,&snes->vec_func);CHKERRQ(ierr);
-    } else if (snes->dm) {
-      ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
-    }
-  }
+  ierr = SNESGetFunction(snes,&snes->vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
 
@@ -3350,7 +3342,7 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 /*@C
    SNESGetFunction - Returns the vector where the function is stored.
 
-   Not Collective, but Vec is parallel if SNES is parallel
+   Not Collective, but Vec is parallel if SNES is parallel. Collective if Vec is requested, but has not been created yet.
 
    Input Parameter:
 .  snes - the SNES context
@@ -3368,9 +3360,22 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 @*/
 PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (r)    *r    = snes->vec_func;
+  if (r) {
+    if (!snes->vec_func) {
+      if (snes->vec_rhs) {
+        ierr = VecDuplicate(snes->vec_rhs,&snes->vec_func);CHKERRQ(ierr);
+      } else if (snes->vec_sol) {
+        ierr = VecDuplicate(snes->vec_sol,&snes->vec_func);CHKERRQ(ierr);
+      } else if (snes->dm) {
+        ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
+      }
+    }
+    *r = snes->vec_func;
+  }
   if (func) *func = snes->ops->computefunction;
   if (ctx)  *ctx  = snes->funP;
   PetscFunctionReturn(0);
