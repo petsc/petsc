@@ -114,13 +114,16 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
 #define __FUNCT__ "PetscBGConvertPartition"
 PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS partition, PetscBG *bg)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscBG        bgCount;
-  PetscBGNode   *remoteRanks;
-  PetscInt       numRemoteRanks = 0;
-  PetscInt       localSize, *partSizes = PETSC_NULL, *partOffsets = PETSC_NULL;
-  PetscMPIInt    numProcs, rank, p;
-  PetscErrorCode ierr;
+  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  PetscBG         bgCount;
+  PetscBGNode    *remoteRanks, *remotePoints;
+  IS              renumbering;
+  PetscInt       *renumArray;
+  PetscInt        numRemoteRanks = 0, p, i;
+  PetscInt        localSize[2], partSize, *partSizes = PETSC_NULL, *partOffsets = PETSC_NULL;
+  const PetscInt *partArray;
+  PetscMPIInt     numProcs, rank;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
@@ -144,24 +147,48 @@ PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS parti
     numRemoteRanks = numProcs;
   }
   ierr = PetscMalloc(numRemoteRanks * sizeof(PetscBGNode), &remoteRanks);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numRemoteRanks,PetscInt,&partSizes,numRemoteRanks,PetscInt,&partOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*numRemoteRanks,PetscInt,&partSizes,2*numRemoteRanks,PetscInt,&partOffsets);CHKERRQ(ierr);
   for(p = 0; p < numRemoteRanks; ++p) {
     remoteRanks[p].rank  = p;
     remoteRanks[p].index = 0;
-    ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(partSection, p, &partSizes[2*p+0]);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(partSection, p, &partSizes[2*p+1]);CHKERRQ(ierr);
   }
   ierr = PetscBGCreate(comm, &bgCount);CHKERRQ(ierr);
   ierr = PetscBGSetGraph(bgCount, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscBGView(bgCount, PETSC_NULL);CHKERRQ(ierr);
-  localSize = 0;
-  ierr = PetscBGFetchAndOpBegin(bgCount, MPIU_INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm, "localSize %d\n", localSize);CHKERRQ(ierr);
+  localSize[0] = 0; localSize[1] = 0;
+  ierr = PetscBGFetchAndOpBegin(bgCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscBGFetchAndOpEnd(bgCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(comm, "localSize %d %d\n", localSize[0], localSize[1]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   for(p = 0; p < numRemoteRanks; ++p) {
     ierr = PetscPrintf(comm, "offset for rank %d: %d\n", p, partOffsets[p]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
   ierr = PetscBGDestroy(&bgCount);CHKERRQ(ierr);
+  /* Create the inverse graph for the partition */
+  ierr = PetscMalloc(localSize[0] * sizeof(PetscBGNode), &remotePoints);CHKERRQ(ierr);
+  for(i = 0; i < localSize[0]; ++i) {
+    remotePoints[i].rank  = 0;
+    remotePoints[i].index = localSize[1] + i;
+  }
+  ierr = ISGetLocalSize(partition, &partSize);CHKERRQ(ierr);
+  ierr = PetscBGCreate(comm, bg);CHKERRQ(ierr);
+  ierr = PetscBGSetGraph(*bg, partSize, localSize[0], PETSC_NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Send global point numbers
+     - owned values are sent
+     - local values are received
+  */
+  ierr = PetscMalloc(localSize[0] * sizeof(PetscInt), &renumArray);CHKERRQ(ierr);
+  ierr = ISGetIndices(partition, &partArray);CHKERRQ(ierr);
+  ierr = PetscBGBcastBegin(*bg, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
+  ierr = PetscBGBcastEnd(*bg, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(partition, &partArray);CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(comm, localSize[0], renumArray, PETSC_OWN_POINTER, &renumbering);CHKERRQ(ierr);
+  ierr = ISView(renumbering, PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISDestroy(&renumbering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -171,6 +198,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscBG        partBG;
   IS             cellPart,        part;
   PetscSection   cellPartSection, partSection;
   PetscMPIInt    numProcs, rank;
@@ -218,8 +246,8 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscBGConvertPartition(dm, partSection, part, PETSC_NULL);CHKERRQ(ierr);
-
+  ierr = PetscBGConvertPartition(dm, partSection, part, &partBG);CHKERRQ(ierr);
+  ierr = PetscBGDestroy(&partBG);CHKERRQ(ierr);
 #if 0
   /* Create the remote bases -- We probably do not need this BG, only ones buikt on this. We do need to know how many points we are getting */
   {
