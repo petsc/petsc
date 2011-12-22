@@ -35,29 +35,30 @@
 extern PetscBool    PetscThreadGo;
 extern PetscMPIInt  PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
+extern PetscInt     PetscMainThreadShareWork;
 
 PetscErrorCode ithreaderr_true = 0;
 int*           pVal_true;
-#if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
-static pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
-#endif
 
 #define CACHE_LINE_SIZE 64
 extern int* ThreadCoreAffinity;
 
+typedef void* (*pfunc)(void*);
+
 /* true thread pool data structure */
 #if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
+pthread_barrier_t pbarr;
 typedef struct {
   pthread_mutex_t mutex;
   pthread_cond_t cond;
-  void* (*pfunc)(void*);
+  pfunc *funcArr;
   void** pdata;
-  pthread_barrier_t* pbarr;
   int iNumJobThreads;
   int iNumReadyThreads;
   PetscBool startJob;
 } sjob_true;
-sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,NULL,0,0,PETSC_FALSE};
+
+sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,0,0,PETSC_FALSE};
 #endif
 
 static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER; 
@@ -82,7 +83,7 @@ extern void* FuncFinish(void*);
   ----------------------------
 */
 void* PetscThreadFunc_True(void* arg) {
-  int ierr,iVal;
+  int ierr;
   PetscErrorCode iterr;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -105,19 +106,15 @@ void* PetscThreadFunc_True(void* arg) {
     while(job_true.startJob==PETSC_FALSE&&job_true.iNumJobThreads==0) {
       /* upon entry, automically releases the lock and blocks
        upon return, has the lock */
-
       ierr = pthread_cond_wait(&job_true.cond,&job_true.mutex);
     }
     job_true.startJob = PETSC_FALSE;
     job_true.iNumJobThreads--;
     job_true.iNumReadyThreads--;
-    iVal = PetscMaxThreads-job_true.iNumReadyThreads-1;
     pthread_mutex_unlock(&job_true.mutex);
-    if(job_true.pdata==NULL) {
-      iterr = (PetscErrorCode)(long int)job_true.pfunc(job_true.pdata);
-    }
-    else {
-      iterr = (PetscErrorCode)(long int)job_true.pfunc(job_true.pdata[iVal]);
+
+    if(job_true.funcArr[ThreadId+PetscMainThreadShareWork]) {
+      iterr = (PetscErrorCode)(long int)job_true.funcArr[ThreadId+PetscMainThreadShareWork](job_true.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(iterr!=0) {
       ithreaderr_true = 1;
@@ -126,7 +123,7 @@ void* PetscThreadFunc_True(void* arg) {
     /* the barrier is necessary BECAUSE: look at job_true.iNumReadyThreads
       what happens if a thread finishes before they all start? BAD!
      what happens if a thread finishes before any else start? BAD! */
-    pthread_barrier_wait(job_true.pbarr); /* ensures all threads are finished */
+    pthread_barrier_wait(&pbarr); /* ensures all threads are finished */
     /* reset job */
     if(PetscThreadGo) {
       pthread_mutex_lock(&job_true.mutex);
@@ -150,18 +147,18 @@ PetscErrorCode PetscThreadInitialize_True(PetscInt N)
   pVal_true = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-  BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); /* BarrPoint[0] makes no sense, don't use it! */
-  job_true.pdata = (void**)malloc(N*sizeof(void*));
+  /* Initialize the barrier */
+  status = pthread_barrier_init(&pbarr,NULL,PetscMaxThreads);
+  job_true.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
+  job_true.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   for(i=0; i<N; i++) {
     pVal_true[i] = i;
+    job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
+    job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);
-    /* error check to ensure proper thread creation */
-    status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
-    /* should check error */
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadFinalize_True"
@@ -176,8 +173,9 @@ PetscErrorCode PetscThreadFinalize_True() {
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);
   }
-  free(BarrPoint);
   free(PetscThreadPoint);
+  free(job_true.funcArr);
+  free(job_true.pdata);
   free(pVal_true);
 
   PetscFunctionReturn(0);
@@ -197,17 +195,41 @@ void MainWait_True() {
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_True"
 PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
-  int ierr;
+  int i,ierr;
   PetscErrorCode ijoberr = 0;
 
   MainWait();
-  job_true.pfunc = pFunc;
-  job_true.pdata = data;
-  job_true.pbarr = &BarrPoint[n];
-  job_true.iNumJobThreads = n;
+  for(i=0; i<PetscMaxThreads; i++) {
+    if(pFunc == FuncFinish) {
+      job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
+      job_true.pdata[i+PetscMainThreadShareWork] = NULL;
+    } else {
+      /* Currently this model assumes that the first n threads will be only doing the useful work while
+	 the remaining threads will be just spinning.
+	 Need to modify this model when threads with specific affinities, e.g., n threads pinned to only
+	 one socket,or n threads spread across different sockets, are requested.
+      */
+      if (i < n-PetscMainThreadShareWork) {
+	job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
+	job_true.pdata[i+PetscMainThreadShareWork] = data[i+PetscMainThreadShareWork];
+      }
+      else {
+	job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
+	job_true.pdata[i+PetscMainThreadShareWork] = NULL;
+      }
+    }
+  }
+
+  job_true.iNumJobThreads = PetscMaxThreads;;
   job_true.startJob = PETSC_TRUE;
+  /* Tell the threads to go to work */
   ierr = pthread_cond_broadcast(&job_true.cond);
   if(pFunc!=FuncFinish) {
+    if(PetscMainThreadShareWork) {
+      job_true.funcArr[0] = pFunc;
+      job_true.pdata[0] = data[0];
+      ijoberr = (PetscErrorCode)(long int)job_true.funcArr[0](job_true.pdata[0]);
+    }
     MainWait(); /* why wait after? guarantees that job gets done */
   }
 
