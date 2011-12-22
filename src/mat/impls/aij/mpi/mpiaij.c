@@ -3128,7 +3128,16 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatInvertBlockDiagonal_MPIAIJ,
        0,
        MatGetSubMatricesParallel_MPIAIJ,
-/*129*/0
+/*129*/0,
+       MatTransposeMatMult_MPIAIJ_MPIAIJ,  
+       MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ,  
+       MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ,
+       0,
+/*134*/0,
+       0,
+       0,
+       0,
+       0
 };
 
 /* ----------------------------------------------------------------------------------------*/

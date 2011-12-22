@@ -123,16 +123,13 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j,ap_rmax=0;
   PetscReal            afill=1.0,afill_tmp;
-  PetscLogDouble       t0,tf,etime=0.0,t00,tff,time_matupdate=0.0,time_Cd=0.0,time_AP=0.0,time_Co=0.0;
   PetscInt             rstart = P->cmap->rstart,rmax;
   PetscScalar          *vals;
 
   PetscFunctionBegin;
-  ierr = PetscGetTime(&t00);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
   ptap->reuse    = MAT_INITIAL_MATRIX;
@@ -156,12 +153,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   pi_loc = p_loc->i; pj_loc = p_loc->j; 
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_matupdate += tf-t0;
-
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = PetscMalloc((am+1)*sizeof(PetscInt),&api);CHKERRQ(ierr);
   api[0] = 0;
 
@@ -227,16 +220,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]);
   if (afill_tmp > afill) afill = afill_tmp;
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_AP += tf-t0;
-#if defined(DEBUG_MATPTAP)
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] AP is done\n",rank);
-#endif
-
   /* determine symbolic Co=(p->B)^T*AP - send to others */
   /*----------------------------------------------------*/
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* then, compute symbolic Co = (p->B)^T*AP */
@@ -395,9 +380,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscFree(sstatus);CHKERRQ(ierr);
   ierr = PetscFree(buf_s);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_Co += tf-t0;
-
 #if defined(DEBUG_MATPTAP)
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Co is done\n",rank);
@@ -405,7 +387,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* compute the local portion of C (mpi mat) */
   /*------------------------------------------*/
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
 
   /* allocate bi array and free space for accumulating nonzero column info */
@@ -473,17 +454,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  time_Cd += tf-t0;
-
   /* create symbolic parallel matrix Cmpi - why cannot be assembled in Numeric part - check runex55_SA ?  */
   /*------------------------------------------------------------------------------------------------------*/
   ierr = PetscMalloc((rmax+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   ierr = PetscMemzero(vals,rmax*sizeof(PetscScalar));CHKERRQ(ierr);
-  /*
-  ierr = PetscSynchronizedPrintf(comm, "[%d] pn %D, pN %D, cstart %D, rmax %D\n", rank,pn,pN,rstart,rmax);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-   */
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -532,18 +506,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   } else {
     ierr = PetscInfo(Cmpi,"Empty matrix product\n");CHKERRQ(ierr);
   }
-#endif
-  ierr = PetscGetTime(&tff);CHKERRQ(ierr);
-  etime += tff - t00;
-  /*
-  PetscInt prid=0;
-  if (rank == prid){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PtAPSym time %g = matsetup %g + AP %g + Co %g + Cd %g\n",rank,etime,time_matupdate,time_AP,time_Co,time_Cd);
-  }
-   */
-#if defined(DEBUG_MATPTAP)
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] exit  MatPtAPSymbolic_MPIAIJ_MPIAIJ\n",rank);
 #endif
   PetscFunctionReturn(0);
 }

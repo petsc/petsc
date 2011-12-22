@@ -109,6 +109,11 @@ extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult_32(Mat);
 extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
+
+extern PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 

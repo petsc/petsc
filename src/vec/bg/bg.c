@@ -61,6 +61,7 @@ PetscErrorCode PetscBGReset(PetscBG bg)
 {
   PetscErrorCode ierr;
   PetscBGDataLink link,next;
+  PetscBGWinLink  wlink,wnext;
   PetscInt i;
 
   PetscFunctionBegin;
@@ -81,6 +82,13 @@ PetscErrorCode PetscBGReset(PetscBG bg)
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   bg->link = PETSC_NULL;
+  for (wlink=bg->wins; wlink; wlink=wnext) {
+    wnext = wlink->next;
+    if (wlink->inuse) SETERRQ1(((PetscObject)bg)->comm,PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
+    ierr = MPI_Win_free(&wlink->win);CHKERRQ(ierr);
+    ierr = PetscFree(wlink);CHKERRQ(ierr);
+  }
+  bg->wins = PETSC_NULL;
   if (bg->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->ingroup);CHKERRQ(ierr);}
   if (bg->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->outgroup);CHKERRQ(ierr);}
   ierr = PetscBGDestroy(&bg->multi);CHKERRQ(ierr);
@@ -584,6 +592,7 @@ PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBo
   ierr = MPI_Win_create(array,(MPI_Aint)bytes*bg->nowned,(PetscMPIInt)bytes,MPI_INFO_NULL,((PetscObject)bg)->comm,&link->win);CHKERRQ(ierr);
   link->epoch = epoch;
   link->next = bg->wins;
+  link->inuse = PETSC_TRUE;
   bg->wins = link;
   *win = link->win;
 

@@ -43,12 +43,14 @@ static int*         pVal_main;
 #define CACHE_LINE_SIZE 64  /* used by 'chain', 'main','tree' thread pools */
 extern int* ThreadCoreAffinity;
 
+typedef void* (*pfunc)(void*);
+
 /* main thread pool data structure */
 typedef struct {
   pthread_mutex_t** mutexarray;
   pthread_cond_t**  cond1array;
   pthread_cond_t** cond2array;
-  void* (*pfunc)(void*);
+  pfunc *funcArr;
   void** pdata;
   PetscBool** arrThreadReady;
 } sjob_main;
@@ -108,11 +110,8 @@ void* PetscThreadFunc_Main(void* arg) {
 	/* (job_main.arrThreadReady[ThreadId])   = PETSC_FALSE; */
     }
     ierr = pthread_mutex_unlock(job_main.mutexarray[ThreadId]);
-    if(job_main.pdata==NULL) {
-      iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata);
-    }
-    else {
-      iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata[ThreadId+PetscMainThreadShareWork]);
+    if(job_main.funcArr[ThreadId+PetscMainThreadShareWork]) {
+      iterr = (PetscErrorCode)(long int)job_main.funcArr[ThreadId+PetscMainThreadShareWork](job_main.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(iterr!=0) {
       ithreaderr = 1;
@@ -170,7 +169,7 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
     ierr = pthread_cond_init(job_main.cond2array[i],NULL);
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
-  job_main.pfunc = NULL;
+  job_main.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_main.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   pVal_main = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
@@ -178,6 +177,8 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_main[i] = i;
+    job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
+    job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);
     /* error check */
   }
@@ -203,6 +204,7 @@ PetscErrorCode PetscThreadFinalize_Main() {
   free(arrcond2);
   free(arrstart);
   free(arrready);
+  free(job_main.funcArr);
   free(job_main.pdata);
   free(pVal_main);
 
@@ -229,18 +231,37 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
   PetscErrorCode ijoberr = 0;
 
   MainWait(); /* you know everyone is waiting to be signalled! */
-  job_main.pfunc = pFunc;
-  job_main.pdata = data;
   for(i=0; i<PetscMaxThreads; i++) {
     *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
   }
   /* tell the threads to go to work */
   for(i=0; i<PetscMaxThreads; i++) {
+    if(pFunc == FuncFinish) {
+      job_main.funcArr[i+PetscMainThreadShareWork] = pFunc;
+      job_main.pdata[i+PetscMainThreadShareWork] = NULL;
+    } else {
+      /* Currently this model assumes that the first n threads will be only doing the useful work while
+	 the remaining threads will be just spinning.
+	 Need to modify this model when threads with specific affinities, e.g., n threads pinned to only
+	 one socket,or n threads spread across different sockets, are requested.
+      */
+      if (i < n-PetscMainThreadShareWork) {
+	job_main.funcArr[i+PetscMainThreadShareWork] = pFunc;
+	job_main.pdata[i+PetscMainThreadShareWork] = data[i+PetscMainThreadShareWork];
+      }
+      else {
+	job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
+	job_main.pdata[i+PetscMainThreadShareWork] = NULL;
+      }
+    }
+
     ierr = pthread_cond_signal(job_main.cond2array[i]);
   }
   if(pFunc!=FuncFinish) {
     if(PetscMainThreadShareWork) {
-      ijoberr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata[0]);
+      job_main.funcArr[0] = pFunc;
+      job_main.pdata[0] = data[0];
+      ijoberr = (PetscErrorCode)(long int)job_main.funcArr[0](job_main.pdata[0]);
     }
     MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
