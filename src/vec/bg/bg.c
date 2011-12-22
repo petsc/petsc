@@ -432,6 +432,7 @@ static PetscErrorCode MPIU_Type_get_contiguous_size(MPI_Datatype dtype,size_t *b
     {MPI_FLOAT,sizeof(float)},
     {MPI_DOUBLE,sizeof(double)},
     {MPIU_INT,sizeof(PetscInt)},
+    {MPIU_2INT,2*sizeof(PetscInt)},
     {MPIU_REAL,sizeof(PetscReal)},
     {MPIU_SCALAR,sizeof(PetscScalar)}
   };
