@@ -217,6 +217,7 @@ PetscErrorCode PetscBGSetRankOrder(PetscBG bg,PetscBool flg)
 
    Input Arguments:
 +  bg - bipartite graph
+.  nowned - number of owned points (these are possible targets for remote references)
 .  nlocal - number of local nodes referencing remote nodes
 .  ilocal - locations of local/ghosted nodes, or PETSC_NULL for contiguous storage
 .  localmode - copy mode for ilocal
