@@ -382,19 +382,21 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 + indis   -  IS of the indices found on the IS list
 - coloris -  IS of colors
 
-  Note: 
-+ The global colors assigned to the ISs of the local input list might not correspond to the
+  Notes:
+  The global colors assigned to the ISs of the local input list might not correspond to the
   local numbers of the ISs on that list, but the two *orderings* are the same: the global 
   colors assigned to the ISs on the local list form a strictly increasing sequence.
-. The ISs on the input list can belong to subcommunicators of comm, and the subcommunicators 
-  on the input IS list are assumed to be in a "deadlock-free" order:
-- Local lists of PetscObjects (or their subcommes) on a comm are "deadlock-free" if subcomm1 
+
+  The ISs on the input list can belong to subcommunicators of comm, and the subcommunicators 
+  on the input IS list are assumed to be in a "deadlock-free" order.
+
+  Local lists of PetscObjects (or their subcommes) on a comm are "deadlock-free" if subcomm1 
   preceeds subcomm2 on any local list, then it preceeds subcomm2 on all ranks.
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global 
   numbering. This is ensured, for example, by ISColoringToList().
 
 .seealso ISColoringToList()
- @*/
+@*/
 #undef  __FUNCT__
 #define __FUNCT__ "ISListToColoring"
 PetscErrorCode ISListToColoring(MPI_Comm comm, PetscInt listlen, IS islist[], IS *indis, IS *coloris) 
