@@ -164,6 +164,7 @@ void* MainWait_LockFree(void* arg)
     if(job_done == PetscMaxThreads) job_done = 1;
     else job_done = 0;
   }
+  return(0);
 }
 
 #undef __FUNCT__
