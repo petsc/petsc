@@ -43,18 +43,21 @@ PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
 void           (*MainWait)(void) = NULL;
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt) = NULL;
+
 /* Tree Thread Pool Functions */
 extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadInitialize_Tree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Tree(void);
 extern void           MainWait_Tree(void);
 extern PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt);
+
 /* Main Thread Pool Functions */
 extern void*          PetscThreadFunc_Main(void*);
 extern PetscErrorCode PetscThreadInitialize_Main(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Main(void);
 extern void           MainWait_Main(void);
 extern PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt);
+
 /* Chain Thread Pool Functions */
 extern void*          PetscThreadFunc_Chain(void*);
 extern PetscErrorCode PetscThreadInitialize_Chain(PetscInt);
@@ -68,10 +71,13 @@ extern PetscErrorCode PetscThreadInitialize_True(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_True(void);
 extern void           MainWait_True(void);
 extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
-/* NO Thread Pool Function */
-PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void**,PetscInt);
 
-/* True Thread Pool Functions */
+/* NO Thread Pool Functions */
+void* PetscThreadFunc_None(void*);
+/*void  MainWait_None(void);*/
+PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt);
+
+/* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
@@ -126,21 +132,35 @@ void DoCoreAffinity(void)
 }
 #endif
 
+typedef void* (*pfunc)(void*);
+typedef struct {
+  pfunc kernelfunc;
+  int   nthreads;
+  void** data;
+  pthread_t* ThreadId;
+}sjob_none;
+
+sjob_none job_none;
+
 /* 
    -----------------------------
      'NO' THREAD POOL FUNCTION 
    -----------------------------
 */
-PetscErrorCode PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThreads,pthread_t* ThreadId,void** data) 
+void* PetscThreadFunc_None(void* arg) 
 {
-  PetscErrorCode    ierr;
-  PetscInt i;
+  PetscErrorCode    iterr=0;
+  sjob_none         *job = (sjob_none*)arg;
+  PetscInt          i;
+  PetscInt          nthreads= (int)job->nthreads;
+  void**            data = (void**)job->data;
+  pthread_t*        ThreadId = (pthread_t*)job->ThreadId;
+  pfunc             funcp = (pfunc)job->kernelfunc;
 
-  PetscFunctionBegin;
-  for(i=0; i<iTotThreads; i++) {
-    ierr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
+  for(i=0; i<nthreads; i++) {
+    iterr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
   }
-  PetscFunctionReturn(0);
+  return(0);
 }
 
 PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) 
@@ -157,17 +177,22 @@ PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_Spawn"
-PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void** data,PetscInt n) {
+#define __FUNCT__ "MainJob_None"
+PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n) {
   PetscErrorCode ijoberr = 0;
 
+  PetscFunctionBegin;
   pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
   PetscThreadPoint = apThread; /* point to same place */
-  PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
+  job_none.nthreads = n;
+  job_none.kernelfunc = pFunc;
+  job_none.data = data;
+  job_none.ThreadId = apThread;
+  PetscThreadFunc_None(&job_none);
   PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
   free(apThread);
 
-  return ijoberr;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -288,7 +313,11 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
       /* need to define these in the case on 'no threads' or 'thread create/destroy'
 	 could take any of the above versions 
       */
-      MainJob               = &MainJob_Spawn;
+      PetscThreadInitialize = PETSC_NULL;
+      PetscThreadFinalize   = PETSC_NULL;
+      PetscThreadFunc       = &PetscThreadFunc_None;
+      /*    MainWait              = &MainWait_None; */
+      MainJob               = &MainJob_None;
       PetscInfo1(PETSC_NULL,"Using No thread pool with %d threads\n",PetscMaxThreads);
     }
   }
