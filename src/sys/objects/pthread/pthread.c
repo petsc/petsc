@@ -73,9 +73,9 @@ extern void*          MainWait_True(void*);
 extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 
 /* NO Thread Pool Functions */
-void*          PetscThreadFunc_None(void*);
-/*void*          MainWait_None(void*);*/
-PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt);
+extern void*          PetscThreadFunc_None(void*);
+extern void*          MainWait_None(void*);
+extern PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt);
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
@@ -131,69 +131,6 @@ void DoCoreAffinity(void)
   }
 }
 #endif
-
-typedef void* (*pfunc)(void*);
-typedef struct {
-  pfunc kernelfunc;
-  int   nthreads;
-  void** data;
-  pthread_t* ThreadId;
-}sjob_none;
-
-sjob_none job_none;
-
-/* 
-   -----------------------------
-     'NO' THREAD POOL FUNCTION 
-   -----------------------------
-*/
-void* PetscThreadFunc_None(void* arg) 
-{
-  PetscErrorCode    iterr=0;
-  sjob_none         *job = (sjob_none*)arg;
-  PetscInt          i;
-  PetscInt          nthreads= (int)job->nthreads;
-  void**            data = (void**)job->data;
-  pthread_t*        ThreadId = (pthread_t*)job->ThreadId;
-  pfunc             funcp = (pfunc)job->kernelfunc;
-
-  for(i=0; i<nthreads; i++) {
-    iterr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
-  }
-  return(0);
-}
-
-PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) 
-{
-  PetscErrorCode ierr;
-  PetscInt i;
-
-  PetscFunctionBegin;
-  void* joinstatus;
-  for (i=0; i<iTotThreads; i++) {
-    ierr = pthread_join(ThreadId[i], &joinstatus);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MainJob_None"
-PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n) {
-  PetscErrorCode ijoberr = 0;
-
-  PetscFunctionBegin;
-  pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-  PetscThreadPoint = apThread; /* point to same place */
-  job_none.nthreads = n;
-  job_none.kernelfunc = pFunc;
-  job_none.data = data;
-  job_none.ThreadId = apThread;
-  PetscThreadFunc_None(&job_none);
-  PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
-  free(apThread);
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private_Pthread"
@@ -316,7 +253,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
       PetscThreadInitialize = PETSC_NULL;
       PetscThreadFinalize   = PETSC_NULL;
       PetscThreadFunc       = &PetscThreadFunc_None;
-      /*    MainWait              = &MainWait_None; */
+      MainWait              = &MainWait_None;
       MainJob               = &MainJob_None;
       PetscInfo1(PETSC_NULL,"Using No thread pool with %d threads\n",PetscMaxThreads);
     }
