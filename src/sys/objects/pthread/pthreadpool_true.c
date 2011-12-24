@@ -67,7 +67,7 @@ static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void           (*MainWait)(void);
+extern void*           (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -183,13 +183,14 @@ PetscErrorCode PetscThreadFinalize_True() {
 
 #undef __FUNCT__
 #define __FUNCT__ "MainWait_True"
-void MainWait_True() {
+void* MainWait_True(void* arg) {
   int ierr;
   ierr = pthread_mutex_lock(&job_true.mutex);
   while(job_true.iNumReadyThreads<PetscMaxThreads||job_true.startJob==PETSC_TRUE) {
     ierr = pthread_cond_wait(&main_cond_true,&job_true.mutex);
   }
   ierr = pthread_mutex_unlock(&job_true.mutex);
+  return(0);
 }
 
 #undef __FUNCT__
@@ -198,7 +199,7 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
 
-  MainWait();
+  MainWait(NULL);
   for(i=0; i<PetscMaxThreads; i++) {
     if(pFunc == FuncFinish) {
       job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
@@ -230,7 +231,7 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
       job_true.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_true.funcArr[0](job_true.pdata[0]);
     }
-    MainWait(); /* why wait after? guarantees that job gets done */
+    MainWait(NULL); /* why wait after? guarantees that job gets done */
   }
 
   if(ithreaderr_true) {

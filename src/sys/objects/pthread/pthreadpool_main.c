@@ -66,7 +66,7 @@ static char* arrready;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void           (*MainWait)(void);
+extern void*          (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -213,7 +213,7 @@ PetscErrorCode PetscThreadFinalize_Main() {
 
 #undef __FUNCT__
 #define __FUNCT__ "MainWait_Main"
-void MainWait_Main() {
+void* MainWait_Main(void* arg) {
   int i,ierr;
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_mutex_lock(job_main.mutexarray[i]);
@@ -222,6 +222,7 @@ void MainWait_Main() {
     }
     ierr = pthread_mutex_unlock(job_main.mutexarray[i]);
   }
+  return(0);
 }
 
 #undef __FUNCT__
@@ -230,7 +231,7 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
 
-  MainWait(); /* you know everyone is waiting to be signalled! */
+  MainWait(NULL); /* you know everyone is waiting to be signalled! */
   for(i=0; i<PetscMaxThreads; i++) {
     *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
   }
@@ -263,7 +264,7 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
       job_main.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_main.funcArr[0](job_main.pdata[0]);
     }
-    MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
+    MainWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
   if(ithreaderr) {

@@ -57,7 +57,7 @@ sjob_lockfree job_lockfree = {NULL,NULL,0};
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void           (*MainWait)(void);
+extern void*          (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -152,7 +152,7 @@ PetscErrorCode PetscThreadFinalize_LockFree() {
 
 #undef __FUNCT__
 #define __FUNCT__ "MainWait_LockFree"
-void MainWait_LockFree() 
+void* MainWait_LockFree(void* arg) 
 {
   int job_done,i;
 
@@ -199,7 +199,7 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n)
       ijoberr = (PetscErrorCode)(long int)job_lockfree.funcArr[0](job_lockfree.pdata[0]);
     }
     /* Wait for all threads to finish their job */
-    MainWait();
+    MainWait(NULL);
   }
 
   if(ithreaderr_lockfree) {

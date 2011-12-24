@@ -41,47 +41,47 @@ PetscInt     MainThreadCoreAffinity=0;
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
-void           (*MainWait)(void) = NULL;
+void*          (*MainWait)(void*) = NULL;
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt) = NULL;
 
 /* Tree Thread Pool Functions */
 extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadInitialize_Tree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Tree(void);
-extern void           MainWait_Tree(void);
+extern void*          MainWait_Tree(void*);
 extern PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt);
 
 /* Main Thread Pool Functions */
 extern void*          PetscThreadFunc_Main(void*);
 extern PetscErrorCode PetscThreadInitialize_Main(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Main(void);
-extern void           MainWait_Main(void);
+extern void*          MainWait_Main(void*);
 extern PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt);
 
 /* Chain Thread Pool Functions */
 extern void*          PetscThreadFunc_Chain(void*);
 extern PetscErrorCode PetscThreadInitialize_Chain(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Chain(void);
-extern void           MainWait_Chain(void);
+extern void*          MainWait_Chain(void*);
 extern PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void**,PetscInt);
 
 /* True Thread Pool Functions */
 extern void*          PetscThreadFunc_True(void*);
 extern PetscErrorCode PetscThreadInitialize_True(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_True(void);
-extern void           MainWait_True(void);
+extern void*          MainWait_True(void*);
 extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 
 /* NO Thread Pool Functions */
-void* PetscThreadFunc_None(void*);
-/*void  MainWait_None(void);*/
+void*          PetscThreadFunc_None(void*);
+/*void*          MainWait_None(void*);*/
 PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt);
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
-extern void           MainWait_LockFree(void);
+extern void*           MainWait_LockFree(void*);
 extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt);
 
 void* FuncFinish(void* arg) {
