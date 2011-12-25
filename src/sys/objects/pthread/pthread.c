@@ -12,7 +12,6 @@
 #if defined(PETSC_HAVE_PTHREAD_H)
 #include <pthread.h>
 #endif
-
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
@@ -27,6 +26,9 @@
 #endif
 #if defined(PETSC_HAVE_VALGRIND)
 #include <valgrind/valgrind.h>
+#endif
+#if defined(PETSC_HAVE_SYS_SYSCTL_H)
+#include <sys/sysctl.h>
 #endif
 
 PetscBool    PetscCheckCoreAffinity    = PETSC_FALSE;
@@ -176,7 +178,12 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
       PetscMaxThreads = 0; 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
       PetscMaxThreads = get_nprocs() - PetscMainThreadShareWork;
-#endif      
+#endif
+#if defined(PETSC_HAVE_SYS_SYSCTL_H) 
+      size_t   len = sizeof(PetscMaxThreads);
+      ierr = sysctlbyname("hw.activecpu",&PetscMaxThreads,&len,NULL,0);CHKERRQ(ierr);
+      PetscMaxThreads -= PetscMainThreadShareWork;
+#endif
     } 
   } else PetscMaxThreads = nthreads;
   PetscFunctionReturn(0);
