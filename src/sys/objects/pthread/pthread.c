@@ -238,16 +238,15 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   }
   
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  PetscInt N_CORES;
-  N_CORES = get_nprocs();
-  ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
+  PetscInt N_CORES=get_nprocs();
+  ThreadCoreAffinity = (int*)malloc(PetscMaxThreads*sizeof(int));
   char tstr[9];
   char tbuf[2];
   PetscInt i;
   
   strcpy(tstr,"-thread");
   for(i=0;i<PetscMaxThreads;i++) {
-    ThreadCoreAffinity[i] = i;
+    ThreadCoreAffinity[i] = i+PetscMainThreadShareWork;
     sprintf(tbuf,"%d",i);
     strcat(tstr,tbuf);
     ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
