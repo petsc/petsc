@@ -404,23 +404,28 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 {
   PetscInt       p;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (s->atlasLayout.numDof != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);}
+  ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
   for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d constrained", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d constrained", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for(b = 0; b < s->bc->atlasDof[p]; ++b) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "  (%4d) dim %2d offset %3d\n", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d\n", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
