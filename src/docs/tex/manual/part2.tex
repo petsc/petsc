@@ -3488,7 +3488,7 @@ KSPSetType(ksp,KSPPREONLY);\\
 KSPGetPC(ksp,\&pc);\\
 PCSetType(pc,PCLU);\\
 PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);\\
-PCFactorCreatematrix(pc,\&F);\\
+PCFactorGetMatrix(pc,\&F);\\
 icntl=7; ival = 2;\\
 MatMumpsSetIcntl(F,icntl,ival);
 \end{tabbing}

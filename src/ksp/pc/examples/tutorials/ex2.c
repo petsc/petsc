@@ -97,7 +97,7 @@ int main(int argc,char **argv)
    * note that the last one is negative. This in itself is not an error,
    * but it will make the iterative method diverge.
    */
-  ierr = PCFactorCreatematrix(pc,&M);CHKERRQ(ierr);
+  ierr = PCFactorGetMatrix(pc,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
   printf("\nPivots:\n\n"); VecView(D,0);
