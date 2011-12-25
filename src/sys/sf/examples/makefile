@@ -1,6 +1,6 @@
 
-LOCDIR   = src/vec/bg/examples/
-DIRS     = tests tutorials
+LOCDIR   = src/sys/sf/examples/
+DIRS     = tutorials
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

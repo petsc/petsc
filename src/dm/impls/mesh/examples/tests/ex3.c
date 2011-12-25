@@ -1,6 +1,6 @@
-static char help[] = "Mesh Distribution with BG.\n\n";
+static char help[] = "Mesh Distribution with SF.\n\n";
 #include <petscdmmesh.h>
-#include <petscbg.h>
+#include <petscsf.h>
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -72,17 +72,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshConvertOverlapToBG"
-PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
+#define __FUNCT__ "DMMeshConvertOverlapToSF"
+PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt      *local;
-  PetscBGNode   *remote;
+  PetscSFNode   *remote;
   PetscInt       numPoints;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscBGCreate(((PetscObject) dm)->comm, bg);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, sf);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
     /* The local points have degree 1
@@ -92,7 +92,7 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
 
     numPoints = overlap->getNumPoints();
     ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
-    ierr = PetscMalloc(numPoints * sizeof(PetscBGNode), &remote);CHKERRQ(ierr);
+    ierr = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
     for(PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
       const PetscInt                                                      rank   = overlap->getRank(r);
       const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
@@ -104,19 +104,19 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
         remote[i].index = c_iter.color();
       }
     }
-    ierr = PetscBGSetGraph(*bg, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscBGView(*bg, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sf, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFView(*sf, PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGConvertPartition"
-PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS partition, PetscBG *bg)
+#define __FUNCT__ "PetscSFConvertPartition"
+PetscErrorCode PetscSFConvertPartition(DM dm, PetscSection partSection, IS partition, PetscSF *sf)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
-  PetscBG         bgCount;
-  PetscBGNode    *remoteRanks, *remotePoints;
+  PetscSF         sfCount;
+  PetscSFNode    *remoteRanks, *remotePoints;
   IS              renumbering;
   PetscInt       *renumArray;
   PetscInt        numRemoteRanks = 0, p, i;
@@ -130,23 +130,23 @@ PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS parti
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /*
    1. Count the number of ranks that your points should be sent to (nranks)
-   2. Create a PetscBG that maps from nranks local points to (rank, 0). That is, each process has only one "owned" point. Call this bgcount.
+   2. Create a PetscSF that maps from nranks local points to (rank, 0). That is, each process has only one "owned" point. Call this sfcount.
    3. Put the number of points destined to each rank in outgoing, create another array outoffset of same size (nranks)
    4. incoming[0] = 0
-   5. PetscBGFetchAndOpBegin/End(bg,MPIU_INT,incoming,outgoing,outoffset,MPIU_SUM);
+   5. PetscSFFetchAndOpBegin/End(sf,MPIU_INT,incoming,outgoing,outoffset,MPIU_SUM);
 
    Now, incoming[0] holds the number of points you will receive and outoffset[i] holds the offset on rank[i] at which to place outgoing[i] points.
 
-   6. Call PetscBGSetGraph() to build this new graph that communicates all your currently owned points to the remote processes at the offsets above.
-   7. PetscBGReduceBegin/End(newbg,MPIU_POINT,outgoing_points,incoming_points,MPI_REPLACE);
+   6. Call PetscSFSetGraph() to build this new graph that communicates all your currently owned points to the remote processes at the offsets above.
+   7. PetscSFReduceBegin/End(newsf,MPIU_POINT,outgoing_points,incoming_points,MPI_REPLACE);
 
-   I would typically make MPIU_POINT just represent a PetscBGNode() indicating where the point data is in my local space. That would have successfully inverted the communication graph: now I have two-sided knowledge and local-to-global now maps from newowner-to-oldowner.
+   I would typically make MPIU_POINT just represent a PetscSFNode() indicating where the point data is in my local space. That would have successfully inverted the communication graph: now I have two-sided knowledge and local-to-global now maps from newowner-to-oldowner.
    */
   /* Assume all processes participate in the partition */
   if (!rank) { /* Could check for IS length here */
     numRemoteRanks = numProcs;
   }
-  ierr = PetscMalloc(numRemoteRanks * sizeof(PetscBGNode), &remoteRanks);CHKERRQ(ierr);
+  ierr = PetscMalloc(numRemoteRanks * sizeof(PetscSFNode), &remoteRanks);CHKERRQ(ierr);
   ierr = PetscMalloc2(2*numRemoteRanks,PetscInt,&partSizes,2*numRemoteRanks,PetscInt,&partOffsets);CHKERRQ(ierr);
   for(p = 0; p < numRemoteRanks; ++p) {
     remoteRanks[p].rank  = p;
@@ -154,36 +154,36 @@ PetscErrorCode PetscBGConvertPartition(DM dm, PetscSection partSection, IS parti
     ierr = PetscSectionGetDof(partSection, p, &partSizes[2*p+0]);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(partSection, p, &partSizes[2*p+1]);CHKERRQ(ierr);
   }
-  ierr = PetscBGCreate(comm, &bgCount);CHKERRQ(ierr);
-  ierr = PetscBGSetGraph(bgCount, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscBGView(bgCount, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, &sfCount);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfCount, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFView(sfCount, PETSC_NULL);CHKERRQ(ierr);
   localSize[0] = 0; localSize[1] = 0;
-  ierr = PetscBGFetchAndOpBegin(bgCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
-  ierr = PetscBGFetchAndOpEnd(bgCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpBegin(sfCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpEnd(sfCount, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(comm, "localSize %d %d\n", localSize[0], localSize[1]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   for(p = 0; p < numRemoteRanks; ++p) {
     ierr = PetscPrintf(comm, "offset for rank %d: %d\n", p, partOffsets[p]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
-  ierr = PetscBGDestroy(&bgCount);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfCount);CHKERRQ(ierr);
   /* Create the inverse graph for the partition */
-  ierr = PetscMalloc(localSize[0] * sizeof(PetscBGNode), &remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc(localSize[0] * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
   for(i = 0; i < localSize[0]; ++i) {
     remotePoints[i].rank  = 0;
     remotePoints[i].index = localSize[1] + i;
   }
   ierr = ISGetLocalSize(partition, &partSize);CHKERRQ(ierr);
-  ierr = PetscBGCreate(comm, bg);CHKERRQ(ierr);
-  ierr = PetscBGSetGraph(*bg, partSize, localSize[0], PETSC_NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sf, partSize, localSize[0], PETSC_NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Send global point numbers
      - owned values are sent
      - local values are received
   */
   ierr = PetscMalloc(localSize[0] * sizeof(PetscInt), &renumArray);CHKERRQ(ierr);
   ierr = ISGetIndices(partition, &partArray);CHKERRQ(ierr);
-  ierr = PetscBGBcastBegin(*bg, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
-  ierr = PetscBGBcastEnd(*bg, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(*sf, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(*sf, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(partition, &partArray);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm, localSize[0], renumArray, PETSC_OWN_POINTER, &renumbering);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscBG        partBG;
+  PetscSF        partSF;
   IS             cellPart,        part;
   PetscSection   cellPartSection, partSection;
   PetscMPIInt    numProcs, rank;
@@ -246,20 +246,20 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscBGConvertPartition(dm, partSection, part, &partBG);CHKERRQ(ierr);
-  ierr = PetscBGDestroy(&partBG);CHKERRQ(ierr);
+  ierr = PetscSFConvertPartition(dm, partSection, part, &partSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
 #if 0
-  /* Create the remote bases -- We probably do not need this BG, only ones buikt on this. We do need to know how many points we are getting */
+  /* Create the remote bases -- We probably do not need this SF, only ones buikt on this. We do need to know how many points we are getting */
   {
-    PetscBG         bg;
-    PetscBGNode    *remotePoints;
+    PetscSF         sf;
+    PetscSFNode    *remotePoints;
     const PetscInt *partArray;
     PetscInt        numOwned, numLocal, r, i;
 
     ierr = PetscSectionGetDof(partSection, rank, &numOwned);CHKERRQ(ierr);
     ierr = ISGetLocalSize(part, &numLocal);CHKERRQ(ierr);
     ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLocal * sizeof(PetscBGNode), &remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(numLocal * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
     for(r = 0, i = 0; r < numProcs; ++r) {
       PetscInt dof, offset, p;
 
@@ -270,9 +270,9 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
         remotePoints[i].index = p;
       }
     }
-    ierr = PetscBGCreate(comm, &bg);CHKERRQ(ierr);
-    ierr = PetscBGSetGraph(bg, numOwned, numLocal, partArray, PETSC_COPY_VALUES, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscBGView(bg, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSFCreate(comm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sf, numOwned, numLocal, partArray, PETSC_COPY_VALUES, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
 
     // Test sending the points
     //   How do I know how many points are coming to me?
@@ -281,13 +281,13 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
       PetscInt  numPoints = 10;
 
       ierr = PetscMalloc(numPoints * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
-      ierr = PetscBGBcastBegin(bg, MPIU_INT, partArray, newPoints);CHKERRQ(ierr);
-      ierr = PetscBGBcastEnd(bg, MPIU_INT, partArray, newPoints);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, partArray, newPoints);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, partArray, newPoints);CHKERRQ(ierr);
       ierr = PetscFree(newPoints);CHKERRQ(ierr);
     }
 
     ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscBGDestroy(&bg);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   }
 #endif
 #if 0

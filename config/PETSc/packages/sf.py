@@ -1,4 +1,4 @@
-# Temporary package file to enable PetscBG development components.
+# Temporary package file to enable PetscSF development components.
 
 import PETSc.package
 import os
@@ -12,7 +12,6 @@ class Configure(PETSc.package.NewPackage):
     self.archIndependent   = 1
     self.complex           = 1
     self.worksonWindows    = 1
-    self.complex           = 1
     self.double            = 0
     return
 
@@ -22,6 +21,5 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def configureLibrary(self):
-    self.addDefine('HAVE_BG',1)
     self.found = 1
     self.framework.packages.append(self)

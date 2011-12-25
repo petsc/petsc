@@ -1,12 +1,12 @@
-#include <private/bgimpl.h>
+#include <private/sfimpl.h>
 #include <petscctable.h>
 
-const char *const PetscBGSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","PetscBGSynchronizationType","PETSCBG_SYNCHRONIZATION_",0};
+const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFSynchronizationType","PETSCSF_SYNCHRONIZATION_",0};
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGCreate"
+#define __FUNCT__ "PetscSFCreate"
 /*@C
-   PetscBGCreate - create a bipartite graph communication context
+   PetscSFCreate - create a bipartite graph communication context
 
    Not Collective
 
@@ -18,24 +18,24 @@ const char *const PetscBGSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","Pets
 
    Level: intermediate
 
-.seealso: PetscBGSetGraph(), PetscBGDestroy()
+.seealso: PetscSFSetGraph(), PetscSFDestroy()
 @*/
-PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG *bg)
+PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *bg)
 {
   PetscErrorCode ierr;
-  PetscBG        b;
+  PetscSF        b;
 
   PetscFunctionBegin;
   PetscValidPointer(bg,2);
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PetscBGInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(b,_p_PetscBG,struct _PetscBGOps,PETSCBG_CLASSID,-1,"PetscBG","Bipartite Graph","PetscBG",comm,PetscBGDestroy,PetscBGView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,-1,"PetscSF","Bipartite Graph","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
   b->nowned    = -1;
   b->nlocal    = -1;
   b->nranks    = -1;
-  b->sync      = PETSCBG_SYNCHRONIZATION_FENCE;
+  b->sync      = PETSCSF_SYNCHRONIZATION_FENCE;
   b->rankorder = PETSC_TRUE;
   b->ingroup   = MPI_GROUP_NULL;
   b->outgroup  = MPI_GROUP_NULL;
@@ -44,9 +44,9 @@ PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG *bg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGReset"
+#define __FUNCT__ "PetscSFReset"
 /*@C
-   PetscBGReset - Reset a bipartite graph so that different sizes or neighbors can be used
+   PetscSFReset - Reset a bipartite graph so that different sizes or neighbors can be used
 
    Collective
 
@@ -55,13 +55,13 @@ PetscErrorCode PetscBGCreate(MPI_Comm comm,PetscBG *bg)
 
    Level: advanced
 
-.seealso: PetscBGCreate(), PetscBGSetGraph(), PetscBGDestroy()
+.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFDestroy()
 @*/
-PetscErrorCode PetscBGReset(PetscBG bg)
+PetscErrorCode PetscSFReset(PetscSF bg)
 {
   PetscErrorCode ierr;
-  PetscBGDataLink link,next;
-  PetscBGWinLink  wlink,wnext;
+  PetscSFDataLink link,next;
+  PetscSFWinLink  wlink,wnext;
   PetscInt i;
 
   PetscFunctionBegin;
@@ -91,14 +91,14 @@ PetscErrorCode PetscBGReset(PetscBG bg)
   bg->wins = PETSC_NULL;
   if (bg->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->ingroup);CHKERRQ(ierr);}
   if (bg->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->outgroup);CHKERRQ(ierr);}
-  ierr = PetscBGDestroy(&bg->multi);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&bg->multi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGDestroy"
+#define __FUNCT__ "PetscSFDestroy"
 /*@C
-   PetscBGDestroy - destroy bipartite graph
+   PetscSFDestroy - destroy bipartite graph
 
    Collective
 
@@ -107,25 +107,25 @@ PetscErrorCode PetscBGReset(PetscBG bg)
 
    Level: intermediate
 
-.seealso: PetscBGCreate(), PetscBGReset()
+.seealso: PetscSFCreate(), PetscSFReset()
 @*/
-PetscErrorCode PetscBGDestroy(PetscBG *bg)
+PetscErrorCode PetscSFDestroy(PetscSF *bg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!*bg) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*bg),PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific((*bg),PETSCSF_CLASSID,1);
   if (--((PetscObject)(*bg))->refct > 0) {*bg = 0; PetscFunctionReturn(0);}
-  ierr = PetscBGReset(*bg);CHKERRQ(ierr);
+  ierr = PetscSFReset(*bg);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(bg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGSetFromOptions"
+#define __FUNCT__ "PetscSFSetFromOptions"
 /*@C
-   PetscBGSetFromOptions - set PetscBG options using the options database
+   PetscSFSetFromOptions - set PetscSF options using the options database
 
    Logically Collective
 
@@ -133,31 +133,31 @@ PetscErrorCode PetscBGDestroy(PetscBG *bg)
 .  bg - bipartite graph
 
    Options Database Keys:
-.  -bg_synchronization - synchronization type used by PetscBG
+.  -bg_synchronization - synchronization type used by PetscSF
 
    Level: intermediate
 
 .keywords: KSP, set, from, options, database
 
-.seealso: PetscBGSetSynchronizationType()
+.seealso: PetscSFSetSynchronizationType()
 @*/
-PetscErrorCode PetscBGSetFromOptions(PetscBG bg)
+PetscErrorCode PetscSFSetFromOptions(PetscSF bg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)bg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-bg_synchronization","synchronization type to use for PetscBG communication","PetscBGSetSynchronizationType",PetscBGSynchronizationTypes,(PetscEnum)bg->sync,(PetscEnum*)&bg->sync,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-bg_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscBGSetRankOrder",bg->rankorder,&bg->rankorder,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-bg_synchronization","synchronization type to use for PetscSF communication","PetscSFSetSynchronizationType",PetscSFSynchronizationTypes,(PetscEnum)bg->sync,(PetscEnum*)&bg->sync,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-bg_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",bg->rankorder,&bg->rankorder,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGSetSynchronizationType"
+#define __FUNCT__ "PetscSFSetSynchronizationType"
 /*@C
-   PetscBGSetSynchronizationType - set synchrozitaion type for PetscBG communication
+   PetscSFSetSynchronizationType - set synchrozitaion type for PetscSF communication
 
    Logically Collective
 
@@ -170,22 +170,22 @@ PetscErrorCode PetscBGSetFromOptions(PetscBG bg)
 
    Level: intermediate
 
-.seealso: PetscBGSetFromOptions()
+.seealso: PetscSFSetFromOptions()
 @*/
-PetscErrorCode PetscBGSetSynchronizationType(PetscBG bg,PetscBGSynchronizationType sync)
+PetscErrorCode PetscSFSetSynchronizationType(PetscSF bg,PetscSFSynchronizationType sync)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveEnum(bg,sync,2);
   bg->sync = sync;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGSetRankOrder"
+#define __FUNCT__ "PetscSFSetRankOrder"
 /*@C
-   PetscBGSetRankOrder - sort multi-points for gathers and scatters by rank order
+   PetscSFSetRankOrder - sort multi-points for gathers and scatters by rank order
 
    Logically Collective
 
@@ -195,23 +195,23 @@ PetscErrorCode PetscBGSetSynchronizationType(PetscBG bg,PetscBGSynchronizationTy
 
    Level: advanced
 
-.seealso: PetscBGGatherBegin(), PetscBGScatterBegin()
+.seealso: PetscSFGatherBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscBGSetRankOrder(PetscBG bg,PetscBool flg)
+PetscErrorCode PetscSFSetRankOrder(PetscSF bg,PetscBool flg)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveBool(bg,flg,2);
-  if (bg->multi) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscBGGatherBegin() or PetscBGScatterBegin()");
+  if (bg->multi) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
   bg->rankorder = flg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGSetGraph"
+#define __FUNCT__ "PetscSFSetGraph"
 /*@C
-   PetscBGSetGraph - Set a parallel bipartite graph
+   PetscSFSetGraph - Set a parallel bipartite graph
 
    Collective
 
@@ -226,9 +226,9 @@ PetscErrorCode PetscBGSetRankOrder(PetscBG bg,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PetscBGCreate(), PetscBGView()
+.seealso: PetscSFCreate(), PetscSFView()
 @*/
-PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode localmode,const PetscBGNode *iremote,PetscCopyMode remotemode)
+PetscErrorCode PetscSFSetGraph(PetscSF bg,PetscInt nowned,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
 {
   PetscErrorCode ierr;
   PetscTable table;
@@ -237,10 +237,10 @@ PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const 
   PetscInt i,*rcount;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   if (nlocal && ilocal) PetscValidIntPointer(ilocal,4);
   if (nlocal) PetscValidPointer(iremote,6);
-  ierr = PetscBGReset(bg);CHKERRQ(ierr);
+  ierr = PetscSFReset(bg);CHKERRQ(ierr);
   bg->nowned = nowned;
   bg->nlocal = nlocal;
   if (ilocal) {
@@ -267,11 +267,11 @@ PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const 
     ierr = PetscMemcpy(bg->remote,iremote,nlocal*sizeof(*bg->remote));CHKERRQ(ierr);
     break;
   case PETSC_OWN_POINTER:
-    bg->remote_alloc = (PetscBGNode*)iremote;
+    bg->remote_alloc = (PetscSFNode*)iremote;
     bg->remote = bg->remote_alloc;
     break;
   case PETSC_USE_POINTER:
-    bg->remote = (PetscBGNode*)iremote;
+    bg->remote = (PetscSFNode*)iremote;
     break;
   default: SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown remotemode");
   }
@@ -317,9 +317,9 @@ PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGView"
+#define __FUNCT__ "PetscSFView"
 /*@C
-   PetscBGView - view a bipartite graph
+   PetscSFView - view a bipartite graph
 
    Collective
 
@@ -329,15 +329,15 @@ PetscErrorCode PetscBGSetGraph(PetscBG bg,PetscInt nowned,PetscInt nlocal,const 
 
    Level: beginner
 
-.seealso: PetscBGCreate(), PetscBGSetGraph()
+.seealso: PetscSFCreate(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscBGView(PetscBG bg,PetscViewer viewer)
+PetscErrorCode PetscSFView(PetscSF bg,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject)bg)->comm,&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(bg,1,viewer,2);
@@ -347,7 +347,7 @@ PetscErrorCode PetscBGView(PetscBG bg,PetscViewer viewer)
     PetscInt i,j;
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)bg,viewer,"Bipartite Graph Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscBGSynchronizationTypes[bg->sync],bg->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[bg->sync],bg->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of outgoing edges=%D, remote ranks=%D\n",rank,bg->nlocal,bg->nranks);CHKERRQ(ierr);
@@ -432,9 +432,9 @@ static PetscErrorCode MPIU_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGetDataTypes"
+#define __FUNCT__ "PetscSFGetDataTypes"
 /*@C
-   PetscBGGetDataTypes - gets composite local and remote data types for each rank
+   PetscSFGetDataTypes - gets composite local and remote data types for each rank
 
    Not Collective
 
@@ -448,12 +448,12 @@ static PetscErrorCode MPIU_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool 
 
    Level: developer
 
-.seealso: PetscBGSetGraph(), PetscBGView()
+.seealso: PetscSFSetGraph(), PetscSFView()
 @*/
-PetscErrorCode PetscBGGetDataTypes(PetscBG bg,MPI_Datatype unit,const MPI_Datatype **localtypes,const MPI_Datatype **remotetypes)
+PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Datatype **localtypes,const MPI_Datatype **remotetypes)
 {
   PetscErrorCode ierr;
-  PetscBGDataLink link;
+  PetscSFDataLink link;
   PetscInt i,nranks;
   const PetscInt *ranks,*roffset;
   const PetscMPIInt *rmine,*rremote;
@@ -471,7 +471,7 @@ PetscErrorCode PetscBGGetDataTypes(PetscBG bg,MPI_Datatype unit,const MPI_Dataty
   }
 
   /* Create new composite types for each send rank */
-  ierr = PetscBGGetRanks(bg,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(bg,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
@@ -491,9 +491,9 @@ PetscErrorCode PetscBGGetDataTypes(PetscBG bg,MPI_Datatype unit,const MPI_Dataty
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGetRanks"
+#define __FUNCT__ "PetscSFGetRanks"
 /*@C
-   PetscBGGetRanks - Get ranks and number of vertices referenced by local part of graph
+   PetscSFGetRanks - Get ranks and number of vertices referenced by local part of graph
 
    Not Collective
 
@@ -509,13 +509,13 @@ PetscErrorCode PetscBGGetDataTypes(PetscBG bg,MPI_Datatype unit,const MPI_Dataty
 
    Level: developer
 
-.seealso: PetscBGSetGraph(), PetscBGGetDataTypes()
+.seealso: PetscSFSetGraph(), PetscSFGetDataTypes()
 @*/
-PetscErrorCode PetscBGGetRanks(PetscBG bg,PetscInt *nranks,const PetscInt **ranks,const PetscInt **roffset,const PetscMPIInt **rmine,const PetscMPIInt **rremote)
+PetscErrorCode PetscSFGetRanks(PetscSF bg,PetscInt *nranks,const PetscInt **ranks,const PetscInt **roffset,const PetscMPIInt **rmine,const PetscMPIInt **rremote)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   if (nranks)  *nranks  = bg->nranks;
   if (ranks)   *ranks   = bg->ranks;
   if (roffset) *roffset = bg->roffset;
@@ -525,20 +525,20 @@ PetscErrorCode PetscBGGetRanks(PetscBG bg,PetscInt *nranks,const PetscInt **rank
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGetWindow"
+#define __FUNCT__ "PetscSFGetWindow"
 /*@C
-   PetscBGGetWindow - Get a window for use with a given data type
+   PetscSFGetWindow - Get a window for use with a given data type
 
-   Collective on PetscBG
+   Collective on PetscSF
 
    Input Arguments:
 +  bg - bipartite graph
 .  unit - data type
 .  array - array to be sent
 .  epoch - PETSC_TRUE to acquire the window and start an epoch, PETSC_FALSE to just acquire the window
-.  fenceassert - assert parameter for call to MPI_Win_fence(), if PETSCBG_SYNCHRONIZATION_FENCE
-.  postassert - assert parameter for call to MPI_Win_post(), if PETSCBG_SYNCHRONIZATION_ACTIVE
--  startassert - assert parameter for call to MPI_Win_start(), if PETSCBG_SYNCHRONIZATION_ACTIVE
+.  fenceassert - assert parameter for call to MPI_Win_fence(), if PETSCSF_SYNCHRONIZATION_FENCE
+.  postassert - assert parameter for call to MPI_Win_post(), if PETSCSF_SYNCHRONIZATION_ACTIVE
+-  startassert - assert parameter for call to MPI_Win_start(), if PETSCSF_SYNCHRONIZATION_ACTIVE
 
    Output Arguments:
 .  win - window
@@ -550,13 +550,13 @@ PetscErrorCode PetscBGGetRanks(PetscBG bg,PetscInt *nranks,const PetscInt **rank
    reuse an existing window created with the same array. Another alternative is to maintain a cache of windows and reuse
    whichever one is available, by copying the array into it if necessary.
 
-.seealso: PetscBGGetRanks(), PetscBGGetDataTypes()
+.seealso: PetscSFGetRanks(), PetscSFGetDataTypes()
 @*/
-PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
+PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
 {
   PetscErrorCode ierr;
   MPI_Aint lb,lb_true,bytes,bytes_true;
-  PetscBGWinLink link;
+  PetscSFWinLink link;
 
   PetscFunctionBegin;
   ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
@@ -575,14 +575,14 @@ PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBo
 
   if (epoch) {
     switch (bg->sync) {
-    case PETSCBG_SYNCHRONIZATION_FENCE:
+    case PETSCSF_SYNCHRONIZATION_FENCE:
       ierr = MPI_Win_fence(fenceassert,*win);CHKERRQ(ierr);
       break;
-    case PETSCBG_SYNCHRONIZATION_LOCK: /* Handled outside */
+    case PETSCSF_SYNCHRONIZATION_LOCK: /* Handled outside */
       break;
-    case PETSCBG_SYNCHRONIZATION_ACTIVE: {
+    case PETSCSF_SYNCHRONIZATION_ACTIVE: {
       MPI_Group ingroup,outgroup;
-      ierr = PetscBGGetGroups(bg,&ingroup,&outgroup);CHKERRQ(ierr);
+      ierr = PetscSFGetGroups(bg,&ingroup,&outgroup);CHKERRQ(ierr);
       ierr = MPI_Win_post(ingroup,postassert,*win);CHKERRQ(ierr);
       ierr = MPI_Win_start(outgroup,startassert,*win);CHKERRQ(ierr);
     } break;
@@ -593,9 +593,9 @@ PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGFindWindow"
+#define __FUNCT__ "PetscSFFindWindow"
 /*@C
-   PetscBGFindWindow - Finds a window that is already in use
+   PetscSFFindWindow - Finds a window that is already in use
 
    Not Collective
 
@@ -609,11 +609,11 @@ PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBo
 
    Level: developer
 
-.seealso: PetscBGGetWindow(), PetscBGRestoreWindow()
+.seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
 @*/
-PetscErrorCode PetscBGFindWindow(PetscBG bg,MPI_Datatype unit,const void *array,MPI_Win *win)
+PetscErrorCode PetscSFFindWindow(PetscSF bg,MPI_Datatype unit,const void *array,MPI_Win *win)
 {
-  PetscBGWinLink link;
+  PetscSFWinLink link;
 
   PetscFunctionBegin;
   for (link=bg->wins; link; link=link->next) {
@@ -627,9 +627,9 @@ PetscErrorCode PetscBGFindWindow(PetscBG bg,MPI_Datatype unit,const void *array,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGRestoreWindow"
+#define __FUNCT__ "PetscSFRestoreWindow"
 /*@C
-   PetscBGRestoreWindow - Restores a window obtained with PetscBGGetWindow()
+   PetscSFRestoreWindow - Restores a window obtained with PetscSFGetWindow()
 
    Collective
 
@@ -637,17 +637,17 @@ PetscErrorCode PetscBGFindWindow(PetscBG bg,MPI_Datatype unit,const void *array,
 +  bg - bipartite graph
 .  unit - data type
 .  array - array associated with window
-.  epoch - close an epoch, must match argument to PetscBGGetWindow()
+.  epoch - close an epoch, must match argument to PetscSFGetWindow()
 -  win - window
 
    Level: developer
 
-.seealso: PetscBGFindWindow()
+.seealso: PetscSFFindWindow()
 @*/
-PetscErrorCode PetscBGRestoreWindow(PetscBG bg,MPI_Datatype unit,const void *array,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
+PetscErrorCode PetscSFRestoreWindow(PetscSF bg,MPI_Datatype unit,const void *array,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
 {
   PetscErrorCode ierr;
-  PetscBGWinLink *p,link;
+  PetscSFWinLink *p,link;
 
   PetscFunctionBegin;
   for (p=&bg->wins; *p; p=&(*p)->next) {
@@ -667,12 +667,12 @@ PetscErrorCode PetscBGRestoreWindow(PetscBG bg,MPI_Datatype unit,const void *arr
   found:
   if (epoch) {
     switch (bg->sync) {
-    case PETSCBG_SYNCHRONIZATION_FENCE:
+    case PETSCSF_SYNCHRONIZATION_FENCE:
       ierr = MPI_Win_fence(fenceassert,*win);CHKERRQ(ierr);
       break;
-    case PETSCBG_SYNCHRONIZATION_LOCK:
+    case PETSCSF_SYNCHRONIZATION_LOCK:
       break;                    /* handled outside */
-    case PETSCBG_SYNCHRONIZATION_ACTIVE: {
+    case PETSCSF_SYNCHRONIZATION_ACTIVE: {
       ierr = MPI_Win_complete(*win);CHKERRQ(ierr);
       ierr = MPI_Win_wait(*win);CHKERRQ(ierr);
     } break;
@@ -687,9 +687,9 @@ PetscErrorCode PetscBGRestoreWindow(PetscBG bg,MPI_Datatype unit,const void *arr
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGetGroups"
+#define __FUNCT__ "PetscSFGetGroups"
 /*@C
-   PetscBGGetGroups - gets incoming and outgoing process groups
+   PetscSFGetGroups - gets incoming and outgoing process groups
 
    Collective
 
@@ -702,9 +702,9 @@ PetscErrorCode PetscBGRestoreWindow(PetscBG bg,MPI_Datatype unit,const void *arr
 
    Level: developer
 
-.seealso: PetscBGGetWindow(), PetscBGRestoreWindow()
+.seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
 @*/
-PetscErrorCode PetscBGGetGroups(PetscBG bg,MPI_Group *incoming,MPI_Group *outgoing)
+PetscErrorCode PetscSFGetGroups(PetscSF bg,MPI_Group *incoming,MPI_Group *outgoing)
 {
   PetscErrorCode ierr;
   MPI_Group group;
@@ -714,31 +714,31 @@ PetscErrorCode PetscBGGetGroups(PetscBG bg,MPI_Group *incoming,MPI_Group *outgoi
     PetscInt    i,*outranks,*inranks;
     const PetscInt *indegree;
     PetscMPIInt rank;
-    PetscBGNode *remote;
-    PetscBG     bgcount;
+    PetscSFNode *remote;
+    PetscSF     bgcount;
 
     /* Compute the number of incoming ranks */
-    ierr = PetscMalloc(bg->nranks*sizeof(PetscBGNode),&remote);CHKERRQ(ierr);
+    ierr = PetscMalloc(bg->nranks*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
     for (i=0; i<bg->nranks; i++) {
       remote[i].rank = bg->ranks[i];
       remote[i].index = 0;
     }
-    ierr = PetscBGCreate(((PetscObject)bg)->comm,&bgcount);CHKERRQ(ierr);
-    ierr = PetscBGSetSynchronizationType(bgcount,PETSCBG_SYNCHRONIZATION_LOCK);CHKERRQ(ierr); /* or FENCE, ACTIVE here would cause recursion */
-    ierr = PetscBGSetGraph(bgcount,1,bg->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscBGComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
-    ierr = PetscBGComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
+    ierr = PetscSFCreate(((PetscObject)bg)->comm,&bgcount);CHKERRQ(ierr);
+    ierr = PetscSFSetSynchronizationType(bgcount,PETSCSF_SYNCHRONIZATION_LOCK);CHKERRQ(ierr); /* or FENCE, ACTIVE here would cause recursion */
+    ierr = PetscSFSetGraph(bgcount,1,bg->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
 
     /* Enumerate the incoming ranks */
     ierr = PetscMalloc2(indegree[0],PetscInt,&inranks,bg->nranks,PetscInt,&outranks);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
     for (i=0; i<bg->nranks; i++) outranks[i] = rank;
-    ierr = PetscBGGatherBegin(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
-    ierr = PetscBGGatherEnd(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
+    ierr = PetscSFGatherBegin(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
+    ierr = PetscSFGatherEnd(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
     ierr = MPI_Comm_group(((PetscObject)bg)->comm,&group);CHKERRQ(ierr);
     ierr = MPI_Group_incl(group,indegree[0],inranks,&bg->ingroup);CHKERRQ(ierr);
     ierr = PetscFree2(inranks,outranks);CHKERRQ(ierr);
-    ierr = PetscBGDestroy(&bgcount);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&bgcount);CHKERRQ(ierr);
   }
   *incoming = bg->ingroup;
 
@@ -751,9 +751,9 @@ PetscErrorCode PetscBGGetGroups(PetscBG bg,MPI_Group *incoming,MPI_Group *outgoi
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGetMultiBG"
+#define __FUNCT__ "PetscSFGetMultiSF"
 /*@C
-   PetscBGGetMultiBG - gets the inner BG implemeting gathers and scatters
+   PetscSFGetMultiSF - gets the inner SF implemeting gathers and scatters
 
    Collective
 
@@ -767,35 +767,35 @@ PetscErrorCode PetscBGGetGroups(PetscBG bg,MPI_Group *incoming,MPI_Group *outgoi
 
    Notes:
 
-   In most cases, users should use PetscBGGatherBegin() and PetscBGScatterBegin() instead of manipulating multi
+   In most cases, users should use PetscSFGatherBegin() and PetscSFScatterBegin() instead of manipulating multi
    directly. Since multi satisfies the stronger condition that each entry in the global space has exactly one incoming
    edge, it is a candidate for future optimization that might involve its removal.
 
-.seealso: PetscBGSetGraph(), PetscBGGatherBegin(), PetscBGScatterBegin()
+.seealso: PetscSFSetGraph(), PetscSFGatherBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscBGGetMultiBG(PetscBG bg,PetscBG *multi)
+PetscErrorCode PetscSFGetMultiSF(PetscSF bg,PetscSF *multi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   PetscValidPointer(multi,2);
   if (!bg->multi) {
     const PetscInt *indegree;
     PetscInt i,*inoffset,*outones,*outoffset;
-    PetscBGNode *remote;
-    ierr = PetscBGComputeDegreeBegin(bg,&indegree);CHKERRQ(ierr);
-    ierr = PetscBGComputeDegreeEnd(bg,&indegree);CHKERRQ(ierr);
+    PetscSFNode *remote;
+    ierr = PetscSFComputeDegreeBegin(bg,&indegree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(bg,&indegree);CHKERRQ(ierr);
     ierr = PetscMalloc3(bg->nowned+1,PetscInt,&inoffset,bg->nlocal,PetscInt,&outones,bg->nlocal,PetscInt,&outoffset);CHKERRQ(ierr);
     inoffset[0] = 0;
     for (i=0; i<bg->nowned; i++) inoffset[i+1] = inoffset[i] + indegree[i];
     for (i=0; i<bg->nlocal; i++) outones[i] = 1;
-    ierr = PetscBGFetchAndOpBegin(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscBGFetchAndOpEnd(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpBegin(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpEnd(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
     for (i=0; i<bg->nowned; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
 #if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
     for (i=0; i<bg->nowned; i++) {
-      if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscBGFetchAndOp");
+      if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
     }
 #endif
     ierr = PetscMalloc(bg->nlocal*sizeof(*remote),&remote);CHKERRQ(ierr);
@@ -803,19 +803,19 @@ PetscErrorCode PetscBGGetMultiBG(PetscBG bg,PetscBG *multi)
       remote[i].rank = bg->remote[i].rank;
       remote[i].index = outoffset[i];
     }
-    ierr = PetscBGCreate(((PetscObject)bg)->comm,&bg->multi);CHKERRQ(ierr);
-    ierr = PetscBGSetSynchronizationType(bg->multi,bg->sync);CHKERRQ(ierr);
-    ierr = PetscBGSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFCreate(((PetscObject)bg)->comm,&bg->multi);CHKERRQ(ierr);
+    ierr = PetscSFSetSynchronizationType(bg->multi,bg->sync);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     if (bg->rankorder) {        /* Sort the ranks */
       PetscMPIInt rank;
       PetscInt *inranks,*newoffset,*outranks,*newoutoffset,*tmpoffset,maxdegree;
-      PetscBGNode *newremote;
+      PetscSFNode *newremote;
       ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
       for (i=0,maxdegree=0; i<bg->nowned; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
       ierr = PetscMalloc5(bg->multi->nowned,PetscInt,&inranks,bg->multi->nowned,PetscInt,&newoffset,bg->nlocal,PetscInt,&outranks,bg->nlocal,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
       for (i=0; i<bg->nlocal; i++) outranks[i] = rank;
-      ierr = PetscBGReduceBegin(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscBGReduceEnd(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
       for (i=0; i<bg->nowned; i++) {
         PetscInt j;
@@ -823,14 +823,14 @@ PetscErrorCode PetscBGGetMultiBG(PetscBG bg,PetscBG *multi)
         ierr = PetscSortIntWithArray(indegree[i],inranks+inoffset[i],tmpoffset);CHKERRQ(ierr);
         for (j=0; j<indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
-      ierr = PetscBGBcastBegin(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscBGBcastEnd(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
       ierr = PetscMalloc(bg->nlocal*sizeof(*newremote),&newremote);CHKERRQ(ierr);
       for (i=0; i<bg->nlocal; i++) {
         newremote[i].rank = bg->remote[i].rank;
         newremote[i].index = newoutoffset[i];
       }
-      ierr = PetscBGSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,newremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,newremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
       ierr = PetscFree5(inranks,newoffset,outranks,newoutoffset,tmpoffset);CHKERRQ(ierr);
     }
     ierr = PetscFree3(inoffset,outones,outoffset);CHKERRQ(ierr);
@@ -840,11 +840,11 @@ PetscErrorCode PetscBGGetMultiBG(PetscBG bg,PetscBG *multi)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGBcastBegin"
+#define __FUNCT__ "PetscSFBcastBegin"
 /*@C
-   PetscBGBcastBegin - begin pointwise broadcast to be concluded with call to PetscBGBcastEnd()
+   PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
 
-   Collective on PetscBG
+   Collective on PetscSF
 
    Input Arguments:
 +  bg - bipartite graph on which to communicate
@@ -856,9 +856,9 @@ PetscErrorCode PetscBGGetMultiBG(PetscBG bg,PetscBG *multi)
 
    Level: intermediate
 
-.seealso: PetscBGCreate(), PetscBGSetGraph(), PetscBGView(), PetscBGBcastEnd(), PetscBGReduceBegin()
+.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin()
 @*/
-PetscErrorCode PetscBGBcastBegin(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFBcastBegin(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
 {
   PetscErrorCode     ierr;
   PetscInt           i,nranks;
@@ -867,21 +867,21 @@ PetscErrorCode PetscBGBcastBegin(PetscBG bg,MPI_Datatype unit,const void *owned,
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscBGGetWindow(bg,unit,(void*)owned,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(bg,unit,(void*)owned,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    if (bg->sync == PETSCBG_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
+    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
     ierr = MPI_Get(ghosted,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
-    if (bg->sync == PETSCBG_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
+    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGBcastEnd"
+#define __FUNCT__ "PetscSFBcastEnd"
 /*@C
-   PetscBGBcastEnd - end a broadcast operation started with PetscBGBcastBegin()
+   PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
 
    Collective
 
@@ -895,23 +895,23 @@ PetscErrorCode PetscBGBcastBegin(PetscBG bg,MPI_Datatype unit,const void *owned,
 
    Level: intermediate
 
-.seealso: PetscBGSetGraph(), PetscBGReduceEnd()
+.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
 @*/
-PetscErrorCode PetscBGBcastEnd(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFBcastEnd(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
 {
   PetscErrorCode ierr;
   MPI_Win win;
 
   PetscFunctionBegin;
-  ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = PetscBGRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGReduceBegin"
+#define __FUNCT__ "PetscSFReduceBegin"
 /*@C
-   PetscBGReduceBegin - begin reduce of ghost copies into global, to be completed with call to PetscBGReduceEnd()
+   PetscSFReduceBegin - begin reduce of ghost copies into global, to be completed with call to PetscSFReduceEnd()
 
    Collective
 
@@ -926,9 +926,9 @@ PetscErrorCode PetscBGBcastEnd(PetscBG bg,MPI_Datatype unit,const void *owned,vo
 
    Level: intermediate
 
-.seealso: PetscBGBcastBegin()
+.seealso: PetscSFBcastBegin()
 @*/
-PetscErrorCode PetscBGReduceBegin(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+PetscErrorCode PetscSFReduceBegin(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
 {
   PetscErrorCode     ierr;
   PetscInt           i,nranks;
@@ -937,21 +937,21 @@ PetscErrorCode PetscBGReduceBegin(PetscBG bg,MPI_Datatype unit,const void *ghost
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscBGGetWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    if (bg->sync == PETSCBG_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
+    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
     ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
-    if (bg->sync == PETSCBG_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
+    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGReduceEnd"
+#define __FUNCT__ "PetscSFReduceEnd"
 /*@C
-   PetscBGReduceEnd - end a reduction operation started with PetscBGReduceBegin()
+   PetscSFReduceEnd - end a reduction operation started with PetscSFReduceBegin()
 
    Collective
 
@@ -966,24 +966,24 @@ PetscErrorCode PetscBGReduceBegin(PetscBG bg,MPI_Datatype unit,const void *ghost
 
    Level: intermediate
 
-.seealso: PetscBGSetGraph(), PetscBGBcastEnd()
+.seealso: PetscSFSetGraph(), PetscSFBcastEnd()
 @*/
-PetscErrorCode PetscBGReduceEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+PetscErrorCode PetscSFReduceEnd(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
 {
   PetscErrorCode ierr;
   MPI_Win win;
 
   PetscFunctionBegin;
-  ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
-  ierr = PetscBGRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGComputeDegreeBegin"
+#define __FUNCT__ "PetscSFComputeDegreeBegin"
 /*@C
-   PetscBGComputeDegreeBegin - begin computation of degree for each owned vertex, to be completed with PetscBGComputeDegreeEnd()
+   PetscSFComputeDegreeBegin - begin computation of degree for each owned vertex, to be completed with PetscSFComputeDegreeEnd()
 
    Collective
 
@@ -995,14 +995,14 @@ PetscErrorCode PetscBGReduceEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted
 
    Level: advanced
 
-.seealso: PetscBGGatherBegin()
+.seealso: PetscSFGatherBegin()
 @*/
-PetscErrorCode PetscBGComputeDegreeBegin(PetscBG bg,const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeBegin(PetscSF bg,const PetscInt **degree)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCBG_CLASSID,1);
+  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
   PetscValidPointer(degree,2);
   if (!bg->degree) {
     PetscInt i;
@@ -1010,16 +1010,16 @@ PetscErrorCode PetscBGComputeDegreeBegin(PetscBG bg,const PetscInt **degree)
     ierr = PetscMalloc(bg->nlocal*sizeof(PetscInt),&bg->degreetmp);CHKERRQ(ierr);
     for (i=0; i<bg->nowned; i++) bg->degree[i] = 0;
     for (i=0; i<bg->nlocal; i++) bg->degreetmp[i] = 1;
-    ierr = PetscBGReduceBegin(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
   }
   *degree = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGComputeDegreeEnd"
+#define __FUNCT__ "PetscSFComputeDegreeEnd"
 /*@C
-   PetscBGComputeDegreeEnd - complete computation of vertex degree that was started with PetscBGComputeDegreeBegin()
+   PetscSFComputeDegreeEnd - complete computation of vertex degree that was started with PetscSFComputeDegreeBegin()
 
    Collective
 
@@ -1033,13 +1033,13 @@ PetscErrorCode PetscBGComputeDegreeBegin(PetscBG bg,const PetscInt **degree)
 
 .seealso:
 @*/
-PetscErrorCode PetscBGComputeDegreeEnd(PetscBG bg,const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeEnd(PetscSF bg,const PetscInt **degree)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (bg->degreetmp) {
-    ierr = PetscBGReduceEnd(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscFree(bg->degreetmp);CHKERRQ(ierr);
   }
   *degree = bg->degree;
@@ -1047,9 +1047,9 @@ PetscErrorCode PetscBGComputeDegreeEnd(PetscBG bg,const PetscInt **degree)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGFetchAndOpBegin"
+#define __FUNCT__ "PetscSFFetchAndOpBegin"
 /*@C
-   PetscBGFetchAndOpBegin - begin operation that fetches values from owner and updates atomically by applying operation using local value, to be completed with PetscBGFetchAndOpEnd()
+   PetscSFFetchAndOpBegin - begin operation that fetches values from owner and updates atomically by applying operation using local value, to be completed with PetscSFFetchAndOpEnd()
 
    Collective
 
@@ -1065,9 +1065,9 @@ PetscErrorCode PetscBGComputeDegreeEnd(PetscBG bg,const PetscInt **degree)
 
    Level: advanced
 
-.seealso: PetscBGComputeDegreeBegin(), PetscBGReduceBegin(), PetscBGSetGraph()
+.seealso: PetscSFComputeDegreeBegin(), PetscSFReduceBegin(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscBGFetchAndOpBegin(PetscBG bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+PetscErrorCode PetscSFFetchAndOpBegin(PetscSF bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
 {
   PetscErrorCode ierr;
   PetscInt           i,nranks;
@@ -1076,9 +1076,9 @@ PetscErrorCode PetscBGFetchAndOpBegin(PetscBG bg,MPI_Datatype unit,void *owned,c
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscBGGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscBGGetWindow(bg,unit,owned,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(bg,unit,owned,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<bg->nranks; i++) {
     ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,bg->ranks[i],0,win);CHKERRQ(ierr);
     ierr = MPI_Get(result,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
@@ -1089,9 +1089,9 @@ PetscErrorCode PetscBGFetchAndOpBegin(PetscBG bg,MPI_Datatype unit,void *owned,c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGFetchAndOpEnd"
+#define __FUNCT__ "PetscSFFetchAndOpEnd"
 /*@C
-   PetscBGFetchAndOpEnd - end operation started in matching call to PetscBGFetchAndOpBegin() to fetch values from owner and update atomically by applying operation using local value
+   PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from owner and update atomically by applying operation using local value
 
    Collective
 
@@ -1107,24 +1107,24 @@ PetscErrorCode PetscBGFetchAndOpBegin(PetscBG bg,MPI_Datatype unit,void *owned,c
 
    Level: advanced
 
-.seealso: PetscBGComputeDegreeEnd(), PetscBGReduceEnd(), PetscBGSetGraph()
+.seealso: PetscSFComputeDegreeEnd(), PetscSFReduceEnd(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscBGFetchAndOpEnd(PetscBG bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+PetscErrorCode PetscSFFetchAndOpEnd(PetscSF bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
 {
   PetscErrorCode ierr;
   MPI_Win        win;
 
   PetscFunctionBegin;
-  ierr = PetscBGFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscBGFetchAndOpBegin(), rendering this implementation synchronous. */
-  ierr = PetscBGRestoreWindow(bg,unit,owned,PETSC_FALSE,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscSFFetchAndOpBegin(), rendering this implementation synchronous. */
+  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_FALSE,0,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGatherBegin"
+#define __FUNCT__ "PetscSFGatherBegin"
 /*@C
-   PetscBGGatherBegin - begin pointwise gather operation, to be completed with PetscBGGatherEnd()
+   PetscSFGatherBegin - begin pointwise gather operation, to be completed with PetscSFGatherEnd()
 
    Collective
 
@@ -1138,23 +1138,23 @@ PetscErrorCode PetscBGFetchAndOpEnd(PetscBG bg,MPI_Datatype unit,void *owned,con
 
    Level: intermediate
 
-.seealso: PetscBGComputeDegreeBegin(), PetscBGScatterBegin()
+.seealso: PetscSFComputeDegreeBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscBGGatherBegin(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned)
+PetscErrorCode PetscSFGatherBegin(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned)
 {
   PetscErrorCode ierr;
-  PetscBG        multi;
+  PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscBGReduceBegin(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGGatherEnd"
+#define __FUNCT__ "PetscSFGatherEnd"
 /*@C
-   PetscBGGatherEnd - ends pointwise gather operation that was started with PetscBGGatherBegin()
+   PetscSFGatherEnd - ends pointwise gather operation that was started with PetscSFGatherBegin()
 
    Collective
 
@@ -1168,23 +1168,23 @@ PetscErrorCode PetscBGGatherBegin(PetscBG bg,MPI_Datatype unit,const void *ghost
 
    Level: intermediate
 
-.seealso: PetscBGComputeDegreeEnd(), PetscBGScatterEnd()
+.seealso: PetscSFComputeDegreeEnd(), PetscSFScatterEnd()
 @*/
-PetscErrorCode PetscBGGatherEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted,void *owned)
+PetscErrorCode PetscSFGatherEnd(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned)
 {
   PetscErrorCode ierr;
-  PetscBG        multi;
+  PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscBGReduceEnd(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGScatterBegin"
+#define __FUNCT__ "PetscSFScatterBegin"
 /*@C
-   PetscBGScatterBegin - begin pointwise scatter operation, to be completed with PetscBGScatterEnd()
+   PetscSFScatterBegin - begin pointwise scatter operation, to be completed with PetscSFScatterEnd()
 
    Collective
 
@@ -1198,23 +1198,23 @@ PetscErrorCode PetscBGGatherEnd(PetscBG bg,MPI_Datatype unit,const void *ghosted
 
    Level: intermediate
 
-.seealso: PetscBGComputeDegreeBegin(), PetscBGScatterBegin()
+.seealso: PetscSFComputeDegreeBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscBGScatterBegin(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFScatterBegin(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
 {
   PetscErrorCode ierr;
-  PetscBG        multi;
+  PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscBGBcastBegin(multi,unit,owned,ghosted);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(multi,unit,owned,ghosted);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGScatterEnd"
+#define __FUNCT__ "PetscSFScatterEnd"
 /*@C
-   PetscBGScatterEnd - ends pointwise scatter operation that was started with PetscBGScatterBegin()
+   PetscSFScatterEnd - ends pointwise scatter operation that was started with PetscSFScatterBegin()
 
    Collective
 
@@ -1228,15 +1228,15 @@ PetscErrorCode PetscBGScatterBegin(PetscBG bg,MPI_Datatype unit,const void *owne
 
    Level: intermediate
 
-.seealso: PetscBGComputeDegreeEnd(), PetscBGScatterEnd()
+.seealso: PetscSFComputeDegreeEnd(), PetscSFScatterEnd()
 @*/
-PetscErrorCode PetscBGScatterEnd(PetscBG bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFScatterEnd(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
 {
   PetscErrorCode ierr;
-  PetscBG        multi;
+  PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetMultiBG(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscBGBcastEnd(multi,unit,owned,ghosted);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(multi,unit,owned,ghosted);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
