@@ -137,7 +137,7 @@ void DoCoreAffinity(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMaxPThreads"
-/*@ 
+/*
    PetscSetMaxPThreads - Sets the number of pthreads to create.
 
    Not collective
@@ -159,7 +159,7 @@ void DoCoreAffinity(void)
    available processing units.
    
 .seealso: PetscGetMaxPThreads()
-@*/ 
+*/ 
 PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads) 
 {
   PetscErrorCode ierr;
@@ -184,7 +184,7 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetMaxPThreads"
-/*@ 
+/*
    PetscGetMaxPThreads - Returns the number of pthreads created.
 
    Not collective
@@ -198,7 +198,7 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
    Must call PetscSetMaxPThreads() before
    
 .seealso: PetscSetMaxPThreads()
-@*/ 
+*/ 
 PetscErrorCode PetscGetMaxPThreads(PetscInt *nthreads)
 {
   PetscFunctionBegin;
