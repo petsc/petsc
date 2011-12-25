@@ -31,7 +31,7 @@
 
 PetscBool    PetscCheckCoreAffinity    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
-PetscMPIInt  PetscMaxThreads = 2;
+PetscMPIInt  PetscMaxThreads = -1; /* Later set when PetscSetMaxThreads is called */
 pthread_t*   PetscThreadPoint;
 int*         ThreadCoreAffinity;
 PetscInt     PetscMainThreadShareWork = 1; /* Flag to indicate whether the main thread shares work along with the worker threads, 1 by default, can be switched off using option -mainthread_no_share_work */
@@ -136,6 +136,81 @@ void DoCoreAffinity(void)
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSetMaxPThreads"
+/* 
+   PetscSetMaxPThreads - Sets the number of pthreads to create.
+
+   Not collective
+  
+   Input Parameters:
+.  nthreads - # of pthreads.
+
+   Options Database Keys:
+   -nthreads <nthreads> Number of pthreads to create.
+
+   Level: beginner
+ 
+   Notes:
+   Use nthreads = PETSC_DECIDE for PETSc to calculate the maximum number of pthreads to create.
+   The number of threads is then set to the number of processing units available
+   for the system. By default, PETSc will set max. threads = # of processing units
+   available - 1 (since we consider the main thread as also a worker thread). If the
+   option -mainthread_no_share_work is used, then max. threads created = # of
+   available processing units.
+   
+.seealso: PetscGetMaxPThreads()
+*/ 
+PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads) 
+{
+  PetscErrorCode ierr;
+  PetscBool      flg=PETSC_FALSE;
+
+  PetscFunctionBegin;
+
+  if(nthreads == PETSC_DECIDE) {
+    /* Check if run-time option is given */
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,&flg);CHKERRQ(ierr);
+    if(!flg) {
+      /* Use some default value if the information on # of cores is
+	 not available or cannot be figured out */
+      PetscMaxThreads = 0; 
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+      PetscMaxThreads = get_nprocs() - PetscMainThreadShareWork;
+#endif      
+    } 
+  } else PetscMaxThreads = nthreads;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGetMaxPThreads"
+/* 
+   PetscGetMaxPThreads - Returns the number of pthreads created.
+
+   Not collective
+  
+   Output Parameters:
+.  nthreads - Number of pthreads created.
+
+   Level: beginner
+ 
+   Notes:
+   Must call PetscSetMaxPThreads() before
+   
+.seealso: PetscSetMaxPThreads()
+*/ 
+PetscErrorCode PetscGetMaxPThreads(PetscInt *nthreads)
+{
+  PetscFunctionBegin;
+  if(PetscMaxThreads < 0) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscSetMaxPThreads() first");
+  } else {
+    *nthreads = PetscMaxThreads;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private_Pthread"
 PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 {
@@ -145,11 +220,14 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 
   PetscFunctionBegin;
 
+  /* Check to see if the user wants the main thread not to share work with the other threads */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
+  if(flg1) PetscMainThreadShareWork = 0;
+
   /*
       Set maximum number of threads
-   */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
-
+  */
+  ierr = PetscSetMaxPThreads(PETSC_DECIDE);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
@@ -180,10 +258,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     tstr[7] = '\0';
   }
 #endif
-  
-  /* Check to see if the user wants the main thread not to share work with the other threads */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
-  if(flg1) PetscMainThreadShareWork = 0;
   
   PetscCheckCoreAffinity = PETSC_TRUE;
 
