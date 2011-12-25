@@ -432,33 +432,6 @@ static PetscErrorCode MPIU_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MPIU_Type_get_contiguous_size"
-static PetscErrorCode MPIU_Type_get_contiguous_size(MPI_Datatype dtype,size_t *bytes)
-{
-  static const struct {MPI_Datatype type; size_t size;}
-  typemap[] = {
-    {MPI_INT,sizeof(PetscMPIInt)},
-    {MPI_FLOAT,sizeof(float)},
-    {MPI_DOUBLE,sizeof(double)},
-    {MPIU_INT,sizeof(PetscInt)},
-    {MPIU_2INT,2*sizeof(PetscInt)},
-    {MPIU_REAL,sizeof(PetscReal)},
-    {MPIU_SCALAR,sizeof(PetscScalar)}
-  };
-  PetscInt i;
-
-  PetscFunctionBegin;
-  for (i=0; i<sizeof(typemap)/sizeof(typemap[0]); i++) {
-    if (dtype == typemap[i].type) {
-      *bytes = typemap[i].size;
-      PetscFunctionReturn(0);
-    }
-  }
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this data type");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscBGGetDataTypes"
 /*@C
    PetscBGGetDataTypes - gets composite local and remote data types for each rank
@@ -582,11 +555,14 @@ PetscErrorCode PetscBGGetRanks(PetscBG bg,PetscInt *nranks,const PetscInt **rank
 PetscErrorCode PetscBGGetWindow(PetscBG bg,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
 {
   PetscErrorCode ierr;
-  size_t bytes;
+  MPI_Aint lb,lb_true,bytes,bytes_true;
   PetscBGWinLink link;
 
   PetscFunctionBegin;
-  ierr = MPIU_Type_get_contiguous_size(unit,&bytes);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
+  ierr = MPI_Type_get_true_extent(unit,&lb_true,&bytes_true);CHKERRQ(ierr);
+  if (lb != 0 || lb_true != 0) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
+  if (bytes != bytes_true) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   link->bytes = bytes;
   link->addr  = array;
