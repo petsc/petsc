@@ -38,6 +38,7 @@ pthread_t*   PetscThreadPoint;
 int*         ThreadCoreAffinity;
 PetscInt     PetscMainThreadShareWork = 1; /* Flag to indicate whether the main thread shares work along with the worker threads, 1 by default, can be switched off using option -mainthread_no_share_work */
 PetscInt     MainThreadCoreAffinity=0;
+PetscInt     N_CORES;
 
 typedef enum {THREADSYNC_NOPOOL,THREADSYNC_MAINPOOL,THREADSYNC_TRUEPOOL,THREADSYNC_CHAINPOOL,THREADSYNC_TREEPOOL,THREADSYNC_LOCKFREE} ThreadSynchronizationType;
 static const char *ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
@@ -173,16 +174,15 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
     /* Check if run-time option is given */
     ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,&flg);CHKERRQ(ierr);
     if(!flg) {
-      /* Use some default value if the information on # of cores is
-	 not available or cannot be figured out */
-      PetscMaxThreads = 0; 
+      PetscMaxThreads = 1; 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-      PetscMaxThreads = get_nprocs() - PetscMainThreadShareWork;
+      N_CORES = get_nprocs();
+      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
 #endif
 #if defined(PETSC_HAVE_SYS_SYSCTL_H) 
-      size_t   len = sizeof(PetscMaxThreads);
-      ierr = sysctlbyname("hw.activecpu",&PetscMaxThreads,&len,NULL,0);CHKERRQ(ierr);
-      PetscMaxThreads -= PetscMainThreadShareWork;
+      size_t   len = sizeof(N_CORES);
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
 #endif
     } 
   } else PetscMaxThreads = nthreads;
@@ -243,9 +243,8 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscSetMainThreadAffinity(MainThreadCoreAffinity);
 #endif
   }
-  
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  PetscInt N_CORES=get_nprocs();
+ 
+  /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
   ThreadCoreAffinity = (int*)malloc(PetscMaxThreads*sizeof(int));
   char tstr[9];
   char tbuf[2];
@@ -263,7 +262,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     }
     tstr[7] = '\0';
   }
-#endif
   
   PetscCheckCoreAffinity = PETSC_TRUE;
 
