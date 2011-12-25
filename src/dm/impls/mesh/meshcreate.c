@@ -87,7 +87,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
 
   PetscFunctionBegin;
   PetscValidPointer(cellVertices, 5);
-  /*PetscValidLogicalCollectiveBool(comm,interpolate,6);*/
+  /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
   if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dm_mesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, 
   PetscFunctionBegin;
   PetscValidPointer(numCorners, 4);
   PetscValidPointer(cellVertices, 5);
-  /*PetscValidLogicalCollectiveBool(comm,interpolate,6);*/
+  /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
   if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dmmesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
