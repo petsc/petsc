@@ -31,7 +31,7 @@
 
 PetscBool    PetscCheckCoreAffinity    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
-PetscMPIInt  PetscMaxThreads = -1; /* Later set when PetscSetMaxThreads is called */
+PetscMPIInt  PetscMaxThreads = -1; /* Later set when PetscSetMaxPThreads is called */
 pthread_t*   PetscThreadPoint;
 int*         ThreadCoreAffinity;
 PetscInt     PetscMainThreadShareWork = 1; /* Flag to indicate whether the main thread shares work along with the worker threads, 1 by default, can be switched off using option -mainthread_no_share_work */
@@ -137,7 +137,7 @@ void DoCoreAffinity(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMaxPThreads"
-/* 
+/*@ 
    PetscSetMaxPThreads - Sets the number of pthreads to create.
 
    Not collective
@@ -159,7 +159,7 @@ void DoCoreAffinity(void)
    available processing units.
    
 .seealso: PetscGetMaxPThreads()
-*/ 
+@*/ 
 PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads) 
 {
   PetscErrorCode ierr;
@@ -184,7 +184,7 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetMaxPThreads"
-/* 
+/*@ 
    PetscGetMaxPThreads - Returns the number of pthreads created.
 
    Not collective
@@ -198,7 +198,7 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
    Must call PetscSetMaxPThreads() before
    
 .seealso: PetscSetMaxPThreads()
-*/ 
+@*/ 
 PetscErrorCode PetscGetMaxPThreads(PetscInt *nthreads)
 {
   PetscFunctionBegin;
