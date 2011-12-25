@@ -216,7 +216,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 {
   PetscErrorCode                 ierr;
   PetscBool                      flg1=PETSC_FALSE;
-  ThreadSynchronizationType      thread_sync_type=THREADSYNC_MAINPOOL;
+  ThreadSynchronizationType      thread_sync_type=THREADSYNC_NOPOOL;
 
   PetscFunctionBegin;
 
