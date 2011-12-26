@@ -181,23 +181,42 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
 #define __FUNCT__ "PetscSFDistributeSection"
 PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection originalSection, PetscInt **remoteOffsets, PetscSection *newSection)
 {
-  const PetscInt *rankOffsets;
-  PetscInt        numRanks, numLocalPoints;
+  PetscSF         embedSF;
+  const PetscInt *ilocal, *indices;
+  IS              selected;
+  PetscInt        nleaves, rpStart, rpEnd, pStart = PETSC_MAX_INT, pEnd = -1, i;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sf, &numRanks, PETSC_NULL, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  numLocalPoints = rankOffsets[numRanks];
-  ierr = PetscMalloc(numLocalPoints * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(originalSection, &rpStart, &rpEnd);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
+  ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+  ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&selected);CHKERRQ(ierr);
+  ierr = PetscSFView(embedSF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(embedSF, PETSC_NULL, &nleaves, &ilocal, PETSC_NULL);CHKERRQ(ierr);
+  if (ilocal) {
+    for(i = 0; i < nleaves; ++i) {
+      pStart = PetscMin(pStart, ilocal[i]);
+      pEnd   = PetscMax(pEnd,   ilocal[i]);
+    }
+  } else {
+    pStart = 0;
+    pEnd   = nleaves;
+  }
+  ++pEnd;
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) sf)->comm, newSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*newSection, 0, numLocalPoints);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*newSection, pStart, pEnd);CHKERRQ(ierr);
   /* Could fuse these at the cost of a copy and extra allocation */
-  ierr = PetscSFBcastBegin(sf, MPIU_INT, &originalSection->atlasDof[-originalSection->atlasLayout.pStart], &(*newSection)->atlasDof[-(*newSection)->atlasLayout.pStart]);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_INT, &originalSection->atlasDof[-originalSection->atlasLayout.pStart], &(*newSection)->atlasDof[-(*newSection)->atlasLayout.pStart]);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], *remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], *remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &originalSection->atlasDof[-originalSection->atlasLayout.pStart], &(*newSection)->atlasDof[-(*newSection)->atlasLayout.pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &originalSection->atlasDof[-originalSection->atlasLayout.pStart], &(*newSection)->atlasDof[-(*newSection)->atlasLayout.pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], &(*remoteOffsets)[-pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], &(*remoteOffsets)[-pStart]);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
+  ierr = PetscSectionView(*newSection, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -210,10 +229,10 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection originalSection
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const PetscInt remoteOffsets[], PetscSF *sectionSF)
 {
   MPI_Comm           comm = ((PetscObject) sf)->comm;
+  const PetscInt    *localPoints;
+  PetscInt           pStart, pEnd;
   PetscInt           numRanks;
   const PetscInt    *ranks, *rankOffsets;
-  const PetscMPIInt *localPoints, *remotePoints;
-  PetscInt           pStart, pEnd;
   PetscInt           numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
@@ -221,33 +240,38 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
-  numPoints = rankOffsets[numRanks];
+  ierr = PetscSFGetGraph(sf, PETSC_NULL, &numPoints, &localPoints, PETSC_NULL);CHKERRQ(ierr);
   for(i = 0; i < numPoints; ++i) {
+    PetscInt localPoint = localPoints ? localPoints[i] : i;
     PetscInt dof;
 
-    ierr = PetscSectionGetDof(section, localPoints[i], &dof);CHKERRQ(ierr);
-    numIndices += dof;
+    if ((localPoint >= pStart) && (localPoint < pEnd)) {
+      ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
+      numIndices += dof;
+    }
   }
   ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
   /* Create new index graph */
-  ierr = PetscSectionGetChart(section, &pStart,  &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   for(r = 0, ind = 0; r < numRanks; ++r) {
     PetscInt rank = ranks[r];
 
     for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
-      PetscInt localPoint   = localPoints[i];
+      PetscInt localPoint   = localPoints ? localPoints[i] : i;
       PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
       PetscInt localOffset, dof, d;
 
-      ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
-      for(d = 0; d < dof; ++d, ++ind) {
-        localIndices[ind]        = localOffset+d;
-        remoteIndices[ind].rank  = rank;
-        remoteIndices[ind].index = remoteOffset+d;
+      if ((localPoint >= pStart) && (localPoint < pEnd)) {
+        ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
+        for(d = 0; d < dof; ++d, ++ind) {
+          localIndices[ind]        = localOffset+d;
+          remoteIndices[ind].rank  = rank;
+          remoteIndices[ind].index = remoteOffset+d;
+        }
       }
     }
   }
@@ -417,13 +441,15 @@ PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
   ierr = PetscSFCreateSectionSF(pointSF, newCoordSection, remoteOffsets, &coordSF);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coordSF);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(coordinates, &newCoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
+
+  ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -445,6 +471,7 @@ int main(int argc, char *argv[])
   ierr = DistributeMesh(dm, &user, &pointSF, &parallelDM);CHKERRQ(ierr);
   ierr = DistributeCoordinates(dm, pointSF, parallelDM);CHKERRQ(ierr);
   ierr = DMSetFromOptions(parallelDM);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMDestroy(&parallelDM);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
