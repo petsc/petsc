@@ -170,20 +170,22 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 
   PetscFunctionBegin;
 
-  if(nthreads == PETSC_DECIDE) {
-    /* Check if run-time option is given */
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,&flg);CHKERRQ(ierr);
-    if(!flg) {
-      PetscMaxThreads = 1; 
+  N_CORES=1; /* Default value if N_CORES cannot be found out */
+  PetscMaxThreads = N_CORES;
+  /* Find the number of cores */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-      N_CORES = get_nprocs();
-      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
+    N_CORES = get_nprocs();
 #endif
 #if defined(PETSC_HAVE_SYS_SYSCTL_H) 
       size_t   len = sizeof(N_CORES);
       ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
-      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
 #endif
+
+  if(nthreads == PETSC_DECIDE) {
+    /* Check if run-time option is given */
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,&flg);CHKERRQ(ierr);
+    if(!flg) {
+      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
     } 
   } else PetscMaxThreads = nthreads;
   PetscFunctionReturn(0);
