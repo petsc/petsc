@@ -870,6 +870,64 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateEmbeddedSF"
+/*@C
+   PetscSFCreateEmbeddedSF - removes edges from all but the selected roots, does not remap indices
+
+   Collective
+
+   Input Arguments:
++  sf - original star forest
+.  nroots - number of roots to select on this process
+-  selected - selected roots on this process
+
+   Output Arguments:
+.  newsf - new star forest
+
+   Level: advanced
+
+   Note:
+   To use the new PetscSF, it may be necessary to know the indices of the leaves that are still participating. This can
+   be done by calling PetscSFGetGraph().
+
+.seealso: PetscSFSetGraph(), PetscSFGetGraph()
+@*/
+PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt *selected,PetscSF *newsf)
+{
+  PetscErrorCode ierr;
+  PetscInt i,nleaves,*ilocal,*rootdata,*leafdata;
+  PetscSFNode *iremote;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (nroots) PetscValidPointer(selected,3);
+  PetscValidPointer(newsf,4);
+  ierr = PetscMalloc2(sf->nroots,PetscInt,&rootdata,sf->nleaves,PetscInt,&leafdata);CHKERRQ(ierr);
+  ierr = PetscMemzero(rootdata,sf->nroots*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(leafdata,sf->nleaves*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<nroots; i++) rootdata[selected[i]] = 1;
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+
+  for (i=0,nleaves=0; i<sf->nleaves; i++) nleaves += leafdata[i];
+  ierr = PetscMalloc(nleaves*sizeof(PetscInt),&ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&iremote);CHKERRQ(ierr);
+  for (i=0,nleaves=0; i<sf->nleaves; i++) {
+    if (leafdata[i]) {
+      ilocal[nleaves]        = sf->mine ? sf->mine[i] : i;
+      iremote[nleaves].rank  = sf->remote[i].rank;
+      iremote[nleaves].index = sf->remote[i].index;
+      nleaves++;
+    }
+  }
+  ierr = PetscSFCreate(((PetscObject)sf)->comm,newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetSynchronizationType(*newsf,sf->sync);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()

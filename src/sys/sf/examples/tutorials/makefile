@@ -35,8 +35,12 @@ runex1_5:
 	-@${MPIEXEC} -n 4 ./ex1 -test_scatter > ex1_5.tmp 2>&1; \
 	   ${DIFF} output/ex1_5.out ex1_5.tmp || echo "${PWD}\n Possible problem with with ex1_5, diffs above \n========================================="; \
 	   ${RM} -f ex1_5.tmp
+runex1_6:
+	-@${MPIEXEC} -n 4 ./ex1 -test_embed > ex1_6.tmp 2>&1; \
+	   ${DIFF} output/ex1_6.out ex1_6.tmp || echo "${PWD}\n Possible problem with with ex1_6, diffs above \n========================================="; \
+	   ${RM} -f ex1_6.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5 ex1.rm
+TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6 ex1.rm
 TESTEXAMPLES_C_X11	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =

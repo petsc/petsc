@@ -57,6 +57,7 @@ extern PetscErrorCode PetscSFSetSynchronizationType(PetscSF,PetscSFSynchronizati
 extern PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 extern PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt nroots,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode modelocal,const PetscSFNode *remote,PetscCopyMode moderemote);
 extern PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote);
+extern PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt nroots,const PetscInt *selected,PetscSF *newsf);
 extern PetscErrorCode PetscSFCreateArray(PetscSF,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscSFDestroyArray(PetscSF,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscSFReset(PetscSF);

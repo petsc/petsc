@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -40,6 +40,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
   test_scatter = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
+  test_embed = PETSC_FALSE;
+  ierr = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nroots = 2 + (PetscInt)(rank == 0);
@@ -160,6 +162,15 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Scattered data at leaves\n");CHKERRQ(ierr);
     ierr = PetscIntView(nleaves,outdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
+  }
+
+  if (test_embed) {
+    const PetscInt nroots = 1 + (PetscInt)!rank,selected[] = {1,2};
+    PetscSF esf;
+    ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&esf);CHKERRQ(ierr);
   }
 
   /* Clean storage for star forest. */
