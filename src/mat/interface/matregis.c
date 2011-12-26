@@ -96,7 +96,7 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = MatRegisterBaseName(MATAIJPTHREAD,MATSEQAIJPTHREAD,0);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJPTHREAD,  path,"MatCreate_SeqAIJPThread",      MatCreate_SeqAIJPThread);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJPTHREAD,  path,"MatCreate_SeqAIJPThread", MatCreate_SeqAIJPThread);CHKERRQ(ierr);
 #endif
 
   ierr = MatRegisterBaseName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM);CHKERRQ(ierr);
