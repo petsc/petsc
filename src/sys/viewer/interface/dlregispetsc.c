@@ -73,6 +73,10 @@ PetscErrorCode  PetscSysInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_SF
+extern PetscErrorCode PetscSFInitializePackage(const char *path);
+#endif
+
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 
@@ -116,6 +120,9 @@ PetscErrorCode  PetscDLLibraryRegister_petscsys(const char path[])
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_SF
+  ierr = PetscSFInitializePackage(path);CHKERRQ(ierr);
+#endif
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscDLLibraryRegister_petscvec(path);CHKERRQ(ierr);
