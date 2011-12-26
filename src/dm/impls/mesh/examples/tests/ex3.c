@@ -261,11 +261,11 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DistributeMesh"
-PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
+PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *parallelDM)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscSF        partSF, pointSF;
+  PetscSF        partSF;
   ISLocalToGlobalMapping renumbering;
   IS             cellPart,        part;
   PetscSection   cellPartSection, partSection;
@@ -330,7 +330,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */
-  ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, &pointSF);CHKERRQ(ierr);
+  ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, pointSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
   /* Distribute cones
    - Partitioning:         input partition point map and naive sf, output sf with inverse of map, distribute points
@@ -346,11 +346,11 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   /* Create PetscSection for original cones */
   ierr = DMMeshCreateConeSection(dm, &originalConeSection);CHKERRQ(ierr);
   /* Distribute Section */
-  ierr = PetscSFDistributeSection(pointSF, originalConeSection, &remoteOffsets, &newConeSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(*pointSF, originalConeSection, &remoteOffsets, &newConeSection);CHKERRQ(ierr);
   ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Create SF for cones */
-  ierr = PetscSFCreateSectionSF(pointSF, newConeSection, remoteOffsets, &coneSF);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(*pointSF, newConeSection, remoteOffsets, &coneSF);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(newConeSection, &pStart, &pEnd);CHKERRQ(ierr);
 
   ALE::Obj<PETSC_MESH_TYPE>             newMesh  = new PETSC_MESH_TYPE(comm, mesh->getDimension(), mesh->debug());
@@ -375,7 +375,6 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
 
   ierr = PetscSectionDestroy(&originalConeSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&newConeSection);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
 
   newMesh->getSieve()->symmetrize();
@@ -386,11 +385,45 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, DM *parallelDM)
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   ierr = ISDestroy(&part);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
 
   ierr = DMMeshCreate(comm, parallelDM);CHKERRQ(ierr);
   ierr = DMMeshSetMesh(*parallelDM, newMesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DistributeCoordinates"
+PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
+{
+  PetscSF        coordSF;
+  PetscSection   originalCoordSection, newCoordSection;
+  Vec            coordinates, newCoordinates;
+  PetscScalar   *coords,     *newCoords;
+  PetscInt      *remoteOffsets;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+
+  ierr = PetscSFDistributeSection(pointSF, originalCoordSection, &remoteOffsets, &newCoordSection);CHKERRQ(ierr);
+
+  ierr = DMMeshSetCoordinateSection(parallelDM, newCoordSection);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateVec(parallelDM, &newCoordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(newCoordinates, &newCoords);CHKERRQ(ierr);
+
+  ierr = PetscSFCreateSectionSF(pointSF, newCoordSection, remoteOffsets, &coordSF);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&coordSF);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(coordinates, &newCoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -400,6 +433,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   DM             dm, parallelDM;
+  PetscSF        pointSF;
   AppCtx         user;
   PetscErrorCode ierr;
 
@@ -408,7 +442,8 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
-  ierr = DistributeMesh(dm, &user, &parallelDM);CHKERRQ(ierr);
+  ierr = DistributeMesh(dm, &user, &pointSF, &parallelDM);CHKERRQ(ierr);
+  ierr = DistributeCoordinates(dm, pointSF, parallelDM);CHKERRQ(ierr);
   ierr = DMSetFromOptions(parallelDM);CHKERRQ(ierr);
   ierr = DMDestroy(&parallelDM);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
