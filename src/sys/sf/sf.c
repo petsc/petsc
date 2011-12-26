@@ -6,58 +6,58 @@ const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","Pets
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFCreate"
 /*@C
-   PetscSFCreate - create a bipartite graph communication context
+   PetscSFCreate - create a star forest communication context
 
    Not Collective
 
    Input Arguments:
-.  comm - communicator on which the bipartite graph will operate
+.  comm - communicator on which the star forest will operate
 
    Output Arguments:
-.  bg - new bipartite graph context
+.  sf - new star forest context
 
    Level: intermediate
 
 .seealso: PetscSFSetGraph(), PetscSFDestroy()
 @*/
-PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *bg)
+PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 {
   PetscErrorCode ierr;
   PetscSF        b;
 
   PetscFunctionBegin;
-  PetscValidPointer(bg,2);
+  PetscValidPointer(sf,2);
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscSFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,-1,"PetscSF","Bipartite Graph","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
-  b->nowned    = -1;
-  b->nlocal    = -1;
+  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,-1,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
+  b->nroots    = -1;
+  b->nleaves   = -1;
   b->nranks    = -1;
   b->sync      = PETSCSF_SYNCHRONIZATION_FENCE;
   b->rankorder = PETSC_TRUE;
   b->ingroup   = MPI_GROUP_NULL;
   b->outgroup  = MPI_GROUP_NULL;
-  *bg = b;
+  *sf = b;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFReset"
 /*@C
-   PetscSFReset - Reset a bipartite graph so that different sizes or neighbors can be used
+   PetscSFReset - Reset a star forest so that different sizes or neighbors can be used
 
    Collective
 
    Input Arguments:
-.  bg - bipartite graph
+.  sf - star forest
 
    Level: advanced
 
 .seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFDestroy()
 @*/
-PetscErrorCode PetscSFReset(PetscSF bg)
+PetscErrorCode PetscSFReset(PetscSF sf)
 {
   PetscErrorCode ierr;
   PetscSFDataLink link,next;
@@ -65,60 +65,60 @@ PetscErrorCode PetscSFReset(PetscSF bg)
   PetscInt i;
 
   PetscFunctionBegin;
-  bg->mine = PETSC_NULL;
-  ierr = PetscFree(bg->mine_alloc);CHKERRQ(ierr);
-  bg->remote = PETSC_NULL;
-  ierr = PetscFree(bg->remote_alloc);CHKERRQ(ierr);
-  ierr = PetscFree4(bg->ranks,bg->roffset,bg->rmine,bg->rremote);CHKERRQ(ierr);
-  ierr = PetscFree(bg->degree);CHKERRQ(ierr);
-  for (link=bg->link; link; link=next) {
+  sf->mine = PETSC_NULL;
+  ierr = PetscFree(sf->mine_alloc);CHKERRQ(ierr);
+  sf->remote = PETSC_NULL;
+  ierr = PetscFree(sf->remote_alloc);CHKERRQ(ierr);
+  ierr = PetscFree4(sf->ranks,sf->roffset,sf->rmine,sf->rremote);CHKERRQ(ierr);
+  ierr = PetscFree(sf->degree);CHKERRQ(ierr);
+  for (link=sf->link; link; link=next) {
     next = link->next;
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
-    for (i=0; i<bg->nranks; i++) {
+    for (i=0; i<sf->nranks; i++) {
       ierr = MPI_Type_free(&link->mine[i]);CHKERRQ(ierr);
       ierr = MPI_Type_free(&link->remote[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree2(link->mine,link->remote);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
-  bg->link = PETSC_NULL;
-  for (wlink=bg->wins; wlink; wlink=wnext) {
+  sf->link = PETSC_NULL;
+  for (wlink=sf->wins; wlink; wlink=wnext) {
     wnext = wlink->next;
-    if (wlink->inuse) SETERRQ1(((PetscObject)bg)->comm,PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
+    if (wlink->inuse) SETERRQ1(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
     ierr = MPI_Win_free(&wlink->win);CHKERRQ(ierr);
     ierr = PetscFree(wlink);CHKERRQ(ierr);
   }
-  bg->wins = PETSC_NULL;
-  if (bg->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->ingroup);CHKERRQ(ierr);}
-  if (bg->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&bg->outgroup);CHKERRQ(ierr);}
-  ierr = PetscSFDestroy(&bg->multi);CHKERRQ(ierr);
+  sf->wins = PETSC_NULL;
+  if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
+  if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
+  ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFDestroy"
 /*@C
-   PetscSFDestroy - destroy bipartite graph
+   PetscSFDestroy - destroy star forest
 
    Collective
 
    Input Arguments:
-.  bg - bipartite graph context
+.  sf - address of star forest
 
    Level: intermediate
 
 .seealso: PetscSFCreate(), PetscSFReset()
 @*/
-PetscErrorCode PetscSFDestroy(PetscSF *bg)
+PetscErrorCode PetscSFDestroy(PetscSF *sf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!*bg) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*bg),PETSCSF_CLASSID,1);
-  if (--((PetscObject)(*bg))->refct > 0) {*bg = 0; PetscFunctionReturn(0);}
-  ierr = PetscSFReset(*bg);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(bg);CHKERRQ(ierr);
+  if (!*sf) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*sf),PETSCSF_CLASSID,1);
+  if (--((PetscObject)(*sf))->refct > 0) {*sf = 0; PetscFunctionReturn(0);}
+  ierr = PetscSFReset(*sf);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -130,10 +130,10 @@ PetscErrorCode PetscSFDestroy(PetscSF *bg)
    Logically Collective
 
    Input Arguments:
-.  bg - bipartite graph
+.  sf - star forest
 
    Options Database Keys:
-.  -bg_synchronization - synchronization type used by PetscSF
+.  -sf_synchronization - synchronization type used by PetscSF
 
    Level: intermediate
 
@@ -141,15 +141,15 @@ PetscErrorCode PetscSFDestroy(PetscSF *bg)
 
 .seealso: PetscSFSetSynchronizationType()
 @*/
-PetscErrorCode PetscSFSetFromOptions(PetscSF bg)
+PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)bg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-bg_synchronization","synchronization type to use for PetscSF communication","PetscSFSetSynchronizationType",PetscSFSynchronizationTypes,(PetscEnum)bg->sync,(PetscEnum*)&bg->sync,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-bg_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",bg->rankorder,&bg->rankorder,PETSC_NULL);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscObjectOptionsBegin((PetscObject)sf);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-sf_synchronization","synchronization type to use for PetscSF communication","PetscSFSetSynchronizationType",PetscSFSynchronizationTypes,(PetscEnum)sf->sync,(PetscEnum*)&sf->sync,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -162,23 +162,23 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF bg)
    Logically Collective
 
    Input Arguments:
-+  bg - bipartite graph for communication
++  sf - star forest for communication
 -  sync - synchronization type
 
    Options Database Key:
-.  -bg_synchronization <sync> - sets the synchronization type
+.  -sf_synchronization <sync> - sets the synchronization type
 
    Level: intermediate
 
 .seealso: PetscSFSetFromOptions()
 @*/
-PetscErrorCode PetscSFSetSynchronizationType(PetscSF bg,PetscSFSynchronizationType sync)
+PetscErrorCode PetscSFSetSynchronizationType(PetscSF sf,PetscSFSynchronizationType sync)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(bg,sync,2);
-  bg->sync = sync;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(sf,sync,2);
+  sf->sync = sync;
   PetscFunctionReturn(0);
 }
 
@@ -190,45 +190,45 @@ PetscErrorCode PetscSFSetSynchronizationType(PetscSF bg,PetscSFSynchronizationTy
    Logically Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 -  flg - PETSC_TRUE to sort, PETSC_FALSE to skip sorting (lower setup cost, but non-deterministic)
 
    Level: advanced
 
 .seealso: PetscSFGatherBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscSFSetRankOrder(PetscSF bg,PetscBool flg)
+PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  PetscValidLogicalCollectiveBool(bg,flg,2);
-  if (bg->multi) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
-  bg->rankorder = flg;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscValidLogicalCollectiveBool(sf,flg,2);
+  if (sf->multi) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
+  sf->rankorder = flg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetGraph"
 /*@C
-   PetscSFSetGraph - Set a parallel bipartite graph
+   PetscSFSetGraph - Set a parallel star forest
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
-.  nowned - number of owned points (these are possible targets for remote references)
-.  nlocal - number of local nodes referencing remote nodes
-.  ilocal - locations of local/ghosted nodes, or PETSC_NULL for contiguous storage
++  sf - star forest
+.  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
+.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
+.  ilocal - locations of leaves in leafdata buffers, pass PETSC_NULL for contiguous storage
 .  localmode - copy mode for ilocal
-.  iremote - locations of global nodes
+.  iremote - remote locations of root vertices for each leaf on the current process
 -  remotemode - copy mode for iremote
 
    Level: intermediate
 
 .seealso: PetscSFCreate(), PetscSFView()
 @*/
-PetscErrorCode PetscSFSetGraph(PetscSF bg,PetscInt nowned,PetscInt nlocal,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
+PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
 {
   PetscErrorCode ierr;
   PetscTable table;
@@ -237,79 +237,79 @@ PetscErrorCode PetscSFSetGraph(PetscSF bg,PetscInt nowned,PetscInt nlocal,const 
   PetscInt i,*rcount;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  if (nlocal && ilocal) PetscValidIntPointer(ilocal,4);
-  if (nlocal) PetscValidPointer(iremote,6);
-  ierr = PetscSFReset(bg);CHKERRQ(ierr);
-  bg->nowned = nowned;
-  bg->nlocal = nlocal;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (nleaves && ilocal) PetscValidIntPointer(ilocal,4);
+  if (nleaves) PetscValidPointer(iremote,6);
+  ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  sf->nroots = nroots;
+  sf->nleaves = nleaves;
   if (ilocal) {
     switch (localmode) {
     case PETSC_COPY_VALUES:
-      ierr = PetscMalloc(nlocal*sizeof(*bg->mine),&bg->mine_alloc);CHKERRQ(ierr);
-      bg->mine = bg->mine_alloc;
-      ierr = PetscMemcpy(bg->mine,ilocal,nlocal*sizeof(*bg->mine));CHKERRQ(ierr);
+      ierr = PetscMalloc(nleaves*sizeof(*sf->mine),&sf->mine_alloc);CHKERRQ(ierr);
+      sf->mine = sf->mine_alloc;
+      ierr = PetscMemcpy(sf->mine,ilocal,nleaves*sizeof(*sf->mine));CHKERRQ(ierr);
       break;
     case PETSC_OWN_POINTER:
-      bg->mine_alloc = (PetscInt*)ilocal;
-      bg->mine = bg->mine_alloc;
+      sf->mine_alloc = (PetscInt*)ilocal;
+      sf->mine = sf->mine_alloc;
       break;
     case PETSC_USE_POINTER:
-      bg->mine = (PetscInt*)ilocal;
+      sf->mine = (PetscInt*)ilocal;
       break;
-    default: SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown localmode");
+    default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown localmode");
     }
   }
   switch (remotemode) {
   case PETSC_COPY_VALUES:
-    ierr = PetscMalloc(nlocal*sizeof(*bg->remote),&bg->remote_alloc);CHKERRQ(ierr);
-    bg->remote = bg->remote_alloc;
-    ierr = PetscMemcpy(bg->remote,iremote,nlocal*sizeof(*bg->remote));CHKERRQ(ierr);
+    ierr = PetscMalloc(nleaves*sizeof(*sf->remote),&sf->remote_alloc);CHKERRQ(ierr);
+    sf->remote = sf->remote_alloc;
+    ierr = PetscMemcpy(sf->remote,iremote,nleaves*sizeof(*sf->remote));CHKERRQ(ierr);
     break;
   case PETSC_OWN_POINTER:
-    bg->remote_alloc = (PetscSFNode*)iremote;
-    bg->remote = bg->remote_alloc;
+    sf->remote_alloc = (PetscSFNode*)iremote;
+    sf->remote = sf->remote_alloc;
     break;
   case PETSC_USE_POINTER:
-    bg->remote = (PetscSFNode*)iremote;
+    sf->remote = (PetscSFNode*)iremote;
     break;
-  default: SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown remotemode");
+  default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown remotemode");
   }
 
-  ierr = MPI_Comm_size(((PetscObject)bg)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)sf)->comm,&size);CHKERRQ(ierr);
   ierr = PetscTableCreate(10,size,&table);CHKERRQ(ierr);
-  for (i=0; i<nlocal; i++) {
+  for (i=0; i<nleaves; i++) {
     /* Log 1-based rank */
     ierr = PetscTableAdd(table,iremote[i].rank+1,1,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = PetscTableGetCount(table,&bg->nranks);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bg->nranks,PetscInt,&bg->ranks,bg->nranks+1,PetscInt,&bg->roffset,nlocal,PetscMPIInt,&bg->rmine,nlocal,PetscMPIInt,&bg->rremote);CHKERRQ(ierr);
-  ierr = PetscMalloc(bg->nranks*sizeof(PetscInt),&rcount);CHKERRQ(ierr);
+  ierr = PetscTableGetCount(table,&sf->nranks);CHKERRQ(ierr);
+  ierr = PetscMalloc4(sf->nranks,PetscInt,&sf->ranks,sf->nranks+1,PetscInt,&sf->roffset,nleaves,PetscMPIInt,&sf->rmine,nleaves,PetscMPIInt,&sf->rremote);CHKERRQ(ierr);
+  ierr = PetscMalloc(sf->nranks*sizeof(PetscInt),&rcount);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(table,&pos);CHKERRQ(ierr);
-  for (i=0; i<bg->nranks; i++) {
-    ierr = PetscTableGetNext(table,&pos,&bg->ranks[i],&rcount[i]);CHKERRQ(ierr);
-    bg->ranks[i]--;             /* Convert back to 0-based */
+  for (i=0; i<sf->nranks; i++) {
+    ierr = PetscTableGetNext(table,&pos,&sf->ranks[i],&rcount[i]);CHKERRQ(ierr);
+    sf->ranks[i]--;             /* Convert back to 0-based */
   }
   ierr = PetscTableDestroy(&table);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(bg->nranks,bg->ranks,rcount);CHKERRQ(ierr);
-  bg->roffset[0] = 0;
-  for (i=0; i<bg->nranks; i++) {
-    bg->roffset[i+1] = bg->roffset[i] + rcount[i];
+  ierr = PetscSortIntWithArray(sf->nranks,sf->ranks,rcount);CHKERRQ(ierr);
+  sf->roffset[0] = 0;
+  for (i=0; i<sf->nranks; i++) {
+    sf->roffset[i+1] = sf->roffset[i] + rcount[i];
     rcount[i] = 0;
   }
-  for (i=0; i<nlocal; i++) {
+  for (i=0; i<nleaves; i++) {
     PetscInt lo,hi,irank;
-    /* Search for index of iremote[i].rank in bg->ranks */
-    lo = 0; hi = bg->nranks;
+    /* Search for index of iremote[i].rank in sf->ranks */
+    lo = 0; hi = sf->nranks;
     while (hi - lo > 1) {
       PetscInt mid = lo + (hi - lo)/2;
-      if (iremote[i].rank < bg->ranks[mid]) hi = mid;
+      if (iremote[i].rank < sf->ranks[mid]) hi = mid;
       else                                  lo = mid;
     }
-    if (hi - lo == 1 && iremote[i].rank == bg->ranks[lo]) irank = lo;
+    if (hi - lo == 1 && iremote[i].rank == sf->ranks[lo]) irank = lo;
     else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",iremote[i].rank);
-    bg->rmine[bg->roffset[irank] + rcount[irank]] = ilocal ? ilocal[i] : i;
-    bg->rremote[bg->roffset[irank] + rcount[irank]] = iremote[i].index;
+    sf->rmine[sf->roffset[irank] + rcount[irank]] = ilocal ? ilocal[i] : i;
+    sf->rremote[sf->roffset[irank] + rcount[irank]] = iremote[i].index;
     rcount[irank]++;
   }
   ierr = PetscFree(rcount);CHKERRQ(ierr);
@@ -319,47 +319,47 @@ PetscErrorCode PetscSFSetGraph(PetscSF bg,PetscInt nowned,PetscInt nlocal,const 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFView"
 /*@C
-   PetscSFView - view a bipartite graph
+   PetscSFView - view a star forest
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 -  viewer - viewer to display graph, for example PETSC_VIEWER_STDOUT_WORLD
 
    Level: beginner
 
 .seealso: PetscSFCreate(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscSFView(PetscSF bg,PetscViewer viewer)
+PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject)bg)->comm,&viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject)sf)->comm,&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(bg,1,viewer,2);
+  PetscCheckSameComm(sf,1,viewer,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
     PetscInt i,j;
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)bg,viewer,"Bipartite Graph Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[bg->sync],bg->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[sf->sync],sf->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)sf)->comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of outgoing edges=%D, remote ranks=%D\n",rank,bg->nlocal,bg->nranks);CHKERRQ(ierr);
-    for (i=0; i<bg->nlocal; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D -> (%D,%D)\n",rank,bg->mine?bg->mine[i]:i,bg->remote[i].rank,bg->remote[i].index);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
+    for (i=0; i<sf->nleaves; i++) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D -> (%D,%D)\n",rank,sf->mine?sf->mine[i]:i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Outgoing edges by rank\n",rank);CHKERRQ(ierr);
-    for (i=0; i<bg->nranks; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,bg->ranks[i],bg->roffset[i+1]-bg->roffset[i]);CHKERRQ(ierr);
-      for (j=bg->roffset[i]; j<bg->roffset[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D -> %D\n",rank,bg->rmine[j],bg->rremote[j]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
+    for (i=0; i<sf->nranks; i++) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+      for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D -> %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -439,18 +439,18 @@ static PetscErrorCode MPIU_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool 
    Not Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 -  unit - data type for each node
 
    Output Arguments:
-+  localtypes - types describing part of local buffer referencing each remote rank
--  remotetypes - types describing part of remote buffer referenced for each remote rank
++  localtypes - types describing part of local leaf buffer referencing each remote rank
+-  remotetypes - types describing part of remote root buffer referenced for each remote rank
 
    Level: developer
 
 .seealso: PetscSFSetGraph(), PetscSFView()
 @*/
-PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Datatype **localtypes,const MPI_Datatype **remotetypes)
+PetscErrorCode PetscSFGetDataTypes(PetscSF sf,MPI_Datatype unit,const MPI_Datatype **localtypes,const MPI_Datatype **remotetypes)
 {
   PetscErrorCode ierr;
   PetscSFDataLink link;
@@ -460,7 +460,7 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Dataty
 
   PetscFunctionBegin;
   /* Look for types in cache */
-  for (link=bg->link; link; link=link->next) {
+  for (link=sf->link; link; link=link->next) {
     PetscBool match;
     ierr = MPIU_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
     if (match) {
@@ -471,19 +471,19 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Dataty
   }
 
   /* Create new composite types for each send rank */
-  ierr = PetscSFGetRanks(bg,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     PetscInt rcount = roffset[i+1] - roffset[i];
-    ierr = MPI_Type_create_indexed_block(rcount,1,bg->rmine+bg->roffset[i],link->unit,&link->mine[i]);CHKERRQ(ierr);
-    ierr = MPI_Type_create_indexed_block(rcount,1,bg->rremote+bg->roffset[i],link->unit,&link->remote[i]);CHKERRQ(ierr);
+    ierr = MPI_Type_create_indexed_block(rcount,1,sf->rmine+sf->roffset[i],link->unit,&link->mine[i]);CHKERRQ(ierr);
+    ierr = MPI_Type_create_indexed_block(rcount,1,sf->rremote+sf->roffset[i],link->unit,&link->remote[i]);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&link->mine[i]);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&link->remote[i]);CHKERRQ(ierr);
   }
-  link->next = bg->link;
-  bg->link = link;
+  link->next = sf->link;
+  sf->link = link;
 
   *localtypes = link->mine;
   *remotetypes = link->remote;
@@ -493,12 +493,12 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Dataty
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFGetRanks"
 /*@C
-   PetscSFGetRanks - Get ranks and number of vertices referenced by local part of graph
+   PetscSFGetRanks - Get ranks and number of vertices referenced by leaves on this process
 
    Not Collective
 
    Input Arguments:
-.  bg - bipartite graph
+.  sf - star forest
 
    Output Arguments:
 +  nranks - number of ranks referenced by local part
@@ -511,16 +511,16 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF bg,MPI_Datatype unit,const MPI_Dataty
 
 .seealso: PetscSFSetGraph(), PetscSFGetDataTypes()
 @*/
-PetscErrorCode PetscSFGetRanks(PetscSF bg,PetscInt *nranks,const PetscInt **ranks,const PetscInt **roffset,const PetscMPIInt **rmine,const PetscMPIInt **rremote)
+PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscInt **ranks,const PetscInt **roffset,const PetscMPIInt **rmine,const PetscMPIInt **rremote)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
-  if (nranks)  *nranks  = bg->nranks;
-  if (ranks)   *ranks   = bg->ranks;
-  if (roffset) *roffset = bg->roffset;
-  if (rmine)   *rmine   = bg->rmine;
-  if (rremote) *rremote = bg->rremote;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (nranks)  *nranks  = sf->nranks;
+  if (ranks)   *ranks   = sf->ranks;
+  if (roffset) *roffset = sf->roffset;
+  if (rmine)   *rmine   = sf->rmine;
+  if (rremote) *rremote = sf->rremote;
   PetscFunctionReturn(0);
 }
 
@@ -532,7 +532,7 @@ PetscErrorCode PetscSFGetRanks(PetscSF bg,PetscInt *nranks,const PetscInt **rank
    Collective on PetscSF
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
 .  array - array to be sent
 .  epoch - PETSC_TRUE to acquire the window and start an epoch, PETSC_FALSE to just acquire the window
@@ -552,7 +552,7 @@ PetscErrorCode PetscSFGetRanks(PetscSF bg,PetscInt *nranks,const PetscInt **rank
 
 .seealso: PetscSFGetRanks(), PetscSFGetDataTypes()
 @*/
-PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
+PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
 {
   PetscErrorCode ierr;
   MPI_Aint lb,lb_true,bytes,bytes_true;
@@ -561,20 +561,20 @@ PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBo
   PetscFunctionBegin;
   ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
   ierr = MPI_Type_get_true_extent(unit,&lb_true,&bytes_true);CHKERRQ(ierr);
-  if (lb != 0 || lb_true != 0) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
-  if (bytes != bytes_true) SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
+  if (lb != 0 || lb_true != 0) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
+  if (bytes != bytes_true) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   link->bytes = bytes;
   link->addr  = array;
-  ierr = MPI_Win_create(array,(MPI_Aint)bytes*bg->nowned,(PetscMPIInt)bytes,MPI_INFO_NULL,((PetscObject)bg)->comm,&link->win);CHKERRQ(ierr);
+  ierr = MPI_Win_create(array,(MPI_Aint)bytes*sf->nroots,(PetscMPIInt)bytes,MPI_INFO_NULL,((PetscObject)sf)->comm,&link->win);CHKERRQ(ierr);
   link->epoch = epoch;
-  link->next = bg->wins;
+  link->next = sf->wins;
   link->inuse = PETSC_TRUE;
-  bg->wins = link;
+  sf->wins = link;
   *win = link->win;
 
   if (epoch) {
-    switch (bg->sync) {
+    switch (sf->sync) {
     case PETSCSF_SYNCHRONIZATION_FENCE:
       ierr = MPI_Win_fence(fenceassert,*win);CHKERRQ(ierr);
       break;
@@ -582,11 +582,11 @@ PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBo
       break;
     case PETSCSF_SYNCHRONIZATION_ACTIVE: {
       MPI_Group ingroup,outgroup;
-      ierr = PetscSFGetGroups(bg,&ingroup,&outgroup);CHKERRQ(ierr);
+      ierr = PetscSFGetGroups(sf,&ingroup,&outgroup);CHKERRQ(ierr);
       ierr = MPI_Win_post(ingroup,postassert,*win);CHKERRQ(ierr);
       ierr = MPI_Win_start(outgroup,startassert,*win);CHKERRQ(ierr);
     } break;
-    default: SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
+    default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
     }
   }
   PetscFunctionReturn(0);
@@ -600,7 +600,7 @@ PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBo
    Not Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
 -  array - array with which the window is associated
 
@@ -611,12 +611,12 @@ PetscErrorCode PetscSFGetWindow(PetscSF bg,MPI_Datatype unit,void *array,PetscBo
 
 .seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
 @*/
-PetscErrorCode PetscSFFindWindow(PetscSF bg,MPI_Datatype unit,const void *array,MPI_Win *win)
+PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void *array,MPI_Win *win)
 {
   PetscSFWinLink link;
 
   PetscFunctionBegin;
-  for (link=bg->wins; link; link=link->next) {
+  for (link=sf->wins; link; link=link->next) {
     if (array == link->addr) {
       *win = link->win;
       PetscFunctionReturn(0);
@@ -634,7 +634,7 @@ PetscErrorCode PetscSFFindWindow(PetscSF bg,MPI_Datatype unit,const void *array,
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
 .  array - array associated with window
 .  epoch - close an epoch, must match argument to PetscSFGetWindow()
@@ -644,13 +644,13 @@ PetscErrorCode PetscSFFindWindow(PetscSF bg,MPI_Datatype unit,const void *array,
 
 .seealso: PetscSFFindWindow()
 @*/
-PetscErrorCode PetscSFRestoreWindow(PetscSF bg,MPI_Datatype unit,const void *array,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
+PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,const void *array,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
 {
   PetscErrorCode ierr;
   PetscSFWinLink *p,link;
 
   PetscFunctionBegin;
-  for (p=&bg->wins; *p; p=&(*p)->next) {
+  for (p=&sf->wins; *p; p=&(*p)->next) {
     link = *p;
     if (*win == link->win) {
       if (array != link->addr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matched window, but not array");
@@ -666,7 +666,7 @@ PetscErrorCode PetscSFRestoreWindow(PetscSF bg,MPI_Datatype unit,const void *arr
 
   found:
   if (epoch) {
-    switch (bg->sync) {
+    switch (sf->sync) {
     case PETSCSF_SYNCHRONIZATION_FENCE:
       ierr = MPI_Win_fence(fenceassert,*win);CHKERRQ(ierr);
       break;
@@ -676,7 +676,7 @@ PetscErrorCode PetscSFRestoreWindow(PetscSF bg,MPI_Datatype unit,const void *arr
       ierr = MPI_Win_complete(*win);CHKERRQ(ierr);
       ierr = MPI_Win_wait(*win);CHKERRQ(ierr);
     } break;
-    default: SETERRQ(((PetscObject)bg)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
+    default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
     }
   }
 
@@ -694,23 +694,23 @@ PetscErrorCode PetscSFRestoreWindow(PetscSF bg,MPI_Datatype unit,const void *arr
    Collective
 
    Input Argument:
-.  bg - bipartite graph
+.  sf - star forest
 
    Output Arguments:
-+  incoming - group of origin processes for incoming edges
--  outgoing - group of destination processes for outgoing edges
++  incoming - group of origin processes for incoming edges (leaves that reference my roots)
+-  outgoing - group of destination processes for outgoing edges (roots that I reference)
 
    Level: developer
 
 .seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
 @*/
-PetscErrorCode PetscSFGetGroups(PetscSF bg,MPI_Group *incoming,MPI_Group *outgoing)
+PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoing)
 {
   PetscErrorCode ierr;
   MPI_Group group;
 
   PetscFunctionBegin;
-  if (bg->ingroup == MPI_GROUP_NULL) {
+  if (sf->ingroup == MPI_GROUP_NULL) {
     PetscInt    i,*outranks,*inranks;
     const PetscInt *indegree;
     PetscMPIInt rank;
@@ -718,35 +718,35 @@ PetscErrorCode PetscSFGetGroups(PetscSF bg,MPI_Group *incoming,MPI_Group *outgoi
     PetscSF     bgcount;
 
     /* Compute the number of incoming ranks */
-    ierr = PetscMalloc(bg->nranks*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
-    for (i=0; i<bg->nranks; i++) {
-      remote[i].rank = bg->ranks[i];
+    ierr = PetscMalloc(sf->nranks*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+    for (i=0; i<sf->nranks; i++) {
+      remote[i].rank = sf->ranks[i];
       remote[i].index = 0;
     }
-    ierr = PetscSFCreate(((PetscObject)bg)->comm,&bgcount);CHKERRQ(ierr);
+    ierr = PetscSFCreate(((PetscObject)sf)->comm,&bgcount);CHKERRQ(ierr);
     ierr = PetscSFSetSynchronizationType(bgcount,PETSCSF_SYNCHRONIZATION_LOCK);CHKERRQ(ierr); /* or FENCE, ACTIVE here would cause recursion */
-    ierr = PetscSFSetGraph(bgcount,1,bg->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(bgcount,1,sf->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
 
     /* Enumerate the incoming ranks */
-    ierr = PetscMalloc2(indegree[0],PetscInt,&inranks,bg->nranks,PetscInt,&outranks);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
-    for (i=0; i<bg->nranks; i++) outranks[i] = rank;
+    ierr = PetscMalloc2(indegree[0],PetscInt,&inranks,sf->nranks,PetscInt,&outranks);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)sf)->comm,&rank);CHKERRQ(ierr);
+    for (i=0; i<sf->nranks; i++) outranks[i] = rank;
     ierr = PetscSFGatherBegin(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
-    ierr = MPI_Comm_group(((PetscObject)bg)->comm,&group);CHKERRQ(ierr);
-    ierr = MPI_Group_incl(group,indegree[0],inranks,&bg->ingroup);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(((PetscObject)sf)->comm,&group);CHKERRQ(ierr);
+    ierr = MPI_Group_incl(group,indegree[0],inranks,&sf->ingroup);CHKERRQ(ierr);
     ierr = PetscFree2(inranks,outranks);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&bgcount);CHKERRQ(ierr);
   }
-  *incoming = bg->ingroup;
+  *incoming = sf->ingroup;
 
-  if (bg->outgroup == MPI_GROUP_NULL) {
-    ierr = MPI_Comm_group(((PetscObject)bg)->comm,&group);CHKERRQ(ierr);
-    ierr = MPI_Group_incl(group,bg->nranks,bg->ranks,&bg->outgroup);CHKERRQ(ierr);
+  if (sf->outgroup == MPI_GROUP_NULL) {
+    ierr = MPI_Comm_group(((PetscObject)sf)->comm,&group);CHKERRQ(ierr);
+    ierr = MPI_Group_incl(group,sf->nranks,sf->ranks,&sf->outgroup);CHKERRQ(ierr);
   }
-  *outgoing = bg->outgroup;
+  *outgoing = sf->outgroup;
   PetscFunctionReturn(0);
 }
 
@@ -758,10 +758,10 @@ PetscErrorCode PetscSFGetGroups(PetscSF bg,MPI_Group *incoming,MPI_Group *outgoi
    Collective
 
    Input Argument:
-.  bg - bipartite graph with possible redundancy
+.  sf - star forest that may contain roots with 0 or with more than 1 vertex
 
    Output Arguments:
-.  multi - bipartite graph with incoming 
+.  multi - star forest with split roots, such that each root has degree exactly 1
 
    Level: developer
 
@@ -773,69 +773,69 @@ PetscErrorCode PetscSFGetGroups(PetscSF bg,MPI_Group *incoming,MPI_Group *outgoi
 
 .seealso: PetscSFSetGraph(), PetscSFGatherBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscSFGetMultiSF(PetscSF bg,PetscSF *multi)
+PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(multi,2);
-  if (!bg->multi) {
+  if (!sf->multi) {
     const PetscInt *indegree;
     PetscInt i,*inoffset,*outones,*outoffset;
     PetscSFNode *remote;
-    ierr = PetscSFComputeDegreeBegin(bg,&indegree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(bg,&indegree);CHKERRQ(ierr);
-    ierr = PetscMalloc3(bg->nowned+1,PetscInt,&inoffset,bg->nlocal,PetscInt,&outones,bg->nlocal,PetscInt,&outoffset);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeBegin(sf,&indegree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(sf,&indegree);CHKERRQ(ierr);
+    ierr = PetscMalloc3(sf->nroots+1,PetscInt,&inoffset,sf->nleaves,PetscInt,&outones,sf->nleaves,PetscInt,&outoffset);CHKERRQ(ierr);
     inoffset[0] = 0;
-    for (i=0; i<bg->nowned; i++) inoffset[i+1] = inoffset[i] + indegree[i];
-    for (i=0; i<bg->nlocal; i++) outones[i] = 1;
-    ierr = PetscSFFetchAndOpBegin(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(bg,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
-    for (i=0; i<bg->nowned; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
+    for (i=0; i<sf->nroots; i++) inoffset[i+1] = inoffset[i] + indegree[i];
+    for (i=0; i<sf->nleaves; i++) outones[i] = 1;
+    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
+    for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
 #if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
-    for (i=0; i<bg->nowned; i++) {
+    for (i=0; i<sf->nroots; i++) {
       if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
     }
 #endif
-    ierr = PetscMalloc(bg->nlocal*sizeof(*remote),&remote);CHKERRQ(ierr);
-    for (i=0; i<bg->nlocal; i++) {
-      remote[i].rank = bg->remote[i].rank;
+    ierr = PetscMalloc(sf->nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+    for (i=0; i<sf->nleaves; i++) {
+      remote[i].rank = sf->remote[i].rank;
       remote[i].index = outoffset[i];
     }
-    ierr = PetscSFCreate(((PetscObject)bg)->comm,&bg->multi);CHKERRQ(ierr);
-    ierr = PetscSFSetSynchronizationType(bg->multi,bg->sync);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-    if (bg->rankorder) {        /* Sort the ranks */
+    ierr = PetscSFCreate(((PetscObject)sf)->comm,&sf->multi);CHKERRQ(ierr);
+    ierr = PetscSFSetSynchronizationType(sf->multi,sf->sync);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    if (sf->rankorder) {        /* Sort the ranks */
       PetscMPIInt rank;
       PetscInt *inranks,*newoffset,*outranks,*newoutoffset,*tmpoffset,maxdegree;
       PetscSFNode *newremote;
-      ierr = MPI_Comm_rank(((PetscObject)bg)->comm,&rank);CHKERRQ(ierr);
-      for (i=0,maxdegree=0; i<bg->nowned; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
-      ierr = PetscMalloc5(bg->multi->nowned,PetscInt,&inranks,bg->multi->nowned,PetscInt,&newoffset,bg->nlocal,PetscInt,&outranks,bg->nlocal,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
-      for (i=0; i<bg->nlocal; i++) outranks[i] = rank;
-      ierr = PetscSFReduceBegin(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(bg->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(((PetscObject)sf)->comm,&rank);CHKERRQ(ierr);
+      for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
+      ierr = PetscMalloc5(sf->multi->nroots,PetscInt,&inranks,sf->multi->nroots,PetscInt,&newoffset,sf->nleaves,PetscInt,&outranks,sf->nleaves,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
+      for (i=0; i<sf->nleaves; i++) outranks[i] = rank;
+      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
-      for (i=0; i<bg->nowned; i++) {
+      for (i=0; i<sf->nroots; i++) {
         PetscInt j;
         for (j=0; j<indegree[i]; j++) tmpoffset[j] = j;
         ierr = PetscSortIntWithArray(indegree[i],inranks+inoffset[i],tmpoffset);CHKERRQ(ierr);
         for (j=0; j<indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
-      ierr = PetscSFBcastBegin(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(bg->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscMalloc(bg->nlocal*sizeof(*newremote),&newremote);CHKERRQ(ierr);
-      for (i=0; i<bg->nlocal; i++) {
-        newremote[i].rank = bg->remote[i].rank;
+      ierr = PetscSFBcastBegin(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
+      ierr = PetscMalloc(sf->nleaves*sizeof(*newremote),&newremote);CHKERRQ(ierr);
+      for (i=0; i<sf->nleaves; i++) {
+        newremote[i].rank = sf->remote[i].rank;
         newremote[i].index = newoutoffset[i];
       }
-      ierr = PetscSFSetGraph(bg->multi,inoffset[bg->nowned],bg->nlocal,PETSC_NULL,PETSC_COPY_VALUES,newremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,PETSC_NULL,PETSC_COPY_VALUES,newremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
       ierr = PetscFree5(inranks,newoffset,outranks,newoutoffset,tmpoffset);CHKERRQ(ierr);
     }
     ierr = PetscFree3(inoffset,outones,outoffset);CHKERRQ(ierr);
   }
-  *multi = bg->multi;
+  *multi = sf->multi;
   PetscFunctionReturn(0);
 }
 
@@ -847,18 +847,18 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF bg,PetscSF *multi)
    Collective on PetscSF
 
    Input Arguments:
-+  bg - bipartite graph on which to communicate
++  sf - star forest on which to communicate
 .  unit - data type associated with each node
--  owned - buffer to broadcast
+-  rootdata - buffer to broadcast
 
    Output Arguments:
-.  ghosted - buffer to update with ghosted values
+.  leafdata - buffer to update with values from each leaf's respective root
 
    Level: intermediate
 
 .seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin()
 @*/
-PetscErrorCode PetscSFBcastBegin(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscErrorCode     ierr;
   PetscInt           i,nranks;
@@ -867,13 +867,13 @@ PetscErrorCode PetscSFBcastBegin(PetscSF bg,MPI_Datatype unit,const void *owned,
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(bg,unit,(void*)owned,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
-    ierr = MPI_Get(ghosted,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
-    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
+    if (sf->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
+    ierr = MPI_Get(leafdata,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
+    if (sf->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -886,49 +886,49 @@ PetscErrorCode PetscSFBcastBegin(PetscSF bg,MPI_Datatype unit,const void *owned,
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
--  owned - buffer t obroadcast
+-  rootdata - buffer to broadcast
 
    Output Arguments:
-.  ghosted - buffer to update
+.  leafdata - buffer to update with values from each leaf's respective root
 
    Level: intermediate
 
 .seealso: PetscSFSetGraph(), PetscSFReduceEnd()
 @*/
-PetscErrorCode PetscSFBcastEnd(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscErrorCode ierr;
   MPI_Win win;
 
   PetscFunctionBegin;
-  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
-  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFReduceBegin"
 /*@C
-   PetscSFReduceBegin - begin reduce of ghost copies into global, to be completed with call to PetscSFReduceEnd()
+   PetscSFReduceBegin - begin reduction of leafdata into rootdata, to be completed with call to PetscSFReduceEnd()
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
-.  ghosted - values to reduce
+.  leafdata - values to reduce
 -  op - reduction operation
 
    Output Arguments:
-.  owned - result of reduction
+.  rootdata - result of reduction of values from all leaves of each root
 
    Level: intermediate
 
 .seealso: PetscSFBcastBegin()
 @*/
-PetscErrorCode PetscSFReduceBegin(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscErrorCode     ierr;
   PetscInt           i,nranks;
@@ -937,13 +937,13 @@ PetscErrorCode PetscSFReduceBegin(PetscSF bg,MPI_Datatype unit,const void *ghost
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
-    ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
-    if (bg->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
+    if (sf->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
+    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
+    if (sf->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -956,61 +956,61 @@ PetscErrorCode PetscSFReduceBegin(PetscSF bg,MPI_Datatype unit,const void *ghost
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
-.  ghosted - values to reduce
+.  leafdata - values to reduce
 -  op - reduction operation
 
    Output Arguments:
-.  owned - result of reduction
+.  rootdata - result of reduction of values from all leaves of each root
 
    Level: intermediate
 
 .seealso: PetscSFSetGraph(), PetscSFBcastEnd()
 @*/
-PetscErrorCode PetscSFReduceEnd(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned,MPI_Op op)
+PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscErrorCode ierr;
   MPI_Win win;
 
   PetscFunctionBegin;
-  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
-  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFComputeDegreeBegin"
 /*@C
-   PetscSFComputeDegreeBegin - begin computation of degree for each owned vertex, to be completed with PetscSFComputeDegreeEnd()
+   PetscSFComputeDegreeBegin - begin computation of degree for each root vertex, to be completed with PetscSFComputeDegreeEnd()
 
    Collective
 
    Input Arguments:
-.  bg - bipartite graph
+.  sf - star forest
 
    Output Arguments:
-.  degree - degree of each owned vertex
+.  degree - degree of each root vertex
 
    Level: advanced
 
 .seealso: PetscSFGatherBegin()
 @*/
-PetscErrorCode PetscSFComputeDegreeBegin(PetscSF bg,const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(bg,PETSCSF_CLASSID,1);
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(degree,2);
-  if (!bg->degree) {
+  if (!sf->degree) {
     PetscInt i;
-    ierr = PetscMalloc(bg->nowned*sizeof(PetscInt),&bg->degree);CHKERRQ(ierr);
-    ierr = PetscMalloc(bg->nlocal*sizeof(PetscInt),&bg->degreetmp);CHKERRQ(ierr);
-    for (i=0; i<bg->nowned; i++) bg->degree[i] = 0;
-    for (i=0; i<bg->nlocal; i++) bg->degreetmp[i] = 1;
-    ierr = PetscSFReduceBegin(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscMalloc(sf->nroots*sizeof(PetscInt),&sf->degree);CHKERRQ(ierr);
+    ierr = PetscMalloc(sf->nleaves*sizeof(PetscInt),&sf->degreetmp);CHKERRQ(ierr);
+    for (i=0; i<sf->nroots; i++) sf->degree[i] = 0;
+    for (i=0; i<sf->nleaves; i++) sf->degreetmp[i] = 1;
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
   }
   *degree = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -1019,55 +1019,61 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF bg,const PetscInt **degree)
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFComputeDegreeEnd"
 /*@C
-   PetscSFComputeDegreeEnd - complete computation of vertex degree that was started with PetscSFComputeDegreeBegin()
+   PetscSFComputeDegreeEnd - complete computation of degree for each root vertex, started with PetscSFComputeDegreeBegin()
 
    Collective
 
    Input Arguments:
-.  bg - bipartite graph
+.  sf - star forest
 
    Output Arguments:
-.  degree - degree of each owned vertex
+.  degree - degree of each root vertex
 
    Level: developer
 
 .seealso:
 @*/
-PetscErrorCode PetscSFComputeDegreeEnd(PetscSF bg,const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (bg->degreetmp) {
-    ierr = PetscSFReduceEnd(bg,MPIU_INT,bg->degreetmp,bg->degree,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscFree(bg->degreetmp);CHKERRQ(ierr);
+  if (sf->degreetmp) {
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
   }
-  *degree = bg->degree;
+  *degree = sf->degree;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFFetchAndOpBegin"
 /*@C
-   PetscSFFetchAndOpBegin - begin operation that fetches values from owner and updates atomically by applying operation using local value, to be completed with PetscSFFetchAndOpEnd()
+   PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value, to be completed with PetscSFFetchAndOpEnd()
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
-.  ghosted - ghosted value to use in reduction
+.  leafdata - leaf values to use in reduction
 -  op - operation to use for reduction
 
    Output Arguments:
-+  owned - owned values to be updated, input state is seen by first process to perform an update
--  result - ghosted array with state in owned at time of update using our ghosted values
++  rootdata - root values to be updated, input state is seen by first process to perform an update
+-  leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
    Level: advanced
 
+   Note:
+   The update is only atomic at the granularity provided by the hardware. Different roots referenced by the same process
+   might be updated in a different order. Furthermore, if a composite type is used for the unit datatype, atomicity is
+   not guaranteed across the whole vertex. Therefore, this function is mostly only used with primitive types such as
+   integers.
+
 .seealso: PetscSFComputeDegreeBegin(), PetscSFReduceBegin(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscSFFetchAndOpBegin(PetscSF bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
   PetscInt           i,nranks;
@@ -1076,13 +1082,13 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF bg,MPI_Datatype unit,void *owned,c
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(bg,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetDataTypes(bg,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(bg,unit,owned,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
-  for (i=0; i<bg->nranks; i++) {
-    ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,bg->ranks[i],0,win);CHKERRQ(ierr);
-    ierr = MPI_Get(result,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
-    ierr = MPI_Accumulate((void*)ghosted,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
+  for (i=0; i<sf->nranks; i++) {
+    ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,sf->ranks[i],0,win);CHKERRQ(ierr);
+    ierr = MPI_Get(leafupdate,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
+    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
     ierr = MPI_Win_unlock(ranks[i],win);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1091,63 +1097,63 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF bg,MPI_Datatype unit,void *owned,c
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFFetchAndOpEnd"
 /*@C
-   PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from owner and update atomically by applying operation using local value
+   PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from roots and update atomically by applying operation using my leaf value
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
-.  ghosted - ghosted value to use in reduction
+.  leafdata - leaf values to use in reduction
 -  op - operation to use for reduction
 
    Output Arguments:
-+  owned - owned values to be updated, input state is seen by first process to perform an update
--  result - ghosted array with state in owned at time of update using our ghosted values
++  rootdata - root values to be updated, input state is seen by first process to perform an update
+-  leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
    Level: advanced
 
 .seealso: PetscSFComputeDegreeEnd(), PetscSFReduceEnd(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscSFFetchAndOpEnd(PetscSF bg,MPI_Datatype unit,void *owned,const void *ghosted,void *result,MPI_Op op)
+PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
   MPI_Win        win;
 
   PetscFunctionBegin;
-  ierr = PetscSFFindWindow(bg,unit,owned,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscSFFetchAndOpBegin(), rendering this implementation synchronous. */
-  ierr = PetscSFRestoreWindow(bg,unit,owned,PETSC_FALSE,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_FALSE,0,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFGatherBegin"
 /*@C
-   PetscSFGatherBegin - begin pointwise gather operation, to be completed with PetscSFGatherEnd()
+   PetscSFGatherBegin - begin pointwise gather of all leaves into multi-roots, to be completed with PetscSFGatherEnd()
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
--  ghosted - ghosted data to gather to owning process
+-  leafdata - leaf data to gather to roots
 
    Output Argument:
-.  owned - owned values to gather into
+.  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
    Level: intermediate
 
 .seealso: PetscSFComputeDegreeBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscSFGatherBegin(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned)
+PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *multirootdata)
 {
   PetscErrorCode ierr;
   PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1159,55 +1165,55 @@ PetscErrorCode PetscSFGatherBegin(PetscSF bg,MPI_Datatype unit,const void *ghost
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
--  ghosted - ghosted data to gather to owning process
+-  leafdata - leaf data to gather to roots
 
    Output Argument:
-.  owned - owned values to gather into
+.  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
    Level: intermediate
 
 .seealso: PetscSFComputeDegreeEnd(), PetscSFScatterEnd()
 @*/
-PetscErrorCode PetscSFGatherEnd(PetscSF bg,MPI_Datatype unit,const void *ghosted,void *owned)
+PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *multirootdata)
 {
   PetscErrorCode ierr;
   PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(multi,unit,ghosted,owned,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFScatterBegin"
 /*@C
-   PetscSFScatterBegin - begin pointwise scatter operation, to be completed with PetscSFScatterEnd()
+   PetscSFScatterBegin - begin pointwise scatter operation from multi-roots to leaves, to be completed with PetscSFScatterEnd()
 
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
--  owned - owned values to scatter
+-  multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
    Output Argument:
-.  ghosted - ghosted data to scatter into
+.  leafdata - leaf data to be update with personal data from each respective root
 
    Level: intermediate
 
 .seealso: PetscSFComputeDegreeBegin(), PetscSFScatterBegin()
 @*/
-PetscErrorCode PetscSFScatterBegin(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *multirootdata,void *leafdata)
 {
   PetscErrorCode ierr;
   PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(multi,unit,owned,ghosted);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1219,24 +1225,24 @@ PetscErrorCode PetscSFScatterBegin(PetscSF bg,MPI_Datatype unit,const void *owne
    Collective
 
    Input Arguments:
-+  bg - bipartite graph
++  sf - star forest
 .  unit - data type
--  owned - owned values to scatter
+-  multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
    Output Argument:
-.  ghosted - ghosted data to scatter into
+.  leafdata - leaf data to be update with personal data from each respective root
 
    Level: intermediate
 
 .seealso: PetscSFComputeDegreeEnd(), PetscSFScatterEnd()
 @*/
-PetscErrorCode PetscSFScatterEnd(PetscSF bg,MPI_Datatype unit,const void *owned,void *ghosted)
+PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multirootdata,void *leafdata)
 {
   PetscErrorCode ierr;
   PetscSF        multi;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetMultiSF(bg,&multi);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(multi,unit,owned,ghosted);CHKERRQ(ierr);
+  ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

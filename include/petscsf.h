@@ -9,7 +9,7 @@ PETSC_EXTERN_CXX_BEGIN
 extern PetscClassId PETSCSF_CLASSID;
 
 /*S
-   PetscSF - PETSc object for communication using a bipartite graph
+   PetscSF - PETSc object for communication using star forests
 
    Level: intermediate
 

@@ -28,25 +28,25 @@ struct _PetscSFOps {
 
 struct _p_PetscSF {
   PETSCHEADER(struct _PetscSFOps);
-  PetscInt        nowned;       /* Number of owned nodes (candidates for incoming edges) */
-  PetscInt        nlocal;       /* Number of local nodes with outgoing edges */
-  PetscInt        *mine;        /* Location of nodes with outgoing edges */
+  PetscInt        nroots;       /* Number of root vertices on current process (candidates for incoming edges) */
+  PetscInt        nleaves;      /* Number of leaf vertices on current process (this process specifies a root for each leaf) */
+  PetscInt        *mine;        /* Location of leaves in leafdata arrays provided to the communication routines */
   PetscInt        *mine_alloc;
-  PetscSFNode     *remote;      /* Remote nodes referenced by outgoing edges */
+  PetscSFNode     *remote;      /* Remote references to roots for each local leaf */
   PetscSFNode     *remote_alloc;
-  PetscInt        nranks;       /* Number of ranks owning nodes addressed by outgoing edges from current rank */
+  PetscInt        nranks;       /* Number of ranks owning roots connected to my leaves */
   PetscInt        *ranks;       /* List of ranks referenced by "remote" */
   PetscInt        *roffset;     /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscMPIInt     *rmine;       /* Concatenated array holding local indices referencing each remote rank */
   PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
   PetscSFWinLink  wins;         /* List of active windows */
-  PetscInt        *degree;      /* Degree of each owned vertex */
+  PetscInt        *degree;      /* Degree of each of my root vertices */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
   PetscSFSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscBool       rankorder;    /* Sort ranks for gather and scatter operations */
-  MPI_Group       ingroup;
-  MPI_Group       outgroup;
+  MPI_Group       ingroup;      /* Group of processes connected to my roots */
+  MPI_Group       outgroup;     /* Group of processes connected to my leaves */
   PetscSF         multi;        /* Internal graph used to implement gather and scatter operations */
 };
 
