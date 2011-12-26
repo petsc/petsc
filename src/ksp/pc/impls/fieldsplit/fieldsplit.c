@@ -1425,11 +1425,11 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 .   -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
 .   -pc_fieldsplit_schur_precondition <true,false> default is true
 .   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
+.   -fieldsplit_NAME_ksp_* - control inner linear solver, NAME is a sequential integer if unspecified, otherwise use name provided in PCFieldSplitSetIS() or the name associated with the field in the DM passed to PCSetDM() (or a higher level function)
+-   -fieldsplit_NAME_pc_* - control inner preconditioner, NAME has same semantics as above
 
--    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
-     for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
-
-   Notes: use PCFieldSplitSetFields() to set fields defined by "strided" entries and PCFieldSplitSetIS()
+   Notes:
+    Use PCFieldSplitSetFields() to set fields defined by "strided" entries and PCFieldSplitSetIS()
      to define a field by an arbitrary collection of entries.
 
       If no fields are set the default is used. The fields are defined by entries strided by bs,

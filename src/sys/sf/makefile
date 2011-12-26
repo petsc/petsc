@@ -1,15 +1,15 @@
-#requirespackage 'PETSC_HAVE_BG'
+#requirespackage 'PETSC_HAVE_SF'
 
 ALL: lib
 
-SOURCEH	 = ../../../include/private/bgimpl.h ../../../include/petscbg.h
-SOURCEC  = dlregisbg.c bg.c
+SOURCEH	 = ../../../include/private/sfimpl.h ../../../include/petscsf.h
+SOURCEC  = dlregissf.c sf.c
 OBJSC	 = $(SOURCEC:.c=.o)
 OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = examples
-LOCDIR   = src/vec/bg/
-MANSEC   = PetscBG
+LOCDIR   = src/sys/sf/
+MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

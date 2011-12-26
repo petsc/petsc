@@ -1408,6 +1408,8 @@ namespace ALE {
       delete [] values;
       PETSc::Log::Event("PartitionClosure").end();
     }
+#undef __FUNCT__
+#define __FUNCT__ "createPartitionClosureV"
     template<typename Mesh>
     static PetscErrorCode createPartitionClosureV(const Obj<Mesh>& mesh, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition, const int height = 0) {
       typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;

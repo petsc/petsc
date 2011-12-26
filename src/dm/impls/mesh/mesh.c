@@ -2065,6 +2065,24 @@ PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateConeSection"
+PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*section, mesh->getSieve()->getChart().min(), mesh->getSieve()->getChart().max());CHKERRQ(ierr);
+  for(p = mesh->getSieve()->getChart().min(); p < mesh->getSieve()->getChart().max(); ++p) {
+    ierr = PetscSectionSetDof(*section, p, mesh->getSieve()->getConeSize(p));CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateVec"
 PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;

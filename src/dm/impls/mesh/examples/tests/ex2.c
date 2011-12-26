@@ -1,6 +1,6 @@
 static char help[] = "Test of Sieve vs. New Mesh and Field Distribution.\n\n";
 #include <petscdmmesh.h>
-#include <petscbg.h>
+#include <petscsf.h>
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -80,17 +80,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshConvertOverlapToBG"
-PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
+#define __FUNCT__ "DMMeshConvertOverlapToSF"
+PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt      *local;
-  PetscBGNode   *remote;
+  PetscSFNode   *remote;
   PetscInt       numPoints;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscBGCreate(((PetscObject) dm)->comm, bg);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, sf);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
     /* The local points have degree 1
@@ -100,7 +100,7 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
 
     numPoints = overlap->getNumPoints();
     ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
-    ierr = PetscMalloc(numPoints * sizeof(PetscBGNode), &remote);CHKERRQ(ierr);
+    ierr = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
     for(PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
       const PetscInt                                                      rank   = overlap->getRank(r);
       const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
@@ -112,16 +112,16 @@ PetscErrorCode DMMeshConvertOverlapToBG(DM dm, PetscBG *bg)
         remote[i].index = c_iter.color();
       }
     }
-    ierr = PetscBGSetGraph(*bg, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscBGView(*bg, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sf, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFView(*sf, PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBGCreateSectionBG"
-PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG *sectionBG)
+#define __FUNCT__ "PetscSFCreateSectionSF"
+PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF *sectionSF)
 {
   PetscInt           numRanks;
   const PetscInt    *ranks, *rankOffsets;
@@ -129,12 +129,12 @@ PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG 
   PetscInt           numPoints, numIndices = 0;
   PetscInt          *remoteOffsets;
   PetscInt          *localIndices;
-  PetscBGNode       *remoteIndices;
+  PetscSFNode       *remoteIndices;
   PetscInt           i, r, ind;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscBGGetRanks(bg, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
   numPoints = rankOffsets[numRanks];
   for(i = 0; i < numPoints; ++i) {
     PetscInt dof;
@@ -149,22 +149,22 @@ PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG 
   for(i = 0; i < numPoints; ++i) {
     ierr = PetscSectionGetOffset(section, localPoints[i], &localOffsets[i]);CHKERRQ(ierr);
   }
-  ierr = PetscBGBcastBegin(bg, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscBGBcastEnd(bg, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
   for(i = 0; i < numPoints; ++i) {
-    ierr = PetscSynchronizedPrintf(((PetscObject) bg)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i]);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(((PetscObject) sf)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i]);CHKERRQ(ierr);
   }
 #else
   ierr = PetscMalloc((section->atlasLayout.pEnd - section->atlasLayout.pStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscBGBcastBegin(bg, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
-  ierr = PetscBGBcastEnd(bg, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
   for(i = section->atlasLayout.pStart; i < section->atlasLayout.pEnd; ++i) {
-    ierr = PetscSynchronizedPrintf(((PetscObject) bg)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i-section->atlasLayout.pStart]);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(((PetscObject) sf)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i-section->atlasLayout.pStart]);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscSynchronizedFlush(((PetscObject) bg)->comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject) sf)->comm);CHKERRQ(ierr);
   ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc(numIndices * sizeof(PetscBGNode), &remoteIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
   /* Create new index graph */
   for(r = 0, ind = 0; r < numRanks; ++r) {
     PetscInt rank = ranks[r];
@@ -184,10 +184,10 @@ PetscErrorCode PetscBGCreateSectionBG(PetscBG bg, PetscSection section, PetscBG 
     }
   }
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  if (numIndices != ind) {SETERRQ2(((PetscObject) bg)->comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
-  ierr = PetscBGCreate(((PetscObject) bg)->comm, sectionBG);CHKERRQ(ierr);
-  ierr = PetscBGSetGraph(*sectionBG, numIndices, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscBGView(*sectionBG, PETSC_NULL);CHKERRQ(ierr);
+  if (numIndices != ind) {SETERRQ2(((PetscObject) sf)->comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
+  ierr = PetscSFCreate(((PetscObject) sf)->comm, sectionSF);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sectionSF, numIndices, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFView(*sectionSF, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   DM             dm;
-  PetscBG        bg;
+  PetscSF        sf;
   AppCtx         user;
   PetscErrorCode ierr;
 
@@ -206,18 +206,18 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
-  ierr = DMMeshConvertOverlapToBG(dm, &bg);CHKERRQ(ierr);
+  ierr = DMMeshConvertOverlapToSF(dm, &sf);CHKERRQ(ierr);
   {
     PetscSection section;
-    PetscBG      sectionBG;
+    PetscSF      sectionSF;
 
     ierr = DMMeshGetCoordinateSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscBGCreateSectionBG(bg, section, &sectionBG);CHKERRQ(ierr);
-    ierr = PetscBGDestroy(&sectionBG);CHKERRQ(ierr);
+    ierr = PetscSFCreateSectionSF(sf, section, &sectionSF);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sectionSF);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
-  ierr = PetscBGDestroy(&bg);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

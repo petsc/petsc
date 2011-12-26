@@ -21,7 +21,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
-                ex150.c ex153.c ex154.c ex155.c ex157.c ex158.c ex159.c
+                ex150.c ex151.c ex153.c ex154.c ex155.c ex157.c ex158.c ex159.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -1171,6 +1171,11 @@ runex67f:
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex67f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex67f_1.tmp
+runex68:
+	-@${MPIEXEC} -n 1 ./ex68  > ex68_1.tmp 2>&1; \
+	   ${DIFF} output/ex68_1.out ex68_1.tmp || echo ${PWD} "\nPossible problem with with ex68, diffs above \n========================================="; \
+	   ${RM} -f ex68_1.tmp
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex73:
 	-@${MPIEXEC} -n 3  ./ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info
@@ -1675,6 +1680,19 @@ runex148_2:
 	   ${DIFF} output/ex148.out ex148.tmp || echo ${PWD} "\nPossible problem with with ex148_2, diffs above \n========================================="; \
 	   ${RM} -f ex148.tmp
 
+runex151:
+	-@${MPIEXEC} -n 1 ./ex151  > ex151_1.tmp 2>&1; \
+	   ${DIFF} output/ex151_1.out ex151_1.tmp || echo ${PWD} "\nPossible problem with with ex151, diffs above \n========================================="; \
+	   ${RM} -f ex151_1.tmp
+runex151_2:
+	-@${MPIEXEC} -n 2 ./ex151  > ex151_2.tmp 2>&1; \
+	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with with ex151_2, diffs above \n========================================="; \
+	   ${RM} -f ex151_2.tmp
+runex151_3:
+	-@${MPIEXEC} -n 3 ./ex151  > ex151_3.tmp 2>&1; \
+	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with with ex151_3, diffs above \n========================================="; \
+	   ${RM} -f ex151_3.tmp
+
 runex158:
 	-@${MPIEXEC} -n 1 ./ex158  > ex158.tmp 2>&1; \
 	   ${DIFF} output/ex158.out ex158.tmp || echo ${PWD} "\nPossible problem with with ex158, diffs above \n========================================="; \
@@ -1708,7 +1726,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 \
                                  ex16.rm ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
-                                 ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
+                                 ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
@@ -1717,7 +1735,9 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
                                  ex137.PETSc runex137 ex137.rm \
-                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm ex159.PETSc runex159 runex159_nest ex159.rm \
+                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
+                                 ex151.PETSc runex151 runex151_2 runex151_3 ex151.rm \
+                                 ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm 
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
