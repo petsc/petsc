@@ -47,7 +47,14 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
+    if (!i) {
+      PetscInt m,n,M,N;
+      ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+      ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+      ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    }
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
