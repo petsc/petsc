@@ -1969,8 +1969,8 @@ Possibly
                     commands PetscMallocDump() and PetscMallocLogDump()
                     sprinkled in your code to track memory that is
                     allocated and not later freed. Use the commands
-                    PetscMallocSpace() and PetscGetResidentSetSize() to
-                    monitor memory allocated and total memory used as
+                    PetscMallocGetCurrentUsage() and PetscMemoryGetCurrentUsage() to
+                    monitor memory allocated and PetscMallocGetMaximumUsage() and PetscMemoryGetMaximumUsage() for total memory used as
                     the code progresses. </li>
                   <li style="color: rgb(0, 0, 0);">This is just the way
                     Unix works and is harmless.</li>
