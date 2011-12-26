@@ -226,7 +226,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PetscSFCreate(), PetscSFView()
+.seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/
 PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
 {
@@ -313,6 +313,36 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     rcount[irank]++;
   }
   ierr = PetscFree(rcount);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFGetGraph"
+/*@C
+   PetscSFGetGraph - Get the graph specifying a parallel star forest
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
+.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
+.  ilocal - locations of leaves in leafdata buffers
+-  iremote - remote locations of root vertices for each leaf on the current process
+
+   Level: intermediate
+
+.seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (nroots) *nroots = sf->nroots;
+  if (nleaves) *nleaves = sf->nleaves;
+  if (ilocal) *ilocal = sf->mine;
+  if (iremote) *iremote = sf->remote;
   PetscFunctionReturn(0);
 }
 
