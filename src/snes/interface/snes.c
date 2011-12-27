@@ -1980,10 +1980,19 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   if (!snes->ops->computejacobian && snes->dm) {
-    Mat J;
-    ierr = DMCreateMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    Mat J,B;
+    ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
+    if (snes->mf_operator) {
+      ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
+      ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+    } else {
+      J = B;
+      ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+    }
+    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian && snes->ops->computejacobian == MatMFFDComputeJacobian) {
     Mat J;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
