@@ -173,12 +173,11 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
   N_CORES=1; /* Default value if N_CORES cannot be found out */
   PetscMaxThreads = N_CORES;
   /* Find the number of cores */
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
     N_CORES = get_nprocs();
-#endif
-#if defined(PETSC_HAVE_SYS_SYSCTL_H) 
-      size_t   len = sizeof(N_CORES);
-      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
+    size_t   len = sizeof(N_CORES);
+    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
 #endif
 
   if(nthreads == PETSC_DECIDE) {
