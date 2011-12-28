@@ -192,7 +192,7 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree2(x->arrindex,x->nelem);CHKERRQ(ierr);
+  ierr = PetscFree3(x->arrindex,x->nelem,x->cpu_affinity);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
@@ -213,7 +213,6 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
   ierr = PetscFree(v->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
 extern PetscErrorCode VecResetArray_MPI(Vec);
@@ -287,8 +286,6 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
 {
   Vec_MPIPthread *s;
   PetscErrorCode ierr;
-  PetscInt       nthreads=PetscMaxThreads;
-  PetscBool      flg;
 
   PetscFunctionBegin;
 
@@ -304,6 +301,7 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   s->array_allocated = 0;
   s->nthreads        = 0;
   s->arrindex        = 0;
+  s->cpu_affinity    = 0;
   if (alloc && !array) {
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
@@ -316,12 +314,8 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   }
   vecs_created++;
 
-  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
-  } else {
-    ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
-  }
+  ierr = VecPThreadSetNThreads(v,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecPThreadSetThreadAffinities(v,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecSet_SeqPThread(v,0.0);CHKERRQ(ierr);
   s->array_allocated = (PetscScalar*)s->array;

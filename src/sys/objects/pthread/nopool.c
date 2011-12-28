@@ -81,7 +81,7 @@ void* MainWait_None(void* arg)
 
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_None"
-PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n) {
+PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   PetscErrorCode ijoberr = 0;
 
   PetscFunctionBegin;
