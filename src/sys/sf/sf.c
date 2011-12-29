@@ -317,6 +317,74 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateInverseSF"
+/*@C
+   PetscSFCreateInverseSF - given a PetscSF in which all vertices have degree 1, creates the inverse map
+
+   Collective
+
+   Input Arguments:
+.  sf - star forest to invert
+
+   Output Arguments:
+.  isf - inverse of sf
+
+   Level: advanced
+
+   Notes:
+   All roots must have degree 1.
+
+   The local space may be a permutation, but cannot be sparse.
+
+.seealso: PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt rank;
+  PetscInt i,nroots,nleaves,maxlocal,count,*newilocal;
+  const PetscInt *ilocal;
+  PetscSFNode *roots,*leaves;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)sf)->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal?ilocal[i]:i)+1);
+  ierr = PetscMalloc2(nroots,PetscSFNode,&roots,nleaves,PetscSFNode,&leaves);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    leaves[i].rank = rank;
+    leaves[i].index = ilocal ? ilocal[i] : i;
+  }
+  for (i=0;i <nroots; i++) {
+    roots[i].rank = -1;
+    roots[i].index = -1;
+  }
+  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+
+  /* Check whether our leaves are sparse */
+  for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
+  if (count == nroots) newilocal = PETSC_NULL;
+  else {                        /* Index for sparse leaves and compact "roots" array (which is to become our leaves. */
+    ierr = PetscMalloc(count*sizeof(PetscInt),&newilocal);CHKERRQ(ierr);
+    for (i=0,count=0; i<nroots; i++) {
+      if (roots[i].rank >= 0) {
+        newilocal[count] = i;
+        roots[count].rank  = roots[i].rank;
+        roots[count].index = roots[i].index;
+        count++;
+      }
+    }
+  }
+
+  ierr = PetscSFCreate(((PetscObject)sf)->comm,isf);CHKERRQ(ierr);
+  ierr = PetscSFSetSynchronizationType(*isf,sf->sync);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*isf,maxlocal,count,newilocal,PETSC_OWN_POINTER,roots,PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree2(roots,leaves);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFGetGraph"
 /*@C
    PetscSFGetGraph - Get the graph specifying a parallel star forest

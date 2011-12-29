@@ -68,6 +68,7 @@ extern PetscErrorCode PetscSFFindWindow(PetscSF,MPI_Datatype,const void*,MPI_Win
 extern PetscErrorCode PetscSFRestoreWindow(PetscSF,MPI_Datatype,const void*,PetscBool,PetscMPIInt,MPI_Win*);
 extern PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 extern PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
+extern PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 
 /* broadcasts rootdata to leafdata */
 extern PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void *rootdata,void *leafdata);
