@@ -47,6 +47,10 @@ E*/
 typedef enum {PETSCSF_SYNCHRONIZATION_FENCE,PETSCSF_SYNCHRONIZATION_LOCK,PETSCSF_SYNCHRONIZATION_ACTIVE} PetscSFSynchronizationType;
 extern const char *const PetscSFSynchronizationTypes[];
 
+#if !defined(PETSC_HAVE_MPI_WIN_CREATE) /* The intent here is to be able to compile even without a complete MPI. */
+typedef struct MPI_Win_MISSING *MPI_Win;
+#endif
+
 extern PetscErrorCode PetscSFInitializePackage(const char*);
 extern PetscErrorCode PetscSFFinalizePackage(void);
 extern PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
