@@ -40,8 +40,8 @@ Star Forest Object: 4 MPI processes
   [3]    2 <- 2
   [3] 2: 1 edges
   [3]    0 <- 1
-  ## Gathered data at multi-roots from leaves
-  0:   4001   2000   2002   3002   4002  
-  0:   1001   3000  
-  0:   2001   4000  
-  0:   3001   1000  
+## Gathered data at multi-roots from leaves
+0: 4001 2000 2002 3002 4002
+0: 1001 3000
+0: 2001 4000
+0: 3001 1000

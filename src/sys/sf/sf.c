@@ -375,6 +375,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (iascii) {
     PetscMPIInt rank;
     PetscInt i,j;
+    PetscBool verbose;
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[sf->sync],sf->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
@@ -385,15 +386,20 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine?sf->mine[i]:i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
-    for (i=0; i<sf->nranks; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
-      for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+    verbose = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)sf)->prefix,"-sf_view_verbose",&verbose,PETSC_NULL);CHKERRQ(ierr);
+    if (verbose) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
+      for (i=0; i<sf->nranks; i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+        for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
