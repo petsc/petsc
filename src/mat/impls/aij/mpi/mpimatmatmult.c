@@ -11,9 +11,9 @@
 /*
 #define DEBUG_MATMATMULT
  */
-
+/*
 #define DEBUG_MATTrMatMult
- 
+ */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
@@ -1096,7 +1096,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   Mat_PtAPMPI          *ptap;
   PetscInt             *adj,*aJ;
   PetscInt             i,j,k,anz,pnz,row,*cj;
-  MatScalar            *ada,*pta,*ca,valtmp;
+  MatScalar            *ada,*aval,*ca,valtmp;
   PetscInt             am=A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n; 
   MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
@@ -1142,16 +1142,16 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ai   = a_loc->i; 
   aj   = a_loc->j;
 
-  ierr = PetscMalloc((A->cmap->N)*sizeof(PetscScalar),&pta);CHKERRQ(ierr); /* non-scalable!!! */
-  ierr = PetscMemzero(pta,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((A->cmap->N)*sizeof(PetscScalar),&aval);CHKERRQ(ierr); /* non-scalable!!! */
+  ierr = PetscMemzero(aval,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     for (i=0; i<am; i++) {
-      /* 2-a) put A[i,:] to dense array pta */
+      /* 2-a) put A[i,:] to dense array aval */
       anz = ai[i+1] - ai[i];
       adj = aj + ai[i];
       ada = a_loc->a + ai[i];
       for (j=0; j<anz; j++){
-        pta[adj[j]] = ada[j];
+        aval[adj[j]] = ada[j];
       }
 
       /* 2-b) Compute Cseq = P_loc[i,:]^T*A[i,:] using outer product */
@@ -1168,7 +1168,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
         /* perform dense axpy */
         valtmp = pA[j];
         for (k=0; k<cnz; k++) { 
-          ca[k] += valtmp*pta[cj[k]];
+          ca[k] += valtmp*aval[cj[k]];
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);      
       } 
@@ -1185,14 +1185,14 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
         /* perform dense axpy */
         valtmp = pA[j];
         for (k=0; k<cnz; k++) { 
-          ca[k] += valtmp*pta[cj[k]]; 
+          ca[k] += valtmp*aval[cj[k]]; 
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);     
       }
      
       /* zero the current row of Pt*A */
       aJ = aj + ai[i];
-      for (k=0; k<anz; k++) pta[aJ[k]] = 0.0;
+      for (k=0; k<anz; k++) aval[aJ[k]] = 0.0;
     }
 
   /* 3) send and recv matrix values coa */
@@ -1258,7 +1258,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
-  ierr = PetscFree(pta);CHKERRQ(ierr);
+  ierr = PetscFree(aval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1618,9 +1618,9 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   Mat_MPIAIJ           *p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ           *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
   Mat_PtAPMPI          *ptap;
-  PetscInt             *adj,*aJ;
-  PetscInt             i,j,k,anz,pnz,row,*cj;
-  MatScalar            *ada,*pta,*ca,valtmp;
+  PetscInt             *adj;
+  PetscInt             i,j,k,anz,pnz,row,*cj,nexta;
+  MatScalar            *ada,*ca,valtmp;
   PetscInt             am=A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n; 
   MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
@@ -1647,8 +1647,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
 #endif
 
-  /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
-  /*--------------------------------------------------------------*/
+  /* 2) compute numeric C_seq = P_loc^T*A_loc */
+  /*------------------------------------------*/
   /* get data from symbolic products */
   coi = merge->coi; coj = merge->coj;
   ierr = PetscMalloc((coi[pon]+1)*sizeof(MatScalar),&coa);CHKERRQ(ierr);
@@ -1666,58 +1666,57 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   ai   = a_loc->i; 
   aj   = a_loc->j;
 
-  ierr = PetscMalloc((A->cmap->N)*sizeof(PetscScalar),&pta);CHKERRQ(ierr); /* non-scalable!!! */
-  ierr = PetscMemzero(pta,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
-
-    for (i=0; i<am; i++) {
-      /* 2-a) put A[i,:] to dense array pta */
-      anz = ai[i+1] - ai[i];
-      adj = aj + ai[i];
-      ada = a_loc->a + ai[i];
-      for (j=0; j<anz; j++){
-        pta[adj[j]] = ada[j];
-      }
-
-      /* 2-b) Compute Cseq = P_loc[i,:]^T*A[i,:] using outer product */
-      /*--------------------------------------------------------------*/  
-      /* put the value into Co=(p->B)^T*A (off-diagonal part, send to others) */
-      pnz = po->i[i+1] - po->i[i];
-      poJ = po->j + po->i[i];
-      pA  = po->a + po->i[i];
-      for (j=0; j<pnz; j++){ 
-        row = poJ[j]; 
-        cnz = coi[row+1] - coi[row];
-        cj  = coj + coi[row]; 
-        ca  = coa + coi[row];
-        /* perform dense axpy */
-        valtmp = pA[j];
-        for (k=0; k<cnz; k++) { 
-          ca[k] += valtmp*pta[cj[k]];
+  for (i=0; i<am; i++) {
+    /* 2-a) put A[i,:] to dense array aval */
+    anz = ai[i+1] - ai[i];
+    adj = aj + ai[i];
+    ada = a_loc->a + ai[i];
+      
+    /* 2-b) Compute Cseq = P_loc[i,:]^T*A[i,:] using outer product */
+    /*-------------------------------------------------------------*/  
+    /* put the value into Co=(p->B)^T*A (off-diagonal part, send to others) */
+    pnz = po->i[i+1] - po->i[i];
+    poJ = po->j + po->i[i];
+    pA  = po->a + po->i[i];
+    for (j=0; j<pnz; j++){ 
+      row = poJ[j]; 
+      cnz = coi[row+1] - coi[row];
+      cj  = coj + coi[row]; 
+      ca  = coa + coi[row];
+      /* perform sparse axpy */
+      nexta  = 0; 
+      valtmp = pA[j];
+      for (k=0; nexta<anz; k++) { 
+        if (cj[k] == adj[nexta]){
+          ca[k] += valtmp*ada[nexta];
+          nexta++;
         }
-        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);      
-      } 
-
-      /* put the value into Cd (diagonal part) */
-      pnz = pd->i[i+1] - pd->i[i];
-      pdJ = pd->j + pd->i[i];
-      pA  = pd->a + pd->i[i];
-      for (j=0; j<pnz; j++){  
-        row = pdJ[j]; 
-        cnz = bi[row+1] - bi[row];
-        cj  = bj + bi[row]; 
-        ca  = ba + bi[row];
-        /* perform dense axpy */
-        valtmp = pA[j];
-        for (k=0; k<cnz; k++) { 
-          ca[k] += valtmp*pta[cj[k]]; 
-        }
-        ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);     
       }
-     
-      /* zero the current row of Pt*A */
-      aJ = aj + ai[i];
-      for (k=0; k<anz; k++) pta[aJ[k]] = 0.0;
+      ierr = PetscLogFlops(2.0*anz);CHKERRQ(ierr);      
+    } 
+
+    /* put the value into Cd (diagonal part) */
+    pnz = pd->i[i+1] - pd->i[i];
+    pdJ = pd->j + pd->i[i];
+    pA  = pd->a + pd->i[i];
+    for (j=0; j<pnz; j++){  
+      row = pdJ[j]; 
+      cnz = bi[row+1] - bi[row];
+      cj  = bj + bi[row]; 
+      ca  = ba + bi[row];
+      /* perform sparse axpy */
+      nexta  = 0;
+      valtmp = pA[j];
+      for (k=0; nexta<anz; k++) { 
+        if (cj[k] == adj[nexta]){
+          ca[k] += valtmp*ada[nexta];
+          nexta++;
+        }
+      }
+      ierr = PetscLogFlops(2.0*anz);CHKERRQ(ierr);     
     }
+     
+  }
 
   /* 3) send and recv matrix values coa */
   /*------------------------------------*/
@@ -1745,7 +1744,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   /*----------------------------------------------------*/
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++){
-    buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure  -- memory corruption ???*/
+    buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
     nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
     nextci[k]   = buf_ri_k[k] + (nrows + 1);/* poins to the next i-structure of k-th recved i-structure  */
@@ -1782,7 +1781,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
-  ierr = PetscFree(pta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2119,6 +2117,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   ptap->apj      = PETSC_NULL;
   ptap->merge    = merge;
   ptap->rmax     = rmax;
+  ptap->apa      = PETSC_NULL;
  
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
