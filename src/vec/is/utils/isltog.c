@@ -381,7 +381,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 
   PetscFunctionBegin;
   end   = 0;
-  start = 100000000;
+  start = PETSC_MAX_INT;
 
   for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;
