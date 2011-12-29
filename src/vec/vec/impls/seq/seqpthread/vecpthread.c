@@ -1210,15 +1210,15 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
 +  v - the vector
 -  nthreads - number of threads
 
-   Level: beginner
-
-   Concepts: vectors^number of threads
+   Note:
+   Use nthreads = PETSC_DECIDE for PETSc to determine the number of threads.
 
    Options Database keys:
    -vec_threads <nthreads> - Number of threads
 
-   Notes:
-   Use nthreads = PETSC_DECIDE for PETSc to determine the number of threads.
+   Level: intermediate
+
+   Concepts: vectors^number of threads
 
 .seealso: VecCreateSeqPThread(), VecPThreadGetNThreads()
 @*/
@@ -1275,11 +1275,11 @@ PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
 .  v - the vector
 
    Output Parameter
--  nthreads - number of threads
+.  nthreads - number of threads
 
-   Level: beginner
+   Level: intermediate
 
-   Concepts: vectorsnumber of threads
+   Concepts: vectors^number of threads
 
 .seealso: VecPThreadSetNThreads()
 @*/
@@ -1304,11 +1304,11 @@ PetscErrorCode VecPThreadGetNThreads(Vec v,PetscInt *nthreads)
 
    Notes:
    Must set affinities for all the threads used with the vector.
-   size(affinities[]) = nthreads
-   Use affinities[] = PETSC_NULL for PETSc to set the thread affinities.
+ 
+   Use affinities[] = PETSC_NULL for PETSc to decide the thread affinities.
 
    Options Database Keys:
-+  -vec_thread_affinities - Comma seperated list of thread affinities
+   -vec_thread_affinities - Comma seperated list of thread affinities
 
    Level: intermediate
 
@@ -1454,6 +1454,17 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECSEQPTHREAD - VECSEQPTHREAD = "seqpthread" - The basic sequential vector using posix threads
+
+   Options Database Keys:
+.  -vec_type seqpthread - sets the vector type to VECSEQPTHREAD during a call to VecSetFromOptions()
+
+   Level: intermediate
+
+.seealso: VecCreate(), VecCreateSeqPThread(), VecSetType(), VecSetFromOptions(), VECSEQ
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqPThread"
@@ -1489,7 +1500,7 @@ EXTERN_C_END
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  n - the vector length 
-.  nthreads - number of threads.
+.  nthreads - number of threads
 -  affinities - thread affinities
 
    Output Parameter:
@@ -1503,14 +1514,14 @@ EXTERN_C_END
    affinities = PETSC_NULL to decide the thread affinities.
 
    Options Database Keys:
-+  -vec_threads <nthreads> - Sets number of threads to be used for vector operations
--  -vec_thread_affinities  - Comma seperated list of thread affinities
+   -vec_threads <nthreads> - Sets number of threads to be used for vector operations
+   -vec_thread_affinities  - Comma seperated list of thread affinities
 
-   Level: beginner
+   Level: intermediate
 
    Concepts: vectors^creating sequential with threads
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+.seealso: VecCreateSeq(), VecPThreadSetNThreads(), VecPThreadSetThreadAffinities(), VecDuplicate(), VecDuplicateVecs()
 @*/
 PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,PetscInt affinities[],Vec *v)
 {
