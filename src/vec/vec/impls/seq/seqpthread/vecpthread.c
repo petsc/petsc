@@ -1239,7 +1239,7 @@ PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
 
   if(nthreads == PETSC_DECIDE) {
     ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used for vector operations","VecPThreadSetNThreads",PetscMaxThreads,&nthr,&flg);CHKERRQ(ierr);
-    if(flg && s->nthreads > PetscMaxThreads) {
+    if(flg && nthr > PetscMaxThreads) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthr,PetscMaxThreads);
     }
     if(!flg) nthr = PetscMaxThreads;
@@ -1320,9 +1320,9 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 {
   PetscErrorCode  ierr;
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
-  PetscInt        nmax;
+  PetscInt        nmax=PetscMaxThreads+PetscMainThreadShareWork;
   PetscBool       flg;
-  PetscInt        thread_affinities[16];
+  PetscInt        thread_affinities[PetscMaxThreads+PetscMainThreadShareWork];
 
   PetscFunctionBegin;
 
@@ -1332,6 +1332,8 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 
   ierr = PetscMalloc(s->nthreads*sizeof(PetscInt),&s->cpu_affinity);CHKERRQ(ierr);
   if(affinities == PETSC_NULL) {
+    ierr = PetscMemcpy(thread_affinities+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+    if(PetscMainThreadShareWork) thread_affinities[0] = MainThreadCoreAffinity;
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-vec_thread_affinities","Set CPU affinity for each thread","VecPThreadSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
