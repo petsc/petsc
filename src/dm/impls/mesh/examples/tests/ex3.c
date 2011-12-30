@@ -216,7 +216,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection originalSection
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], &(*remoteOffsets)[-pStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
-  ierr = PetscSectionView(*newSection, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSectionView(*newSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -261,10 +261,10 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
 
     for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
       PetscInt localPoint   = localPoints ? localPoints[i] : i;
-      PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
-      PetscInt localOffset, dof, d;
 
       if ((localPoint >= pStart) && (localPoint < pEnd)) {
+        PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
+        PetscInt localOffset, dof, d;
         ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
         for(d = 0; d < dof; ++d, ++ind) {
@@ -332,7 +332,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
     }
     ierr = PetscSectionSetUp(cellPartSection);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, cellPartition->size(), cellPartition->restrictSpace(), PETSC_COPY_VALUES, &cellPart);CHKERRQ(ierr);
-    ierr = PetscSectionView(cellPartSection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
     /* Create SF assuming a serial partition for all processes: Could check for IS length here */
     if (!rank) {
@@ -351,7 +351,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   }
   /* Close the partition over the mesh */
   ierr = ALE::Partitioner<>::createPartitionClosureV(mesh, cellPartSection, cellPart, &partSection, &part, 0);CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */
   ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, pointSF);CHKERRQ(ierr);
