@@ -129,13 +129,15 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
       return (any([s in output for s in ['www.gnu.org',
-                                         'developer.apple.com',
                                          'bugzilla.redhat.com',
                                          'gcc.gnu.org',
                                          'gcc version',
+                                         '-print-libgcc-file-name',
                                          'passed on to the various sub-processes invoked by gcc',
+                                         'passed on to the various sub-processes invoked by cc',
                                          'passed on to the various sub-processes invoked by gfortran',
                                          'passed on to the various sub-processes invoked by g++',
+                                         'passed on to the various sub-processes invoked by c++',
                                          ]])
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
