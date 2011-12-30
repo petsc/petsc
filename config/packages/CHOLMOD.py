@@ -8,7 +8,8 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.liblist   = [['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libmetis.a']]
+    self.liblist   = [['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a'],
+                      ['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libmetis.a']]
     self.functions = ['cholmod_l_solve'] 
     self.includes  = ['cholmod.h']
     self.complex   = 1
