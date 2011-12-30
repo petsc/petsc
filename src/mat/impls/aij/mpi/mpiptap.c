@@ -505,7 +505,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ptap->api      = api;
   ptap->apj      = apj;
   ptap->merge    = merge;
-  ptap->apnz_max = ap_rmax;
+  ptap->rmax     = ap_rmax;
  
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
@@ -771,8 +771,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   } else if (sparse_axpy == 2){/* Perform two sparse axpy */
     /*----------------------------------------------------*/
     /* malloc apa to store sparse row A[i,:]*P */ 
-    ierr = PetscMalloc((ptap->apnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(apa,ptap->apnz_max*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscMalloc((ptap->rmax+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
+    ierr = PetscMemzero(apa,ptap->rmax*sizeof(MatScalar));CHKERRQ(ierr);
 
     pA=pa_loc;
     for (i=0; i<am; i++) {

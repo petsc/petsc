@@ -16,13 +16,15 @@
 /* Global variables */
 extern PetscMPIInt  PetscMaxThreads;
 extern PetscInt     PetscMainThreadShareWork;
+extern PetscInt*    ThreadCoreAffinity;
+extern PetscInt     MainThreadCoreAffinity;
 
 PetscInt vecs_created=0;
 Kernel_Data *kerneldatap;
 Kernel_Data **pdata;
 
 /* Global function pointer */
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
+extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
@@ -81,7 +83,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr = MainJob(VecDot_Kernel,(void**)pdata,x->nthreads);
+  ierr = MainJob(VecDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   /* gather result */
   *z = kerneldatap[0].result;
@@ -145,7 +147,7 @@ PetscErrorCode VecTDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr = MainJob(VecTDot_Kernel,(void**)pdata,x->nthreads);
+  ierr = MainJob(VecTDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   /* gather result */
   *z = kerneldatap[0].result;
@@ -204,7 +206,7 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
       kerneldatap[i].n     = nx[i];  
       pdata[i]             = &kerneldatap[i];
     }
-    ierr = MainJob(VecScale_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecScale_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
@@ -253,7 +255,7 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       kerneldatap[i].alpha = alpha;
       pdata[i] = &kerneldatap[i];
     }
-    ierr = MainJob(VecAXPY_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
@@ -321,7 +323,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       kerneldatap[i].alpha = alpha;
       pdata[i]             = &kerneldatap[i];
     }
-    ierr = MainJob(VecAYPX_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecAYPX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     if(alpha==-1.0) {
@@ -401,7 +403,7 @@ PetscErrorCode VecAXPBY_SeqPThread(Vec yin,PetscScalar alpha,PetscScalar beta,Ve
       pdata[i] = &kerneldatap[i];
     }
     
-    ierr = MainJob(VecAX_Kernel,(void**)pdata,x->nthreads);CHKERRQ(ierr);
+    ierr = MainJob(VecAX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
     
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
@@ -419,7 +421,7 @@ PetscErrorCode VecAXPBY_SeqPThread(Vec yin,PetscScalar alpha,PetscScalar beta,Ve
       pdata[i] = &kerneldatap[i];
     }
     
-    ierr = MainJob(VecAXPBY_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecAXPBY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
     
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
@@ -493,7 +495,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
     kerneldatap[i].n = nw[i];
     pdata[i] = &kerneldatap[i];
   }
-  ierr = MainJob(VecWAXPY_Kernel,(void**)pdata,w->nthreads);
+  ierr = MainJob(VecWAXPY_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   if (alpha == 1.0 || alpha == -1.0) {
     ierr = PetscLogFlops(1.0*win->map->n);CHKERRQ(ierr);
@@ -569,7 +571,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
       kerneldatap[i].n = nx[i];
       pdata[i] = &kerneldatap[i];
     }
-    ierr = MainJob(VecNorm_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecNorm_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results */
     *z = (PetscReal)kerneldatap[0].result;
     if(type == NORM_1) {
@@ -685,7 +687,7 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
       kerneldatap[i].n    = nx[i];
       pdata[i]            = &kerneldatap[i];
     }
-    ierr = MainJob(VecMax_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecMax_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results, determine global max, global index */
     max = kerneldatap[0].localmax;
     j   = kerneldatap[0].localind;
@@ -754,7 +756,7 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
       pdata[i]            = &kerneldatap[i];
     }
 
-    ierr = MainJob(VecMin_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecMin_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results, determine global max, global index */
     min = kerneldatap[0].localmin;
     j   = kerneldatap[0].localind;
@@ -818,7 +820,7 @@ PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr  = MainJob(VecPointwiseMult_Kernel,(void**)pdata,w->nthreads);
+  ierr  = MainJob(VecPointwiseMult_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -865,7 +867,7 @@ PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr  = MainJob(VecPointwiseDivide_Kernel,(void**)pdata,w->nthreads);
+  ierr  = MainJob(VecPointwiseDivide_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -910,7 +912,7 @@ PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
       pdata[i]         = &kerneldatap[i];
     }
 
-    ierr = MainJob(VecSwap_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecSwap_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -953,7 +955,7 @@ PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
     pdata[i]            = &kerneldatap[i];
    }
 
-  ierr = MainJob(VecSetRandom_Kernel,(void**)pdata,x->nthreads);
+  ierr = MainJob(VecSetRandom_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -995,7 +997,7 @@ PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
       kerneldatap[i].n   = nx[i];
       pdata[i]           = &kerneldatap[i];
     }
-    ierr = MainJob(VecCopy_Kernel,(void**)pdata,x->nthreads);
+    ierr = MainJob(VecCopy_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -1100,7 +1102,7 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
     kerneldatap[i].istart = ix[i];
     pdata[i]              = &kerneldatap[i];
   }
-  ierr = MainJob(VecMAXPY_Kernel,(void**)pdata,x->nthreads);
+  ierr = MainJob(VecMAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = PetscLogFlops(nv*2.0*xin->map->n);CHKERRQ(ierr);
@@ -1144,7 +1146,7 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
     kerneldatap[i].n       = nx[i];
     pdata[i]               = &kerneldatap[i];
   }
-  ierr = MainJob(VecSet_Kernel,(void**)pdata,x->nthreads);
+  ierr = MainJob(VecSet_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1164,6 +1166,7 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree2(vs->arrindex,vs->nelem);CHKERRQ(ierr);
+  ierr = PetscFree(vs->cpu_affinity);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
 
   vecs_created--;
@@ -1189,6 +1192,7 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
   ierr = VecPThreadSetNThreads(*V,s->nthreads-PetscMainThreadShareWork);CHKERRQ(ierr);
+  ierr = VecPThreadSetThreadAffinities(*V,s->cpu_affinity+PetscMainThreadShareWork);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
 
@@ -1206,11 +1210,17 @@ PetscErrorCode VecDuplicate_SeqPThread(Vec win,Vec *V)
 +  v - the vector
 -  nthreads - number of threads
 
+   Note:
+   Use nthreads = PETSC_DECIDE for PETSc to determine the number of threads.
+
+   Options Database keys:
+   -vec_threads <nthreads> - Number of threads
+
    Level: intermediate
 
-   Concepts: vectors^setting number of threads
+   Concepts: vectors^number of threads
 
-.seealso: VecCreateSeqPThread()
+.seealso: VecCreateSeqPThread(), VecPThreadGetNThreads()
 @*/
 PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
 {
@@ -1218,14 +1228,28 @@ PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
   PetscInt       Q,R;
   PetscBool      S;
-  PetscInt       i,iIndex=0;
+  PetscInt       i,iIndex=0,nthr;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  if(nthreads > PetscMaxThreads) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthreads,PetscMaxThreads);
+
   if(s->nthreads != 0) {
     ierr = PetscFree2(s->arrindex,s->nelem);CHKERRQ(ierr);
   }
-  s->nthreads = nthreads+PetscMainThreadShareWork;
+
+  if(nthreads == PETSC_DECIDE) {
+    ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used for vector operations","VecPThreadSetNThreads",PetscMaxThreads,&nthr,&flg);CHKERRQ(ierr);
+    if(flg && nthr > PetscMaxThreads) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthr,PetscMaxThreads);
+    }
+    if(!flg) nthr = PetscMaxThreads;
+    s->nthreads = nthr+PetscMainThreadShareWork;
+  } else {
+    if(nthreads > PetscMaxThreads) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthreads,PetscMaxThreads);
+    }
+    s->nthreads = nthreads + PetscMainThreadShareWork;
+  }
   Q = v->map->n/s->nthreads;
   R = v->map->n-Q*s->nthreads;
 
@@ -1239,6 +1263,93 @@ PetscErrorCode VecPThreadSetNThreads(Vec v,PetscInt nthreads)
     iIndex += s->nelem[i];
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPThreadGetNThreads"
+/*@
+   VecPThreadGetNThreads - Returns the number of threads used for vector operations.
+
+   Input Parameter
+.  v - the vector
+
+   Output Parameter
+.  nthreads - number of threads
+
+   Level: intermediate
+
+   Concepts: vectors^number of threads
+
+.seealso: VecPThreadSetNThreads()
+@*/
+PetscErrorCode VecPThreadGetNThreads(Vec v,PetscInt *nthreads)
+{
+  Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
+  
+  PetscFunctionBegin;
+  *nthreads = s->nthreads - PetscMainThreadShareWork;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPThreadSetThreadAffinities"
+/*@
+   VecPThreadSetThreadAffinities - Sets the CPU affinities of vector threads.
+
+   Input Parameters
++  v - the vector
+-  affinities - list of cpu affinities for threads.
+
+   Notes:
+   Must set affinities for all the threads used with the vector.
+ 
+   Use affinities[] = PETSC_NULL for PETSc to decide the thread affinities.
+
+   Options Database Keys:
+   -vec_thread_affinities - Comma seperated list of thread affinities
+
+   Level: intermediate
+
+   Concepts: vectors^thread cpu affinity
+
+.seealso: VecPThreadGetThreadAffinities()
+@*/
+PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
+{
+  PetscErrorCode  ierr;
+  Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
+  PetscInt        nmax=PetscMaxThreads+PetscMainThreadShareWork;
+  PetscBool       flg;
+  PetscInt        thread_affinities[PetscMaxThreads+PetscMainThreadShareWork];
+
+  PetscFunctionBegin;
+
+  if(s->cpu_affinity) {
+    ierr = PetscFree(s->cpu_affinity);CHKERRQ(ierr);
+  }
+
+  ierr = PetscMalloc(s->nthreads*sizeof(PetscInt),&s->cpu_affinity);CHKERRQ(ierr);
+  if(affinities == PETSC_NULL) {
+    ierr = PetscMemcpy(thread_affinities+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+    if(PetscMainThreadShareWork) thread_affinities[0] = MainThreadCoreAffinity;
+    /* Check if run-time option is set */
+    ierr = PetscOptionsIntArray("-vec_thread_affinities","Set CPU affinity for each thread","VecPThreadSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
+    if(flg) {
+      if(nmax != s->nthreads-PetscMainThreadShareWork) {
+	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, vector Threads = %D, CPU affinities set = %D",s->nthreads-PetscMainThreadShareWork,nmax);
+      }
+      ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,thread_affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+    } else {
+      /* Reuse the core affinities set for first s->nthreads */
+      ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+    }
+  } else {
+    /* Set user provided affinities */
+    ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+  }
+  if(PetscMainThreadShareWork) s->cpu_affinity[0] = MainThreadCoreAffinity;
   PetscFunctionReturn(0);
 }
 
@@ -1310,8 +1421,6 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
 {
   Vec_SeqPthread *s;
   PetscErrorCode ierr;
-  PetscBool      flg;
-  PetscInt       nthreads=PetscMaxThreads;
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -1323,6 +1432,7 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   s->array_allocated = 0;
   s->nthreads        = 0;
   s->arrindex        = 0;
+  s->cpu_affinity    = 0;
 
   /* If this is the first vector being created then also create the common Kernel data structure */
   if(vecs_created == 0) {
@@ -1334,17 +1444,26 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
-  } else {
-    ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
-  }
+  /* Set the number of threads */
+  ierr = VecPThreadSetNThreads(v,PETSC_DECIDE);CHKERRQ(ierr);
+  /* Set thread affinities */
+  ierr = VecPThreadSetThreadAffinities(v,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQPTHREAD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
+
+/*MC
+   VECSEQPTHREAD - VECSEQPTHREAD = "seqpthread" - The basic sequential vector using posix threads
+
+   Options Database Keys:
+.  -vec_type seqpthread - sets the vector type to VECSEQPTHREAD during a call to VecSetFromOptions()
+
+   Level: intermediate
+
+.seealso: VecCreate(), VecCreateSeqPThread(), VecSetType(), VecSetFromOptions(), VECSEQ
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -1381,7 +1500,8 @@ EXTERN_C_END
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  n - the vector length 
--  nthreads - number of threads.
+.  nthreads - number of threads
+-  affinities - thread affinities
 
    Output Parameter:
 .  V - the vector
@@ -1390,13 +1510,20 @@ EXTERN_C_END
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
+   Use nthreads = PETSC_DECIDE for PETSc to decide the number of threads and
+   affinities = PETSC_NULL to decide the thread affinities.
+
+   Options Database Keys:
+   -vec_threads <nthreads> - Sets number of threads to be used for vector operations
+   -vec_thread_affinities  - Comma seperated list of thread affinities
+
    Level: intermediate
 
    Concepts: vectors^creating sequential with threads
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+.seealso: VecCreateSeq(), VecPThreadSetNThreads(), VecPThreadSetThreadAffinities(), VecDuplicate(), VecDuplicateVecs()
 @*/
-PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,Vec *v)
+PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,PetscInt affinities[],Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1405,5 +1532,6 @@ PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,Ve
   ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
   ierr = VecSetType(*v,VECSEQPTHREAD);CHKERRQ(ierr);
   ierr = VecPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetThreadAffinities(*v,affinities);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

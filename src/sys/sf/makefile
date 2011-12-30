@@ -1,5 +1,3 @@
-#requirespackage 'PETSC_HAVE_SF'
-
 ALL: lib
 
 SOURCEH	 = ../../../include/private/sfimpl.h ../../../include/petscsf.h

@@ -1698,6 +1698,56 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
+/* Merged from MatGetSymbolicTranspose_SeqAIJ() - replace MatGetSymbolicTranspose_SeqAIJ()? */
+#undef __FUNCT__  
+#define __FUNCT__ "MatTransposeSymbolic_SeqAIJ"
+PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
+{ 
+  PetscErrorCode ierr;
+  PetscInt       i,j,anzj;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data,*b;
+  PetscInt       an=A->cmap->N,am=A->rmap->N;
+  PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
+
+  PetscFunctionBegin;
+  /* Allocate space for symbolic transpose info and work array */
+  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&ati);CHKERRQ(ierr);
+  ierr = PetscMalloc(ai[am]*sizeof(PetscInt),&atj);CHKERRQ(ierr);
+  ierr = PetscMalloc(an*sizeof(PetscInt),&atfill);CHKERRQ(ierr);
+  ierr = PetscMemzero(ati,(an+1)*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* Walk through aj and count ## of non-zeros in each row of A^T. */
+  /* Note: offset by 1 for fast conversion into csr format. */
+  for (i=0;i<ai[am];i++) {
+    ati[aj[i]+1] += 1;
+  }
+  /* Form ati for csr format of A^T. */
+  for (i=0;i<an;i++) {
+    ati[i+1] += ati[i];
+  }
+
+  /* Copy ati into atfill so we have locations of the next free space in atj */
+  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* Walk through A row-wise and mark nonzero entries of A^T. */
+  for (i=0;i<am;i++) {
+    anzj = ai[i+1] - ai[i];
+    for (j=0;j<anzj;j++) {
+      atj[atfill[*aj]] = i;
+      atfill[*aj++]   += 1;
+    }
+  }
+
+  /* Clean up temporary space and complete requests. */
+  ierr = PetscFree(atfill);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,an,am,ati,atj,PETSC_NULL,B);CHKERRQ(ierr);
+  b = (Mat_SeqAIJ *)((*B)->data);
+  b->free_a   = PETSC_FALSE;
+  b->free_ij  = PETSC_TRUE;
+  b->nonew    = 0;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqAIJ"
 PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)

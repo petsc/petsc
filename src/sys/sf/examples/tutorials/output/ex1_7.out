@@ -1,0 +1,56 @@
+Star Forest Object: 4 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=3, leaves=2, remote ranks=2
+  [0] 0 <- (3,1)
+  [0] 1 <- (1,0)
+  [1] Number of roots=2, leaves=3, remote ranks=2
+  [1] 0 <- (0,1)
+  [1] 1 <- (2,0)
+  [1] 2 <- (0,2)
+  [2] Number of roots=2, leaves=3, remote ranks=3
+  [2] 0 <- (1,1)
+  [2] 1 <- (3,0)
+  [2] 2 <- (0,2)
+  [3] Number of roots=2, leaves=3, remote ranks=2
+  [3] 0 <- (2,1)
+  [3] 1 <- (0,0)
+  [3] 2 <- (0,2)
+## Multi-SF
+Star Forest Object: 4 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=5, leaves=2, remote ranks=2
+  [0] 0 <- (3,1)
+  [0] 1 <- (1,0)
+  [1] Number of roots=2, leaves=3, remote ranks=2
+  [1] 0 <- (0,1)
+  [1] 1 <- (2,0)
+  [1] 2 <- (0,2)
+  [2] Number of roots=2, leaves=3, remote ranks=3
+  [2] 0 <- (1,1)
+  [2] 1 <- (3,0)
+  [2] 2 <- (0,3)
+  [3] Number of roots=2, leaves=3, remote ranks=2
+  [3] 0 <- (2,1)
+  [3] 1 <- (0,0)
+  [3] 2 <- (0,4)
+## Inverse of Multi-SF
+Star Forest Object: 4 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=2, leaves=5, remote ranks=3
+  [0] 0 <- (3,1)
+  [0] 1 <- (1,0)
+  [0] 2 <- (1,2)
+  [0] 3 <- (2,2)
+  [0] 4 <- (3,2)
+  [1] Number of roots=3, leaves=2, remote ranks=2
+  [1] 0 <- (0,1)
+  [1] 1 <- (2,0)
+  [2] Number of roots=3, leaves=2, remote ranks=2
+  [2] 0 <- (1,1)
+  [2] 1 <- (3,0)
+  [3] Number of roots=3, leaves=2, remote ranks=2
+  [3] 0 <- (2,1)
+  [3] 1 <- (0,0)

@@ -3,6 +3,33 @@
 
 const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFSynchronizationType","PETSCSF_SYNCHRONIZATION_",0};
 
+#if !defined(PETSC_HAVE_MPI_WIN_CREATE)
+#define MPI_WIN_NULL ((MPI_Win)0)
+#define MPI_REPLACE 0
+#define MPI_Win_create(base,size,disp_unit,info,comm,win) 1;SETERRQ(comm,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_free(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_start(group,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_post(group,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_complete(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_wait(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_lock(lock_type,rank,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_unlock(rank,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Win_fence(assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Get(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Accumulate(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,op,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+/* Independent of MPI_Win, but also not in MPI-1 */
+#define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_get_contents(datatype,num_ints,num_addrs,num_dtypes,ints,addrs,dtypes) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_dup(datatype,newtype) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_create_indexed_block(count,blocklength,displs,oldtype,newtype) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_get_true_extent(type,lb,bytes) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_COMBINER_DUP   0
+#define MPI_MODE_NOPUT     0
+#define MPI_MODE_NOPRECEDE 0
+#define MPI_MODE_NOSUCCEED 0
+#define MPI_MODE_NOSTORE   0
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFCreate"
 /*@C
@@ -317,6 +344,74 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateInverseSF"
+/*@C
+   PetscSFCreateInverseSF - given a PetscSF in which all vertices have degree 1, creates the inverse map
+
+   Collective
+
+   Input Arguments:
+.  sf - star forest to invert
+
+   Output Arguments:
+.  isf - inverse of sf
+
+   Level: advanced
+
+   Notes:
+   All roots must have degree 1.
+
+   The local space may be a permutation, but cannot be sparse.
+
+.seealso: PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt rank;
+  PetscInt i,nroots,nleaves,maxlocal,count,*newilocal;
+  const PetscInt *ilocal;
+  PetscSFNode *roots,*leaves;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)sf)->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal?ilocal[i]:i)+1);
+  ierr = PetscMalloc2(nroots,PetscSFNode,&roots,nleaves,PetscSFNode,&leaves);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    leaves[i].rank = rank;
+    leaves[i].index = i;
+  }
+  for (i=0;i <nroots; i++) {
+    roots[i].rank = -1;
+    roots[i].index = -1;
+  }
+  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+
+  /* Check whether our leaves are sparse */
+  for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
+  if (count == nroots) newilocal = PETSC_NULL;
+  else {                        /* Index for sparse leaves and compact "roots" array (which is to become our leaves). */
+    ierr = PetscMalloc(count*sizeof(PetscInt),&newilocal);CHKERRQ(ierr);
+    for (i=0,count=0; i<nroots; i++) {
+      if (roots[i].rank >= 0) {
+        newilocal[count] = i;
+        roots[count].rank  = roots[i].rank;
+        roots[count].index = roots[i].index;
+        count++;
+      }
+    }
+  }
+
+  ierr = PetscSFCreate(((PetscObject)sf)->comm,isf);CHKERRQ(ierr);
+  ierr = PetscSFSetSynchronizationType(*isf,sf->sync);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*isf,maxlocal,count,newilocal,PETSC_OWN_POINTER,roots,PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree2(roots,leaves);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFGetGraph"
 /*@C
    PetscSFGetGraph - Get the graph specifying a parallel star forest
@@ -375,6 +470,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (iascii) {
     PetscMPIInt rank;
     PetscInt i,j;
+    PetscBool verbose;
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[sf->sync],sf->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
@@ -385,15 +481,20 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine?sf->mine[i]:i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
-    for (i=0; i<sf->nranks; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
-      for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+    verbose = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)sf)->prefix,"-sf_view_verbose",&verbose,PETSC_NULL);CHKERRQ(ierr);
+    if (verbose) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
+      for (i=0; i<sf->nranks; i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+        for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -408,8 +509,8 @@ static PetscErrorCode MPIU_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype)
   PetscFunctionBegin;
   ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRQ(ierr);
   if (combiner == MPI_COMBINER_DUP) {
-    PetscInt ints[1];
-    MPI_Aint addrs[1];
+    PETSC_UNUSED PetscInt ints[1];
+    PETSC_UNUSED MPI_Aint addrs[1];
     MPI_Datatype types[1];
     if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     ierr = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRQ(ierr);
@@ -506,7 +607,7 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF sf,MPI_Datatype unit,const MPI_Dataty
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    PetscInt rcount = roffset[i+1] - roffset[i];
+    PETSC_UNUSED PetscInt rcount = roffset[i+1] - roffset[i];
     ierr = MPI_Type_create_indexed_block(rcount,1,sf->rmine+sf->roffset[i],link->unit,&link->mine[i]);CHKERRQ(ierr);
     ierr = MPI_Type_create_indexed_block(rcount,1,sf->rremote+sf->roffset[i],link->unit,&link->remote[i]);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&link->mine[i]);CHKERRQ(ierr);
