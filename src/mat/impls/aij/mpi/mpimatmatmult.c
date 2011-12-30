@@ -1221,7 +1221,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   /*----------------------------------------------------*/
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++){
-    buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure  -- memory corruption ???*/
+    buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
     nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
     nextci[k]   = buf_ri_k[k] + (nrows + 1);/* poins to the next i-structure of k-th recved i-structure  */
@@ -1288,7 +1288,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal            afill=1.0,afill_tmp;
-  PetscInt             rstart = P->cmap->rstart,rmax,aN=A->cmap->N;
+  PetscInt             rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Crmax;
   PetscScalar          *vals;
   Mat_SeqAIJ           *a_loc, *pdt,*pot;
 
@@ -1340,9 +1340,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
 #endif
   /* create and initialize a linked list */
-  PetscInt Crmax;
   i = PetscMax(pdt->rmax,pot->rmax);
-  Crmax = i*a_loc->rmax;
+  Crmax = i*a_loc->rmax*size;
   if (!Crmax || Crmax > aN) Crmax = aN;
 #if defined(DEBUG_MATTrMatMult)
   printf("[%d] rmax A_loc %d * max(PD %d, PO %d)=%d, Crmax %d\n",rank,a_loc->rmax,pdt->rmax,pot->rmax,i*a_loc->rmax,Crmax);
@@ -1350,7 +1349,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   for (i=0; i<pon; i++) {
-    nnz = 0;
     pnz = poti[i+1] - poti[i];
     ptJ = potj + poti[i];
     for (j=0; j<pnz; j++){
@@ -1376,7 +1374,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     coi[i+1] = coi[i] + nnz;
   }
   
-  ierr = PetscMalloc((coi[pon]+1)*sizeof(PetscInt),&coj);CHKERRQ(ierr);
+  ierr = PetscMalloc((coi[pon]+1)*sizeof(PetscInt),&coj);CHKERRQ(ierr); 
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]);
   if (afill_tmp > afill) afill = afill_tmp;
@@ -1489,13 +1487,13 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr = PetscMalloc((pn+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
   bi[0] = 0;
 
-  /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
+  /* set initial free space to be fill*(nnz(P) + nnz(A)) */
   nnz           = fill*(pdti[pn] + poti[pon] + ai[am]);
   ierr          = PetscFreeSpaceGet(nnz,&free_space);
   current_space = free_space;
 
 #if defined(DEBUG_MATTrMatMult)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nnz=%d + %d + %d\n",rank,pdti[pn],poti[pon],ai[am]);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nnz=fill %g*(%d + %d + %d)\n",rank,fill,pdti[pn],poti[pon],ai[am]);
 #endif
 
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
@@ -1809,7 +1807,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal            afill=1.0,afill_tmp;
-  PetscInt             rstart = P->cmap->rstart,rmax,aN=A->cmap->N;
+  PetscInt             rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Crmax;
   PetscScalar          *vals;
   Mat_SeqAIJ           *a_loc, *pdt,*pot;
 
@@ -1861,9 +1859,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
 #endif
   /* create and initialize a linked list */
-  PetscInt Crmax;
   i = PetscMax(pdt->rmax,pot->rmax);
-  Crmax = i*a_loc->rmax;
+  Crmax = i*a_loc->rmax*size; /* non-scalable! */
   if (!Crmax || Crmax > aN) Crmax = aN;
 #if defined(DEBUG_MATTrMatMult)
   printf("[%d] rmax A_loc %d * max(PD %d, PO %d)=%d, Crmax %d\n",rank,a_loc->rmax,pdt->rmax,pot->rmax,i*a_loc->rmax,Crmax);
