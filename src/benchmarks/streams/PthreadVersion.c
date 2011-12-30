@@ -134,7 +134,7 @@ void tuned_STREAM_Add();
 void tuned_STREAM_Triad(double);
 void tuned_STREAM_2A();
 
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
+extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 extern PetscMPIInt    PetscMaxThreads;
 extern PetscInt       PetscMainThreadShareWork;
 
@@ -417,7 +417,7 @@ void* tuned_STREAM_2A_Kernel(void* arg)
 
 void tuned_STREAM_2A() 
 {
-  MainJob(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 
 void* tuned_STREAM_Initialize_Kernel(void* arg) {
@@ -454,7 +454,7 @@ void tuned_STREAM_Initialize(double scalar) {
     istart += kerneldatap[i].nloc;
   }
 
-  MainJob(tuned_STREAM_Initialize_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_Initialize_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 
 void* tuned_STREAM_Copy_Kernel(void* arg) {
@@ -469,7 +469,7 @@ void* tuned_STREAM_Copy_Kernel(void* arg) {
 }
 
 void tuned_STREAM_Copy() {
-  MainJob(tuned_STREAM_Copy_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_Copy_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 
 void* tuned_STREAM_Scale_Kernel(void* arg) {
@@ -485,7 +485,7 @@ void* tuned_STREAM_Scale_Kernel(void* arg) {
 }
 
 void tuned_STREAM_Scale(double scalar) {
-  MainJob(tuned_STREAM_Scale_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_Scale_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 
 void* tuned_STREAM_Add_Kernel(void* arg) {
@@ -501,7 +501,7 @@ void* tuned_STREAM_Add_Kernel(void* arg) {
 }
 
 void tuned_STREAM_Add() {
-  MainJob(tuned_STREAM_Add_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_Add_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 
 void* tuned_STREAM_Triad_Kernel(void* arg) {
@@ -517,6 +517,6 @@ void* tuned_STREAM_Triad_Kernel(void* arg) {
 }
 
 void tuned_STREAM_Triad(double scalar) {
-  MainJob(tuned_STREAM_Triad_Kernel,(void**)pdata,nWorkThreads);
+  MainJob(tuned_STREAM_Triad_Kernel,(void**)pdata,nWorkThreads,PETSC_NULL);
 }
 #endif

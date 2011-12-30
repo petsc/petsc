@@ -192,7 +192,7 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree2(x->arrindex,x->nelem);CHKERRQ(ierr);
+  ierr = PetscFree3(x->arrindex,x->nelem,x->cpu_affinity);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
@@ -213,7 +213,6 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
   ierr = PetscFree(v->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
 extern PetscErrorCode VecResetArray_MPI(Vec);
@@ -287,8 +286,6 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
 {
   Vec_MPIPthread *s;
   PetscErrorCode ierr;
-  PetscInt       nthreads=PetscMaxThreads;
-  PetscBool      flg;
 
   PetscFunctionBegin;
 
@@ -304,6 +301,7 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   s->array_allocated = 0;
   s->nthreads        = 0;
   s->arrindex        = 0;
+  s->cpu_affinity    = 0;
   if (alloc && !array) {
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
@@ -316,12 +314,8 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   }
   vecs_created++;
 
-  ierr = PetscOptionsInt("-vec_threads","Set number of threads to be used with the vector","VecPThreadSetNThreads",nthreads,&nthreads,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecPThreadSetNThreads(v,nthreads);CHKERRQ(ierr);
-  } else {
-    ierr = VecPThreadSetNThreads(v,PetscMaxThreads);CHKERRQ(ierr);
-  }
+  ierr = VecPThreadSetNThreads(v,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecPThreadSetThreadAffinities(v,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecSet_SeqPThread(v,0.0);CHKERRQ(ierr);
   s->array_allocated = (PetscScalar*)s->array;
@@ -346,14 +340,14 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
 }
 
 /*MC
-   VECMPIPTHREAD - VECMPIPTHREAD = "mpipthread" - The basic parallel vector
+   VECMPIPTHREAD - VECMPIPTHREAD = "mpipthread" - The basic parallel vector using posix threads
 
    Options Database Keys:
 . -vec_type mpipthread - sets the vector type to VECMPIPTHREAD during a call to VecSetFromOptions()
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI()
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VECSEQPTHREAD, VECMPI,
 M*/
 
 EXTERN_C_BEGIN
@@ -368,6 +362,17 @@ PetscErrorCode  VecCreate_MPIPThread(Vec vv)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*MC
+   VECPTHREAD = "pthread" - A VECSEQPTHREAD on one process and VECMPIPTHREAD on more than one process
+
+   Options Database Keys:
+. -vec_type pthread - sets a vector type to standard on calls to VecSetFromOptions()
+
+  Level: intermediate
+
+.seealso: VecCreateSeqPThread(), VecCreateMPI()
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -387,3 +392,44 @@ PetscErrorCode VecCreate_PThread(Vec v)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreateMPIPThread"
+/*@
+   VecCreateMPIPThread - Creates a parallel vector using posix threads.
+
+   Collective on MPI_Comm
+ 
+   Input Parameters:
++  comm - the MPI communicator to use 
+.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
+.  N - global vector length (or PETSC_DETERMINE to have calculated if n is given)
+.  nthreads - Number of local threads (or PETSC_DECIDE to have nthreads calculated)
+-  affinities - Local thread affinities (or PETSC_NULL for PETSc to set affinities)
+
+   Output Parameter:
+.  vv - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   Level: intermediate
+
+   Concepts: vectors^creating parallel
+
+.seealso: VecCreateSeqPThread(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
+
+@*/ 
+PetscErrorCode  VecCreateMPIPThread(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nthreads,PetscInt affinities[],Vec *v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(comm,v);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
+  ierr = VecSetType(*v,VECMPIPTHREAD);CHKERRQ(ierr);
+  ierr = VecPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
+  ierr = VecPThreadSetThreadAffinities(*v,affinities);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

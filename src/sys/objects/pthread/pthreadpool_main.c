@@ -67,7 +67,7 @@ extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
 extern void*          (*MainWait)(void*);
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
+extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void PetscPthreadSetAffinity(PetscInt);
@@ -193,7 +193,7 @@ PetscErrorCode PetscThreadFinalize_Main() {
 
   PetscFunctionBegin;
 
-  MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+  MainJob(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ void* MainWait_Main(void* arg) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_Main"
-PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
+PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
 
