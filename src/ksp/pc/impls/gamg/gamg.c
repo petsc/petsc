@@ -307,10 +307,14 @@ PetscErrorCode createLevel( const PC a_pc,
       if( new_npe == 1 ) {
         ierr = MatGetLocalSize( adj, &is_sz, &ii );  CHKERRQ(ierr);
         ierr = ISCreateStride( cm, is_sz, 0, 0, &proc_is );  CHKERRQ(ierr);
-      }
-      else {
+      } else {
+        char prefix[256];
+        const char *pcpre;
         ierr = MatPartitioningCreate( cm, &mpart ); CHKERRQ(ierr);
         ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
+        ierr = PCGetOptionsPrefix(a_pc,&pcpre);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(prefix,sizeof prefix,"%spc_gamg_",pcpre?pcpre:"");CHKERRQ(ierr);
+        ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
         ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
         ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
         ierr = MatPartitioningApply( mpart, &proc_is ); CHKERRQ(ierr);
