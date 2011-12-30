@@ -380,7 +380,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = PetscMalloc2(nroots,PetscSFNode,&roots,nleaves,PetscSFNode,&leaves);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     leaves[i].rank = rank;
-    leaves[i].index = ilocal ? ilocal[i] : i;
+    leaves[i].index = i;
   }
   for (i=0;i <nroots; i++) {
     roots[i].rank = -1;
