@@ -301,7 +301,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     velotab[i] = (SCOTCH_Num) (vwgttab[i] + 0.5);
   ierr = PetscFree(vwgttab);CHKERRQ(ierr);
 
-  ierr = SCOTCH_dgraphInit(&grafdat,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  ierr = SCOTCH_dgraphInit(&grafdat,((PetscObject)part)->comm);CHKERRQ(ierr);
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
