@@ -40,9 +40,6 @@ class Configure(PETSc.package.NewPackage):
         self.deps.append(self.ptscotch)
       else:
         self.ptscotch = 0
-      # [parallem mumps] make sure either ptscotch or parmetis is enabled
-      if not self.ptscotch and not self.parmetis:
-        raise RuntimeError('MUMPS requires either Parmetis or PTScotch. Use either --download-parmetis or --download-ptscotch')
     return
 
   def consistencyChecks(self):
@@ -140,3 +137,9 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
+
+  def configureLibrary(self):
+    PETSc.package.NewPackage.configureLibrary(self)
+     # [parallem mumps] make sure either ptscotch or parmetis is enabled
+    if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch and not self.parmetis:
+       raise RuntimeError('MUMPS requires either Parmetis or PTScotch. Use either --download-parmetis or --download-ptscotch')
