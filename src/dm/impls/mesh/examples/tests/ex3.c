@@ -72,45 +72,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshConvertOverlapToSF"
-PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
-{
-  ALE::Obj<PETSC_MESH_TYPE> mesh;
-  PetscInt      *local;
-  PetscSFNode   *remote;
-  PetscInt       numPoints;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, sf);CHKERRQ(ierr);
-  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
-  {
-    /* The local points have degree 1
-         We use the recv overlap
-    */
-    ALE::Obj<PETSC_MESH_TYPE::recv_overlap_type> overlap = mesh->getRecvOverlap();
-
-    numPoints = overlap->getNumPoints();
-    ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
-    ierr = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
-    for(PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
-      const PetscInt                                                      rank   = overlap->getRank(r);
-      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
-      const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cEnd   = overlap->supportEnd(rank);
-
-      for(PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter, ++i) {
-        local[i]        = *c_iter;
-        remote[i].rank  = rank;
-        remote[i].index = c_iter.color();
-      }
-    }
-    ierr = PetscSFSetGraph(*sf, numPoints, numPoints, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscSFView(*sf, PETSC_NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscSFConvertPartition"
 PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection, IS partition, ISLocalToGlobalMapping *renumbering, PetscSF *sf)
 {
