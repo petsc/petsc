@@ -55,7 +55,7 @@
       parameter (SNES_LS_CUBIC                   =  3)
       parameter (SNES_LS_EXACT                   =  4)
       parameter (SNES_LS_TEST                    =  5)
-      parameter (SNES_LS_SECANT                  =  5)
+      parameter (SNES_LS_SECANT                  =  6)
 
 !
 !  Some PETSc fortran functions that the user might pass as arguments
