@@ -239,8 +239,6 @@ PetscErrorCode DMCartesianGetSectionReal(DM dm, const char name[], SectionReal *
 #define __FUNCT__ "DMSetFromOptions_Cartesian"
 PetscErrorCode  DMSetFromOptions_Cartesian(DM dm)
 {
-  char           typeName[256];
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -18,7 +18,9 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
+    const char *prefix;
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
+    SETERRQ1(((PetscObject)part)->comm,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix?prefix:"");
   }
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
 
@@ -515,7 +517,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitionin
 
   ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
+  if (!r) SETERRQ1(((PetscObject)part)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
   part->ops->destroy      = (PetscErrorCode (*)(MatPartitioning)) 0;
   part->ops->view         = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;

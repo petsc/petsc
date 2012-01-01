@@ -1132,12 +1132,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
 
     if( a_Gmat_2 != 0 ) { /* output */
       /* grow graph to get wider set of selected vertices to cover fine grid, invalidates 'llist' */
-      if( npe==1 ){
-        ierr = MatMatTransposeMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
-      }
-      else {
-        ierr = MatMatMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
-      }
+      ierr = MatTransposeMatMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
       *a_Gmat_2 = Gmat2; /* output */
     }
     else Gmat2 = a_Gmat1;  /* use local to get crsGIDs at least */
@@ -1345,13 +1340,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* square matrix - SA */  
   if( method != 0 ){
     Mat Gmat2;
-    if( npe==1 ){
-      ierr = MatMatTransposeMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
-    }
-    else {
-      ierr = MatSetOptionsPrefix(Gmat,"GmatGmat_");CHKERRQ(ierr); /* enable option '-GmatGmat_matmatmult_scalable' */
-      ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
-    }
+    ierr = MatTransposeMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     CHKERRQ(ierr);
     AuxMat = Gmat;
     Gmat = Gmat2;

@@ -1363,7 +1363,12 @@ runex94_2_spaxpy2:
 runex94_2_matmatmult:
 	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -options_left no -matptap_sparseaxpy 0 -matmatmult_scalable> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex94_2, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex94_2_matmatmult, diffs above \n========================================="; fi; \
+	   ${RM} -f ex94_2.tmp
+runex94_2_mattransposematmult:
+	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -options_left no -mattransposematmult_scalable> ex94_2.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex94_2_mattransposematmult, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_2.tmp
 
 runex95:
@@ -1764,7 +1769,7 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm ex41.PETSc runex41 ex41.rm  
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94 runex94_matmatmult runex94_matmatmult_2 runex94_spaxpy1 runex94_spaxpy2 \
-                                 runex94_2 runex94_2_spaxpy1 runex94_2_spaxpy2 runex94_2_matmatmult ex94.rm \
+                                 runex94_2 runex94_2_spaxpy1 runex94_2_spaxpy2 runex94_2_matmatmult runex94_2_mattransposematmult ex94.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm 

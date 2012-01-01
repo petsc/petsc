@@ -22,11 +22,13 @@
        PetscLayoutSetBlockSize(PetscLayout,1);
        PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N);
        PetscLayoutSetUp(PetscLayout);
-       PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
+       Optionally use any of the following:
+          PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
+          PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend); or PetscLayoutGetRanges(PetscLayout,const PetscInt *range[])
        PetscLayoutDestroy(PetscLayout);
 
-      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is 
-      recommended they not be used in user codes unless you really gain something in their use.
+      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in  
+      user codes unless you really gain something in their use.
 
     Fortran Notes: 
       Not available from Fortran

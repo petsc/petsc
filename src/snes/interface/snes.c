@@ -1495,6 +1495,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
   PetscCheckSameComm(snes,1,y,3);
+  VecValidValues(x,2,PETSC_TRUE);
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->ops->computefunction) {
@@ -1511,6 +1512,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   }
   snes->nfuncs++;
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  VecValidValues(y,3,PETSC_FALSE);
   PetscFunctionReturn(0);
 }
 
@@ -1551,6 +1553,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
   if(b) PetscCheckSameComm(snes,1,b,3);
+  if (b) VecValidValues(b,2,PETSC_TRUE);
   ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   if (snes->ops->computegs) {
     PetscStackPush("SNES user GS");
@@ -1558,6 +1561,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
     PetscStackPop;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
   ierr = PetscLogEventEnd(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
+  VecValidValues(x,3,PETSC_FALSE);
   PetscFunctionReturn(0);
 }
 
@@ -1618,6 +1622,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(snes,1,X,2);
+  VecValidValues(X,2,PETSC_TRUE);
   if (!snes->ops->computejacobian) PetscFunctionReturn(0);
 
   /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
@@ -1980,10 +1985,19 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   if (!snes->ops->computejacobian && snes->dm) {
-    Mat J;
-    ierr = DMCreateMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    Mat J,B;
+    ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
+    if (snes->mf_operator) {
+      ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
+      ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+    } else {
+      J = B;
+      ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+    }
+    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian && snes->ops->computejacobian == MatMFFDComputeJacobian) {
     Mat J;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);

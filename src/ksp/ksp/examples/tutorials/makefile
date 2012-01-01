@@ -1054,7 +1054,7 @@ runex55_SA:
 	   ${RM} -f ex55_sa.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa  -ksp_norm_type unpreconditioned  > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa  -ksp_norm_type unpreconditioned -matpartitioning_type parmetis > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
 	   ${RM} -f ex56.tmp
 

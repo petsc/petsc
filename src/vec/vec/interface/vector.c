@@ -1083,6 +1083,7 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "VecReciprocal"
 /*@

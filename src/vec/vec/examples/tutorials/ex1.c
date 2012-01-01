@@ -92,9 +92,10 @@ y
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)PetscRealPart(dots[0]),
                              (PetscInt)PetscRealPart(dots[1]),(PetscInt)PetscRealPart(dots[2]));CHKERRQ(ierr);
 #else
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt)dot);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",n);CHKERRQ(ierr);
+  /*  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
                              (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
+  */			     
 #endif
   ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",(double)maxval,maxind);CHKERRQ(ierr);

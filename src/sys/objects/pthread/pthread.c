@@ -48,47 +48,47 @@ void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
 void*          (*MainWait)(void*) = NULL;
-PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt) = NULL;
+						  PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*) = NULL;
 
 /* Tree Thread Pool Functions */
 extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadInitialize_Tree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Tree(void);
 extern void*          MainWait_Tree(void*);
-extern PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Main Thread Pool Functions */
 extern void*          PetscThreadFunc_Main(void*);
 extern PetscErrorCode PetscThreadInitialize_Main(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Main(void);
 extern void*          MainWait_Main(void*);
-extern PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Chain Thread Pool Functions */
 extern void*          PetscThreadFunc_Chain(void*);
 extern PetscErrorCode PetscThreadInitialize_Chain(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Chain(void);
 extern void*          MainWait_Chain(void*);
-extern PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* True Thread Pool Functions */
 extern void*          PetscThreadFunc_True(void*);
 extern PetscErrorCode PetscThreadInitialize_True(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_True(void);
 extern void*          MainWait_True(void*);
-extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* NO Thread Pool Functions */
 extern void*          PetscThreadFunc_None(void*);
 extern void*          MainWait_None(void*);
-extern PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
 extern void*           MainWait_LockFree(void*);
-extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt);
+						  extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
@@ -173,12 +173,11 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
   N_CORES=1; /* Default value if N_CORES cannot be found out */
   PetscMaxThreads = N_CORES;
   /* Find the number of cores */
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
     N_CORES = get_nprocs();
-#endif
-#if defined(PETSC_HAVE_SYS_SYSCTL_H) 
-      size_t   len = sizeof(N_CORES);
-      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
+    size_t   len = sizeof(N_CORES);
+    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
 #endif
 
   if(nthreads == PETSC_DECIDE) {

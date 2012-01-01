@@ -115,6 +115,52 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingCreateSF"
+/*@C
+    ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n)
+    ordering and a global parallel ordering.
+
+    Collective
+
+    Input Parameter:
++   sf - star forest mapping contiguous local indices to (rank, offset)
+-   start - first global index on this process
+
+    Output Parameter:
+.   mapping - new mapping data structure
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
+@*/
+PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalToGlobalMapping *mapping)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,maxlocal,nroots,nleaves,*globals,*ltog;
+  const PetscInt *ilocal;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscValidPointer(mapping,3);
+
+  ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,PETSC_NULL);CHKERRQ(ierr);
+  if (ilocal) {for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);}
+  else maxlocal = nleaves;
+  ierr = PetscMalloc(nroots*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxlocal*sizeof(PetscInt),&ltog);CHKERRQ(ierr);
+  for (i=0; i<nroots; i++) globals[i] = start + i;
+  for (i=0; i<maxlocal; i++) ltog[i] = -1;
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
+  ierr = PetscFree(globals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingCreate"
@@ -381,7 +427,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 
   PetscFunctionBegin;
   end   = 0;
-  start = 100000000;
+  start = PETSC_MAX_INT;
 
   for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;

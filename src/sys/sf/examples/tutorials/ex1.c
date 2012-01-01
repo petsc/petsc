@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -42,6 +42,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
   test_embed = PETSC_FALSE;
   ierr = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,PETSC_NULL);CHKERRQ(ierr);
+  test_invert = PETSC_FALSE;
+  ierr = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   nroots = 2 + (PetscInt)(rank == 0);
@@ -171,6 +173,17 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
     ierr = PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&esf);CHKERRQ(ierr);
+  }
+
+  if (test_invert) {
+    PetscSF msf,imsf;
+    ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
+    ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(imsf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&imsf);CHKERRQ(ierr);
   }
 
   /* Clean storage for star forest. */

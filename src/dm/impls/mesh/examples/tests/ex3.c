@@ -75,66 +75,55 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "PetscSFConvertPartition"
 PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection, IS partition, ISLocalToGlobalMapping *renumbering, PetscSF *sf)
 {
-  MPI_Comm        comm = ((PetscObject) sfPart)->comm;
-  PetscSF         sfPoints;
-  PetscSFNode    *remotePoints;
-  PetscInt       *renumArray;
-  PetscInt        numRanks, numRemoteRanks = 0, p, i;
-  const PetscInt *rankOffsets;
-  PetscInt        localSize[2], partSize, *partSizes = PETSC_NULL, *partOffsets = PETSC_NULL;
+  MPI_Comm       comm = ((PetscObject)sfPart)->comm;
+  PetscSF        sfPoints;
+  PetscInt       *partSizes,*partOffsets,p,i,numParts,numMyPoints,numPoints,count;
   const PetscInt *partArray;
-  PetscMPIInt     numProcs, rank;
-  PetscErrorCode  ierr;
+  PetscSFNode    *sendPoints;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sfPart, &numRanks, PETSC_NULL, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  numRemoteRanks = rankOffsets[numRanks];
-  ierr = PetscMalloc2(2*numRemoteRanks,PetscInt,&partSizes,2*numRemoteRanks,PetscInt,&partOffsets);CHKERRQ(ierr);
-  for(p = 0; p < numRemoteRanks; ++p) {
-    ierr = PetscSectionGetDof(partSection, p, &partSizes[2*p+0]);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(partSection, p, &partSizes[2*p+1]);CHKERRQ(ierr);
-  }
-  localSize[0] = 0; localSize[1] = 0;
-  ierr = PetscSFFetchAndOpBegin(sfPart, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(sfPart, MPIU_2INT, &localSize, partSizes, partOffsets, MPIU_SUM);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm, "localSize %d %d\n", localSize[0], localSize[1]);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  for(p = 0; p < numRemoteRanks; ++p) {
-    ierr = PetscPrintf(comm, "offset for rank %d: %d\n", p, partOffsets[p]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
-  /* Create the inverse graph for the partition */
-  ierr = PetscMalloc(localSize[0] * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
-  for(i = 0; i < localSize[0]; ++i) {
-    remotePoints[i].rank  = 0;
-    remotePoints[i].index = localSize[1] + i;
-  }
-  ierr = ISGetLocalSize(partition, &partSize);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm, &sfPoints);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfPoints, partSize, localSize[0], PETSC_NULL, PETSC_OWN_POINTER, remotePoints, PETSC_USE_POINTER);CHKERRQ(ierr);
-  /* Send global point numbers
-     - owned values are sent
-     - local values are received
-  */
-  ierr = PetscMalloc(localSize[0] * sizeof(PetscInt), &renumArray);CHKERRQ(ierr);
-  ierr = ISGetIndices(partition, &partArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfPoints, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfPoints, MPIU_INT, partArray, renumArray);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(partition, &partArray);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfPoints);CHKERRQ(ierr);
 
-  ierr = ISLocalToGlobalMappingCreate(comm, localSize[0], renumArray, PETSC_OWN_POINTER, renumbering);CHKERRQ(ierr);
+  /* Get the number of parts and sizes that I have to distribute */
+  ierr = PetscSFGetGraph(sfPart,PETSC_NULL,&numParts,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numParts,PetscInt,&partSizes,numParts,PetscInt,&partOffsets);CHKERRQ(ierr);
+  for (p=0,numPoints=0; p<numParts; p++) {
+    ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
+    numPoints += partSizes[p];
+  }
+  numMyPoints = 0;
+  ierr = PetscSFFetchAndOpBegin(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpEnd(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
+  /* I will receive numMyPoints. I will send a total of numPoints, to be placed on remote procs at partOffsets */
+
+  /* Create SF mapping locations (addressed through partition, as indexed leaves) to new owners (roots) */
+  ierr = PetscMalloc(numPoints*sizeof(PetscSFNode),&sendPoints);CHKERRQ(ierr);
+  for (p=0,count=0; p<numParts; p++) {
+    for (i=0; i<partSizes[p]; i++) {
+      sendPoints[count].rank = p;
+      sendPoints[count].index = partOffsets[p]+i;
+      count++;
+    }
+  }
+  if (count != numPoints) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count %D should equal numPoints=%D",count,numPoints);
+  ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
+  ierr = ISGetIndices(partition,&partArray);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&sfPoints);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfPoints,numMyPoints,numPoints,partArray,PETSC_USE_POINTER,sendPoints,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* Invert SF so that the new owners are leaves and the locations indexed through partition are the roots */
+  ierr = PetscSFCreateInverseSF(sfPoints,sf);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfPoints);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(partition,&partArray);CHKERRQ(ierr);
+
+  /* Create the new local-to-global mapping */
+  ierr = ISLocalToGlobalMappingCreateSF(*sf,0,renumbering);CHKERRQ(ierr);
+
   ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(*renumbering, PETSC_NULL);CHKERRQ(ierr);
-
-  for(i = 0; i < localSize[0]; ++i) {
-    remotePoints[i].rank  = 0;
-    remotePoints[i].index = renumArray[i];
-  }
-  ierr = PetscSFCreate(comm, sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sf, partSize, localSize[0], PETSC_NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFView(*sf,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -177,7 +166,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection originalSection
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &originalSection->atlasOff[-originalSection->atlasLayout.pStart], &(*remoteOffsets)[-pStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
-  ierr = PetscSectionView(*newSection, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSectionView(*newSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -222,10 +211,10 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
 
     for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
       PetscInt localPoint   = localPoints ? localPoints[i] : i;
-      PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
-      PetscInt localOffset, dof, d;
 
       if ((localPoint >= pStart) && (localPoint < pEnd)) {
+        PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
+        PetscInt localOffset, dof, d;
         ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
         for(d = 0; d < dof; ++d, ++ind) {
@@ -293,7 +282,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
     }
     ierr = PetscSectionSetUp(cellPartSection);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, cellPartition->size(), cellPartition->restrictSpace(), PETSC_COPY_VALUES, &cellPart);CHKERRQ(ierr);
-    ierr = PetscSectionView(cellPartSection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
     /* Create SF assuming a serial partition for all processes: Could check for IS length here */
     if (!rank) {
@@ -312,7 +301,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   }
   /* Close the partition over the mesh */
   ierr = ALE::Partitioner<>::createPartitionClosureV(mesh, cellPartSection, cellPart, &partSection, &part, 0);CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */
   ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, pointSF);CHKERRQ(ierr);

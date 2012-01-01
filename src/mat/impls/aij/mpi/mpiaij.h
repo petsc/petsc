@@ -28,8 +28,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscScalar    *bufa;
   Mat            P_loc,P_oth;  /* partial B_seq -- intend to replace B_seq */
   PetscInt       *api,*apj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt       apnz_max;     /* max num of nnz in a local row of A*P 
-                                - used by MatPtAPNumeric_MPIAIJ_MPIAIJ in sparse_axpy=2 */
+  PetscInt       rmax;         /* max num of nnz in a local row of the matrix product */
   MatReuse       reuse; 
   PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
   Mat            A_loc;        /* used by MatTransposeMatMult(), contains api and apj */
@@ -115,6 +114,7 @@ extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
 
 extern PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
