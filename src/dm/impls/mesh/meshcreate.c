@@ -6,6 +6,7 @@
 #define __FUNCT__ "DMSetFromOptions_Mesh"
 PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -28,10 +29,13 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
     }
     ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
-      ALE::Obj<PETSC_MESH_TYPE> mesh;
+      PetscViewer viewer;
 
-      ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
-      mesh->view("Mesh");
+      ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+      ierr = DMView(dm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -40,16 +44,234 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 #include <sieve/DMBuilder.hh>
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshCreateBoxMesh"
-PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
-  PetscInt       debug = 0;
+#define __FUNCT__ "DMMeshCreateSquareBoundary"
+/*
+ Simple square boundary:
+
+ 18--5-17--4--16
+  |     |     |
+  6    10     3
+  |     |     |
+ 19-11-20--9--15
+  |     |     |
+  7     8     2
+  |     |     |
+ 12--0-13--1--14
+*/
+PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
+{
+  DM_Mesh       *mesh        = (DM_Mesh *) dm->data;
+  PetscInt       numVertices = (edges[0]+1)*(edges[1]+1);
+  PetscInt       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+  PetscScalar   *coords;
+  PetscInt       coordSize;
+  PetscMPIInt    rank;
+  PetscInt       v, vx, vy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  try {
-    ierr = ALE::DMBuilder::createBoxMesh(comm, dim, false, interpolate, debug, dm);CHKERRQ(ierr);
-  } catch(ALE::Exception e) {
-    SETERRQ1(comm, PETSC_ERR_PLIB, "Unable to create mesh: %s", e.message());
+  ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt e, ex, ey;
+
+    ierr = DMMeshSetChart(dm, 0, numEdges+numVertices);CHKERRQ(ierr);
+    for(e = 0; e < numEdges; ++e) {
+      ierr = DMMeshSetConeSize(dm, e, 2);CHKERRQ(ierr);
+    }
+    ierr = DMMeshSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    for(vy = 0; vy <= edges[1]; vy++) {
+      for(ex = 0; ex < edges[0]; ex++) {
+        PetscInt edge    = vy*edges[0]     + ex;
+        PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
+        PetscInt cone[2] = {vertex, vertex+1};
+
+        ierr = DMMeshSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if ((vy == 0) || (vy == edges[1])) {
+          ierr = DMMeshMarkPoint(dm, "marker", edge,    1);CHKERRQ(ierr);
+          ierr = DMMeshMarkPoint(dm, "marker", cone[0], 1);CHKERRQ(ierr);
+          if (ex == edges[0]-1) {
+            ierr = DMMeshMarkPoint(dm, "marker", cone[1], 1);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    for(vx = 0; vx <= edges[0]; vx++) {
+      for(ey = 0; ey < edges[1]; ey++) {
+        PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
+        PetscInt vertex  = ey*(edges[0]+1) + vx + numEdges;
+        PetscInt cone[2] = {vertex, vertex+edges[0]+1};
+
+        ierr = DMMeshSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if ((vx == 0) || (vx == edges[0])) {
+          ierr = DMMeshMarkPoint(dm, "marker", edge,    1);CHKERRQ(ierr);
+          ierr = DMMeshMarkPoint(dm, "marker", cone[0], 1);CHKERRQ(ierr);
+          if (ey == edges[1]-1) {
+            ierr = DMMeshMarkPoint(dm, "marker", cone[1], 1);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+  }
+  ierr = DMMeshSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMMeshStratify(dm);CHKERRQ(ierr);
+  /* Build coordinates */
+  ierr = PetscSectionSetChart(mesh->coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
+  for(v = numEdges; v < numEdges+numVertices; ++v) {
+    ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  for(vy = 0; vy <= edges[1]; ++vy) {
+    for(vx = 0; vx <= edges[0]; ++vx) {
+      coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
+      coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
+    }
+  }
+  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateCubeBoundary"
+/*
+ Simple cubic boundary:
+
+     2-------3
+    /|      /|
+   6-------7 |
+   | |     | |
+   | 0-----|-1
+   |/      |/
+   4-------5
+*/
+PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
+{
+  DM_Mesh       *mesh        = (DM_Mesh *) dm->data;
+  PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
+  PetscInt       numFaces    = 6;
+  PetscScalar   *coords;
+  PetscInt       coordSize;
+  PetscMPIInt    rank;
+  PetscInt       v, vx, vy, vz;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Must have at least 1 face per side");}
+  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");}
+  ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt f;
+
+    ierr = DMMeshSetChart(dm, 0, numFaces+numVertices);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      ierr = DMMeshSetConeSize(dm, f, 4);CHKERRQ(ierr);
+    }
+    ierr = DMMeshSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    for(v = 0; v < numFaces+numVertices; ++v) {
+      ierr = DMMeshMarkPoint(dm, "marker", v, 1);CHKERRQ(ierr);
+    }
+    { // Side 0 (Front)
+      PetscInt cone[4] = {numFaces+4, numFaces+5, numFaces+7, numFaces+6};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+    { // Side 1 (Back)
+      PetscInt cone[4] = {numFaces+1, numFaces+0, numFaces+2, numFaces+3};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+    { // Side 0 (Bottom)
+      PetscInt cone[4] = {numFaces+0, numFaces+1, numFaces+5, numFaces+4};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+    { // Side 0 (Top)
+      PetscInt cone[4] = {numFaces+6, numFaces+7, numFaces+3, numFaces+2};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+    { // Side 0 (Left)
+      PetscInt cone[4] = {numFaces+0, numFaces+4, numFaces+6, numFaces+2};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+    { // Side 0 (Right)
+      PetscInt cone[4] = {numFaces+5, numFaces+1, numFaces+3, numFaces+7};
+      ierr = DMMeshSetCone(dm, 0, cone);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMMeshSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMMeshStratify(dm);CHKERRQ(ierr);
+  /* Build coordinates */
+  ierr = PetscSectionSetChart(mesh->coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
+  for(v = numFaces; v < numFaces+numVertices; ++v) {
+    ierr = PetscSectionSetDof(mesh->coordSection, v, 3);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  for(vz = 0; vz <= faces[2]; ++vz) {
+    for(vy = 0; vy <= faces[1]; ++vy) {
+      for(vx = 0; vx <= faces[0]; ++vx) {
+        coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+0] = lower[0] + ((upper[0] - lower[0])/faces[0])*vx;
+        coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+1] = lower[1] + ((upper[1] - lower[1])/faces[1])*vy;
+        coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+2] = lower[2] + ((upper[2] - lower[2])/faces[2])*vz;
+      }
+    }
+  }
+  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateBoxMesh"
+PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dm, 4);
+  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    DM boundary;
+
+    if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+    ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+    PetscValidLogicalCollectiveInt(boundary,dim,2);
+    ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
+    ierr = DMMeshSetDimension(boundary, dim-1);CHKERRQ(ierr);
+    switch(dim) {
+    case 2:
+    {
+      PetscReal lower[2] = {0.0, 0.0};
+      PetscReal upper[2] = {1.0, 1.0};
+      PetscInt  edges[2] = {2, 2};
+
+      ierr = DMMeshCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
+      break;
+    }
+    case 3:
+    {
+      PetscReal lower[3] = {0.0, 0.0, 0.0};
+      PetscReal upper[3] = {1.0, 1.0, 1.0};
+      PetscInt  faces[3] = {1, 1, 1};
+
+      ierr = DMMeshCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
+      break;
+    }
+    default:
+      SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+    }
+    ierr = DMMeshGenerate(boundary, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+  } else {
+    PetscInt debug = 0;
+    try {
+      ierr = ALE::DMBuilder::createBoxMesh(comm, dim, false, interpolate, debug, dm);CHKERRQ(ierr);
+    } catch(ALE::Exception e) {
+      SETERRQ1(comm, PETSC_ERR_PLIB, "Unable to create mesh: %s", e.message());
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -431,6 +653,18 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->lf             = PETSC_NULL;
   mesh->lj             = PETSC_NULL;
 
+  mesh->useNewImpl     = PETSC_FALSE;
+  mesh->dim            = 0;
+  mesh->sf             = PETSC_NULL;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
+  mesh->maxConeSize    = 0;
+  mesh->cones          = PETSC_NULL;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
+  mesh->maxSupportSize = 0;
+  mesh->supports       = PETSC_NULL;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
+
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Mesh;
   dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
@@ -467,6 +701,9 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   dm->ops->destroy            = DMDestroy_Mesh;
 
   ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void)) DMConvert_DA_Mesh);CHKERRQ(ierr);
+
+  /* NEW_MESH_IMPL */
+  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

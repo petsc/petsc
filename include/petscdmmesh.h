@@ -4,6 +4,7 @@
 #if !defined(__PETSCDMMESH_H)
 #define __PETSCDMMESH_H
 
+#include <petscsf.h>
 #include <petscdm.h>
 
 #if defined(PETSC_HAVE_SIEVE) && defined(__cplusplus)
@@ -41,19 +42,35 @@ extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
 extern PetscErrorCode DMMeshFinalize();
 
+/* New Sieve Mesh interface */
+extern PetscErrorCode DMMeshGetDimension(DM, PetscInt *);
+extern PetscErrorCode DMMeshSetDimension(DM, PetscInt);
+extern PetscErrorCode DMMeshGetChart(DM, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshSetChart(DM, PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetConeSize(DM, PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshSetConeSize(DM, PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetCone(DM, PetscInt, const PetscInt *[]);
+extern PetscErrorCode DMMeshSetCone(DM, PetscInt, const PetscInt[]);
+extern PetscErrorCode DMMeshGetMaxSizes(DM, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshSetUp(DM);
+extern PetscErrorCode DMMeshSymmetrize(DM);
+extern PetscErrorCode DMMeshStratify(DM);
+
+extern PetscErrorCode DMMeshMarkPoint(DM, const char[], PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
+extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
+extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
+
+extern PetscErrorCode DMMeshJoinPoints(DM, const PetscInt [], PetscInt *);
+
+/* Old Sieve Mesh interface */
 extern PetscErrorCode DMMeshDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], DM*);
 extern PetscErrorCode DMMeshGenerate(DM, PetscBool , DM *);
 extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , DM*);
 extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
-extern PetscErrorCode DMMeshGetDimension(DM, PetscInt *);
 extern PetscErrorCode DMMeshGetMaximumDegree(DM, PetscInt *);
-
-extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
-extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
-extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
-extern PetscErrorCode DMMeshGetStratum(DM, const char [], PetscInt, PetscInt *);
-extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
 
 extern PetscErrorCode DMCartesianCreate(MPI_Comm, DM *);
 extern PetscErrorCode DMMeshCartesianGetMesh(DM, ALE::Obj<ALE::CartesianMesh>&);
@@ -61,7 +78,6 @@ extern PetscErrorCode DMMeshCartesianSetMesh(DM, const ALE::Obj<ALE::CartesianMe
 
 extern PetscErrorCode DMMeshGetCoordinates(DM, PetscBool , PetscInt *, PetscInt *, PetscReal *[]);
 extern PetscErrorCode DMMeshGetElements(DM, PetscBool , PetscInt *, PetscInt *, PetscInt *[]);
-extern PetscErrorCode DMMeshGetCone(DM, PetscInt, PetscInt *, PetscInt *[]);
 
 extern PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 extern PetscErrorCode DMMeshMarkBoundaryCells(DM, const char [], PetscInt, PetscInt);
