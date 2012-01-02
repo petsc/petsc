@@ -1218,7 +1218,7 @@ PetscErrorCode DMMeshSetConeSize(DM dm, PetscInt p, PetscInt size)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCone"
-/*@
+/*@C
   DMMeshGetCone - Return the points on the in-edges for this point in the Sieve DAG
 
   Not collective
@@ -1231,6 +1231,9 @@ PetscErrorCode DMMeshSetConeSize(DM dm, PetscInt p, PetscInt size)
 . cone - An array of points which are on the in-edges for point p
 
   Level: beginner
+
+  Note:
+  This routine is not available in Fortran.
 
 .seealso: DMMeshCreate(), DMMeshSetCone(), DMMeshSetChart()
 @*/
