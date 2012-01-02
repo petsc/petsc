@@ -94,7 +94,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_scale_solve_failed","Scale step by this factor if solve fails","",ts->scale_solve_failed,&ts->scale_solve_failed,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
 
