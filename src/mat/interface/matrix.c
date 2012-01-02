@@ -7500,7 +7500,7 @@ PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (mat->nullsp) { ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr); }
+  ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
   mat->nullsp = nullsp;
   PetscFunctionReturn(0);
 }
@@ -7536,7 +7536,7 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (mat->nearnullsp) { ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr); }
+  ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
   mat->nearnullsp = nullsp;
   PetscFunctionReturn(0);
 }
