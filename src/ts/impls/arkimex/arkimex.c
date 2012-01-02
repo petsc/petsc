@@ -581,10 +581,15 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
         ts->nonlinear_its += its; ts->linear_its += lits;
-        if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
-          ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-          ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
-          PetscFunctionReturn(0);
+        if (snesreason < 0) {
+          if (ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+            ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+            ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+            PetscFunctionReturn(0);
+          } else {
+            ts->time_step *= ts->scale_solve_failed;
+            goto reject_step;   /* Do not try to solve any more stages */
+          }
         }
       }
       ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
@@ -618,7 +623,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->time_step = next_time_step;
       ark->status = TS_STEP_INCOMPLETE;
     }
+    reject_step: continue;
   }
+  ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 

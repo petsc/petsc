@@ -113,6 +113,7 @@ struct _p_TS {
   PetscBool retain_stages;
   PetscInt reject,max_reject;
 
+  PetscReal scale_solve_failed; /* Scale step by this factor if solver (linear on nonlinear) fails. */
   PetscReal atol,rtol;          /* Relative and absolute tolerance for local truncation error */
   Vec       vatol,vrtol;        /* Relative and absolute tolerance in vector form */
   PetscReal cfltime,cfltime_local;

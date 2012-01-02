@@ -682,6 +682,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   PetscInt        i,j,its,lits,reject,next_scheme;
   PetscReal       next_time_step;
   PetscBool       accept;
+  SNESConvergedReason snesreason;
   PetscErrorCode  ierr;
   MatStructure    str;
 
@@ -721,7 +722,18 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+        ierr = SNESGetConvergedReason(snes,&snesreason);CHKERRQ(ierr);
         ts->nonlinear_its += its; ts->linear_its += lits;
+        if (snesreason < 0) {
+          if (ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+            ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+            ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+            PetscFunctionReturn(0);
+          } else {
+            ts->time_step *= ts->scale_solve_failed;
+            goto reject_step;   /* Do not try to solve any more stages */
+          }
+        }
       } else {
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
@@ -764,7 +776,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ts->time_step = next_time_step;
       ros->status = TS_STEP_INCOMPLETE;
     }
+    reject_step: continue;
   }
+  ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 
