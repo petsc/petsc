@@ -4165,7 +4165,7 @@ PetscErrorCode  MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Output Parameter:
 +  v - the vector for storing the minimums
--  idx - the indices of the column found for each row (optional)
+-  idx - the indices of the column found for each row (or PETSC_NULL if not needed)
 
    Level: intermediate
 
@@ -4252,7 +4252,7 @@ PetscErrorCode  MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Output Parameter:
 +  v - the vector for storing the maximums
--  idx - the indices of the column found for each row (optional)
+-  idx - the indices of the column found for each row (or PETSC_NULL if not needed)
 
    Level: intermediate
 
