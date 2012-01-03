@@ -1018,7 +1018,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   }
 
   ierr = MPI_Allreduce(&xin->stash.insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+  if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
 
   bs = xin->map->bs;
