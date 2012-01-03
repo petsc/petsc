@@ -293,29 +293,23 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt       *ai=a->i,*bi=b->i,*ci,*cj;
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
-  MatScalar      *ca;
   PetscReal      afill;
 
   PetscFunctionBegin;
+  /* printf("MatMatMultSymbolic_SeqAIJ_SeqAIJ...\n"); */
   /* Get ci and cj */
   ierr = MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ(A,B,fill,&ci,&cj,&nspacedouble);CHKERRQ(ierr);
     
-  /* Allocate space for ca */
-  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  
   /* put together the new symbolic matrix */
-  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,PETSC_NULL,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
   c = (Mat_SeqAIJ *)((*C)->data);
-  c->free_a   = PETSC_TRUE;
-  c->free_ij  = PETSC_TRUE;
-  c->nonew    = 0;
+  c->free_a  = PETSC_FALSE;
+  c->free_ij = PETSC_TRUE;
+  c->nonew   = 0;
   (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, needs non-scalable O(bn) array 'abdense' */
-  ierr = PetscMalloc(bn*sizeof(PetscScalar),&c->matmult_abdense);CHKERRQ(ierr);
-  ierr = PetscMemzero(c->matmult_abdense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
    
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -349,10 +343,24 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   PetscInt       am=A->rmap->n,cm=C->rmap->n;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a,valtmp; 
-  PetscScalar    *ab_dense=c->matmult_abdense;
+  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca,valtmp; 
+  PetscScalar    *ab_dense;
   
   PetscFunctionBegin;  
+  /* printf("MatMatMultNumeric_SeqAIJ_SeqAIJ...ca %p\n",c->a); */
+  if (!c->a){ /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
+    ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+    c->a      = ca;
+    c->free_a = PETSC_TRUE;
+
+    ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&ab_dense);CHKERRQ(ierr);
+    ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+    c->matmult_abdense = ab_dense;
+  } else {
+    ca       = c->a;
+    ab_dense = c->matmult_abdense;
+  }
+
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
@@ -799,7 +807,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,anzi,bnzj,nexta,nextb,*acol,*bcol,brow;
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble flops=0.0;
-  MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca=c->a,*cval;
+  MatScalar      *aa=a->a,*aval,*ba=b->a,*bval,*ca,*cval;
   Mat_MatMatTransMult *multtrans;
   PetscContainer      container;
 #if defined(USE_ARRAY)
@@ -850,6 +858,13 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 #endif
 
   /* clear old values in C */
+  if (!c->a){
+    ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+    c->a      = ca;
+    c->free_a = PETSC_TRUE;
+  } else {
+    ca =  c->a;
+  }
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<cm; i++) {
@@ -944,9 +959,16 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt       am=A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
   PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
   PetscLogDouble flops=0.0;
-  MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
+  MatScalar      *aa=a->a,*ba,*ca,*caj;
  
   PetscFunctionBegin;
+  if (!c->a){
+    ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+    c->a      = ca;
+    c->free_a = PETSC_TRUE;
+  } else {
+    ca = c->a;
+  }
   /* clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
