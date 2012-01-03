@@ -381,6 +381,7 @@ extern PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 extern PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
 extern PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscInt**,const PetscInt**,const PetscReal**,const PetscReal**);
 extern PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
+extern PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 extern PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 extern PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 extern PetscErrorCode TSAdaptDestroy(TSAdapt*);

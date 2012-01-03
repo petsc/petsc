@@ -142,6 +142,7 @@ struct _p_TSAdapt {
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
   PetscReal   dt_min,dt_max;
+  PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
   PetscViewer monitor;
 };
 

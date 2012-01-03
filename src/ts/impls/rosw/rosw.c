@@ -691,7 +691,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   accept = PETSC_TRUE;
   ros->status = TS_STEP_INCOMPLETE;
 
-  for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
+  for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     const PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
       ros->stage_time = ts->ptime + h*ASum[i];
@@ -722,6 +722,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->nonlinear_its += its; ts->linear_its += lits;
+        ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+        ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        if (!accept) goto reject_step;
       } else {
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
@@ -764,7 +767,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ts->time_step = next_time_step;
       ros->status = TS_STEP_INCOMPLETE;
     }
+    reject_step: continue;
   }
+  if (!ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 

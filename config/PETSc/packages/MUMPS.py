@@ -30,16 +30,8 @@ class Configure(PETSc.package.NewPackage):
       self.blacs      = framework.require('PETSc.packages.blacs',self)
       self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
       self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
-      if self.framework.argDB.get('download-parmetis') or self.framework.argDB.get('with-parmetis'):
-        self.parmetis   = framework.require('PETSc.packages.parmetis',self)
-        self.deps.append(self.parmetis)
-      else:
-        self.parmetis = 0
-      if self.framework.argDB.get('download-ptscotch') or self.framework.argDB.get('with-ptscotch'):
-        self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
-        self.deps.append(self.ptscotch)
-      else:
-        self.ptscotch = 0
+      self.parmetis   = framework.require('PETSc.packages.parmetis',self)
+      self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
     return
 
   def consistencyChecks(self):
@@ -67,12 +59,12 @@ class Configure(PETSc.package.NewPackage):
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
-    if self.parmetis:
+    if self.parmetis.found:
       g.write('IMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
       g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
       orderingsc += ' -Dmetis -Dparmetis'
       orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis'
-    if self.ptscotch:
+    elif self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
       orderingsc += ' -Dscotch  -Dptscotch'
@@ -139,7 +131,11 @@ class Configure(PETSc.package.NewPackage):
     return self.installDir
 
   def configureLibrary(self):
+    if self.parmetis.found:
+      self.deps.append(self.parmetis)
+    elif self.ptscotch.found:
+      self.deps.append(self.ptscotch)
     PETSc.package.NewPackage.configureLibrary(self)
      # [parallem mumps] make sure either ptscotch or parmetis is enabled
-    if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch and not self.parmetis:
+    if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:
        raise RuntimeError('MUMPS requires either Parmetis or PTScotch. Use either --download-parmetis or --download-ptscotch')

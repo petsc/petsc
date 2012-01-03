@@ -8,8 +8,10 @@
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define TS PetscFortranAddr
+#define TSAdapt PetscFortranAddr
 #endif
 #define TSType character*(80)
+#define TSAdaptType character*(80)
 #define TSConvergedReason PetscEnum
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 

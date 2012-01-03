@@ -8,14 +8,12 @@
 #define dmmeshgetelementsf90_        DMMESHGETELEMENTSF90
 #define dmmeshrestoreelementsf90_    DMMESHRESTOREELEMENTSF90
 #define dmmeshgetlabelids_           DMMESHGETLABELIDS
-#define dmmeshgetstratum_            DMMESHGETSTRATUM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmeshgetcoordinatesf90_     dmmeshgetcoordinatesf90
 #define dmmeshrestorecoordinatesf90_ dmmeshrestorecoordinatesf90
 #define dmmeshgetelementsf90_        dmmeshgetelementsf90
 #define dmmeshrestoreelementsf90_    dmmeshrestoreelementsf90
 #define dmmeshgetlabelids_           dmmeshgetlabelids
-#define dmmeshgetstratum_            dmmeshgetstratum
 #endif
 
 EXTERN_C_BEGIN
@@ -50,13 +48,15 @@ void PETSC_STDCALL dmmeshrestoreelementsf90_(DM *x,F90Array2d *ptr,int *__ierr P
 }
 void PETSC_STDCALL dmmeshgetconef90_(DM *dm,PetscInt *p,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt   *v, n;
-  *__ierr = DMMeshGetCone(*dm,*p,&n,&v); if (*__ierr) return;
-  *__ierr = F90Array1dCreate(v,PETSC_INT,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  const PetscInt *v;
+  PetscInt        n;
+  *__ierr = DMMeshGetConeSize(*dm,*p,&n); if (*__ierr) return;
+  *__ierr = DMMeshGetCone(*dm,*p,&v); if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void *)v,PETSC_INT,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 void PETSC_STDCALL dmmeshrestoreconef90_(DM *dm,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
 
 #if 0
@@ -74,14 +74,6 @@ void PETSC_STDCALL dmmeshgetlabelids_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), F
   FIXCHAR(name,lenN,pN);
   *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &ids PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMMeshGetLabelIds(*dm,pN, ids);
-  FREECHAR(name,pN);
-}
-void PETSC_STDCALL dmmeshgetstratum_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, F90Array1d *ptr, int *ierr PETSC_END_LEN(lenN) PETSC_F90_2PTR_PROTO(ptrd)){
-  char     *pN;
-  PetscInt *points;
-  FIXCHAR(name,lenN,pN);
-  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &points PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = DMMeshGetStratum(*dm,pN, *value, points);
   FREECHAR(name,pN);
 }
 

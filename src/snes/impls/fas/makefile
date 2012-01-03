@@ -9,6 +9,7 @@ OBJSC    = fas.o fasgalerkin.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
+SUBMANSEC= SNESFAS
 LOCDIR   = src/snes/impls/fas/
 
 include ${PETSC_DIR}/conf/variables
