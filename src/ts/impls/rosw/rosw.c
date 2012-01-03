@@ -769,7 +769,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     }
     reject_step: continue;
   }
-  if (!ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  if (ros->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 
