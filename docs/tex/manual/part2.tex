@@ -14,7 +14,8 @@
 \label{chapter:tao_solver}
 
 TAO contains unconstrained minimization, bound constrained minimization, 
-and nonlinear least squares solvers.
+nonlinear complementarity, nonlinear least squares solvers, and pde-constrained
+solvers.
 The structure of these problems can differ significantly, 
 but TAO has a similar interface to all of its solvers.  
 Routines that most solvers have in common will be discussed in 
@@ -545,7 +546,7 @@ This routine  and the user-defined context
 should be set in the TAO solver with the command
 \findex{TaoSetConstraintsRoutine()}
 \begin{verbatim}
-   TaoSetConstraintRoutine(TaoSolver,
+   TaoSetConstraintsRoutine(TaoSolver,
                            PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
                            void*);
 \end{verbatim}
@@ -574,7 +575,7 @@ object
 for PETSc to apply the preconditioner on and a matrix for applying
 the inverse of the state Jacobian. This inverse matrix may be {\tt
   PETSC\_NULL},
-in which case the inverse matrix need not be formed.
+TAO will apply the inverse using a PETSc KSP solver.
 These evaluation routines should be registered with TAO using the routines
 \begin{verbatim}
    TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
@@ -591,11 +592,12 @@ For the state Jacobian,
 the third argument is the matrix that will be used for preconditioning,
 the fourth argument is an optional matrix for the inverse of the state 
 Jacobian.  You can use {\tt PETSC\_NULL} for this inverse argument and let 
-PETSc apply the inverse using a KSP operation, but you will get faster
+PETSc apply the inverse using a KSP operation, but you may get faster
 results if you can manipulate the structure of the Jacobian to provide your
 own inverse. The fifth argument is the function pointer, and the sixth argument is
-an optional user-defined context. There should be no solve performed with the
-design Jacobian, so there is no need to provide 
+an optional user-defined context. There is no solve performed with the
+design Jacobian, so there is no need to provide preconditioner or inverse
+matrices.
 
 
 \section{Monitors}

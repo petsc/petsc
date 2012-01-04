@@ -919,9 +919,149 @@ The gradient of the minimization
 problem is $J^T C(X)$ and the Hessian matrix is approximated by
 $J^T J$, where $J$ is the Jacobian of the constraints at $X$.
 
-\subsection{POUNDerS}
 
-as efficient as Levenberg Marquardt or POUNDerS methods,
+\section{Complementarity}
+\label{sec:complementarity}
+
+Mixed complementarity problems, or box-constrained variational inequalities,
+are related to nonlinear systems of equations.  They are defined by a 
+continuously differentiable function,
+$F:\Re^n \to \Re^n$, and bounds, $\ell \in \{\Re \cup \{-\infty\}\}^n$ 
+and $u \in \{\Re \cup \{\infty\}\}^n$, on the variables such that 
+$\ell \leq u$.  Given this information, $\x^* \in [\ell,u]$ is a solution to 
+MCP($F$, $\ell$, $u$) if for each $i \in \{1, \ldots, n\}$ we have at
+least one of the following:
+\begin{eqnarray*}
+\begin{array}{ll}
+F_i(x^*) \geq 0 & \mbox{if } x^*_i = \ell_i \\
+F_i(x^*) = 0 & \mbox{if } \ell_i < x^*_i < u_i \\
+F_i(x^*) \leq 0 & \mbox{if } x^*_i = u_i.
+\end{array}
+\end{eqnarray*}
+Note that when $\ell = \{-\infty\}^n$ and $u = \{\infty\}^n$ we have a 
+nonlinear system of equations, and $\ell = \{0\}^n$ and $u = \{\infty\}^n$ 
+corresponds to the nonlinear complementarity problem \cite{cottle:nonlinear}.
+
+Simple complementarity conditions arise from the first-order optimality 
+conditions from optimization \cite{karush:minima, kuhn.tucker:nonlinear}.  
+In the simple bound constrained optimization case, these conditions 
+correspond to MCP($\nabla f$, $\ell$, $u$), where $f: \Re^n \to \Re$ 
+is the objective function.  In a one-dimensional setting these conditions 
+are intuitive.  If the solution is at the lower bound, then the function must 
+be increasing and $\nabla f \geq 0$.  However, if the solution is at the 
+upper bound, then the function must be decreasing and $\nabla f \leq 0$.  
+Finally, if the solution 
+is strictly between the bounds, we must be at a stationary point and 
+$\nabla f = 0$.  Other complementarity problems arise in economics and 
+engineering \cite{ferris.pang:engineering}, game 
+theory \cite{nash:equilibrium}, and finance \cite{huang.pang:option}.
+
+Evaluation routines for $F$ and its Jacobian must be supplied prior
+to solving the application.
+The bounds, $[\ell,u]$, on the variables must also be 
+provided.  
+If no starting point is supplied, a default starting point of all zeros 
+is used.
+
+\subsection{Semismooth Methods}
+
+TAO has two implementations of semismooth algorithms 
+\cite{munson.facchinei.ea:semismooth, deluca.facchinei.ea:semismooth, 
+facchinei.fischer.ea:semismooth} for solving mixed complementarity problems.
+Both are based upon a reformulation of the mixed complementarity problem
+as a nonsmooth system of equations using the Fischer-Burmeister 
+function \cite{fischer:special}.  A nonsmooth Newton method is applied to
+the reformulated system to calculate a solution.  The theoretical properties
+of such methods are detailed in the aforementioned references.
+
+The Fischer-Burmeister function, $\phi:\Re^2 \to \Re$, is defined as,
+\begin{eqnarray*}
+\phi(a,b) := \sqrt{a^2 + b^2} - a - b.
+\end{eqnarray*}
+This function has the following key property
+\begin{eqnarray*}
+\begin{array}{lcr}
+        \phi(a,b) = 0 & \Leftrightarrow & a \geq 0,\; b \geq 0,\; ab = 0
+\end{array}
+\end{eqnarray*}
+used when reformulating the mixed complementarity problem the system of 
+equations $\Phi(x) = 0$ where $\Phi:\Re^n \to \Re^n$.  
+The reformulation is defined component-wise as
+\begin{eqnarray*}
+\Phi_i(x) := \left\{ \begin{array}{ll}
+   \phi(x_i - l_i, F_i(x)) & \mbox{if } -\infty < l_i < u_i = \infty, \\
+   -\phi(u_i-x_i, -F_i(x)) & \mbox{if } -\infty = l_i < u_i < \infty, \\
+   \phi(x_i - l_i, \phi(u_i - x_i, - F_i(x))) & \mbox{if } -\infty < l_i < u_i < \infty, \\
+   -F_i(x) & \mbox{if } -\infty = l_i < u_i = \infty, \\
+   l_i - x_i & \mbox{if } -\infty < l_i = u_i < \infty.
+   \end{array} \right.
+\end{eqnarray*}
+We note that $\Phi$ is not differentiable everywhere, but satisfies a
+semismoothness property 
+\cite{mifflin:semismooth, qi:convergence, qi.sun:nonsmooth}.  Furthermore,
+the natural merit function, $\Psi(x) := \frac{1}{2} \| \Phi(x) \|_2^2$, is 
+continuously differentiable.
+
+The two semismooth TAO solvers both solve the system $\Phi(x) = 0$ by applying
+a nonsmooth newton method with a line-search.  We calculate a direction, $d^k$,
+by solving the system $H^kd^k = -\Phi(x^k)$ where $H^k$ is an element of the 
+$B$-subdifferential \cite{qi.sun:nonsmooth} of $\Phi$ at $x^k$.  If the 
+direction calculated does not satisfy a suitable descent condition, then 
+we use the negative gradient of the merit function, $-\nabla \Psi(x^k)$, as 
+the search direction.  A standard Armijo search \cite{armijo:minimization} is
+used to find the new iteration.  Non-monotone searches 
+\cite{grippo.lampariello.ea:nonmonotone} are also available by setting 
+appropriate run-time options.  See Section \ref{sec:TaoLineSearch} for further 
+details.
+
+The first semismooth algorithm available in TAO is not guaranteed to 
+remain feasible with respect to the bounds, $[\ell, u]$, and is termed 
+an infeasible semismooth method.  This method can be specified using the 
+TaoMethod {\tt tao\_ssils}.  In this case, the descent test used is 
+that
+\begin{eqnarray*}
+\nabla \Psi(x^k)^Td^k \leq -\delta\| d^k \|^\rho.
+\end{eqnarray*}
+Both $\delta > 0$ and $\rho > 2$ can be modified using the
+run-time commands {\tt -tao\_ssils\_delta <delta>} and 
+{\tt -tao\_ssils\_rho <rho>} respectively. By default, 
+$\delta = 10^{-10}$ and $\rho = 2.1$.
+
+An alternative is to remain feasible with respect to the bounds by using a 
+projected Armijo line-search.  This method can be specified using the 
+TaoMethod {\tt tao\_ssfls}.  The descent test used is the same as above 
+where the direction in this case corresponds to the first part of the 
+piece-wise linear arc searched by the projected line-search.  
+Both $\delta > 0$ and $\rho > 2$ can be modified using the run-time 
+commands  {\tt -tao\_ssfls\_delta <delta>} and {\tt -tao\_ssfls\_rho <rho>} 
+respectively.  By default, $\delta = 10^{-10}$ and $\rho = 2.1$.
+
+The recommended algorithm is the infeasible semismooth method,
+{\tt tao\_ssils}, because of its strong global and local convergence 
+properties.  However, if it is known that $F$ is not defined outside 
+of the box, $[\ell,u]$, perhaps due to the presence of $log$ functions,
+the feasible algorithm, {\tt tao\_ssfls}, is a reasonable alternative.
+
+\Comment{
+\section{Nonlinear Least Squares}
+\label{sec:leastsquares}
+Given a function $C  : \Re^n \to \Re^m$, the nonlinear least
+squares problem minimizes $\half \| C(X) \|_2$.
+The nonlinear equations $C$ should be specified with the function
+{\tt TaoSetPetscConstraintsFunction()}.
+Most solvers also require the Jacobian of this function.  
+The routine that evaluates this matrix should be set
+using the command {\tt TaoSetPetscJacobian()}.
+
+Using the constraint data provided by the user, the nonlinear
+least squares solver formulates a minimization problem, and
+solves the minimization problem using another TAO solver.  
+A nonlinear least squares solver should be chosen with
+the method \texttt{tao\_nlsq}. The underlying
+minimization solver can be chosen with the runtime
+option {\tt -nlsq\_tao\_method TaoMethod}.
+
+
 \section{PDE-Constrained Optimization}
 \label{sec:pdeconstrained}
 
