@@ -1041,27 +1041,3 @@ The recommended algorithm is the infeasible semismooth method,
 properties.  However, if it is known that $F$ is not defined outside 
 of the box, $[\ell,u]$, perhaps due to the presence of $log$ functions,
 the feasible algorithm, {\tt tao\_ssfls}, is a reasonable alternative.
-
-\Comment{
-\section{Nonlinear Least Squares}
-\label{sec:leastsquares}
-Given a function $C  : \Re^n \to \Re^m$, the nonlinear least
-squares problem minimizes $\half \| C(X) \|_2$.
-The nonlinear equations $C$ should be specified with the function
-{\tt TaoSetPetscConstraintsFunction()}.
-Most solvers also require the Jacobian of this function.  
-The routine that evaluates this matrix should be set
-using the command {\tt TaoSetPetscJacobian()}.
-
-Using the constraint data provided by the user, the nonlinear
-least squares solver formulates a minimization problem, and
-solves the minimization problem using another TAO solver.  
-A nonlinear least squares solver should be chosen with
-the method \texttt{tao\_nlsq}. The underlying
-minimization solver can be chosen with the runtime
-option {\tt -nlsq\_tao\_method TaoMethod}.
-
-
-\section{PDE-Constrained Optimization}
-\label{sec:pdeconstrained}
-
