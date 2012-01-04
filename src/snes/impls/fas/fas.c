@@ -928,7 +928,6 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
   PetscReal           fnorm;
   SNESConvergedReason reason;
   SNES_FAS            *fas = (SNES_FAS *)snes->data;
-  PetscInt            k;
   PetscFunctionBegin;
   if (fas->downsmooth) {
     ierr = SNESSolve(fas->downsmooth, B, X);CHKERRQ(ierr);
@@ -946,15 +945,14 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
       ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", 0, fnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
-    for (k = 0; k < fas->max_down_it; k++) {
-      ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
-      if (fas->monitor) {
-        ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-        ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", k+1, fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-      }
+    ierr = SNESSetGSSweeps(snes, fas->max_down_it);CHKERRQ(ierr);
+    ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+    if (fas->monitor) {
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(fas->monitor, "1 SNES GS Function norm %14.12e\n", fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
   } else if (snes->pc) {
     ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
@@ -978,7 +976,6 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
   PetscReal           fnorm;
   SNESConvergedReason reason;
   SNES_FAS            *fas = (SNES_FAS *)snes->data;
-  PetscInt            k;
   PetscFunctionBegin;
   if (fas->upsmooth) {
     ierr = SNESSolve(fas->downsmooth, B, X);CHKERRQ(ierr);
@@ -996,15 +993,14 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
       ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", 0, fnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
-    for (k = 0; k < fas->max_up_it; k++) {
-      ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
-      if (fas->monitor) {
-        ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-        ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(fas->monitor, "%d SNES GS Function norm %14.12e\n", k+1, fnorm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
-      }
+    ierr = SNESSetGSSweeps(snes, fas->max_up_it);CHKERRQ(ierr);
+    ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+    if (fas->monitor) {
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(fas->monitor, "1 SNES GS Function norm %14.12e\n", fnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(fas->monitor,((PetscObject)snes)->tablevel + 2);CHKERRQ(ierr);
     }
   } else if (snes->pc) {
     ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
