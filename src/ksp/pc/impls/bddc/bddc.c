@@ -1,5 +1,5 @@
 
-#include "bddc.h"
+#include "bddc.h" /*I "petscksp.h" I*/
 
 /*
    Implementation of BDDC preconditioner based on:
