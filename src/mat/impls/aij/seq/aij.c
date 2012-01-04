@@ -2731,7 +2731,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
         atmp = PetscAbsScalar(aa[j]);
         if (atmp > 1.0e-12) {x[i] = atmp; if (idx) idx[i] = aj[j]; break;}
       }
-      if (j == ncols) {x[i] = *aa; if (idx) idx[i] = *aj;}
+      if (j == ncols) {x[i] = PetscAbsScalar(*aa); if (idx) idx[i] = *aj;}
     } else {
       x[i] = 0.0; if (idx) idx[i] = 0;
     }
@@ -2739,7 +2739,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
       atmp = PetscAbsScalar(*aa);
       if (atmp > 1.0e-12 && PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
       aa++; aj++;
-    }   
+    }
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
