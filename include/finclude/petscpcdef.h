@@ -66,5 +66,6 @@
 #define PCSACUSPPOLY 'sacusppoly'
 #define PCBICGSTABCUSP 'bicgstabcusp'
 #define PCAINVCUSP 'ainvcusp'
+#define PCBDDC 'bddc'
 
 #endif
