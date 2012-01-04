@@ -227,7 +227,6 @@ extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,PetscRea
 extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_new(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,Mat);
-extern PetscErrorCode MatGetSymbolicMatMatMult_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,PetscReal,PetscInt*[],PetscInt*[],PetscInt*);
 
 extern PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);
