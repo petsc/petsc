@@ -61,6 +61,9 @@ extern PetscErrorCode  PCCreate_AINVCUSP(PC);
 #if defined(PETSC_HAVE_PARMS)
 extern PetscErrorCode  PCCreate_PARMS(PC);
 #endif
+#if defined(PETSC_HAVE_PCBDDC)
+extern PetscErrorCode  PCCreate_BDDC(PC);
+#endif
 
 EXTERN_C_END
 
@@ -144,6 +147,9 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_PARMS)
   ierr = PCRegisterDynamic(PCPARMS   ,path,"PCCreate_PARMS",PCCreate_PARMS);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_BDDC)
+  ierr = PCRegisterDynamic(PCBDDC         ,path,"PCCreate_BDDC",PCCreate_BDDC);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
