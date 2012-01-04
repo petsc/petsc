@@ -144,7 +144,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
-  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
+  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   PetscReal          afill;
   PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
   PetscBT            lnkbt;
@@ -411,7 +411,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
-  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N,nspacedouble;
+  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   MatScalar          *ca;
   PetscReal          afill;
   PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
