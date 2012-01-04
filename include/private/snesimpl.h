@@ -107,8 +107,10 @@ struct _p_SNES {
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
+  PetscInt    gssweeps;           /* number of GS sweeps */
 
-  /* line search parameters */
+  /* ------------------------ Line Search Parameters ---------------------- */
+
   SNESLineSearchType ls_type;     /* the present line search type */
   PetscReal   damping;            /* line search damping */
   PetscReal   maxstep;            /* line search maximum step size */
