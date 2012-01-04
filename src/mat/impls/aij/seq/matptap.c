@@ -263,13 +263,10 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) 
 {
   PetscErrorCode     ierr;
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c,*ap;
-  PetscInt           *ai=a->i,*pi=p->i,*api,*apj;
-  PetscInt           *ci,*cj; 
-  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N,pm=P->rmap->N;
+  Mat_SeqAIJ         *ap,*c;
+  PetscInt           *api,*apj,*ci,*cj,pn=P->cmap->N,sparse_axpy=0;
   MatScalar          *ca;
   Mat_PtAP           *ptap;
-  PetscInt           sparse_axpy=0;
   Mat                Pt,AP;
   
   PetscFunctionBegin;
