@@ -81,9 +81,22 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries"
-/*
-SZ INSERT COMMENT HERE 
-*/
+/*@
+   PCBDDCSetNeumannBoundaries - brief explanation
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioning context
+-  input_vec - pick a better name and explain what this is
+
+   Level: intermediate
+
+   Notes:
+   usage notes, perhaps an example
+
+.seealso: PCBDDC
+@*/
 PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,Vec input_vec)
 {
   PetscErrorCode ierr;
