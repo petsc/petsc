@@ -804,7 +804,7 @@ PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
   PetscSection   originalCoordSection, newCoordSection;
   Vec            coordinates, newCoordinates;
   PetscScalar   *coords,     *newCoords;
-  PetscInt      *remoteOffsets;
+  PetscInt      *remoteOffsets, coordSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -814,6 +814,10 @@ PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
 
   ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateVec(parallelDM, &newCoordinates);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(newCoordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(newCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(newCoordinates);CHKERRQ(ierr);
+
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(newCoordinates, &newCoords);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, newCoordSection, remoteOffsets, &coordSF);CHKERRQ(ierr);

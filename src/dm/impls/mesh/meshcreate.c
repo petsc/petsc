@@ -70,7 +70,6 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   if (!rank) {
     PetscInt e, ex, ey;
@@ -664,6 +663,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->supports       = PETSC_NULL;
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
 
   mesh->meetTmpA       = PETSC_NULL;
   mesh->meetTmpB       = PETSC_NULL;

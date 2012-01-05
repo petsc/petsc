@@ -258,6 +258,7 @@ PetscErrorCode DMMeshView_Mesh_Ascii(DM dm, PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm = ((PetscObject) dm)->comm;
     PetscInt   *sizes;
@@ -486,12 +487,16 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
   ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->closureTmpA,mesh->closureTmpB);CHKERRQ(ierr);
   while(next) {
+    SieveLabel tmp;
+
     ierr = PetscFree(next->name);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumValues);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumOffsets);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumSizes);CHKERRQ(ierr);
     ierr = PetscFree(next->points);CHKERRQ(ierr);
-    next = next->next;
+    tmp  = next->next;
+    ierr = PetscFree(next);CHKERRQ(ierr);
+    next = tmp;
   }
   PetscFunctionReturn(0);
 }
@@ -1585,7 +1590,6 @@ PetscErrorCode DMMeshSymmetrize(DM dm)
 
     /* Calculate support sizes */
     ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(mesh->supportSection, pStart, pEnd);CHKERRQ(ierr);
     for(p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, c;
