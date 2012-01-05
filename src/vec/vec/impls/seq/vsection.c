@@ -74,6 +74,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->atlasOff           = PETSC_NULL;
   (*s)->bc                 = PETSC_NULL;
   (*s)->bcIndices          = PETSC_NULL;
+  (*s)->setup              = PETSC_FALSE;
   (*s)->numFields          = 0;
   (*s)->field              = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -337,6 +338,8 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (s->setup) {PetscFunctionReturn(0);}
+  s->setup = PETSC_TRUE;
   for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
     s->atlasOff[p] = offset;
     offset += s->atlasDof[p];

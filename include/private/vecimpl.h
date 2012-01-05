@@ -117,6 +117,7 @@ struct _n_PetscSection {
   PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
   PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
   PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  PetscBool                     setup;
 
   PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
   PetscInt                     *numFieldComponents; /* The number of components in each field */
