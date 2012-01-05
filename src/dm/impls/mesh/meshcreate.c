@@ -665,6 +665,11 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
 
+  mesh->meetTmpA       = PETSC_NULL;
+  mesh->meetTmpB       = PETSC_NULL;
+  mesh->joinTmpA       = PETSC_NULL;
+  mesh->joinTmpB       = PETSC_NULL;
+
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Mesh;
   dm->ops->setfromoptions     = DMSetFromOptions_Mesh;

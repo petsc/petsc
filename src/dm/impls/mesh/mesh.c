@@ -480,6 +480,8 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->coordSection);CHKERRQ(ierr);
   ierr = VecDestroy(&mesh->coordinates);CHKERRQ(ierr);
+  ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
+  ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
   while(next) {
     ierr = PetscFree(next->name);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumValues);CHKERRQ(ierr);
@@ -1256,7 +1258,11 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, const PetscInt *cone[])
     ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> v(m->getSieve()->getConeSize(p));
 
     m->getSieve()->cone(p, v);
-    *cone = v.getPoints();
+    if (!mesh->meetTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpA,m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpB);CHKERRQ(ierr);}
+    for(int c = 0; c < v.getSize(); ++c) {
+      mesh->meetTmpA[c] = v.getPoints()[c];
+    }
+    *cone = mesh->meetTmpA;
   }
   PetscFunctionReturn(0);
 }
@@ -1303,6 +1309,150 @@ PetscErrorCode DMMeshSetCone(DM dm, PetscInt p, const PetscInt cone[])
     }
   } else {
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method does not make sense for the C++ Sieve implementation");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetSupportSize"
+/*@
+  DMMeshGetSupportSize - Return the number of out-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMMesh
+- p - The Sieve point, which must lie in the chart set with DMMeshSetChart()
+
+  Output Parameter:
+. size - The support size for point p
+
+  Level: beginner
+
+.seealso: DMMeshCreate(), DMMeshSetConeSize(), DMMeshSetChart(), DMMeshGetConeSize()
+@*/
+PetscErrorCode DMMeshGetSupportSize(DM dm, PetscInt p, PetscInt *size)
+{
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(size, 3);
+  if (mesh->useNewImpl) {
+    ierr = PetscSectionGetDof(mesh->supportSection, p, size);CHKERRQ(ierr);
+  } else {
+    Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    *size = m->getSieve()->getSupportSize(p);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetSupport"
+/*@
+  DMMeshGetSupport - Return the points on the out-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMMesh
+- p - The Sieve point, which must lie in the chart set with DMMeshSetChart()
+
+  Output Parameter:
+. support - An array of points which are on the out-edges for point p
+
+  Level: beginner
+
+.seealso: DMMeshCreate(), DMMeshSetCone(), DMMeshSetChart(), DMMeshGetCone()
+@*/
+PetscErrorCode DMMeshGetSupport(DM dm, PetscInt p, const PetscInt *support[])
+{
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(support, 3);
+  if (mesh->useNewImpl) {
+    PetscInt off;
+
+    ierr = PetscSectionGetOffset(mesh->supportSection, p, &off);CHKERRQ(ierr);
+    *support = &mesh->supports[off];
+  } else {
+    Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> v(m->getSieve()->getSupportSize(p));
+
+    m->getSieve()->support(p, v);
+    if (!mesh->joinTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpA,m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpB);CHKERRQ(ierr);}
+    for(int s = 0; s < v.getSize(); ++s) {
+      mesh->joinTmpA[s] = v.getPoints()[s];
+    }
+    *support = mesh->joinTmpA;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetTransitiveClosure"
+/*@
+  DMMeshGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMMesh
+. p - The Sieve point, which must lie in the chart set with DMMeshSetChart()
+- useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
+
+  Output Parameters:
++ numPoints - The number of points in the closure
+- points - The points
+
+  Level: beginner
+
+.seealso: DMMeshCreate(), DMMeshSetCone(), DMMeshSetChart(), DMMeshGetCone()
+@*/
+PetscErrorCode DMMeshGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, const PetscInt *points[])
+{
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (mesh->useNewImpl) {
+    /* This is only 1-level */
+    if (useCone) {
+      ierr = DMMeshGetConeSize(dm, p, numPoints);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dm, p, points);CHKERRQ(ierr);
+    } else {
+      ierr = DMMeshGetSupportSize(dm, p, numPoints);CHKERRQ(ierr);
+      ierr = DMMeshGetSupport(dm, p, points);CHKERRQ(ierr);
+    }
+  } else {
+    Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    typedef ALE::ISieveVisitor::TransitiveClosureVisitor<PETSC_MESH_TYPE::sieve_type> visitor_type;
+    visitor_type::visitor_type nV;
+    visitor_type               cV(*m->getSieve(), nV);
+
+    if (useCone) {
+      m->getSieve()->cone(p, cV);
+    } else {
+      cV.setIsCone(false);
+      m->getSieve()->support(p, cV);
+    }
+    PetscInt *closureTmpA;
+    int i = 0;
+
+    ierr = PetscMalloc(cV.getPoints().size() * sizeof(PetscInt), &closureTmpA);CHKERRQ(ierr);
+    for(std::set<PETSC_MESH_TYPE::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
+      closureTmpA[i] = *p_iter;
+    }
+    if (numPoints) *numPoints = cV.getPoints().size();
+    if (points)    *points    = closureTmpA;
   }
   PetscFunctionReturn(0);
 }
@@ -1437,14 +1587,15 @@ PetscErrorCode DMMeshSymmetrize(DM dm)
     ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &offsets);CHKERRQ(ierr);
     ierr = PetscMemzero(offsets, (pEnd - pStart) * sizeof(PetscInt));CHKERRQ(ierr);
     for(p = pStart; p < pEnd; ++p) {
-      PetscInt dof, off, offS, c;
+      PetscInt dof, off, c;
 
       ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(mesh->supportSection, p, &offS);CHKERRQ(ierr);
       for(c = off; c < off+dof; ++c) {
         const PetscInt q = mesh->cones[c];
+        PetscInt       offS;
 
+        ierr = PetscSectionGetOffset(mesh->supportSection, q, &offS);CHKERRQ(ierr);
         mesh->supports[offS+offsets[q]] = p;
         ++offsets[q];
       }
@@ -1946,6 +2097,62 @@ PetscErrorCode DMMeshJoinPoints(DM dm, const PetscInt points[], PetscInt *covere
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     /* const Obj<typename Mesh::sieve_type::supportSet> edge = m->getSieve()->nJoin(points[0], points[1], 1); */
     *coveredPoint = -1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshMeetPoints"
+/* This is a 1-level meet */
+PetscErrorCode DMMeshMeetPoints(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
+{
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscInt      *meet[2];
+  PetscInt       meetSize, i = 0;
+  PetscInt       dof, off, p, c, m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(points, 2);
+  PetscValidPointer(numCoveringPoints, 3);
+  PetscValidPointer(coveringPoints, 4);
+  if (mesh->useNewImpl) {
+    if (!mesh->meetTmpA) {ierr = PetscMalloc2(mesh->maxConeSize,PetscInt,&mesh->meetTmpA,mesh->maxConeSize,PetscInt,&mesh->meetTmpB);CHKERRQ(ierr);}
+    meet[0] = mesh->meetTmpA; meet[1] = mesh->meetTmpB;
+    /* Copy in cone of first point */
+    ierr = PetscSectionGetDof(mesh->coneSection, points[0], &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(mesh->coneSection, points[0], &off);CHKERRQ(ierr);
+    for(meetSize = 0; meetSize < dof; ++meetSize) {
+      meet[i][meetSize] = mesh->cones[off+meetSize];
+    }
+    /* Check each successive cone */
+    for(p = 1; p < numPoints; ++p) {
+      PetscInt newMeetSize = 0;
+
+      ierr = PetscSectionGetDof(mesh->coneSection, points[p], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(mesh->coneSection, points[p], &off);CHKERRQ(ierr);
+      for(c = 0; c < dof; ++c) {
+        const PetscInt point = mesh->cones[off+c];
+
+        for(m = 0; m < meetSize; ++m) {
+          if (point == meet[i][m]) {
+            meet[1-i][newMeetSize++] = point;
+            break;
+          }
+        }
+      }
+      meetSize = newMeetSize;
+      i = 1-i;
+    }
+    *numCoveringPoints = meetSize;
+    *coveringPoints    = meet[1-i];
+  } else {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    /* const Obj<typename Mesh::sieve_type::supportSet> edge = m->getSieve()->nJoin(points[0], points[1], 1); */
+    *numCoveringPoints = 0;
+    *coveringPoints    = PETSC_NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -2476,24 +2683,27 @@ PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], D
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_TRIANGLE
+/* Already included since C++ is turned on #include <triangle.h> */
+
 #undef __FUNCT__
 #define __FUNCT__ "TriangleInitInput"
 PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx) {
   PetscFunctionBegin;
   inputCtx->numberofpoints = 0;
   inputCtx->numberofpointattributes = 0;
-  inputCtx->pointlist = NULL;
-  inputCtx->pointattributelist = NULL;
-  inputCtx->pointmarkerlist = NULL;
+  inputCtx->pointlist = PETSC_NULL;
+  inputCtx->pointattributelist = PETSC_NULL;
+  inputCtx->pointmarkerlist = PETSC_NULL;
   inputCtx->numberofsegments = 0;
-  inputCtx->segmentlist = NULL;
-  inputCtx->segmentmarkerlist = NULL;
+  inputCtx->segmentlist = PETSC_NULL;
+  inputCtx->segmentmarkerlist = PETSC_NULL;
   inputCtx->numberoftriangleattributes = 0;
-  inputCtx->trianglelist = NULL;
+  inputCtx->trianglelist = PETSC_NULL;
   inputCtx->numberofholes = 0;
-  inputCtx->holelist = NULL;
+  inputCtx->holelist = PETSC_NULL;
   inputCtx->numberofregions = 0;
-  inputCtx->regionlist = NULL;
+  inputCtx->regionlist = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2502,17 +2712,17 @@ PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx) {
 PetscErrorCode TriangleInitOutput(struct triangulateio *outputCtx) {
   PetscFunctionBegin;
   outputCtx->numberofpoints = 0;
-  outputCtx->pointlist = NULL;
-  outputCtx->pointattributelist = NULL;
-  outputCtx->pointmarkerlist = NULL;
+  outputCtx->pointlist = PETSC_NULL;
+  outputCtx->pointattributelist = PETSC_NULL;
+  outputCtx->pointmarkerlist = PETSC_NULL;
   outputCtx->numberoftriangles = 0;
-  outputCtx->trianglelist = NULL;
-  outputCtx->triangleattributelist = NULL;
-  outputCtx->neighborlist = NULL;
-  outputCtx->segmentlist = NULL;
-  outputCtx->segmentmarkerlist = NULL;
-  outputCtx->edgelist = NULL;
-  outputCtx->edgemarkerlist = NULL;
+  outputCtx->trianglelist = PETSC_NULL;
+  outputCtx->triangleattributelist = PETSC_NULL;
+  outputCtx->neighborlist = PETSC_NULL;
+  outputCtx->segmentlist = PETSC_NULL;
+  outputCtx->segmentmarkerlist = PETSC_NULL;
+  outputCtx->edgelist = PETSC_NULL;
+  outputCtx->edgemarkerlist = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2577,8 +2787,8 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
       const PetscInt *cone;
 
       ierr = DMMeshGetCone(boundary, e, &cone);CHKERRQ(ierr);
-      in.segmentlist[idx*2+0] = cone[0];
-      in.segmentlist[idx*2+1] = cone[1];
+      in.segmentlist[idx*2+0] = cone[0] - vStart;
+      in.segmentlist[idx*2+1] = cone[1] - vStart;
       ierr = DMMeshGetLabelValue(boundary, "marker", e, &in.segmentmarkerlist[idx]);CHKERRQ(ierr);
     }
   }
@@ -2599,6 +2809,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   if (!rank) {
     char args[32];
 
+    /* Take away 'Q' for verbose output */
     ierr = PetscStrcpy(args, "pqezQ");CHKERRQ(ierr);
     if (createConvexHull) {
       ierr = PetscStrcat(args, "c");CHKERRQ(ierr);
@@ -2608,11 +2819,11 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     }
     triangulate(args, &in, &out, PETSC_NULL);
   }
-  if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRQ(ierr);}
-  if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);}
-  if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRQ(ierr);}
-  if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);}
-  if (in.holelist)          {ierr = PetscFree(in.holelist);CHKERRQ(ierr);}
+  ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.segmentlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.holelist);CHKERRQ(ierr);
 
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMMESH);CHKERRQ(ierr);
@@ -2676,6 +2887,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   ierr = TriangleFiniOutput(&out);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGenerate"
@@ -2706,7 +2918,9 @@ PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   /* PetscValidLogicalCollectiveLogical(dm, interpolate, 2); */
   if (bd->useNewImpl) {
     if (interpolate) {SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+#ifdef PETSC_HAVE_TRIANGLE
     ierr = DMMeshGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
+#endif
   } else {
     ALE::Obj<PETSC_MESH_TYPE> mB;
 
@@ -2816,8 +3030,12 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
     if (stratumValue < 0) {
       ierr = DMMeshGetChart(dm, start, end);CHKERRQ(ierr);
     } else {
+      PetscInt pStart, pEnd;
+
       if (start) {*start = 0;}
       if (end)   {*end   = 0;}
+      ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+      if (pStart == pEnd) {PetscFunctionReturn(0);}
     }
     while(next) {
       ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
@@ -2857,8 +3075,16 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     PetscBool  flg   = PETSC_FALSE;
     PetscInt   depth;
 
-    if (start) {*start = 0;}
-    if (end)   {*end   = 0;}
+    if (stratumValue < 0) {
+      ierr = DMMeshGetChart(dm, start, end);CHKERRQ(ierr);
+    } else {
+      PetscInt pStart, pEnd;
+
+      if (start) {*start = 0;}
+      if (end)   {*end   = 0;}
+      ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+      if (pStart == pEnd) {PetscFunctionReturn(0);}
+    }
     while(next) {
       ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
       if (flg) break;
@@ -3160,6 +3386,30 @@ PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
 
   PetscFunctionBegin;
   ierr = DMMeshSetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetConeSection"
+PetscErrorCode DMMeshGetConeSection(DM dm, PetscSection *section) {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!mesh->useNewImpl) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");}
+  if (section) *section = mesh->coneSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCones"
+PetscErrorCode DMMeshGetCones(DM dm, PetscInt *cones[]) {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!mesh->useNewImpl) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");}
+  if (cones) *cones = mesh->cones;
   PetscFunctionReturn(0);
 }
 

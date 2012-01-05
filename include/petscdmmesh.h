@@ -51,6 +51,10 @@ extern PetscErrorCode DMMeshGetConeSize(DM, PetscInt, PetscInt *);
 extern PetscErrorCode DMMeshSetConeSize(DM, PetscInt, PetscInt);
 extern PetscErrorCode DMMeshGetCone(DM, PetscInt, const PetscInt *[]);
 extern PetscErrorCode DMMeshSetCone(DM, PetscInt, const PetscInt[]);
+extern PetscErrorCode DMMeshGetSupportSize(DM, PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshGetSupport(DM, PetscInt, const PetscInt *[]);
+extern PetscErrorCode DMMeshGetConeSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshGetCones(DM, PetscInt *[]);
 extern PetscErrorCode DMMeshGetMaxSizes(DM, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshSetUp(DM);
 extern PetscErrorCode DMMeshSymmetrize(DM);
@@ -62,7 +66,9 @@ extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
 extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
 
-extern PetscErrorCode DMMeshJoinPoints(DM, const PetscInt [], PetscInt *);
+extern PetscErrorCode DMMeshJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *);
+extern PetscErrorCode DMMeshMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+extern PetscErrorCode DMMeshGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, const PetscInt *[]);
 
 /* Old Sieve Mesh interface */
 extern PetscErrorCode DMMeshDistribute(DM, const char[], DM*);

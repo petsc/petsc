@@ -40,6 +40,9 @@ typedef struct {
   PetscSection         coordSection;   /* Layout for coordinates */
   Vec                  coordinates;    /* Coordinate values */
 
+  PetscInt            *meetTmpA, *meetTmpB; /* Work space for meet operation */
+  PetscInt            *joinTmpA, *joinTmpB; /* Work space for join operation */
+
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
 } DM_Mesh;
