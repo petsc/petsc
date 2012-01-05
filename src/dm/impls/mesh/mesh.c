@@ -307,6 +307,8 @@ PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   if (mesh->useNewImpl) {
     PetscBool      iascii, isbinary;
 
@@ -482,6 +484,7 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
   ierr = VecDestroy(&mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
+  ierr = PetscFree2(mesh->closureTmpA,mesh->closureTmpB);CHKERRQ(ierr);
   while(next) {
     ierr = PetscFree(next->name);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumValues);CHKERRQ(ierr);
@@ -1259,7 +1262,7 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 
     m->getSieve()->cone(p, v);
     if (!mesh->meetTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpA,m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpB);CHKERRQ(ierr);}
-    for(int c = 0; c < v.getSize(); ++c) {
+    for(size_t c = 0; c < v.getSize(); ++c) {
       mesh->meetTmpA[c] = v.getPoints()[c];
     }
     *cone = mesh->meetTmpA;
@@ -1351,7 +1354,7 @@ PetscErrorCode DMMeshGetSupportSize(DM dm, PetscInt p, PetscInt *size)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetSupport"
-/*@
+/*@C
   DMMeshGetSupport - Return the points on the out-edges for this point in the Sieve DAG
 
   Not collective
@@ -1387,7 +1390,7 @@ PetscErrorCode DMMeshGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
     m->getSieve()->support(p, v);
     if (!mesh->joinTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpA,m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpB);CHKERRQ(ierr);}
-    for(int s = 0; s < v.getSize(); ++s) {
+    for(size_t s = 0; s < v.getSize(); ++s) {
       mesh->joinTmpA[s] = v.getPoints()[s];
     }
     *support = mesh->joinTmpA;
@@ -1397,7 +1400,7 @@ PetscErrorCode DMMeshGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetTransitiveClosure"
-/*@
+/*@C
   DMMeshGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
 
   Not collective
@@ -1422,15 +1425,36 @@ PetscErrorCode DMMeshGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!mesh->closureTmpA) {
+    PetscInt maxSize;
+    if (mesh->useNewImpl) {
+      maxSize = PetscMax(mesh->maxConeSize, mesh->maxSupportSize)+1;
+    } else {
+      Obj<PETSC_MESH_TYPE> m;
+      ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+      maxSize = PetscMax(m->getSieve()->getMaxConeSize(), m->getSieve()->getMaxSupportSize())+1;
+    }
+    ierr = PetscMalloc2(maxSize,PetscInt,&mesh->closureTmpA,maxSize,PetscInt,&mesh->closureTmpB);CHKERRQ(ierr);
+  }
   if (mesh->useNewImpl) {
+    const PetscInt *tmp;
+    PetscInt        tmpSize, t;
+    PetscInt        closureSize = 1;
+
+    mesh->closureTmpA[0] = p;
     /* This is only 1-level */
     if (useCone) {
-      ierr = DMMeshGetConeSize(dm, p, numPoints);CHKERRQ(ierr);
-      ierr = DMMeshGetCone(dm, p, points);CHKERRQ(ierr);
+      ierr = DMMeshGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dm, p, &tmp);CHKERRQ(ierr);
     } else {
-      ierr = DMMeshGetSupportSize(dm, p, numPoints);CHKERRQ(ierr);
-      ierr = DMMeshGetSupport(dm, p, points);CHKERRQ(ierr);
+      ierr = DMMeshGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
+      ierr = DMMeshGetSupport(dm, p, &tmp);CHKERRQ(ierr);
     }
+    for(t = 0; t < tmpSize; ++t) {
+      mesh->closureTmpA[closureSize++] = tmp[t];
+    }
+    if (numPoints) *numPoints = closureSize;
+    if (points)    *points    = mesh->closureTmpA;
   } else {
     Obj<PETSC_MESH_TYPE> m;
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1444,15 +1468,13 @@ PetscErrorCode DMMeshGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
       cV.setIsCone(false);
       m->getSieve()->support(p, cV);
     }
-    PetscInt *closureTmpA;
     int i = 0;
 
-    ierr = PetscMalloc(cV.getPoints().size() * sizeof(PetscInt), &closureTmpA);CHKERRQ(ierr);
     for(std::set<PETSC_MESH_TYPE::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
-      closureTmpA[i] = *p_iter;
+      mesh->closureTmpA[i] = *p_iter;
     }
     if (numPoints) *numPoints = cV.getPoints().size();
-    if (points)    *points    = closureTmpA;
+    if (points)    *points    = mesh->closureTmpA;
   }
   PetscFunctionReturn(0);
 }
@@ -2016,7 +2038,7 @@ PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, Pe
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetStratumIS"
 /*@C
-  DMMeshGetStratum - Get the points in a label stratum
+  DMMeshGetStratumIS - Get the points in a label stratum
 
   Not Collective
 
@@ -3372,10 +3394,17 @@ PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section) {
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateSection"
 PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshGetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(section, 2);
+  if (mesh->useNewImpl) {
+    *section = mesh->coordSection;
+  } else {
+    ierr = DMMeshGetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3434,12 +3463,17 @@ PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section) {
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateVec"
 PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
-  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
-  {
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coordinates, 2);
+  if (mesh->useNewImpl) {
+    *coordinates = mesh->coordinates;
+  } else {
+    ALE::Obj<PETSC_MESH_TYPE> mesh;
+    ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
     const Obj<PETSC_MESH_TYPE::real_section_type>& coords = mesh->getRealSection("coordinates");
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, coords->getStorageSize(), coords->restrictSpace(), coordinates);CHKERRQ(ierr);
   }

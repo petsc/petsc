@@ -40,8 +40,9 @@ typedef struct {
   PetscSection         coordSection;   /* Layout for coordinates */
   Vec                  coordinates;    /* Coordinate values */
 
-  PetscInt            *meetTmpA, *meetTmpB; /* Work space for meet operation */
-  PetscInt            *joinTmpA, *joinTmpB; /* Work space for join operation */
+  PetscInt            *meetTmpA,    *meetTmpB;    /* Work space for meet operation */
+  PetscInt            *joinTmpA,    *joinTmpB;    /* Work space for join operation */
+  PetscInt            *closureTmpA, *closureTmpB; /* Work space for closure operation */
 
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */

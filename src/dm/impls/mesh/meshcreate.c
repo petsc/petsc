@@ -669,6 +669,8 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->meetTmpB       = PETSC_NULL;
   mesh->joinTmpA       = PETSC_NULL;
   mesh->joinTmpB       = PETSC_NULL;
+  mesh->closureTmpA    = PETSC_NULL;
+  mesh->closureTmpB    = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Mesh;
