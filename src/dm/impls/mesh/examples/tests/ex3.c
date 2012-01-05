@@ -589,9 +589,27 @@ PetscErrorCode DMMeshPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreatePartition"
 PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *partition, PetscInt height) {
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  if (size == 1) {
+    PetscInt *points;
+    PetscInt  cStart, cEnd, c;
+
+    ierr = DMMeshGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(((PetscObject) dm)->comm, partSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(*partSection, 0, size);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*partSection, 0, cEnd-cStart);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+    ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscInt), &points);CHKERRQ(ierr);
+    for(c = cStart; c < cEnd; ++c) {
+      points[c] = c;
+    }
+    ierr = ISCreateGeneral(((PetscObject) dm)->comm, cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (height == 0) {
     PetscInt  numVertices;
     PetscInt *start     = PETSC_NULL;
