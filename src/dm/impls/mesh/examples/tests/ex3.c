@@ -560,7 +560,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = PetscMalloc(nvtxs * sizeof(PetscInt), &points);CHKERRQ(ierr);
   for(p = 0, i = 0; p < commSize; ++p) {
     for(v = 0; v < nvtxs; ++v) {
-      if (assignment[v] == p) points[i++] = assignment[v];
+      if (assignment[v] == p) points[i++] = v;
     }
   }
   if (i != nvtxs) {SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %d should be %d", i, nvtxs);}
@@ -809,27 +809,19 @@ PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
 
   PetscFunctionBegin;
   ierr = DMMeshGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
-  ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-
+  ierr = DMMeshGetCoordinateSection(parallelDM, &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointSF, originalCoordSection, &remoteOffsets, newCoordSection);CHKERRQ(ierr);
 
-  ierr = DMMeshSetCoordinateSection(parallelDM, newCoordSection);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateVec(parallelDM, &newCoordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(newCoordinates, &newCoords);CHKERRQ(ierr);
-
   ierr = PetscSFCreateSectionSF(pointSF, newCoordSection, remoteOffsets, &coordSF);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(coordSF, MPIU_SCALAR, coords, newCoords);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coordSF);CHKERRQ(ierr);
-
   ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&originalCoordSection);CHKERRQ(ierr);
-
-  ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
