@@ -66,6 +66,7 @@ program main
   Vec            X
   Mat            J
   PetscInt       steps,maxsteps,mx
+  PetscBool      OptionSaveToDisk
   PetscErrorCode ierr
   DM             da
   PetscReal      ftime,dt
@@ -118,6 +119,9 @@ program main
   call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-s1',              &
        user(user_s+2),flg,ierr)
 
+  OptionSaveToDisk=.FALSE.
+  call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-sdisk',           &
+       OptionSaveToDisk,flg,ierr) 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,8 +137,6 @@ program main
 #ifdef MF_EX22F_MF
   ! - - - - - - - - -- - - - -   
   !   Matrix free setup
-  print*,'Doing it matrix free'
-  
   call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   dof=i2*(xe-xs+1)
   gdof=i2*(gxe-gxs+1)
@@ -184,6 +186,13 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   call TSSolve(ts,X,ftime,ierr)
   call TSGetTimeStepNumber(ts,steps,ierr)
+
+  if(OptionSaveToDisk) then
+     call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
+     dof=i2*(xe-xs+1)
+     gdof=i2*(gxe-gxs+1)
+     call SaveSolutionToDisk(da,X,gdof,xs,xe)   
+  end if
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Free work space.
@@ -586,3 +595,37 @@ subroutine  MyMult(A,X,F,ierr)
   return
 end subroutine MyMult
 #endif
+
+
+!
+subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
+  implicit none
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscdmda.h>
+
+  Vec X,Xloc
+  DM             da
+  PetscInt xs,xe
+  PetscInt gdof,i
+  PetscErrorCode ierr
+  PetscOffset    ixx 
+  PetscScalar data2(2,xs:xe),data(gdof)
+  PetscScalar    xx(0:1)
+
+
+  call VecGetArray(X,xx,ixx,ierr)
+
+  data2=reshape(xx(ixx:ixx+gdof),(/2,xe-xs+1/))
+  data=reshape(data2,(/gdof/))
+  open(1020,file='solution_out_ex22f_mf.txt') 
+  do i=1,gdof
+     write(1020,'(e24.16,1x)') data(i)
+  end do
+  close(1020)
+
+  call VecRestoreArray(X,xx,ixx,ierr)
+end subroutine SaveSolutionToDisk
