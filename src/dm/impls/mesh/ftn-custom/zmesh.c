@@ -14,6 +14,7 @@
 #define cellsectionrealcreate_      CELLSECTIONREALCREATE
 #define dmmeshgetlabelsize_         DMMESHGETLABELSIZE
 #define dmmeshgetstratumsize_       DMMESHGETSTRATUMSIZE
+#define dmmeshgetstratumis_         DMMESHGETSTRATUMIS
 #define dmmeshgetsectionreal_       DMMESHGETSECTIONREAL
 #define dmmeshgetsectionint_        DMMESHGETSECTIONINT
 #define dmmeshsetsectionreal_       DMMESHSETSECTIONREAL
@@ -36,6 +37,7 @@
 #define cellsectionrealcreate_       cellsectionrealcreate
 #define dmmeshgetlabelsize_          dmmeshgetlabelsize
 #define dmmeshgetstratumsize_        dmmeshgetstratumsize
+#define dmmeshgetstratumis_          dmmeshgetstratumis
 #define dmmeshgetsectionreal_        dmmeshgetsectionreal
 #define dmmeshgetsectionint_         dmmeshgetsectionint
 #define dmmeshsetsectionreal_        dmmeshsetsectionreal
@@ -136,6 +138,13 @@ void PETSC_STDCALL  dmmeshgetstratumsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(le
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetStratumSize(*mesh,pN, *value, size);
+  FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  dmmeshgetstratumis_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshGetStratumIS(*mesh,pN, *value, is);
   FREECHAR(name,pN);
 }
 
