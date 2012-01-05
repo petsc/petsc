@@ -461,6 +461,80 @@ PetscErrorCode  PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionVecView_ASCII"
+PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
+{
+  PetscScalar   *array;
+  PetscInt       p, i;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (s->atlasLayout.numDof != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);}
+  ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &array);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
+  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+    if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
+      PetscInt b;
+
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      for(i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", array[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
+      for(b = 0; b < s->bc->atlasDof[p]; ++b) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      for(i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", array[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionVecView"
+PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
+{
+  PetscBool      isascii;
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject) v)->comm, &viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  if (isascii) {
+    const char *name;
+
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    if (s->numFields) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s with %d fields\n", name, s->numFields);CHKERRQ(ierr);
+      for(f = 0; f < s->numFields; ++f) {
+        ierr = PetscViewerASCIIPrintf(viewer, "  field %d with %d components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
+        ierr = PetscSectionVecView_ASCII(s->field[f], v, viewer);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s\n", name);CHKERRQ(ierr);
+      ierr = PetscSectionVecView_ASCII(s, v, viewer);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported by this section object", ((PetscObject) viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
 

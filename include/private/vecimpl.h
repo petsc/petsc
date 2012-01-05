@@ -150,6 +150,7 @@ extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
