@@ -224,7 +224,11 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 		}
 		lastid = flid;
 	      }
-	      assert(hav==1);
+	      if(hav!=1){
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,
+                         "found %d vertices.  (if==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
+                         hav);
+              }
 	    }
 	    else{
 	      /* I'm stealing this local, owned by a ghost */
