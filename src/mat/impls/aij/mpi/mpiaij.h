@@ -24,12 +24,12 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
 } Mat_Merge_SeqsToMPI; 
 
 typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ() */
-  PetscInt       *startsj,*startsj_r;
-  PetscScalar    *bufa;
+  PetscInt       *startsj_s,*startsj_r; /* used by MatGetBrowsOfAoCols_MPIAIJ */
+  PetscScalar    *bufa;                 /* used by MatGetBrowsOfAoCols_MPIAIJ */
   Mat            P_loc,P_oth;  /* partial B_seq -- intend to replace B_seq */
   PetscInt       *api,*apj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
   PetscInt       rmax;         /* max num of nnz in a local row of the matrix product */
-  MatReuse       reuse; 
+  MatReuse       reuse;        /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
   Mat            A_loc;        /* used by MatTransposeMatMult(), contains api and apj */
 
