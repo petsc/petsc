@@ -30,6 +30,7 @@
 #endif
 
 extern pthread_t* PetscThreadPoint;
+extern int*       ThreadCoreAffinity;
 
 extern void*   (*PetscThreadFunc)(void*);
 extern void*   (*MainWait)(void*);
@@ -82,7 +83,7 @@ void* MainWait_None(void* arg)
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_None"
 PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  PetscErrorCode ijoberr = 0;
+  PetscErrorCode ijoberr = 0,i;
 
   PetscFunctionBegin;
   pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
@@ -91,6 +92,7 @@ PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
   job_none.kernelfunc = pFunc;
   job_none.data = data;
   job_none.ThreadId = apThread;
+  for(i=0;i<n;i++) ThreadCoreAffinity[i] = cpu_affinity[i];
   PetscThreadFunc(&job_none);
   MainWait(&job_none); /* ensures that all threads are finished with the job */
   free(apThread);
