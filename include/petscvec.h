@@ -486,23 +486,24 @@ extern PetscErrorCode  VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 
 
 #if defined(PETSC_USE_DEBUG)
-#define VecValidValues(vec,argnum,input)\
-{\
-  PetscErrorCode    _ierr;\
-  PetscInt          _n,_i;\
-  const PetscScalar *_x;\
-\
-  _ierr = VecGetLocalSize(vec,&_n);CHKERRQ(_ierr);\
-  _ierr = VecGetArrayRead(vec,&_x);CHKERRQ(_ierr);\
-  for (_i=0; _i<_n; _i++) {\
-    if (input) {\
-      if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %d",_i,argnum); \
-    } else {\
-      if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %d",_i,argnum); \
-    }\
-  }\
-  _ierr = VecRestoreArrayRead(vec,&_x);CHKERRQ(_ierr);\
-}
+#define VecValidValues(vec,argnum,input) do {                           \
+    PetscErrorCode     _ierr;                                           \
+    PetscInt          _n,_i;                                            \
+    const PetscScalar *_x;                                              \
+                                                                        \
+    if (vec->petscnative || vec->ops->getarray) {                       \
+      _ierr = VecGetLocalSize(vec,&_n);CHKERRQ(_ierr);                  \
+      _ierr = VecGetArrayRead(vec,&_x);CHKERRQ(_ierr);                  \
+      for (_i=0; _i<_n; _i++) {                                         \
+        if (input) {                                                    \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %d",_i,argnum); \
+        } else {                                                        \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %d",_i,argnum); \
+        }                                                               \
+      }                                                                 \
+      _ierr = VecRestoreArrayRead(vec,&_x);CHKERRQ(_ierr);              \
+    }                                                                   \
+  } while (0)
 #else
 #define VecValidValues(vec,argnum,input)
 #endif
