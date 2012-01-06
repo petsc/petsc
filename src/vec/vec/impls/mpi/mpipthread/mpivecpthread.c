@@ -153,7 +153,7 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   vw   = (Vec_MPIPthread *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
   ierr = VecPThreadSetNThreads(*v,w->nthreads-PetscMainThreadShareWork);CHKERRQ(ierr);
-
+  ierr = VecPThreadSetThreadAffinities(*v,w->cpu_affinity+PetscMainThreadShareWork);CHKERRQ(ierr);
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
@@ -192,7 +192,8 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree3(x->arrindex,x->nelem,x->cpu_affinity);CHKERRQ(ierr);
+  ierr = PetscFree2(x->arrindex,x->nelem);CHKERRQ(ierr);
+  ierr = PetscFree(x->cpu_affinity);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
