@@ -45,23 +45,16 @@ class Retriever(logger.Logger):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
 
-    archive    = '_d_'+name
-    if url.endswith(".bz2") or url.endswith(".tbz"):
-      archive += '.tar'
-      archiveZip = archive+'.bz2'
-    elif url.endswith('.tgz') or url.endswith('.tar.gz'):
-      archive += '.tar'
-      archiveZip = archive+'.gz'
-    elif url.endswith(".zip") or url.endswith('.ZIP'):
-      archiveZip = archive+'.zip'
-    else:
+    # get the tarball file name from the URL
+    filename = os.path.basename(urlparse.urlparse(url)[2])
+    localFile = os.path.join(root,'_d_'+filename)
+    ext =  os.path.splitext(localFile)[1]
+    if ext not in ['.bz2','.tbz','.gz','.tgz','.zip','.ZIP']:
       raise RuntimeError('Unknown compression type in URL: '+ url)
-    localFile  = os.path.join(root, archiveZip)
-
     self.logPrint('Downloading '+url+' to '+localFile)
-
     if os.path.exists(localFile):
-      os.remove(localFile)
+      os.unlink(localFile)
+
     httpfail=-1
     ftpfail=-1
     try:
@@ -79,7 +72,6 @@ class Retriever(logger.Logger):
         self.logPrintBox('Failed download with alternate: '+furl)
         ftpfail=1
     if ((ftpfail == 1) or ((ftpfail == -1) and httpfail)):
-      filename   = os.path.basename(urlparse.urlparse(url)[2])
       failureMessage = '''\
 Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
@@ -89,38 +81,34 @@ Unable to download package %s from: %s
   --download-%s=/yourselectedlocation/%s
 ''' % (name, url, filename, name.lower(), filename)
       raise RuntimeError(failureMessage)
-    self.logPrint('Uncompressing '+localFile)
-    if not archiveZip.endswith(".zip"):
-      localFile  = os.path.join(root, archive)
-      # just in case old local .tar file is still hanging around get rid of it
-      if os.path.exists(localFile):
-        os.remove(localFile)
-    try:
-      if archiveZip.endswith(".bz2"):
-        import bz2
-        f_in  = bz2.BZ2File(os.path.join(root, archiveZip), 'rb')
-        f_out = file(os.path.join(root, archive), 'wb')
-        f_out.writelines(f_in)
-        f_out.close()
-        f_in.close()
-      elif archiveZip.endswith(".zip"):
-        # Use zipfile, but its more complicated
-        config.base.Configure.executeShellCommand('cd '+root+'; unzip '+archiveZip, log = self.log)
-      else:
-        import gzip
-        f_in  = gzip.GzipFile(os.path.join(root, archiveZip), 'rb')
-        f_out = file(os.path.join(root, archive), 'wb')
-        f_out.writelines(f_in)
-        f_out.close()
-        f_in.close()
-    except IOError, e:
-      self.logPrint(localFile+' is not compressed. An internet filter is possibly responsible.')
-    except ImportError, e:
-        raise RuntimeError('Could not import compressor for '+archiveZip+': '+str(e))
-    except RuntimeError, e:
-      filename   = os.path.basename(urlparse.urlparse(url)[2])
-      if str(e).find("not in gzip format") > -1:
-        failureMessage = '''\
+
+    self.logPrint('Extracting '+localFile)
+    if ext in ['.zip','.ZIP']:
+      config.base.Configure.executeShellCommand('cd '+root+'; unzip '+localFile, log = self.log)
+      output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+localFile+' | head -n 1', log = self.log)
+      dirname = os.path.normpath(output[0].strip())
+    else:
+      try:
+        import tarfile
+        tf  = tarfile.open(os.path.join(root, localFile))
+        # some tarfiles list packagename/ but some list packagename/filename in the first entry
+        if tf.firstmember.isdir():
+          dirname = tf.firstmember.name
+        else:
+          dirname = os.path.dirname(tf.firstmember.name)
+        if hasattr(tf,'extractall'): #python 2.5+
+          tf.extractall(root)
+        else:
+          for tfile in tf.getmembers():
+            tf.extract(tfile,root)
+        tf.close()
+      except IOError, e:
+        self.logPrint(localFile+' is not a tarball?')
+      except ImportError, e:
+        raise RuntimeError('Could not import extractor for '+localFile+': '+str(e))
+      except RuntimeError, e:
+        if str(e).find("not in gzip format") > -1:
+          failureMessage = '''\
 Unable to unzip downloaded package %s from: %s
 * If you are behind a firewall - please fix your proxy and rerun ./configure
 *     For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov 
@@ -128,28 +116,15 @@ Unable to unzip downloaded package %s from: %s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
 ''' % (name, url, filename, name.lower(), filename)
-        raise RuntimeError(failureMessage)
-      else:
-        raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
-    self.logPrint('Expanding '+localFile)
+          raise RuntimeError(failureMessage)
+        else:
+          raise RuntimeError('Error extracting '+localFile+': '+str(e))
+
+    # fix file permissions for the untared tarballs.
     try:
-      if not archiveZip.endswith(".zip"):
-        config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
-    except RuntimeError, e:
-      raise RuntimeError('Error doing tar -xf '+archive+': '+str(e))
-    # now find the dirname - and do a chmod
-    try:
-      if archiveZip.endswith(".zip"):
-        output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+archive+' | head -n 1', log = self.log)
-      else:
-        output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -n 1', log = self.log)
-      dirname = os.path.normpath(output[0].strip())
-      # some tarfiles list packagename/ but some list packagename/filename in the first entry - so handle both cases
-      apath,bpath=os.path.split(dirname)
-      if (apath != ''): dirname = apath
       config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
     except RuntimeError, e:
-      raise RuntimeError('Error  changing permissions for '+archive+': '+str(e))
+      raise RuntimeError('Error  changing permissions for '+dirname+' obtained from '+LocalFile+ ' : '+str(e))
     os.unlink(localFile)
     return
 
