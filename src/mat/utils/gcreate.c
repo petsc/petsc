@@ -240,6 +240,71 @@ PetscErrorCode  MatSetUpPreallocation(Mat B)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatXAIJSetPreallocation"
+/*@
+   MatXAIJSetPreallocation - set preallocation for serial and parallel AIJ, BAIJ, and SBAIJ matrices
+
+   Collective on Mat
+
+   Input Arguments:
++  A - matrix being preallocated
+.  bs - block size
+.  dnz - maximum number of nonzero entries per row of diagonal block of parallel matrix
+.  dnnz - number of nonzeros per row of diagonal block of parallel matrix
+.  onz - maximum number of nonzero entries per row of off-diagonal block of parallel matrix
+.  onnz - number of nonzeros per row of off-diagonal block of parallel matrix
+.  dnzu - maximum number of nonzero entries per row of upper-triangular part of diagonal block of parallel matrix
+.  dnnzu - number of nonzeros per row of upper-triangular part of diagonal block of parallel matrix
+.  onzu - maximum number of nonzero entries per row of upper-triangular part of off-diagonal block of parallel matrix
+-  onnzu - number of nonzeros per row of upper-triangular part of off-diagonal block of parallel matrix
+
+   Level: beginner
+
+.seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation()
+@*/
+PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,PetscInt dnz,const PetscInt *dnnz,PetscInt onz,const PetscInt *onnz,PetscInt dnzu,const PetscInt *dnnzu,PetscInt onzu,const PetscInt *onnzu)
+{
+  PetscErrorCode ierr;
+  void (*aij)(void);
+
+  PetscFunctionBegin;
+  ierr = MatSeqBAIJSetPreallocation(A,bs,dnz,dnnz);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,bs,dnz,dnnz,onz,onnz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A,bs,dnzu,dnnzu);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,bs,dnzu,dnnzu,onzu,onnzu);CHKERRQ(ierr);
+  /*
+    In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any
+    good before going on with it.
+  */
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  if (!aij) {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  }
+  if (aij) {
+    if (bs == 1) {
+      ierr = MatSeqAIJSetPreallocation(A,dnz,dnnz);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(A,dnz,dnnz,onz,onnz);CHKERRQ(ierr);
+    } else if (!dnnz) {
+      ierr = MatSeqAIJSetPreallocation(A,dnz*bs,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(A,dnz*bs,PETSC_NULL,onz*bs,PETSC_NULL);CHKERRQ(ierr);
+    } else {                    /* The user has provided preallocation per block-row, convert it to per scalar-row */
+      PetscInt i,m,*sdnnz,*sonnz;
+      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc2((!!dnnz)*m*bs,PetscInt,&sdnnz,(!!onnz)*m*bs,PetscInt,&sonnz);CHKERRQ(ierr);
+      for (i=0; i<m*bs; i++) {
+        if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
+        if (onnz) sonnz[i] = onnz[i/bs] * bs;
+      }
+      ierr = MatSeqAIJSetPreallocation(A,dnz*bs,dnnz?sdnnz:PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(A,dnz*bs,dnnz?sdnnz:PETSC_NULL,onz*bs,onnz?sonnz:PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
         Merges some information from Cs header to A; the C object is then destroyed
 
