@@ -13,6 +13,7 @@
 #define vertexsectionintcreate_     VERTEXSECTIONINTCREATE
 #define cellsectionrealcreate_      CELLSECTIONREALCREATE
 #define dmmeshgetlabelsize_         DMMESHGETLABELSIZE
+#define dmmeshgetlabelids_          DMMESHGETLABELIDS
 #define dmmeshgetstratumsize_       DMMESHGETSTRATUMSIZE
 #define dmmeshgetstratumis_         DMMESHGETSTRATUMIS
 #define dmmeshgetsectionreal_       DMMESHGETSECTIONREAL
@@ -36,6 +37,7 @@
 #define vertexsectionintcreate_      vertexsectionintcreate
 #define cellsectionrealcreate_       cellsectionrealcreate
 #define dmmeshgetlabelsize_          dmmeshgetlabelsize
+#define dmmeshgetlabelids_           dmmeshgetlabelids
 #define dmmeshgetstratumsize_        dmmeshgetstratumsize
 #define dmmeshgetstratumis_          dmmeshgetstratumis
 #define dmmeshgetsectionreal_        dmmeshgetsectionreal
@@ -132,6 +134,12 @@ void PETSC_STDCALL  dmmeshgetlabelsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetLabelSize(*mesh,pN, size);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL dmmeshgetlabelids_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshGetLabelIds(*dm,pN,ids);
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  dmmeshgetstratumsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){

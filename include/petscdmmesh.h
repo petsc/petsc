@@ -60,9 +60,10 @@ extern PetscErrorCode DMMeshSetUp(DM);
 extern PetscErrorCode DMMeshSymmetrize(DM);
 extern PetscErrorCode DMMeshStratify(DM);
 
-extern PetscErrorCode DMMeshMarkPoint(DM, const char[], PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetLabelValue(DM, const char[], PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshSetLabelValue(DM, const char[], PetscInt, PetscInt);
 extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
-extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
+extern PetscErrorCode DMMeshGetLabelIdIS(DM, const char[], IS *);
 extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
 
@@ -161,8 +162,6 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 extern PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
-extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
-extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode DMMeshAssembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 extern PetscErrorCode DMMeshAssembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
@@ -230,12 +229,10 @@ extern PetscErrorCode DMMeshSetMaxDof(DM, PetscInt);
 extern PetscErrorCode SectionGetArray(DM, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 
 /* Helper functions for simple distributions */
-extern PetscErrorCode DMMeshGetVertexMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetVertexSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetVertexSectionInt(DM, const char[], PetscInt, SectionInt *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionInt,(DM dm, PetscInt fiberDim, SectionInt *section),(dm,"default",fiberDim,section))
-extern PetscErrorCode DMMeshGetCellMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetCellSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
