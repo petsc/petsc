@@ -53,6 +53,7 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   PetscValidLogicalCollectiveInt(da,M,2);
   PetscValidLogicalCollectiveInt(da,N,3);
   PetscValidLogicalCollectiveInt(da,P,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
 
   dd->M = M;
   dd->N = N;
@@ -86,6 +87,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscValidLogicalCollectiveInt(da,m,2);
   PetscValidLogicalCollectiveInt(da,n,3);
   PetscValidLogicalCollectiveInt(da,p,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->m = m;
   dd->n = n;
   dd->p = p;
@@ -117,6 +119,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
   PetscValidLogicalCollectiveEnum(da,bx,2);
   PetscValidLogicalCollectiveEnum(da,by,3);
   PetscValidLogicalCollectiveEnum(da,bz,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
@@ -146,6 +149,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,dof,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->w = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
@@ -174,6 +178,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,stype,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->stencil_type = stype;
   PetscFunctionReturn(0);
 }
@@ -201,6 +206,7 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,width,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->s = width;
   PetscFunctionReturn(0);
 }
@@ -243,6 +249,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   if (lx) {
     if (dd->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
     ierr = DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx);CHKERRQ(ierr);
