@@ -2541,7 +2541,6 @@ PetscErrorCode TaoGetHistory(TaoSolver tao, PetscReal **obj, PetscReal **resid, 
 @*/
 PetscErrorCode  TaoSetApplicationContext(TaoSolver tao,void *usrP)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
