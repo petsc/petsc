@@ -9,6 +9,7 @@
 #define MetisInt    idx_t
 #define MetisScalar real_t
 
+
 /* Structure for graph partitioning (adapted from Metis) */
 struct _PCBDDCGraph {
   PetscInt nvtxs;
@@ -23,6 +24,9 @@ struct _PCBDDCGraph {
   PetscBool *touched;
 };
 
+typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
+typedef struct _PCBDDCGraph *PCBDDCGraph;
+
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
@@ -32,7 +36,7 @@ typedef struct {
   Mat           coarse_mat;
   Vec           coarse_vec;
   Vec           coarse_rhs;
-  PC            coarse_pc;
+  KSP           coarse_ksp;
   Mat           coarse_phi_B;
   Mat           coarse_phi_D;
   PetscMPIInt   local_primal_size;
@@ -52,8 +56,8 @@ typedef struct {
   Vec           vec2_R;
   VecScatter    R_to_B;
   VecScatter    R_to_D;
-  PC            pc_R;
-  PC            pc_D;
+  KSP           ksp_R;
+  KSP           ksp_D;
   Vec           vec4_D;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
@@ -69,7 +73,7 @@ typedef struct {
   PetscBool     faces_flag;
   PetscBool     edges_flag;
   /* Some customization is possible */
-  Vec                        Vec_Neumann;
+  IS                         NeumannBoundaries;
   PetscBool                  prec_type;
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
@@ -81,5 +85,15 @@ typedef struct {
 
 /* In case of multilevel BDDC, this is the minimum number of procs for which it will be allowed */
 #define MIN_PROCS_FOR_BDDC 16
+
+/* prototypes for functions contained in bddc.c */
+static PetscErrorCode PCBDDCCoarseSetUp(PC);
+static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt,PetscInt* );
+static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC,PetscScalar*);
+static PetscErrorCode PCBDDCManageLocalBoundaries(PC);
+static PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,Vec);
+static PetscErrorCode PCBDDCSolveSaddlePoint(PC);
+static PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
+static PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
 
 #endif /* __pcbddc_h */

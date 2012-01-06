@@ -148,7 +148,7 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_PARMS)
   ierr = PCRegisterDynamic(PCPARMS   ,path,"PCCreate_PARMS",PCCreate_PARMS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_BDDC)
+#if defined(PETSC_HAVE_PCBDDC)
   ierr = PCRegisterDynamic(PCBDDC         ,path,"PCCreate_BDDC",PCCreate_BDDC);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
