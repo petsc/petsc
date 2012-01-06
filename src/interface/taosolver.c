@@ -2523,3 +2523,54 @@ PetscErrorCode TaoGetHistory(TaoSolver tao, PetscReal **obj, PetscReal **resid, 
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSetApplicationContext"
+/*@
+   TaoSetApplicationContext - Sets the optional user-defined context for 
+   a solver.  
+
+   Logically Collective on TaoSolver
+
+   Input Parameters:
++  tao  - the TaoSolver context
+-  usrP - optional user context
+
+   Level: intermediate
+
+.seealso: TaoGetApplicationContext(), TaoSetApplicationContext()
+@*/
+PetscErrorCode  TaoSetApplicationContext(TaoSolver tao,void *usrP)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->user = usrP;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TaoGetApplicationContext"
+/*@
+   TaoGetApplicationContext - Gets the user-defined context for a
+   TAO solvers.  
+
+   Not Collective
+
+   Input Parameter:
+.  tao  - TaoSolver context
+
+   Output Parameter:
+.  usrP - user context
+
+   Level: intermediate
+
+.seealso: TaoSetApplicationContext()
+@*/
+PetscErrorCode  TaoGetApplicationContext(TaoSolver tao,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *(void**)usrP = tao->user;
+  PetscFunctionReturn(0);
+}

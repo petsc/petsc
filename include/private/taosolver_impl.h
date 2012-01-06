@@ -36,6 +36,7 @@ struct _TaoSolverOps {
 
 struct _p_TaoSolver {
     PETSCHEADER(struct _TaoSolverOps);
+    void *user;
     void *user_objP;
     void *user_objgradP;
     void *user_gradP;
