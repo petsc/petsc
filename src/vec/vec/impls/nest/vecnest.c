@@ -673,6 +673,71 @@ static PetscErrorCode  VecRestoreSubVector_Nest(Vec X,IS is,Vec *x)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray_Nest"
+static PetscErrorCode VecGetArray_Nest(Vec X,PetscScalar **x)
+{
+  Vec_Nest       *bx = (Vec_Nest*)X->data;
+  PetscInt       i,m,rstart,rend;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(X,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscScalar),x);CHKERRQ(ierr);
+  for (i=0; i<bx->nb; i++) {
+    Vec               subvec = bx->v[i];
+    IS                isy    = bx->is[i];
+    PetscInt          j,sm;
+    const PetscInt    *ixy;
+    const PetscScalar *y;
+    ierr = VecGetLocalSize(subvec,&sm);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(subvec,&y);CHKERRQ(ierr);
+    ierr = ISGetIndices(isy,&ixy);CHKERRQ(ierr);
+    for (j=0; j<sm; j++) {
+      PetscInt ix = ixy[j];
+      if (ix < rstart || rend <= ix) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      (*x)[ix-rstart] = y[j];
+    }
+    ierr = ISRestoreIndices(isy,&ixy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(subvec,&y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray_Nest"
+static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
+{
+  Vec_Nest       *bx = (Vec_Nest*)X->data;
+  PetscInt       i,m,rstart,rend;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(X,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
+  for (i=0; i<bx->nb; i++) {
+    Vec            subvec = bx->v[i];
+    IS             isy    = bx->is[i];
+    PetscInt       j,sm;
+    const PetscInt *ixy;
+    PetscScalar    *y;
+    ierr = VecGetLocalSize(subvec,&sm);CHKERRQ(ierr);
+    ierr = VecGetArray(subvec,&y);CHKERRQ(ierr);
+    ierr = ISGetIndices(isy,&ixy);CHKERRQ(ierr);
+    for (j=0; j<sm; j++) {
+      PetscInt ix = ixy[j];
+      if (ix < rstart || rend <= ix) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      y[j] = (*x)[ix-rstart];
+    }
+    ierr = ISRestoreIndices(isy,&ixy);CHKERRQ(ierr);
+    ierr = VecRestoreArray(subvec,&y);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(*x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecNestSetOps_Private"
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
@@ -710,12 +775,12 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->setvalues               = 0;
   ops->assemblybegin           = VecAssemblyBegin_Nest;
   ops->assemblyend             = VecAssemblyEnd_Nest;
-  ops->getarray                = 0;
+  ops->getarray                = VecGetArray_Nest;
   ops->getsize                 = VecGetSize_Nest;
 
   /* 25 */
   ops->getlocalsize            = VecGetLocalSize_Nest;
-  ops->restorearray            = 0;
+  ops->restorearray            = VecRestoreArray_Nest;
   ops->max                     = VecMax_Nest;
   ops->min                     = VecMin_Nest;
   ops->setrandom               = 0;
@@ -1206,7 +1271,7 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   ierr = VecSetUp_NestIS_Private(V,nb,is);CHKERRQ(ierr);
 
   ierr = VecNestSetOps_Private(V->ops);CHKERRQ(ierr);
-  V->petscnative = PETSC_TRUE;
+  V->petscnative = PETSC_FALSE;
 
 
   /* expose block api's */
