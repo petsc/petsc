@@ -1673,7 +1673,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }  
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
-      ierr = KSPSetType( eksp, KSPCG );                         CHKERRQ(ierr);
+      /* ierr = KSPSetType( eksp, KSPCG );                         CHKERRQ(ierr); */
       ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
       ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);

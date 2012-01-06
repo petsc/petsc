@@ -694,7 +694,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
           ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
         }
         ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
-        ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr);
+        /* ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr); */
         ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
         CHKERRQ(ierr);
         ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
