@@ -65,6 +65,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
   }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Serial Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
@@ -120,10 +121,6 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
 
   /* Create the new local-to-global mapping */
   ierr = ISLocalToGlobalMappingCreateSF(*sf,0,renumbering);CHKERRQ(ierr);
-
-  ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(*renumbering, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFView(*sf,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +141,6 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection originalSection
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscSFView(embedSF, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(embedSF, PETSC_NULL, &nleaves, &ilocal, PETSC_NULL);CHKERRQ(ierr);
   if (ilocal) {
     for(i = 0; i < nleaves; ++i) {
@@ -189,7 +185,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
 
   PetscFunctionBegin;
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, PETSC_NULL, &numPoints, &localPoints, PETSC_NULL);CHKERRQ(ierr);
   for(i = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;
@@ -227,7 +222,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, const Pe
   if (numIndices != ind) {SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
   ierr = PetscSFCreate(comm, sectionSF);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sectionSF, numIndices, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFView(*sectionSF, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -737,7 +731,6 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   PetscSection   originalConeSection, newConeSection;
   PetscInt      *remoteOffsets, newConesSize;
   PetscInt      *cones, *newCones;
-  PetscBool      flg;
   PetscMPIInt    numProcs, rank, p;
   PetscErrorCode ierr;
 
@@ -747,22 +740,6 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   ierr = DMMeshGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   ierr = DMMeshCreatePartition(dm, &cellPartSection, &cellPart, height);CHKERRQ(ierr);
-  ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
-  /* Debugging */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-output_partition", &flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer    viewer;
-    PetscErrorCode ierr;
-
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRXX(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
-    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMView(dm, viewer);CHKERRQ(ierr);
-    ierr = ISView(cellPart, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) {
     numRemoteRanks = numProcs;
@@ -776,18 +753,29 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   }
   ierr = PetscSFCreate(comm, &partSF);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Debugging */
+  ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFView(partSF, PETSC_NULL);CHKERRQ(ierr);
   /* Close the partition over the mesh */
   ierr = DMMeshCreatePartitionClosure(dm, cellPartSection, cellPart, &partSection, &part);CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   /* Create new mesh */
   ierr = DMMeshCreate(comm, parallelDM);CHKERRQ(ierr);
   ierr = DMMeshSetDimension(*parallelDM, dim);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *parallelDM, "Parallel Mesh");CHKERRQ(ierr);
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */
   ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, pointSF);CHKERRQ(ierr);
+  /* Debugging */
+  ierr = PetscPrintf(comm, "Point Partition:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFView(*pointSF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(renumbering, PETSC_NULL);CHKERRQ(ierr);
+  /* Cleanup */
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
   ierr = ISDestroy(&part);CHKERRQ(ierr);
@@ -795,8 +783,6 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   ierr = DMMeshGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
   ierr = DMMeshGetConeSection(*parallelDM, &newConeSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(*pointSF, originalConeSection, &remoteOffsets, newConeSection);CHKERRQ(ierr);
-  ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMMeshSetUp(*parallelDM);CHKERRQ(ierr);
   /* Communicate and renumber cones */
   ierr = PetscSFCreateSectionSF(*pointSF, newConeSection, remoteOffsets, &coneSF);CHKERRQ(ierr);
@@ -807,6 +793,12 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, PETSC_NULL, newCones);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
+  /* Debugging */
+  ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Parallel Cone Section:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscSFView(coneSF, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
   /* Create supports and stratify sieve */
   ierr = DMMeshSymmetrize(*parallelDM);CHKERRQ(ierr);

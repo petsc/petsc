@@ -619,6 +619,20 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   SNES_FAS * fas = (SNES_FAS *)snes->data;
 
   PetscFunctionBegin;
+  if (fas->upsmooth)     ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
+  if (fas->downsmooth)   ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
+  if (fas->inject) {
+    ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
+  }
+  if (fas->interpolate == fas->restrct) {
+    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
+    fas->restrct = PETSC_NULL;
+  } else {
+    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
+    if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
+  }
+  if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
+
   if (fas->upsmooth)   ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth) ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
   if (fas->next)       ierr = SNESReset(fas->next);CHKERRQ(ierr);
@@ -636,17 +650,6 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
   /* recursively resets and then destroys */
   if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
-  if (fas->inject) {
-    ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
-  }
-  if (fas->interpolate == fas->restrct) {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    fas->restrct = PETSC_NULL;
-  } else {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
-  }
-  if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
   if (fas->next)         ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   ierr = PetscFree(fas);CHKERRQ(ierr);
 
@@ -661,17 +664,37 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscErrorCode ierr;
   VecScatter     injscatter;
   PetscInt       dm_levels;
-
+  Vec            vec_sol, vec_func, vec_sol_update, vec_rhs; /* preserve these if they're set through the reset */
+  
   PetscFunctionBegin;
 
   if (fas->usedmfornumberoflevels && (fas->level == fas->levels - 1)) {
     ierr = DMGetRefineLevel(snes->dm,&dm_levels);CHKERRQ(ierr);
     dm_levels++;
     if (dm_levels > fas->levels) {
+
+      /* we don't want the solution and func vectors to be destroyed in the SNESReset when it's called in SNESSetUp_FAS*/
+      vec_sol = snes->vec_sol;
+      vec_func = snes->vec_func;
+      vec_sol_update = snes->vec_sol_update;
+      vec_rhs = snes->vec_rhs;
+      snes->vec_sol = PETSC_NULL;
+      snes->vec_func = PETSC_NULL;
+      snes->vec_sol_update = PETSC_NULL;
+      snes->vec_rhs = PETSC_NULL;
+
+      /* reset the number of levels */
       ierr = SNESFASSetLevels(snes,dm_levels,PETSC_NULL);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+      snes->vec_sol = vec_sol;
+      snes->vec_func = vec_func;
+      snes->vec_rhs = vec_rhs;
+      snes->vec_sol_update = vec_sol_update;
     }
   }
+
+  if (fas->level != fas->levels - 1) snes->gridsequence = 0; /* no grid sequencing inside the multigrid hierarchy! */
 
   if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
     ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
