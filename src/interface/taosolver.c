@@ -1725,7 +1725,7 @@ PetscErrorCode TaoDrawStepMonitor(TaoSolver tao, void *ctx)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSeparableobjectiveMonitor"
+#define __FUNCT__ "TaoSeparableObjectiveMonitor"
 /*@C
    TaoSeparableObjectiveMonitor - Views the separable objective function at each iteration
    It can be turned on from the command line using the 
