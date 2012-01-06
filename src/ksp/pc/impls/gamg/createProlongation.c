@@ -107,7 +107,7 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
 #undef __FUNCT__
 #define __FUNCT__ "smoothAggs"
 PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
-                           const Mat a_Gmat_1, /* base graph */
+                           const Mat a_Gmat_1, /* base graph, could be unsymmetic */
                            const PetscScalar a_lid_state[], /* [nloc], states */
                            PetscInt a_id_llist[], /* [nloc+nghost_2], aggragate list */
                            PetscScalar a_deleted_parent_gid[] /* [nloc], which pe owns my deleted */
@@ -225,6 +225,11 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 		lastid = flid;
 	      }
 	      if(hav!=1){
+                flid2 = lid_sel_lid[lidj];
+                PetscPrintf(PETSC_COMM_SELF,"[%d]%s ERROR looking for %d\n",mype,__FUNCT__,lidj);     
+                for( ix=1,flid=a_id_llist[flid2] ; flid!=-1 ; flid=a_id_llist[flid], ix++ ) {
+                  PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) adjac lid = %d\n",mype,__FUNCT__,ix,flid);               
+                }
                 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,
                          "found %d vertices.  (if==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
                          hav);
