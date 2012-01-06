@@ -21,53 +21,13 @@ The TAO design philosophy uses object-oriented techniques of data and
 state encapsulation, abstract classes, and limited inheritance to
 create a flexible optimization toolkit.  This chapter provides a short
 introduction to our design philosophy by describing the objects in TAO
-and the importance of this design.  Since a major concern in the TAO
+and the importance of this design. 
+
+\begin{comment}   
+ Since a major concern in the TAO
 project is the performance and scalability of optimization algorithms
 on large problems, we also present some performance resuls.
 
-\begin{comment}   
-
-The Toolkit for Advanced Optimization (TAO) focuses on the design of large
-scale optimization software, including nonlinear least
-squares, unconstrained minimization, bound constrained
-optimization, and decomposition techniques.
-The solution of such problems
-pervades many areas of computational science and demands robust and
-flexible solution strategies.
-As surveyed by Mor\'e and Wright \cite{optguide93},
-various software packages are available for solving these
-problems; however, their portability, versatility, and scalability are
-restricted, especially within parallel environments.
-
-The current generation of numerical software generally has a rigid form
-that imposes many limitations, even when restricted to
-uniprocessor architectures.
-In traditional software design, the expressions of
-algorithms make assumptions about the way mathematical objects, such as
-vectors and matrices, are represented by the computer.
-Thus, users are
-forced to convert from the natural representation of data for a particular
-application to one imposed by the software developer, often at the
-expense of considerable overhead.  In addition, library routines are
-often characterized by long and complicated calling sequences, with
-no consistent interface among algorithms that solve a particular class
-of problems.
-
-These issues are magnified by the very nature of multiprocessor
-architectures, since robust and
-efficient implementation of mathematical abstractions involves
-the added considerations
-of parallel data structures and communication.
-An effective software package should
-exploit different parallel programming
-techniques for various phases of the solution process.
-
-Since many application problems require the computational
-power of high-performance computers, a need clearly exists for a
-uniform and flexible framework for developing optimization software and
-solving application programs.
-Our goal is to use object-oriented and component-based
-software engineering techniques to create such an environment.
 
 \end{comment}
 
@@ -110,9 +70,7 @@ index set refers to a set of integers used to identify particular
 elements of vectors or matrices.  An optimization algorithm is a
 sequence of well defined operations on these objects.  These
 operations include vector sums, inner products, and matrix-vector
-multiplication.  TAO makes no assumptions about the representation of
-these objects by passing pointers to data-structure-neutral objects
-for the execution of these numerical operations.
+multiplication.
 
 With sufficiently flexible abstract interfaces, TAO can support a
 variety of implementations of data structures and algorithms.  These
@@ -136,16 +94,7 @@ particular data formats.  The user can initialize an application with
 external frameworks, provide function information to a TAO solver, and
 call TAO to solve the application problem.
 
-The use of abstractions for matrices and vectors in TAO optimization
-software also enables us to leverage automatic differentiation
-technology to facilitate the parallel computation of gradients and
-Hessians needed within optimization algorithms.  We have demonstrated
-the viability of this approach through preliminary interfacing between
-TAO solvers and the automatic differentiation tools ADIFOR and ADIC.
-We are currently working on developing TAO interfaces that use special
-problem features (for example, partial separability, stencil
-information) in automatic differentiation computations.
-
+\begin{comment}
 \section{Performance Results}
 
 A major concern in the TAO project is the performance and scalability
@@ -262,3 +211,4 @@ achieved better performance on this problem.
 %%% mode: latex
 %%% TeX-master: "manual_tex"
 %%% End: 
+\end{comment}

@@ -33,9 +33,9 @@ or other statistic at the current iteration through routines such as
 To use this convergence test within a TAO solver, use
 the command \findex{TaoSetConvergenceTest()}
 \begin{verbatim}
-      PetscErrorCode TaoSetConvergenceTest(TaoSolver tao,
-                                PetscErrorCode (*conv)(TaoSolver,void*),
-                                void *cctx);
+   TaoSetConvergenceTest(TaoSolver tao,
+                     PetscErrorCode (*conv)(TaoSolver,void*),
+                     void *cctx);
 \end{verbatim}
 \noindent
 The second argument of this command is the convergence routine, and the
@@ -45,7 +45,7 @@ The convergence routine receives the TAO solver and this private data
 structure. 
 The termination flag can be set using the routine
 \begin{verbatim}
-   PetscErrorCode TaoSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
+   TaoSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
 \end{verbatim}
 \noindent
 
@@ -58,20 +58,23 @@ Many solvers in TAO require a line search.  While these solvers always
 offer a default line search, alternative line searches can also be used
 using the function
 \begin{verbatim}
-  PetscErrorCode TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
+   TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
 \end{verbatim}
-command line option  {\tt -tao\_ls\_type}.  Available line searches 
+or by using the command line option  {\tt -tao\_ls\_type}.  
+Available line searches 
 include Mor\'{e}-Thuente\cite{more:92}, Armijo, gpcg, and unit.
 
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
-can override the defaults by using the options
-{\tt -tao\_ls\_maxfev <max>},
-{\tt -tao\_ls\_stepmin <min>},
-{\tt -tao\_ls\_stepmax <max>},
-{\tt -tao\_ls\_ftol <ftol>},
-{\tt -tao\_ls\_gtol <gtol>}, and
-{\tt -tao\_ls\_rtol <rtol>}.
+can override the defaults by using the following options:
+\begin{itemize}
+\item {\tt -tao\_ls\_maxfev <max>}
+\item {\tt -tao\_ls\_stepmin <min>}
+\item {\tt -tao\_ls\_stepmax <max>}
+\item {\tt -tao\_ls\_ftol <ftol>}
+\item {\tt -tao\_ls\_gtol <gtol>}
+\item {\tt -tao\_ls\_rtol <rtol>}
+\end{itemize}
 
 One should run a TAO program with the option 
 {\tt -help}

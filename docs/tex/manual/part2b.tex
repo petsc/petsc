@@ -75,7 +75,7 @@ optimization problem
 The current iterate and Hessian approximation are updated and the process
 is repeated until the method converges.  This algorithm is the default 
 unconstrained minimization solver and can be selected using the 
-TaoMethod {\tt tao\_lmvm}.  For best efficiency, function and gradient 
+TAO solver {\tt tao\_lmvm}.  For best efficiency, function and gradient 
 evaluations should be performed simultaneously when using this algorithm.
 
 The primary factors determining the behavior of this algorithm are the 
@@ -243,7 +243,7 @@ conjugate gradient method for solving symmetric, positive-definite linear
 systems of equations.  This algorithm requires only function and gradient 
 evaluations as well as a line search.  The TAO implementation uses a 
 Mor\'{e}-Thuente line search to obtain the step length.  The nonlinear 
-conjugate gradient method can be selected by using the TaoMethod 
+conjugate gradient method can be selected by using the TAO solver 
 {\tt tao\_cg}.  For the best efficiency, function and gradient evaluations 
 should be performed simultaneously when using this algorithm.
 
@@ -285,7 +285,7 @@ problem
 \[
 \min_\tau f(x_k + \tau d_k).
 \]
-The Newton line-search method can be set using the TaoMethod {\tt tao\_nls}.
+The Newton line-search method can be set using the TAO solver {\tt tao\_nls}.
 For the best efficiency, function and gradient evaluations should be 
 performed simultaneously when using this algorithm.
 
@@ -515,7 +515,7 @@ trust-region radius is updated.  However, if $x_k + d_k$ does not sufficiently
 reduce the nonlinear objective function, then the step is rejected, the 
 trust-region radius is reduced, and the quadratic program is re-solved 
 using the updated trust-region radius. The Newton trust-region method 
-can be set using TaoMethod {\tt tao\_ntr}.  For the best efficiency, 
+can be set using the TAO solver {\tt tao\_ntr}.  For the best efficiency, 
 function and gradient evaluations should be performed separately when 
 using this algorithm.
 
@@ -659,15 +659,12 @@ quadratic model of the free variables.
 The TRON algorithm solves a reduced linear system
 defined by the rows and columns corresponding to the variables that
 lie between the upper and lower bounds.
-When running in parallel, these rows can either remain on
-their current processor or be redistributed evenly over all of the
-processors with the command {\tt TaoSelectSubset()}.
 The TRON algorithm applies a trust region to the 
 conjugate gradients to ensure convergence.  The initial trust region
 can be set using the command 
-{\tt TaoSetTrustRegionRadius()}
+{\tt TaoSetInitialTrustRegionRadius()}
 and the current trust region size can be found using the command
-{\tt TaoGetTrustRegionRadius().}
+{\tt TaoGetCurrentTrustRegionRadius().}
 The initial trust region can significantly alter the 
 rate of convergence for the algorithm and should be
 tuned and adjusted for optimal performance.
@@ -687,7 +684,7 @@ options,  also apply to GPCG.
 \subsection{Interior Point Newton Algorithm}
 The BQPIP algorithm is an interior point algorithm for bound
 constrained quadratic optimization.  It can be set using the
-TaoMethod of {\tt tao\_bqpip}.
+TAO solver of {\tt tao\_bqpip}.
 Since it assumes the objective function is quadratic, 
 it evaluates the function, gradient, and Hessian only once.
 In this algorithm all of the variables are free variables.
@@ -700,15 +697,16 @@ with the command {\tt TaoGetKSP()}.
 This method is the bound constrained variant of the LMVM method for
 unconstrained optimization.  It uses projected gradients to approximate
 the Hessian -- eliminating the need for Hessian evaluations.
-The method can be set using  TaoMethod {\tt tao\_blmvm}.
+The method can be set using the TAO solver {\tt tao\_blmvm}.
 The command {\tt TaoLMVMSetSize()}, which sets the number
 of vectors to be used in the Hessian approximation, 
 also applies to this method.
 
-\section{PDE-Constrained Optimization}
-\label{sec:pdeconstrained}
+\section{Linearly Constrained Lagrangian
+\label{sec:lcl}
 
-TAO can solve PDE-constrained optimization problems of the form
+TAO can use the {\tt tao\_lcl} algorithm to 
+solve PDE-constrained optimization problems of the form
 \[
 \begin{array}{ll}
 \displaystyle \min_{u,v} & f(u,v) \\
@@ -895,10 +893,10 @@ performed.
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
 squares problem minimizes $\half \| F(X) \|_2$.
 The nonlinear equations $F$ should be specified with the function
-{\tt TaoSetSeparableObjectiveFunction()}.
+{\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
 Most solvers also require the Jacobian of this function.  
 The routine that evaluates this matrix should be set
-using the command {\tt TaoSetJacobianRoutine()}.
+using the command {\tt Tao\-Set\-Jacobian\-Routine()}.
 
 Using the constraint data provided by the user, the nonlinear
 least squares solver formulates a minimization problem, and
@@ -909,15 +907,6 @@ the method \texttt{tao\_pounders} or \texttt{tao\_lm}.
 \subsection{POUNDerS}
    One algorithm for solving the least squares problem is the model-based
 derivate-free POUNDerS algorithm (\texttt{tao\_pounders}).
-
-
-\subsection{Levenberg Marquardt}
-   One algorithm for solving the least squares problem is a Levenberg
-Marquardt algorithm (\texttt{tao\_lm}).  This implementation of the 
-algorithm applies the Newton  method to the minimization problem.
-The gradient of the minimization
-problem is $J^T C(X)$ and the Hessian matrix is approximated by
-$J^T J$, where $J$ is the Jacobian of the constraints at $X$.
 
 
 \section{Complementarity}

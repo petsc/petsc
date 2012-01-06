@@ -13,7 +13,7 @@ concerning the installation and usage of TAO can be found at
 \url{http://www.mcs.anl.gov/tao/}.
 
 The current version (2.0) of TAO requires an ANSI C or C++ compiler, 
-an implementation of MPI, and version ?.? of PETSc (PETSc must be 
+an implementation of MPI, and version 3.2 of PETSc (PETSc must be 
 configured without complex variables).
 
 During the setup process, the user will have to set an environmental
@@ -61,7 +61,7 @@ program using TAO:
 \item Install TAO according to the instructions in
   \url{http://www.mcs.anl.gov/tao/documentation/installation.html}.
 \item Copy the examples and makefile from the directory
-  \url{${TAO\_DIR}/examples/},%$
+  \url{${TAO\_DIR}/examples}, %$
   compile the examples, and run the programs. 
 \item Select the example program matching the application most
   closely, and use it as a starting point for developing a customized
@@ -71,18 +71,17 @@ program using TAO:
 \section{A Simple TAO Example}
 \label{sec:simple}
 
-To help the user start using TAO immediately, we use a simple
-uniprocessor example. The code in
+To help the user start using TAO immediately, we introduce here a simple
+uniprocessor example. Please read Section~\ref{chapter:tao_solver} for a 
+more in-depth discussion on using the TAO solvers.
+The code presented here in
 Figure~\ref{fig:example1} is for minimizing the
 extended Rosenbrock function $f: \Re^n \to \Re$ defined by
 \[
  f(x) = 
  \sum_{i=0}^{m-1} \left( \alpha(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 \right),
 \]
-where $n = 2m$ is the number of variables.  The code in
-Figure~\ref{fig:example1} is only the main program.  We have not
-included the code for evaluating the function and gradient or
-for evaluating the Hessian matrix.
+where $n = 2m$ is the number of variables.  
 
 \afterpage{
 \begin{figure}[H]
@@ -98,11 +97,13 @@ Fortran usage.
 
 The code in Figure~\ref{fig:example1} contains many of the components
 needed to write most TAO programs and thus, is illustrative of the
-features present in complex optimization problems.  Note that we have
-omitted the code required for the routine \texttt{FormFunctionGradient},
+features present in complex optimization problems.  Note that for
+display purposes we have omitted some non-essential lines of code as well as the
+(essential) code required for the routine \texttt{FormFunctionGradient},
 which evaluates the function and gradient, and the code for
 \texttt{FormHessian}, which evaluates the Hessian matrix for Rosenbrock's
-function.  The following sections annotates the lines of code in
+function. The complete code is available in \url{$TAO\_DIR/src/unconstrained/examples/tutorials/rosenbrock1.c}. %$
+The following sections annotates the lines of code in
 Figure~\ref{fig:example1}.
 
 \section{Include Files}
@@ -150,7 +151,7 @@ All TAO programs should call \texttt{TaoFinalize()}
 \findex{TaoFinalize()} as their final (or nearly final) statement
 \findex{TaoFinalize()}
 \begin{verbatim}
-   ierr = TaoFinalize();
+   TaoFinalize();
 \end{verbatim}
 \noindent
 This routine handles options to be called at the conclusion of the
@@ -210,35 +211,13 @@ Users of TAO are required to provide routines that perform function
 evaluations. Depending on the solver chosen, they may also have to
 write routines that evaluate the gradient vector and Hessian matrix.
 
-\section{TAO Programming with PETSc}
+\section{Programming with PETSc}
 \label{sec:tao_programming}
-
-\subsection*{Include Files}
-Any applications using the PETSc package for vectors, matrices, and linear
-solvers should include the appropriate header files.  For example
-\begin{verbatim}
-   #include "tao.h"
-\end{verbatim}
-\noindent
-includes the appropriate information for most TAO applications using PETSc. 
-Fortran users should read Section~\ref{sec:fortran_includes}
-
-
-\subsection*{The Options Database}
-\label{sec:options}
-
-The user can input control data at run time using an options database.
-The command
-\begin{verbatim}
-   PetscOptionsGetInt(PETSC_NULL, "-n", &user.n, &flg);
-\end{verbatim}
-\noindent
-checks whether
-the user has provided a command line option to set the value of \texttt{
-n}, the number of variables.  If so, the variable \texttt{n} is set
-accordingly; otherwise, \texttt{n} remains unchanged. A complete
-description of the options database may be found in the PETSc users
-manual.
+TAO relies heavily on PETSc not only for its vectors, matrices, and linear
+solvers, but also for its programming utilities such as command line option 
+handling, error handling, compiling system and compiling system.  We provide
+here a quick overview of some of these PETSc features, please reference
+the PETSc manual for a more in-depth discussion of PETSc.
 
 \subsection*{Vectors}
 
@@ -307,6 +286,25 @@ matrix, it must be processed with the pair of commands
 The PETSc users manual discusses various matrix formats as
 well as the details of some basic matrix manipulation routines.
 
+
+\subsection*{The Options Database}
+\label{sec:options}
+A TAO application can access the command line options presented at
+runtime throught the PETSc options database. This gives the application
+author the ability to set and change application parameters without
+the need to recompile the application. For example, 
+an application may have a grid discretization parameter \texttt{nx}
+which can be set with the command line option \texttt{-nx <integer>}.
+The application can read this option with the following line of code:
+\begin{verbatim}
+   PetscOptionsGetInt(PETSC_NULL, "-nx", &nx, &flg);
+\end{verbatim}
+\noindent
+If the command line option is present, the variable \texttt{nx} is set
+accordingly; otherwise, \texttt{nx} remains unchanged. A complete
+description of the options database may be found in the PETSc users
+manual.
+
 \subsection*{Parallel Programming}
 
 Since TAO uses the message-passing model for parallel programming and
@@ -322,7 +320,7 @@ management of parallel data.
 %\sindex{collective operations} 
 The user must specify a communicator
 upon creation of any PETSc or TAO objects (such as a vector, matrix, or solver)
-to indicate the processors over which the object is to be distributed.
+to indicate the processors over which the object is to be distributed. 
 For example, some commands for matrix, vector, and solver creation
 are:
 \begin{verbatim}
@@ -331,6 +329,9 @@ are:
    ierr = TaoCreate(MPI_Comm comm,TaoSolver *tao); 
 \end{verbatim}
 \noindent
+In most cases, the value for \texttt{comm} will be either 
+\texttt{PETSC\_COMM\_SELF} for single-process objects or 
+\texttt{PETSC\_COMM\_WORLD} for objects distributed over all processors.
 The creation routines are collective over all processors in the
 communicator; thus, all processors in the communicator {\em must} call
 the creation routine.  In addition, if a sequence of collective
@@ -343,7 +344,7 @@ order on each processor.
 Compilation of the TAO numerical libraries and TAO application codes
 requires three environmental variables to be set.  These three
 variables, \texttt{TAO\_DIR}, \texttt{PETSC\_ARCH}, and \texttt{PETSC\_DIR},
-are discussed more fully in the TAO installation instructions.
+are discussed more fully in the TAO installation instructions (\url{http:\\www.mcs.anl.gov/tao/documentation/installation.html}).
 
 TAO uses a portable makefile system provided by the
 PETSc~\cite{petsc-web-page,petsc-user-ref} library, which is discussed
@@ -369,42 +370,6 @@ the following command initiates a program that uses eight processors:
   mpiexec -np 8 tao_program_name tao_options
 \end{verbatim}
 
-\begin{comment}
-  Figure~\ref{fig:exrun} illustrates compiling and running a TAO
-  program using MPICH.  Note that different sites may have slightly
-  different library and compiler names.
-\end{comment}
-
-\begin{comment}
-  Users who are experiencing difficulties linking TAO programs should
-  refer to the troubleshooting guide via the TAO home page {\tt
-    http://www.mcs.anl.gov/tao}. or the source code given by the file
-  \texttt{{TAO\_DIR}/docs/troubleshooting.html}.
-\end{comment}
-
-\begin{comment}
-\begin{figure}[htb]
-{\footnotesize
-\begin{verbatim}
-[ember] ex2 -tao_method tao_nls -tao_monitor
-iter = 0, Function value: -0.330579, Residual: 0.728961
-iter = 1, Function value: -0.427745, Residual: 3.64242e-07
-iter = 2, Function value: -0.427745, Residual: 2.03244e-12
-
-[ember] mpirun -np 2 ex2 -tao_method tao_nls -tao_monitor
-iter = 0, Function value: -0.330579, Residual: 0.728961
-iter = 1, Function value: -0.427745, Residual: 3.63647e-07
-iter = 2, Function value: -0.427745, Residual: 2.18415e-12
-
-\end{verbatim}
-}
-\nobreak
-\caption{Running a TAO Program}
-\label{fig:exrun}
-\end{figure}
-  
-\end{comment}
-
 
 \section{Error Checking}
 
@@ -412,21 +377,21 @@ All TAO commands begin with the \texttt{Tao} prefix and return an
 integer indicating whether an error has occurred during the call.  The
 error code equals zero after the successful completion of the routine
 and is set to a nonzero value if an error has been detected.  The
-macro \texttt{CHKERRQ(info)} checks the value of \texttt{info} and calls an
-error handler upon error detection.  \texttt{CHKERRQ()} should be used in
+macro \texttt{CHKERRQ(ierr)} checks the value of \texttt{ierr} and calls an
+error handler upon error detection.  \texttt{CHKERRQ()} should be used after
 all subroutines to enable a complete error traceback.
 
 In Figure \ref{fig:traceback} we indicate a traceback generated by
 error detection within a sample program. The error occurred on line
-2110 of the file \texttt{\$\{PETSC\_DIR\}/src/mat/interface/matrix.c} in the
+2110 of the file \texttt{\$\{PETSC\_DIR\}/src/mat/inter\-face/mat\-rix.c} in the
 routine \texttt{MatMult()} and was caused by failure to assemble the 
 matrix in the Hessian evaluation routine.
 The \texttt{MatMult()} routine was called from
 the \texttt{TaoSolve\_NLS()} routine, which was in turn called on line 
-154 of \texttt{TaoSolve\_()}, called from the \texttt{main()} routine 
+154 of \texttt{TaoSolve()}, called from the \texttt{main()} routine 
 in the program \texttt{rosenbrock1.c}.  The PETSc users
 manual provides further details regarding error checking, including
-information about the Fortran interface.
+information about error handling in Fortran.
 
 \begin{figure}[htb]
 {\footnotesize
@@ -436,14 +401,14 @@ information about the Fortran interface.
 [0]PETSC ERROR: Object is in wrong state!
 [0]PETSC ERROR: Not for unassembled matrix!
 [0]PETSC ERROR: ------------------------------------------------------------------------
-[0]PETSC ERROR: Petsc Development HG revision: b95ffff514b66a703d96e6ae8e78ea266ad2ca19  HG Date: Fri Jul 15 20:55:04 2011 -0500
+[0]PETSC ERROR: Petsc Development HG revision: b95ffff514b66a703d96e6ae8e78ea266ad2ca19
 [0]PETSC ERROR: See docs/changes/index.html for recent updates.
 [0]PETSC ERROR: See docs/faq.html for hints about trouble shooting.
 [0]PETSC ERROR: See docs/index.html for manual pages.
 [0]PETSC ERROR: ------------------------------------------------------------------------
 [0]PETSC ERROR: Libraries linked from petsc-dev/arch-linux2-c-debug/lib
 [0]PETSC ERROR: Configure run at Tue Jul 19 14:13:14 2011
-[0]PETSC ERROR: Configure options --with-shared-libraries --with-dynamic-loading --with-mpi-dir=/usr/local
+[0]PETSC ERROR: Configure options --with-shared-libraries --with-dynamic-loading
 [0]PETSC ERROR: ------------------------------------------------------------------------
 [0]PETSC ERROR: MatMult() line 2110 in petsc-dev/src/mat/interface/matrix.c
 [0]PETSC ERROR: TaoSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
@@ -471,7 +436,7 @@ down the code segment where corruption has occurred.
 \label{sec:makefiles}
 
 To manage code portability across a wide variety of UNIX systems, TAO
-uses a makefile system that is part of the PETSc software.  This
+uses a makefile system that is integrated with the PETSc makefile system.  This
 section briefly discusses makefile usage from the perspective of
 application programmers; see the ``makefiles'' chapter of the PETSc
 users manual for additional details.
@@ -484,10 +449,7 @@ To make a program named \texttt{rosenbrock1}, one may use the command
 \end{verbatim}
 \noindent
 The variables \texttt{TAO\_DIR}, \texttt{PETSC\_DIR}, and \texttt{PETSC\_ARCH}
-need to be set either as environment variables or as command line options to make.  Note that
-when using command line options with make, one
-must {\em not} place spaces on either side of an ``='' sign. Error messages
-such as 
+need to be set either as environment variables or as command line options to make. Error messages such as 
 \begin{verbatim}
    /conf/variables: No such file or directory
 \end{verbatim}
@@ -539,32 +501,18 @@ sample makefile, the appropriate \texttt{include} file is automatically
 completely specified; the user should {\em not} alter this statement
 within the makefile.
 
-Note that the variable \texttt{\$\{TAO\_LIB\}} (as listed on the link
-line in this makefile) specifies {\em all} of the TAO libraries in 
-the appropriate order for correct linking.
-
-
-\begin{comment}
-  The second sample makefile, given in Figure~\ref{fig:make2},
-  controls the generation of several example programs.  Again, the
-  most important line in this makefile is the \texttt{include} line that
-  includes the files defining all of the macro variables.
-\end{comment}
-
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
 \item \texttt{CFLAGS, FFLAGS} - user-specified additional options for the
-  C++ compiler and fortran compiler.
+  C/C++ compiler and Fortran compiler.
 \item \texttt{CPPFLAGS, FPPFLAGS} - user-specified additional flags
-        for the C++ preprocessor and fortran preprocesor.
-\item \texttt{CLINKER, FLINKER} - the C++ and Fortran linkers. 
+        for the C/C++ preprocessor and Fortran preprocesor.
+\item \texttt{CLINKER, FLINKER} - the C/C++ and Fortran linkers. 
 \item \texttt{RM} - the remove command for deleting files.
-\item \texttt{TAO\_LIB} - all of the TAO libraries
+\item \texttt{TAO\_LIB} - the TAO library flags
              \findex{TAO_LIB}
-\item \texttt{TAO\_FORTRAN\_LIB} - the TAO Fortran interface
-             library. \findex{TAO_FORTRAN_LIB}
-\item \texttt{PETSC\_LIB} - all of the PETSc libraries
+\item \texttt{PETSC\_LIB} - the PETSc library flags
 
 \end{itemize}
 
@@ -573,7 +521,7 @@ as follows:
 The home directory of TAO contains the following subdirectories:
 
 \begin{itemize}
-\item \texttt{docs} - All documentation for TAO. The files \texttt{tao\_manual.ps}
+\item \texttt{docs} - All documentation for TAO. The files \texttt{tao\_manual.pdf}
                    and \texttt{manual/manual.html} contain the users manual in
                    PDF and HTML formats, respectively. Includes
                    the subdirectory
@@ -604,8 +552,6 @@ Each TAO source code component directory has the following subdirectories:
   \begin{itemize}
   \item \texttt{tutorials} - Programs designed to teach users about TAO.  These
           codes can serve as templates for the design of custom applicatinos.
-  \item \texttt{tests} - Programs designed for thorough testing of TAO.  As such,
-          these codes are not intended for examination by users.
   \end{itemize}
 \item  \texttt{interface} - The calling sequences for the abstract interface  
         to the component.

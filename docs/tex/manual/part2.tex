@@ -25,8 +25,21 @@ Many of the options can also be set at the command line.  These options
 can also be found in manual pages or by
 running a program with the {\tt -help} option.
 
+\section{Header File}
+
+TAO applications written in C/C++ should have the statement 
+\begin{verbatim}
+   #include "tao.h"
+\end{verbatim}
+\noindent
+in each file that uses a routine in the TAO libraries.
+All of the required lower level include files such as ``taosolver.h''
+and ``tao\_sys.h'' as well as ``petsc.h'', ``petscvec.h'', and ``petscmat.h''
+are automatically included within this high-level file.
+
 
 \section{Initialize and Finalize}
+
 The first TAO routine in any application should be {\tt TaoInitialize()}.
 Most TAO programs begin with a call to
 \findex{TaoInitialize()}
@@ -146,28 +159,6 @@ can be used to represent the Hessian of $f$ or the Jacobian of a constraint
 function $c: \, \Re^n \to \Re^m$.  The TAO solvers use
 these objects to compute a solution to the application.
 
-The PETSc package provides parallel and serial implementations of these
-objects and offers additional tools intended for high-performance 
-scientific applications.
-The {\bf Vec} and {\bf Mat} types in PETSc
-represent the vectors and matrices in a TAO application.
-This chapter will describe how to create these an application object
-and give it the necessary properties.  This chapter will also describe how to use
-the TAO solvers in conjunction with this application object.
-
-\section{Header File}
-
-TAO applications written in C/C++ should have the statement 
-\begin{verbatim}
-   #include "tao.h"
-\end{verbatim}
-\noindent
-in each file that uses a routine in the TAO libraries.
-All of the required lower level include files such as ``taosolver.h''
-and ``tao\_sys.h''
-are automatically included within this high-level file.
-
-
 \section{Defining Variables}
 In all of the optimization solvers, the application must provide
 a {\bf Vec} object of appropriate dimension to represent the variables.
@@ -252,8 +243,8 @@ application object using
 the routine \findex{TaoSetObjectiveRoutine()}
 \begin{verbatim}
    TaoAppSetObjectiveRoutine(TaoSolver,
-                             PetscErrorCode(*)(TaoSolver,Vec,PetscReal*,void*),
-                             void*);
+                     PetscErrorCode(*)(TaoSolver,Vec,PetscReal*,void*),
+                     void*);
 \end{verbatim}
 \noindent
 The first argument in this routine is the TAO solver object, 
@@ -288,8 +279,8 @@ This routine, and the user-defined pointer, can be passed to the application
 object using the routine: \findex{TaoSetGradientRoutine()}
 \begin{verbatim}
    TaoSetGradientRoutine(TaoSolver,
-                            PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
-                            void *);
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
+                     void *);
 \end{verbatim}
 \noindent
 In this routine, the first argument is the TaoSolver object, the second argument
@@ -355,9 +346,9 @@ linear solver in the routine {\tt KSPSetOperators()}.
 One can set the Hessian evaluation routine by calling \sindex{Hessian}
 \findex{TaoSetHessianRoutine()}
 \begin{verbatim}
-   PetscErrorCode TaoSetHessianRoutine(TaoSolver,Mat H, Mat Hpre,
-                PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*),
-                void *);
+   TaoSetHessianRoutine(TaoSolver,Mat H, Mat Hpre,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
+                     MatStructure*,void*), void *);
 \end{verbatim}
 \noindent
 The first argument is the TAO application, the second and third arguments
@@ -376,14 +367,14 @@ These routines are
 
 \findex{TaoDefaultComputeGradient()}
 \begin{verbatim}
-  TaoDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
+   TaoDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
 \end{verbatim}
 
 
 \findex{TaoDefaultComputeHessian()}
 \begin{verbatim}
    TaoDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, 
-                                MatStructure*, void*);
+                     MatStructure*, void*);
 \end{verbatim}
 \noindent
 These routines can be set using {\tt TaoSetGradientRoutine()} and 
@@ -398,7 +389,7 @@ using
 the last argument.
 \begin{verbatim}
    TaoDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, 
-                                      MatStructure*, void* );
+                     MatStructure*, void* );
 \end{verbatim}
 
 It is also possible to use finite difference approximations to directly check
@@ -434,7 +425,7 @@ or upper bounds upon the variables.
 Vectors that represent lower and upper bounds for each variable 
 can be set with the command  \sindex{bounds}\findex{TaoSetVariableBounds}
 \begin{verbatim}
-   TaoSetVariableBounds(TaoSolver,Vec,Vec);
+   PetscErrorCode TaoSetVariableBounds(TaoSolver,Vec,Vec);
 \end{verbatim}
 \noindent
 The first vector and second vectors should contain the lower and upper 
@@ -457,10 +448,11 @@ will be computed.
 This routine can be set with the command
 \begin{verbatim}
    TaoSetVariableBoundsRoutine(TaoSolver
-                          PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),void*);
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),void*);
 \end{verbatim}
    
-Since not all solvers use bounds on variables, the user must be careful 
+Since not all solvers recognize the presence of bound-constraints on 
+variables, the user must be careful 
 to select a type of solver that acknowledges these bounds.
 
 \section{Nonlinear Least Squares}
@@ -469,11 +461,11 @@ value should be computed as a vector of residuals for better algorithmic
 results.  This can be done by using a separable objective function, computed
 with a function of the form
 \begin{verbatim}
-  EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
+   PetscErrorCode EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
 and set with
 \begin{verbatim}
-  TaoSetSeparableObjectiveRoutine(TaoSolver,
+   TaoSetSeparableObjectiveRoutine(TaoSolver,
                      PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
                      void *);
 \end{verbatim}
@@ -485,9 +477,9 @@ should be in a routine that looks like
 \end{verbatim}
 This function can be registered with TAO using the function
 \begin{verbatim}
-   PetscErrorCode TaoSetJacobianRoutine(TaoSolver,Mat J, Mat Jpre,
-                PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*),
-                void *);
+   TaoSetJacobianRoutine(TaoSolver,Mat J, Mat Jpre,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
+                     MatStructure*,void*), void *);
 \end{verbatim}
 The first argument is the TAO solver object, the second and third arguments
 are the Mat object where the Jacobian will be stored and the Mat object
@@ -500,7 +492,6 @@ cast as a {\tt void*} pointer.
 TAO can solve PDE-constrained optimization applications 
 that have the form
 
-We are interested in solving optimization problems of the form
 \[
 \begin{array}{ll}
 \displaystyle \min_{u,v} & f(u,v) \\
@@ -519,11 +510,11 @@ respect to the design variables.  TAO also needs to know which variables
 in the solution vector are state variables, and which are design variables.
 
 The objective and gradient routines are set as for other TAO applications,
-with {\tt TaoSetObjectiveRoutine()} and {\tt TaoSetGradientRoutine}.
+with {\tt Tao\-Set\-Object\-ive\-Routine()} and {\tt Tao\-Set\-Gradient\-Routine}.
 These vectors include the combined state and design variables, the index set
 containing the state variables must be passed to TAO using the function
 \begin{verbatim}
-  TaoSetStateDesignIS(TaoSolver, IS, IS)
+   TaoSetStateDesignIS(TaoSolver, IS, IS)
 \end{verbatim}
 where the first IS is a PETSc Index Set describing which of the variables in the 
 solution vector are state variables and the second IS describes which are
@@ -535,7 +526,7 @@ These constraints should be specified in a
 routine, written by the user, that evaluates {\tt C(X)}.
 The routine that evaluates the constraint equations should have the form:
 \begin{verbatim}
-   PetscErrorCode EqualityConstraints(TaoSolver,Vec,Vec,void*);
+   EqualityConstraints(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
 \noindent
 The first argument of this routine is a TAO solver object.  The second argument
@@ -547,8 +538,8 @@ should be set in the TAO solver with the command
 \findex{TaoSetConstraintsRoutine()}
 \begin{verbatim}
    TaoSetConstraintsRoutine(TaoSolver,
-                           PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
-                           void*);
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
+                     void*);
 \end{verbatim}
 \noindent
 In this function, first argument is the TAO solver object,
@@ -563,8 +554,8 @@ to one variable.
 The evaluation of the Jacobian of {\tt f} should be performed in routines
 of the form
 \begin{verbatim}
-   PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,MatStructure*,void*);
-   PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
+   JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,MatStructure*, void*);
+   JacobianDesign(TaoSolver,Vec,Mat*,void*);
 \end{verbatim}
 \noindent
 In this function, the second argument is the variable vector at which to 
@@ -579,11 +570,11 @@ TAO will apply the inverse using a PETSc KSP solver.
 These evaluation routines should be registered with TAO using the routines
 \begin{verbatim}
    TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
-              PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), 
-              void*);
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
+                     MatStructure*,void*), void*);
    TaoSetJacobianDesignRoutine(TaoSolver,Mat,
-              PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
-              void*);
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
+                     void*);
 \end{verbatim}
 \noindent
 The first argument is the TAO solver object, the second
@@ -606,7 +597,7 @@ By default the TAO solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
 command \findex{TaoSetMonitor()} 
 \begin{verbatim}
-   PetscErrorCode TaoSetMonitor(TaoSolver,
+   TaoSetMonitor(TaoSolver,
                      PetscErrorCode (*mon)(TaoSolver tao,void* mctx),
                      void *mctx);
 \end{verbatim}
@@ -623,7 +614,7 @@ that should be done after the solution update.
 \findex{TaoSetMonitor()}.
 \begin{verbatim}
    TaoSetMonitor(TaoSolver,
-                    PetscErrorCode (*)(TaoSolver,void*),void *);
+                     PetscErrorCode (*)(TaoSolver,void*),void *);
 \end{verbatim}
 
 
@@ -732,7 +723,7 @@ automatically completely specified; the user should {\em not} alter
 this statement within the makefile.
  
 TAO applications should be linked with the
-to the {\tt PETSC\_LIB} library
+{\tt PETSC\_LIB} library
 as well as the {\tt TAO\_LIB} library. This version uses
 PETSc 3.2, and the {\tt PETSC\_DIR} variable
 should be set accordingly.  Many examples of makefiles
@@ -754,7 +745,7 @@ Such mistakes are immediately detected during compilation when using
 C/C++.  Thus, using a mixture of C/C++ and Fortran often works well
 for programmers who wish to employ Fortran for the core numerical
 routines within their applications.  In particular, one can
-effectively write TAO driver routines in C++, thereby preserving
+effectively write TAO driver routines in C/C++, thereby preserving
 flexibility within the program, and still use Fortran when desired for
 underlying numerical computations.
 
@@ -768,24 +759,15 @@ the usual Fortran conventions; the user need not worry about passing
 pointers or values.  The calling sequences for the Fortran version are
 in most cases identical to the C version, except for the error
 checking variable discussed in Section \ref{sec:fortran_errors}.  In
-addition, the Fortran routine {\tt TaoInitialize(character(*) filename,int ierr)}
-differs slightly from its C counterpart; see the manual page for
+addition, the Fortran routines {\tt TaoInitialize(character(*) filename,int ierr)} and {\tt TaoGetConvergenceHistory()}
+differ slightly from their C counterparts; see the manual page for
 details.
-
+Additional interface differences for Fortran users:
 
 \subsection{Include Files}
 \label{sec:fortran_includes}
 
-%  In Fortran the
-%  initialization command has the form
-%  \begin{verbatim}
-%     call TaoInitialize(character file_name,integer info)
-%  \end{verbatim}\noindent
-%  \begin{verbatim}
-%     call Finalize(integer info)
-%  \end{verbatim}\noindent
-
-Currently, TAO users must employ the Fortran file suffix {\tt .F}
+TAO users must employ the Fortran file suffix {\tt .F}
 rather than {\tt .f}.  This convention enables use of the CPP
 preprocessor, which allows the use of the {\em \#include} statements
 that define TAO objects and variables. (Familiarity with the CPP
@@ -798,14 +780,14 @@ contains the Fortran include files
 and should be used via statements 
 such as the following:
 \begin{verbatim}
-    #include "include/finclude/includefile.h"
+   #include "include/finclude/petscvec.h"
 \end{verbatim}
 \noindent
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
 each file needed for the various TAO (or other supplementary)
 components within their program.  This approach differs from the TAO
-C++ interface, where the user need only include the highest level
+C interface, where the user need only include the highest level
 file, for example, {\tt tao.h}, which then automatically
 includes all of the required lower level files.  As shown in the
 various Fortran example programs in the TAO distribution, in Fortran
@@ -840,16 +822,8 @@ tracebacks.  For example, one could use code such as the following:
 In addition, Fortran programmers can check these error codes with the
 macro {\tt CHKERRQ()}, which terminates all process when an error
 is encountered.  See the PETSc users manual for details.  The most
-common reason for crashing PETSc Fortran code is forgetting the final
+common reason for crashing TAO or PETSc Fortran code is forgetting the final
 {\tt ierr} argument.
-
-Additional interface differences for Fortran users:
-\begin{itemize}
-\item \texttt{TaoGetConvergenceHistory()} -- returns only the number of 
-elements in the history.  Storage for the convergence information must 
-be preallocated by the user and then registered with 
-\texttt{TaoSetConvergenceHistory()}.
-\end{itemize}
 
 \subsection{Compiling and Linking Fortran Programs}
 \label{sec:fortcompile}
@@ -880,11 +854,6 @@ version of the program {\tt rosenbrock1f} with
 \label{fig:make4}
 \end{figure}
 
-\noindent
-Note that the TAO Fortran interface library, given by {\tt
-\$\{TAO\_LIB\}}, {\em must} \findex{TAO_FORTRAN_LIB} precede
-the base TAO library, given by {\tt \$\{TAO\_LIB\}}, \findex{TAO_LIB}
-on the link line.
 
 \subsection{Additional Issues}
 
@@ -941,18 +910,20 @@ is sufficiently close to zero.
 
 Other stopping criteria include a minimum trust region radius or 
 a maximum number of iterations.  These parameters can be set with
-the routines {\tt TaoSetTrustRegionTolerance()}\sindex{trust region}\findex{TaoSetTrustRegionTolerance}
-and {\tt TaoSetMaximumIterations()}\findex{TaoSetMaximumIterations()}.
+the routines {\tt Tao\-Set\-Trust\-Region\-Tolerance()}\sindex{trust region}\findex{TaoSetTrustRegionTolerance}
+and {\tt Tao\-Set\-Max\-imum\-Iter\-ations()}\findex{TaoSetMaximumIterations()}.
 Similarly, a maximum number of function evaluations can be set 
 with the command 
-{\tt TaoSetMaximumFunctionEvaluations()}
-\findex{TaoSetMaximumFunctionEvaluations()}.
+{\tt Tao\-Set\-Max\-imum\-Func\-tion\-Evaluations()}
+\findex{TaoSetMaximumFunctionEvaluations()}.  The stopping criteria can
+also be set using command line options such as \texttt{-tao\_fatol}, 
+\texttt{-tao\_max\_it}, and \texttt{-tao\_max\_funcs}.
 
 \section{Viewing Solutions}
 
 The routine
 \begin{verbatim}
-   ierr =  TaoSolve(TaoSolver tao)
+   TaoSolve(TaoSolver tao)
 \end{verbatim}
 \noindent
 will apply the solver to the application that has been created by the user.
@@ -960,7 +931,7 @@ will apply the solver to the application that has been created by the user.
 To see parameters and performance statistics for the solver, the
 routine
 \begin{verbatim}
-   ierr = TaoView(TaoSolver tao)
+   TaoView(TaoSolver tao)
 \end{verbatim}
 can be used.  This routine will display to standard output the number
 of function evaluations need by the solver and other information
@@ -978,16 +949,16 @@ norm, infeasibility norm, and step length
 can be retrieved with the command 
 \findex{TaoGetSolutionStatus()}
 \begin{verbatim}
-   ierr = TaoGetSolutionStatus(TaoSolver tao, PetscInt *iterate, 
-                            PetscReal *f, PetscReal *gnorm, PetscReal *cnorm,
-                            PetscReal *xdiff, TaoSolverTerminationReason *reason)
+   TaoGetSolutionStatus(TaoSolver tao, PetscInt *iterate, PetscReal *f,
+                     PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
+                     TaoSolverTerminationReason *reason)
 \end{verbatim}
 \noindent
-The last argument returns
-a code that indicates the reason that the solver terminated.  Positive 
+The last argument returns a code that indicates the reason that the solver 
+terminated.  Positive 
 numbers indicate that a solution has been found, while negative numbers
 indicate a failure.  A list of reasons can be found in the manual page
-for {\tt TaoGetTerminationReason()}.
+for {\tt Tao\-Get\-Termination\-Reason()}.
 
 The user set
 vectors containing the solution before solving
