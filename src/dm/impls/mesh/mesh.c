@@ -568,12 +568,14 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
   if (mesh->useNewImpl) {
     PetscSection   section;
     PetscInt       bs = -1;
-    PetscInt       localSize  = order->getLocalSize();
-    PetscInt       globalSize = order->getGlobalSize();
+    PetscInt       localSize;
+    PetscInt       globalSize;
     PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
     PetscErrorCode ierr;
 
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    /* ierr = PetscSectionGetOwnedStorageSize(section, sf, &localSize);CHKERRQ(ierr); */
+    /* ierr = PetscSectionGetGlobalStorageSize(section, sf, &globalSize);CHKERRQ(ierr); */
     ierr = MatCreate(((PetscObject) dm)->comm, J);CHKERRQ(ierr);
     ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
     ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
@@ -595,12 +597,15 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 
       if (bs < 0) {
         if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
-          const typename Section::chart_type& chart = section->getChart();
+          PetscInt     pStart, pEnd, p, dof;
+          PetscSection section;
 
-          ierr = DMMeshGetChart();CHKERRQ(ierr);
-          for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            if (section->getFiberDimension(*c_iter)) {
-              bs = section->getFiberDimension(*c_iter);
+          ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+          ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+          for(p = pStart; p < pEnd; ++p) {
+            ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+            if (dof) {
+              bs = dof;
               break;
             }
           }

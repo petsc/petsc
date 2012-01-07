@@ -6,7 +6,6 @@
 #define __FUNCT__ "DMSetFromOptions_Mesh"
 PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 {
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscBool      flg;
   PetscErrorCode ierr;
 
