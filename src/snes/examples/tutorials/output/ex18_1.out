@@ -1,10 +1,3 @@
-  0 SNES Function norm 0.83248 
-  1 SNES Function norm 0.254912 
-  2 SNES Function norm 0.0743308 
-  3 SNES Function norm 0.0156169 
-  4 SNES Function norm 0.000860018 
-  5 SNES Function norm 1.72238e-06 
-  6 SNES Function norm 1.262e-11 
 SNES Object: 1 MPI processes
   type: ls
     line search variant: CUBIC
@@ -52,7 +45,7 @@ SNES Object: 1 MPI processes
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=25, cols=25
-          total: nonzeros=169, allocated nonzeros=0
+          total: nonzeros=169, allocated nonzeros=169
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
@@ -85,7 +78,7 @@ SNES Object: 1 MPI processes
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=81, cols=81
-          total: nonzeros=625, allocated nonzeros=0
+          total: nonzeros=625, allocated nonzeros=625
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)

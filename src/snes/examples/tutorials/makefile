@@ -325,14 +325,13 @@ runex5_2:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -snes_mf_operator -ksp_converged_reason \
-           -snes_converged_reason -snes_view -pc_type mg    > ex5_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg > ex5_3.tmp 2>&1; \
 	   if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
 	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -ksp_converged_reason \
-           -snes_converged_reason -snes_view -pc_type mg    > ex5_4.tmp 2>&1; \
+           -snes_converged_reason -snes_view -pc_type mg > ex5_4.tmp 2>&1; \
 	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_4.tmp
@@ -415,7 +414,7 @@ runex5_5_ngmres_fas:
 	   ${RM} -f ex5_5_ngmres_fas.tmp
 
 runex5_6:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex5 -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
 	   ${DIFF} output/ex5_6.out ex5_6.tmp || echo  ${PWD} "\nPossible problem with ex5_6, diffs above \n========================================="; \
 	   ${RM} -f ex5_6.tmp
 
@@ -575,7 +574,7 @@ runex50_ngmres_fas: #test ex50 with NGMRES preconditioned by FAS with pointwise 
            ${RM} -f ex50_ngmres_fas.tmp
 
 runex18:
-	-@${MPIEXEC} -n 1 ./ex18 -snes_monitor_short -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view  > ex18_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view  > ex18_1.tmp 2>&1; \
 	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex18, diffs above \n========================================="; fi; \
 	   ${RM} -f ex18_1.tmp
@@ -602,7 +601,7 @@ runex19_4: #test pc_redundant
 runex19_5: #test different scatters
 	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
            for B in " " -vecscatter_merge ; do \
-             ${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short $$A $$B > ex19_5.tmp 2>&1; \
+             ${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 $$A $$B > ex19_5.tmp 2>&1; \
 	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
 	     else  echo  ${PWD} "\nPossible problem with with ex19_5 " $$A $$B " diffs above \n========================================="; fi; \
            done;\
