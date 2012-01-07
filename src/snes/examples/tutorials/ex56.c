@@ -360,6 +360,10 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
+/*
+  There is a problem here with uninterpolated meshes. The index in numDof[] is not dimension in this case,
+  but sieve depth.
+*/
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   PetscInt       dim                = user->dim;
