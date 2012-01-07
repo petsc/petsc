@@ -87,7 +87,7 @@ extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
 extern void*           MainWait_LockFree(void*);
-						  extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;

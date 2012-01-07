@@ -1559,18 +1559,17 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
   PetscInt        nmax=PetscMaxThreads+PetscMainThreadShareWork;
   PetscBool       flg;
-  PetscInt        thread_affinities[PetscMaxThreads+PetscMainThreadShareWork];
 
   PetscFunctionBegin;
 
   if(s->cpu_affinity) {
     ierr = PetscFree(s->cpu_affinity);CHKERRQ(ierr);
   }
-
   ierr = PetscMalloc(s->nthreads*sizeof(PetscInt),&s->cpu_affinity);CHKERRQ(ierr);
+
   if(affinities == PETSC_NULL) {
-    ierr = PetscMemcpy(thread_affinities+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
-    if(PetscMainThreadShareWork) thread_affinities[0] = MainThreadCoreAffinity;
+    /* PETSc decides affinities */
+    PetscInt        *thread_affinities=0;
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-vec_thread_affinities","Set CPU affinity for each thread","VecPThreadSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
@@ -1578,8 +1577,9 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, vector Threads = %D, CPU affinities set = %D",s->nthreads-PetscMainThreadShareWork,nmax);
       }
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,thread_affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+      ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
     } else {
-      /* Reuse the core affinities set for first s->nthreads */
+      /* Reuse the core affinities set for the first nthreads */
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
     }
   } else {
@@ -1587,6 +1587,7 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
     ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
   }
   if(PetscMainThreadShareWork) s->cpu_affinity[0] = MainThreadCoreAffinity;
+
   PetscFunctionReturn(0);
 }
 
