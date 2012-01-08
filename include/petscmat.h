@@ -1048,6 +1048,7 @@ extern PetscErrorCode  MatSeqDenseSetPreallocation(Mat,PetscScalar[]);
 extern PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,PetscInt*[]);
 extern PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,PetscInt*[]);
 extern PetscErrorCode  MatAdicSetLocalFunction(Mat,void (*)(void));
+extern PetscErrorCode  MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
 extern PetscErrorCode  MatSeqDenseSetLDA(Mat,PetscInt);
 extern PetscErrorCode  MatDenseGetLocalMatrix(Mat,Mat*);
