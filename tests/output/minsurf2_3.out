@@ -23,4 +23,3 @@ TaoSolver: 3 MPI processes
   total number of iterations=6,                          (max: 2000)
   total number of function/gradient evaluations=11,      (max: 4000)
   Solution converged:   estimated |f(x)-f(X*)|/|f(X*)| <= frtol
-   ||g(X)|| <= gatol
