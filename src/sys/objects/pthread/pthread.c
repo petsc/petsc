@@ -31,7 +31,6 @@
 #include <sys/sysctl.h>
 #endif
 
-PetscBool    PetscCheckCoreAffinity    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscMaxThreads = -1; /* Later set when PetscSetMaxPThreads is called */
 pthread_t*   PetscThreadPoint;
@@ -88,7 +87,7 @@ extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
 extern void*           MainWait_LockFree(void*);
-						  extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
@@ -120,19 +119,16 @@ void PetscPthreadSetAffinity(PetscInt icorr)
 
 void DoCoreAffinity(void)
 {
-  if (!PetscCheckCoreAffinity) return;
-  else {
-    int       i,icorr=0; 
-    cpu_set_t mset;
-    pthread_t pThread = pthread_self();
-
-    for (i=0; i<PetscMaxThreads; i++) {
-      if (pthread_equal(pThread,PetscThreadPoint[i])) {
-        icorr = ThreadCoreAffinity[i];
-	CPU_ZERO(&mset);
-	CPU_SET(icorr,&mset);
-	pthread_setaffinity_np(pThread,sizeof(cpu_set_t),&mset);
-      }
+  int       i,icorr=0; 
+  cpu_set_t mset;
+  pthread_t pThread = pthread_self();
+  
+  for (i=0; i<PetscMaxThreads; i++) {
+    if (pthread_equal(pThread,PetscThreadPoint[i])) {
+      icorr = ThreadCoreAffinity[i];
+      CPU_ZERO(&mset);
+      CPU_SET(icorr,&mset);
+      pthread_setaffinity_np(pThread,sizeof(cpu_set_t),&mset);
     }
   }
 }
@@ -264,8 +260,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     tstr[7] = '\0';
   }
   
-  PetscCheckCoreAffinity = PETSC_TRUE;
-
   ierr = PetscOptionsEnum("-thread_sync_type","Type of thread synchronization algorithm"," ",ThreadSynchronizationTypes,(PetscEnum)thread_sync_type,(PetscEnum*)&thread_sync_type,&flg1);CHKERRQ(ierr);
   
   switch(thread_sync_type) {

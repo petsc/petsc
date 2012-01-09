@@ -7,13 +7,11 @@
 #define dmmeshrestorecoordinatesf90_ DMMESHRESTORECOORDINATESF90
 #define dmmeshgetelementsf90_        DMMESHGETELEMENTSF90
 #define dmmeshrestoreelementsf90_    DMMESHRESTOREELEMENTSF90
-#define dmmeshgetlabelids_           DMMESHGETLABELIDS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmeshgetcoordinatesf90_     dmmeshgetcoordinatesf90
 #define dmmeshrestorecoordinatesf90_ dmmeshrestorecoordinatesf90
 #define dmmeshgetelementsf90_        dmmeshgetelementsf90
 #define dmmeshrestoreelementsf90_    dmmeshrestoreelementsf90
-#define dmmeshgetlabelids_           dmmeshgetlabelids
 #endif
 
 EXTERN_C_BEGIN
@@ -68,13 +66,5 @@ void PETSC_STDCALL dmmeshrestoreclosuref90_(DM dm,F90Array1d *ptr,int *__ierr PE
   *__ierr = PetscFree(c);
 }
 #endif
-void PETSC_STDCALL dmmeshgetlabelids_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), F90Array1d *ptr, int *ierr PETSC_END_LEN(lenN) PETSC_F90_2PTR_PROTO(ptrd)){
-  char     *pN;
-  PetscInt *ids;
-  FIXCHAR(name,lenN,pN);
-  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &ids PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = DMMeshGetLabelIds(*dm,pN, ids);
-  FREECHAR(name,pN);
-}
 
 EXTERN_C_END

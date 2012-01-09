@@ -377,6 +377,24 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOwnedStorageSize"
+/*
+  This gives the storage only for points owned by this process.
+*/
+PetscErrorCode PetscSectionGetOwnedStorageSize(PetscSection s, PetscSF sf, PetscInt *size)
+{
+  PetscInt p, n = 0;
+
+  PetscFunctionBegin;
+  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+    /* Discount points that are not owned using the SF */
+    n += s->atlasDof[p];
+  }
+  *size = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetOffset"
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {
