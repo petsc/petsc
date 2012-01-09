@@ -119,8 +119,8 @@ tao_alletags:
 	-@maint/generateetags.py
 
 
-tao_testexamples_c: 
-	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runExamples.py
+tao_testexamples: 
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d
 
 tao_allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}
