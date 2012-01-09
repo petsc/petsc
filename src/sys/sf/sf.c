@@ -868,6 +868,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     ierr = PetscSFGatherEnd(bgcount,MPIU_INT,outranks,inranks);CHKERRQ(ierr);
     ierr = MPI_Comm_group(((PetscObject)sf)->comm,&group);CHKERRQ(ierr);
     ierr = MPI_Group_incl(group,indegree[0],inranks,&sf->ingroup);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
     ierr = PetscFree2(inranks,outranks);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&bgcount);CHKERRQ(ierr);
   }
@@ -876,6 +877,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
   if (sf->outgroup == MPI_GROUP_NULL) {
     ierr = MPI_Comm_group(((PetscObject)sf)->comm,&group);CHKERRQ(ierr);
     ierr = MPI_Group_incl(group,sf->nranks,sf->ranks,&sf->outgroup);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
   }
   *outgoing = sf->outgroup;
   PetscFunctionReturn(0);
