@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        = 
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c
+EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -66,6 +66,10 @@ ex16: ex16.o  chkopts
 	-${CLINKER}  -o ex16 ex16.o ${PETSC_MAT_LIB}
 	${RM} ex16.o
 
+ex17: ex17.o  chkopts
+	-${CLINKER}  -o ex17 ex17.o ${PETSC_MAT_LIB}
+	${RM} ex17.o
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
@@ -124,6 +128,11 @@ runex15_2:
 	   if (${DIFF} output/ex15_2.out ex15_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex15_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex15_2.tmp
+
+runex17:
+	-@${MPIEXEC} -n 8 ./ex17 -emptyranks 0,2,4 -bigranks 1,3,7 > ex17_1.tmp 2>&1;   \
+	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo ${PWD} "\nPossible problem with with ex17_1, diffs above \n========================================="; \
+	   ${RM} -f ex17_1.tmp
 
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
