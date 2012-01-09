@@ -861,118 +861,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   }
 
 
-  /* Assign global numbering to coarse dofs */
-  // TODO move this block before calling SetupCoarseEnvironment
-  {
-    PetscScalar    coarsesum;
-    PetscMPIInt    *auxlocal_primal;
-    PetscMPIInt    *auxglobal_primal;
-    PetscMPIInt    *all_auxglobal_primal;
-    PetscMPIInt    *all_auxglobal_primal_type;  /* dummy */
-
-    ierr = MPI_Comm_size(((PetscObject)pc)->comm,&totprocs);CHKERRQ(ierr);
-    /* Construct needed data structures for message passing */
-    ierr = PetscMalloc( pcbddc->local_primal_size*sizeof(PetscMPIInt),&pcbddc->local_primal_indices);CHKERRQ(ierr);
-    ierr = PetscMalloc(          totprocs*sizeof(PetscMPIInt),          &pcbddc->local_primal_sizes);CHKERRQ(ierr);
-    ierr = PetscMalloc(          totprocs*sizeof(PetscMPIInt),  &pcbddc->local_primal_displacements);CHKERRQ(ierr);
-    /* Gather local_primal_size information to all processes  */
-    ierr = MPI_Allgather(&pcbddc->local_primal_size,1,MPIU_INT,&pcbddc->local_primal_sizes[0],1,MPIU_INT, ((PetscObject)pc)->comm );CHKERRQ(ierr);
-    pcbddc->replicated_primal_size = 0;
-    for (i=0; i<totprocs; i++) {
-      pcbddc->local_primal_displacements[i] = pcbddc->replicated_primal_size ;
-      pcbddc->replicated_primal_size  += pcbddc->local_primal_sizes[i];
-    }
-    /* allocate some auxiliary space */
-    ierr = PetscMalloc( (pcbddc->local_primal_size)*sizeof(PetscMPIInt),          &auxlocal_primal);CHKERRQ(ierr);
-    ierr = PetscMalloc( (pcbddc->local_primal_size)*sizeof(PetscMPIInt),         &auxglobal_primal);CHKERRQ(ierr);
-    ierr = PetscMalloc( (pcbddc->replicated_primal_size)*sizeof(PetscMPIInt),     &all_auxglobal_primal);CHKERRQ(ierr);
-    ierr = PetscMalloc( (pcbddc->replicated_primal_size)*sizeof(PetscMPIInt),&all_auxglobal_primal_type);CHKERRQ(ierr);
-
-    /* First let's count coarse dofs: note that we allow to have a constraint on a subdomain and not its counterpart on the neighbour subdomain (if user wants)
-       This code fragment assumes that the number of local constraints per connected component
-       is not greater than the number of nodes on the connected component (for each dof)
-       (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
-    /* auxlocal_primal      : primal indices in local nodes numbering (internal and interface) */ 
-    ierr = VecSet(pcis->vec1_N,zero);
-    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    for(i=0;i<pcbddc->n_vertices;i++) {
-      array[ pcbddc->vertices[i] ] = one;
-      auxlocal_primal[i] = pcbddc->vertices[i];
-    }
-    for(i=0;i<pcbddc->n_constraints;i++) {
-      for (s=0; s<pcbddc->sizes_of_constraint[i]; s++) {
-        k = pcbddc->indices_to_constraint[i][s];
-        if( array[k] == zero ) {
-          array[k] = one;
-          auxlocal_primal[i+pcbddc->n_vertices] = k;
-          break;
-        }
-      }
-    }
-    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_global,zero);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    for(i=0;i<pcis->n;i++) {
-      if(array[i]) { array[i] = one/array[i]; }
-    }
-    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_global,zero);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
-    ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
-    pcbddc->coarse_size = (PetscInt) coarsesum;
-    if(check_flag) {
-      ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem = %d\n",pcbddc->coarse_size);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    }
-    /* Now assign them a global numbering */
-    /* auxglobal_primal contains indices in global nodes numbering (internal and interface) */
-    ierr = ISLocalToGlobalMappingApply(matis->mapping,pcbddc->local_primal_size,auxlocal_primal,auxglobal_primal);CHKERRQ(ierr);
-    /* all_auxglobal_primal contains all primal nodes indices in global nodes numbering (internal and interface) */
-    ierr = MPI_Allgatherv(&auxglobal_primal[0],pcbddc->local_primal_size,MPIU_INT,&all_auxglobal_primal[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT, ((PetscObject)pc)->comm );CHKERRQ(ierr);
-    /* aux_global_type is a dummy argument (PetscSortMPIInt doesn't exist!) */
-    ierr = PetscSortMPIIntWithArray( pcbddc->replicated_primal_size,all_auxglobal_primal,all_auxglobal_primal_type);CHKERRQ(ierr);
-    k=1;
-    j=all_auxglobal_primal[0];  /* first dof in global numbering */
-    for(i=1;i< pcbddc->replicated_primal_size ;i++) {
-      if(j != all_auxglobal_primal[i] ) {
-        all_auxglobal_primal[k]=all_auxglobal_primal[i];
-        k++;
-        j=all_auxglobal_primal[i];
-      }
-    }
-    /* At this point all_auxglobal_primal should contains one copy of each primal node's indices in global nodes numbering */
-    /* We need only the indices from 0 to pcbddc->coarse_size. Remaning elements of array are garbage. */
-    /* Now get global coarse numbering of local primal nodes */
-    for(i=0;i<pcbddc->local_primal_size;i++) {
-      k=0;
-      while( all_auxglobal_primal[k] != auxglobal_primal[i] ) { k++;}
-      pcbddc->local_primal_indices[i]=k;
-    }
-    if(check_flag) {
-      ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
-      for(i=0;i<pcbddc->local_primal_size;i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,pcbddc->local_primal_indices[i]);
-      }
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    }
-    /* free allocated memory */
-    ierr = PetscFree(          auxlocal_primal);CHKERRQ(ierr);
-    ierr = PetscFree(         auxglobal_primal);CHKERRQ(ierr);
-    ierr = PetscFree(     all_auxglobal_primal);CHKERRQ(ierr);
-    ierr = PetscFree(all_auxglobal_primal_type);CHKERRQ(ierr);
-
-  }
-
   /* Creating PC contexts for local Dirichlet and Neumann problems */
   {
     Mat  A_RR;
@@ -1486,6 +1374,125 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   ierr = MPI_Comm_size(prec_comm,&size_prec_comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(prec_comm,&rank_prec_comm);CHKERRQ(ierr);
   ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
+  
+  /* Assign global numbering to coarse dofs */
+  {
+    PetscScalar    coarsesum,one=1.,zero=0.;
+    PetscScalar    *array;
+    PetscMPIInt    *auxlocal_primal;
+    PetscMPIInt    *auxglobal_primal;
+    PetscMPIInt    *all_auxglobal_primal;
+    PetscMPIInt    *all_auxglobal_primal_dummy;
+    PetscMPIInt    mpi_local_primal_size = (PetscMPIInt)pcbddc->local_primal_size;
+
+    /* Construct needed data structures for message passing */
+    ierr = PetscMalloc(mpi_local_primal_size*sizeof(PetscMPIInt),&pcbddc->local_primal_indices);CHKERRQ(ierr);
+    ierr = PetscMalloc(size_prec_comm*sizeof(PetscMPIInt),&pcbddc->local_primal_sizes);CHKERRQ(ierr);
+    ierr = PetscMalloc(size_prec_comm*sizeof(PetscMPIInt),&pcbddc->local_primal_displacements);CHKERRQ(ierr);
+    /* Gather local_primal_size information for all processes  */
+    ierr = MPI_Gather(&mpi_local_primal_size,1,MPIU_INT,&pcbddc->local_primal_sizes[0],1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+    pcbddc->replicated_primal_size = 0;
+    if(rank_prec_comm == 0) {
+      for (i=0; i<size_prec_comm; i++) {
+        pcbddc->local_primal_displacements[i] = pcbddc->replicated_primal_size ;
+        pcbddc->replicated_primal_size += pcbddc->local_primal_sizes[i];
+      }
+      /* allocate some auxiliary space */
+      ierr = PetscMalloc(pcbddc->replicated_primal_size*sizeof(*all_auxglobal_primal),&all_auxglobal_primal);CHKERRQ(ierr);
+      ierr = PetscMalloc(pcbddc->replicated_primal_size*sizeof(*all_auxglobal_primal_dummy),&all_auxglobal_primal_dummy);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxlocal_primal);CHKERRQ(ierr);
+    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxglobal_primal);CHKERRQ(ierr);
+
+    /* First let's count coarse dofs: note that we allow to have a constraint on a subdomain and not its counterpart on the neighbour subdomain (if user wants)
+       This code fragment assumes that the number of local constraints per connected component
+       is not greater than the number of nodes defined for the connected component 
+       (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
+    /* auxlocal_primal      : primal indices in local nodes numbering (internal and interface) */ 
+    ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    for(i=0;i<pcbddc->n_vertices;i++) {
+      array[ pcbddc->vertices[i] ] = one;
+      auxlocal_primal[i] = pcbddc->vertices[i];
+    }
+    for(i=0;i<pcbddc->n_constraints;i++) {
+      for (j=0; j<pcbddc->sizes_of_constraint[i]; j++) {
+        k = pcbddc->indices_to_constraint[i][j];
+        if( array[k] == zero ) {
+          array[k] = one;
+          auxlocal_primal[i+pcbddc->n_vertices] = k;
+          break;
+        }
+      }
+    }
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_global,zero);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    for(i=0;i<pcis->n;i++) { if(array[i]) array[i] = one/array[i]; }
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_global,zero);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
+    ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
+    pcbddc->coarse_size = (PetscInt) coarsesum;
+    //if(check_flag) {
+    //  ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+    //  ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem = %d\n",pcbddc->coarse_size);CHKERRQ(ierr);
+    //  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    //}
+    /* Now assign them a global numbering */
+    /* auxglobal_primal contains indices in global nodes numbering (internal and interface) */
+    ierr = ISLocalToGlobalMappingApply(matis->mapping,pcbddc->local_primal_size,auxlocal_primal,auxglobal_primal);CHKERRQ(ierr);
+    /* all_auxglobal_primal contains all primal nodes indices in global nodes numbering (internal and interface) */
+    ierr = MPI_Gatherv(&auxglobal_primal[0],pcbddc->local_primal_size,MPIU_INT,&all_auxglobal_primal[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+
+    /* After this block all_auxglobal_primal should contains one copy of each primal node's indices in global nodes numbering */
+    /* It implements a function similar to PetscSortRemoveDupsInt */
+    if(rank_prec_comm==0) {
+      /* dummy argument since PetscSortMPIInt doesn't exist! */
+      ierr = PetscSortMPIIntWithArray(pcbddc->replicated_primal_size,all_auxglobal_primal,all_auxglobal_primal_dummy);CHKERRQ(ierr);
+      k=1;
+      j=all_auxglobal_primal[0];  /* first dof in global numbering */
+      for(i=1;i< pcbddc->replicated_primal_size ;i++) {
+        if(j != all_auxglobal_primal[i] ) {
+          all_auxglobal_primal[k]=all_auxglobal_primal[i];
+          k++;
+          j=all_auxglobal_primal[i];
+        }
+      }
+    } else {
+      ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscMPIInt),&all_auxglobal_primal);CHKERRQ(ierr);
+    }
+    /* We only need to broadcast the indices from 0 to pcbddc->coarse_size. Remaning elements of array are garbage. */
+    ierr = MPI_Bcast(all_auxglobal_primal,pcbddc->coarse_size,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+    
+    /* Now get global coarse numbering of local primal nodes */
+    for(i=0;i<pcbddc->local_primal_size;i++) {
+      k=0;
+      while( all_auxglobal_primal[k] != auxglobal_primal[i] ) { k++;}
+      pcbddc->local_primal_indices[i]=k;
+    }
+    //if(check_flag) {
+    //  ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+    //  ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
+    //  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    //  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
+    //  for(i=0;i<pcbddc->local_primal_size;i++) {
+    //    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,pcbddc->local_primal_indices[i]);
+    //  }
+    //  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    //}
+    /* free allocated memory */
+    ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
+    ierr = PetscFree(auxglobal_primal);CHKERRQ(ierr);
+    ierr = PetscFree(all_auxglobal_primal);CHKERRQ(ierr);
+    ierr = PetscFree(all_auxglobal_primal_dummy);CHKERRQ(ierr);
+  }
 
   /* adapt coarse problem type */
   if(pcbddc->coarse_problem_type == MULTILEVEL_BDDC && pcbddc->active_procs < MIN_PROCS_FOR_BDDC )
