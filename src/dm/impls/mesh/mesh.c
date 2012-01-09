@@ -367,48 +367,62 @@ PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
   PetscFunctionReturn(0);
 }
 
-#if 0
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateAllocationVectors"
-PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, PetscSection const ALE::Obj<Order>& globalOrder, const ALE::Obj<ALE::Mesh<PetscInt,PetscScalar>::sieve_type>& adjGraph, PetscBool isSymmetric, PetscInt dnz[], PetscInt onz[])
+PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
 {
-  PetscInt                          numLocalRows = globalOrder->getLocalSize();
-  PetscInt                          firstRow     = globalOrder->getGlobalOffsets()[atlas->commRank()];
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscLayout    layout;
+  PetscInt       numLocalRows, firstRow;
   PetscInt       pStart, pEnd, p;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMemzero(dnz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dnzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
     PetscBool isOwned;
 
-    ierr = PetscSF(sf, p, isOwned);CHKERRQ(ierr);
+    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
     if (isOwned) {
-      const ALE::Obj<typename FlexMesh::sieve_type::coneSequence>& adj   = adjGraph->cone(point);
-      const typename Order::value_type& rIdx  = globalOrder->restrictPoint(point)[0];
-      const int                         row   = rIdx.prefix;
-      const int                         rSize = rIdx.index/bs;
+      const PetscInt *cone;
+      PetscInt        coneSize, q, row, rSize;
 
-      if ((atlas->debug() > 1) && ((bs == 1) || (rIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
+      rSize /= bs;
+      if ((bs == 1) || (row%bs == 0)) {ierr = PetscPrintf(comm, "[%d]: row %d size %d bs %d\n", rank, row, rSize*bs, bs);CHKERRQ(ierr);}
       if (rSize == 0) continue;
-      for(typename FlexMesh::sieve_type::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
-        const typename Atlas::point_type& neighbor = *v_iter;
-        const typename Order::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
-        const int                         col      = cIdx.prefix>=0 ? cIdx.prefix : -(cIdx.prefix+1);
-        const int&                        cSize    = cIdx.index/bs;
+      for(q = 0; q < coneSize; ++q) {
+        const PetscInt neighbor = cone[q];
+        PetscInt       col, cSize, r;
 
-        if ((atlas->debug() > 1) && ((bs == 1) || (cIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]:   col "<<col<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
+        col    = col >= 0 ? col : -(col+1);
+        cSize /= bs;
+        /* TODO ierr = PetscSFIsOwned(sf, neighbor, &isOwned);CHKERRQ(ierr); */
+        if ((bs == 1) || (col%bs == 0)) {ierr = PetscPrintf(comm, "[%d]:   col %d size %d bs %d\n", rank, col, cSize*bs, bs);CHKERRQ(ierr);}
         if (cSize > 0) {
-          if (isSymmetric && (col < row)) {
-            if (atlas->debug() > 1) {std::cout << "["<<adjGraph->commRank()<<"]: Rejecting row "<<row<<" col " << col <<std::endl;}
-            continue;
-          }
-          if (globalOrder->isLocal(neighbor)) {
-            for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
+          if (isOwned) {
+            for(r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
+            if (col >= row) {
+              for(r = 0; r < rSize; ++r) {dnzu[(row - firstRow)/bs + r] += cSize;}
+            }
           } else {
-            for(int r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
+            for(r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
+            if (col >= row) {
+              for(r = 0; r < rSize; ++r) {onzu[(row - firstRow)/bs + r] += cSize;}
+            }
           }
         }
       }
@@ -418,12 +432,83 @@ PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshPreallocateOperator"
-PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscInt dnz[], PetscInt onz[], PetscBool isSymmetric, Mat A, PetscBool fillMatrix)
+#define __FUNCT__ "DMMeshFillMatrixWithZero"
+PetscErrorCode DMMeshFillMatrixWithZero(DM dm, Mat A, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[])
 {
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscLayout   layout;
+  PetscInt      *cols;
+  PetscScalar   *values;
+  PetscInt       numLocalRows, firstRow, maxRowLen, r;
+  PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
+  for(r = 0, maxRowLen = 0; r < numLocalRows/bs; ++r) {
+    maxRowLen = PetscMax(maxRowLen, dnz[r] + onz[r]);
+  }
+  ierr = PetscMalloc2(maxRowLen,PetscInt,&cols,maxRowLen,PetscScalar,&values);CHKERRQ(ierr);
+  ierr = PetscMemzero((void *) values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt  rowLen = 0;
+    PetscBool isOwned;
+
+    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
+    if (isOwned) {
+      const PetscInt *cone;
+      PetscInt        coneSize, q, row, rSize, r;
+
+      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
+      rSize /= bs;
+      if (rSize == 0) continue;
+      for(q = 0; q < coneSize; ++q) {
+        const PetscInt neighbor = cone[q];
+        PetscInt       col, cSize, c;
+
+        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
+        col    = col >= 0 ? col : -(col+1);
+        cSize /= bs;
+        for(c = col; c < col+cSize; ++c) {
+          cols[rowLen++] = c;
+        }
+      }
+      for(r = 0; r < rSize; ++r) {
+        PetscInt fullRow = row + r;
+
+        if (rowLen != dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]) {
+          SETERRQ5(comm, PETSC_ERR_ARG_WRONG, "Invalid row length %d, should be dnz[%d]: %d + onz[%d]: %d", rowLen, (row - firstRow)/bs+r, dnz[(row - firstRow)/bs+r], (row - firstRow)/bs+r, onz[(row - firstRow)/bs+r]);
+        }
+        ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscFree2(cols,values);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshPreallocateOperator"
+PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
+{
+  DM             dmAdj;
+  PetscSF        sfAdj;
+  PetscLayout    layout;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Using points instead of dofs would decrease the graph size, but we would need to also communicate the section information for new points */
+  /* Create local adjacency graph in global dof numbering (cones are adj dofs) */
+  /* Exchange cones on interface */
+#if 0
   /* Create local adjacency graph */
   ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
   if (debug) adjGraph->view("Adjacency Graph");
@@ -532,25 +617,19 @@ PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /* Update global order */
   mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap);
   if (debug) globalOrder->view("Modified Global Order");
-
+#endif
 
   /* Read out adjacency graph */
-  ierr = createAllocationVectors(bs, atlas, globalOrder, adjGraph, isSymmetric, dnz, onz);
+  ierr = DMMeshCreateAllocationVectors(dm, bs, sfAdj, section, dmAdj, dnz, onz, dnzu, onzu);
   /* Set matrix pattern */
-  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatXAIJSetPreallocation(A, bs, 0, dnz, 0, onz, 0, dnzu, 0, onzu);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   /* Fill matrix with zeros */
   if (fillMatrix) {
-    ierr = fillMatrixWithZero(A, bs, atlas, globalOrder, adjGraph, isSymmetric, dnz, onz);CHKERRQ(ierr);
+    ierr = DMMeshFillMatrixWithZero(dm, A, bs, sfAdj, section, dmAdj, dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Mesh"
@@ -593,7 +672,8 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
       ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
     }
     if (!isShell) {
-      PetscInt *dnz, *onz, bsLocal;
+      PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
+      PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
 
       if (bs < 0) {
         if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
@@ -616,9 +696,9 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
         bsLocal = bs;
         ierr = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, ((PetscObject) dm)->comm);CHKERRQ(ierr);
       }
-      ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-      //ierr = DMMeshPreallocateOperator(dm, bs, section, dnz, onz, isSymmetric, *J, !dm->prealloc_only);CHKERRQ(ierr);
-      ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+      ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
+      ierr = DMMeshPreallocateOperator(dm, bs, section, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
+      ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
     }
   } else {
     ALE::Obj<PETSC_MESH_TYPE> m;
@@ -2269,7 +2349,7 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
       for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = stratum->begin(); e_iter != stratum->end(); ++e_iter, ++i) {
         idx[i] = *e_iter;
       }
-      ierr = ISCreateGeneral(((PetscObject) dm)->comm, stratum->size(), idx, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, stratum->size(), idx, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
