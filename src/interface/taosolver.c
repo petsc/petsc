@@ -618,6 +618,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 		    break;
 		case TAO_CONVERGED_FRTOL:
 		    ierr = PetscViewerASCIIPrintf(viewer,"estimated |f(x)-f(X*)|/|f(X*)| <= frtol\n"); CHKERRQ(ierr);
+		    break;
 		case TAO_CONVERGED_GATOL:
 		    ierr = PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n"); CHKERRQ(ierr);
 		    break;
