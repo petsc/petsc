@@ -151,7 +151,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
   TaoSetGradientRoutine(), and (if using 2nd order method) TaoSetHessianRoutine().
 
   Level: beginner
-  .seealso: TaoCreate(), TaoSetObjectiveRoutine(), TaoSetGradientRoutine(), TaoSetHessianRoutine()
+
+.seealso: TaoCreate(), TaoSetObjectiveRoutine(), TaoSetGradientRoutine(), TaoSetHessianRoutine()
  @*/
 PetscErrorCode TaoSolve(TaoSolver tao)
 {
@@ -690,7 +691,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 
   Logically collective on TaoSolver
 
-  Input Parameters
+  Input Parameters:
 + tao - the TaoSolver context
 . fatol - absolute convergence tolerance
 . frtol - relative convergence tolerance
@@ -703,16 +704,17 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 . -tao_frtol <frtol> - Sets frtol
 . -tao_gatol <catol> - Sets gatol
 . -tao_grtol <catol> - Sets grtol
-- .tao_gttol <crtol> - Sets gttol
+- -tao_gttol <crtol> - Sets gttol
 
-  Stopping Criteria 
+  Stopping Criteria:
 $ f(X) - f(X*) (estimated)            <= fatol 
 $ |f(X) - f(X*)| (estimated) / |f(X)| <= frtol
 $ ||g(X)||                            <= gatol
 $ ||g(X)|| / |f(X)|                   <= grtol
 $ ||g(X)|| / ||g(X0)||                <= gttol
 
-  Notes: Use PETSC_DEFAULT to leave one or more tolerances unchanged.
+  Notes: 
+  Use PETSC_DEFAULT to leave one or more tolerances unchanged.
 
   Level: beginner
 
