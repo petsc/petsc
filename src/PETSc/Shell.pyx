@@ -34,7 +34,7 @@ cdef class Shell(Object):
         CHKERR( PetscShellSetURL(self.shell, _url) )
         return self
 
-    def registerComponent(self, key, url=None, Shell component = None):
+    def registerComponent(self, key, url=None, Shell component=None):
         cdef const_char *_key = NULL
         cdef const_char *_url = NULL
         cdef PetscShell _component = NULL
@@ -53,7 +53,7 @@ cdef class Shell(Object):
         cdef const_char *_serverkey = NULL
         clientkey = str2bytes(clientkey, &_clientkey)
         serverkey = str2bytes(serverkey, &_serverkey)
-        CHKERR( PetscShellRegisterDependence(self.shell,_serverkey,_clientkey) )
+        CHKERR( PetscShellRegisterDependence(self.shell, _serverkey, _clientkey) )
         return self
 
     def getComponent(self, key):
