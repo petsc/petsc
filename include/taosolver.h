@@ -124,6 +124,8 @@ extern PetscErrorCode TaoComputeVariableBounds(TaoSolver);
 
 extern PetscErrorCode TaoGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+extern PetscErrorCode TaoGetConstraintTolerances(TaoSolver, PetscReal*, PetscReal*);
+extern PetscErrorCode TaoSetConstraintTolerances(TaoSolver, PetscReal, PetscReal);
 extern PetscErrorCode TaoSetFunctionLowerBound(TaoSolver, PetscReal);
 extern PetscErrorCode TaoSetInitialTrustRegionRadius(TaoSolver, PetscReal);
 extern PetscErrorCode TaoSetMaximumIterations(TaoSolver, PetscInt);

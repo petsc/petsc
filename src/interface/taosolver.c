@@ -388,8 +388,8 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	ierr = PetscOptionsBool("-tao_view","view TaoSolver info after each minimization has completed","TaoView",PETSC_FALSE,&tao->viewtao,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr); 
 	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
@@ -702,9 +702,9 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
   Options Database Keys:
 + -tao_fatol <fatol> - Sets fatol
 . -tao_frtol <frtol> - Sets frtol
-. -tao_gatol <catol> - Sets gatol
-. -tao_grtol <catol> - Sets grtol
-- -tao_gttol <crtol> - Sets gttol
+. -tao_gatol <gatol> - Sets gatol
+. -tao_grtol <grtol> - Sets grtol
+- -tao_gttol <gttol> - Sets gttol
 
   Stopping Criteria:
 $ f(X) - f(X*) (estimated)            <= fatol 
@@ -769,6 +769,55 @@ PetscErrorCode TaoSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol,
 	CHKERRQ(ierr);
       } else {
 	tao->gttol = PetscMax(0,gttol);
+      }
+    }
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetConstraintTolerances"
+/*@
+  TaoSetConstraintTolerances - Sets contraint tolerance parameters used in TAO
+  convergence tests
+
+  Logically collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. catol - absolute constraint tolerance, constraint norm must be less than catol for used for fatol, gatol convergence criteria 
+- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for fatol, gatol, gttol convergence criteria 
+
+  Options Database Keys:
++ -tao_catol <catol> - Sets catol
+- -tao_crtol <crtol> - Sets crtol
+
+  Level: intermediate
+
+.seealso: TaoGetTolerances()
+
+@*/
+PetscErrorCode TaoSetConstraintTolerances(TaoSolver tao, PetscReal catol, PetscReal crtol)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    
+    if (catol != PETSC_DEFAULT) {
+      if (catol<0) {
+	ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.");
+	CHKERRQ(ierr);
+      } else {
+	tao->catol = PetscMax(0,catol);
+      }
+    }
+    
+    if (crtol != PETSC_DEFAULT) {
+      if (crtol<0) {
+	ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.");
+	CHKERRQ(ierr);
+      } else {
+	tao->crtol = PetscMax(0,crtol);
       }
     }
 

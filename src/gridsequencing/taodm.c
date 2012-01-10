@@ -395,9 +395,9 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   Options Database Keys:
 + -tao_fatol <fatol> - Sets fatol
 . -tao_frtol <frtol> - Sets frtol
-. -tao_gatol <catol> - Sets gatol
-. -tao_grtol <catol> - Sets gatol
-- .tao_gttol <crtol> - Sets gttol
+. -tao_gatol <gatol> - Sets gatol
+. -tao_grtol <grtol> - Sets grtol
+- .tao_gttol <gttol> - Sets gttol
 
   Absolute Stopping Criteria
 $ f_{k+1} <= f_k + fatol
