@@ -80,7 +80,8 @@ typedef struct {
   PetscInt                   coarsening_ratio;
   PetscInt                   active_procs;
   /* For verbose output of some bddc data structures */
-  PetscBool                  check_flag;
+  PetscBool                  dbg_flag;
+  PetscViewer                dbg_viewer;
 } PC_BDDC;
 
 /* In case of multilevel BDDC, this is the minimum number of procs for which it will be allowed */
