@@ -5,7 +5,7 @@
 /*@C
    TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
 
-   Collective on TaoSolver
+   Logically collective on TaoSolver
 
    Input Parameters:
 +  tao - the TaoSolver context
@@ -63,7 +63,7 @@ $      Hpre does not have the same nonzero structure.
 
    Level: beginner
 
-*/
+@*/
 PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
@@ -102,9 +102,9 @@ PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCo
 #define __FUNCT__ "TaoComputeHessian"
 /*@C
    TaoComputeHessian - Computes the Hessian matrix that has been
-   set with TaoSetHessian().
+   set with TaoSetHessianRoutine().
 
-   Collective on TaoSolver and Mat
+   Collective on TaoSolver
 
    Input Parameters:
 +  solver - the TaoSolver solver context
@@ -124,8 +124,6 @@ PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCo
    themselves.
 
    Level: developer
-
-.keywords: TaoSolver, compute, Hessian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
 
@@ -161,7 +159,7 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
    TaoComputeJacobian - Computes the Jacobian matrix that has been
    set with TaoSetJacobianRoutine().
 
-   Collective on TaoSolver and Mat
+   Collective on TaoSolver
 
    Input Parameters:
 +  solver - the TaoSolver solver context
@@ -181,8 +179,6 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
    themselves.
 
    Level: developer
-
-.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobian()
 
@@ -218,7 +214,7 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
    set with TaoSetJacobianStateRoutine().
 
-   Collective on TaoSolver and Mat
+   Collective on TaoSolver
 
    Input Parameters:
 +  solver - the TaoSolver solver context
@@ -238,8 +234,6 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
    themselves.
 
    Level: developer
-
-.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
@@ -275,7 +269,7 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
    TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
    set with TaoSetJacobianDesignRoutine().
 
-   Collective on TaoSolver and Mat
+   Collective on TaoSolver
 
    Input Parameters:
 +  solver - the TaoSolver solver context
@@ -293,8 +287,6 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
    themselves.
 
    Level: developer
-
-.keywords: TaoSolver, compute, Jacobian, matrix
 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
@@ -329,7 +321,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
-   Collective on TaoSolver
+   Logically collective on TaoSolver
 
    Input Parameters:
 +  tao - the TaoSolver context
@@ -385,7 +377,7 @@ $      Jpre does not have the same nonzero structure.
    If in doubt about whether your preconditioner matrix has changed
    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
-   Level: beginner
+   Level: intermediate
 
 @*/
 PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
@@ -430,7 +422,7 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
    (and its inverse) of the constraint function with respect to the state variables.
    Used only for pde-constrained optimization.
 
-   Collective on TaoSolver
+   Logically collective on TaoSolver
 
    Input Parameters:
 +  tao - the TaoSolver context
@@ -491,7 +483,7 @@ $      Jpre does not have the same nonzero structure.
    If in doubt about whether your preconditioner matrix has changed
    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
-   Level: beginner
+   Level: intermediate
 .seealse: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
 @*/
 PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, Mat *, MatStructure *, void*), void *ctx)
@@ -544,7 +536,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
    the constraint function with respect to the design variables.  Used only for 
    pde-constrained optimization.
 
-   Collective on TaoSolver
+   Logically collective on TaoSolver
 
    Input Parameters:
 +  tao - the TaoSolver context
@@ -570,7 +562,7 @@ $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   Level: beginner
+   Level: intermediate
 .seealso: TaoComputeJacobianDesign(), TaoSetJacobianStateRoutine(), TaoSetStateDesignIS()
 @*/
 PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, void*), void *ctx)
@@ -605,7 +597,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
    solution vector are state variables and which are design.  Only applies to
    pde-constrained optimization.
 
-   Collective on TaoSolver
+   Logically Collective on TaoSolver
 
    Input Parameters:
 +  tao - The TaoSolver context

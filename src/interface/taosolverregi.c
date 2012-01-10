@@ -69,7 +69,7 @@ extern PetscBool TaoSolverRegisterAllCalled;
 
   Level: developer
 
-.seealso TaoSolverRegisterDynamic(), TaoSolverRegisterDestroy()
+.seealso TaoSolverRegister(), TaoSolverRegisterDestroy()
 @*/
 PetscErrorCode TaoSolverRegisterAll(const char path[])
 {

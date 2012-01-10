@@ -5,14 +5,14 @@
 /*@
   TaoSetInitialVector - Sets the initial guess for the solve
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
   
   Input Parameters:
 + tao - the TaoSolver context
 - x0  - the initial guess 
  
   Level: beginner
-.seealso: TaoSolverCreate(), TaoSolverSolve()
+.seealso: TaoCreate(), TaoSolve()
 @*/
 
 PetscErrorCode TaoSetInitialVector(TaoSolver tao, Vec x0) {
@@ -150,7 +150,7 @@ PetscErrorCode TaoComputeObjective(TaoSolver tao, Vec X, PetscReal *f)
 /*@
   TaoComputeObjectiveAndGradient - Computes the objective function value at a given point
 
-  Collective on TaoSOlver
+  Collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -219,7 +219,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f
 /*@C
   TaoSetObjectiveRoutine - Sets the function evaluation routine for minimization
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameter:
 + tao - the TaoSolver context
@@ -252,7 +252,7 @@ PetscErrorCode TaoSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoS
 /*@C
   TaoSetSeparableObjectiveRoutine - Sets the function evaluation routine for least-square applications
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameter:
 + tao - the TaoSolver context
@@ -285,7 +285,7 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscE
 #undef __FUNCT__
 #define __FUNCT__ "TaoComputeSeparableObjective"
 /*@
-  TaoComputeSeparableObjective - Computes an objective function vector at a given point
+  TaoComputeSeparableObjective - Computes a separable objective function vector at a given point (for least-square applications)
 
   Collective on TaoSolver
 
@@ -301,7 +301,7 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscE
 
   Level: advanced
 
-.seealso: TaoSetSeparableObjective()
+.seealso: TaoSetSeparableObjectiveRoutine()
 @*/
 PetscErrorCode TaoComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
 {
@@ -333,7 +333,7 @@ PetscErrorCode TaoComputeSeparableObjective(TaoSolver tao, Vec X, Vec F)
 /*@C
   TaoSetGradientRoutine - Sets the gradient evaluation routine for minimization
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameter:
 + tao - the TaoSolver context
@@ -365,9 +365,9 @@ PetscErrorCode TaoSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoS
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetObjectiveAndGradientRoutine"
 /*@C
-  TaoSetObjectiveAndGradientRoutine - Sets the gradient evaluation routine for minimization
+  TaoSetObjectiveAndGradientRoutine - Sets a combined objective function and gradient evaluation routine for minimization
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameter:
 + tao - the TaoSolver context
@@ -432,7 +432,7 @@ PetscErrorCode TaoIsObjectiveDefined(TaoSolver tao, PetscBool *flg)
   it is appropriate to call TaoComputeGradient() or 
   TaoComputeGradientAndGradient()
 
-  Collective on TaoSolver
+  Not Collective
 
   Input Parameter:
 + tao - the TaoSolver context
@@ -459,9 +459,9 @@ PetscErrorCode TaoIsGradientDefined(TaoSolver tao, PetscBool *flg)
   TaoIsObjectiveAndGradientDefined -- Checks to see if the user has
   declared a joint objective/gradient routine.  Useful for determining when
   it is appropriate to call TaoComputeObjective() or 
-  TaoComputeGradientAndGradient()
+  TaoComputeObjectiveAndGradient()
 
-  Collective on TaoSolver
+  Not Collective
 
   Input Parameter:
 + tao - the TaoSolver context

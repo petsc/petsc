@@ -40,7 +40,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 
 
 
-   Level: intermediate
+   Level: advanced
 
    Note:
    This routine is slow and expensive, and is not currently optimized
@@ -52,9 +52,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 
 
    Note:
-   The gradient evaluation must be set using the routine TaoSetGradientRoutine().
-
-.keywords: finite differences, Hessian
+   This finite difference gradient evaluation can be set using the routine TaoSetGradientRoutine() or by using the command line option -tao_fd_gradient
 
 .seealso: TaoSetGradientRoutine()
 
@@ -113,22 +111,18 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 +  -tao_fd - Activates TaoDefaultComputeHessian()
 -  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
    to take advantage of sparsity in the problem.  Although
-   TaoAppDefaultComputeHessian() is not recommended for general use
+   TaoDefaultComputeHessian() is not recommended for general use
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
 
-   Note:
-   The gradient evaluation must be set using the routine TaoSetGradientRoutine().
 
-.keywords: finite differences, Hessian
 
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESDefaultComputeJacobian(),
-          TaoSetGradientRoutine(), TaoDefaultComputeGradient()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESDefaultComputeJacobian(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
 @*/
 PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
@@ -179,24 +173,14 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 .  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
 -  flag - flag indicating whether the matrix sparsity structure has changed
 
-   Options Database Keys:
-+  -mat_fd_coloring_freq <freq>
--  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
+   Level: advanced
 
-   Level: intermediate
 
-   Note:
-   The gradient evaluation must be set using the routine TaoSetPetscGradient().
-
- .keywords: finite differences, Hessian, coloring, sparse
-
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESDefaultComputeJacobianColor(), 
-          TaoSetGradientRoutine()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESDefaultComputeJacobianColor(), TaoSetGradientRoutine()
 
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH,Mat *BB,MatStructure *flag,void *ctx){
+PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx){
   PetscErrorCode      ierr;
-  Mat                 H=*HH,B=*BB;
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
@@ -207,11 +191,11 @@ PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH,Mat *
   *flag = SAME_NONZERO_PATTERN;
 
   ierr=PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n"); CHKERRQ(ierr);
-  ierr = MatFDColoringApply(B,coloring,V,flag,ctx); CHKERRQ(ierr);
+  ierr = MatFDColoringApply(*B,coloring,V,flag,ctx); CHKERRQ(ierr);
 
-  if (H != B) {
-      ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  if (*H != *B) {
+      ierr = MatAssemblyBegin(*H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

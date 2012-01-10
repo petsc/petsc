@@ -13,7 +13,7 @@ LIBBASE  = libtao
 MANSEC   = taosolver
 DIRS     = 
 EDIRS    = 
-LOCDIR   = src/util
+LOCDIR   = src/util/
 
 include ${TAO_DIR}/conf/tao_base
 

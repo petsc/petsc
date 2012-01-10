@@ -1,8 +1,3 @@
-tao_fd_gradient
-fd - plate2_fd_test, eptorsion2_fd_test
-Check 'Collective' documentation
-
-
 Describe new features
   no more application object
   pde-constrained
@@ -16,15 +11,7 @@ Describe new features
   
 update manual
   add pounders section
-  put complementarity docs back in
   Show list of termination reasons in part2.tex section Viewing Solutions
-
-Check fortran stubs 
-
-Check documentation
-
-Links in examples are wrong?
-
 
 Test on arches
   Visual Studio -- ps3

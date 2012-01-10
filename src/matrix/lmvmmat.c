@@ -30,11 +30,12 @@ static const char *Limit_Table[64] = {
   Collective on A
 
   Input Parameters:
-  . comm -- MPI Communicator
-  . n -- local size of vectors
-  . N -- global size of vectors
++ comm - MPI Communicator
+. n - local size of vectors
+- N - global size of vectors
+
   Output Parameters:
-  . A - New LMVM matrix
+. A - New LMVM matrix
 
   Level: developer
 

@@ -6,7 +6,7 @@
 /*@
   VecPow - Replaces each component of a vector by x_i^p
 
-  Not Collective
+  Logically Collective on v
 
   Input Parameter:
 + v - the vector
@@ -98,6 +98,8 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
   and stores the result in this vector.  Used primarily for projecting
   a vector within upper and lower bounds. 
 
+  Logically Collective 
+
   Input Parameters:
 . Vec1, Vec2, Vec3 - The three vectors
 
@@ -186,7 +188,9 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 /*@
    VecFischer - Evaluates the Fischer-Burmeister function for complementarity 
    problems.
-   
+
+   Logically Collective on vectors
+
    Input Parameters:
 +  X - current point
 .  F - function evaluated at x
@@ -290,6 +294,8 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 /*@
    VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
    complementarity problems.
+
+   Logically Collective on vectors
 
    Input Parameters:
 +  X - current point
@@ -397,7 +403,9 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 /*@
    D_Fischer - Calculates an element of the B-subdifferential of the 
    Fischer-Burmeister function for complementarity problems.
-  
+
+   Collective on jac
+
    Input Parameters:   
 +  jac - the jacobian of f at X
 .  X - current point
@@ -413,7 +421,7 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 
    Level: developer
 
-.seealso Fischer()
+.seealso: VecFischer()
 @*/
 PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, 
 		      Vec T1, Vec T2, Vec Da, Vec Db)
@@ -553,6 +561,8 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
    D_SFischer - Calculates an element of the B-subdifferential of the
    smoothed Fischer-Burmeister function for complementarity problems.
  
+   Collective on jac
+
    Input Parameters: 
 +  jac - the jacobian of f at X
 .  X - current point
@@ -570,7 +580,7 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
 
    Level: developer
 
-.seealso TaoVec::SFischer()
+.seealso D_Fischer()
 @*/
 PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con, 
                        Vec XL, Vec XU, PetscReal mu, 

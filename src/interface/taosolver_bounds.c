@@ -5,7 +5,7 @@
 /*@
   TaoSetVariableBounds - Sets the upper and lower bounds
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -47,7 +47,7 @@ PetscErrorCode TaoSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 /*@C
   TaoSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -188,7 +188,7 @@ PetscErrorCode TaoComputeConstraints(TaoSolver tao, Vec X, Vec C)
 /*@C
   TaoSetConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
-  Collective on TaoSolver
+  Logically collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -204,7 +204,7 @@ $      func (TaoSolver tao, Vec x, Vec c, void *ctx);
 . c   - vector constraints evaluated at x
 - ctx - the (optional) user-defined function context
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
 
@@ -236,7 +236,8 @@ PetscErrorCode TaoSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*f
 
   Level: advanced
 
-  Notes: DL and DU should be created before calling this routine.  If calling
+  Note: 
+  DL and DU should be created before calling this routine.  If calling
   this routine after using an unconstrained solver, DL and DU are set to all 
   zeros.
 
