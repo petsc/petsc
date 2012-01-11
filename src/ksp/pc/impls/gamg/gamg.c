@@ -185,7 +185,7 @@ PetscErrorCode createLevel( const PC a_pc,
 
   /* get number of PEs to make active, reduce */
   ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
-  new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
+  new_npe = (PetscMPIInt)((float)neq/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
   if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
   else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
   if( a_isLast ) new_npe = 1; 
@@ -612,9 +612,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 		  mype,__FUNCT__,(int)level1,N,pc_gamg->m_data_cols,
 		  (int)(info.nz_used/(PetscReal)N),nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
-      /* aggregation method should gaurrentee this does not happen! */
 
-      if (pc_gamg->m_verbose) {
+      /* stop if one node */
+      if( M/pc_gamg->m_data_cols < 2 ) {
+        level++;
+        break;
+      }
+
+      if (PETSC_FALSE) {
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
         v = 1.e-10; /* LU factor has hard wired numbers for small diags so this needs to match (yuk) */
         ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr);
