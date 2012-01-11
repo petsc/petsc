@@ -8,7 +8,7 @@ manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.te
 	cp ../sty/*.sty .
 	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	-bibtex manual_tex
-	/usr/bin/makeindex manual_tex
+	/usr/texbin/makeindex manual_tex
 	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	echo  \\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
