@@ -206,7 +206,7 @@ class TaoExamples(ExampleList):
         self.add(Example(example="eptorsion2",nprocs=1,options="-tao_smonitor",method="ntr",tags=["eptorsion","multiprocessor","unconstrained","c","ntr","dm"],name="eptorsion2_3",section="unconstrained"))
         self.add(Example(example="eptorsion2",nprocs=3,options="-tao_smonitor -mx 16 -my 16",method="ntr",tags=["eptorsion","multiprocessor","unconstrained","c","ntr","dm"],name="eptorsion2_4",section="unconstrained"))
         self.add(Example(example="eptorsion2",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["eptorsion","single","unconstrained","c","lmvm","dm"],name="eptorsion2_5",section="unconstrained"))
-        self.add(Example(example="eptorsion2",nprocs=3,options="-tao_smonitor -mx 16 -my 16",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","c","lmvm","dm"],name="eptorsion2_5",section="unconstrained"))
+        self.add(Example(example="eptorsion2",nprocs=3,options="-tao_smonitor -mx 16 -my 16",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","c","lmvm","dm"],name="eptorsion2_6",section="unconstrained"))
         self.add(Example(example="eptorsion2f",nprocs=1,options="-tao_smonitor",method="nls",tags=["eptorsion","single","unconstrained","fortran","nls","dm"],name="eptorsion2f",section="unconstrained"))
         self.add(Example(example="eptorsion2f",nprocs=2,options="-tao_smonitor",method="nls",tags=["eptorsion","multiprocessor","unconstrained","fortran","nls","dm"],name="eptorsion2f_2",section="unconstrained"))
         self.add(Example(example="eptorsion2f",nprocs=3,options="-tao_smonitor -mx 16 -my 16",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","fortran","lmvm","dm"],name="eptorsion2f_3",section="unconstrained"))

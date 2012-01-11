@@ -1,17 +1,13 @@
 
 ---- Elastic-Plastic Torsion Problem -----
-mx: 16     my: 16   
+mx: 10     my: 10   
 
-iter =   0, Function value -0.33218, Residual: 0.623913 
-iter =   1, Function value -0.378168, Residual: 0.374058 
-iter =   2, Function value -0.398441, Residual: 0.236372 
-iter =   3, Function value -0.419353, Residual: 0.165586 
-iter =   4, Function value -0.426263, Residual: 0.230984 
-iter =   5, Function value -0.431383, Residual: 0.0810856 
-iter =   6, Function value -0.432616, Residual: 0.053576 
-iter =   7, Function value -0.433452, Residual: 0.0382823 
-iter =   8, Function value -0.433881, Residual: 0.0473719 
-iter =   9, Function value -0.434199, Residual: 0.0231229 
-iter =  10, Function value -0.434351, Residual: 0.012333 
-iter =  11, Function value -0.434383, Residual: 0.010686 
-iter =  12, Function value -0.434396, Residual: 0.00477936 
+iter =   0, Function value -0.330579, Residual: 0.728961 
+iter =   1, Function value -0.391218, Residual: 0.386209 
+iter =   2, Function value -0.412219, Residual: 0.209489 
+iter =   3, Function value -0.424578, Residual: 0.104311 
+iter =   4, Function value -0.426033, Residual: 0.112253 
+iter =   5, Function value -0.427233, Residual: 0.0332491 
+iter =   6, Function value -0.427491, Residual: 0.0246162 
+iter =   7, Function value -0.427717, Residual: 0.0129942 
+iter =   8, Function value -0.427741, Residual: 0.00603353 

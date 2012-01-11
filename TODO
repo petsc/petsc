@@ -1,18 +1,28 @@
-Describe new features
-  no more application object
-  pde-constrained
-  pounders
-  c, single, quad
-  drop-in line searches
-  conform more to petsc
-    no separate tao objects
-    option names
-
-  
-update manual
+Manual
+  Finalize authors list
   add pounders section
+  check pde-constrained/lcl
+  make sure pounder, lm aren't mentioned
   Show list of termination reasons in part2.tex section Viewing Solutions
 
+
+Web page/announcement
+  Describe new features
+    no more application object
+    pde-constrained
+    pounders
+    c, single, quad
+    drop-in line searches
+    conform more to petsc
+    no separate tao objects
+
+
+
+
+
+  
+
+------------------------
 Test on arches
   Visual Studio -- ps3
   BG
