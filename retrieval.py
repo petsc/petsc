@@ -88,37 +88,31 @@ Unable to download package %s from: %s
       output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+localFile+' | head -n 1', log = self.log)
       dirname = os.path.normpath(output[0].strip())
     else:
+      import tarfile
       try:
-        import tarfile
         tf  = tarfile.open(os.path.join(root, localFile))
-        # some tarfiles list packagename/ but some list packagename/filename in the first entry
-        if tf.firstmember.isdir():
-          dirname = tf.firstmember.name
-        else:
-          dirname = os.path.dirname(tf.firstmember.name)
-        if hasattr(tf,'extractall'): #python 2.5+
-          tf.extractall(root)
-        else:
-          for tfile in tf.getmembers():
-            tf.extract(tfile,root)
-        tf.close()
-      except IOError, e:
-        self.logPrint(localFile+' is not a tarball?')
-      except ImportError, e:
-        raise RuntimeError('Could not import extractor for '+localFile+': '+str(e))
-      except RuntimeError, e:
-        if str(e).find("not in gzip format") > -1:
-          failureMessage = '''\
-Unable to unzip downloaded package %s from: %s
+      except tarfile.ReadError:
+        failureMessage = '''\
+Downloaded package %s from: %s is not a tarball.
+[or installed python cannot process compressed files]
 * If you are behind a firewall - please fix your proxy and rerun ./configure
-*     For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov 
+  For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov 
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
 ''' % (name, url, filename, name.lower(), filename)
-          raise RuntimeError(failureMessage)
-        else:
-          raise RuntimeError('Error extracting '+localFile+': '+str(e))
+        raise RuntimeError(failureMessage)
+      # some tarfiles list packagename/ but some list packagename/filename in the first entry
+      if tf.firstmember.isdir():
+        dirname = tf.firstmember.name
+      else:
+        dirname = os.path.dirname(tf.firstmember.name)
+      if hasattr(tf,'extractall'): #python 2.5+
+        tf.extractall(root)
+      else:
+        for tfile in tf.getmembers():
+          tf.extract(tfile,root)
+      tf.close()
 
     # fix file permissions for the untared tarballs.
     try:
