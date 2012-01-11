@@ -891,7 +891,7 @@ performed.
 \section{Nonlinear Least Squares}
 \label{sec:leastsquares}
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
-squares problem minimizes $\half \| F(X) \|_2$.
+squares problem minimizes $f(x)=\half \| F(x) \|_2$.
 The nonlinear equations $F$ should be specified with the function
 {\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
 Most solvers also require the Jacobian of this function.  
@@ -903,10 +903,174 @@ least squares solver formulates a minimization problem, and
 solves the minimization problem using another TAO solver.  
 A nonlinear least squares application should be solved with
 the method \texttt{tao\_pounders} or \texttt{tao\_lm}.
+\textbf{***** Jason, check the lm above. It would be great to include it
+but otherwise say that we only have methods that do not use the Jacobian
+and that if they have a Jacobian, they should use something else/the
+next/beta version.}
+
 
 \subsection{POUNDerS}
-   One algorithm for solving the least squares problem is the model-based
-derivate-free POUNDerS algorithm (\texttt{tao\_pounders}).
+   One algorithm for solving the least squares problem when the Jacobian
+of the residual vector $F$ is unavailable is the model-based
+derivate-free POUNDerS (Practical Optimization Using No Derivatives for
+sums of Squares) algorithm (\texttt{tao\_pounders}). 
+POUNDerS employs a derivative-free trust region framework as described in
+\cite{Dfobook}. An example of this version of POUNDerS applied to a
+practical least squares problem can be found in \cite{UNEDF0}.
+
+
+\subsubsection{Inputs}
+If evaluations of the residual vector $F$ are available, then this can be
+input and will often result in improved performance. Assuming that
+\texttt{nfs}$>0$ such points are available, then the user should input the
+matrix of locations \texttt{X0} $=[y_1, \ldots, y_{\rm nfs}]$ and the
+corresponding matrix of residuals \texttt{F0} $= [F(y_1), \ldots, F(y_{\rm
+nfs})]$. The user selects which one of these points is the starting point
+(this is typically the point $\arg \min_{i=1,\ldots, {\rm nfs}}
+\|F(y_i)\|^2$) to be used and inputs the index as the integer
+\texttt{xkin}.
+
+If no such points are available, then \texttt{nfs}$=0$, \texttt{F0} is
+empty, \texttt{xkin}$=1$, and the user inputs the desired starting point
+(whose residual has not yet been evaluated) as \texttt{X0} $=[x_0]$.
+
+
+In addition to the inputs \texttt{nfs}, \texttt{X0}, \texttt{F0},
+\texttt{xkin} above, the following inputs are required:
+\begin{description}
+  \item[\texttt{n}] the problem dimension/number of
+  variables ($\geq 1$, integer);
+  
+  \item[\texttt{m}] the number of residual components ($\geq 1$, integer);
+
+  \item[\texttt{delta}] the initial trust region radius ($>0$, real).
+  This is  used to determine the size of the initial neighborhood within
+  which the algorithm should look. In particular, if \texttt{nfs}=0, the
+  algorithm will evaluate $F$ at $n$ points within a distance
+  \texttt{delta} of \texttt{X0};
+  
+  \item[\texttt{nfmax}]  the maximum number of function evaluations
+  allowed. This is the typical termination criteria;
+  
+  \item[\texttt{gtol}] The termination tolerance for the 2-norm of the
+  model gradient ($>0$, real). This termination criteria is roughly
+  equivalent to demanding that the final gradient of $f$ is of order
+  \texttt{gtol}.
+  
+  \item[\texttt{npmax}] The maximum number of interpolation points used
+  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This is input is made
+  available to advanced users. We recommend other users to use the value 
+  \texttt{npmax}$=2n+1$;
+   
+  \item[\texttt{L}] Vector of lower bounds on $x$ (can be arbitrarily
+  large if the problem is unconstrained);
+
+  \item[\texttt{U}] Vector of upper bounds on $x$ (can be arbitrarily
+  large if the problem is unconstrained);
+  
+  \item[\texttt{printf}]  Controls the level of output to the screen.
+  \textbf{****Need more on the options here!******}
+\end{description}
+
+In addition the user provides a function for evaluating the residual
+vector $F$.  \textbf{****Describe this in detail or say******} This is
+described in detail in Section~\ref{sec:}.
+
+
+\subsubsection{Derivative-Free Trust Region Algorithm}
+In each iteration $k$, the algorithm maintains a model $m_k(x)$,
+described below, of the nonlinear least squares function $f$ centered about
+the current iterate $x_k$. 
+
+Assuming that the maximum number of function evaluations has not been
+reached and that $\|\nabla m_k(x_k)\|_2>$\texttt{gtol}, the next point 
+$x_+$ to be evaluated is obtained by solving the trust region subproblem 
+\begin{equation}
+ \min\left\{
+ m_k(x) : 
+ \|x-x_k\|_{p} \leq \Delta_k, 
+ l\leq x \leq u\right
+ \}, 
+ \label{eq:poundersp}
+\end{equation}
+where $(l,u)$ denote the bound constraints and $\Delta_k$ is the current
+trust region radius. By default we use a trust region norm with $p=\infty$
+and solve (\ref{eq:poundersp}) with the XXXx method described in
+Section~\ref{sec:}. \textbf{***Jason, the new version uses $p=\infty$,
+your version may use $p=2$.}
+
+The residual vector is then evaluated to obtain $F(x_+)$ and hence
+$f(x_+)$. The ratio of actual decrease to predicted decreased
+\[
+ \rho_k = \frac{f(x_k)-f(x_+)}{m_k(x_k)-m_k(x_+)}
+\]
+as well as an indicator, \texttt{valid}, on the model's quality of
+approximation on the trust region are then used to update the iterate,
+\[
+x_{k+1} = \left\{\begin{array}{ll}
+x_+ & \mbox{if } \rho_k \geq \eta_1 \\
+x_+ & \mbox{if } 0<\rho_k <\eta_1  \mbox{ and \texttt{valid}=\texttt{true}}
+\\
+x_k & \mbox{else}, 
+\end{array}
+\right.
+\]
+and trust region radius,
+\[
+\Delta_{k+1} = \left\{\begin{array}{ll}
+ \mbox{min}(\gamma_1\Delta_k, \Delta_{\max}) & \mbox{if } \rho_k \geq
+\eta_1 \mbox{ and } \|x_+-x_k\|_p\geq \omega_1\Delta_k \\
+\gamma_0\Delta_k & \mbox{if } \rho_k < \eta_1 \mbox{ and
+\texttt{valid}=\texttt{true}} \\
+\Delta_k &  \mbox{else,}
+\end{array}
+\right.
+\]
+where $0 < \eta_1 < 1$,  $0 < \gamma_0 < 1 < \gamma_1$, $0<\omega_1<1$,
+and $\Delta_{\max}$ are constants. 
+
+In the event that $\rho_k\leq 0$ and \texttt{valid} is \texttt{false}, the
+iterate and trust region radius remain unchanged after the above updates
+and the algorithm tests if the direction $x_+-x_k$ improves the model. If
+not, the algorithm performs an additional evaluation to obtain
+$F(x_k+d_k)$, where $d_k$ is a model-improving direction. 
+
+The iteration counter is then updated and the next model $m_{k}$ is
+obtained as described next.
+
+\subsubsection{Forming the Trust Region Model}
+In each iteration POUNDerS uses a subset of the available evaluated
+residual vectors $\{ F(y_1), F(y_2), \cdots \}$ to form an interpolatory
+quadratic model of each residual component. The $m$ quadratic models
+\begin{equation}
+ q_k^{(i)}(x) = 
+ F_i(x_k) + (x-x_k)^T g_k^{(i)} + \frac{1}{2} (x-x_k)^T H_k^{(i)} (x-x_k), 
+ \qquad i = 1, \ldots, m
+\label{eq:models}
+\end{equation}
+thus satisfy the interpolation conditions 
+\[ 
+ q_k^{(i)}(y_j) = F_i(y_j), \qquad i=1, \ldots, m; \, j=1,\ldots , l_k
+\]
+on a common interpolation set $\{y_1, \cdots , y_{l_k}\}$ of size
+$l_k\in[n+1,$\texttt{npmax}$]$.
+
+The gradients and Hessians of the models in (\ref{eq:models}) are then
+used to construct the master model, 
+\begin{equation}
+m_k(x) = f(x_k) + 
+(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
+\frac{1}{2}(x-x_k)^T \sum_{i=1}^{m}
+\left( g_k^{(i)} \left(g_k^{(i)}\right)^T +  F_i(x_k)
+H_k^{(i)}\right) (x-x_k).
+ \label{eq:newton2}
+\end{equation}
+The process of forming these models also computes the indicator
+\texttt{valid} of the model's local quality.
+
+\texttt{Jason, is this roughly what you had in mind? I could also write a
+sentence on termination but this is described both in the inputs section
+and in the algorithm outline.}
 
 
 \section{Complementarity}
