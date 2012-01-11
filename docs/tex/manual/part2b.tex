@@ -681,7 +681,7 @@ is quadratic, the algorithm does not use a trust region.
 All of the options that apply to TRON, except for trust region
 options,  also apply to GPCG.
 
-\subsection{Interior Point Newton Algorithm}
+\subsection{Interior Point Newton Algorithm}\label{sec:bqpip}
 The BQPIP algorithm is an interior point algorithm for bound
 constrained quadratic optimization.  It can be set using the
 TAO solver of {\tt tao\_bqpip}.
@@ -894,6 +894,11 @@ Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
 squares problem minimizes $f(x)=\half \| F(x) \|_2$.
 The nonlinear equations $F$ should be specified with the function
 {\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
+The current version of TAO (2.0) has no second order algorithms 
+for nonlinear least squares, but we do anticipate such an algorithm for the
+next release.
+
+\begin{comment}
 Most solvers also require the Jacobian of this function.  
 The routine that evaluates this matrix should be set
 using the command {\tt Tao\-Set\-Jacobian\-Routine()}.
@@ -907,7 +912,7 @@ the method \texttt{tao\_pounders} or \texttt{tao\_lm}.
 but otherwise say that we only have methods that do not use the Jacobian
 and that if they have a Jacobian, they should use something else/the
 next/beta version.}
-
+\end{comment}
 
 \subsection{POUNDerS}
    One algorithm for solving the least squares problem when the Jacobian
@@ -918,63 +923,6 @@ POUNDerS employs a derivative-free trust region framework as described in
 \cite{Dfobook}. An example of this version of POUNDerS applied to a
 practical least squares problem can be found in \cite{UNEDF0}.
 
-
-\subsubsection{Inputs}
-If evaluations of the residual vector $F$ are available, then this can be
-input and will often result in improved performance. Assuming that
-\texttt{nfs}$>0$ such points are available, then the user should input the
-matrix of locations \texttt{X0} $=[y_1, \ldots, y_{\rm nfs}]$ and the
-corresponding matrix of residuals \texttt{F0} $= [F(y_1), \ldots, F(y_{\rm
-nfs})]$. The user selects which one of these points is the starting point
-(this is typically the point $\arg \min_{i=1,\ldots, {\rm nfs}}
-\|F(y_i)\|^2$) to be used and inputs the index as the integer
-\texttt{xkin}.
-
-If no such points are available, then \texttt{nfs}$=0$, \texttt{F0} is
-empty, \texttt{xkin}$=1$, and the user inputs the desired starting point
-(whose residual has not yet been evaluated) as \texttt{X0} $=[x_0]$.
-
-
-In addition to the inputs \texttt{nfs}, \texttt{X0}, \texttt{F0},
-\texttt{xkin} above, the following inputs are required:
-\begin{description}
-  \item[\texttt{n}] the problem dimension/number of
-  variables ($\geq 1$, integer);
-  
-  \item[\texttt{m}] the number of residual components ($\geq 1$, integer);
-
-  \item[\texttt{delta}] the initial trust region radius ($>0$, real).
-  This is  used to determine the size of the initial neighborhood within
-  which the algorithm should look. In particular, if \texttt{nfs}=0, the
-  algorithm will evaluate $F$ at $n$ points within a distance
-  \texttt{delta} of \texttt{X0};
-  
-  \item[\texttt{nfmax}]  the maximum number of function evaluations
-  allowed. This is the typical termination criteria;
-  
-  \item[\texttt{gtol}] The termination tolerance for the 2-norm of the
-  model gradient ($>0$, real). This termination criteria is roughly
-  equivalent to demanding that the final gradient of $f$ is of order
-  \texttt{gtol}.
-  
-  \item[\texttt{npmax}] The maximum number of interpolation points used
-  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This is input is made
-  available to advanced users. We recommend other users to use the value 
-  \texttt{npmax}$=2n+1$;
-   
-  \item[\texttt{L}] Vector of lower bounds on $x$ (can be arbitrarily
-  large if the problem is unconstrained);
-
-  \item[\texttt{U}] Vector of upper bounds on $x$ (can be arbitrarily
-  large if the problem is unconstrained);
-  
-  \item[\texttt{printf}]  Controls the level of output to the screen.
-  \textbf{****Need more on the options here!******}
-\end{description}
-
-In addition the user provides a function for evaluating the residual
-vector $F$.  \textbf{****Describe this in detail or say******} This is
-described in detail in Section~\ref{sec:}.
 
 
 \subsubsection{Derivative-Free Trust Region Algorithm}
@@ -995,9 +943,8 @@ $x_+$ to be evaluated is obtained by solving the trust region subproblem
 \end{equation}
 where $(l,u)$ denote the bound constraints and $\Delta_k$ is the current
 trust region radius. By default we use a trust region norm with $p=\infty$
-and solve (\ref{eq:poundersp}) with the XXXx method described in
-Section~\ref{sec:}. \textbf{***Jason, the new version uses $p=\infty$,
-your version may use $p=2$.}
+and solve (\ref{eq:poundersp}) with the BQPIP method described in
+Section~\ref{sec:bqpip}. 
 
 The residual vector is then evaluated to obtain $F(x_+)$ and hence
 $f(x_+)$. The ratio of actual decrease to predicted decreased
@@ -1068,9 +1015,64 @@ H_k^{(i)}\right) (x-x_k).
 The process of forming these models also computes the indicator
 \texttt{valid} of the model's local quality.
 
-\texttt{Jason, is this roughly what you had in mind? I could also write a
-sentence on termination but this is described both in the inputs section
-and in the algorithm outline.}
+
+\subsubsection{Parameters}
+\begin{comment}
+If evaluations of the residual vector $F$ are available, then this can be
+input and will often result in improved performance. Assuming that
+\texttt{nfs}$>0$ such points are available, then the user should input the
+matrix of locations \texttt{X0} $=[y_1, \ldots, y_{\rm nfs}]$ and the
+corresponding matrix of residuals \texttt{F0} $= [F(y_1), \ldots, F(y_{\rm
+nfs})]$. The user selects which one of these points is the starting point
+(this is typically the point $\arg \min_{i=1,\ldots, {\rm nfs}}
+\|F(y_i)\|^2$) to be used and inputs the index as the integer
+\texttt{xkin}.
+
+If no such points are available, then \texttt{nfs}$=0$, \texttt{F0} is
+empty, \texttt{xkin}$=1$, and the user inputs the desired starting point
+(whose residual has not yet been evaluated) as \texttt{X0} $=[x_0]$.
+
+
+In addition to the inputs \texttt{nfs}, \texttt{X0}, \texttt{F0},
+\texttt{xkin} above, 
+\end{comment}
+
+POUNDerS supports the following parameters that can be set from the
+command line or PETSc options file:
+\begin{description}
+  \item[\texttt{-tao\_pounders\_delta <delta>}] the initial trust region 
+  radius ($>0$, real).
+  This is  used to determine the size of the initial neighborhood within
+  which the algorithm should look. 
+  %In particular, if \texttt{nfs}=0, the
+  %algorithm will evaluate $F$ at $n$ points within a distance
+  %\texttt{delta} of \texttt{X0};
+  
+  \item[\texttt{-tao\_pounders\_npmax <npmax>}] The maximum number of 
+  interpolation points used
+  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This is input is made
+  available to advanced users. We recommend other users to use the default
+  value (\texttt{npmax}$=2n+1$);
+
+  \item[\texttt{-tao\_pounders\_gqt}] Use the gqt algorithm to solve the
+  subproblem~\ref{eq:poundersp} (uses $p=2$).
+
+  \item[\texttt{-tao\_gatol <gatol>}] The termination tolerance for the 2-norm of the
+  model gradient ($>0$, real). This termination criteria is roughly
+  equivalent to demanding that the final gradient of $f$ is of order
+  \texttt{gatol}.
+
+  \item[subproblem] If the default BQPIP algorithm is used to solve the 
+  subproblem~\ref{eq:poundersp}, the parameters of the subproblem solver
+  can be accessed using the command line options prefix \texttt{-pounders\_subsolver\_}.  For example, \texttt{-pounders\_subsolver\_gatol 1.0e-5}
+  
+   
+\end{description}
+
+In addition the user provides an initial solution vector, a vector for storing
+the separable objective function, an a routine for evaluating the residual
+vector $F$.  These are described in detail in Sections~\ref{sec:fghj} and \ref{sec:evalsof}.
+
 
 
 \section{Complementarity}
