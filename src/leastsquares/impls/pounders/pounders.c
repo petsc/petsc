@@ -1062,8 +1062,8 @@ PetscErrorCode TaoCreate_POUNDERS(TaoSolver tao)
   tao->data = (void*)mfqP;
   tao->max_it = 2000;
   tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  tao->fatol = 1e-8;
+  tao->frtol = 1e-8;
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;
   mfqP->deltamin=1e-6;
