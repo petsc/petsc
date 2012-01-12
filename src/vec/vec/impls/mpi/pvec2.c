@@ -48,15 +48,17 @@ PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 #define __FUNCT__ "VecNorm_MPI"
 PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
-  PetscReal      sum,work = 0.0;
-  PetscScalar    *xx = *(PetscScalar**)xin->data;
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(n);
+  PetscReal         sum,work = 0.0;
+  const PetscScalar *xx;
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n;
+  PetscBLASInt      one = 1,bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
+    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     work  = BLASdot_(&bn,xx,&one,xx,&one);
+    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = PetscSqrtReal(sum);
     ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
