@@ -664,7 +664,7 @@ PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 extern PetscErrorCode  MatRestrict(Mat,Vec,Vec);
 extern PetscErrorCode  MatGetVecs(Mat,Vec*,Vec*);
 extern PetscErrorCode  MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
-extern PetscErrorCode  MatGetMultiProcBlock(Mat,MPI_Comm,Mat*);
+extern PetscErrorCode  MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 extern PetscErrorCode  MatFindZeroDiagonals(Mat,IS*);
 
 /*MC

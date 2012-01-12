@@ -8968,7 +8968,8 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
 
    Input Parameters:
 +  mat - the matrix
--  subcomm - the subcommunicator obtained by com_split(comm)
+.  subcomm - the subcommunicator obtained by com_split(comm)
+-  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
 .  subMat - 'parallel submatrices each spans a given subcomm
@@ -8992,7 +8993,7 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
 
 .seealso: MatGetSubMatrices()
 @*/
-PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, Mat* subMat)
+PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,Mat* subMat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    commsize,subCommSize;
@@ -9003,7 +9004,7 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, Mat* subMat)
   if (subCommSize > commsize) SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
   
   ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr); 
-  ierr = (*mat->ops->getmultiprocblock)(mat,subComm,subMat);CHKERRQ(ierr);
+  ierr = (*mat->ops->getmultiprocblock)(mat,subComm,scall,subMat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);   
   PetscFunctionReturn(0);
 }

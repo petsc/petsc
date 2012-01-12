@@ -17,7 +17,7 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscInt       **buf_ri,**buf_rj;
   PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
   PetscMPIInt    nsend,nrecv;  
-  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
+  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C (matrix product) - rename to ci, cj! */
   PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
@@ -90,7 +90,7 @@ extern PetscErrorCode MatGetSubMatricesParallel_MPIAIJ (Mat,PetscInt,const IS[],
 
 extern PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat *);
 extern PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat *);
-extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,Mat*);
+extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 extern PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
 extern PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
