@@ -1057,21 +1057,23 @@ command line or PETSc options file:
   \item[\texttt{-tao\_pounders\_gqt}] Use the gqt algorithm to solve the
   subproblem~\ref{eq:poundersp} (uses $p=2$).
 
-  \item[\texttt{-tao\_gatol <gatol>}] The termination tolerance for the 2-norm of the
-  model gradient ($>0$, real). This termination criteria is roughly
-  equivalent to demanding that the final gradient of $f$ is of order
-  \texttt{gatol}.
-
-  \item[subproblem] If the default BQPIP algorithm is used to solve the 
+  \item[subproblem parameters] If the default BQPIP algorithm is used to solve the 
   subproblem~\ref{eq:poundersp}, the parameters of the subproblem solver
   can be accessed using the command line options prefix \texttt{-pounders\_subsolver\_}.  For example, \texttt{-pounders\_subsolver\_gatol 1.0e-5}
   
+
    
 \end{description}
-
 In addition the user provides an initial solution vector, a vector for storing
 the separable objective function, an a routine for evaluating the residual
 vector $F$.  These are described in detail in Sections~\ref{sec:fghj} and \ref{sec:evalsof}.
+
+\subsubsection{Convergence Notes}
+Because the gradient function is not provided to POUNDerS, 
+The norm of the gradient of the objective function is not available. Therefore
+for convergence criteria, this norm is approximated by the norm of the
+model gradient.  
+
 
 
 
