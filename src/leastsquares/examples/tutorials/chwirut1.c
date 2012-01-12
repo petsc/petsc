@@ -75,12 +75,15 @@ int main(int argc,char **argv)
   PetscInt   i;               /* iteration information */
   PetscReal  hist[100],resid[100];
   PetscInt   nhist;
+  PetscBool  printhistory;
   AppCtx     user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
   TaoInitialize(&argc,&argv,(char *)0,help);
 
+  printhistory = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-printhistory",&printhistory,0); CHKERRQ(ierr);
   /* Allocate vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x); CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f); CHKERRQ(ierr);
@@ -113,13 +116,15 @@ int main(int argc,char **argv)
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
-
+  
   ierr = TaoSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-  ierr = TaoGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
-  for (i=0;i<nhist;i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%G\t%G\n",hist[i],resid[i]); 
+  if (printhistory) {
+    ierr = TaoGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
+    for (i=0;i<nhist;i++) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%G\t%G\n",hist[i],resid[i]); 
+    }
   }
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
