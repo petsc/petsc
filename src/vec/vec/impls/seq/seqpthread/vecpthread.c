@@ -97,7 +97,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1+x->nthreads-1);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(ierr);
+  PetscFunctionReturn(0);
 }
 
 void* VecTDot_Kernel(void *arg)
@@ -603,22 +603,259 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
   PetscFunctionReturn(0);
 }
 
+void* VecMDot_Kernel4(void* arg)
+{
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  PetscInt           n = data->n;
+  const PetscScalar  *x = (const PetscScalar*)data->x;
+  const PetscScalar  *y0 = (const PetscScalar*)data->y0;
+  const PetscScalar  *y1 = (const PetscScalar*)data->y1;
+  const PetscScalar  *y2 = (const PetscScalar*)data->y2;
+  const PetscScalar  *y3 = (const PetscScalar*)data->y3;
+
+  DoCoreAffinity();
+#if defined(PETSC_USE_COMPLEX)
+    PetscInt i;
+    PetscScalar sum0,sum1,sum2,sum3;
+    sum0 = sum1 = sum2 = sum3 = 0.0;
+    for(i=0;i<n;i++) {
+      sum0 += x[i]*PetscConj(y0[i]);
+      sum1 += x[i]*PetscConj(y1[i]);
+      sum2 += x[i]*PetscConj(y2[i]);
+      sum3 += x[i]*PetscConj(y3[i]);
+    }
+    data->result0 = sum0; data->result1 = sum1; data->result2 = sum2; data->result3 = sum3;
+# else
+    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    data->result0 = BLASdot_(&bn,x,&one,y0,&one);
+    data->result1 = BLASdot_(&bn,x,&one,y1,&one);
+    data->result2 = BLASdot_(&bn,x,&one,y2,&one);
+    data->result3 = BLASdot_(&bn,x,&one,y3,&one);
+#endif
+    return(0);
+}
+
+void* VecMDot_Kernel3(void* arg)
+{
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  PetscInt           n = data->n;
+  const PetscScalar  *x = (const PetscScalar*)data->x;
+  const PetscScalar  *y0 = (const PetscScalar*)data->y0;
+  const PetscScalar  *y1 = (const PetscScalar*)data->y1;
+  const PetscScalar  *y2 = (const PetscScalar*)data->y2;
+
+  DoCoreAffinity();
+#if defined(PETSC_USE_COMPLEX)
+    PetscInt i;
+    PetscScalar sum0,sum1,sum2;
+    sum0 = sum1 = sum2 = 0.0;
+    for(i=0;i<n;i++) {
+      sum0 += x[i]*PetscConj(y0[i]);
+      sum1 += x[i]*PetscConj(y1[i]);
+      sum2 += x[i]*PetscConj(y2[i]);
+    }
+    data->result0 = sum0; data->result1 = sum1; data->result2 = sum2;
+# else
+    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    data->result0 = BLASdot_(&bn,x,&one,y0,&one);
+    data->result1 = BLASdot_(&bn,x,&one,y1,&one);
+    data->result2 = BLASdot_(&bn,x,&one,y2,&one);
+#endif
+    return(0);
+}
+
+void* VecMDot_Kernel2(void* arg)
+{
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  PetscInt           n = data->n;
+  const PetscScalar  *x = (const PetscScalar*)data->x;
+  const PetscScalar  *y0 = (const PetscScalar*)data->y0;
+  const PetscScalar  *y1 = (const PetscScalar*)data->y1;
+
+  DoCoreAffinity();
+#if defined(PETSC_USE_COMPLEX)
+    PetscInt i;
+    PetscScalar sum0,sum1;
+    sum0 = sum1 = 0.0;
+    for(i=0;i<n;i++) {
+      sum0 += x[i]*PetscConj(y0[i]);
+      sum1 += x[i]*PetscConj(y1[i]);
+    }
+    data->result0 = sum0; data->result1 = sum1;
+# else
+    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    data->result0 = BLASdot_(&bn,x,&one,y0,&one);
+    data->result1 = BLASdot_(&bn,x,&one,y1,&one);
+#endif
+    return(0);
+}
+
+void* VecMDot_Kernel1(void* arg)
+{
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  PetscInt           n = data->n;
+  const PetscScalar  *x = (const PetscScalar*)data->x;
+  const PetscScalar  *y0 = (const PetscScalar*)data->y0;
+
+  DoCoreAffinity();
+#if defined(PETSC_USE_COMPLEX)
+    PetscInt i;
+    PetscScalar sum0;
+    sum0 = 0.0;
+    for(i=0;i<n;i++) {
+      sum0 += x[i]*PetscConj(y0[i]);
+    }
+    data->result0 = sum0;
+# else
+    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    data->result0 = BLASdot_(&bn,x,&one,y0,&one);
+#endif
+    return(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "VecMDot_SeqPThread"
 PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
-  PetscErrorCode   ierr=0;
-  PetscInt         j;
+  PetscErrorCode ierr;
+  Vec_SeqPthread *x = (Vec_SeqPthread*)xin->data;
+  PetscInt       *ix = x->arrindex;
+  PetscInt       *nx = x->nelem;
+  Vec            *yy = (Vec*)yin;
+  PetscScalar    *xa,*y0,*y1,*y2,*y3;
+  PetscInt       i,j,j_rem;
 
   PetscFunctionBegin;
 
-  for(j=0;j<nv;j++) {
-    ierr = VecDot_SeqPThread(xin,yin[j],&z[j]);CHKERRQ(ierr);
-  }
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  switch(j_rem = nv&0x3) {
+  case 3:
+    ierr = VecGetArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&y1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&y2);CHKERRQ(ierr);
 
+    for(i=0;i<x->nthreads;i++) {
+      kerneldatap[i].x      = xa + ix[i];
+      kerneldatap[i].y0     = y0 + ix[i];
+      kerneldatap[i].y1     = y1 + ix[i];
+      kerneldatap[i].y2     = y2 + ix[i];
+      kerneldatap[i].n      = nx[i];
+      pdata[i]              = &kerneldatap[i];
+    }
+    ierr = MainJob(VecMDot_Kernel3,(void**)pdata,x->nthreads,x->cpu_affinity);
+
+    ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&y2);CHKERRQ(ierr);
+
+    z[0] = kerneldatap[0].result0;
+    for(j=1;j<x->nthreads;j++) {
+      z[0] += kerneldatap[j].result0;
+    }
+    z[1] = kerneldatap[0].result1;
+    for(j=1;j<x->nthreads;j++) {
+      z[1] += kerneldatap[j].result1;
+    }
+    z[2] = kerneldatap[0].result2;
+    for(j=1;j<x->nthreads;j++) {
+      z[2] += kerneldatap[j].result2;
+    }
+    yy += 3;
+    z  += 3;
+    break;
+  case 2:
+    ierr = VecGetArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&y1);CHKERRQ(ierr);
+
+    for(i=0;i<x->nthreads;i++) {
+      kerneldatap[i].x      = xa + ix[i];
+      kerneldatap[i].y0     = y0 + ix[i];
+      kerneldatap[i].y1     = y1 + ix[i];
+      kerneldatap[i].n      = nx[i];
+      pdata[i]              = &kerneldatap[i];
+    }
+    ierr = MainJob(VecMDot_Kernel2,(void**)pdata,x->nthreads,x->cpu_affinity);
+
+    ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
+
+    z[0] = kerneldatap[0].result0;
+    for(j=1;j<x->nthreads;j++) {
+      z[0] += kerneldatap[j].result0;
+    }
+    z[1] = kerneldatap[0].result1;
+    for(j=1;j<x->nthreads;j++) {
+      z[1] += kerneldatap[j].result1;
+    }
+    yy += 2; z += 2;
+    break;
+  case 1:
+    ierr = VecGetArray(yy[0],&y0);CHKERRQ(ierr);
+
+    for(i=0;i<x->nthreads;i++) {
+      kerneldatap[i].x    = xa + ix[i];
+      kerneldatap[i].y0   = y0 + ix[i];
+      kerneldatap[i].n    = nx[i];
+      pdata[i]            = &kerneldatap[i];
+    }
+    ierr = MainJob(VecMDot_Kernel1,(void**)pdata,x->nthreads,x->cpu_affinity);
+    
+    ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
+
+    z[0] = kerneldatap[0].result0;
+    for(j=1;j<x->nthreads;j++) {
+      z[0] += kerneldatap[j].result0;
+    }
+    yy++; z++;
+    break;
+  }
+  for(j=j_rem;j<nv;j+=4) {
+    ierr = VecGetArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&y1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&y2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[3],&y3);CHKERRQ(ierr);
+
+    for(i=0;i<x->nthreads;i++) {
+      kerneldatap[i].x      = xa + ix[i];
+      kerneldatap[i].y0     = y0 + ix[i];
+      kerneldatap[i].y1     = y1 + ix[i];
+      kerneldatap[i].y2     = y2 + ix[i];
+      kerneldatap[i].y3     = y3 + ix[i];
+      kerneldatap[i].n      = nx[i];
+      pdata[i]              = &kerneldatap[i];
+    }
+    ierr = MainJob(VecMDot_Kernel4,(void**)pdata,x->nthreads,x->cpu_affinity);
+
+    ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&y2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[3],&y3);CHKERRQ(ierr);
+
+    z[0] = kerneldatap[0].result0;
+    for(j=1;j<x->nthreads;j++) {
+      z[0] += kerneldatap[j].result0;
+    }
+    z[1] = kerneldatap[0].result1;
+    for(j=1;j<x->nthreads;j++) {
+      z[1] += kerneldatap[j].result1;
+    }
+    z[2] = kerneldatap[0].result2;
+    for(j=1;j<x->nthreads;j++) {
+      z[2] += kerneldatap[j].result2;
+    }
+    z[3] = kerneldatap[0].result3;
+    for(j=1;j<x->nthreads;j++) {
+      z[3] += kerneldatap[j].result3;
+    }
+    yy += 4;
+    z  += 4;
+  }    
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(PetscMax(nv*(2.0*xin->map->n-1+x->nthreads-1),0.0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-      
+
 #undef __FUNCT__
 #define __FUNCT__ "VecMTDot_SeqPThread"
 PetscErrorCode VecMTDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
@@ -1322,18 +1559,17 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
   Vec_SeqPthread *s = (Vec_SeqPthread*)v->data;
   PetscInt        nmax=PetscMaxThreads+PetscMainThreadShareWork;
   PetscBool       flg;
-  PetscInt        thread_affinities[PetscMaxThreads+PetscMainThreadShareWork];
 
   PetscFunctionBegin;
 
   if(s->cpu_affinity) {
     ierr = PetscFree(s->cpu_affinity);CHKERRQ(ierr);
   }
-
   ierr = PetscMalloc(s->nthreads*sizeof(PetscInt),&s->cpu_affinity);CHKERRQ(ierr);
+
   if(affinities == PETSC_NULL) {
-    ierr = PetscMemcpy(thread_affinities+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
-    if(PetscMainThreadShareWork) thread_affinities[0] = MainThreadCoreAffinity;
+    /* PETSc decides affinities */
+    PetscInt        *thread_affinities=0;
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-vec_thread_affinities","Set CPU affinity for each thread","VecPThreadSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
@@ -1341,8 +1577,9 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, vector Threads = %D, CPU affinities set = %D",s->nthreads-PetscMainThreadShareWork,nmax);
       }
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,thread_affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+      ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
     } else {
-      /* Reuse the core affinities set for first s->nthreads */
+      /* Reuse the core affinities set for the first nthreads */
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
     }
   } else {
@@ -1350,6 +1587,7 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
     ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
   }
   if(PetscMainThreadShareWork) s->cpu_affinity[0] = MainThreadCoreAffinity;
+
   PetscFunctionReturn(0);
 }
 

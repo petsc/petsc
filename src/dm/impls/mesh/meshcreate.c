@@ -6,7 +6,6 @@
 #define __FUNCT__ "DMSetFromOptions_Mesh"
 PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 {
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -87,10 +86,10 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 
         ierr = DMMeshSetCone(dm, edge, cone);CHKERRQ(ierr);
         if ((vy == 0) || (vy == edges[1])) {
-          ierr = DMMeshMarkPoint(dm, "marker", edge,    1);CHKERRQ(ierr);
-          ierr = DMMeshMarkPoint(dm, "marker", cone[0], 1);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(dm, "marker", edge,    1);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(dm, "marker", cone[0], 1);CHKERRQ(ierr);
           if (ex == edges[0]-1) {
-            ierr = DMMeshMarkPoint(dm, "marker", cone[1], 1);CHKERRQ(ierr);
+            ierr = DMMeshSetLabelValue(dm, "marker", cone[1], 1);CHKERRQ(ierr);
           }
         }
       }
@@ -103,10 +102,10 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 
         ierr = DMMeshSetCone(dm, edge, cone);CHKERRQ(ierr);
         if ((vx == 0) || (vx == edges[0])) {
-          ierr = DMMeshMarkPoint(dm, "marker", edge,    1);CHKERRQ(ierr);
-          ierr = DMMeshMarkPoint(dm, "marker", cone[0], 1);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(dm, "marker", edge,    1);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(dm, "marker", cone[0], 1);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
-            ierr = DMMeshMarkPoint(dm, "marker", cone[1], 1);CHKERRQ(ierr);
+            ierr = DMMeshSetLabelValue(dm, "marker", cone[1], 1);CHKERRQ(ierr);
           }
         }
       }
@@ -172,7 +171,7 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     }
     ierr = DMMeshSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     for(v = 0; v < numFaces+numVertices; ++v) {
-      ierr = DMMeshMarkPoint(dm, "marker", v, 1);CHKERRQ(ierr);
+      ierr = DMMeshSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
     { // Side 0 (Front)
       PetscInt cone[4] = {numFaces+4, numFaces+5, numFaces+7, numFaces+6};

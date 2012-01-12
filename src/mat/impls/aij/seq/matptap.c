@@ -264,7 +264,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *ap,*c;
-  PetscInt           *api,*apj,*ci,*cj,pn=P->cmap->N,sparse_axpy=0;
+  PetscInt           *api,*apj,*ci,pn=P->cmap->N,sparse_axpy=0;
   MatScalar          *ca;
   Mat_PtAP           *ptap;
   Mat                Pt,AP;
@@ -295,7 +295,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(Pt,AP,fill,C);CHKERRQ(ierr);
   c  = (Mat_SeqAIJ*)(*C)->data;
   ci = c->i; 
-  cj = c->j;
   ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
   ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
   c->a       = ca;

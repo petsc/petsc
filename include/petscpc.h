@@ -449,22 +449,10 @@ extern PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 extern PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 
 #if defined(PETSC_HAVE_PCBDDC)
-/* Two enums defining how to treat the coarse problem */
+/* Enum defining how to treat the coarse problem */
 typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
-typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
-typedef struct _PCBDDCGraph *PCBDDCGraph;
-extern PetscErrorCode PCBDDCSetDefaultDimensions(PC,PetscInt,PetscInt,PetscInt,PetscInt);
-extern PetscErrorCode PCBDDCCoarseSetUp(PC);
-extern PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt,PetscInt* );
-extern PetscErrorCode PCBDDCSetupCoarseEnvironment(PC,PetscScalar*);
-extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,Vec);
-extern PetscErrorCode PCBDDCDefaultGrid(PC);
-extern PetscErrorCode PCBDDCManageLocalBoundaries(PC);
-extern PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,Vec);
-extern PetscErrorCode PCBDDCSolveSaddlePoint(PC);
-extern PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
-extern PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
-extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,Vec);
+extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
+extern PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
 extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
 #endif
 

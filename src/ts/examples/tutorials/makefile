@@ -319,15 +319,15 @@ runex17_2:
 	   ${RM} -f ex17_2.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none -snes_ls basic > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 > ex22_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none > ex22_2.tmp 2>&1; \
 	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo  ${PWD} "\nPossible problem with ex22_2, diffs above \n=========================================";  \
 	   ${RM} -f ex22_2.tmp
 runex22_3:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 > ex22_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo  ${PWD} "\nPossible problem with ex22_3, diffs above \n=========================================";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
@@ -346,7 +346,7 @@ runex24:                        # This is not in the nightlies because the conve
 	   ${RM} -f ex24_1.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo  ${PWD} "\nPossible problem with ex25_1, diffs above \n=========================================";  \
 	   ${RM} -f ex25_1.tmp
 

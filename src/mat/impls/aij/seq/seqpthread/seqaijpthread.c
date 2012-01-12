@@ -19,6 +19,7 @@ typedef struct {
   PetscInt   *nrows;        /* List of nrows for each thread */
   PetscInt   nthreads;      /* Number of threads to use for matrix operations */
   PetscInt   *cpu_affinity; /* CPU affinity of threads */
+  PetscInt   *nz;           /* List of number of nonzeros for each thread */
 }Mat_SeqAIJPThread;
 
 typedef struct {
@@ -26,9 +27,13 @@ typedef struct {
   PetscInt  *ai;
   PetscInt  *aj;
   PetscInt  *adiag;
+  PetscInt  nz;
   PetscScalar *x,*y,*z;
   PetscInt   nrows;
   PetscInt   nonzerorow;
+  /* Only used for MatAssemblyEnd */
+  PetscInt  *ai1,*aj1;
+  MatScalar *aa1;
 }Mat_KernelData;
 
 Mat_KernelData *mat_kerneldatap;
@@ -312,7 +317,75 @@ PetscErrorCode MatPThreadSetThreadAffinities(Mat A,const PetscInt affinities[])
   PetscFunctionReturn(0);
 }
 
+void* MatAssembly_Kernel(void* arg)
+{
+  Mat_KernelData    *data = (Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
+  const MatScalar   *aa = (const MatScalar*)data->aa;
+  PetscInt          *ai1 = data->ai1,*aj1 = data->aj1;
+  MatScalar         *aa1 = data->aa1;
+  PetscInt          nz = data->nz;
+  PetscInt          nrows = data->nrows;
+  PetscErrorCode    ierr;
 
+  DoCoreAffinity();
+  /* Copy over the old ai,aj,aa to ai1,aj1,aa1 */
+  ierr = PetscMemcpy(ai1,ai,nrows*sizeof(PetscInt));
+  ierr = PetscMemcpy(aj1,aj,nz*sizeof(PetscInt));
+  ierr = PetscMemcpy(aa1,aa,nz*sizeof(MatScalar));
+
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJPThread"
+PetscErrorCode MatAssemblyEnd_SeqAIJPThread(Mat A, MatAssemblyType mode)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJPThread  *ap = (Mat_SeqAIJPThread*)A->spptr;
+  PetscInt           *ai = a->i, *aj = a->j,*ai1,*aj1;
+  MatScalar          *aa = a->a,*aa1;
+  PetscInt            i,rstart,rend;
+
+  PetscFunctionBegin;
+  if(mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+
+  ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+
+  /*  Allocate ai1,aj1,aa1 */
+  ierr = PetscMalloc3(a->nz,MatScalar,&aa1,a->nz,PetscInt,&aj1,A->rmap->n+1,PetscInt,&ai1);CHKERRQ(ierr);
+  /* Allocate ap->nz */
+  ierr = PetscMalloc(ap->nthreads*sizeof(PetscInt),&ap->nz);CHKERRQ(ierr);
+
+  for(i=0;i<ap->nthreads;i++) {
+    rstart                   = ap->rstart[i];
+    rend                     = ap->rstart[i] + ap->nrows[i];
+    ap->nz[i]                = ai[rend] - ai[rstart];
+    mat_kerneldatap[i].nz    = ap->nz[i];
+    mat_kerneldatap[i].nrows = ap->nrows[i];
+    /* old */
+    mat_kerneldatap[i].ai    = ai + ap->rstart[i];
+    mat_kerneldatap[i].aj    = aj + ai[ap->rstart[i]];
+    mat_kerneldatap[i].aa    = aa + ai[ap->rstart[i]];
+    /* new */
+    mat_kerneldatap[i].ai1   = ai1 + ap->rstart[i];
+    mat_kerneldatap[i].aj1   = aj1 + ai[ap->rstart[i]];
+    mat_kerneldatap[i].aa1   = aa1 + ai[ap->rstart[i]];
+    mat_pdata[i]             = &mat_kerneldatap[i];
+  }
+  ierr = MainJob(MatAssembly_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
+
+  ai1[A->rmap->n] = ai[A->rmap->n];
+
+  /* Free the old aij a->i, a->j, a->a */
+  ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
+  /* Set new aij */
+  a->i = ai1; a->j = aj1; a->a = aa1;
+
+  PetscFunctionReturn(0);
+}
+  
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJPThread"
@@ -338,6 +411,7 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   B->ops->mult    = MatMult_SeqAIJPThread;
   B->ops->destroy = MatDestroy_SeqAIJPThread;
   B->ops->multadd = MatMultAdd_SeqAIJPThread;
+  B->ops->assemblyend = MatAssemblyEnd_SeqAIJPThread;
 
   if(mats_created == 0) {
     ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Mat_KernelData),&mat_kerneldatap);CHKERRQ(ierr);

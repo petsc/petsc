@@ -122,7 +122,8 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   createLevel
+   createLevel: create coarse op with RAP.  repartition and/or reduce number 
+     of active processors.
 
    Input Parameter:
    . a_pc - parameters
@@ -184,13 +185,13 @@ PetscErrorCode createLevel( const PC a_pc,
 
   /* get number of PEs to make active, reduce */
   ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
-  new_npe = neq/min_eq_proc; /* hardwire min. number of eq/proc */
+  new_npe = (PetscMPIInt)((float)neq/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
   if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
   else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
   if( a_isLast ) new_npe = 1; 
   
   if( !repart && !(new_npe == 1 && *a_nactive_proc != 1) ) { 
-    *a_Amat_crs = Cmat; /* output */
+    *a_Amat_crs = Cmat; /* output - no repartitioning or reduction */
   }
   else {
     /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
@@ -201,7 +202,7 @@ PetscErrorCode createLevel( const PC a_pc,
     /* create sub communicator  */
     MPI_Comm        cm;
     MPI_Group       wg, g2;
-    PetscInt       *counts,inpe;
+    PetscInt       *counts,inpe,targetPE;
     PetscMPIInt    *ranks;
     IS              isscat;
     PetscScalar    *array;
@@ -216,14 +217,18 @@ PetscErrorCode createLevel( const PC a_pc,
     ierr = MPI_Allgather( &ncrs0, 1, MPIU_INT, counts, 1, MPIU_INT, wcomm ); CHKERRQ(ierr); 
     assert(counts[mype]==ncrs0);
     /* count real active pes */
-    for( nactive = jj = 0 ; jj < npe ; jj++) {
+    for( nactive = jj = 0, targetPE = -1 ; jj < npe ; jj++) {
       if( counts[jj] != 0 ) {
 	ranks[nactive++] = jj;
-        }
+        if( targetPE == -1 ) targetPE = jj; /* find lowest active PE */
+      }
     }
-
-    if (nactive < new_npe) new_npe = nactive; /* this can happen with empty input procs */
-
+    
+    if (nactive < new_npe) {
+      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s reducing number of target PEs: %d --> %d (?)\n",mype,__FUNCT__,new_npe,nactive); 
+      new_npe = nactive; /* this can happen with empty input procs */
+    }
+    
     if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
 
     *a_nactive_proc = new_npe; /* output */
@@ -305,8 +310,9 @@ PetscErrorCode createLevel( const PC a_pc,
       adj->rmap->range[nactive] = adj->rmap->range[npe];
       
       if( new_npe == 1 ) {
+        /* simply dump on one proc w/o partitioner for final reduction */
         ierr = MatGetLocalSize( adj, &is_sz, &ii );  CHKERRQ(ierr);
-        ierr = ISCreateStride( cm, is_sz, 0, 0, &proc_is );  CHKERRQ(ierr);
+        ierr = ISCreateStride( cm, is_sz, targetPE, 0, &proc_is );  CHKERRQ(ierr);
       } else {
         char prefix[256];
         const char *pcpre;
@@ -324,8 +330,9 @@ PetscErrorCode createLevel( const PC a_pc,
       ierr = ISGetLocalSize( proc_is, &is_sz );       CHKERRQ(ierr);
       ierr = PetscMalloc( a_cbs*is_sz*sizeof(PetscInt), &newproc_idx ); CHKERRQ(ierr);
       ierr = ISGetIndices( proc_is, &is_idx );        CHKERRQ(ierr);
-      /* spread partitioning across machine - best way ??? */
-      NN = 1; /*npe/new_npe;*/
+      
+      NN = 1; /* bring to "front" of machine */
+      /*NN = npe/new_npe;*/ /* spread partitioning across machine */
       for( kk = jj = 0 ; kk < is_sz ; kk++ ){
         for( ii = 0 ; ii < a_cbs ; ii++, jj++ ) {
           newproc_idx[jj] = is_idx[kk] * NN; /* distribution */
@@ -456,7 +463,7 @@ PetscErrorCode createLevel( const PC a_pc,
     }
 
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
-    *a_P_inout = Pnew; /* output */
+    *a_P_inout = Pnew; /* output - repartitioned */
 
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
     ierr = PetscFree( counts );  CHKERRQ(ierr);
@@ -605,9 +612,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 		  mype,__FUNCT__,(int)level1,N,pc_gamg->m_data_cols,
 		  (int)(info.nz_used/(PetscReal)N),nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
-      /* aggregation method should gaurrentee this does not happen! */
 
-      if (pc_gamg->m_verbose) {
+      /* stop if one node */
+      if( M/pc_gamg->m_data_cols < 2 ) {
+        level++;
+        break;
+      }
+
+      if (PETSC_FALSE) {
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
         v = 1.e-10; /* LU factor has hard wired numbers for small diags so this needs to match (yuk) */
         ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr);
@@ -667,6 +679,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
     /* do my own cheby */
     ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &isCheb ); CHKERRQ(ierr);
+
     if( isCheb ) {
       ierr = PetscTypeCompare( (PetscObject)subpc, PETSC_GAMG_SMOOTHER, &isCheb ); CHKERRQ(ierr);
       if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
@@ -674,7 +687,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
         KSP eksp; Mat Lmat = Aarr[level];
         Vec bb, xx; PC pc;
         const PCType type;
-        
+
         ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
         ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
         ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
@@ -686,14 +699,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
           ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
         }
         ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
-        ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr);
+        /* ierr = KSPSetType( eksp, KSPCG );                      CHKERRQ(ierr); */
         ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
         CHKERRQ(ierr);
         ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
-        
+
         ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
         ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
-        
+
         ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
         ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
         ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
@@ -707,8 +720,8 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
         ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 
         if (pc_gamg->m_verbose) {
-          PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e PC=%s\n",
-                      __FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+          PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e\n",
+                      __FUNCT__,emax,emin);
         }
       }
       { 

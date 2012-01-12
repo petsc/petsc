@@ -368,77 +368,266 @@ PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshCreateMatrix"
-/*@C
-  DMMeshCreateMatrix - Creates a matrix with the correct parallel layout required for
-    computing the Jacobian on a function defined using the information in the Section.
-
-  Collective on DMMesh
-
-  Input Parameters:
-+ mesh    - the mesh object
-. section - the section which determines data layout
-- mtype   - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
-            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
-
-  Output Parameter:
-. J  - matrix with the correct nonzero preallocation
-       (obviously without the correct Jacobian values)
-
-  Level: advanced
-
-  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you
-       do not need to do it yourself.
-
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
-@*/
-PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, const MatType mtype, Mat *J)
+#define __FUNCT__ "DMMeshCreateAllocationVectors"
+PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscLayout    layout;
+  PetscInt       numLocalRows, firstRow;
+  PetscInt       pStart, pEnd, p;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-  if (!mtype) mtype = MATAIJ;
-  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  try {
-    ierr = DMMeshCreateMatrix(m, s, mtype, J, -1, !dm->prealloc_only);CHKERRQ(ierr);
-  } catch(ALE::Exception e) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMemzero(dnz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dnzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscBool isOwned;
+
+    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
+    if (isOwned) {
+      const PetscInt *cone;
+      PetscInt        coneSize, q, row, rSize;
+
+      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
+      rSize /= bs;
+      if ((bs == 1) || (row%bs == 0)) {ierr = PetscPrintf(comm, "[%d]: row %d size %d bs %d\n", rank, row, rSize*bs, bs);CHKERRQ(ierr);}
+      if (rSize == 0) continue;
+      for(q = 0; q < coneSize; ++q) {
+        const PetscInt neighbor = cone[q];
+        PetscInt       col, cSize, r;
+
+        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
+        col    = col >= 0 ? col : -(col+1);
+        cSize /= bs;
+        /* TODO ierr = PetscSFIsOwned(sf, neighbor, &isOwned);CHKERRQ(ierr); */
+        if ((bs == 1) || (col%bs == 0)) {ierr = PetscPrintf(comm, "[%d]:   col %d size %d bs %d\n", rank, col, cSize*bs, bs);CHKERRQ(ierr);}
+        if (cSize > 0) {
+          if (isOwned) {
+            for(r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
+            if (col >= row) {
+              for(r = 0; r < rSize; ++r) {dnzu[(row - firstRow)/bs + r] += cSize;}
+            }
+          } else {
+            for(r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
+            if (col >= row) {
+              for(r = 0; r < rSize; ++r) {onzu[(row - firstRow)/bs + r] += cSize;}
+            }
+          }
+        }
+      }
+    }
   }
-  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshGetVertexMatrix"
-PetscErrorCode DMMeshGetVertexMatrix(DM dm, const MatType mtype, Mat *J)
+#define __FUNCT__ "DMMeshFillMatrixWithZero"
+PetscErrorCode DMMeshFillMatrixWithZero(DM dm, Mat A, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[])
 {
-  SectionReal    section;
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscLayout   layout;
+  PetscInt      *cols;
+  PetscScalar   *values;
+  PetscInt       numLocalRows, firstRow, maxRowLen, r;
+  PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshGetVertexSectionReal(dm, "default", 1, &section);CHKERRQ(ierr);
-  ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
+  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
+  for(r = 0, maxRowLen = 0; r < numLocalRows/bs; ++r) {
+    maxRowLen = PetscMax(maxRowLen, dnz[r] + onz[r]);
+  }
+  ierr = PetscMalloc2(maxRowLen,PetscInt,&cols,maxRowLen,PetscScalar,&values);CHKERRQ(ierr);
+  ierr = PetscMemzero((void *) values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt  rowLen = 0;
+    PetscBool isOwned;
+
+    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
+    if (isOwned) {
+      const PetscInt *cone;
+      PetscInt        coneSize, q, row, rSize, r;
+
+      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
+      rSize /= bs;
+      if (rSize == 0) continue;
+      for(q = 0; q < coneSize; ++q) {
+        const PetscInt neighbor = cone[q];
+        PetscInt       col, cSize, c;
+
+        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
+        col    = col >= 0 ? col : -(col+1);
+        cSize /= bs;
+        for(c = col; c < col+cSize; ++c) {
+          cols[rowLen++] = c;
+        }
+      }
+      for(r = 0; r < rSize; ++r) {
+        PetscInt fullRow = row + r;
+
+        if (rowLen != dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]) {
+          SETERRQ5(comm, PETSC_ERR_ARG_WRONG, "Invalid row length %d, should be dnz[%d]: %d + onz[%d]: %d", rowLen, (row - firstRow)/bs+r, dnz[(row - firstRow)/bs+r], (row - firstRow)/bs+r, onz[(row - firstRow)/bs+r]);
+        }
+        ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscFree2(cols,values);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshGetCellMatrix"
-PetscErrorCode DMMeshGetCellMatrix(DM dm, const MatType mtype, Mat *J)
+#define __FUNCT__ "DMMeshPreallocateOperator"
+PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
-  SectionReal    section;
+  DM             dmAdj;
+  PetscSF        sfAdj;
+  PetscLayout    layout;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshGetCellSectionReal(dm, "default", 1, &section);CHKERRQ(ierr);
-  ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
+  /* Using points instead of dofs would decrease the graph size, but we would need to also communicate the section information for new points */
+  /* Create local adjacency graph in global dof numbering (cones are adj dofs) */
+  /* Exchange cones on interface */
+#if 0
+  /* Create local adjacency graph */
+  ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
+  if (debug) adjGraph->view("Adjacency Graph");
+  // Complete adjacency graph
+  typedef ALE::ConeSection<FlexMesh::sieve_type>              cones_wrapper_type;
+  typedef ALE::Section<ALE::Pair<int, point_type>, point_type> cones_type;
+  Obj<cones_wrapper_type>       cones          = new cones_wrapper_type(adjGraph);
+  Obj<cones_type>               overlapCones   = new cones_type(adjGraph->comm(), adjGraph->debug());
+  const Obj<send_overlap_type>& sendOverlap    = mesh->getSendOverlap();
+  const Obj<recv_overlap_type>& recvOverlap    = mesh->getRecvOverlap();
+  const Obj<send_overlap_type>  nbrSendOverlap = new send_overlap_type(mesh->comm(), mesh->debug());
+  const Obj<recv_overlap_type>  nbrRecvOverlap = new recv_overlap_type(mesh->comm(), mesh->debug());
+
+  // Now overlapCones will have the neighbors for any point in the overlap, in the remote numbering
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
+  if (debug) overlapCones->view("Overlap Cones");
+  // TODO Copy overlaps
+  sendOverlap->copy(nbrSendOverlap.ptr());
+  recvOverlap->copy(nbrRecvOverlap.ptr());
+  if (debug) nbrSendOverlap->view("Initial Send Overlap");
+  if (debug) nbrRecvOverlap->view("Initial Recv Overlap");
+  // TODO Update neighbor send overlap from local adjacency
+  //   For each localPoint in sendOverlap
+  //     For each rank receiving this point
+  //       For each adjPoint in adjGraph->cone(point)
+  //         If recvOverlap does not contain an arrow (rank, adjPoint, *), meaning the point is not interior to the domain
+  //           nbrSendOverlap->addArrow(adjPoint, rank, -1)
+  const typename send_overlap_type::baseSequence::iterator sBegin = sendOverlap->baseBegin();
+  const typename send_overlap_type::baseSequence::iterator sEnd   = sendOverlap->baseEnd();
+
+  for(typename send_overlap_type::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+    const typename send_overlap_type::target_type            rank   = *r_iter;
+    const typename send_overlap_type::coneSequence::iterator pBegin = sendOverlap->coneBegin(*r_iter);
+    const typename send_overlap_type::coneSequence::iterator pEnd   = sendOverlap->coneEnd(*r_iter);
+
+    for(typename send_overlap_type::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+      const typename send_overlap_type::source_type               localPoint = *p_iter;
+      const typename FlexMesh::sieve_type::coneSequence::iterator adjBegin   = adjGraph->cone(localPoint)->begin();
+      const typename FlexMesh::sieve_type::coneSequence::iterator adjEnd     = adjGraph->cone(localPoint)->end();
+
+      for(typename FlexMesh::sieve_type::coneSequence::iterator a_iter = adjBegin; a_iter != adjEnd; ++a_iter) {
+        const typename FlexMesh::sieve_type::coneSequence::iterator::value_type adjPoint = *a_iter;
+
+        // Deal with duplication at the assembly stage
+        nbrSendOverlap->addArrow(adjPoint, rank, -1);
+      }
+    }
+  }
+  nbrSendOverlap->assemble();
+  nbrSendOverlap->assemblePoints();
+  if (debug) nbrSendOverlap->view("Modified Send Overlap");
+  //   Let maxPoint be the first point not contained in adjGraph
+  point_type maxPoint = std::max(*std::max_element(adjGraph->cap()->begin(),  adjGraph->cap()->end()),
+                                 *std::max_element(adjGraph->base()->begin(), adjGraph->base()->end())) + 1;
+  // TODO Update neighbor recv overlap and local adjacency
+  //   For each point in recvOverlap
+  //     For each rank sending this point
+  //       For each adjPoint in the overlap cone from adjGraph for this point
+  //         If adjPoint is interior, meaning sendOverlap has no arrow (rank, *, adjPoint) CAN THIS EVER HAPPEN???
+  //           If nbrRevOverlap has arrow (rank, newPoint, adjPoint)
+  //             Let newPoint = maxPoint, increment maxPoint
+  //             Add arrows (point, newPoint) and (newPoint, point) to adjGraph
+  //           Else
+  //             Add arrows (point, newPoint) and (newPoint, point) to adjGraph
+  //         Else
+  //           Why would we see a new connection for an old point??? Need an example
+  //           We have the arrow (rank, oldPoint, adjPoint)
+  //           Add arrows (point, oldPoint) and (oldPoint, point) to adjGraph
+  const typename recv_overlap_type::capSequence::iterator rBegin = recvOverlap->capBegin();
+  const typename recv_overlap_type::capSequence::iterator rEnd   = recvOverlap->capEnd();
+
+  for(typename recv_overlap_type::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+    const int                                                   rank   = *r_iter;
+    const typename recv_overlap_type::supportSequence::iterator pBegin = recvOverlap->supportBegin(*r_iter);
+    const typename recv_overlap_type::supportSequence::iterator pEnd   = recvOverlap->supportEnd(*r_iter);
+
+    for(typename recv_overlap_type::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+      const point_type&                      localPoint  = *p_iter;
+      const point_type&                      remotePoint = p_iter.color();
+      const int                              size        = overlapCones->getFiberDimension(typename cones_type::point_type(rank, remotePoint));
+      const typename cones_type::value_type *values      = overlapCones->restrictPoint(typename cones_type::point_type(rank, remotePoint));
+
+      for(int i = 0; i < size; ++i) {
+        const typename recv_overlap_type::supportSequence::iterator newPointsBegin = nbrRecvOverlap->supportBegin(rank, values[i]);
+        const int                                                   numNewPoints   = nbrRecvOverlap->getSupportSize(rank, values[i]);
+        point_type                                                  newPoint;
+
+        if (!numNewPoints) {
+          typename Mesh::order_type::value_type value(-1, 0);
+
+          newPoint = maxPoint++;
+          globalOrder->updatePoint(newPoint, &value); // Mark the new point as nonlocal
+          nbrRecvOverlap->addArrow(rank, newPoint, values[i]);
+        } else {
+          newPoint = *newPointsBegin;
+        }
+        adjGraph->addArrow(newPoint,   localPoint);
+        adjGraph->addArrow(localPoint, newPoint);
+      }
+    }
+  }
+  nbrRecvOverlap->assemble();
+  nbrRecvOverlap->assemblePoints();
+  if (debug) nbrRecvOverlap->view("Modified Recv Overlap");
+  if (debug) adjGraph->view("Modified Adjacency Graph");
+  /* Update global order */
+  mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap);
+  if (debug) globalOrder->view("Modified Global Order");
+#endif
+
+  /* Read out adjacency graph */
+  ierr = DMMeshCreateAllocationVectors(dm, bs, sfAdj, section, dmAdj, dnz, onz, dnzu, onzu);
+  /* Set matrix pattern */
+  ierr = MatXAIJSetPreallocation(A, bs, 0, dnz, 0, onz, 0, dnzu, 0, onzu);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  /* Fill matrix with zeros */
+  if (fillMatrix) {
+    ierr = DMMeshFillMatrixWithZero(dm, A, bs, sfAdj, section, dmAdj, dnz, onz);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -446,19 +635,91 @@ PetscErrorCode DMMeshGetCellMatrix(DM dm, const MatType mtype, Mat *J)
 #define __FUNCT__ "DMCreateMatrix_Mesh"
 PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 {
-  SectionReal            section;
+  DM_Mesh               *mesh = (DM_Mesh *) dm->data;
   ISLocalToGlobalMapping ltog;
-  PetscBool              flag;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
-  ierr = DMMeshGetSectionReal(dm, "default", &section);CHKERRQ(ierr);
-  ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  if (!mtype) mtype = MATAIJ;
+  if (mesh->useNewImpl) {
+    PetscSection   section;
+    PetscInt       bs = -1;
+    PetscInt       localSize;
+    PetscInt       globalSize;
+    PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
+    PetscErrorCode ierr;
+
+    ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    /* ierr = PetscSectionGetOwnedStorageSize(section, sf, &localSize);CHKERRQ(ierr); */
+    /* ierr = PetscSectionGetGlobalStorageSize(section, sf, &globalSize);CHKERRQ(ierr); */
+    ierr = MatCreate(((PetscObject) dm)->comm, J);CHKERRQ(ierr);
+    ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
+    ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+    /* Check for symmetric storage */
+    isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
+    if (isSymmetric) {
+      ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (!isShell) {
+      PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
+      PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
+
+      if (bs < 0) {
+        if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
+          PetscInt     pStart, pEnd, p, dof;
+          PetscSection section;
+
+          ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+          ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
+          for(p = pStart; p < pEnd; ++p) {
+            ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+            if (dof) {
+              bs = dof;
+              break;
+            }
+          }
+        } else {
+          bs = 1;
+        }
+        /* Must have same blocksize on all procs (some might have no points) */
+        bsLocal = bs;
+        ierr = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+      }
+      ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
+      ierr = DMMeshPreallocateOperator(dm, bs, section, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
+      ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+    }
+  } else {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+    SectionReal section;
+    PetscBool   flag;
+    ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    ierr = DMMeshGetSectionReal(dm, "default", &section);CHKERRQ(ierr);
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    try {
+      ierr = DMMeshCreateMatrix(m, s, mtype, J, -1, !dm->prealloc_only);CHKERRQ(ierr);
+    } catch(ALE::Exception e) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_LIB, e.message());
+    }
+    ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dm, &ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J, ltog, ltog);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -505,56 +766,32 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
 #define __FUNCT__ "DMCreateGlobalVector_Mesh"
 PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscBool      flag;
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscInt       localSize, globalSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
-  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
+  if (mesh->useNewImpl) {
+    PetscSection s;
 
+    ierr = DMMeshGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = PetscSectionGetOwnedStorageSize(s, mesh->sf, &localSize);CHKERRQ(ierr);
+    globalSize = PETSC_DETERMINE;
+  } else {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    PetscBool                 flag;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
+
+    localSize  = order->getLocalSize();
+    globalSize = order->getGlobalSize();
+  }
   ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
-  ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetSizes(*gvec, localSize, globalSize);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *gvec, "DM", (PetscObject) dm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshCreateVector"
-/*@
-  DMMeshCreateVector - Creates a global vector matching the input section
-
-  Collective on DMMesh
-
-  Input Parameters:
-+ mesh - the DMMesh
-- section - the Section
-
-  Output Parameter:
-. vec - the global vector
-
-  Level: advanced
-
-  Notes: The vector can safely be destroyed using VecDestroy().
-.seealso DMMeshCreate()
-@*/
-PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
-
-  ierr = VecCreate(m->comm(), vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(*vec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -562,16 +799,25 @@ PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
 #define __FUNCT__ "DMCreateLocalVector_Mesh"
 PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscBool      flag;
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscInt       size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
-  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  const int size = m->getRealSection("default")->getStorageSize();
+  if (mesh->useNewImpl) {
+    PetscSection s;
 
+    ierr = DMMeshGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(s, &size);CHKERRQ(ierr);
+  } else {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    PetscBool                 flag;
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+    ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    size = m->getRealSection("default")->getStorageSize();
+  }
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
@@ -1681,7 +1927,7 @@ PetscErrorCode DMMeshStratify(DM dm)
       ierr = PetscSectionGetDof(mesh->supportSection, p, &supportSize);CHKERRQ(ierr);
       if (!coneSize && supportSize) {
         ++numRoots;
-        ierr = DMMeshMarkPoint(dm, "depth", p, 0);CHKERRQ(ierr);
+        ierr = DMMeshSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
       } else if (!supportSize && coneSize) {
         ++numLeaves;
       }
@@ -1693,7 +1939,7 @@ PetscErrorCode DMMeshStratify(DM dm)
         ierr = PetscSectionGetDof(mesh->coneSection, p, &coneSize);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(mesh->supportSection, p, &supportSize);CHKERRQ(ierr);
         if (!supportSize && coneSize) {
-          ierr = DMMeshMarkPoint(dm, "depth", p, 1);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(dm, "depth", p, 1);CHKERRQ(ierr);
         }
       }
     } else {
@@ -1725,7 +1971,7 @@ PetscErrorCode DMMeshStratify(DM dm)
   Level: beginner
 
 .keywords: mesh
-.seealso: DMMeshMarkPoint(), DMMeshGetLabelStratum()
+.seealso: DMMeshSetLabelValue(), DMMeshGetLabelStratum()
 @*/
 PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
 {
@@ -1765,9 +2011,9 @@ PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshMarkPoint"
+#define __FUNCT__ "DMMeshSetLabelValue"
 /*@C
-  DMMeshMarkPoint - Add a point to a Sieve Label with given value
+  DMMeshSetLabelValue - Add a point to a Sieve Label with given value
 
   Not Collective
 
@@ -1784,7 +2030,7 @@ PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, Pet
 .keywords: mesh
 .seealso: DMMeshGetLabelStratum()
 @*/
-PetscErrorCode DMMeshMarkPoint(DM dm, const char name[], PetscInt point, PetscInt value)
+PetscErrorCode DMMeshSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
@@ -1893,7 +2139,7 @@ PetscErrorCode DMMeshMarkPoint(DM dm, const char name[], PetscInt point, PetscIn
   Level: beginner
 
 .keywords: mesh
-.seealso: DMMeshMarkPoint()
+.seealso: DMMeshSetLabelValue()
 @*/
 PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
@@ -1926,16 +2172,15 @@ PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshGetLabelIds"
+#define __FUNCT__ "DMMeshGetLabelIdIS"
 /*@C
-  DMMeshGetLabelIds - Get the integer ids in a label
+  DMMeshGetLabelIdIS - Get the integer ids in a label
 
   Not Collective
 
   Input Parameters:
 + mesh - The DMMesh object
-. name - The label name
-- ids - The id storage array
+- name - The label name
 
   Output Parameter:
 . ids - The integer ids
@@ -1945,10 +2190,11 @@ PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
 .keywords: mesh
 .seealso: DMMeshGetLabelSize()
 @*/
-PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
+PetscErrorCode DMMeshGetLabelIdIS(DM dm, const char name[], IS *ids)
 {
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
-  PetscInt       i    = 0;
+  PetscInt      *values;
+  PetscInt       size, i = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1962,8 +2208,10 @@ PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
     while(next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) {
+        size = next->numStrata;
+        ierr = PetscMalloc(size * sizeof(PetscInt), &values);CHKERRQ(ierr);
         for(i = 0; i < next->numStrata; ++i) {
-          ids[i] = next->stratumValues[i];
+          values[i] = next->stratumValues[i];
         }
         break;
       }
@@ -1975,10 +2223,13 @@ PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
     const ALE::Obj<PETSC_MESH_TYPE::label_type::capSequence>&      labelIds = m->getLabel(name)->cap();
     const PETSC_MESH_TYPE::label_type::capSequence::const_iterator iEnd     = labelIds->end();
 
+    size = labelIds->size();
+    ierr = PetscMalloc(size * sizeof(PetscInt), &values);CHKERRQ(ierr);
     for(PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
-      ids[i] = *i_iter;
+      values[i] = *i_iter;
     }
   }
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2079,7 +2330,7 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
 
         for(v = 0; v < next->numStrata; ++v) {
           if (next->stratumValues[v] == value) {
-            ierr = ISCreateGeneral(((PetscObject) dm)->comm, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], PETSC_COPY_VALUES, is);CHKERRQ(ierr);
+            ierr = ISCreateGeneral(PETSC_COMM_SELF, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], PETSC_COPY_VALUES, is);CHKERRQ(ierr);
             break;
           }
         }
@@ -2098,7 +2349,7 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
       for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = stratum->begin(); e_iter != stratum->end(); ++e_iter, ++i) {
         idx[i] = *e_iter;
       }
-      ierr = ISCreateGeneral(((PetscObject) dm)->comm, stratum->size(), idx, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, stratum->size(), idx, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -2892,7 +3143,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
     for(v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        ierr = DMMeshMarkPoint(*dm, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+        ierr = DMMeshSetLabelValue(*dm, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
       }
     }
     if (interpolate) {
@@ -2902,7 +3153,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
           PetscInt       edge;
 
           ierr = DMMeshJoinPoints(*dm, vertices, &edge);CHKERRQ(ierr); /* 1-level join */
-          ierr = DMMeshMarkPoint(*dm, "marker", edge, out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMMeshSetLabelValue(*dm, "marker", edge, out.edgemarkerlist[e]);CHKERRQ(ierr);
         }
       }
     }
@@ -3055,6 +3306,7 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
     if (stratumValue < 0) {
       ierr = DMMeshGetChart(dm, start, end);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     } else {
       PetscInt pStart, pEnd;
 
@@ -3071,8 +3323,13 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
     if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
     /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
     depth = stratumValue;
-    if (start) {*start = next->points[next->stratumOffsets[depth]];}
-    if (end)   {*end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;}
+    if ((depth < 0) || (depth >= next->numStrata)) {
+      if (start) {*start = 0;}
+      if (end)   {*end   = 0;}
+    } else {
+      if (start) {*start = next->points[next->stratumOffsets[depth]];}
+      if (end)   {*end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;}
+    }
   } else {
     ALE::Obj<PETSC_MESH_TYPE> mesh;
     ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
@@ -3119,8 +3376,13 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
     /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
     depth = next->stratumValues[next->numStrata-1] - stratumValue;
-    if (start) {*start = next->points[next->stratumOffsets[depth]];}
-    if (end)   {*end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;}
+    if ((depth < 0) || (depth >= next->numStrata)) {
+      if (start) {*start = 0;}
+      if (end)   {*end   = 0;}
+    } else {
+      if (start) {*start = next->points[next->stratumOffsets[depth]];}
+      if (end)   {*end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;}
+    }
   } else {
     ALE::Obj<PETSC_MESH_TYPE> mesh;
     ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
@@ -3139,7 +3401,6 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateSection"
 PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
-  ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt      *numDofTot, *maxConstraints;
   PetscInt       pStart = 0, pEnd = 0;
   PetscErrorCode ierr;
@@ -3163,7 +3424,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
   } else {
     numFields = 0;
   }
-  ierr = DMMeshGetDepthStratum(dm, -1, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
   for(PetscInt d = 0; d <= dim; ++d) {
     ierr = DMMeshGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
@@ -3174,7 +3435,6 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
       ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
     }
   }
-  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   if (numBC) {
     for(PetscInt f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
     for(PetscInt bc = 0; bc < numBC; ++bc) {
@@ -3186,9 +3446,11 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
       ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
       ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
       for(PetscInt i = 0; i < n; ++i) {
-        const PetscInt p        = idx[i];
-        const PetscInt numConst = numDof[field*(dim+1)+mesh->depth(p)];
+        const PetscInt p = idx[i];
+        PetscInt       depth, numConst;
 
+        ierr = DMMeshGetLabelValue(dm, "depth", p, &depth);CHKERRQ(ierr);
+        numConst              = numDof[field*(dim+1)+depth];
         maxConstraints[field] = PetscMax(maxConstraints[field], numConst);
         if (numFields) {
           ierr = PetscSectionSetFieldConstraintDof(*section, p, field, numConst);CHKERRQ(ierr);
@@ -3373,7 +3635,7 @@ PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mesh->defaultSection) {
+  if (!mesh->defaultSection && !mesh->useNewImpl) {
     ierr = DMMeshGetSection(dm, "default", &mesh->defaultSection);CHKERRQ(ierr);
   }
   *section = mesh->defaultSection;
@@ -3391,7 +3653,9 @@ PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section) {
 
   PetscFunctionBegin;
   mesh->defaultSection = section;
-  ierr = DMMeshSetSection(dm, "default", mesh->defaultSection);CHKERRQ(ierr);
+  if (!mesh->useNewImpl) {
+    ierr = DMMeshSetSection(dm, "default", mesh->defaultSection);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

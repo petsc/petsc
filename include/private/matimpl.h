@@ -163,7 +163,7 @@ struct _MatOps {
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
   PetscErrorCode (*multhermitiantranspose)(Mat,Vec,Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,Mat*);
+  PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,MatReuse,Mat*);
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);

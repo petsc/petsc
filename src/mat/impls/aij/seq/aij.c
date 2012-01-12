@@ -2115,7 +2115,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_SeqAIJ"
-PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,Mat* subMat)
+PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,MatReuse scall,Mat* subMat)
 {
   PetscErrorCode ierr;
   Mat            B;

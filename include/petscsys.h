@@ -42,9 +42,11 @@
 #endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+#define PETSC_EXTERN extern "C"
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
 #define PETSC_EXTERN_CXX_END  }
 #else
+#define PETSC_EXTERN extern
 #define PETSC_EXTERN_CXX_BEGIN
 #define PETSC_EXTERN_CXX_END
 #endif
@@ -1997,9 +1999,11 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
+#define PETSC_EXTERN_C extern "C"
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
+#define PETSC_EXTERN_C
 #define EXTERN_C_BEGIN 
 #define EXTERN_C_END 
 #endif

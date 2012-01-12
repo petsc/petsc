@@ -16,8 +16,9 @@ typedef struct {
 /* Common data for all kernels */
 typedef struct {
   PetscScalar   *x,*y,*w;
+  PetscScalar   *y0,*y1,*y2,*y3;
   PetscInt      n;
-  PetscScalar   result;
+  PetscScalar   result,result0,result1,result2,result3;
   PetscScalar   alpha;
   PetscScalar   beta;
   NormType      typeUse;

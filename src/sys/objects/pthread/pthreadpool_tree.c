@@ -303,7 +303,7 @@ void* MainWait_Tree(void* arg) {
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_Tree"
 PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  int i,ierr;
+  int i,j,issetaffinity,ierr;
   PetscErrorCode ijoberr = 0;
 
   MainWait(NULL);
@@ -313,16 +313,15 @@ PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
       job_tree.funcArr[i+PetscMainThreadShareWork] = pFunc;
       job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
     } else {
-      /* Currently this model assumes that the first n threads will be only doing the useful work while
-	 the remaining threads will be just spinning.
-	 Need to modify this model when threads with specific affinities, e.g., n threads pinned to only
-	 one socket,or n threads spread across different sockets, are requested.
-      */
-      if (i < n-PetscMainThreadShareWork) {
-	job_tree.funcArr[i+PetscMainThreadShareWork] = pFunc;
-	job_tree.pdata[i+PetscMainThreadShareWork] = data[i+PetscMainThreadShareWork];
+      issetaffinity=0;
+      for(j=PetscMainThreadShareWork;j < n;j++) {
+	if(cpu_affinity[j] == ThreadCoreAffinity[i]) {
+	  job_tree.funcArr[i+PetscMainThreadShareWork] = pFunc;
+	  job_tree.pdata[i+PetscMainThreadShareWork] = data[j];
+	  issetaffinity=1;
+	}
       }
-      else {
+      if(!issetaffinity) {
 	job_tree.funcArr[i+PetscMainThreadShareWork] = NULL;
 	job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
       }

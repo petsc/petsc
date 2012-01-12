@@ -171,7 +171,7 @@ void* MainWait_LockFree(void* arg)
 #define __FUNCT__ "MainJob_LockFree"
 PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
-  int i;
+  int i,j,issetaffinity=0;
   PetscErrorCode ijoberr = 0;
 
   for(i=0;i<PetscMaxThreads;i++) {
@@ -179,11 +179,15 @@ PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void** data,PetscInt n,Pet
       job_lockfree.funcArr[i+PetscMainThreadShareWork] = pFunc;
       job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
     } else {
-      if (i < n-PetscMainThreadShareWork) {
-	job_lockfree.funcArr[i+PetscMainThreadShareWork] = pFunc;
-	job_lockfree.pdata[i+PetscMainThreadShareWork] = data[i+PetscMainThreadShareWork];
+      issetaffinity=0;
+      for(j=PetscMainThreadShareWork;j < n;j++) {
+	if(cpu_affinity[j] == ThreadCoreAffinity[i]) {
+	  job_lockfree.funcArr[i+PetscMainThreadShareWork] = pFunc;
+	  job_lockfree.pdata[i+PetscMainThreadShareWork] = data[j];
+	  issetaffinity=1;
+	}
       }
-      else {
+      if(!issetaffinity) {
 	job_lockfree.funcArr[i+PetscMainThreadShareWork] = NULL;
 	job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
       }
