@@ -1317,17 +1317,15 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
     pc->ops->apply   = PCApply_BJacobi_Multiproc;
   } else { /* pc->setupcalled */
-    if (pc->flag == DIFFERENT_NONZERO_PATTERN && mpjac->submats) {
+    subcomm = mpjac->psubcomm->comm;
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
-      ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
-      subcomm = mpjac->psubcomm->comm;
-      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
+      if (mpjac->submats){ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
+      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);  
     } else {
-      subcomm = mpjac->psubcomm->comm;
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
     }
+    ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
   }
 
   if (pc->setfromoptionscalled){
