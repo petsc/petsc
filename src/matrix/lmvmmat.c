@@ -43,13 +43,13 @@ static const char *Limit_Table[64] = {
 extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *A)
 {
     MatLMVMCtx *ctx;
-    PetscErrorCode info;
+    PetscErrorCode ierr;
     PetscInt nhistory;
 
     PetscFunctionBegin;
 
     /*  create data structure and populate with default values */
-    info = PetscMalloc(sizeof(MatLMVMCtx),(void**)&ctx); CHKERRQ(info);
+    ierr = PetscMalloc(sizeof(MatLMVMCtx),(void**)&ctx); CHKERRQ(ierr);
     ctx->lm=5;
     ctx->eps=0.0;
     ctx->limitType=MatLMVM_Limit_None;
@@ -90,26 +90,26 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
 
 
-    info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho); 
-                       CHKERRQ(info);
-    info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->beta); 
-                       CHKERRQ(info);
+    ierr = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho); 
+                       CHKERRQ(ierr);
+    ierr = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->beta); 
+                       CHKERRQ(ierr);
 
     nhistory = PetscMax(ctx->scalar_history,1);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_history); 
-                       CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_history);
-                       CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_history); 
-                       CHKERRQ(info);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_history); 
+                       CHKERRQ(ierr);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_history);
+                       CHKERRQ(ierr);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_history); 
+                       CHKERRQ(ierr);
 
     nhistory = PetscMax(ctx->rescale_history,1);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_rhistory);
-                       CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_rhistory);
-                       CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_rhistory); 
-                       CHKERRQ(info);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_rhistory);
+                       CHKERRQ(ierr);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_rhistory);
+                       CHKERRQ(ierr);
+    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_rhistory); 
+                       CHKERRQ(ierr);
 
 
     /*  Finish initializations */
@@ -128,11 +128,11 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->H0 = 0;
     ctx->useDefaultH0=PETSC_TRUE;
     
-    info = MatCreateShell(comm, n, n, N, N, ctx, A); CHKERRQ(info);
-    info = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);
-    CHKERRQ(info);
-    info = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);
-    CHKERRQ(info);
+    ierr = MatCreateShell(comm, n, n, N, N, ctx, A); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);
+    CHKERRQ(ierr);
+    ierr = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);
+    CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
 }
@@ -149,41 +149,41 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     PetscInt       ll;
     PetscBool     scaled;
     MatLMVMCtx     *shell;
-    PetscErrorCode info;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
     PetscValidHeaderSpecific(A,MAT_CLASSID,1);
     PetscValidHeaderSpecific(b,VEC_CLASSID,2);
     PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-    info = MatShellGetContext(A,(void**)&shell); CHKERRQ(info);
+    ierr = MatShellGetContext(A,(void**)&shell); CHKERRQ(ierr);
     if (shell->lmnow < 1) {
 	shell->rho[0] = 1.0;
     }
 
-    info = VecCopy(b,x); CHKERRQ(info);
+    ierr = VecCopy(b,x); CHKERRQ(ierr);
     for (ll = 0; ll < shell->lmnow; ++ll) {
-	info = VecDot(x,shell->S[ll],&sq); CHKERRQ(info);
+	ierr = VecDot(x,shell->S[ll],&sq); CHKERRQ(ierr);
 	shell->beta[ll] = sq * shell->rho[ll];
-	info = VecAXPY(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(info);
+	ierr = VecAXPY(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(ierr);
     }
 
     scaled = PETSC_FALSE;
     if (!scaled && !shell->useDefaultH0 && shell->H0) {
-	info = MatSolve(shell->H0,x,shell->U); CHKERRQ(info);
-	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
+	ierr = MatSolve(shell->H0,x,shell->U); CHKERRQ(ierr);
+	ierr = VecDot(x,shell->U,&dd); CHKERRQ(ierr);
 	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
 	    /*  Accept Hessian solve */
-	    info = VecCopy(shell->U,x); CHKERRQ(info);
+	    ierr = VecCopy(shell->U,x); CHKERRQ(ierr);
 	    scaled = PETSC_TRUE;
 	}
     }
 
     if (!scaled && shell->useScale) {
-	info = VecPointwiseMult(shell->U,x,shell->scale); CHKERRQ(info);
-	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
+	ierr = VecPointwiseMult(shell->U,x,shell->scale); CHKERRQ(ierr);
+	ierr = VecDot(x,shell->U,&dd); CHKERRQ(ierr);
 	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
 	    /*  Accept scaling */
-	    info = VecCopy(shell->U,x); CHKERRQ(info);	
+	    ierr = VecCopy(shell->U,x); CHKERRQ(ierr);	
 	    scaled = PETSC_TRUE;
 	}
     }
@@ -194,19 +194,19 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 		break;
 
 	    case MatLMVM_Scale_Scalar:
-		info = VecScale(x,shell->sigma); CHKERRQ(info);
+		ierr = VecScale(x,shell->sigma); CHKERRQ(ierr);
 		break;
   
 	    case MatLMVM_Scale_Broyden:
-		info = VecPointwiseMult(x,x,shell->D); CHKERRQ(info);
+		ierr = VecPointwiseMult(x,x,shell->D); CHKERRQ(ierr);
 		break;
 	}
     } 
 
     for (ll = shell->lmnow-1; ll >= 0; --ll) {
-	info = VecDot(x,shell->Y[ll],&yq); CHKERRQ(info);
-	info = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
-	CHKERRQ(info);
+	ierr = VecDot(x,shell->Y[ll],&yq); CHKERRQ(ierr);
+	ierr = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
+	CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
 }
@@ -219,21 +219,21 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 extern PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 {
     PetscBool isascii;
-    PetscErrorCode info;
+    PetscErrorCode ierr;
     MatLMVMCtx *lmP;
     PetscFunctionBegin;
 
-    info = MatShellGetContext(A,(void**)&lmP); CHKERRQ(info);
+    ierr = MatShellGetContext(A,(void**)&lmP); CHKERRQ(ierr);
 
-    info = PetscTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii); CHKERRQ(info);
+    ierr = PetscTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
     if (isascii) {
-	info = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n"); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," Number of vectors: %D\n",lmP->lm); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," scale type: %s\n",Scale_Table[lmP->scaleType]); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," rescale type: %s\n",Rescale_Table[lmP->rScaleType]); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," limit type: %s\n",Limit_Table[lmP->limitType]); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," updates: %D\n",lmP->nupdates); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," rejects: %D\n",lmP->nrejects); CHKERRQ(info);
+	ierr = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n"); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," Number of vectors: %D\n",lmP->lm); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," scale type: %s\n",Scale_Table[lmP->scaleType]); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," rescale type: %s\n",Rescale_Table[lmP->rScaleType]); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," limit type: %s\n",Limit_Table[lmP->limitType]); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," updates: %D\n",lmP->nupdates); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv," rejects: %D\n",lmP->nrejects); CHKERRQ(ierr);
 	
     }
     else {
@@ -538,17 +538,6 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	ierr = VecReciprocal(ctx->U); CHKERRQ(ierr);
 	ierr = VecAbs(ctx->U); CHKERRQ(ierr);
 
-        /*  Checking the diagonal scaling for not a number and infinity */
-	/*  should not be necessary for the Broyden update */
-        /*  info = U->Dot(U, &sDs); CHKERRQ(info); */
-        /*  if (sDs != sDs) { */
-        /*    // not a number */
-        /*    info = U->SetToConstant(TAO_ZERO_SAFEGUARD); CHKERRQ(info); */
-        /*  } */
-        /*  else if ((sDs - sDs) != 0.0)) { */
-        /*    // infinity */
-        /*    info = U->SetToConstant(TAO_INF_SAFEGUARD); CHKERRQ(info); */
-        /*  } */
 
 	switch(ctx->rScaleType) {
 	case MatLMVM_Rescale_None:

@@ -19,10 +19,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscDLLibraryRegister_taolinesearch"
 PetscErrorCode PetscDLLibraryRegister_taolinesearch(const char path[]) 
 {
-    PetscErrorCode info;
-    info = PetscInitializeNoArguments(); if (info) return 1;
+    PetscErrorCode ierr;
+    ierr = PetscInitializeNoArguments(); if (ierr) return 1;
     PetscFunctionBegin;
-    info = TaoLineSearchInitializePackage(path); CHKERRQ(info);
+    ierr = TaoLineSearchInitializePackage(path); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -52,22 +52,22 @@ EXTERN_C_END
 @*/
 PetscErrorCode TaoLineSearchInitializePackage(const char path[])
 {
-    PetscErrorCode info;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (TaoLineSearchInitialized) PetscFunctionReturn(0);
     TaoLineSearchInitialized=PETSC_TRUE;
 
-    info = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID); CHKERRQ(info);
+    ierr = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID); CHKERRQ(ierr);
 
 
-    info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
-    info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
-    info = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(info);
-    info = TaoLineSearchRegisterDynamic("armijo",path,"TaoLineSearchCreate_Armijo",TaoLineSearchCreate_Armijo); CHKERRQ(info);
+    ierr = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegisterDynamic("armijo",path,"TaoLineSearchCreate_Armijo",TaoLineSearchCreate_Armijo); CHKERRQ(ierr);
 
-    info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
-    info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(info);
+    ierr = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 

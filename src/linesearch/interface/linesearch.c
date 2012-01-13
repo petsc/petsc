@@ -37,7 +37,7 @@ PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
 
 PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscBool isascii, isstring;
   const TaoLineSearchType type;
   PetscBool destroyviewer = PETSC_FALSE;
@@ -45,48 +45,48 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   if (!viewer) {
     destroyviewer = PETSC_TRUE;
-    info = PetscViewerASCIIGetStdout(((PetscObject)ls)->comm, &viewer); CHKERRQ(info);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)ls)->comm, &viewer); CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(ls,1,viewer,2);
 
-  info = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(info);
-  info = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(info);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     if (((PetscObject)ls)->prefix) {
-      info = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:(%s)\n",((PetscObject)ls)->prefix);CHKERRQ(info);
+      ierr = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:(%s)\n",((PetscObject)ls)->prefix);CHKERRQ(ierr);
     } else {
-      info = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:\n");CHKERRQ(info);
+      ierr = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:\n");CHKERRQ(ierr);
     }
-    info = PetscViewerASCIIPushTab(viewer); CHKERRQ(info);
-    info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    ierr = TaoLineSearchGetType(ls,&type);CHKERRQ(ierr);
     if (type) {
-      info = PetscViewerASCIIPrintf(viewer,"type: %s\n",type);CHKERRQ(info);
+      ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",type);CHKERRQ(ierr);
     } else {
-      info = PetscViewerASCIIPrintf(viewer,"type: not set yet\n");CHKERRQ(info);
+      ierr = PetscViewerASCIIPrintf(viewer,"type: not set yet\n");CHKERRQ(ierr);
     }
     if (ls->ops->view) {
-      info = PetscViewerASCIIPushTab(viewer);CHKERRQ(info);
-      info = (*ls->ops->view)(ls,viewer);CHKERRQ(info);
-      info = PetscViewerASCIIPopTab(viewer);CHKERRQ(info);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*ls->ops->view)(ls,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    info = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->max_funcs);CHKERRQ(info);
-    info = PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(info); 
-    info = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D\n",ls->nfeval);CHKERRQ(info);
-    info = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D\n",ls->ngeval);CHKERRQ(info);
-    info = PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D\n",ls->nfgeval);CHKERRQ(info);
+    ierr = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->max_funcs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D\n",ls->nfeval);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D\n",ls->ngeval);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D\n",ls->nfgeval);CHKERRQ(ierr);
 
     if (ls->bounded) {
-      info = PetscViewerASCIIPrintf(viewer,"using variable bounds\n");CHKERRQ(info);
+      ierr = PetscViewerASCIIPrintf(viewer,"using variable bounds\n");CHKERRQ(ierr);
     }
-    info = PetscViewerASCIIPopTab(viewer); CHKERRQ(info);
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 
   } else if (isstring) {
-    info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
-    info = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(info);
+    ierr = TaoLineSearchGetType(ls,&type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
   if (destroyviewer) {
-    info = PetscViewerDestroy(&viewer); CHKERRQ(info);
+    ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 
@@ -123,7 +123,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 
 PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 {
-     PetscErrorCode info;
+     PetscErrorCode ierr;
      TaoLineSearch ls;
 
      PetscFunctionBegin;
@@ -131,13 +131,13 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
      *newls = PETSC_NULL;
 
  #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-     info = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(info);
+     ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);
  #endif 
 
-     info = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
+     ierr = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
 			      TAOLINESEARCH_CLASSID, 0, "TaoLineSearch",0,0,
 			      comm,TaoLineSearchDestroy, TaoLineSearchView);
-     CHKERRQ(info);
+     CHKERRQ(ierr);
      ls->bounded = 0;
      ls->max_funcs=30;
      ls->ftol = 0.0001;
@@ -191,7 +191,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 
 PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 {
-     PetscErrorCode info;
+     PetscErrorCode ierr;
      const char *default_type=TAOLINESEARCH_MT;
      PetscBool flg;
      PetscErrorCode ierr;
@@ -199,10 +199,10 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
      PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
      if (ls->setupcalled) PetscFunctionReturn(0);
      if (!((PetscObject)ls)->type_name) {
-	 info = TaoLineSearchSetType(ls,default_type); CHKERRQ(info);
+	 ierr = TaoLineSearchSetType(ls,default_type); CHKERRQ(ierr);
      }
      if (ls->ops->setup) {
-	 info = (*ls->ops->setup)(ls); CHKERRQ(info);
+	 ierr = (*ls->ops->setup)(ls); CHKERRQ(ierr);
      }
      if (ls->usetaoroutines) {
        ierr = TaoIsObjectiveDefined(ls->taosolver,&flg); CHKERRQ(ierr);
@@ -275,23 +275,23 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 @*/
 PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 {
-     PetscErrorCode info;
+     PetscErrorCode ierr;
      PetscFunctionBegin;
      if (!*ls) PetscFunctionReturn(0);
      PetscValidHeaderSpecific(*ls,TAOLINESEARCH_CLASSID,1);
      if (--((PetscObject)*ls)->refct > 0) {*ls=0; PetscFunctionReturn(0);}
      if ((*ls)->stepdirection!=PETSC_NULL) {
-       info = PetscObjectDereference((PetscObject)(*ls)->stepdirection);CHKERRQ(info);
+       ierr = PetscObjectDereference((PetscObject)(*ls)->stepdirection);CHKERRQ(ierr);
        (*ls)->stepdirection = PETSC_NULL;
      }
      if ((*ls)->start_x != PETSC_NULL) {
-       info = PetscObjectDereference((PetscObject)(*ls)->start_x); CHKERRQ(info);
+       ierr = PetscObjectDereference((PetscObject)(*ls)->start_x); CHKERRQ(ierr);
        (*ls)->start_x = PETSC_NULL;
      }
      if ((*ls)->ops->destroy) {
-       info = (*(*ls)->ops->destroy)(*ls); CHKERRQ(info);
+       ierr = (*(*ls)->ops->destroy)(*ls); CHKERRQ(ierr);
      }
-     info = PetscHeaderDestroy(ls); CHKERRQ(info);
+     ierr = PetscHeaderDestroy(ls); CHKERRQ(ierr);
      PetscFunctionReturn(0);
 }
 

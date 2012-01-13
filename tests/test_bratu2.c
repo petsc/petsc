@@ -69,7 +69,7 @@ PetscErrorCode FormJacobian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode      info;                 /* used to check for functions returning nonzeros */
+  PetscErrorCode      ierr;                 /* used to check for functions returning nonzeros */
   PetscInt      Nx, Ny;              /* number of preocessors in x- and y- directions */
   PetscInt      m, N;                /* number of local and global elements in vectors */
   Vec      x,f;                 /* solution, residual vectors */
@@ -89,9 +89,9 @@ int main( int argc, char **argv )
   user.mx = 4; user.my = 4; user.param = 6.0;
 
   /* check for any command line arguments that override defaults */
-  info = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRQ(info);
-  info = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(info);
-  info = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(info);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
@@ -105,67 +105,67 @@ int main( int argc, char **argv )
 
 
   /* Create distributed array (DA) to manage parallel grid and vectors  */
-  info = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRQ(info);
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  info = DACreateGlobalVector(user.da,&x); CHKERRQ(info);
-  info = DACreateLocalVector(user.da,&user.localX); CHKERRQ(info);
-  info = VecDuplicate(x,&f); CHKERRQ(info);
-  info = VecDuplicate(user.localX,&user.localF); CHKERRQ(info);
+  ierr = DACreateGlobalVector(user.da,&x); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&f); CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF); CHKERRQ(ierr);
 
-  info = VecGetLocalSize(x,&m); CHKERRQ(info);
-  info = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRQ(info);
+  ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRQ(ierr);
 
   /*
     Get the global node numbers for all local nodes, including ghost points.
     Associate this mapping with the matrix for later use in setting matrix
     entries via MatSetValuesLocal().
   */
-  info = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRQ(info);
-  info = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); CHKERRQ(info);
-  info = MatSetLocalToGlobalMapping(J,isltog); CHKERRQ(info);
-  info = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(info);
+  ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,isltog); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(ierr);
 
   /* The Tao code begins here */
 
   /* Create the optimization solver, Petsc application   */
-  info = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(info);
-  info = TaoSetType(tao,"tao_pounders"); CHKERRQ(info);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
   /* Set the initial vector */
-  info = FormInitialGuess(&user,x); CHKERRQ(info);
-  info = TaoSetInitialVector(tao,x); CHKERRQ(info);
+  ierr = FormInitialGuess(&user,x); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
 
   /* Set the user function, constraints, jacobian evaluation routines */
-  info = TaoSetSeparableObjectiveRoutine(tao,f,FormFunction,(void*)&user); CHKERRQ(info);
-  info = TaoSetJacobianRoutine(tao,J,J,FormJacobian,(void*)&user); CHKERRQ(info);
+  ierr = TaoSetSeparableObjectiveRoutine(tao,f,FormFunction,(void*)&user); CHKERRQ(ierr);
+  ierr = TaoSetJacobianRoutine(tao,J,J,FormJacobian,(void*)&user); CHKERRQ(ierr);
 
 
   /* Check for any TAO command line options */ 
-  info = TaoSetFromOptions(tao); CHKERRQ(info);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
   /* SOLVE THE LEAST-SQUARES APPLICATION */
-  info = TaoSolve(tao); CHKERRQ(info);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
 
   /*
     To view TAO solver information,
-     info = TaoView(tao); CHKERRQ(info);
+     ierr = TaoView(tao); CHKERRQ(ierr);
   */
 
   /* Free TAO data structures */
-  info = TaoDestroy(&tao); CHKERRQ(info);  
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);  
 
   /* Free PETSc data structures */
-  info = VecDestroy(&x); CHKERRQ(info);
-  info = VecDestroy(&f); CHKERRQ(info);      
-  info = VecDestroy(&user.localX); CHKERRQ(info); 
-  info = VecDestroy(&user.localF); CHKERRQ(info); 
-  info = MatDestroy(&J); CHKERRQ(info);
-  info = DADestroy(user.da); CHKERRQ(info);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&f); CHKERRQ(ierr);      
+  ierr = VecDestroy(&user.localX); CHKERRQ(ierr); 
+  ierr = VecDestroy(&user.localF); CHKERRQ(ierr); 
+  ierr = MatDestroy(&J); CHKERRQ(ierr);
+  ierr = DADestroy(user.da); CHKERRQ(ierr);
 
 
   /* Finalize TAO and PETSc */
@@ -190,7 +190,8 @@ int main( int argc, char **argv )
  */
 PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  PetscInt    i, j, row, mx, my, info, xs, ys, xm, ym, gxm, gym, gxs, gys;
+  PetscErrorCode ierr;
+  PetscInt    i, j, row, mx, my, xs, ys, xm, ym, gxm, gym, gxs, gys;
   PetscReal  lambda, temp1, temp, hx, hy;
   PetscReal  *x;
 
@@ -206,7 +207,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
          the array.
   */
 
-  info = VecGetArray(user->localX,&x); CHKERRQ(info);
+  ierr = VecGetArray(user->localX,&x); CHKERRQ(ierr);
   /* 
      Since we don't need the data from ghost points, we do not need
      to call DAGlobalToLocal functions 
@@ -220,8 +221,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -242,13 +243,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  info = VecRestoreArray(user->localX,&x); CHKERRQ(info);
+  ierr = VecRestoreArray(user->localX,&x); CHKERRQ(ierr);
 
   /*
      Insert values into global vector
   */
   
-  info = DALocalToGlobal(user->da,user->localX,INSERT_VALUES,X); CHKERRQ(info);
+  ierr = DALocalToGlobal(user->da,user->localX,INSERT_VALUES,X); CHKERRQ(ierr);
   return 0;
 } 
 
@@ -269,7 +270,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
-  PetscErrorCode     info;
+  PetscErrorCode     ierr;
   PetscInt i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscReal  two = 2.0, lambda,hx, hy, hxdhy, hydhx,sc;
   PetscReal  u, uxx, uyy, *x,*f;
@@ -286,20 +287,20 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
      done while messages are in transition.
   */
 
-  info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
-  info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
   */
-  info = VecGetArray(localX,&x); CHKERRQ(info);
-  info = VecGetArray(localF,&f); CHKERRQ(info);
+  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -322,13 +323,13 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  info = VecRestoreArray(localX,&x); CHKERRQ(info);
-  info = VecRestoreArray(localF,&f); CHKERRQ(info);
+  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
 
   /*
      Insert values into global vector
   */
-  info = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(info);
+  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
   PetscLogFlops(11*ym*xm);
   return 0; 
 } 
@@ -379,7 +380,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
   Mat     jac=*JJ;
   Vec     localX=user->localX; /* local vector */
-  PetscErrorCode     info;
+  PetscErrorCode     ierr;
   PetscInt i, j, row, mx, my, col[5];
   PetscInt     xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscReal  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
@@ -396,20 +397,20 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
      done while messages are in transition.
   */
 
-  info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
-  info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
 
   /*
      Get pointer to vector data
   */
-  info = VecGetArray(localX,&x); CHKERRQ(info);
+  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
 
 
   /*
      Get local grid boundaries
   */
-  info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
@@ -428,7 +429,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
       row++;
       /* boundary points */
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        info = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(info);
+        ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
         continue;
       }
       /* interior grid points */
@@ -437,7 +438,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
       v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = -hydhx; col[3] = row + 1;
       v[4] = -hxdhy; col[4] = row + gxm;
-      info = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(info);
+      ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
 
@@ -447,9 +448,9 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  info = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
-  info = VecRestoreArray(localX,&x); CHKERRQ(info);
-  info = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
@@ -473,7 +474,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
       Tell the matrix we will never add a new nonzero location to the
     matrix. If we do it will generate an error.
   */
-  info = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(info);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

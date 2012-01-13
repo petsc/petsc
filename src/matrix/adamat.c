@@ -30,65 +30,60 @@
 @*/
 PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 {
-    MPI_Comm     comm=((PetscObject)mat)->comm;
+  MPI_Comm     comm=((PetscObject)mat)->comm;
   TaoMatADACtx ctx;
-  PetscErrorCode          info;
+  PetscErrorCode          ierr;
   PetscInt nloc,n;
 
   PetscFunctionBegin;
-  /*
-  info=MatCheckVecs(mat,d1,d2,&flg);CHKERRQ(info);
-  if (flg==PETSC_FALSE){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"InCompatible matrix and vector for ADA^T matrix");
-  }
-  */
-  info = PetscNew(_p_TaoMatADACtx,&ctx);CHKERRQ(info);
+
+  ierr = PetscNew(_p_TaoMatADACtx,&ctx);CHKERRQ(ierr);
 
   ctx->A=mat;
   ctx->D1=d1;
   ctx->D2=d2;
   if (d1){
-    info = VecDuplicate(d1,&ctx->W);CHKERRQ(info);
-    info =  PetscObjectReference((PetscObject)d1);CHKERRQ(info);
+    ierr = VecDuplicate(d1,&ctx->W);CHKERRQ(ierr);
+    ierr =  PetscObjectReference((PetscObject)d1);CHKERRQ(ierr);
   } else {
     ctx->W=0;
   }
   if (d2){
-    info = VecDuplicate(d2,&ctx->W2);CHKERRQ(info);
-    info = VecDuplicate(d2,&ctx->ADADiag);CHKERRQ(info);
-    info =  PetscObjectReference((PetscObject)d2);CHKERRQ(info);
+    ierr = VecDuplicate(d2,&ctx->W2);CHKERRQ(ierr);
+    ierr = VecDuplicate(d2,&ctx->ADADiag);CHKERRQ(ierr);
+    ierr =  PetscObjectReference((PetscObject)d2);CHKERRQ(ierr);
   } else {
     ctx->W2=0;
     ctx->ADADiag=0;
   }
 
   ctx->GotDiag=0;
-  info =  PetscObjectReference((PetscObject)mat);CHKERRQ(info);
+  ierr =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
 
-  info=VecGetLocalSize(d2,&nloc);CHKERRQ(info);
-  info=VecGetSize(d2,&n);CHKERRQ(info);
+  ierr=VecGetLocalSize(d2,&nloc);CHKERRQ(ierr);
+  ierr=VecGetSize(d2,&n);CHKERRQ(ierr);
 
-  info = MatCreateShell(comm,nloc,nloc,n,n,ctx,J);CHKERRQ(info);
+  ierr = MatCreateShell(comm,nloc,nloc,n,n,ctx,J);CHKERRQ(ierr);
 
-  info = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)(void))MatDiagonalSet_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)(void))MatShift_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)(void))MatEqual_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_ADA);CHKERRQ(info);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)(void))MatDiagonalSet_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)(void))MatShift_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)(void))MatEqual_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_ADA);CHKERRQ(ierr);
 
-  info = PetscLogObjectParent(*J,ctx->W); CHKERRQ(info);
-  info = PetscLogObjectParent(mat,*J); CHKERRQ(info);
+  ierr = PetscLogObjectParent(*J,ctx->W); CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,*J); CHKERRQ(ierr);
 
-  info = MatSetOption(*J,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(info);
+  ierr = MatSetOption(*J,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
 
@@ -98,19 +93,19 @@ PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
 {
   TaoMatADACtx ctx;
   PetscReal        one = 1.0;
-  PetscErrorCode           info;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
-  info = MatMult(ctx->A,a,ctx->W);CHKERRQ(info);
+  ierr = MatMult(ctx->A,a,ctx->W);CHKERRQ(ierr);
   if (ctx->D1){
-    info = VecPointwiseMult(ctx->W,ctx->D1,ctx->W);CHKERRQ(info);
+    ierr = VecPointwiseMult(ctx->W,ctx->D1,ctx->W);CHKERRQ(ierr);
   }
-  info = MatMultTranspose(ctx->A,ctx->W,y);CHKERRQ(info);
+  ierr = MatMultTranspose(ctx->A,ctx->W,y);CHKERRQ(ierr);
   if (ctx->D2){
-    info = VecPointwiseMult(ctx->W2, ctx->D2, a);CHKERRQ(info);
-    info = VecAXPY(y, one, ctx->W2);CHKERRQ(info);
+    ierr = VecPointwiseMult(ctx->W2, ctx->D2, a);CHKERRQ(ierr);
+    ierr = VecAXPY(y, one, ctx->W2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
@@ -119,10 +114,10 @@ PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
 #define __FUNCT__ "MatMultTranspose_ADA"
 PetscErrorCode MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  info = MatMult_ADA(mat,a,y);CHKERRQ(info);
+  ierr = MatMult_ADA(mat,a,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -132,16 +127,16 @@ PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
 {
   TaoMatADACtx ctx;
   PetscReal        zero=0.0,one = 1.0;
-  PetscErrorCode   info;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(M,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
 
   if (ctx->D2==PETSC_NULL){
-    info = VecDuplicate(D,&ctx->D2);CHKERRQ(info);
-    info = VecSet(ctx->D2, zero);CHKERRQ(info);
+    ierr = VecDuplicate(D,&ctx->D2);CHKERRQ(ierr);
+    ierr = VecSet(ctx->D2, zero);CHKERRQ(ierr);
   }
-  info = VecAXPY(ctx->D2, one, D);CHKERRQ(info);
+  ierr = VecAXPY(ctx->D2, one, D);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
@@ -150,30 +145,30 @@ PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
 #define __FUNCT__ "MatDestroy_ADA"
 PetscErrorCode MatDestroy_ADA(Mat mat)
 {
-  int          info;
+  PetscErrorCode          ierr;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
-  info=MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr=MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (ctx->W) {
-    info=VecDestroy(&ctx->W);CHKERRQ(info);
+    ierr=VecDestroy(&ctx->W);CHKERRQ(ierr);
   }
   if (ctx->W2) {
-    info=VecDestroy(&ctx->W2);CHKERRQ(info);
+    ierr=VecDestroy(&ctx->W2);CHKERRQ(ierr);
   }
   if (ctx->ADADiag) {
-    info=VecDestroy(&ctx->ADADiag);CHKERRQ(info);
+    ierr=VecDestroy(&ctx->ADADiag);CHKERRQ(ierr);
   }
   if (ctx->A) {
-    info=MatDestroy(&ctx->A);CHKERRQ(info);
+    ierr=MatDestroy(&ctx->A);CHKERRQ(ierr);
   }
   if (ctx->D1) {
-    info=VecDestroy(&ctx->D1);CHKERRQ(info);
+    ierr=VecDestroy(&ctx->D1);CHKERRQ(ierr);
   }
   if (ctx->D2) {
-    info=VecDestroy(&ctx->D2);CHKERRQ(info);
+    ierr=VecDestroy(&ctx->D2);CHKERRQ(ierr);
   }
-  info = PetscFree(ctx); CHKERRQ(info);
+  ierr = PetscFree(ctx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -183,20 +178,6 @@ PetscErrorCode MatView_ADA(Mat mat,PetscViewer viewer)
 {
 
   PetscFunctionBegin;
-  /*
-  info = ViewerGetFormat(viewer,&format);CHKERRQ(info);
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
-    PetscFunctionReturn(0);  / * do nothing for now * /
-  }
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-  info = MatView(ctx->A,viewer);CHKERRQ(info);
-  if (ctx->D1){
-    info = VecView(ctx->D1,viewer);CHKERRQ(info);
-  }
-  if (ctx->D2){
-    info = VecView(ctx->D2,viewer);CHKERRQ(info);
-  }
-  */
   PetscFunctionReturn(0);
 }
 
@@ -204,12 +185,12 @@ PetscErrorCode MatView_ADA(Mat mat,PetscViewer viewer)
 #define __FUNCT__ "MatShift_ADA"
 PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(Y,(void **)&ctx);CHKERRQ(info);
-  info = VecShift(ctx->D2,a);CHKERRQ(info);
+  ierr = MatShellGetContext(Y,(void **)&ctx);CHKERRQ(ierr);
+  ierr = VecShift(ctx->D2,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -217,26 +198,26 @@ PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
 #define __FUNCT__ "MatDuplicate_ADA"
 PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
 {
-  PetscErrorCode    info;
+  PetscErrorCode    ierr;
   TaoMatADACtx      ctx;
   Mat               A2;
   Vec               D1b=NULL,D2b;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-  info = MatDuplicate(ctx->A,op,&A2);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatDuplicate(ctx->A,op,&A2);CHKERRQ(ierr);
   if (ctx->D1){
-    info = VecDuplicate(ctx->D1,&D1b);CHKERRQ(info);
-    info = VecCopy(ctx->D1,D1b);CHKERRQ(info);
+    ierr = VecDuplicate(ctx->D1,&D1b);CHKERRQ(ierr);
+    ierr = VecCopy(ctx->D1,D1b);CHKERRQ(ierr);
   }
-  info = VecDuplicate(ctx->D2,&D2b);CHKERRQ(info);
-  info = VecCopy(ctx->D2,D2b);CHKERRQ(info);
-  info = MatCreateADA(A2,D1b,D2b,M);CHKERRQ(info);
+  ierr = VecDuplicate(ctx->D2,&D2b);CHKERRQ(ierr);
+  ierr = VecCopy(ctx->D2,D2b);CHKERRQ(ierr);
+  ierr = MatCreateADA(A2,D1b,D2b,M);CHKERRQ(ierr);
   if (ctx->D1){
-  info = PetscObjectDereference((PetscObject)D1b);CHKERRQ(info);
+    ierr = PetscObjectDereference((PetscObject)D1b);CHKERRQ(ierr);
   }
-  info = PetscObjectDereference((PetscObject)D2b);CHKERRQ(info);
-  info = PetscObjectDereference((PetscObject)A2);CHKERRQ(info);
+  ierr = PetscObjectDereference((PetscObject)D2b);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)A2);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -245,18 +226,18 @@ PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
 #define __FUNCT__ "MatEqual_ADA"
 PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
 {
-  PetscErrorCode    info;
+  PetscErrorCode    ierr;
   TaoMatADACtx  ctx1,ctx2;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(A,(void **)&ctx1);CHKERRQ(info);
-  info = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(info);
-  info = VecEqual(ctx1->D2,ctx2->D2,flg);CHKERRQ(info);
+  ierr = MatShellGetContext(A,(void **)&ctx1);CHKERRQ(ierr);
+  ierr = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(ierr);
+  ierr = VecEqual(ctx1->D2,ctx2->D2,flg);CHKERRQ(ierr);
   if (*flg==PETSC_TRUE){
-    info = VecEqual(ctx1->D1,ctx2->D1,flg);CHKERRQ(info);
+    ierr = VecEqual(ctx1->D1,ctx2->D1,flg);CHKERRQ(ierr);
   }
   if (*flg==PETSC_TRUE){
-    info = MatEqual(ctx1->A,ctx2->A,flg);CHKERRQ(info);
+    ierr = MatEqual(ctx1->A,ctx2->A,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -265,14 +246,14 @@ PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
 #define __FUNCT__ "MatScale_ADA"
 PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
 {
-  PetscErrorCode   info;
+  PetscErrorCode   ierr;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-  info = VecScale(ctx->D1,a);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = VecScale(ctx->D1,a);CHKERRQ(ierr);
   if (ctx->D2){
-    info = VecScale(ctx->D2,a);CHKERRQ(info);
+    ierr = VecScale(ctx->D2,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -281,13 +262,13 @@ PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
 #define __FUNCT__ "MatTranspose_ADA"
 PetscErrorCode MatTranspose_ADA(Mat mat,Mat *B)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
   if (*B){
-    info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-    info = MatDuplicate(mat,MAT_COPY_VALUES,B);CHKERRQ(info);
+    ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+    ierr = MatDuplicate(mat,MAT_COPY_VALUES,B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -296,35 +277,35 @@ PetscErrorCode MatTranspose_ADA(Mat mat,Mat *B)
 #define __FUNCT__ "MatADAComputeDiagonal"
 PetscErrorCode MatADAComputeDiagonal(Mat mat)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscInt          i,m,n,low,high;
   PetscReal       *dtemp,*dptr;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
-  info = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(info);
-  info = MatGetSize(mat,&m,&n);CHKERRQ(info);
+  ierr = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
   
-  info = PetscMalloc( n*sizeof(PetscReal),&dtemp ); CHKERRQ(info);
+  ierr = PetscMalloc( n*sizeof(PetscReal),&dtemp ); CHKERRQ(ierr);
 
   for (i=0; i<n; i++){
-    info = MatGetColumnVector(ctx->A, ctx->W, i);CHKERRQ(info);
-    info = VecPointwiseMult(ctx->W,ctx->W,ctx->W);CHKERRQ(info);
-    info = VecDotBegin(ctx->D1, ctx->W,dtemp+i);CHKERRQ(info);
+    ierr = MatGetColumnVector(ctx->A, ctx->W, i);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(ctx->W,ctx->W,ctx->W);CHKERRQ(ierr);
+    ierr = VecDotBegin(ctx->D1, ctx->W,dtemp+i);CHKERRQ(ierr);
   }
   for (i=0; i<n; i++){
-    info = VecDotEnd(ctx->D1, ctx->W,dtemp+i);CHKERRQ(info);
+    ierr = VecDotEnd(ctx->D1, ctx->W,dtemp+i);CHKERRQ(ierr);
   } 
 
-  info = VecGetArray(ctx->ADADiag,&dptr);CHKERRQ(info);
+  ierr = VecGetArray(ctx->ADADiag,&dptr);CHKERRQ(ierr);
   for (i=low; i<high; i++){
     dptr[i-low]= dtemp[i];
   }
-  info = VecRestoreArray(ctx->ADADiag,&dptr);CHKERRQ(info);
+  ierr = VecRestoreArray(ctx->ADADiag,&dptr);CHKERRQ(ierr);
   if (dtemp) {
-    info = PetscFree(dtemp); CHKERRQ(info);
+    ierr = PetscFree(dtemp); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -333,16 +314,16 @@ PetscErrorCode MatADAComputeDiagonal(Mat mat)
 #define __FUNCT__ "MatGetDiagonal_ADA"
 PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
 {
-  PetscErrorCode      info;
+  PetscErrorCode      ierr;
   PetscReal       one=1.0;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-  info = MatADAComputeDiagonal(mat);
-  info=VecCopy(ctx->ADADiag,v);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatADAComputeDiagonal(mat); CHKERRQ(ierr);
+  ierr=VecCopy(ctx->ADADiag,v);CHKERRQ(ierr);
   if (ctx->D2){
-    info=VecAXPY(v, one, ctx->D2);CHKERRQ(info);
+    ierr=VecAXPY(v, one, ctx->D2);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -352,16 +333,16 @@ PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
 #define __FUNCT__ "MatGetSubMatrices_ADA"
 PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscInt i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    info = PetscMalloc( (n+1)*sizeof(Mat),B );CHKERRQ(info);
+    ierr = PetscMalloc( (n+1)*sizeof(Mat),B );CHKERRQ(ierr);
   }
 
   for ( i=0; i<n; i++ ) {
-    info = MatGetSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(info);
+    ierr = MatGetSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -371,7 +352,7 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
 			Mat *newmat)
 {
-  PetscErrorCode          info;
+  PetscErrorCode          ierr;
   PetscInt low,high;
   PetscInt          n,nlocal,i;
   const PetscInt          *iptr;
@@ -384,50 +365,50 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
 
   PetscFunctionBegin;
 
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
-  info = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(info);
-  info = ISCreateStride(((PetscObject)mat)->comm,high-low,low,1,&ISrow);CHKERRQ(info);
-  info = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(info);
-  info = ISDestroy(&ISrow);CHKERRQ(info);
+  ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)mat)->comm,high-low,low,1,&ISrow);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(ierr);
+  ierr = ISDestroy(&ISrow);CHKERRQ(ierr);
 
   if (ctx->D1){
-    info=VecDuplicate(ctx->D1,&D1);CHKERRQ(info);
-    info=VecCopy(ctx->D1,D1);CHKERRQ(info);
+    ierr=VecDuplicate(ctx->D1,&D1);CHKERRQ(ierr);
+    ierr=VecCopy(ctx->D1,D1);CHKERRQ(ierr);
   } else {
     D1=PETSC_NULL;
   }
 
   if (ctx->D2){
-    info=ISGetSize(isrow,&n);CHKERRQ(info);
-    info=ISGetLocalSize(isrow,&nlocal);CHKERRQ(info);
-    info=VecCreate(((PetscObject)(ctx->D2))->comm,&D2);CHKERRQ(info);
-    info=VecGetType(ctx->D2,&type_name);CHKERRQ(info);
-    info=VecSetSizes(D2,nlocal,n);CHKERRQ(info);
-    info=VecSetType(D2,type_name);CHKERRQ(info);
-    info=VecSet(D2, zero);CHKERRQ(info);
-    info=VecGetArray(ctx->D2, &dptr); CHKERRQ(info);
-    info=VecGetArray(D2, &ddptr); CHKERRQ(info);
-    info=ISGetIndices(isrow,&iptr); CHKERRQ(info);
+    ierr=ISGetSize(isrow,&n);CHKERRQ(ierr);
+    ierr=ISGetLocalSize(isrow,&nlocal);CHKERRQ(ierr);
+    ierr=VecCreate(((PetscObject)(ctx->D2))->comm,&D2);CHKERRQ(ierr);
+    ierr=VecGetType(ctx->D2,&type_name);CHKERRQ(ierr);
+    ierr=VecSetSizes(D2,nlocal,n);CHKERRQ(ierr);
+    ierr=VecSetType(D2,type_name);CHKERRQ(ierr);
+    ierr=VecSet(D2, zero);CHKERRQ(ierr);
+    ierr=VecGetArray(ctx->D2, &dptr); CHKERRQ(ierr);
+    ierr=VecGetArray(D2, &ddptr); CHKERRQ(ierr);
+    ierr=ISGetIndices(isrow,&iptr); CHKERRQ(ierr);
     for (i=0;i<nlocal;i++){
       ddptr[i] = dptr[iptr[i]-low];
     }
-    info=ISRestoreIndices(isrow,&iptr); CHKERRQ(info);
-    info=VecRestoreArray(D2, &ddptr); CHKERRQ(info);
-    info=VecRestoreArray(ctx->D2, &dptr); CHKERRQ(info);
+    ierr=ISRestoreIndices(isrow,&iptr); CHKERRQ(ierr);
+    ierr=VecRestoreArray(D2, &ddptr); CHKERRQ(ierr);
+    ierr=VecRestoreArray(ctx->D2, &dptr); CHKERRQ(ierr);
    
   } else {
     D2=PETSC_NULL;
   }
 
-  info = MatCreateADA(Atemp,D1,D2,newmat);CHKERRQ(info);
-  info = MatShellGetContext(*newmat,(void **)&ctx);CHKERRQ(info);
-  info = PetscObjectDereference((PetscObject)Atemp);CHKERRQ(info);
+  ierr = MatCreateADA(Atemp,D1,D2,newmat);CHKERRQ(ierr);
+  ierr = MatShellGetContext(*newmat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)Atemp);CHKERRQ(ierr);
   if (ctx->D1){
-    info = PetscObjectDereference((PetscObject)D1);CHKERRQ(info);
+    ierr = PetscObjectDereference((PetscObject)D1);CHKERRQ(ierr);
   }
   if (ctx->D2){
-    info = PetscObjectDereference((PetscObject)D2);CHKERRQ(info);
+    ierr = PetscObjectDereference((PetscObject)D2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -436,15 +417,15 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
 #define __FUNCT__ "MatGetRowADA"
 PetscErrorCode MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscReal **vals)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscInt m,n;
 
   PetscFunctionBegin;
-  info = MatGetSize(mat,&m,&n);CHKERRQ(info);
+  ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   if (*ncols>0){
-    info = PetscMalloc( (*ncols)*sizeof(PetscInt),cols );CHKERRQ(info);
-    info = PetscMalloc( (*ncols)*sizeof(PetscReal),vals );CHKERRQ(info);
+    ierr = PetscMalloc( (*ncols)*sizeof(PetscInt),cols );CHKERRQ(ierr);
+    ierr = PetscMalloc( (*ncols)*sizeof(PetscReal),vals );CHKERRQ(ierr);
   } else {
     *cols=PETSC_NULL;
     *vals=PETSC_NULL;
@@ -457,11 +438,11 @@ PetscErrorCode MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols
 #define __FUNCT__ "MatRestoreRowADA"
 PetscErrorCode MatRestoreRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscReal **vals)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (*ncols>0){
-    info = PetscFree(*cols);  CHKERRQ(info);
-    info = PetscFree(*vals);  CHKERRQ(info);
+    ierr = PetscFree(*cols);  CHKERRQ(ierr);
+    ierr = PetscFree(*vals);  CHKERRQ(ierr);
   }
   *cols=PETSC_NULL;
   *vals=PETSC_NULL;
@@ -472,43 +453,43 @@ PetscErrorCode MatRestoreRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **
 #define __FUNCT__ "MatGetColumnVectorADA"
 PetscErrorCode MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)
 {
-  PetscErrorCode    info;
+  PetscErrorCode    ierr;
   PetscInt low,high;
   PetscReal zero=0.0,one=1.0;
 
   PetscFunctionBegin;
-  info=VecSet(Y, zero);CHKERRQ(info);
-  info=VecGetOwnershipRange(Y,&low,&high);CHKERRQ(info);
+  ierr=VecSet(Y, zero);CHKERRQ(ierr);
+  ierr=VecGetOwnershipRange(Y,&low,&high);CHKERRQ(ierr);
   if (col>=low && col<high){
-    info=VecSetValue(Y,col,one,INSERT_VALUES);CHKERRQ(info);
+    ierr=VecSetValue(Y,col,one,INSERT_VALUES);CHKERRQ(ierr);
   }
-  info=VecAssemblyBegin(Y);CHKERRQ(info);
-  info=VecAssemblyEnd(Y);CHKERRQ(info);
-  info=MatMult_ADA(mat,Y,Y);CHKERRQ(info);
+  ierr=VecAssemblyBegin(Y);CHKERRQ(ierr);
+  ierr=VecAssemblyEnd(Y);CHKERRQ(ierr);
+  ierr=MatMult_ADA(mat,Y,Y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   PetscMPIInt size;
   PetscBool sametype, issame, ismpidense, isseqdense;
   TaoMatADACtx  ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   MPI_Comm_size(((PetscObject)mat)->comm,&size);
 
 
-  info = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(info);
-  info = PetscTypeCompare((PetscObject)mat,MATSAME,&issame); CHKERRQ(info);
-  info = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense); CHKERRQ(info);
-  info = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense); CHKERRQ(info);
+  ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATSAME,&issame); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense); CHKERRQ(ierr);
 
   if (sametype || issame) {
 
-    info=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(info);
+    ierr=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(ierr);
 
   } else if (ismpidense) {
 
@@ -516,23 +497,23 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     PetscReal *dptr;
     Vec X;
 
-    info = VecDuplicate(ctx->D2,&X);CHKERRQ(info);
-    info=MatGetSize(mat,&M,&N);CHKERRQ(info);
-    info=MatGetLocalSize(mat,&m,&n);CHKERRQ(info);
-    info = MatCreateMPIDense(((PetscObject)mat)->comm,m,m,N,N,PETSC_NULL,NewMat);
-    CHKERRQ(info);
-    info = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(info);
+    ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
+    ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+    ierr=MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(((PetscObject)mat)->comm,m,m,N,N,PETSC_NULL,NewMat);
+    CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
-      info = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(info);
-      info = VecGetArray(X,&dptr);CHKERRQ(info);
+      ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
-	info = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(info);
+	ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
-      info=VecRestoreArray(X,&dptr);CHKERRQ(info);
+      ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
     }
-    info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info = VecDestroy(&X);CHKERRQ(info);
+    ierr=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
 
   } else if (isseqdense && size==1){
 
@@ -540,23 +521,23 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     PetscReal *dptr;
     Vec X;
 
-    info = VecDuplicate(ctx->D2,&X);CHKERRQ(info);
-    info = MatGetSize(mat,&M,&N);CHKERRQ(info);
-    info = MatGetLocalSize(mat,&m,&n);CHKERRQ(info);
-    info = MatCreateSeqDense(((PetscObject)mat)->comm,N,N,PETSC_NULL,NewMat);
-    CHKERRQ(info);
-    info = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(info);
+    ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
+    ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(((PetscObject)mat)->comm,N,N,PETSC_NULL,NewMat);
+    CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
-      info = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(info);
-      info = VecGetArray(X,&dptr);CHKERRQ(info);
+      ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
-	info = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(info);
+	ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
-      info=VecRestoreArray(X,&dptr);CHKERRQ(info);
+      ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
     }
-    info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info=VecDestroy(&X);CHKERRQ(info);
+    ierr=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr=VecDestroy(&X);CHKERRQ(ierr);
 
   } else {
     SETERRQ(PETSC_COMM_SELF,1,"No support to convert objects to that type");
@@ -568,11 +549,11 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 #define __FUNCT__ "MatNorm_ADA"
 PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 {
-  PetscErrorCode info;
+  PetscErrorCode ierr;
   TaoMatADACtx  ctx;
 
   PetscFunctionBegin;
-  info = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   if (type == NORM_FROBENIUS) {
     *norm = 1.0;
