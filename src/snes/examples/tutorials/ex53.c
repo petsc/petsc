@@ -1,6 +1,5 @@
-
+static const char help[] = "Read linear variational inequality from file and solve it.\n\n";
 #include <petscsnes.h>
-#include <../src/snes/impls/vi/viimpl.h>
 
 typedef struct {
   Vec         q,zz,lb,ub;
@@ -23,7 +22,7 @@ int main(int argc,char **argv)
   AppCtx         user;         /* user-defined work context */
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,(char *)0,0);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"videfinition",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&user.M);CHKERRQ(ierr); ierr = MatLoad(user.M,viewer);CHKERRQ(ierr);
   ierr = MatDuplicate(user.M,MAT_COPY_VALUES,&user.Jac);CHKERRQ(ierr);
@@ -45,8 +44,8 @@ int main(int argc,char **argv)
 
   ierr = SNESSetJacobian(snes,user.Jac,user.Jac,FormJacobian1,&user);CHKERRQ(ierr);
 
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,user.lb,user.ub);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,user.zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)user.zz,"x*");CHKERRQ(ierr);
   ierr = VecView(user.zz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

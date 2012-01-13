@@ -77,6 +77,8 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
+#define PETSC_ERR_INT_OVERFLOW     84   /* should always be one less then the smallest value */
+
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
 #define PETSC_ERR_MAX_VALUE        92  /* this is always the one more than the largest error code */
@@ -356,10 +358,6 @@ typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2}
 extern PetscErrorCode  PetscErrorPrintfInitialize(void);
 extern PetscErrorCode  PetscErrorMessage(int,const char*[],char **);
 extern PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
-#include <sstream>
-extern PetscErrorCode  PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
-#endif
 extern PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 extern PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 extern PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);

@@ -1254,7 +1254,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
    Level: advanced
 
-.seealso: MatCreate(), VecCreateNest(), DMGetMatrix(), MATNEST
+.seealso: MatCreate(), VecCreateNest(), DMCreateMatrix(), MATNEST
 @*/
 PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
@@ -1278,7 +1278,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   Notes:
   This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
   It allows the use of symmetric and block formats for parts of multi-physics simulations.
-  It is usually used with DMComposite and DMGetMatrix()
+  It is usually used with DMComposite and DMCreateMatrix()
 
 .seealso: MatCreate(), MatType, MatCreateNest()
 M*/

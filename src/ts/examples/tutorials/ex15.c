@@ -3,7 +3,7 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
 /* 
    u_t = uxx + uyy
    0 < x < 1, 0 < y < 1; 
-   At t=0: u(x,y) = exp(c*r*r*r), if r=sqrt((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
+   At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
 
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine 
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
   if (Jtype == 0){ /* use user provided Jacobian evaluation routine */
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
       ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
     } else if (Jtype == 2){ /* Use coloring to compute  finite difference J efficiently */
       ISColoring iscoloring;
-      ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);

@@ -268,7 +268,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_HDF5_DA"
 PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   DM             dm;
   DM_DA          *da;
   hsize_t        dim,dims[5];
@@ -281,11 +280,17 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   hid_t	         plist_id;  /* property list identifier */
   hid_t          dset_id;   /* dataset identifier */
   hid_t          memspace;  /* memory dataspace identifier */
+  hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   hid_t          file_id;
+  hid_t          group;
   herr_t         status;
+  PetscInt          timestep;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
+  //ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+
   ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
@@ -303,14 +308,27 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   filespace = H5Screate_simple(dim, dims, NULL); 
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
+#if defined(PETSC_USE_REAL_SINGLE)
+  scalartype = H5T_NATIVE_FLOAT;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#error "HDF5 output with 128 bit floats not supported."
+#else
+  scalartype = H5T_NATIVE_DOUBLE;
+#endif
+
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+  if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dcreate2(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #else
-  dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+    dset_id = H5Dcreate(group, vecname, scalartype, filespace, H5P_DEFAULT);
 #endif
-  if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+    if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+  } else {
+    dset_id = H5Dopen2(group, vecname, H5P_DEFAULT);
+    status = H5Dset_extent(dset_id, dims);CHKERRQ(status);
+  }
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
@@ -347,11 +365,14 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
-  status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  status = H5Dwrite(dset_id, scalartype, memspace, filespace, plist_id, x);CHKERRQ(status);
   status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
   ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
+  if (group != file_id) {
+    status = H5Gclose(group);CHKERRQ(status);
+  }
   status = H5Pclose(plist_id);CHKERRQ(status);
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
@@ -427,7 +448,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscInt       dim;
   Vec            natural;
-  PetscBool      isdraw;
+  PetscBool      isdraw,isvtk;
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
@@ -437,6 +458,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
@@ -449,6 +471,12 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else {
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
     }
+  } else if (isvtk) {           /* Duplicate the Vec and hold a reference to the DM */
+    Vec Y;
+    ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+    ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
+    ierr = VecCopy(xin,Y);CHKERRQ(ierr);
+    ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,(PetscObject)Y);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);

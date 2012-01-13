@@ -81,6 +81,7 @@ J*/
 #define MATSUBMATRIX       "submatrix"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
+#define MATIJ              "ij"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -132,6 +133,7 @@ extern PetscErrorCode  MatGetFactorType(Mat,MatFactorType*);
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 extern PetscClassId  MAT_CLASSID;
 extern PetscClassId  MAT_FDCOLORING_CLASSID;
+extern PetscClassId  MAT_TRANSPOSECOLORING_CLASSID;
 extern PetscClassId  MAT_PARTITIONING_CLASSID;
 extern PetscClassId  MAT_NULLSPACE_CLASSID;
 extern PetscClassId  MATMFFD_CLASSID;
@@ -318,6 +320,7 @@ PetscPolymorphicSubroutine(MatCreateMPISBAIJ,(PetscInt bs,PetscInt m,PetscInt n,
 PetscPolymorphicSubroutine(MatCreateMPISBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 extern PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
+extern PetscErrorCode  MatXAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*,PetscInt,const PetscInt*,PetscInt,const PetscInt*,PetscInt,const PetscInt*);
 
 extern PetscErrorCode  MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
 PetscPolymorphicFunction(MatCreateShell,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx),(comm,m,n,M,N,ctx,&A),Mat,A)
@@ -374,13 +377,15 @@ extern PetscErrorCode  MatSetValuesBatch(Mat,PetscInt,PetscInt,PetscInt[],const 
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as index on an associated grid.
+        column of a matrix as indexed on an associated grid.
+
+   Fortran usage is different, see MatSetValuesStencil() for details.
 
    Level: beginner
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil()
 S*/
 typedef struct {
   PetscInt k,j,i,c;
@@ -573,6 +578,7 @@ extern PetscErrorCode  MatZeroEntries(Mat);
 extern PetscErrorCode  MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],PetscScalar,Vec,Vec);
+extern PetscErrorCode  MatZeroRowsColumnsStencil(Mat,PetscInt,const MatStencil[],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumns(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsColumnsIS(Mat,IS,PetscScalar,Vec,Vec);
 
@@ -597,15 +603,15 @@ extern PetscErrorCode  MatGetSeqNonzeroStructure(Mat,Mat*);
 extern PetscErrorCode  MatDestroySeqNonzeroStructure(Mat*); 
 
 extern PetscErrorCode  MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+extern PetscErrorCode  MatMergeSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
+extern PetscErrorCode  MatMergeNumeric(MPI_Comm,Mat,PetscInt,Mat);
 extern PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat,Mat); 
 extern PetscErrorCode  MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
 extern PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
-extern PetscErrorCode  MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
-extern PetscErrorCode  MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
+extern PetscErrorCode  MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
 #if defined (PETSC_USE_CTABLE)
-#include "petscctable.h"
 extern PetscErrorCode  MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);
 #else
 extern PetscErrorCode  MatGetCommunicationStructs(Mat, Vec *, PetscInt *[], VecScatter *);
@@ -621,10 +627,16 @@ extern PetscErrorCode  MatMatMultNumeric(Mat,Mat,Mat);
 extern PetscErrorCode  MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode  MatPtAPNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatRARt(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatRARtNumeric(Mat,Mat,Mat);
 
-extern PetscErrorCode  MatMatMultTranspose(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeSymbolic(Mat,Mat,PetscReal,Mat*);
-extern PetscErrorCode  MatMatMultTransposeNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatTransposeMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatTransposetMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatTransposetMatMultNumeric(Mat,Mat,Mat);
+extern PetscErrorCode  MatMatTransposeMult(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatMatTransposeMultSymbolic(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode  MatMatTransposeMultNumeric(Mat,Mat,Mat);
 
 extern PetscErrorCode  MatAXPY(Mat,PetscScalar,Mat,MatStructure);
 extern PetscErrorCode  MatAYPX(Mat,PetscScalar,Mat,MatStructure);
@@ -652,7 +664,7 @@ PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 extern PetscErrorCode  MatRestrict(Mat,Vec,Vec);
 extern PetscErrorCode  MatGetVecs(Mat,Vec*,Vec*);
 extern PetscErrorCode  MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
-extern PetscErrorCode  MatGetMultiProcBlock(Mat,MPI_Comm,Mat*);
+extern PetscErrorCode  MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 extern PetscErrorCode  MatFindZeroDiagonals(Mat,IS*);
 
 /*MC
@@ -1011,6 +1023,7 @@ extern PetscErrorCode  MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
 extern PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
+extern PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*,PetscInt,PetscBool);
 
 #define MAT_SKIP_ALLOCATION -4
 
@@ -1035,6 +1048,7 @@ extern PetscErrorCode  MatSeqDenseSetPreallocation(Mat,PetscScalar[]);
 extern PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,PetscInt*[]);
 extern PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,PetscInt*[]);
 extern PetscErrorCode  MatAdicSetLocalFunction(Mat,void (*)(void));
+extern PetscErrorCode  MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
 extern PetscErrorCode  MatSeqDenseSetLDA(Mat,PetscInt);
 extern PetscErrorCode  MatDenseGetLocalMatrix(Mat,Mat*);
@@ -1295,9 +1309,25 @@ extern PetscErrorCode  MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**
 extern PetscErrorCode  MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 extern PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring);
 extern PetscErrorCode  MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
-extern PetscErrorCode  MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 extern PetscErrorCode  MatFDColoringSetF(MatFDColoring,Vec);
 extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+
+/*S
+     MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
+
+   Level: beginner
+
+  Concepts: coloring, sparse matrix product
+
+.seealso:  MatTransposeColoringCreate()
+S*/
+typedef struct _p_MatTransposeColoring* MatTransposeColoring;
+
+extern PetscErrorCode MatTransposeColoringCreate(Mat,ISColoring,MatTransposeColoring *);
+extern PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring,Mat,Mat);
+extern PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
+
 /* 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().
@@ -1320,7 +1350,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
        http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
 
    Level: beginner
-
+dm
 .seealso: MatPartitioningCreate(), MatPartitioning
 J*/
 #define MatPartitioningType char*
@@ -1574,7 +1604,16 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GETMULTIPROCBLOCK=123,
                MATOP_GETCOLUMNNORMS=125,
 	       MATOP_GET_SUBMATRICES_PARALLEL=128,
-               MATOP_SET_VALUES_BATCH=129
+               MATOP_SET_VALUES_BATCH=129,
+               MATOP_TRANSPOSEMATMULT=130,
+               MATOP_TRANSPOSEMATMULT_SYMBOLIC=131,
+               MATOP_TRANSPOSEMATMULT_NUMERIC=132,
+               MATOP_TRANSPOSECOLORING_CREATE=133,
+               MATOP_TRANSCOLORING_APPLY_SPTODEN=134,
+               MATOP_TRANSCOLORING_APPLY_DENTOSP=135,
+               MATOP_RARt=136,
+               MATOP_RARt_SYMBOLIC=137,
+               MATOP_RARt_NUMERIC=138
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);
 extern PetscErrorCode  MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1613,7 +1652,9 @@ extern PetscErrorCode  MatNullSpaceCreate(MPI_Comm,PetscBool ,PetscInt,const Vec
 extern PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(MatNullSpace,Vec,void*),void*);
 extern PetscErrorCode  MatNullSpaceDestroy(MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
-extern PetscErrorCode  MatNullSpaceAttach(Mat,MatNullSpace);
+extern PetscErrorCode  MatGetNullSpace(Mat, MatNullSpace *);
+extern PetscErrorCode  MatSetNullSpace(Mat,MatNullSpace);
+extern PetscErrorCode  MatSetNearNullSpace(Mat,MatNullSpace);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
 extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
 
@@ -1760,6 +1801,36 @@ extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
 extern PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
 extern PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
+
+/* 
+ MatIJ: 
+ An unweighted directed pseudograph
+ An interpretation of this matrix as a (pseudo)graph allows us to define additional operations on it:
+ A MatIJ can act on sparse arrays: arrays of indices, or index arrays of integers, scalars, or integer-scalar pairs
+ by mapping the indices to the indices connected to them by the (pseudo)graph ed
+ */
+typedef enum {MATIJ_LOCAL, MATIJ_GLOBAL} MatIJIndexType; 
+extern  PetscErrorCode MatIJSetMultivalued(Mat, PetscBool);
+extern  PetscErrorCode MatIJGetMultivalued(Mat, PetscBool*);
+extern  PetscErrorCode MatIJSetEdges(Mat, PetscInt, const PetscInt*, const PetscInt*);
+extern  PetscErrorCode MatIJGetEdges(Mat, PetscInt *, PetscInt **, PetscInt **);
+extern  PetscErrorCode MatIJSetEdgesIS(Mat, IS, IS);
+extern  PetscErrorCode MatIJGetEdgesIS(Mat, IS*, IS*);
+extern  PetscErrorCode MatIJGetRowSizes(Mat, MatIJIndexType, PetscInt, const PetscInt *, PetscInt **);
+extern  PetscErrorCode MatIJGetMinRowSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetMaxRowSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetSupport(Mat,  PetscInt *, PetscInt **);
+extern  PetscErrorCode MatIJGetSupportIS(Mat, IS *);
+extern  PetscErrorCode MatIJGetImage(Mat, PetscInt*, PetscInt**);
+extern  PetscErrorCode MatIJGetImageIS(Mat, IS *);
+extern  PetscErrorCode MatIJGetSupportSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetImageSize(Mat, PetscInt *);
+
+extern  PetscErrorCode MatIJBinRenumber(Mat, Mat*);
+
+extern  PetscErrorCode MatIJMap(Mat, MatIJIndexType, PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*, MatIJIndexType,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
+extern  PetscErrorCode MatIJBin(Mat, MatIJIndexType, PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
+extern  PetscErrorCode MatIJBinMap(Mat,Mat, MatIJIndexType,PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,MatIJIndexType,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
 
 PETSC_EXTERN_CXX_END
 #endif

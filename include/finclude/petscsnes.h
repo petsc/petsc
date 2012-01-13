@@ -18,6 +18,7 @@
       PetscEnum SNES_DIVERGED_FNORM_NAN
       PetscEnum SNES_DIVERGED_MAX_IT
       PetscEnum SNES_DIVERGED_LINE_SEARCH
+      PetscEnum SNES_DIVERGED_INNER
       PetscEnum SNES_DIVERGED_LOCAL_MIN
       PetscEnum SNES_CONVERGED_ITERATING
    
@@ -33,9 +34,29 @@
       parameter (SNES_DIVERGED_FNORM_NAN          = -4) 
       parameter (SNES_DIVERGED_MAX_IT             = -5)
       parameter (SNES_DIVERGED_LINE_SEARCH        = -6)
+      parameter (SNES_DIVERGED_INNER              = -7)
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
-     
+
+!
+! SNES Line search types
+!
+      PetscEnum SNES_LS_BASIC
+      PetscEnum SNES_LS_BASIC_NONORMS
+      PetscEnum SNES_LS_QUADRATIC
+      PetscEnum SNES_LS_CUBIC
+      PetscEnum SNES_LS_EXACT
+      PetscEnum SNES_LS_TEST
+      PetscEnum SNES_LS_SECANT
+
+      parameter (SNES_LS_BASIC                   =  0)
+      parameter (SNES_LS_BASIC_NONORMS           =  1)
+      parameter (SNES_LS_QUADRATIC               =  2)
+      parameter (SNES_LS_CUBIC                   =  3)
+      parameter (SNES_LS_EXACT                   =  4)
+      parameter (SNES_LS_TEST                    =  5)
+      parameter (SNES_LS_SECANT                  =  6)
+
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !
@@ -55,9 +76,9 @@
       external SNESLINESEARCHNO
       external SNESLINESEARCHNONORMS
 
-      external SNESDAFORMFUNCTION
-      external SNESDACOMPUTEJACOBIANWITHADIFOR
-      external SNESDACOMPUTEJACOBIAN
+      external SNESDMDACOMPUTEFUNCTION
+      external SNESDMDACOMPUTEJACOBIANWITHADIFOR
+      external SNESDMDACOMPUTEJACOBIAN
 
 !  End of Fortran include file for the SNES package in PETSc
 

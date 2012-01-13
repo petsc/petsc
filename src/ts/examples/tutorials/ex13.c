@@ -3,7 +3,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
 /* 
    u_t = uxx + uyy
    0 < x < 1, 0 < y < 1; 
-   At t=0: u(x,y) = exp(c*r*r*r), if r=sqrt((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
+   At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
 Program usage:  
@@ -24,13 +24,12 @@ typedef struct {
    PetscBool drawcontours;   /* flag - 1 indicates drawing contours */
 } MonitorCtx;
 typedef struct {
-   DM             da;
-   PetscReal      c;   
+  PetscReal      c;
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode FormInitialSolution(Vec,void*);
+extern PetscErrorCode FormInitialSolution(DM,Vec,void*);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
@@ -64,9 +63,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  user.da            = da;
-  user.c             = -30.0;
-  
+  user.c = -30.0;
+
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
@@ -74,23 +72,26 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,r,RHSFunction,&user);CHKERRQ(ierr);
 
   /* Set Jacobian */
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,PETSC_NULL);CHKERRQ(ierr);
 
-  /* Use coloring to compute rhs Jacobian efficiently */
+  /* Use coloring to compute Jacobian efficiently */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (coloring){
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    SNES snes;
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&user);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   }
 
   ftime = 1.0;
@@ -100,7 +101,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormInitialSolution(u,&user);CHKERRQ(ierr);
+  ierr = FormInitialSolution(da,u,&user);CHKERRQ(ierr);
   dt   = .01;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
@@ -146,8 +147,8 @@ int main(int argc,char **argv)
  */
 PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 {
-  AppCtx         *user=(AppCtx*)ptr;
-  DM             da = (DM)user->da;
+  PETSC_UNUSED AppCtx *user=(AppCtx*)ptr;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      two = 2.0,hx,hy,sx,sy;
@@ -155,6 +156,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   Vec            localU;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
@@ -221,19 +223,49 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
 {
   PetscErrorCode ierr;
+  DM             da;
+  DMDALocalInfo  info;
+  PetscInt       i,j;
+  PetscReal      hx,hy,sx,sy;
 
   PetscFunctionBegin;
-  ierr = TSDefaultComputeJacobian(ts,t,U,J,Jpre,str,ctx);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  hx = 1.0/(PetscReal)(info.mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(info.my-1); sy = 1.0/(hy*hy);
+  for (j=info.ys; j<info.ys+info.ym; j++) {
+    for (i=info.xs; i<info.xs+info.xm; i++) {
+      PetscInt nc = 0;
+      MatStencil row,col[5];
+      PetscScalar val[5];
+      row.i = i; row.j = j;
+      if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
+        col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
+      } else {
+        col[nc].i = i-1; col[nc].j = j;   val[nc++] = sx;
+        col[nc].i = i+1; col[nc].j = j;   val[nc++] = sx;
+        col[nc].i = i;   col[nc].j = j-1; val[nc++] = sy;
+        col[nc].i = i;   col[nc].j = j+1; val[nc++] = sy;
+        col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*sx - 2*sy;
+      }
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*J != *Jpre) {
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(Vec U,void* ptr)
+PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
-  DM             da=user->da;
   PetscReal      c=user->c;
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;

@@ -1,8 +1,8 @@
 
 ALL: lib 
-SOURCEH   = ctable.h
+SOURCEH   = 
 DIRS      = comm viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine \
-            random adic bag examples verbose fsrc fwk f90-src f90-mod python ams totalview yaml
+            random adic bag examples verbose fsrc shell f90-src f90-mod python ams totalview yaml sf
 LOCDIR    = src/sys/
 MANSEC    = Sys
 

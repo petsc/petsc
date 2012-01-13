@@ -9,7 +9,7 @@
   4 SNES Function norm 0.00193631 
   5 SNES Function norm 1.43559e-07 
   6 SNES Function norm < 1.e-11
-number of Newton iterations = 6
+number of SNES iterations = 6
 
 
 
@@ -22,5 +22,5 @@ number of Newton iterations = 6
   4 SNES Function norm 0.00193631 
   5 SNES Function norm 1.43559e-07 
   6 SNES Function norm < 1.e-11
-number of Newton iterations = 6
+number of SNES iterations = 6
 

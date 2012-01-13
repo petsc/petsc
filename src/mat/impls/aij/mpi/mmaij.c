@@ -27,14 +27,14 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  ierr = PetscTableCreate(aij->B->rmap->n,&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt data,gid1 = aj[B->i[i] + j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
-        ierr = PetscTableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
   }
@@ -50,7 +50,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
   ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<ec; i++) {
-    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
+    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for (i=0; i<aij->B->rmap->n; i++) {

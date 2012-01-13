@@ -289,7 +289,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-        call DMGetMatrix(user%da,MATAIJ,J,ierr)
+        call DMCreateMatrix(user%da,MATAIJ,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
 
@@ -332,7 +332,7 @@
       if (user%rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

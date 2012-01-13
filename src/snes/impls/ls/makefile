@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ls.c lsparams.c
+SOURCEC  = ls.c
 SOURCEF  =
 SOURCEH  = lsimpl.h
-OBJSC    = ls.o lsparams.o
+OBJSC    = ls.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES

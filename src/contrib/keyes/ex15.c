@@ -180,7 +180,7 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load SNES iterations = %d\n", its );CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
   ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
@@ -196,7 +196,7 @@ int main( int argc, char **argv )
   ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %d\n", its );CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits );CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit );CHKERRA(ierr);
 

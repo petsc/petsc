@@ -9,10 +9,7 @@
    rstarts are meaningless (and set to the previous one) except on the processor where the array lives
 */
 
-typedef enum {DMCOMPOSITE_ARRAY, DMCOMPOSITE_DM} DMCompositeLinkType;
-
 struct DMCompositeLink {
-  DMCompositeLinkType    type;
   struct DMCompositeLink *next;
   PetscInt               n;             /* number of owned */
   PetscInt               rstart;        /* rstart is relative to this process */
@@ -22,21 +19,18 @@ struct DMCompositeLink {
   /* only used for DMCOMPOSITE_DM */
   PetscInt               *grstarts;     /* global row for first unknown of this DM on each process */
   DM                     dm;
-
-  /* only used for DMCOMPOSITE_ARRAY */
-  PetscMPIInt            rank;          /* process where array unknowns live */
 };
 
 typedef struct {
   PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
-  PetscInt               nghost;               /* number of all local entries include DMDA ghost points and any shared redundant arrays */
-  PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DM(nmine is ones on this process) */
+  PetscInt               nghost;               /* number of all local entries (includes DMDA ghost points) */
+  PetscInt               nDM,nmine;            /* how many DM's and seperate redundant arrays used to build DM(nmine is ones on this process) */
   PetscBool              setup;                /* after this is set, cannot add new links to the DM*/
   struct DMCompositeLink *next;
 
   PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 } DM_Composite;
 
-extern PetscErrorCode DMGetMatrix_Composite(DM,const MatType,Mat*);
+extern PetscErrorCode DMCreateMatrix_Composite(DM,const MatType,Mat*);
 
 #endif

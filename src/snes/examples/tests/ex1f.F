@@ -251,7 +251,7 @@
       if (rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i1)
+  100 format('Number of SNES iterations = ',i1)
 
 !  PetscDraw contour plot of solution
 

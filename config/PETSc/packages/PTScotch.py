@@ -3,11 +3,12 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['https://gforge.inria.fr/frs/download.php/28044/scotch_5.1.11_esmumps.tar.gz']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/28978/scotch_5.1.12b_esmumps.tar.gz']
     self.downloadfilename = 'scotch'
     self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
+    self.requires32bitint = 0
     self.complex      = 1
     self.needsMath    = 1
     return
@@ -24,7 +25,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.programs.getExecutable('bison',   getFullPath = 1)
     if not hasattr(self.programs, 'bison'): raise RuntimeError('PTScotch needs bison installed')
-    
+
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
     g.write('EXE	=\n')
@@ -35,23 +36,22 @@ class Configure(PETSc.package.NewPackage):
 
     g.write('AR	        = '+self.setCompilers.AR+'\n')
     g.write('ARFLAGS	= '+self.setCompilers.AR_FLAGS+'\n')
-    g.write('CAT	= cat\n')   
+    g.write('CAT	= cat\n')
     self.setCompilers.pushLanguage('C')
-    g.write('CC	        = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCD        = '+self.setCompilers.getCompiler()+'\n')
     g.write('CCS        = '+self.setCompilers.getCompiler()+'\n')
     g.write('CCP        = '+self.setCompilers.getCompiler()+'\n')
-   
+    g.write('CCD        = '+self.setCompilers.getCompiler()+'\n')
+
     # Building cflags
     self.cflags = self.setCompilers.getCompilerFlags()
-    if self.libraries.add('-lz','gzwrite'): 
+    if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
-    self.cflags = self.cflags + ' -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED' 
+    self.cflags = self.cflags + ' -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
-    if self.setCompilers.isDarwin():    
+    if self.setCompilers.isDarwin():
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
 
     if self.libraryOptions.integerSize == 64:
@@ -82,11 +82,14 @@ class Configure(PETSc.package.NewPackage):
 #    If desired one can have this build Scotch as well as PTScoth as indicated here
 #        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.framework.log)
 #
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptscotch', timeout=2500, log = self.framework.log)
+        if self.mpi.found:
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptscotch', timeout=2500, log = self.framework.log)
+        else:
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
-      #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
+      #Scotch has a file identical to one in ParMETIS, remove it so ParMETIS will not use it by mistake
       try: # PTScotch installs parmetis.h by default, we need to remove it so it does not conflict with the ParMETIS native copy
         os.unlink(os.path.join(self.packageDir,'include','parmetis.h'))
       except: pass

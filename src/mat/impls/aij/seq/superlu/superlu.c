@@ -477,23 +477,23 @@ EXTERN_C_END
   Use ./configure --download-superlu to have PETSc installed with SuperLU
 
   Options Database Keys:
-+  -mat_superlu_equil: <FALSE> Equil (None)
-.  -mat_superlu_colperm <COLAMD> (choose one of) NATURAL MMD_ATA MMD_AT_PLUS_A COLAMD
-.  -mat_superlu_iterrefine <NOREFINE> (choose one of) NOREFINE SINGLE DOUBLE EXTRA
-.  -mat_superlu_symmetricmode: <FALSE> SymmetricMode (None)
-.  -mat_superlu_diagpivotthresh <1>: DiagPivotThresh (None)
-.  -mat_superlu_pivotgrowth: <FALSE> PivotGrowth (None)
-.  -mat_superlu_conditionnumber: <FALSE> ConditionNumber (None)
-.  -mat_superlu_rowperm <NOROWPERM> (choose one of) NOROWPERM LargeDiag
-.  -mat_superlu_replacetinypivot: <FALSE> ReplaceTinyPivot (None)
-.  -mat_superlu_printstat: <FALSE> PrintStat (None)
-.  -mat_superlu_lwork <0>: size of work array in bytes used by factorization (None)
-.  -mat_superlu_ilu_droptol <0>: ILU_DropTol (None)
-.  -mat_superlu_ilu_filltol <0>: ILU_FillTol (None)
-.  -mat_superlu_ilu_fillfactor <0>: ILU_FillFactor (None)
-.  -mat_superlu_ilu_droprull <0>: ILU_DropRule (None)
-.  -mat_superlu_ilu_norm <0>: ILU_Norm (None)
--  -mat_superlu_ilu_milu <0>: ILU_MILU (None)
++ -mat_superlu_equil <FALSE>            - Equil (None)
+. -mat_superlu_colperm <COLAMD>         - (choose one of) NATURAL MMD_ATA MMD_AT_PLUS_A COLAMD
+. -mat_superlu_iterrefine <NOREFINE>    - (choose one of) NOREFINE SINGLE DOUBLE EXTRA
+. -mat_superlu_symmetricmode: <FALSE>   - SymmetricMode (None)
+. -mat_superlu_diagpivotthresh <1>      - DiagPivotThresh (None)
+. -mat_superlu_pivotgrowth <FALSE>      - PivotGrowth (None)
+. -mat_superlu_conditionnumber <FALSE>  - ConditionNumber (None)
+. -mat_superlu_rowperm <NOROWPERM>      - (choose one of) NOROWPERM LargeDiag
+. -mat_superlu_replacetinypivot <FALSE> - ReplaceTinyPivot (None)
+. -mat_superlu_printstat <FALSE>        - PrintStat (None)
+. -mat_superlu_lwork <0>                - size of work array in bytes used by factorization (None)
+. -mat_superlu_ilu_droptol <0>          - ILU_DropTol (None)
+. -mat_superlu_ilu_filltol <0>          - ILU_FillTol (None)
+. -mat_superlu_ilu_fillfactor <0>       - ILU_FillFactor (None)
+. -mat_superlu_ilu_droprull <0>         - ILU_DropRule (None)
+. -mat_superlu_ilu_norm <0>             - ILU_Norm (None)
+- -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
    Notes: Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 
@@ -547,29 +547,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     lu->options.Equil = NO;
   } else if (ftype == MAT_FACTOR_ILU){
     /* Set the default input options of ilu: */
-#if 0
-    options.Fact = DOFACT;
-    options.Equil = YES;           /* must be YES for ilu - don't know why */
-    options.ColPerm = COLAMD;
-    options.DiagPivotThresh = 0.1; /* different from complete LU */
-    options.Trans = NOTRANS;
-    options.IterRefine = NOREFINE;
-    options.SymmetricMode = NO;
-    options.PivotGrowth = NO;
-    options.ConditionNumber = NO;
-    options.PrintStat = YES;
-    options.RowPerm = LargeDiag;
-    options.ILU_DropTol = 1e-4;
-    options.ILU_FillTol = 1e-2;
-    options.ILU_FillFactor = 10.0;
-    options.ILU_DropRule = DROP_BASIC | DROP_AREA;
-    options.ILU_Norm = INF_NORM;
-    options.ILU_MILU = SMILU_2;
-#endif
     ilu_set_default_options(&lu->options);
-    /* there is a bug with options.RowPerm=LargeDiag causing src/ksp/ksp/examples/tutorials/runex52_superlu crashes
-       See email communication Betwen Hong and Sharry on Feb. Tue, Feb 22, 2011 */
-    lu->options.RowPerm = NOROWPERM; 
   }
   lu->options.PrintStat = NO;
   

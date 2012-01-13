@@ -43,8 +43,8 @@ static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const Pe
 
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
-    if (i == 0) f[i] = hx*u[i];
-    else if (i == info->mx-1) f[i] = hx*(u[i] - 1.0);
+    if (i == 0) f[i] = 1./hx*u[i];
+    else if (i == info->mx-1) f[i] = 1./hx*(u[i] - 1.0);
     else f[i] = hx*((k[i-1]*(u[i]-u[i-1]) - k[i]*(u[i+1]-u[i]))/(hx*hx) - 1.0);
   }
   PetscFunctionReturn(0);
@@ -140,7 +140,7 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs,cols[] = {row-1,row,row+1};
-    PetscScalar val = hx;
+    PetscScalar val = 1./hx;
     if (i == 0) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
     else if (i == info->mx-1) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
     else {
@@ -336,12 +336,10 @@ int main(int argc, char *argv[])
   PetscInt       *lxk,m,nprocs;
   User           user;
   SNES           snes;
-  KSP            ksp;
-  PC             pc;
   Vec            X,F,Xu,Xk,Fu,Fk;
   Mat            B;
   IS             *isg;
-  PetscBool      view_draw;
+  PetscBool      view_draw,pass_dm;
 
   PetscInitialize(&argc,&argv,0,help);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
@@ -376,9 +374,10 @@ int main(int argc, char *argv[])
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
   {
-    user->ptype = 0; view_draw = PETSC_FALSE;
+    user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
     ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -389,10 +388,11 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMGetMatrix(dau,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes,dau);CHKERRQ(ierr);
     ierr = SNESSolve(snes,PETSC_NULL,Xu);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,&Fu,0);CHKERRQ(ierr);
@@ -400,23 +400,32 @@ int main(int argc, char *argv[])
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMGetMatrix(dak,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes,dak);CHKERRQ(ierr);
     ierr = SNESSolve(snes,PETSC_NULL,Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetIS(pc,"u",isg[0]);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetIS(pc,"k",isg[1]);CHKERRQ(ierr);
+    if (!pass_dm) {             /* Manually provide index sets and names for the splits */
+      KSP ksp;
+      PC  pc;
+      ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetIS(pc,"u",isg[0]);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetIS(pc,"k",isg[1]);CHKERRQ(ierr);
+    } else {
+      /* The same names come from the options prefix for dau and dak. This option can support geometric multigrid inside
+       * of splits, but it requires using a DM (perhaps your own implementation). */
+      ierr = SNESSetDM(snes,pack);CHKERRQ(ierr);
+    }
     ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
     break;
   }

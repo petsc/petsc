@@ -19,8 +19,8 @@ struct timezone { int	tz_minuteswest;
 }
 # include <stdio.h>
 # include <math.h>
-# include <float.h>
 # include <limits.h>
+# include <float.h>
 # include <sys/time.h>
 
 /*
@@ -99,23 +99,24 @@ extern double second();
 int main(int argc,char **args)
    {
    int          quantum, checktick();
-   int          BytesPerWord;
    register int j, k;
    double       scalar, t, times[4][NTIMES],irate[4],rate[4];
-   int          rank;
+   int          rank,size;
 
    MPI_Init(&argc,&args);
    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+   MPI_Comm_size(MPI_COMM_WORLD,&size);
+   if (!rank)   printf("Number of MPI processes %d\n",size);
 
    /* --- SETUP --- determine precision and check timing --- */
 
    if (!rank) {
-     printf(HLINE);
+     /*printf(HLINE);
      printf("Array size = %d, Offset = %d\n" , N, OFFSET);
      printf("Total memory required = %.1f MB.\n", (3 * N * BytesPerWord) / 1048576.0);
      printf("Each test is run %d times, but only\n", NTIMES);
      printf("the *best* time for each is used.\n");
-     printf(HLINE);
+      printf(HLINE); */
    }
 
    /* Get initial value for system clock. */
@@ -131,9 +132,9 @@ int main(int argc,char **args)
 
    if (!rank) {
      if  ( (quantum = checktick()) >= 1) 
-       printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum);
+       ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
      else
-        printf("Your clock granularity appears to be less than one microsecond.\n");
+       ;/* printf("Your clock granularity appears to be less than one microsecond.\n");*/
    }
 
    t = second();
@@ -142,11 +143,11 @@ int main(int argc,char **args)
    t = 1.0E6 * (second() - t);
 
    if (!rank) {
-     printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
+     /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
      printf("   (= %d clock ticks)\n", (int) (t/quantum) );
      printf("Increase the size of the arrays if this shows that\n");
-     printf("you are not getting at least 20 clock ticks per test.\n");
-     printf(HLINE);
+      printf("you are not getting at least 20 clock ticks per test.\n");
+      printf(HLINE);*/
    }
 
 

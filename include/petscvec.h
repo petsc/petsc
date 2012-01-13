@@ -106,7 +106,9 @@ J*/
 #define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
 #define VECNEST        "nest"
 #define VECSEQPTHREAD  "seqpthread"
+#define VECMPIPTHREAD  "mpipthread"
 #define VECPTHREAD     "pthread"    /* seqpthread on one process and mpipthread on several */
+
 
 /* Logging support */
 #define    VEC_FILE_CLASSID 1211214
@@ -483,6 +485,30 @@ extern PetscErrorCode  VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
 extern PetscErrorCode  VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 
 
+#if defined(PETSC_USE_DEBUG)
+#define VecValidValues(vec,argnum,input) do {                           \
+    PetscErrorCode     _ierr;                                           \
+    PetscInt          _n,_i;                                            \
+    const PetscScalar *_x;                                              \
+                                                                        \
+    if (vec->petscnative || vec->ops->getarray) {                       \
+      _ierr = VecGetLocalSize(vec,&_n);CHKERRQ(_ierr);                  \
+      _ierr = VecGetArrayRead(vec,&_x);CHKERRQ(_ierr);                  \
+      for (_i=0; _i<_n; _i++) {                                         \
+        if (input) {                                                    \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %d",_i,argnum); \
+        } else {                                                        \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %d",_i,argnum); \
+        }                                                               \
+      }                                                                 \
+      _ierr = VecRestoreArrayRead(vec,&_x);CHKERRQ(_ierr);              \
+    }                                                                   \
+  } while (0)
+#else
+#define VecValidValues(vec,argnum,input)
+#endif
+
+
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;
 extern PetscErrorCode  VecSetOption(Vec,VecOption,PetscBool );
 
@@ -506,6 +532,7 @@ extern PetscErrorCode  VecSetOperation(Vec,VecOperation,void(*)(void));
      Routines for dealing with ghosted vectors:
   vectors with ghost elements at the end of the array.
 */
+extern PetscErrorCode  VecMPISetGhost(Vec,PetscInt,const PetscInt[]);
 extern PetscErrorCode  VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
 extern PetscErrorCode  VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
 extern PetscErrorCode  VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
@@ -557,8 +584,18 @@ extern PetscErrorCode  VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 extern PetscErrorCode  VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+extern PetscErrorCode VecPThreadSetNThreads(Vec,PetscInt);
+extern PetscErrorCode VecPThreadGetNThreads(Vec,PetscInt*);
+extern PetscErrorCode VecPThreadSetThreadAffinities(Vec,const PetscInt[]);
+extern PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,PetscInt[],Vec*);
+extern PetscErrorCode VecCreateMPIPThread(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],Vec*);
+#endif
+
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);
 extern PetscErrorCode  VecNestGetSubVec(Vec,PetscInt,Vec*);
+extern PetscErrorCode  VecNestSetSubVecs(Vec,PetscInt,PetscInt*,Vec*);
+extern PetscErrorCode  VecNestSetSubVec(Vec,PetscInt,Vec);
 extern PetscErrorCode  VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
 extern PetscErrorCode  VecNestGetSize(Vec,PetscInt*);
 

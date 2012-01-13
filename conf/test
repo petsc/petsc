@@ -26,6 +26,7 @@ testexamples_13: ${TESTEXAMPLES_13}
 testexamples_17: ${TESTEXAMPLES_17}
 testexamples_18: ${TESTEXAMPLES_18}
 testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS}
+testexamples_METIS: ${TESTEXAMPLES_METIS}
 testexamples_SPAI: ${TESTEXAMPLES_SPAI}
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR}
 testexamples_ADIC: ${TESTEXAMPLES_ADIC}
@@ -100,6 +101,8 @@ buildexamples_AMS:
 	-@${OMAKE} testexamples_AMS TESTEXAMPLES_AMS=`echo ${TESTEXAMPLES_AMS} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_PARMETIS:
 	-@${OMAKE} testexamples_PARMETIS TESTEXAMPLES_PARMETIS=`echo ${TESTEXAMPLES_PARMETIS} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_METIS:
+	-@${OMAKE} testexamples_METIS TESTEXAMPLES_METIS=`echo ${TESTEXAMPLES_METIS} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_SPAI:
 	-@${OMAKE} testexamples_SPAI TESTEXAMPLES_SPAI=`echo ${TESTEXAMPLES_SPAI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ADIFOR:
@@ -122,7 +125,7 @@ alltests:
 
 alltest:
 	-@for i in ${TEST_RUNS} ; do \
-	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
+	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" treenodir ; \
 	done
 
 tests_DATAFILESPATH:

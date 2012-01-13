@@ -32,6 +32,8 @@ if __name__ == '__main__':
     '--download-blacs',
     '--download-hypre',
     '--download-mumps',
+    '--download-cmake=1',
+    '--download-metis=1',
     '--download-parmetis',
     '--download-scalapack',
     '--download-superlu_dist',

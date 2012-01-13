@@ -1142,7 +1142,6 @@ namespace ALE {
       const int  numVertices = mesh->depthStratum(0)->size();
       const Obj<typename mesh_type::label_sequence>&     cells       = mesh->heightStratum(0);
       const int  numCells    = cells->size();
-      const int  corners     = sieve->cone(*cells->begin())->size();
       const int  firstVertex = numCells;
       const int  debug       = sieve->debug();
       Obj<mesh_type>                                     newMesh     = new mesh_type(mesh->comm(), dim, mesh->debug());
@@ -1169,10 +1168,11 @@ namespace ALE {
       typename mesh_type::label_sequence::iterator cEnd   = cells->end();
 
       for(typename mesh_type::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
-        typename sieve_type::point_type                           cell   = *c_iter;
-        const Obj<typename sieve_type::traits::coneSequence>&     cone   = sieve->cone(cell);
-        const typename sieve_type::traits::coneSequence::iterator vBegin = cone->begin();
-        const typename sieve_type::traits::coneSequence::iterator vEnd   = cone->end();
+        typename sieve_type::point_type                           cell    = *c_iter;
+        const Obj<typename sieve_type::traits::coneSequence>&     cone    = sieve->cone(cell);
+        const int                                                 corners = cone->size();
+        const typename sieve_type::traits::coneSequence::iterator vBegin  = cone->begin();
+        const typename sieve_type::traits::coneSequence::iterator vEnd    = cone->end();
 
         // Build the cell
         bdVertices[dim].clear();
@@ -1186,6 +1186,7 @@ namespace ALE {
 
         if (corners != dim+1) {
           ALE::SieveBuilder<mesh_type>::buildHexFaces(newSieve, dim, curElement, bdVertices, faces, cell);
+          // Will need to handle cohesive cells here
         } else {
           ALE::SieveBuilder<mesh_type>::buildFaces(newSieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
         }

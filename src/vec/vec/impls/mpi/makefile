@@ -10,7 +10,7 @@ OBJSC    = pbvec.o pdvec.o pvec2.o pmap.o vmpicr.o commonmpvec.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-DIRS     = mpicusp
+DIRS     = mpicusp mpipthread
 LOCDIR   = src/vec/vec/impls/mpi/
 
 include ${PETSC_DIR}/conf/variables

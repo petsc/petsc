@@ -1,8 +1,7 @@
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format.\n\
   -fout <output_file> : file to load.\n\
-  -fin <input_file> : For a 5X5 example of the 5-pt. stencil,\n\
-                       use the file petsc/src/mat/examples/matbinary.ex\n\n";
+  -fin <input_file> : For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
 
 /*
   Include the private file (not included by most applications) so we have direct

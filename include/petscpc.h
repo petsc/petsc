@@ -75,12 +75,13 @@ J*/
 #define PCPFMG            "pfmg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
-#define PCSACUSP          "sacusp"
+#define PCSVD             "svd"
+#define PCGAMG            "gamg"
+#define PCSACUSP          "sacusp"        /* these four run on NVIDIA GPUs using CUSP */
 #define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
-#define PCSVD             "svd"
 #define PCAINVCUSP        "ainvcusp"
-#define PCGAMG            "gamg"
+#define PCBDDC            "bddc"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;
@@ -439,6 +440,21 @@ extern PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt max
 extern PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 extern PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 extern PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
+
+extern PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
+extern PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
+extern PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
+extern PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
+extern PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
+extern PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
+
+#if defined(PETSC_HAVE_PCBDDC)
+/* Enum defining how to treat the coarse problem */
+typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
+extern PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
+extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
+#endif
 
 PETSC_EXTERN_CXX_END
 

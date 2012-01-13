@@ -117,20 +117,41 @@ struct _n_PetscSection {
   PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
   PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
   PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  PetscBool                     setup;
+
+  PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
+  PetscInt                     *numFieldComponents; /* The number of components in each field */
+  PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
+extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
+extern PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
 extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt**);
+extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
 extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
+extern PetscErrorCode PetscSectionGetOwnedStorageSize(PetscSection, PetscSF, PetscInt *);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
@@ -241,7 +262,15 @@ typedef struct {
 } VecStash;
 
 #if defined(PETSC_HAVE_CUSP)
-/* Defines the flag structure that the CUSP arch uses. */
+/*E
+    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
+   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
+   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+ 
+E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
 
@@ -297,13 +326,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUSP_BOTH;
-    }
-#endif
-  } else {
+  if (!x->petscnative){
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   if (a) *a = PETSC_NULL;
@@ -317,6 +340,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
     if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
@@ -339,9 +363,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUSP_CPU;
-    }
+    x->valid_GPU_array = PETSC_CUSP_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);

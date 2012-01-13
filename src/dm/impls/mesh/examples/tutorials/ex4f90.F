@@ -37,7 +37,7 @@
       call DMMeshSetSection(mesh,'default',section,ierr)
       CHKERRQ(ierr)
 !     Create preallocated matrix
-      call DMGetMatrix(mesh, MATAIJ, A,ierr)
+      call DMCreateMatrix(mesh, MATAIJ, A,ierr)
       CHKERRQ(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       CHKERRQ(ierr)

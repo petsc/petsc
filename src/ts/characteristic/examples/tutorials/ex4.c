@@ -198,7 +198,7 @@ int SetParams(AppCtx *user)
   REG_INTG(bag,&p->N_steps,1000           ,"nsteps","Maximum time-steps");
   REG_INTG(bag,&p->n,1                    ,"nsteps","<DO NOT SET> current time-step");
   REG_REAL(bag,&p->t,0.0                  ,"time","<DO NOT SET> initial time");
-  REG_REAL(bag,&p->dtAdvection,1./p->Pe/(sqrt(pow(p->ct/grid->dx,2)+pow(p->st/grid->dz,2))),"dtAdvection","<DO NOT SET> CFL limited advection time step");
+  REG_REAL(bag,&p->dtAdvection,1./p->Pe/(PetscSqrtReal(pow(p->ct/grid->dx,2)+pow(p->st/grid->dz,2))),"dtAdvection","<DO NOT SET> CFL limited advection time step");
   REG_REAL(bag,&p->dtDiffusion,1./(1./grid->dx/grid->dx+1./grid->dz/grid->dz),"dtDiffusion","<DO NOT SET> grid-space limited diffusion time step");
   REG_REAL(bag,&p->dt,PetscMin(p->cfl*p->dtAdvection,pow(p->diffScale,2)*p->dtDiffusion),"dt","<DO NOT SET> time-step size");
 
@@ -333,7 +333,7 @@ int DoSolve(DMMG *dmmg)
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* Evaluate operator (I + \Delta t/2 L) u^-  = X^- */
-    ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
+    ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
     /* Advect Xold into Xstar */
     ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
     /* Xstar -> Xold */

@@ -152,7 +152,7 @@ int main(int argc,char **argv)
 
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
 
     /*
       Visualize solution

@@ -533,7 +533,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     err = fflush(fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {
@@ -784,7 +784,6 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
 
   PetscFunctionBegin;
   if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Subcomm already obtained from PetscViewer and not restored");
-  /* ierr         = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr); */
   ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
@@ -919,6 +918,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
   ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
   if (size > 1 && !vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIISynchronizedAllow() to allow this call");
+  if (!viewer->ops->flush) PetscFunctionReturn(0); /* This viewer obtained via PetscViewerGetSubcomm_ASCII(), should not participate. */
 
   comm = ((PetscObject)viewer)->comm;
   fp   = vascii->fd;

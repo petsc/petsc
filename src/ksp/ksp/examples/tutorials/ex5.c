@@ -26,9 +26,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP            ksp;             /* linear solver context */
+  KSP            ksp;              /* linear solver context */
   Mat            C;                /* matrix */
-  Vec            x,u,b;          /* approx solution, RHS, exact solution */
+  Vec            x,u,b;            /* approx solution, RHS, exact solution */
   PetscReal      norm;             /* norm of solution error */
   PetscScalar    v,none = -1.0;
   PetscInt       Ii,J,ldim,low,high,iglobal,Istart,Iend;
@@ -200,7 +200,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  if (norm > 1.e-13){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
@@ -285,7 +287,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  if (norm > 1.e-4){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  }
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

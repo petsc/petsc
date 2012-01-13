@@ -35,6 +35,7 @@ extern PetscErrorCode   PetscOptionsSetValue(const char[],const char[]);
 extern PetscErrorCode   PetscOptionsClearValue(const char[]);
 
 extern PetscErrorCode   PetscOptionsAllUsed(PetscInt*);
+extern PetscErrorCode   PetscOptionsUsed(const char *,PetscBool*);
 extern PetscErrorCode   PetscOptionsLeft(void);
 extern PetscErrorCode   PetscOptionsView(PetscViewer);
 

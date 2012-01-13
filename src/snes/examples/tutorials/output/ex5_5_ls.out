@@ -1,0 +1,44 @@
+  0 SNES Function norm 1.11127 
+  1 SNES Function norm 0.00103397 
+  2 SNES Function norm 7.94997e-06 
+  3 SNES Function norm 5.557e-10 
+SNES Object: 1 MPI processes
+  type: ls
+    line search variant: CUBIC
+    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+    damping factor=1.000000000000e+00
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=166
+  total number of function evaluations=4
+  KSP Object:   1 MPI processes
+    type: gmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes
+    type: ilu
+      ILU: out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      using diagonal shift to prevent zero pivot
+      matrix ordering: natural
+      factor fill ratio given 1, needed 1
+        Factored matrix follows:
+          Matrix Object:           1 MPI processes
+            type: seqaij
+            rows=6561, cols=6561
+            package used to perform factorization: petsc
+            total: nonzeros=32481, allocated nonzeros=32481
+            total number of mallocs used during MatSetValues calls =0
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Matrix Object:     1 MPI processes
+      type: seqaij
+      rows=6561, cols=6561
+      total: nonzeros=32481, allocated nonzeros=32481
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines

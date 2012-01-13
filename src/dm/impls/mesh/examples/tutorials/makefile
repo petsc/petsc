@@ -33,6 +33,10 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex2f: ex2f.o   chkopts
+	-${CLINKER} -o ex2f ex2f.o  ${PETSC_DM_LIB}
+	${RM} -f ex2.o
+
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o
@@ -271,61 +275,61 @@ runex6:
 testex1_1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_1d.lcon testMesh.lcon) then true; \
-	else echo "Possible problem with ex1_1, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
     if (${DIFF} data/ex1_1d.nodes testMesh.nodes) then true; \
-	else echo "Possible problem with ex1_1, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi
 
 testex1_2:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_2d.lcon testMesh.lcon) then true; \
-	else echo "Possible problem with ex1_2, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi; \
     if (${DIFF} data/ex1_2d.nodes testMesh.nodes) then true; \
-	else echo "Possible problem with ex1_2, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi
 
 testex1_3:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_3d.lcon testMesh.lcon) then true; \
-	else echo "Possible problem with ex1_3, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_3, diffs above \n========================================="; fi; \
     if (${DIFF} data/ex1_3d.nodes testMesh.nodes) then true; \
-	else echo "Possible problem with ex1_3, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex1_3, diffs above \n========================================="; fi
 
 testex1_4:
 	-@${MPIEXEC} -n 5 ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b > /dev/null 2>&1; \
     if (${DIFF} data/bm1b/bm1b.0.connect testMesh.0.connect) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.0.coord testMesh.0.coord) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.1.connect testMesh.1.connect) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.1.coord testMesh.1.coord) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.2.connect testMesh.2.connect) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.2.coord testMesh.2.coord) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.3.connect testMesh.3.connect) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.3.coord testMesh.3.coord) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.4.connect testMesh.4.connect) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi; \
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi; \
     if (${DIFF} data/bm1b/bm1b.4.coord testMesh.4.coord) then true; \
-	else echo "Possible problem with ex1_4, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex1_4, diffs above \n========================================="; fi
 
 testex2_1:
 	-@${MPIEXEC} -n 1 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
-	else echo "Possible problem with ex2_1, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi
 
 testex2_2:
 	-@${MPIEXEC} -n 2 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
-	else echo "Possible problem with ex2_1, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi
 
 testex2_3:
 	-@${MPIEXEC} -n 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
-	else echo "Possible problem with ex2_1, diffs above"; fi
+	else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi
 
 debugex4:
 	-@${MPIEXEC} -n ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
@@ -333,7 +337,7 @@ debugex4:
 runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \
     if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-    else echo "Possible problem with ex10_1, diffs above"; fi; \
+    else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
     ${RM} -f ex10_1.tmp
 
 

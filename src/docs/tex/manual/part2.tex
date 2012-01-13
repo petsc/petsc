@@ -712,13 +712,30 @@ scalar problem in two dimensions one could do
 \begin{tabbing}
    PetscScalar **f,**u;\\
    ...\\
-  DMDAVecGetArray(DM da,Vec local,(void*)\&u);\\
-  DMDAVecGetArray(DM da,Vec global,(void*)\&f);\\
+  DMDAVecGetArray(DM da,Vec local,\&u);\\
+  DMDAVecGetArray(DM da,Vec global,\&f);\\
    ...\\
       f[i][j] = u[i][j] - ...\\
    ...\\
-  DMDAVecRestoreArray(DM da,Vec local,(void*)\&u);\\
-  DMDAVecRestoreArray(DM da,Vec global,(void*)\&f);
+  DMDAVecRestoreArray(DM da,Vec local,\&u);\\
+  DMDAVecRestoreArray(DM da,Vec global,\&f);
+\end{tabbing}
+The recommended approach for multi-component PDEs is to declare a struct representing the fields defined at each node of the grid, e.g.
+\begin{tabbing}
+  typedef struct \{ \\
+    PetscScalar u,v,omega,temperature; \\
+  \} Node;
+\end{tabbing}
+and write residual evaluation using
+\begin{tabbing}
+  Node **f,**u;\\
+  DMDAVecGetArray(DM da,Vec local,\&u);\\
+  DMDAVecGetArray(DM da,Vec global,\&f);\\
+   ...\\
+      f[i][j].omega = ...\\
+   ...\\
+  DMDAVecRestoreArray(DM da,Vec local,\&u);\\
+  DMDAVecRestoreArray(DM da,Vec global,\&f);
 \end{tabbing}
 See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
 complete example and see \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
@@ -772,7 +789,7 @@ added using the local numbering. This is done by first calling
 \end{tabbing}
 followed by 
 \begin{tabbing}
-  VecSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);\\
+  VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);\\
   MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);
 \end{tabbing}
 Now entries may be added to the vector and matrix using the local numbering
@@ -3157,7 +3174,7 @@ A_{{10}_{10}}   & A_{{11}_{10}} & A_{{10}_{11}} & A_{{11}_{11}} & ...\\
 \end{array} \right).
 \]
 Note that for interlaced storage the number of rows/columns of each
-block must be the same size. Matrices obtained with DMGetMatrix()
+block must be the same size. Matrices obtained with DMCreateMatrix()
 where the DM is a a DMDA are always stored interlaced.
 Block matrices can also be stored using the MATNEST format which holds separate assembled blocks.
 Each of these nested matrices is itself distributed in parallel.
@@ -3533,18 +3550,18 @@ solution process.
 The general form of the $n$-dimensional Newton's method for solving
 (\ref{eq_F=0}) is
 \begin{equation}
-     \x_{k+1} = \x_k - [ \F'(\x_k)]^{-1} \F(\x_k), \;\; k=0,1, \ldots, 
+     \x_{k+1} = \x_k - \J(\x_k)^{-1} \F(\x_k), \;\; k=0,1, \ldots, 
 \label{eq_n1}
 \end{equation}
 where $ \x_0 $ is an initial approximation to the solution and   
-$ \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
+$ \J(\x_k) = \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
 In practice, the Newton iteration (\ref{eq_n1}) is implemented by
 the following two steps:
 \begin{eqnarray}
-  1. & {\rm (Approximately) \;solve\;\;\;} \F'(\x_k) \Delta \x_k = -\F(\x_k).\\
+  1. & {\rm (Approximately) \;solve\;\;\;} \J(\x_k) \Delta \x_k = -\F(\x_k).\\
   2. & {\rm Update\;\;\;} \x_{k+1} = \x_k + \Delta \x_k. \hspace{.225in}
 \end{eqnarray}
-
+Other defect-correction algorithms can be implemented by using different choices for $J(\x_k)$.
 
 \section{Basic SNES Usage}
 \label{sec_snesusage}
@@ -3676,6 +3693,18 @@ method to verify the analytic Jacobian. Moreover, if the analytic Jacobian is
 incomplete (some terms are missing or approximate), \trl{-snes_mf_operator} may
 be used to obtain the exact solution, where the Jacobian approximation has been
 transferred to the preconditioner.
+
+One such approximate Jacobian comes from ``Picard linearization'' which writes the nonlinear system as
+\[ \F(\x) = \A(\x) \x - \bb = 0 \]
+where $\A(\x)$ usually contains the lower-derivative parts of the equation.
+For example, the nonlinear diffusion problem
+\[ - \nabla\cdot(\kappa(u) \nabla u) = 0 \]
+would be linearized as
+\[ A(u) v \simeq -\nabla\cdot(\kappa(u) \nabla v). \]
+Usually this linearization is simpler to implement than Newton and the linear problems are somewhat easier to solve.
+In addition to using \trl{-snes_mf_operator} with this approximation to the Jacobian, the Picard iterative procedure can be performed by defining
+$\J(\x)$ to be $\A(\x)$.
+Sometimes this iteration exhibits better global convergence than Newton linearization.
 
 During successive calls to \trl{FormJacobian()}, the user can either
 insert new matrix contexts or reuse old ones, depending on the
@@ -4236,10 +4265,10 @@ These parameters may be set from the options database with
 Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
 Extensions may be forthcoming.
 However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
-An example of this for 2D distributed arrays is given below that uses the utility routine DMGetColoring().
+An example of this for 2D distributed arrays is given below that uses the utility routine DMCreateColoring().
 
 \begin{tabbing}
-   DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
+   DMCreateColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
    ISColoringDestroy(\&iscoloring);
@@ -4473,9 +4502,14 @@ user must create a MATSHELL matrix. Again, note the similarity
 to SNESSetJacobian().
 \end{itemize}
 
-Similar to SNESDefaultComputeJacobianColor() is the
-routine TSDefaultComputeJacobianColor() and TSDefaultComputeJacobian() that 
-corresponds to SNESDefaultComputeJacobian().
+To configure TS to use coloring, create a MatFDColoring, register the function
+\begin{tabbing}
+  MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);
+\end{tabbing}
+obtain the snes using TSGetSNES(), and set the Jacobian routine
+\begin{tabbing}
+  SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);
+\end{tabbing}
 \sindex{coloring with TS}
 
 \subsection{Solving Differential Algebraic Equations}

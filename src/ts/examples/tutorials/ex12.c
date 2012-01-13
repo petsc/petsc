@@ -1,5 +1,5 @@
 
-/* Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -n <procs> ex12 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
@@ -10,8 +10,8 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
   which we split into two first-order systems
 
-    u_t -     v    = 0    so that     F(u,v).u = -v
-    v_t - \Delta u = 0    so that     F(u,v).v = -Delta u
+    u_t -     v    = 0    so that     F(u,v).u = v
+    v_t - \Delta u = 0    so that     F(u,v).v = Delta u
 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
@@ -59,6 +59,8 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
                     2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -71,6 +73,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,da);CHKERRQ(ierr);
 
@@ -86,17 +89,18 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&ts_snes);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts_snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -155,7 +159,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   DM             da = (DM)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      two = 2.0,hx,hy,/*hxdhy,hydhx,*/sx,sy;
+  PetscReal      hx,hy,/*hxdhy,hydhx,*/sx,sy;
   PetscScalar    u,uxx,uyy,v,***x,***f;
   Vec            localX;
 
@@ -201,10 +205,10 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       }
       u          = x[j][i][0];
       v          = x[j][i][1];
-      uxx        = (two*u - x[j][i-1][0] - x[j][i+1][0])*sx;
-      uyy        = (two*u - x[j-1][i][0] - x[j+1][i][0])*sy;
-      f[j][i][0] = -v;
-      f[j][i][1] = -(uxx + uyy);
+      uxx        = (-2*u + x[j][i-1][0] + x[j][i+1][0])*sx;
+      uyy        = (-2*u + x[j-1][i][0] + x[j+1][i][0])*sy;
+      f[j][i][0] = v;
+      f[j][i][1] = uxx + uyy;
     }
   }
 

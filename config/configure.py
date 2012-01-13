@@ -37,16 +37,11 @@ def getBuildSystem(configDir,bsDir):
     downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
   else:
     print '++ Mercurial clone found. URL : ' + output
-    if output.find("petsc.cs.iit.edu") >=0:
-      bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
-      print '++ Using: hg clone '+ bsurl +' '+ bsDir
-      (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
-      if status:
-        print '++ Unable to clone BuildSystem. Please clone manually'
-        print '==============================================================================='
-        sys.exit(3)
-    else:
-      print '++ Nonstandard parent URL. Cannot determine appropriate BuildSystem URL. Please clone appropriate BuildSystem'
+    bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
+    print '++ Using: hg clone '+ bsurl +' '+ bsDir
+    (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
+    if status:
+      print '++ Unable to clone BuildSystem. Please clone manually'
       print '==============================================================================='
       sys.exit(3)
   print '==============================================================================='
@@ -57,13 +52,13 @@ def getBuildSystem(configDir,bsDir):
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 3:
-  print '*** You must have Python2 version 2.3 or higher to run ./configure        *****'
+if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 4:
+  print '*** You must have Python2 version 2.4 or higher to run ./configure        *****'
   print '*          Python is easy to install for end users or sys-admin.              *'
   print '*                  http://www.python.org/download/                            *'
   print '*                                                                             *'
   print '*           You CANNOT configure PETSc without Python                         *'
-  print '*   http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html     *'
+  print '*   http://www.mcs.anl.gov/petsc/documentation/installation.html     *'
   print '*******************************************************************************'
   sys.exit(4)
 
@@ -210,6 +205,15 @@ def move_configure_log(framework):
   return
 
 def petsc_configure(configure_options): 
+  try:
+    petscdir = os.environ['PETSC_DIR']
+    sys.path.append(os.path.join(petscdir,'bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)  
+  except:
+    pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='  
@@ -283,10 +287,6 @@ def petsc_configure(configure_options):
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
-    import PETSc.packages
-    for i in framework.packages:
-      if hasattr(i,'postProcess'):
-        i.postProcess()
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()

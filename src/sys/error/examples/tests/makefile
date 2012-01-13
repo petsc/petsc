@@ -19,7 +19,7 @@ ex1: ex1.o  chkopts
 runex1:
 	-@${MPIEXEC} -n 1 ex1 > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp
 
 #TESTEXAMPLES_C = ex1.PETSc runex1 ex1.rm

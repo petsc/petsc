@@ -42,9 +42,11 @@
 #endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+#define PETSC_EXTERN extern "C"
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
 #define PETSC_EXTERN_CXX_END  }
 #else
+#define PETSC_EXTERN extern
 #define PETSC_EXTERN_CXX_BEGIN
 #define PETSC_EXTERN_CXX_END
 #endif
@@ -549,6 +551,7 @@ M*/
 
 extern  PetscBool  PetscInitializeCalled;
 extern  PetscBool  PetscFinalizeCalled;
+extern PetscBool   synchronizeCUSP;
 
 extern PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 extern PetscErrorCode  PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
@@ -1132,6 +1135,7 @@ extern PetscErrorCode    PetscMallocGetMaximumUsage(PetscLogDouble *);
 extern PetscErrorCode    PetscMallocDebug(PetscBool);
 extern PetscErrorCode    PetscMallocValidate(int,const char[],const char[],const char[]);
 extern PetscErrorCode    PetscMallocSetDumpLog(void);
+extern PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 
 /*E
@@ -1146,7 +1150,7 @@ extern PetscErrorCode    PetscMallocSetDumpLog(void);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1154,16 +1158,16 @@ extern const char *PetscDataTypes[];
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_SCALAR  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define  PETSC_SCALAR  PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define  PETSC_SCALAR  PETSC___FLOAT128
 #else
 #define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define  PETSC_REAL  PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define  PETSC_REAL  PETSC___FLOAT128
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -1213,7 +1217,7 @@ typedef struct _p_PetscToken* PetscToken;
 
 extern PetscErrorCode    PetscTokenCreate(const char[],const char,PetscToken*);
 extern PetscErrorCode    PetscTokenFind(PetscToken,char *[]);
-extern PetscErrorCode    PetscTokenDestroy(PetscToken);
+extern PetscErrorCode    PetscTokenDestroy(PetscToken*);
 
 /*
    These are  MPI operations for MPI_Allreduce() etc
@@ -1256,6 +1260,16 @@ typedef struct _p_PetscObject* PetscObject;
 .seealso:  PetscFListAdd(), PetscFListDestroy()
 S*/
 typedef struct _n_PetscFList *PetscFList;
+
+/*S
+     PetscOpFList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries, 
+                    accessed by string op name together with string argument types.
+
+   Level: advanced
+
+.seealso:  PetscOpFListAdd(), PetscOpFListFind(), PetscOpFListDestroy()
+S*/
+typedef struct _n_PetscOpFList *PetscOpFList;
 
 /*E
   PetscFileMode - Access mode for a file.
@@ -1497,6 +1511,15 @@ extern PetscErrorCode  PetscFListView(PetscFList,PetscViewer);
 extern PetscErrorCode  PetscFListConcat(const char [],const char [],char []);
 extern PetscErrorCode  PetscFListGet(PetscFList,char ***,int*);
 
+/*
+    Multiple dispatch operation function lists. Lists of names of routines with corresponding
+    argument type names with function pointers or in dynamic link libraries that will be loaded 
+    as needed.  Search on the op name and argument type names.
+*/
+extern PetscErrorCode  PetscOpFListAdd(MPI_Comm, PetscOpFList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListDestroy(PetscOpFList*);
+extern PetscErrorCode  PetscOpFListFind(MPI_Comm, PetscOpFList, PetscVoidFunction*, const char[], PetscInt, char*[]);
+extern PetscErrorCode  PetscOpFListView(PetscOpFList,PetscViewer);
 /*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
 
@@ -1518,10 +1541,10 @@ extern PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary);
 extern PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*
-  PetscFwk support.  Needs to be documented.  
+  PetscShell support.  Needs to be better documented.  
   Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
 */
-#include "petscfwk.h"
+#include "petscshell.h"
 
 /*
      Useful utility routines
@@ -1976,9 +1999,11 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
+#define PETSC_EXTERN_C extern "C"
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
+#define PETSC_EXTERN_C
 #define EXTERN_C_BEGIN 
 #define EXTERN_C_END 
 #endif
@@ -2218,6 +2243,7 @@ extern PetscErrorCode  PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 extern PetscErrorCode  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+extern PetscErrorCode  PetscSortIntWithArrayPair(PetscInt,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
 extern PetscErrorCode  PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
 extern PetscErrorCode  PetscSortReal(PetscInt,PetscReal[]);
@@ -2225,6 +2251,7 @@ extern PetscErrorCode  PetscSortRealWithPermutation(PetscInt,const PetscReal[],P
 extern PetscErrorCode  PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 extern PetscErrorCode  PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
 extern PetscErrorCode  PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
+extern PetscErrorCode  PetscMergeIntArrayPair(PetscInt,const PetscInt*,const PetscInt*,PetscInt,const PetscInt*,const PetscInt*,PetscInt*,PetscInt**,PetscInt**);
 
 extern PetscErrorCode  PetscSetDisplay(void);
 extern PetscErrorCode  PetscGetDisplay(char[],size_t);
@@ -2465,6 +2492,8 @@ extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
+
+#include <petscctable.h>
 
 PETSC_EXTERN_CXX_END
 

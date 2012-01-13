@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
   snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Physics 2: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Physics 2: Number of SNES iterations = %D\n\n", its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 

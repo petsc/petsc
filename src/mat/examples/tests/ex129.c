@@ -31,7 +31,7 @@ int main(int argc,char **args)
   IS                perm,iperm;
   PetscInt          dof=1,M=-8,m,n,nrhs;
   PetscScalar       one = 1.0;
-  PetscReal         norm;
+  PetscReal         norm,tol=1.e-13;
   PetscBool         InplaceLU=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = VecSet(y,one);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   nrhs = 2;
@@ -105,15 +105,19 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %A\n",norm);CHKERRQ(ierr);
-   
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %G\n",norm);CHKERRQ(ierr);
+  }
+
   /* MatSolveTranspose */
   ierr = MatSolveTranspose(F,b,x);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,x,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %A\n",norm);CHKERRQ(ierr);
-   
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %G\n",norm);CHKERRQ(ierr);
+  }
+
   /* MatSolveAdd */
   ierr = MatSolveAdd(F,b,y,x);CHKERRQ(ierr);
   ierr = MatMult(A,y,b1);CHKERRQ(ierr);
@@ -121,8 +125,10 @@ int main(int argc,char **args)
   ierr = MatMultAdd(A,x,b1,b1);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %A\n",norm);CHKERRQ(ierr);
-  
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %G\n",norm);CHKERRQ(ierr);
+  }
+
   /* MatSolveTransposeAdd */
   ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr); 
   ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
@@ -130,15 +136,18 @@ int main(int argc,char **args)
   ierr = MatMultTransposeAdd(A,x,b1,b1);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %A\n",norm);CHKERRQ(ierr);
-  
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %G\n",norm);CHKERRQ(ierr);
+  }
+
   /* MatMatSolve */
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
   ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&C1);CHKERRQ(ierr);
   ierr = MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %A\n",norm);CHKERRQ(ierr);
-
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %G\n",norm);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);

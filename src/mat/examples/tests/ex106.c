@@ -145,7 +145,7 @@ int main(int argc,char **args)
   /* Check the error */
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G\n",norm);CHKERRQ(ierr);
 
   /* Free work space. */
   ierr = VecDestroy(&u);CHKERRQ(ierr);

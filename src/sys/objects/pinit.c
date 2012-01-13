@@ -8,12 +8,18 @@
 #if defined(PETSC_HAVE_CUSP)
 #include <cublas.h>
 #endif
+#if defined(PETSC_HAVE_VALGRIND)
+#  include <valgrind/valgrind.h>
+#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
+#else
+#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
+#endif
 
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool  PetscHMPIWorker;
-extern PetscBool  PetscUseThreadPool;
+
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -21,11 +27,18 @@ extern FILE *petsc_history;
 extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
 extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
 extern PetscErrorCode PetscFListDestroyAll(void);
+extern PetscErrorCode PetscOpFListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
-extern PetscErrorCode (*PetscThreadFinalize)(void);
+
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern int* ThreadCoreAffinity;
+extern PetscErrorCode (*PetscThreadFinalize)(void);
+extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
+extern PetscMPIInt PetscMaxThreads;
+#endif
+
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
 
@@ -596,6 +609,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
 .  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
@@ -691,7 +705,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
-  ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+  //  ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
@@ -818,6 +832,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_CUDA)
   cublasInit();
+#endif
+
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+  if(PetscThreadInitialize)
+    ierr = (*PetscThreadInitialize)(PetscMaxThreads);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_AMS)
@@ -1084,6 +1103,11 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
 
+  /*
+       Free all the registered op functions, such as MatOpList, etc
+  */
+  ierr = PetscOpFListDestroyAll();CHKERRQ(ierr); 
+
   /* 
      Destroy any packages that registered a finalize 
   */
@@ -1108,6 +1132,13 @@ PetscErrorCode  PetscFinalize(void)
 
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
+    flg2 = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg2,PETSC_NULL);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+    if (PETSC_RUNNING_ON_VALGRIND) flg2 = PETSC_FALSE;
+#else
+    flg2 = PETSC_FALSE;         /* Skip reporting for optimized builds regardless of -malloc_test */
+#endif
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
 
@@ -1116,7 +1147,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-    } else if (flg1) {
+    } else if (flg1 || flg2) {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);

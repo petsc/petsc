@@ -199,6 +199,83 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
   PetscFunctionReturn(0);
 }
 
+
+#define SWAP3(a,b,c,d,e,f,t) {t=a;a=b;b=t;t=c;c=d;d=t;t=e;e=f;f=t;}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithArrayPair_Private"
+/* 
+   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
+   Assumes 0 origin for v, number of elements = right+1 (right is index of
+   right-most member). 
+*/
+static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J, PetscInt *K, PetscInt right)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,vl,last,tmp;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (L[0] > L[1]) SWAP3(L[0],L[1],J[0],J[1],K[0],K[1],tmp);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP3(L[0],L[right/2],J[0],J[right/2],K[0],K[right/2],tmp);
+  vl   = L[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (L[i] < vl) {last++; SWAP3(L[last],L[i],J[last],J[i],K[last],K[i],tmp);}
+  }
+  SWAP3(L[0],L[last],J[0],J[last],K[0],K[last],tmp);
+  ierr = PetscSortIntWithArrayPair_Private(L,J,K,last-1);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArrayPair_Private(L+last+1,J+last+1,K+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithArrayPair" 
+/*@
+   PetscSortIntWithArrayPair - Sorts an array of integers in place in increasing order;
+       changes a pair of integer arrays to match the sorted first array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  I  - array of integers
+.  J  - second array of integers (first array of the pair)
+-  K  - third array of integers  (second array of the pair)
+
+   Level: intermediate
+
+   Concepts: sorting^ints with array pair
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, PetscInt *K)
+{
+  PetscErrorCode ierr;
+  PetscInt       j,k,tmp,ik;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = L[k];
+      for (j=k+1; j<n; j++) {
+	if (ik > L[j]) {
+	  SWAP3(L[k],L[j],J[k],J[j],K[k],K[j],tmp);
+	  ik = L[k];
+	}
+      }
+    }
+  } else {
+    ierr = PetscSortIntWithArrayPair_Private(L,J,K,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortMPIIntWithArray_Private"
 /* 
@@ -342,6 +419,79 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
     }
   } else {
     ierr = PetscSortIntWithScalarArray_Private(i,Ii,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMergeIntArrayPair" 
+/*@
+   PetscMergeIntArrayPair -     Merges two SORTED integer arrays along with an additional array of integers.
+                                The additional arrays are the same length as sorted arrays and are merged
+                                in the order determined by the merging of the sorted pair.
+
+   Not Collective
+
+   Input Parameters:
++  an  - number of values in the first array
+.  aI  - first sorted array of integers
+.  aJ  - first additional array of integers
+.  bn  - number of values in the second array
+.  bI  - second array of integers
+-  bJ  - second additional of integers
+
+   Output Parameters:
++  n   - number of values in the merged array (== an + bn)
+.  I   - merged sorted array
+-  J   - merged additional array
+
+   Level: intermediate
+
+   Concepts: merging^arrays
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J) 
+{
+  PetscErrorCode ierr;
+  PetscInt n_, *L_ = *L, *J_= *J, ak, bk, k;
+
+  n_ = an + bn;
+  *n = n_;
+  if(!L_) {
+    ierr = PetscMalloc(n_*sizeof(PetscInt), L); CHKERRQ(ierr);
+    L_ = *L;
+  }
+  if(!J_){
+    ierr = PetscMalloc(n_*sizeof(PetscInt), &J_); CHKERRQ(ierr);
+    J_ = *J;
+  }
+  k = ak = bk = 0;
+  while(ak < an && bk < bn) {
+    if(aI[ak] <= bI[bk]) {
+      L_[k] = aI[ak]; 
+      J_[k] = aJ[ak];
+      ++ak;
+      ++k;
+    }
+    else {
+      L_[k] = bI[bk]; 
+      J_[k] = bJ[bk];
+      ++bk;
+      ++k;
+    }
+  }
+  if(ak < an) {
+    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
+    ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
+    k += (an-ak);
+  }
+  if(bk < bn) {
+    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
+    ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
+    k += (bn-bk);
   }
   PetscFunctionReturn(0);
 }

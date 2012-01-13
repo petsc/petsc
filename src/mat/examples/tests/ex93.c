@@ -13,54 +13,89 @@ int main(int argc,char **argv) {
   PetscScalar    none=-1.;
   PetscErrorCode ierr;
   PetscReal      fill=4;
+  PetscReal      norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,3,3,3,3);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-
   ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
-  /* Form A^T*A*A to test PtAP routine. */
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  /* Test MatMatMult() */
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);      /* B = A^T */
+  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A */
+  ierr = MatSetOptionsPrefix(C,"C=B*A=A^T*A_");CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+
   ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
-  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);  /* D = C*A = (A^T*A)*A */
+  ierr = MatSetOptionsPrefix(D,"D=C*A=(A^T*A)*A_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   /* Repeat the numeric product to test reuse of the previous symbolic product */
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-
-  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  /* Test PtAP routine. */
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
+  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
+  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatNorm(D,NORM_FROBENIUS,&norm);
+  if (norm > 1.e-15){
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);
+  }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Repeat PtAP to test symbolic/numeric separation for reuse of the symbolic product */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(C,"C=BtAB_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+
   ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(D,"D=BtAB_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   /* Repeat numeric product to test reuse of the previous symbolic product */
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatNorm(D,NORM_FROBENIUS,&norm);
+  if (norm > 1.e-15){
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in symbolic/numeric MatPtAP: %g\n",norm);
+  }
+  ierr = MatDestroy(&B);
+  ierr = MatDestroy(&C);
+  ierr = MatDestroy(&D);
 
   /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
   ierr = testPTAPRectangular();CHKERRQ(ierr);
+
+  /* test MatMatTransposeMult(): A*B^T */
+  ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
+  ierr = MatSetOptionsPrefix(D,"D=A*A^T_");CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
+  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C=A*B */
+  ierr = MatSetOptionsPrefix(C,"D=A*B=A*A^T_");CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);
   ierr = MatDestroy(&B);

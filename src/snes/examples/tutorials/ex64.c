@@ -98,9 +98,9 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.work2);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMGetMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMGetMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
@@ -112,11 +112,10 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
@@ -420,17 +419,17 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = VecSetValuesLocal(user->cv,2,idx,vals_cv,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->eta,2,idx,vals_eta,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->work2,2,idx,vals_DDcv,INSERT_VALUES);CHKERRQ(ierr);
-    
+        
+  } 
+    ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
+
     ierr = VecAssemblyBegin(user->cv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->cv);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->eta);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->eta);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->work2);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->work2);CHKERRQ(ierr);
-    
-    ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-  } 
 
   ierr = DPsi(user);CHKERRQ(ierr);
   ierr = VecCopy(user->DPsiv,user->wv);CHKERRQ(ierr);

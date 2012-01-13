@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,N,m = 4,n = 4,its,k;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscReal      err_norm,res_norm;
+  PetscReal      err_norm,res_norm,err_tol=1.e-7,res_tol=1.e-6;
   Vec            x,b,u,u_tmp;
   PetscRandom    r;
   PC             pc;          
@@ -107,9 +107,12 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A;",res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A.\n",err_norm);CHKERRQ(ierr);
-
+    if (res_norm > res_tol){
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G;",res_norm);CHKERRQ(ierr);
+    }
+    if (err_norm > err_tol){
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G.\n",err_norm);CHKERRQ(ierr);
+    }
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }
    

@@ -1,0 +1,17 @@
+Mesh in 2 dimensions:
+  0-cells: 9
+  2-cells: 8
+GPU layout grid(1,1,1) block(3,1,1) with 2 batches
+ N_t: 3, N_cb: 2
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+-0.25
+-0.5
+0.25
+-0.5
+-1
+0.5
+0.25
+0.5
+0.75

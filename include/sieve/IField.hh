@@ -592,12 +592,13 @@ namespace ALE {
       return true;
     };
   public:
-    void addSpace() {
+    void addSpace(int comp = 1) {
       Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
       Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
       space->setChart(this->_atlas->getChart());
       space->allocatePoint();
       bc->setChart(this->_bc->getChart());
+      this->_comps.push_back(comp);
       this->_spaces.push_back(space);
       this->_bcs.push_back(bc);
     };

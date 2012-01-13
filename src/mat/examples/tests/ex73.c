@@ -27,7 +27,7 @@ int main(int argc,char **args)
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
-  PetscBool       flg,viewMats,viewIS;
+  PetscBool       flg,viewMats,viewIS,viewVecs;
   PetscInt        ierr,*nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;
@@ -40,6 +40,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_is", &viewIS);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
 
   /* 
      Determine file from which we read the matrix
@@ -64,6 +65,10 @@ int main(int argc,char **args)
   if (viewMats){
     if (!rank) printf("Original matrix:\n");
     ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
+  if (viewVecs){
+    if (!rank) printf("Original vector:\n");
+    ierr = VecView(xin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Partition the graph of the matrix */
@@ -116,6 +121,10 @@ int main(int argc,char **args)
   if (viewMats){
     if (!rank) printf("Partitioned matrix:\n");
     ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
+  if (viewVecs){
+    if (!rank) printf("Mapped vector:\n");
+    ierr = VecView(xout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   {

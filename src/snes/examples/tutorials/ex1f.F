@@ -171,7 +171,7 @@
       if (rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

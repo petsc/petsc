@@ -17,11 +17,15 @@
 #define InsertMode PetscEnum
 #define ScatterMode PetscEnum 
 #define VecOption PetscEnum
-#define VecType character*(80)
+#define VecType character*(80)1
 #define VecOperation PetscEnum
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'
+#define VECSTANDARD 'standard'
+#define VECSEQCUSP 'seqcusp'
+#define VECMPICUSP 'mpicusp'
+#define VECCUSP 'cusp'
 #define VECSHARED 'shared'
 #define VECESI 'esi'
 #define VECPETSCESI 'petscesi'

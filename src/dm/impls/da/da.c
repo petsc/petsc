@@ -53,6 +53,7 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   PetscValidLogicalCollectiveInt(da,M,2);
   PetscValidLogicalCollectiveInt(da,N,3);
   PetscValidLogicalCollectiveInt(da,P,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
 
   dd->M = M;
   dd->N = N;
@@ -86,6 +87,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscValidLogicalCollectiveInt(da,m,2);
   PetscValidLogicalCollectiveInt(da,n,3);
   PetscValidLogicalCollectiveInt(da,p,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->m = m;
   dd->n = n;
   dd->p = p;
@@ -117,6 +119,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
   PetscValidLogicalCollectiveEnum(da,bx,2);
   PetscValidLogicalCollectiveEnum(da,by,3);
   PetscValidLogicalCollectiveEnum(da,bz,4);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
@@ -146,6 +149,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,dof,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->w = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
@@ -174,6 +178,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,stype,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->stencil_type = stype;
   PetscFunctionReturn(0);
 }
@@ -201,6 +206,7 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,width,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->s = width;
   PetscFunctionReturn(0);
 }
@@ -243,6 +249,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   if (lx) {
     if (dd->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
     ierr = DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx);CHKERRQ(ierr);
@@ -274,7 +281,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 #define __FUNCT__ "DMDASetInterpolationType"
 /*@
        DMDASetInterpolationType - Sets the type of interpolation that will be 
-          returned by DMGetInterpolation()
+          returned by DMCreateInterpolation()
 
    Logically Collective on DMDA
 
@@ -284,7 +291,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
    Level: intermediate
 
-   Notes: you should call this on the coarser of the two DMDAs you pass to DMGetInterpolation()
+   Notes: you should call this on the coarser of the two DMDAs you pass to DMCreateInterpolation()
 
 .keywords:  distributed array, interpolation
 
@@ -305,7 +312,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 #define __FUNCT__ "DMDAGetInterpolationType"
 /*@
        DMDAGetInterpolationType - Gets the type of interpolation that will be
-          used by DMGetInterpolation()
+          used by DMCreateInterpolation()
 
    Not Collective
 
@@ -319,7 +326,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 
 .keywords:  distributed array, interpolation
 
-.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMGetInterpolation()
+.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMCreateInterpolation()
 @*/
 PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 {
@@ -493,13 +500,13 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
    Notes: See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for 
        the diagonal and off-diagonal blocks of the matrix
 
-.seealso: DMGetMatrix(), DMDASetBlockFills()
+.seealso: DMCreateMatrix(), DMDASetBlockFills()
 @*/
 PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->ops->getmatrix = f;
+  da->ops->creatematrix = f;
   PetscFunctionReturn(0);
 }
 
@@ -599,7 +606,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
 PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N,P;
+  PetscInt       M,N,P,i;
   DM             da2;
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
@@ -647,8 +654,8 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2 = (DM_DA*)da2->data;
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
-  da2->ops->getmatrix        = da->ops->getmatrix;
-  /* da2->ops->getinterpolation = da->ops->getinterpolation; this causes problem with SNESVI */
+  da2->ops->creatematrix        = da->ops->creatematrix;
+  /* da2->ops->createinterpolation = da->ops->createinterpolation; this causes problem with SNESVI */
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
@@ -685,9 +692,14 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     /* force creation of the coordinate vector */
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
-    ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
+  }
+  for (i=0; i<da->bs; i++) {
+    const char *fieldname;
+    ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da2,i,fieldname);CHKERRQ(ierr);
   }
   *daref = da2;
   PetscFunctionReturn(0);
@@ -746,8 +758,8 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   dd2 = (DM_DA*)da2->data;
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones; why are only some inherited and not all? */
-  /* da2->ops->getinterpolation = da->ops->getinterpolation; copying this one causes trouble for DMSetVI */
-  da2->ops->getmatrix        = da->ops->getmatrix;
+  /* da2->ops->createinterpolation = da->ops->createinterpolation; copying this one causes trouble for DMSetVI */
+  da2->ops->creatematrix        = da->ops->creatematrix;
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
@@ -785,7 +797,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
     
-    ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);

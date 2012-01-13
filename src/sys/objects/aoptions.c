@@ -230,7 +230,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    }
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_REAL_ARRAY: 
@@ -261,7 +261,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    n++;
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_INT: 
@@ -285,8 +285,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
           sscanf(str,"%e",&ir);
 #elif defined(PETSC_USE_REAL_DOUBLE)
           sscanf(str,"%le",&ir);
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-          sscanf(str,"%Le",&ir);
 #elif defined(PETSC_USE_REAL___FLOAT128)
           ir = strtoflt128(str,0);
 #else
@@ -905,7 +903,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
 PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
 {
@@ -958,7 +956,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsList(), PetscOptionsEnum()
 @*/
 PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const*list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscBool  *set)
 {

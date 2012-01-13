@@ -29,7 +29,7 @@
    Concepts: vectors^creating parallel
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-          VecCreateMPIWithArray(), VecCreateGhostWithArray()
+          VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
 
 @*/ 
 PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)

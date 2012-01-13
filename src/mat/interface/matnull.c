@@ -308,13 +308,15 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm < 1.e-7) {
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are likely null vector");CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are unlikely null vector ");CHKERRQ(ierr);
-      consistent = PETSC_FALSE;
+    if (flg1) {
+      if (nrm < 1.e-7) {
+        ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are likely null vector");CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are unlikely null vector ");CHKERRQ(ierr);
+        consistent = PETSC_FALSE;
+      }
+      ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -323,13 +325,15 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   for (j=0; j<n; j++) {
     ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
     ierr = VecNorm(l,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm < 1.e-7) {
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
-      consistent = PETSC_FALSE;
+    if (flg1) {
+      if (nrm < 1.e-7) {
+        ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
+        consistent = PETSC_FALSE;
+      }
+      ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }

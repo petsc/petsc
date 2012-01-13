@@ -26,7 +26,6 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
-
   ierr = PetscInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
 
   /* Set up timers */

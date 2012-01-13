@@ -518,7 +518,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
-	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
+	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
 	if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
         ierr = VecDestroy(&rscale);CHKERRQ(ierr);

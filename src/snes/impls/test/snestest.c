@@ -47,7 +47,14 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
+    if (!i) {
+      PetscInt m,n,M,N;
+      ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+      ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+      ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    }
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
@@ -72,7 +79,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     if (!gnorm) gnorm = 1; /* just in case */
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G (%s)\n",nrm/gnorm,nrm,loc[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %g difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   /*
@@ -133,6 +140,8 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
   snes->ops->view            = 0;
   snes->ops->setup           = 0;
   snes->ops->reset           = 0;
+
+  snes->usesksp             = PETSC_FALSE;
 
   ierr                  = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
   snes->data            = (void*)neP;

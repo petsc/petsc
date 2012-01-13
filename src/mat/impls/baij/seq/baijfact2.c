@@ -5553,7 +5553,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-sol_ver",&sol_ver,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)A)->prefix,"-sol_ver",&sol_ver,PETSC_NULL);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);

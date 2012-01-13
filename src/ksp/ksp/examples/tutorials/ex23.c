@@ -24,11 +24,11 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x, b, u;      /* approx solution, RHS, exact solution */
-  Mat            A;            /* linear system matrix */
-  KSP            ksp;         /* linear solver context */
-  PC             pc;           /* preconditioner context */
-  PetscReal      norm;         /* norm of solution error */
+  Vec            x, b, u;          /* approx solution, RHS, exact solution */
+  Mat            A;                /* linear system matrix */
+  KSP            ksp;              /* linear solver context */
+  PC             pc;               /* preconditioner context */
+  PetscReal      norm,tol=1.e-11;  /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
@@ -173,7 +173,10 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  }
+
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/txpetscgpu-0.0.1.tar.gz']
+    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/txpetscgpu-0.0.2.tar.gz']
     self.includes        = ['txpetscgpu_version.h']
     self.includedir      = ['include']
     self.forceLanguage   = 'CUDA'

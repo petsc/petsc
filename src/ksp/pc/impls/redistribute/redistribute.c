@@ -329,6 +329,10 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
      If you have used MatZeroRows() to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly 
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
 
+     This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
+
+     Developer Notes: Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
+
    Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedistributeGetKSP()

@@ -114,7 +114,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://tetgen.berlios.de/files/tetgen1.4.3.tar.gz']
     self.functions = ['tetrahedralize']
-    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize((char *) "", NULL, NULL)']
+    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out, tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize((char *) "", NULL, NULL)']
     self.includes  = ['tetgen.h']
     self.liblist   = [['libtet.a']]
     self.cxx       = 1

@@ -70,17 +70,19 @@ extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
 #endif
+extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES                   snes;                 /* nonlinear solver */
-  Vec                    x;                    /* solution vector */
-  AppCtx                 user;                 /* user-defined work context */
-  PetscInt               its;                  /* iterations for convergence */
+  SNES                   snes;                         /* nonlinear solver */
+  Vec                    x;                            /* solution vector */
+  AppCtx                 user;                         /* user-defined work context */
+  PetscInt               its;                          /* iterations for convergence */
   PetscErrorCode         ierr;
-  PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal              bratu_lambda_max = 6.81;
+  PetscReal              bratu_lambda_min = 0.;
   PetscBool              flg = PETSC_FALSE;
   DM                     da;
   PetscBool              matlab_function = PETSC_FALSE;
@@ -102,6 +104,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetGS(snes, NonlinearGS, PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -110,7 +113,6 @@ int main(int argc,char **argv)
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
@@ -256,7 +258,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
   /*
      Compute function over the locally owned part of the grid
@@ -264,7 +266,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i];
+        f[j][i] = 2.0*(hydhx+hxdhy)*x[j][i];
       } else {
         u       = x[j][i];
         uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
@@ -274,8 +276,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
     }
   }
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
@@ -294,11 +296,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
 
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. 
@@ -314,7 +316,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       row.j = j; row.i = i;
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        v[0] = 1.0;
+        v[0] =  2.0*(hydhx + hxdhy);
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
       /* interior grid points */
@@ -391,3 +393,103 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0); 
 } 
 #endif
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "NonlinearGS"
+/* 
+      Applies some sweeps on nonlinear Gauss-Seidel on each process
+
+ */
+PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void * ctx)
+{
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym,k,its,l;
+  PetscErrorCode ierr;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    **x,**b,bij,F,J,u,uxx,uyy;
+  DM             da;
+  AppCtx         *user;
+  Vec            localX,localB;
+
+  PetscFunctionBegin;
+  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
+
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+
+  lambda = user->param;
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
+  sc     = hx*hy*lambda;
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
+
+
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
+  }
+  for (l=0; l<1; l++) {
+
+    ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    if (B) {
+      ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+    }
+    /*
+     Get a pointer to vector data.
+     - For default PETSc vectors, VecGetArray() returns a pointer to
+     the data array.  Otherwise, the routine is implementation dependent.
+     - You MUST call VecRestoreArray() when you no longer need access to
+     the array.
+     */
+    ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+    if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+    /*
+     Get local grid boundaries (for 2-dimensional DMDA):
+     xs, ys   - starting grid indices (no ghost points)
+     xm, ym   - widths of local grid (no ghost points)
+     */
+    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
+          /* boundary conditions are all zero Dirichlet */
+          x[j][i] = 0.0;
+        } else {
+          if (B) {
+            bij = b[j][i];
+          } else {
+            bij = 0.;
+          }
+          u       = x[j][i];
+          for (k=0; k<1; k++) {
+            uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+            uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+            F        = uxx + uyy - sc*PetscExpScalar(u) - bij;
+            J       = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(u);
+            u       = u - F/J;
+          }
+          x[j][i] = u;
+        }
+      }
+    }
+    /*
+     Restore vector
+     */
+    ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops((11.0 + 5)*ym*xm);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+} 

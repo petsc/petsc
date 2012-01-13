@@ -1,4 +1,4 @@
-static const char help[] = "Test DMGetInjection for mapping coordinates in 3D";
+static const char help[] = "Test DMCreateInjection for mapping coordinates in 3D";
 
 #include <petscvec.h>
 #include <petscmat.h>
@@ -57,19 +57,19 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
-    ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
 
-    ierr = DMGetInterpolation(cdac,cdaf,&interp,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&interp,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(coordsf,&coordsf2);CHKERRQ(ierr);
     ierr = MatInterpolate(interp,coordsc,coordsf2);CHKERRQ(ierr);
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
-    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %A\n",norm);CHKERRQ(ierr);}
+    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %G\n",norm);CHKERRQ(ierr);}
     ierr = VecDestroy(&coordsf2);CHKERRQ(ierr);
     ierr = MatDestroy(&interp);CHKERRQ(ierr);
   }

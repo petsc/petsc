@@ -3,7 +3,40 @@
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/sys/ctable.h>
+
+typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ_32 - implementation used in PETSc-3.2 */
+  IS             isrowa,isrowb,iscolb; 
+  Mat            B_seq,A_loc,C_seq; 
+  PetscBool      skipNumeric;    /* skip 1st call of MatMatMultNumeric_MPIAIJ_MPIAIJ_32() because it is done in symbolic phase */
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
+} Mat_MatMatMultMPI;
+
+typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
+  PetscLayout    rowmap;
+  PetscInt       **buf_ri,**buf_rj;
+  PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
+  PetscMPIInt    nsend,nrecv;  
+  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C (matrix product) - rename to ci, cj! */
+  PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
+} Mat_Merge_SeqsToMPI; 
+
+typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ() */
+  PetscInt       *startsj_s,*startsj_r; /* used by MatGetBrowsOfAoCols_MPIAIJ */
+  PetscScalar    *bufa;                 /* used by MatGetBrowsOfAoCols_MPIAIJ */
+  Mat            P_loc,P_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt       *api,*apj;    /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscInt       rmax;         /* max num of nnz in a local row of the matrix product */
+  MatReuse       reuse;        /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
+  PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
+  Mat            A_loc;        /* used by MatTransposeMatMult(), contains api and apj */
+
+  Mat_Merge_SeqsToMPI *merge;
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
+} Mat_PtAPMPI;
 
 typedef struct {
   Mat           A,B;                   /* local submatrices: A (diag part),
@@ -12,7 +45,6 @@ typedef struct {
   PetscMPIInt   rank;                   /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
-
   PetscBool     donotstash;             /* PETSC_TRUE if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
@@ -27,47 +59,22 @@ typedef struct {
   PetscInt      *garray;                /* global index of all off-processor columns */
 
   /* The following variables are used for matrix-vector products */
-
   Vec           lvec;              /* local vector */
   Vec           diag;
   VecScatter    Mvctx;             /* scatter context for vector */
   PetscBool     roworiented;       /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
-
   PetscInt      *rowindices;       /* column indices for row */
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscBool     getrowactive;      /* indicates MatGetRow(), not restored */
 
   /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
   PetscInt      *ld;               /* number of entries per row left of diagona block */
+
+  /* Used by MatMatMult() and MatPtAP() */
+  Mat_PtAPMPI   *ptap;
 } Mat_MPIAIJ;
-
-typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  PetscInt       *startsj,*startsj_r;
-  PetscScalar    *bufa;
-  IS             isrowa,isrowb,iscolb; 
-  Mat            *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
-  Mat            A_loc,B_seq;
-  Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt       brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
-  PetscInt       *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt       abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
-  MatReuse       reuse; 
-  PetscErrorCode (*destroy)(Mat);
-  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
-} Mat_MatMatMultMPI;
-
-typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscLayout    rowmap;
-  PetscInt       **buf_ri,**buf_rj;
-  PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
-  PetscMPIInt    nsend,nrecv;  
-  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
-  PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
-  PetscErrorCode (*destroy)(Mat);
-  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
-} Mat_Merge_SeqsToMPI; 
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 extern PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
@@ -83,19 +90,33 @@ extern PetscErrorCode MatGetSubMatricesParallel_MPIAIJ (Mat,PetscInt,const IS[],
 
 extern PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat *);
 extern PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat *);
-extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,Mat*);
+extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 extern PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
+extern PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable_32(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
+
+extern PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult_32(Mat);
 extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
+
+extern PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
 extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 

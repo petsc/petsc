@@ -205,6 +205,8 @@ PetscErrorCode  SNESCreate_SORQN(SNES snes)
   snes->ops->view            = 0;
   snes->ops->reset           = SNESReset_SORQN;
 
+  snes->usesksp             = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, SORQNContext, &sorqn);CHKERRQ(ierr);
   snes->data = (void *) sorqn;
   sorqn->jacobian_start = PETSC_FALSE;

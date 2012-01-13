@@ -45,6 +45,7 @@ int MPIUNI_Memcpy(void *a,const void* b,int n) {
   char *aa= (char*)a;
   char *bb= (char*)b;
 
+  if (b == MPI_IN_PLACE) return 0;
   for (i=0; i<n; i++) aa[i] = bb[i];
   return 0;
 }
@@ -101,13 +102,14 @@ int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
   return MPI_SUCCESS;
 }
 
+static int dups = 0;
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
+  dups++;
   *newcomm =  comm;
   return MPI_SUCCESS;
 }
 
-static int dups = 0;
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   *out = comm;

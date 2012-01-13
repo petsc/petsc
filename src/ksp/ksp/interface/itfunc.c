@@ -196,7 +196,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
     if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-    ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
     ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr); 
   }
@@ -204,11 +204,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (ksp->dmActive) {
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
+      /* only computes initial guess the first time through */
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (ir) {
       ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 
@@ -296,7 +297,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
    Notes:
 
-   The operator is specified with PCSetOperators().
+   If one uses KSPSetDM() then x or b need not be passed. Use KSPGetSolution() to access the solution in this case. 
+
+   The operator is specified with KSPSetOperators().
 
    Call KSPGetConvergedReason() to determine if the solver converged or failed and 
    why. The number of iterations can be obtained from KSPGetIterationNumber().
@@ -333,16 +336,19 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
 
-  if (b && x) {
-    if (x == b) {
-      ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
-      inXisinB = PETSC_TRUE;
-    }
+  if (x && x == b) {
+    if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
+    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+    inXisinB = PETSC_TRUE;
+  }
+  if (b) {
     ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
     ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_rhs = b;
+  }
+  if (x) {
+    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+    ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_sol = x;
   }
 
@@ -1710,7 +1716,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .keywords: KSP, set, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
+.seealso: KSPDefaultConverged(), KSPGetConvergenceContext(), KSPSetTolerances()
 @*/
 PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {

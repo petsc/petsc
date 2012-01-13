@@ -17,10 +17,9 @@ static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\
 
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <petscdmmg.h>
 
-extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
 
 typedef struct {
   PetscInt    k;
@@ -32,8 +31,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  DMMG           *dmmg;
-  PetscReal      norm;
+  KSP            ksp;
   DM             da;
   AppCtx         user;
 
@@ -44,21 +42,17 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(0,"-k",&user.k,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
 
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,&user,&dmmg);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-
-  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
-  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); */
-
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -66,14 +60,14 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,idx[2];
   PetscScalar    h,v[2];
 
   PetscFunctionBegin;
-  ierr   = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr   = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h      = 1.0/((mx-1));
   ierr   = VecSet(b,h);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = mx -1;
@@ -86,15 +80,15 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DMMG dmmg,Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DM da,Vec x,Mat J,Mat jac,MatStructure *str)
 {
-  DM             da = dmmg->dm;
   PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;
   PetscScalar    v[3],h,xlow,xhigh;
   MatStencil     row,col[3];
-  AppCtx         *user = (AppCtx*)dmmg->user;
+  AppCtx         *user;
 
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   h    = 1.0/(mx-1);

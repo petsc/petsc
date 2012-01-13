@@ -604,6 +604,14 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Concepts: block Jacobi
 
+   Developer Notes: This preconditioner does not currently work with CUDA/CUSP for a couple of reasons. 
+       (1) It creates seq vectors as work vectors that should be cusp
+       (2) The use of VecPlaceArray() is not handled properly by CUSP (that is it will not know where 
+           the ownership of the vector is so may use wrong values) even if it did know the ownership 
+           it may induce extra copy ups and downs. Satish suggests a VecTransplantArray() to handle two
+           vectors sharing the same pointer and handling the CUSP side as well instead of VecGetArray()/VecPlaceArray().
+
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCBJacobiSetUseTrueLocal(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
@@ -1243,7 +1251,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,Mat*);
+extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1274,7 +1282,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     subcomm         = mpjac->psubcomm->comm;
 
     /* Get matrix blocks of pmat */
-    ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
+    ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
     ierr = KSPCreate(subcomm,&mpjac->ksp);CHKERRQ(ierr);
@@ -1308,17 +1316,17 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     pc->ops->reset   = PCReset_BJacobi_Multiproc;
     pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
     pc->ops->apply   = PCApply_BJacobi_Multiproc;
-  }
-
-  if (pc->setupcalled && pc->flag == DIFFERENT_NONZERO_PATTERN) {
-    /* destroy old matrix blocks, then get new matrix blocks */
-    if (mpjac->submats) {
-      ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
-      subcomm = mpjac->psubcomm->comm;
-      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  } else { /* pc->setupcalled */
+    subcomm = mpjac->psubcomm->comm;
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      /* destroy old matrix blocks, then get new matrix blocks */
+      if (mpjac->submats){ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
+      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);  
+    } else {
+      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     }
-  }     
+    ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
+  }
 
   if (pc->setfromoptionscalled){
     ierr = KSPSetFromOptions(mpjac->ksp);CHKERRQ(ierr); 

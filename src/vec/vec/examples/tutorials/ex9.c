@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
   PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscBool      flg,flg2;
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
@@ -70,9 +70,15 @@ int main(int argc,char **argv)
      array for storing vector values.
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc((nlocal+nghost)*sizeof(PetscScalar),&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
+  } else if (flg2) {
+    ierr = VecCreate(PETSC_COMM_WORLD,&gxs);CHKERRQ(ierr);
+    ierr = VecSetType(gxs,VECMPI);CHKERRQ(ierr);
+    ierr = VecSetSizes(gxs,nlocal,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecMPISetGhost(gxs,nghost,ifrom);CHKERRQ(ierr);
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRQ(ierr);
   }

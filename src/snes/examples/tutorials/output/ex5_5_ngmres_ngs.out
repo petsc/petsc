@@ -1,0 +1,61 @@
+  0 SNES Function norm 1.11127 
+  1 SNES Function norm 0.565096 
+  2 SNES Function norm 0.384346 
+  3 SNES Function norm 0.292364 
+  4 SNES Function norm 0.235438 
+  5 SNES Function norm 0.196743 
+  6 SNES Function norm 0.168319 
+  7 SNES Function norm 0.146367 
+  8 SNES Function norm 0.128902 
+  9 SNES Function norm 0.114647 
+ 10 SNES Function norm 0.102763 
+ 11 SNES Function norm 0.0926977 
+ 12 SNES Function norm 0.0840577 
+ 13 SNES Function norm 0.0765552 
+ 14 SNES Function norm 0.0699766 
+ 15 SNES Function norm 0.06416 
+ 16 SNES Function norm 0.0589797 
+ 17 SNES Function norm 0.0543368 
+ 18 SNES Function norm 0.0501526 
+ 19 SNES Function norm 0.0463638 
+ 20 SNES Function norm 0.0429189 
+ 21 SNES Function norm 0.039776 
+ 22 SNES Function norm 0.0369012 
+ 23 SNES Function norm 0.0342669 
+ 24 SNES Function norm 0.0318506 
+ 25 SNES Function norm 0.0296345 
+ 26 SNES Function norm 0.0276042 
+ 27 SNES Function norm 0.025748 
+ 28 SNES Function norm 0.0240559 
+ 29 SNES Function norm 0.0225186 
+ 30 SNES Function norm 0.0211266 
+ 31 SNES Function norm 0.0198696 
+ 32 SNES Function norm 0.0187353 
+ 33 SNES Function norm 0.0177102 
+ 34 SNES Function norm 0.0167793 
+ 35 SNES Function norm 0.0159271 
+ 36 SNES Function norm 0.0151391 
+ 37 SNES Function norm 0.0144025 
+ 38 SNES Function norm 0.0137076 
+ 39 SNES Function norm 0.0130482 
+ 40 SNES Function norm 0.0124219 
+ 41 SNES Function norm 0.0118297 
+ 42 SNES Function norm 0.0112751 
+ 43 SNES Function norm 0.0107632 
+ 44 SNES Function norm 0.0102989 
+ 45 SNES Function norm 0.00988576 
+ 46 SNES Function norm 0.00952521 
+ 47 SNES Function norm 0.00921582 
+ 48 SNES Function norm 0.00895356 
+ 49 SNES Function norm 0.0087325 
+ 50 SNES Function norm 0.00854576 
+SNES Object: 1 MPI processes
+  type: ngmres
+    line search variant: QUADRATIC
+    Number of stored past updates: 10
+    Residual selection: gammaA=2e+00, gammaC=2e+00
+    Difference restart: epsilonB=1e-01, deltaB=9e-01
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=0
+  total number of function evaluations=101

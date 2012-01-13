@@ -245,4 +245,4 @@ SNES Object:
       rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
         using I-node (on process 0) routines: found 21 nodes, limit used is 5
-Number of Newton iterations = 2
+Number of SNES iterations = 2

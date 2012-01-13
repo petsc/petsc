@@ -3,7 +3,6 @@
 #include <petscdmcomposite.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmgetmatrix_                 DMGETMATRIX
 #define dmcompositegetentries1_      DMCOMPOSITEGETENTRIES1
 #define dmcompositegetentries2_      DMCOMPOSITEGETENTRIES2
 #define dmcompositegetentries3_      DMCOMPOSITEGETENTRIES3
@@ -11,7 +10,6 @@
 #define dmcompositegetentries5_      DMCOMPOSITEGETENTRIES5
 #define dmcompositecreate_           DMCOMPOSITECREATE
 #define dmcompositeadddm_            DMCOMPOSITEADDDM
-#define dmcompositeaddarray_         DMCOMPOSITEADDARRAY
 #define dmcompositedestroy_          DMCOMPOSITEDESTROY
 #define dmcompositegetaccess4_       DMCOMPOSITEGETACCESS4
 #define dmcompositescatter4_         DMCOMPOSITESCATTER4
@@ -19,7 +17,6 @@
 #define dmcompositegetlocalvectors4_ DMCOMPOSITEGETLOCALVECTORS4
 #define dmcompositerestorelocalvectors4_ DMCOMPOSITERESTORELOCALVECTORS4
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dmgetmatrix_                 dmgetmatrix
 #define dmcompositegetentries1_      dmcompositegetentries1
 #define dmcompositegetentries2_      dmcompositegetentries2
 #define dmcompositegetentries3_      dmcompositegetentries3
@@ -28,7 +25,6 @@
 #define dmcompositecreate_           dmcompositecreate
 #define dmcompositeadddm_            dmcompositeadddm
 #define dmcompositedestroy_          dmcompositedestroy
-#define dmcompositeaddarray_         dmcompositeaddarray
 #define dmcompositegetaccess4_       dmcompositegetaccess4
 #define dmcompositescatter4_         dmcompositescatter4
 #define dmcompositerestoreaccess4_   dmcompositerestoreaccess4
@@ -37,14 +33,6 @@
 #endif
 
 EXTERN_C_BEGIN
-
-void PETSC_STDCALL dmgetmatrix_(DM *dm,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  char *t;
-  FIXCHAR(mat_type,len,t);
-  *ierr = DMGetMatrix(*dm,t,J);
-  FREECHAR(mat_type,t);
-}
 
 void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DM *da1,PetscErrorCode *ierr)
 {
@@ -83,11 +71,6 @@ void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
 void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
 {
   *ierr = DMDestroy(dm);
-}
-
-void PETSC_STDCALL dmcompositeaddarray_(DM *dm,PetscInt *r,PetscInt *n,PetscErrorCode *ierr)
-{
-  *ierr = DMCompositeAddArray(*dm,*r,*n);
 }
 
 void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)

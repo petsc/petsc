@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','BLACS','PTHREAD','CUDA','THRUST','VALGRIND']:
+          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','BLACS','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF']:
             ejobs.append(i.name.upper())
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))

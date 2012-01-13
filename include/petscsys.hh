@@ -2,6 +2,7 @@
 #define __PETSC_HH
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#include <sstream>
 
 namespace PETSc {
   class Exception : public std::exception {
@@ -14,6 +15,7 @@ namespace PETSc {
     ~Exception() throw () {}
   public:
     const std::string msg() const {return this->_txt.str();}
+    const char *message()   const {return this->_txt.str().c_str();}
     /* Message input */
     template<typename Input>
     Exception& operator<<(const Input& in) {

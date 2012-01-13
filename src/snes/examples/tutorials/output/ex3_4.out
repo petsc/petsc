@@ -4,15 +4,15 @@ atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
 iter = 0,SNES Function norm 5.41468
 iter = 1,SNES Function norm 0.295258
 Checking candidate step at iteration 1 with tolerance 1
-  Altering entry 0: x=0, x_last=1.11022e-16, diff=2, x_new=5.55112e-17
+  Altering entry 0: x=0, x_last=0, diff=2, x_new=0
   Altering entry 1: x=0.0155991, x_last=0.0013819, diff=1.08859, x_new=0.00710858
 iter = 2,SNES Function norm 0.303701
 Checking candidate step at iteration 2 with tolerance 1
-  Altering entry 0: x=1.2326e-32, x_last=5.55112e-17, diff=4.5036e+15, x_new=2.77556e-17
+  Altering entry 0: x=0, x_last=0, diff=2, x_new=0
 iter = 3,SNES Function norm 7.24709e-05
 Checking candidate step at iteration 3 with tolerance 1
-  Altering entry 0: x=6.16298e-33, x_last=2.77556e-17, diff=4.5036e+15, x_new=1.38778e-17
-iter = 4,SNES Function norm 1.30878e-11
-Number of Newton iterations = 4
+  Altering entry 0: x=0, x_last=0, diff=2, x_new=0
+iter = 4,SNES Function norm 1.30876e-11
+Number of SNES iterations = 4
 
-Norm of error 1.26522e-12, Iterations 4
+Norm of error 1.26526e-12 Iterations 4

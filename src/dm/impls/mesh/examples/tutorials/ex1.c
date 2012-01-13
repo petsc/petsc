@@ -242,6 +242,95 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, DM *mesh)
   PetscFunctionReturn(0);
 }
 
+#undef  __FUNCT__
+#define __FUNCT__ "CreateMeshBoundary"
+PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
+{
+  typedef ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> Retriever;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  MPI_Comm       comm   = ((PetscObject) mesh)->comm;
+  PetscInt       dim    = options->dim;
+  PetscInt       debug  = options->debug;
+  PetscInt       numCells, numBC, bc;
+  char           bndfilename[2048];
+  FILE          *fp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dim != 3) {PetscFunctionReturn(0);};
+  ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
+  ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(bndfilename, ".bnd");CHKERRQ(ierr);
+  ierr = PetscFOpen(comm, bndfilename, "r", &fp);
+  if (ierr == PETSC_ERR_FILE_OPEN) {
+    PetscFunctionReturn(0);
+  } else {CHKERRQ(ierr);}
+  ierr = PetscPrintf(comm, "Creating mesh boundary on CPU 0\n");CHKERRQ(ierr);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+
+  if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numBC);CHKERRQ(!ierr);}
+  ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  for(bc = 0; bc < numBC; ++bc) {
+    Obj<PETSC_MESH_TYPE::label_type> label;
+    char     bdName[2048];
+    size_t   len      = 0;
+    PetscInt bcType   = 0;
+    PetscInt numFaces = 0, f;
+
+    if (!m->commRank()) {
+      ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);
+      ierr = PetscStrlen(bdName, &len);CHKERRQ(ierr);
+    }
+    ierr = MPI_Bcast(&len, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+    if (m->hasLabel(bdName)) {
+      label = m->getLabel(bdName);
+    } else {
+      label = m->createLabel(bdName);
+    }
+
+    if (!m->commRank()) {ierr = fscanf(fp, "%d %d\n", &bcType, &numFaces);CHKERRQ(!ierr);}
+
+    for(f = 0; f < numFaces; ++f) {
+      Retriever visitor(1);
+      PetscInt  numCorners, c;
+
+      ierr = fscanf(fp, "%d", &numCorners);CHKERRQ(!ierr);
+      PetscInt face[numCorners];
+
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    Face %d with %d corners\n", f, numCorners);CHKERRQ(ierr);}
+      for(c = 0; c < numCorners; ++c) {
+        ierr = fscanf(fp, " %d", &face[c]);CHKERRQ(!ierr);
+
+        // Must transform from vertex numbering to sieve point numbering
+        face[c] += numCells;
+        // Output vertex coordinates
+        const double *coords   = coordinates->restrictPoint(face[c]);
+        const int     fiberDim = coordinates->getFiberDimension(face[c]);
+
+        if (debug) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      (");CHKERRQ(ierr);
+          for(PetscInt d = 0; d < fiberDim; ++d) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g ", coords[d]);CHKERRQ(ierr);
+          }
+          ierr = PetscPrintf(PETSC_COMM_SELF, ") %d\n", face[c]);CHKERRQ(ierr);
+        }
+      }
+      m->getSieve()->nJoin(&face[0], &face[numCorners], dim-1, visitor);
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "      found %d faces %d using join\n", visitor.getSize(), visitor.getPoints()[0]);CHKERRQ(ierr);}
+      if (visitor.getSize() != 1) {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
+      }
+      m->setValue(label, visitor.getPoints()[0], bcType);
+      visitor.clear();
+    }
+    label->view((const char *) bdName);
+  }
+  ierr = PetscFClose(comm, fp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
@@ -257,7 +346,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->useZeroBase    = PETSC_TRUE;
   options->inputFileType  = PCICE;
   options->outputFileType = PCICE;
-  ierr = PetscStrcpy(options->baseFilename, "data/ex1_2d");CHKERRQ(ierr);
+  ierr = PetscStrcpy(options->baseFilename, "src/dm/impls/mesh/examples/tutorials/data/ex1_2d");CHKERRQ(ierr);
   options->output         = PETSC_FALSE;
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
@@ -303,7 +392,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  DM              mesh;
+  DM             mesh;
   Options        options;
   PetscErrorCode ierr;
 
@@ -312,6 +401,7 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);
+  ierr = CreateMeshBoundary(mesh, &options);CHKERRQ(ierr);
   ierr = DistributeMesh(&options, &mesh);CHKERRQ(ierr);
   ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
   ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);

@@ -110,7 +110,7 @@
       if (ctx(4) .eq. 0) then
         write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
@@ -262,7 +262,7 @@
         istart = 0
       endif
       if (rank .eq. size-1) then
-        i = ctx(6)-1
+        i = INT(ctx(6)-1)
         A = 1.0 
         call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1

@@ -61,7 +61,7 @@ runex5:
 
 runex6_3:
 	-@${MPIEXEC} -n 3 ./ex6 > ex6_3.tmp 2>&1;                                                 \
-	  ${DIFF} output/ex6_3.out ex6_3.tmp || echo "Possible problems with ex6_3, diffs above"; \
+	  ${DIFF} output/ex6_3.out ex6_3.tmp || echo  ${PWD} "\nPossible problems with ex6_3, diffs above \n========================================="; \
 	  ${RM} -f ex6_3.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm

@@ -50,7 +50,7 @@ typedef struct{
   PetscBool   degenerate;  /* use degenerate mobility */
   PetscReal   smallnumber;
   PetscBool   graphics;
-  PetscBool   twodomain;
+  PetscInt    domain;
   PetscBool   radiation;
   PetscBool   voidgrowth; /* use initial conditions for void growth */
   DM          da1,da2;
@@ -81,6 +81,7 @@ PetscErrorCode DPsi(AppCtx*);
 PetscErrorCode LaplacianFiniteDifference(AppCtx*);
 PetscErrorCode Llog(Vec,Vec);
 PetscErrorCode Phi(AppCtx*);
+PetscErrorCode Phi_read(AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -167,13 +168,20 @@ int main(int argc, char **argv)
 
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMGetMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMGetMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   /* twodomain modeling */
-  if (user.twodomain) {
-    ierr = Phi(&user);CHKERRQ(ierr);
+  if (user.domain) {
+    switch (user.domain) {
+    case 1:
+      ierr = Phi(&user);CHKERRQ(ierr);
+      break;
+    case 2:
+      ierr = Phi_read(&user);CHKERRQ(ierr);
+      break ;
+    }
   }
 
   /* Form the jacobian matrix and M_0 */
@@ -187,12 +195,10 @@ int main(int argc, char **argv)
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
  
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100,PETSC_DEFAULT);CHKERRQ(ierr);
-
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   
   /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_rand",FILE_MODE_WRITE,&view_rand);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_mat2",FILE_MODE_WRITE,&view_mat);CHKERRQ(ierr);
@@ -209,10 +215,12 @@ int main(int argc, char **argv)
   if (user.graphics) {
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   }
+  /*
   if (user.graphicsfile) {
     ierr = DMView(user.da1,user.graphicsfile);CHKERRQ(ierr);
     ierr = VecView(x,user.graphicsfile);CHKERRQ(ierr);  
   }
+   */
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
@@ -271,9 +279,11 @@ int main(int argc, char **argv)
     ierr = Update_u(x,&user);CHKERRQ(ierr);
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
     t = t + user.dt;
+    /*
     if (user.graphicsfile) {
       ierr = VecView(x,user.graphicsfile);CHKERRQ(ierr);  
     }
+     */
   }
    
   /*  ierr = PetscViewerDestroy(&view_rand);CHKERRQ(ierr);
@@ -376,6 +386,19 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecPointwiseMult(user->Riv,user->cv,user->Riv);CHKERRQ(ierr);
   
   ierr = VecCopy(user->Riv,user->work1);CHKERRQ(ierr);
+  if (user->radiation) {
+    ierr = VecAXPY(user->work1,-1.0,user->Pv);CHKERRQ(ierr);
+  }
+  if (user->domain) {
+    ierr = VecCopy(user->cv,user->work3);CHKERRQ(ierr);
+    ierr = VecShift(user->work3,-1.0*user->cv_eq);CHKERRQ(ierr);
+    ierr = VecCopy(user->Phi2D_V,user->work4);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,-1.0);CHKERRQ(ierr);
+    ierr = VecShift(user->work4,1.0);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(user->work4,user->work4,user->work3);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,user->Svr);CHKERRQ(ierr);
+    ierr = VecAXPY(user->work1,300.0,user->work4);CHKERRQ(ierr);
+  }
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->cv);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
@@ -394,6 +417,19 @@ PetscErrorCode Update_q(AppCtx *user)
   }
 
   ierr = VecCopy(user->Riv,user->work1);CHKERRQ(ierr);
+  if (user->radiation) {
+    ierr = VecAXPY(user->work1,-1.0,user->Pi);CHKERRQ(ierr);
+  }
+  if (user->domain) {
+    ierr = VecCopy(user->ci,user->work3);CHKERRQ(ierr);
+    ierr = VecShift(user->work3,-1.0*user->ci_eq);CHKERRQ(ierr);
+    ierr = VecCopy(user->Phi2D_V,user->work4);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,-1.0);CHKERRQ(ierr);
+    ierr = VecShift(user->work4,1.0);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(user->work4,user->work4,user->work3);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,user->Sir);CHKERRQ(ierr);
+    ierr = VecAXPY(user->work1,300.0,user->work4);CHKERRQ(ierr);
+  }
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->ci);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
@@ -409,6 +445,9 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0/user->dt,user->eta);CHKERRQ(ierr);
+  if (user->radiation) {
+    ierr = VecAXPY(user->work1,-1.0,user->Piv);CHKERRQ(ierr);
+  }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     q_p[5*i+4]=w2[i];
@@ -589,8 +628,10 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   }
   else {
-    ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
-    ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
+    //ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
+    //ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
+    ierr = VecSet(user->cv,.05);CHKERRQ(ierr);
+    ierr = VecSet(user->ci,.05);CHKERRQ(ierr);
     ierr = VecSet(user->eta,user->initeta);CHKERRQ(ierr);
   }
 
@@ -784,11 +825,11 @@ PetscErrorCode GetParams(AppCtx* user)
   user->initv      = .00069; 
   user->initeta    = 0.0;
   user->degenerate = PETSC_FALSE;
-  user->maxevents  = 1000;
+  user->maxevents  = 10;
   user->graphics   = PETSC_TRUE;
 
-  /* twodomain modeling */
-  user->twodomain = PETSC_FALSE;
+  /* multidomain modeling */
+  user->domain    =   1;
   user->Svr       = 0.5; 
   user->Sir       = 0.5;
   user->cv_eq     = 6.9e-4;
@@ -801,6 +842,9 @@ PetscErrorCode GetParams(AppCtx* user)
   /* degenerate mobility */
   user->smallnumber = 1.0e-3;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
+    
+  ierr = PetscOptionsInt("-domain","Number of domains (0=one domain, 1=two domains, 2=multidomain\n","None",user->domain,&user->domain,&flg);CHKERRQ(ierr);
+
     ierr = PetscOptionsReal("-Dv","Vacancy Diffusivity\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Di","Interstitial Diffusivity\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Evf","Vacancy Formation Energy\n","None",user->Evf,&user->Evf,&flg);CHKERRQ(ierr);
@@ -819,7 +863,7 @@ PetscErrorCode GetParams(AppCtx* user)
     ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
+
     ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-radiation","Use initial conditions for void growth\n","None",user->radiation,&user->radiation,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
@@ -1366,4 +1410,21 @@ PetscErrorCode Phi(AppCtx* user)
 
   PetscFunctionReturn(0);
   
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Phi_read"
+PetscErrorCode Phi_read(AppCtx* user)
+{
+  PetscErrorCode     ierr;
+  PetscReal          *values;
+  PetscViewer        viewer;
+
+  PetscFunctionBegin;
+  
+  ierr = VecGetArray(user->Phi2D_V,&values);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,values,16384,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

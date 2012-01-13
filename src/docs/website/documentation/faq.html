@@ -1731,8 +1731,9 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
           Run with the -malloc_debug option and -malloc_dump. Or use the commands
           PetscMallocDump() and PetscMallocLogDump() sprinkled in your code to
           track memory that is allocated and not later freed. Use the commands
-          PetscMallocSpace() and PetscGetResidentSetSize() to monitor memory
-          allocated and total memory used as the code progresses.
+          PetscMallocGetCurrentUsage() and PetscMemoryGetCurrentUsage() to
+          monitor memory allocated and PetscMallocGetMaximumUsage() and PetscMemoryGetMaximumUsage()
+          for total memory used ass the code progresses.
         </li>
 
         <li>This is just the way Unix works and is harmless.</li>

@@ -73,6 +73,35 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectSetTabLevel"
+/*@
+   PetscObjectSetTabLevel - Sets the number of tabs that ASCII output for that object use
+
+   Not Collective
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
+         cast with a (PetscObject), for example, 
+         PetscObjectGetComm((PetscObject)mat,&comm);
+-   tab - the number of tabs
+
+   Level: developer
+
+    Notes: this is used to manage the output from options that are imbedded in other objects. For example
+      the KSP object inside a SNES object. By indenting each lower level further the heirarchy of objects
+      is very clear.
+
+.seealso:  PetscObjectIncrementTabLevel()
+@*/
+PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  obj->tablevel = tab;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectIncrementTabLevel"
 /*@

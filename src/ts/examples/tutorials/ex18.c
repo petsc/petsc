@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
   ierr = DMIGASetFieldName(user.iga, 1, "velocity-u");CHKERRQ(ierr);
   ierr = DMIGASetFieldName(user.iga, 2, "velocity-v");CHKERRQ(ierr);
 
-  ierr = DMGetMatrix(user.iga, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.iga, MATAIJ, &J);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSALPHA);CHKERRQ(ierr);
@@ -148,9 +148,9 @@ PetscErrorCode FormInitialCondition(AppCtx *user,Vec U)
     for(j=info.ys;j<info.ys+info.ym;j++){
       y = user->L0*( (PetscScalar)j/(PetscScalar)info.my );
 
-      d1 = sqrt(SQ(x-user->C1x)+SQ(y-user->C1y));
-      d2 = sqrt(SQ(x-user->C2x)+SQ(y-user->C2y));
-      d3 = sqrt(SQ(x-user->C3x)+SQ(y-user->C3y));
+      d1 = PetscSqrtReal(SQ(x-user->C1x)+SQ(y-user->C1y));
+      d2 = PetscSqrtReal(SQ(x-user->C2x)+SQ(y-user->C2y));
+      d3 = PetscSqrtReal(SQ(x-user->C3x)+SQ(y-user->C3y));
 
       u[j][i].rho = -0.15+0.25*( tanh(0.5*(d1-user->R1)/user->Ca) +
 				 tanh(0.5*(d2-user->R2)/user->Ca) +

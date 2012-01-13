@@ -297,7 +297,7 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
     if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -465,7 +465,7 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}

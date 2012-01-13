@@ -111,16 +111,16 @@
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_SCALAR PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_SCALAR PETSC___FLOAT128
+#else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define  PETSC_REAL  PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_REAL PETSC___FLOAT128
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -144,7 +144,7 @@
 #else
 #if defined (PETSC_USE_REAL_SINGLE)
 #define PetscScalar PetscFortranFloat
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscScalar PetscFortranLongDouble
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscScalar PetscFortranDouble
@@ -156,7 +156,7 @@
 
 #if defined (PETSC_USE_REAL_SINGLE)
 #define PetscReal PetscFortranFloat
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscReal PetscFortranLongDouble
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscReal PetscFortranDouble

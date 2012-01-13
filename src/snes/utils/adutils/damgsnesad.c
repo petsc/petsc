@@ -44,9 +44,9 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDAComputeJacobianWithAdic"
+#define __FUNCT__ "SNESDMDAComputeJacobianWithAdic"
 /*@
-    SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
+    SNESDMDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() as long as the user context has a DMDA as
     its first record and DMDASetLocalAdicFunction() has been called.  
 
@@ -65,7 +65,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 .seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDMDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;
@@ -108,7 +108,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
   ierr = VecSet(dmmg[level]->r,0.0);CHKERRQ(ierr);
   for (j=1; j<=level; j++) {
     if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMCreateInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
     }
   }
 
@@ -226,7 +226,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
   ierr = VecSet(dmmg[level]->r,0.0);CHKERRQ(ierr);
   for (j=1; j<=level; j++) {
     if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMCreateInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
     }
   }
 
@@ -369,7 +369,7 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
   ierr = VecSet(dmmg[level]->r,zero);CHKERRQ(ierr);
   for (j=1; j<=level; j++) {
     if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMCreateInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
     }
   }
 
@@ -489,7 +489,7 @@ PetscErrorCode DMMGSolveFASn(DMMG *dmmg,PetscInt level,PetscInt iter)
   ierr = VecSet(dmmg[level]->r,0.0);CHKERRQ(ierr);
   for (j=1; j<=level; j++) {
     if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMCreateInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
     }
   }
 
@@ -606,7 +606,7 @@ PetscErrorCode DMMGSolveFASSetUp(DMMG *dmmg,PetscInt level)
   ierr = VecSet(dmmg[level]->r,0.0);CHKERRQ(ierr);
   for (j=1; j<=level; j++) {
     if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMCreateInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
     }
   }
   ierr = VecSet(dmmg[level]->r,0.0);CHKERRQ(ierr); 

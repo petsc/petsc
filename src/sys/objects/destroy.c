@@ -231,10 +231,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
   PetscValidHeader(obj,1);
   if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
     PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
-    
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
   PetscFunctionReturn(0);
 }
 
@@ -253,7 +250,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
@@ -291,10 +288,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 
   if (PetscRegisterFinalize_Count < MAXREGFIN) {
     PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
-    
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +306,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 PetscErrorCode  PetscRegisterFinalizeAll(void)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   for (i=0; i<PetscRegisterFinalize_Count; i++) {

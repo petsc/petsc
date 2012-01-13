@@ -24,5 +24,14 @@ class Configure(PETSc.package.NewPackage):
     yield ''
     return
 
-# sets PETSC_HAVE_PTHREAD but does NOT set PETSC_USE_PTHREAD; that is set only by particular packages that
-# use pthreads
+  def configureLibrary(self):
+    ''' Checks for pthread_barrier_t, cpu_set_t, and sys/sysctl.h '''
+    PETSc.package.NewPackage.configureLibrary(self)
+    if self.checkCompile('#include <pthread.h>', 'pthread_barrier_t *a;\n'):
+      self.addDefine('HAVE_PTHREAD_BARRIER_T','1')
+    if self.checkCompile('#include <sched.h>', 'cpu_set_t *a;\n'):
+      self.addDefine('HAVE_SCHED_CPU_SET_T','1')
+    if self.checkPreprocess('#include <sys/sysctl.h>'):
+      self.addDefine('HAVE_SYS_SYSCTL_H','1')
+    
+# sets PETSC_HAVE_PTHREAD but does NOT set PETSC_HAVE_PTHREADCLASSES

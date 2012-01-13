@@ -43,6 +43,7 @@ J*/
 #define DMMESH      "mesh"
 #define DMCARTESIAN "cartesian"
 #define DMIGA       "iga"
+#define DMREDUNDANT "redundant"
 
 extern PetscFList DMList;
 extern PetscBool  DMRegisterAllCalled;
@@ -115,19 +116,20 @@ extern PetscErrorCode   DMClearGlobalVectors(DM);
 extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);
-extern PetscErrorCode   DMGetColoring(DM,ISColoringType,const MatType,ISColoring*);
-extern PetscErrorCode   DMGetMatrix(DM, const MatType,Mat*);
+extern PetscErrorCode   DMCreateColoring(DM,ISColoringType,const MatType,ISColoring*);
+extern PetscErrorCode   DMCreateMatrix(DM,const MatType,Mat*);
 extern PetscErrorCode   DMSetMatrixPreallocateOnly(DM,PetscBool);
-extern PetscErrorCode   DMGetInterpolation(DM,DM,Mat*,Vec*);
-extern PetscErrorCode   DMGetInjection(DM,DM,VecScatter*);
+extern PetscErrorCode   DMCreateInterpolation(DM,DM,Mat*,Vec*);
+extern PetscErrorCode   DMCreateInjection(DM,DM,VecScatter*);
+extern PetscErrorCode   DMGetWorkArray(DM,PetscInt,PetscScalar**);
 extern PetscErrorCode   DMRefine(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMCoarsen(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMRefineHierarchy(DM,PetscInt,DM[]);
 extern PetscErrorCode   DMCoarsenHierarchy(DM,PetscInt,DM[]);
 extern PetscErrorCode   DMSetFromOptions(DM);
 extern PetscErrorCode   DMSetUp(DM);
-extern PetscErrorCode   DMGetInterpolationScale(DM,DM,Mat,Vec*);
-extern PetscErrorCode   DMGetAggregates(DM,DM,Mat*);
+extern PetscErrorCode   DMCreateInterpolationScale(DM,DM,Mat,Vec*);
+extern PetscErrorCode   DMCreateAggregates(DM,DM,Mat*);
 extern PetscErrorCode   DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode   DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode   DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
@@ -137,6 +139,7 @@ extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode   DMSetVecType(DM,const VecType);
 extern PetscErrorCode   DMSetApplicationContext(DM,void*);
+extern PetscErrorCode   DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 extern PetscErrorCode   DMGetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 extern PetscErrorCode   DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));

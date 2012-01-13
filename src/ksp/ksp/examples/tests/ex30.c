@@ -345,13 +345,13 @@ int main(int argc,char **args)
           ierr = VecAXPY(b2,-1.0,b);CHKERRQ(ierr);
           ierr = VecNorm(b2,NORM_2,&rnorm);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",rnorm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",rnorm);CHKERRQ(ierr);
         } 
         if (ckerror && !trans){  /* Check error for each rhs */
           /* ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
           ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);
           ierr = VecNorm(u,NORM_2,&enorm);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A\n",enorm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G\n",enorm);CHKERRQ(ierr);
         }
       
       } /* while ( num_rhs-- ) */
@@ -394,7 +394,7 @@ int main(int argc,char **args)
         ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &enorm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", enorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", enorm);CHKERRQ(ierr);
         ierr = VecDestroy(&xstar);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }

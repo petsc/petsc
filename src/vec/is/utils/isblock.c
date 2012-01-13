@@ -2,7 +2,6 @@
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include <petscis.h> 
 #include <petscbt.h>
-#include <petscctable.h>
 
 
 #undef __FUNCT__  
@@ -41,7 +40,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   Nbs =n/bs;
 #if defined (PETSC_USE_CTABLE)
   Nkbs = nkeys/bs;
-  ierr = PetscTableCreate(Nkbs,&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
@@ -60,7 +59,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
 #if defined (PETSC_USE_CTABLE)
       ierr = PetscTableFind(gid1_lid1,ival+1,&tt);CHKERRQ(ierr);
       if (!tt) {
-	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1);CHKERRQ(ierr);
+	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1,INSERT_VALUES);CHKERRQ(ierr);
         isz++;
       }
 #else

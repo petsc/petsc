@@ -57,7 +57,6 @@ J*/
 #define KSPPYTHON     "python"
 #define KSPBROYDEN    "broyden"
 #define KSPGCR        "gcr"
-#define KSPNGMRES     "ngmres"
 #define KSPSPECEST    "specest"
 
 /* Logging support */
@@ -270,7 +269,7 @@ extern PetscErrorCode  KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
 extern PetscErrorCode  KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
 extern PetscErrorCode  KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
-extern PetscErrorCode  KSPMonitorDefaultLSQR(KSP,PetscInt,PetscReal,void *);
+extern PetscErrorCode  KSPLSQRMonitorDefault(KSP,PetscInt,PetscReal,void *);
 extern PetscErrorCode  KSPMonitorRange(KSP,PetscInt,PetscReal,void *);
 extern PetscErrorCode  KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
 extern PetscErrorCode  KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);

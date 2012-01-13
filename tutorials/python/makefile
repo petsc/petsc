@@ -33,19 +33,19 @@ PYTHON = python
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_view > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp example1.py[co]
 
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -ksp_monitor_short -ksp_view > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
-	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1f_1.tmp
 
 runex1py:
 	-@${MPIEXEC} -n 1 python ./ex1.py -ksp_monitor_short -ksp_view > ex1py_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1py_1.out ex1py_1.tmp) then true; \
-	   else echo "Possible problem with ex1py_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1py_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1py_1.tmp example1.py[co]
 
 TESTEXAMPLES_C       = ex1.PETSc runex1 runex1py ex1.rm

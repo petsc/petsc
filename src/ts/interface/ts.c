@@ -57,7 +57,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
-.  -ts_max_time time - maximum time to compute to
+.  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
 -  -ts_monitor_draw - plot information at each timestep
@@ -75,6 +75,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscViewer    monviewer;
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNES           snes;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -84,7 +85,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&ts->time_step,PETSC_NULL);CHKERRQ(ierr);
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
@@ -93,6 +94,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
 
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -115,6 +118,37 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSolutionCreate(ts,PETSC_NULL,&ctx);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
     }
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsString("-ts_monitor_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewer ctx;
+      if (monfilename[0]) {
+        ierr = PetscViewerBinaryOpen(((PetscObject)ts)->comm,monfilename,FILE_MODE_WRITE,&ctx);CHKERRQ(ierr);
+      } else {
+        ctx = PETSC_VIEWER_BINARY_(((PetscObject)ts)->comm);
+      }
+      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      const char *ptr,*ptr2;
+      char *filetemplate;
+      if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+      /* Do some cursory validation of the input. */
+      ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
+      if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+      for (ptr++ ; ptr && *ptr; ptr++) {
+        ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
+        if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
+        if (ptr2) break;
+      }
+      ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
+    }
+
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
@@ -496,14 +530,11 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 .   F - function vector
 -   ctx - [optional] user-defined function context 
 
-    Important: 
-    The user MUST call either this routine or TSSetMatrices().
-
     Level: beginner
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetMatrices()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian()
 @*/
 PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
@@ -516,7 +547,9 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   if (f)   ts->userops->rhsfunction = f;
   if (ctx) ts->funP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {ierr = VecDuplicate(ts->vec_sol,&r);CHKERRQ(ierr);}
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  if (!ts->dm && ts->vec_sol) {ierr = VecDestroy(&r);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -525,7 +558,6 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
-   Use TSSetMatrices() for linear problems.
 
    Logically Collective on TS
 
@@ -562,8 +594,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
    
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
-.seealso: TSDefaultComputeJacobianColor(),
-          SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetMatrices()
+.seealso: SNESDefaultComputeJacobianColor(), TSSetRHSFunction()
 
 @*/
 PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
@@ -621,13 +652,13 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Important:
-   The user MUST call either this routine, TSSetRHSFunction(), or TSSetMatrices().  This routine must be used when not solving an ODE.
+   The user MUST call either this routine, TSSetRHSFunction().  This routine must be used when not solving an ODE, for example a DAE.
 
    Level: beginner
 
 .keywords: TS, timestep, set, DAE, Jacobian
 
-.seealso: TSSetMatrices(), TSSetRHSFunction(), TSSetIJacobian()
+.seealso: TSSetRHSJacobian(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
 PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 {
@@ -640,7 +671,9 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   if (f)   ts->userops->ifunction = f;
   if (ctx) ts->funP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!res && !ts->dm && ts->vec_sol) {ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);}
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  if (!ts->dm && ts->vec_sol) {ierr = VecDestroy(&res);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -756,7 +789,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 
 .keywords: TS, timestep, DAE, Jacobian
 
-.seealso: TSSetIFunction(), TSSetRHSJacobian()
+.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultComputeJacobian()
 
 @*/
 PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
@@ -1181,6 +1214,8 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
@@ -1256,6 +1291,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = PetscObjectDepublish((*ts));CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
+  ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
@@ -1401,7 +1437,7 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 
    Options Database Keys:
 .  -ts_max_steps <maxsteps> - Sets maxsteps
-.  -ts_max_time <maxtime> - Sets maxtime
+.  -ts_final_time <maxtime> - Sets maxtime
 
    Notes:
    The default maximum number of iterations is 5000. Default time is 5.0
@@ -1778,7 +1814,7 @@ PetscErrorCode  TSStep(TS ts)
   ts->time_step_prev = ts->ptime - ptime_prev;
 
   if (ts->reason < 0) {
-    if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
+    if (ts->errorifstepfailed) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
   } else if (!ts->reason) {
     if (ts->steps >= ts->max_steps)
       ts->reason = TS_CONVERGED_ITS;
@@ -1786,6 +1822,42 @@ PetscErrorCode  TSStep(TS ts)
       ts->reason = TS_CONVERGED_TIME;
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSEvaluateStep"
+/*@
+   TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  order - desired order of accuracy
+-  done - whether the step was evaluated at this order (pass PETSC_NULL to generate an error if not available)
+
+   Output Arguments:
+.  X - state at the end of the current step
+
+   Level: advanced
+
+   Notes:
+   This function cannot be called until all stages have been evaluated.
+   It is normally called by adaptive controllers before a step has been accepted and may also be called by the user after TSStep() has returned.
+
+.seealso: TSStep(), TSAdapt
+@*/
+PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec X,PetscBool *done)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidType(ts,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  if (!ts->ops->evaluatestep) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->evaluatestep)(ts,order,X,done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2619,7 +2691,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianConstant"
 /*@C
-   TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
+   TSComputeIJacobianConstant - Reuses a Jacobian that is time-independent.
 
    Collective on TS
 
@@ -2684,6 +2756,350 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetNonlinearSolveIterations"
+/*@
+   TSGetNonlinearSolveIterations - Gets the total number of linear iterations
+   used by the time integrator.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  nits - number of nonlinear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number, nonlinear, iterations
+
+.seealso:  TSGetLinearSolveIterations()
+@*/
+PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(nits,2);
+  *nits = ts->nonlinear_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetLinearSolveIterations"
+/*@
+   TSGetLinearSolveIterations - Gets the total number of linear iterations
+   used by the time integrator.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  lits - number of linear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number, linear, iterations
+
+.seealso:  TSGetNonlinearSolveIterations(), SNESGetLinearSolveIterations()
+@*/
+PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(lits,2);
+  *lits = ts->linear_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionBinary"
+/*@C
+   TSMonitorSolutionBinary - Monitors progress of the TS solvers by VecView() for the solution at each timestep. Normally the viewer is a binary file
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  x - current state
+-  viewer - binary viewer
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec x,void *viewer)
+{
+  PetscErrorCode       ierr;
+  PetscViewer          v = (PetscViewer)viewer;
+
+  PetscFunctionBegin;
+  ierr = VecView(x,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionVTK"
+/*@C
+   TSMonitorSolutionVTK - Monitors progress of the TS solvers by VecView() for the solution at each timestep.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  x - current state
+-  filenametemplate - string containing a format specifier for the integer time step (e.g. %03D)
+
+   Level: intermediate
+
+   Notes:
+   The VTK format does not allow writing multiple time steps in the same file, therefore a different file will be written for each time step.
+   These are named according to the file name template.
+
+   This function is normally passed as an argument to TSMonitorSet() along with TSMonitorSolutionVTKDestroy().
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec x,void *filenametemplate)
+{
+  PetscErrorCode ierr;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
+
+  PetscFunctionBegin;
+  ierr = PetscSNPrintf(filename,sizeof filename,(const char*)filenametemplate,step);CHKERRQ(ierr);
+  ierr = PetscViewerVTKOpen(((PetscObject)ts)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionVTKDestroy"
+/*@C
+   TSMonitorSolutionVTKDestroy - Destroy context for monitoring
+
+   Collective on TS
+
+   Input Parameters:
+.  filenametemplate - string containing a format specifier for the integer time step (e.g. %03D)
+
+   Level: intermediate
+
+   Note:
+   This function is normally passed to TSMonitorSet() along with TSMonitorSolutionVTK().
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorSolutionVTK()
+@*/
+PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*(char**)filenametemplate);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetAdapt"
+/*@
+   TSGetAdapt - Get the adaptive controller context for the current method
+
+   Collective on TS if controller has not been created yet
+
+   Input Arguments:
+.  ts - time stepping context
+
+   Output Arguments:
+.  adapt - adaptive controller
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptSetType(), TSAdaptChoose()
+@*/
+PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(adapt,2);
+  if (!ts->adapt) {
+    ierr = TSAdaptCreate(((PetscObject)ts)->comm,&ts->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(ts,ts->adapt);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
+  }
+  *adapt = ts->adapt;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetTolerances"
+/*@
+   TSSetTolerances - Set tolerances for local truncation error when using adaptive controller
+
+   Logically Collective
+
+   Input Arguments:
++  ts - time integration context
+.  atol - scalar absolute tolerances, PETSC_DECIDE to leave current value
+.  vatol - vector of absolute tolerances or PETSC_NULL, used in preference to atol if present
+.  rtol - scalar relative tolerances, PETSC_DECIDE to leave current value
+-  vrtol - vector of relative tolerances or PETSC_NULL, used in preference to atol if present
+
+   Level: beginner
+
+.seealso: TS, TSAdapt, TSVecNormWRMS()
+@*/
+PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec vrtol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (atol != PETSC_DECIDE) ts->atol = atol;
+  if (vatol) {
+    ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
+    ts->vatol = vatol;
+  }
+  if (rtol != PETSC_DECIDE) ts->rtol = rtol;
+  if (vrtol) {
+    ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
+    ts->vrtol = vrtol;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorNormWRMS"
+/*@
+   TSErrorNormWRMS - compute a weighted norm of the difference between a vector and the current state
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  Y - state vector to be compared to ts->vec_sol
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 is considered small
+
+   Level: developer
+
+.seealso: TSSetTolerances()
+@*/
+PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
+{
+  PetscErrorCode ierr;
+  PetscInt i,n,N;
+  const PetscScalar *x,*y;
+  Vec X;
+  PetscReal sum,gsum;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
+  PetscValidPointer(norm,3);
+  X = ts->vec_sol;
+  PetscCheckSameTypeAndComm(X,1,Y,2);
+  if (X == Y) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+
+  /* This is simple to implement, just not done yet */
+  if (ts->vatol || ts->vrtol) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"No support for vector scaling yet");
+
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  sum = 0.;
+  for (i=0; i<n; i++) {
+    PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+    sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+  }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+
+  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  *norm = PetscSqrtReal(gsum / N);
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetCFLTimeLocal"
+/*@
+   TSSetCFLTimeLocal - Set the local CFL constraint relative to forward Euler
+
+   Logically Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  cfltime - maximum stable time step if using forward Euler (value can be different on each process)
+
+   Note:
+   After calling this function, the global CFL time can be obtained by calling TSGetCFLTime()
+
+   Level: intermediate
+
+.seealso: TSGetCFLTime(), TSADAPTCFL
+@*/
+PetscErrorCode TSSetCFLTimeLocal(TS ts,PetscReal cfltime)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->cfltime_local = cfltime;
+  ts->cfltime = -1.;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetCFLTime"
+/*@
+   TSGetCFLTime - Get the maximum stable time step according to CFL criteria applied to forward Euler
+
+   Collective on TS
+
+   Input Arguments:
+.  ts - time stepping context
+
+   Output Arguments:
+.  cfltime - maximum stable time step for forward Euler
+
+   Level: advanced
+
+.seealso: TSSetCFLTimeLocal()
+@*/
+PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ts->cfltime < 0) {
+    ierr = MPI_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  }
+  *cfltime = ts->cfltime;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSVISetVariableBounds"

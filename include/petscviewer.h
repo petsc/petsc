@@ -60,6 +60,7 @@ J*/
 #define PETSCVIEWERMATHEMATICA  "mathematica"
 #define PETSCVIEWERNETCDF       "netcdf"
 #define PETSCVIEWERHDF5         "hdf5"
+#define PETSCVIEWERVTK          "vtk"
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERAMS          "ams"
 
@@ -185,9 +186,11 @@ typedef enum {
   PETSC_VIEWER_DRAW_LG,
   PETSC_VIEWER_DRAW_CONTOUR,
   PETSC_VIEWER_DRAW_PORTS,
+  PETSC_VIEWER_VTK_VTS,
   PETSC_VIEWER_NATIVE,
   PETSC_VIEWER_NOFORMAT
   } PetscViewerFormat;
+extern const char *const PetscViewerFormats[];
 
 extern PetscErrorCode  PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 extern PetscErrorCode  PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
@@ -278,6 +281,10 @@ extern PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
 extern PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 extern PetscErrorCode  PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 #endif
+
+typedef PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer);
+extern PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscObject);
+extern PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*
      These are all the default viewers that do not have 

@@ -129,6 +129,9 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
+  ierr = PetscFree(axis->xlabel);CHKERRQ(ierr);
+  ierr = PetscFree(axis->ylabel);CHKERRQ(ierr);
+  ierr = PetscFree(axis->toplabel);CHKERRQ(ierr);
   ierr = PetscStrallocpy(xlabel,&axis->xlabel);CHKERRQ(ierr);
   ierr = PetscStrallocpy(ylabel,&axis->ylabel);CHKERRQ(ierr);
   ierr = PetscStrallocpy(top,&axis->toplabel);CHKERRQ(ierr);

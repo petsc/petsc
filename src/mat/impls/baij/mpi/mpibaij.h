@@ -2,7 +2,6 @@
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <../src/sys/ctable.h>
 
 #if defined (PETSC_USE_CTABLE)
 #define PETSCTABLE PetscTable
@@ -68,7 +67,7 @@ typedef struct {
 extern PetscErrorCode MatLoad_MPIBAIJ(Mat,PetscViewer);
 extern PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
 extern PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
-extern PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *);
+extern PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat,PetscInt,const IS[],const IS[],MatReuse,PetscBool*,PetscBool*,Mat*);
 extern PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat,IS,IS,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscInt); 
 extern PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS *);

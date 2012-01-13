@@ -40,6 +40,26 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/vec/vec/examples/tests/ex30f':    {'numProcs': 4},
                         'src/vec/vec/examples/tests/ex33':     {'numProcs': 4},
                         'src/vec/vec/examples/tests/ex36':     {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
+                        'src/dm/impls/mesh/examples/tests/ex1': [{'numProcs': 1, 'args': '-dim 2 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view -interpolate'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -dm_view -interpolate'},
+                                                                 {'numProcs': 3, 'args': '-dim 2 -dm_view'},
+                                                                 {'numProcs': 3, 'args': '-dim 2 -dm_view -interpolate'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -dm_view'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -dm_view -interpolate'},
+                                                                 {'numProcs': 6, 'args': '-dim 3 -dm_view'},
+                                                                 {'numProcs': 6, 'args': '-dim 3 -dm_view -interpolate'},
+                                                                 {'numProcs': 10, 'args': '-dim 2 -dm_view -refinement_limit 7.63e-6'},
+                                                                 {'numProcs': 10, 'args': '-dim 3 -dm_view -refinement_limit 1.00e-7'},
+                                                                 {'numProcs': 50, 'args': '-dim 2 -dm_view -refinement_limit 7.63e-6'},
+                                                                 {'numProcs': 50, 'args': '-dim 3 -dm_view -refinement_limit 1.00e-7'}],
+                        'src/dm/impls/mesh/examples/tutorials/ex1': [{'numProcs': 1},
+                                                                     {'numProcs': 2, 'args': '-base_file src/dm/impls/mesh/examples/tutorials/data/ex1_3d_big -dim 3'}],
+                        'src/dm/impls/mesh/examples/tests/ex3': [{'numProcs': 1, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
+                                                                 {'numProcs': 2, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
+                                                                 {'numProcs': 3, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
+                                                                 {'numProcs': 5, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'}],
                         'src/dm/impls/mesh/examples/tests/TestMeshExodus': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
                                                                             {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri2.gen'},
                                                                             {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-quad.gen'},
@@ -68,8 +88,8 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex9':    [{'numProcs': 1, 'args': '-snes_mf -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}],
 #                        'src/snes/examples/tutorials/ex19':    {'numProcs': 2, 'args': '-dmmg_nlevels 4 -snes_monitor_short'},
-                        'src/snes/examples/tutorials/ex19':   [{'numProcs': 1, 'args': '-da_vec_type seq     -da_mat_type seqaij     -pc_type none -dmmg_nlevels 1 -da_grid_x 200 -da_grid_y 200 -mat_no_inode -preload off -log_summary -log_summary_py'},
-                                                               {'numProcs': 1, 'args': '-da_vec_type seqcusp -da_mat_type seqaijcusp -pc_type none -dmmg_nlevels 1 -da_grid_x 200 -da_grid_y 200 -mat_no_inode -preload off -log_summary -log_summary_py'}],
+                        'src/snes/examples/tutorials/ex19':   [{'numProcs': 1, 'args': '-dm_vec_type seq     -dm_mat_type seqaij     -pc_type none -dmmg_nlevels 1 -da_grid_x 200 -da_grid_y 200 -mat_no_inode -preload off -log_summary -log_summary_py'},
+                                                               {'numProcs': 1, 'args': '-dm_vec_type seqcusp -dm_mat_type seqaijcusp -pc_type none -dmmg_nlevels 1 -da_grid_x 200 -da_grid_y 200 -mat_no_inode -preload off -log_summary -log_summary_py'}],
                         'src/snes/examples/tutorials/ex11':   [{'numProcs': 1, 'args': '-snes_mf -snes_monitor_short -snes_converged_reason'}],
                         'src/snes/examples/tutorials/ex12':   [{'numProcs': 1, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason'},
                                                                {'numProcs': 1, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.0625'},
@@ -77,6 +97,8 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.0625'},
                                                                {'numProcs': 1, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -bc_type neumann'},
                                                                {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -bc_type neumann'}],
+                                                               #{'numProcs': 1, 'args': '-dim 3 -lambda 0.0 -ksp_rtol 1.0e-9 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.0625'},
+                                                               #{'numProcs': 2, 'args': '-dim 3 -lambda 0.0 -ksp_rtol 1.0e-9 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.005'}],
                         'src/snes/examples/tutorials/ex10':   [{'numProcs': 2, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 0'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
@@ -91,8 +113,54 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
 -snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
-                        'src/snes/examples/tutorials/ex52':   [{'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch',
-                                                                'setup': 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 src/snes/examples/tutorials/ex52.h'}],
+                        'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
+                        'src/snes/examples/tutorials/ex52':   [{'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -gpu_batches 2'},
+
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 2'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 4'},
+
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 elasticity src/snes/examples/tutorials/ex52.h'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
+
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4'},
+                                                               ],
+                        'src/snes/examples/tutorials/ex56':   [{'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex56.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex56.h'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex56.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.1 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.1 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 2 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex56.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.1 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'}
+],
+                        'src/snes/examples/tutorials/ex57':   [{'numProcs': 1, 'args': '-run_type test -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex57.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex57.h'}],
+
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -186,11 +254,11 @@ class SourceDatabaseDict(object):
     return not mark == newMark
 
   def rebuild(self, vertex):
-    if self.verbose: print 'Checking for rebuild of',vertex
+    if self.verbose: print('Checking for rebuild of',vertex)
     try:
       for dep,mark in self.dependencyGraph[vertex]:
         if self.rebuildArc(vertex, dep, mark):
-          if self.verbose: print '    dep',dep,'is changed'
+          if self.verbose: print('    dep',dep,'is changed')
           return True
     except KeyError:
       return True
@@ -284,7 +352,7 @@ class SourceDatabase(logger.Logger):
         if self.rebuildArc(vertex, dep, mark):
           self.logPrint('    dep '+str(dep)+' is changed')
           return True
-    except KeyError, e:
+    except KeyError as e:
       self.logPrint('    %s not in database' % vertex)
       return True
     return False
@@ -464,7 +532,7 @@ class DependencyBuilder(logger.Logger):
     with file(depFile) as f:
       try:
         target, deps = f.read().split(':')
-      except ValueError, e:
+      except ValueError as e:
         self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     assert(target == self.sourceManager.getObjectName(source))
@@ -557,8 +625,9 @@ class PETScMaker(script.Script):
    import os
 
    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
+   self.petscDir = os.environ['PETSC_DIR']
    arch  = self.findArch()
-   argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], arch, 'conf', 'RDict.db')
+   argDB.saveFilename = os.path.join(self.petscDir, arch, 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.logName = 'make.log'
@@ -571,7 +640,7 @@ class PETScMaker(script.Script):
    help = script.Script.setupHelp(self, help)
    #help.addArgument('PETScMaker', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
    help.addArgument('PETScMaker', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
-   help.addArgument('PETScMaker', '-arch', nargs.ArgDir(None, os.environ.get('PETSC_ARCH', None), 'The root directory for this build', isTemporary = 1))
+   help.addArgument('PETScMaker', '-arch', nargs.Arg(None, os.environ.get('PETSC_ARCH', None), 'The root directory for this build', isTemporary = 1))
    help.addArgument('PETScMaker', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('PETScMaker', '-dependencies',  nargs.ArgBool(None, True, 'Use dependencies to control build', isTemporary = 1))
    help.addArgument('PETScMaker', '-buildLibraries', nargs.ArgBool(None, True, 'Build the PETSc libraries', isTemporary = 1))
@@ -689,7 +758,7 @@ class PETScMaker(script.Script):
      self.logPrint('Moving %s to %s' % (locObj, obj))
      if not self.dryRun:
        if not os.path.isfile(locObj):
-         print 'ERROR: Missing object file',locObj
+         print('ERROR: Missing object file',locObj)
          self.operationFailed = True
        else:
          shutil.move(locObj, obj)
@@ -1059,9 +1128,9 @@ class PETScMaker(script.Script):
      depBuilder.buildDependenciesF90()
    if self.verbose > 3:
      import graph
-     print 'Source database:'
+     print('Source database:')
      for filename in self.sourceDatabase.topologicalSort(lambda x: True):
-       print '  ',filename
+       print('  ',filename)
    return
 
  def updateDependencies(self, libname, rootDir):
@@ -1106,7 +1175,9 @@ class PETScMaker(script.Script):
          self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
          for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
            self.logPrint(line)
+         self.logPrintDivider()
          self.logPrint(validOutput, indent = 0)
+         self.logPrintDivider()
          self.logPrint(output, indent = 0)
          ret = -1
        else:
@@ -1179,7 +1250,7 @@ class PETScMaker(script.Script):
      if 'examples' in dirs:
        for exroot, exdirs, exfiles in os.walk(os.path.join(root, 'examples')):
          self.logPrint('Processing '+exroot)
-         print '  Testing in root',root
+         print('  Testing in root',root)
          self.regressionTestsDir(exroot, exfiles)
          for badDir in [d for d in exdirs if not self.checkDir(os.path.join(exroot, d), allowExamples = True)]:
            exdirs.remove(badDir)
@@ -1219,7 +1290,8 @@ class PETScMaker(script.Script):
    if os.path.isfile(self.sourceDBFilename):
      os.remove(self.sourceDBFilename)
      self.logPrint('Removed '+self.sourceDBFilename)
-   shutil.rmtree(self.getObjDir(libname))
+   if os.path.exists(self.getObjDir(libname)):
+     shutil.rmtree(self.getObjDir(libname))
    self.logPrint('Removed '+self.getObjDir(libname))
    return
 

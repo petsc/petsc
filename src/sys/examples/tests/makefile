@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
                 ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c
+                ex22.c ex23.c ex24.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -91,6 +91,9 @@ ex22: ex22.o chkopts
 ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o  ${PETSC_SYS_LIB}
 	${RM} -f ex23.o
+ex24: ex24.o chkopts
+	-${CLINKER} -o ex24 ex24.o  ${PETSC_SYS_LIB}
+	${RM} -f ex24.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1
@@ -111,7 +114,7 @@ runex3:
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
-	   else echo "Possible problem with ex7_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7.tmp ex7.tmp
 
 runex10:
@@ -123,33 +126,33 @@ runex10:
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else echo "Possible problem with ex19_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex19_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex20:
 	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1;   \
-	   ${DIFF} output/ex20_1.out ex20_1.tmp || echo "Possible problem with ex20_1, diffs above"; \
+	   ${DIFF} output/ex20_1.out ex20_1.tmp || echo ${PWD} "\nPossible problem with ex20_1, diffs above \n========================================="; \
 	   ${RM} -f ex20_1.tmp
 runex20_2:
 	-@${MPIEXEC} -n 1 ./ex20 -cl -prefix_push cl_ -zero 10 -prefix_push a_ -one 11 -prefix_push bb_ -two 12 -prefix_pop -three 13 -prefix_push cc_ -prefix_push ddd_ -four 14 -prefix_pop -prefix_pop -prefix_pop -five 15 -prefix_pop > ex20_2.tmp 2>&1;   \
-	   ${DIFF} output/ex20_2.out ex20_2.tmp || echo "Possible problem with ex20_2, diffs above"; \
+	   ${DIFF} output/ex20_2.out ex20_2.tmp || echo  ${PWD} "\nPossible problem with ex20_2, diffs above \n========================================="; \
 	   ${RM} -f ex20_2.tmp
 runex20_3:
 	-@${MPIEXEC} -n 1 ./ex20 -str > ex20_3.tmp 2>&1;   \
-	   ${DIFF} output/ex20_3.out ex20_3.tmp || echo "Possible problem with ex20_3, diffs above"; \
+	   ${DIFF} output/ex20_3.out ex20_3.tmp || echo  ${PWD} "\nPossible problem with ex20_3, diffs above \n========================================="; \
 	   ${RM} -f ex20_3.tmp
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 > ex22.tmp 2>&1;   \
-	   ${DIFF} output/ex22.out ex22.tmp || echo "Possible problem with ex22, diffs above"; \
+	   ${DIFF} output/ex22.out ex22.tmp || echo  ${PWD} "\nPossible problem with ex22, diffs above \n========================================="; \
 	   ${RM} -f ex22.tmp
 runex23:
 	-@${MPIEXEC} -n 1 ./ex23 -options_file_yaml ex23options > ex23.tmp 2>&1;   \
-	   ${DIFF} output/ex23.out ex23.tmp || echo "Possible problem with ex23, diffs above"; \
+	   ${DIFF} output/ex23.out ex23.tmp || echo  ${PWD} "\nPossible problem with ex23, diffs above \n========================================="; \
 	   ${RM} -f ex23.tmp
 
 
 TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
-                                 ex22.PETSc runex22 ex22.rm
+                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_C_X11	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm

@@ -1,59 +1,59 @@
 Level 0 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements   6 x   6 x   4 (     144), size (m) 1666.67 x 1666.67 x 333.333
 Level 1 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements  12 x  12 x   7 (    1008), size (m) 833.333 x 833.333 x 166.667
-  0 SNES Function norm 28.4856 
-    0 KSP Residual norm 28.4856 
-    1 KSP Residual norm 0.112117 
-    2 KSP Residual norm 0.0020735 
-    3 KSP Residual norm 4.85712e-05 
-Linear solve converged due to CONVERGED_RTOL iterations 3
-  1 SNES Function norm 24.6184 
-    0 KSP Residual norm 24.6184 
-    1 KSP Residual norm 0.761857 
-    2 KSP Residual norm 0.0228805 
-    3 KSP Residual norm 0.000826793 
-    4 KSP Residual norm 2.5445e-05 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  2 SNES Function norm 17.8373 
-    0 KSP Residual norm 17.8373 
-    1 KSP Residual norm 1.24583 
-    2 KSP Residual norm 0.0638779 
-    3 KSP Residual norm 0.000909346 
-    4 KSP Residual norm 4.47019e-05 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  3 SNES Function norm 9.17667 
-    0 KSP Residual norm 9.17667 
-    1 KSP Residual norm 0.779535 
-    2 KSP Residual norm 0.0456505 
-    3 KSP Residual norm 0.000791563 
-    4 KSP Residual norm 4.18714e-05 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  4 SNES Function norm 2.55619 
-    0 KSP Residual norm 2.55619 
-    1 KSP Residual norm 0.178793 
-    2 KSP Residual norm 0.00882876 
-    3 KSP Residual norm 0.000437875 
-    4 KSP Residual norm 2.24893e-05 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  5 SNES Function norm 0.21204 
-    0 KSP Residual norm 0.21204 
-    1 KSP Residual norm 0.00696925 
-    2 KSP Residual norm 0.000486081 
-    3 KSP Residual norm 1.6719e-05 
-    4 KSP Residual norm 1.0185e-06 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  6 SNES Function norm 0.00143008 
-    0 KSP Residual norm 0.00143008 
-    1 KSP Residual norm 2.17976e-05 
-    2 KSP Residual norm 1.53248e-06 
-    3 KSP Residual norm 1.4251e-07 
-    4 KSP Residual norm 5.63215e-09 
-Linear solve converged due to CONVERGED_RTOL iterations 4
-  7 SNES Function norm 5.90324e-08 
+  0 SNES Function norm 28.4846 
+    0 KSP Residual norm 28.4846 
+    1 KSP Residual norm 0.112113 
+    2 KSP Residual norm 0.00207342 
+    3 KSP Residual norm 4.85694e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  1 SNES Function norm 24.6173 
+    0 KSP Residual norm 24.6173 
+    1 KSP Residual norm 0.761826 
+    2 KSP Residual norm 0.0228796 
+    3 KSP Residual norm 0.000826756 
+    4 KSP Residual norm 2.54439e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  2 SNES Function norm 17.8364 
+    0 KSP Residual norm 17.8364 
+    1 KSP Residual norm 1.24578 
+    2 KSP Residual norm 0.063876 
+    3 KSP Residual norm 0.000909292 
+    4 KSP Residual norm 4.46999e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  3 SNES Function norm 9.17615 
+    0 KSP Residual norm 9.17615 
+    1 KSP Residual norm 0.779491 
+    2 KSP Residual norm 0.0456479 
+    3 KSP Residual norm 0.000791522 
+    4 KSP Residual norm 4.18692e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  4 SNES Function norm 2.556 
+    0 KSP Residual norm 2.556 
+    1 KSP Residual norm 0.178777 
+    2 KSP Residual norm 0.0088279 
+    3 KSP Residual norm 0.000437842 
+    4 KSP Residual norm 2.24876e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  5 SNES Function norm 0.212016 
+    0 KSP Residual norm 0.212016 
+    1 KSP Residual norm 0.00696826 
+    2 KSP Residual norm 0.000486021 
+    3 KSP Residual norm 1.67167e-05 
+    4 KSP Residual norm 1.01836e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  6 SNES Function norm 0.00142982 
+    0 KSP Residual norm 0.00142982 
+    1 KSP Residual norm 2.17935e-05 
+    2 KSP Residual norm 1.53218e-06 
+    3 KSP Residual norm 1.42482e-07 
+    4 KSP Residual norm 5.63092e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  7 SNES Function norm 5.90129e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 Solution statistics after solve: Full
-CONVERGED_FNORM_RELATIVE: Number of Newton iterations = 7, total linear iterations = 27
-|X|_2 527.036   u in [-1.79245e-11, 24.1984]   v in [-2.84964, 2.84964]   c in [2.01012e-12, 24.1984] 
-Surface statistics: u in [1.266514e+01, 2.419835e+01] mean 2.014428e+01
-Global eta range   [3.03105e+10, 9.2273e+12], converged range [3.03105e+10, 9.1379e+11]
-Global beta2 range [1e+100, 0], converged range [1e+100, 0]
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 7, total linear iterations = 27
+|X|_2 526.976   -1.79183e-11 <= u <=  24.1956   -2.84931 <= v <=  2.84931   2.00902e-12 <= c <=  24.1956 
+Surface statistics: u in [1.266369e+01, 2.419559e+01] mean 2.014198e+01
+Global eta range   3.03128e+10 to 9.2273e+12 converged range 3.03128e+10 to 9.13859e+11
+Global beta2 range 1e+100 to 0 converged range 1e+100 to 0
 

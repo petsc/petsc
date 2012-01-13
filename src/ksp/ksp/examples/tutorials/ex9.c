@@ -24,7 +24,7 @@ T*/
 /* 
    Declare user-defined routines
 */
-extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscLogEvent);
+extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscReal,PetscLogEvent);
 extern PetscErrorCode MyKSPMonitor(KSP,PetscInt,PetscReal,void*);
 
 #undef __FUNCT__
@@ -266,7 +266,7 @@ int main(int argc,char **args)
     /*
        Check error of solution to first linear system
     */
-    ierr = CheckError(u,x1,b1,its,CHECK_ERROR);CHKERRQ(ierr); 
+    ierr = CheckError(u,x1,b1,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr); 
 
     /* - - - - - - - - - - - - Stage 2: - - - - - - - - - - - - - -
                  Assemble and solve second linear system            
@@ -340,7 +340,7 @@ int main(int argc,char **args)
     /*
        Check error of solution to second linear system
     */
-    ierr = CheckError(u,x2,b2,its,CHECK_ERROR);CHKERRQ(ierr); 
+    ierr = CheckError(u,x2,b2,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr); 
 
     /* 
        Conclude profiling stage #2
@@ -375,6 +375,7 @@ int main(int argc,char **args)
     x - approximate solution
     b - work vector
     its - number of iterations for convergence
+    tol - tolerance
     CHECK_ERROR - the event number for error checking
                   (for use with profiling)
 
@@ -389,7 +390,7 @@ int main(int argc,char **args)
     the event (the vectors u,x,b).  Such information is optional;
     we could instead just use 0 instead for all objects.
 */
-PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscLogEvent CHECK_ERROR)
+PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogEvent CHECK_ERROR)
 {
   PetscScalar    none = -1.0;
   PetscReal      norm;
@@ -403,7 +404,9 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscLogEvent CHECK_ERR
   ierr = VecCopy(x,b);CHKERRQ(ierr);
   ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
   return 0;
 }

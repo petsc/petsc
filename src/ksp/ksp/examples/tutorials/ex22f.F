@@ -26,40 +26,36 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
 #include <finclude/petscdmda.h>
-      DMMG             dmmg
       PetscErrorCode   ierr
       DM               da
-      external         ComputeRHS,ComputeJacobian
-      Vec              x
+      KSP              ksp
+      external         ComputeRHS,ComputeMatrix
       PetscInt i1,i3
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      i3 = 3
+      i3 = -3
       i1 = 1
-      call DMMGCreate(PETSC_COMM_WORLD,i3,PETSC_NULL_INTEGER,dmmg,ierr)
+      call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
       call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
      &    DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                               &
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
-      call DMMGSetDM(dmmg,da,ierr)
+      call DMSetFunction(da,ComputeRHS,ierr)
+      call DMSetJacobian(da,ComputeMatrix,ierr)   
+      call KSPSetDM(ksp,da,ierr)
+
+      call KSPSetFromOptions(ksp,ierr)
+      call KSPSetUp(ksp,ierr)
+      call KSPSolve(ksp,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call KSPDestroy(ksp,ierr)
       call DMDestroy(da,ierr)
-
-
-      call DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian,ierr)
-
-      call DMMGSolve(dmmg,ierr)
-
-      call DMMGGetx(dmmg,x,ierr)
-!      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
-
-      call DMMGDestroy(dmmg,ierr)
       call PetscFinalize(ierr)
 
       end
 
-      subroutine ComputeRHS(dmmg,b,ierr)
+      subroutine ComputeRHS(da,x,b,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -69,11 +65,9 @@
       PetscErrorCode  ierr
       PetscInt mx,my,mz
       PetscScalar  h
-      Vec          b
-      DMMG         dmmg
+      Vec          x,b
       DM           da
 
-      call DMMGGetDM(dmmg,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -87,7 +81,7 @@
       end
 
     
-      subroutine ComputeJacobian(dmmg,JJ,jac,ierr)
+      subroutine ComputeMatrix(da,x,JJ,jac,str,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -95,7 +89,6 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscdmda.h>
 
-      DMMG         dmmg
       Mat          jac,JJ
       PetscErrorCode    ierr
 
@@ -106,10 +99,10 @@
       PetscScalar  HxHydHz,HyHzdHx
       PetscScalar  HxHzdHy
       MatStencil   row(4),col(4,7)
-
+      Vec          x
+      MatStructure str
       i1 = 1
       i7 = 7
-      call DMMGGetDM(dmmg,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &

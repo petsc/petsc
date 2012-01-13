@@ -171,7 +171,7 @@ int main(int argc,char **args)
        Print convergence information.  PetscPrintf() produces a single 
        print statement from all processes that share a communicator.
     */
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A System %D: iterations %D\n",norm,k,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G System %D: iterations %D\n",norm,k,its);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

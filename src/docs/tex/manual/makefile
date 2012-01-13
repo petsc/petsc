@@ -26,7 +26,7 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
 	${PDFLATEX} manual1  ${GONULL}
-	bibtex manual1 ${GONULL}
+	-bibtex manual1 ${GONULL}
 	${PDFLATEX} manual1  ${GONULL}
 	${PDFLATEX} manual1  ${GONULL}
 	makeindex manual1  ${GONULL}

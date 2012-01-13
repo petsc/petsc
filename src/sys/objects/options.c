@@ -317,7 +317,7 @@ PetscErrorCode  PetscOptionsInsertString(const char in_str[])
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
     }
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -448,7 +448,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           }
         }
         destroy:
-        ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
       }
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
@@ -478,7 +478,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       ierr = PetscOptionsSetAlias(first,second);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     }
-    ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   }
 
   ierr = MPI_Bcast(&cnt,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -505,7 +505,7 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
 
   PetscFunctionBegin;
   while (left) {
-    PetscBool  isoptions_file,isprefixpush,isprefixpop,isp4,tisp4,isp4yourname,isp4rmrank;
+    PetscBool  isoptions_file,isprefixpush,isprefixpop,isp4,tisp4,isp4yourname,isp4rmrank,key;
     ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-prefix_push",&isprefixpush);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-prefix_pop",&isprefixpop);CHKERRQ(ierr);
@@ -517,8 +517,9 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
     ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
     isp4 = (PetscBool) (isp4 || tisp4);
     ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
+    ierr = PetscOptionsValidKey(eargs[0],&key);CHKERRQ(ierr);
 
-    if (eargs[0][0] != '-') {
+    if (!key) {
       eargs++; left--;
     } else if (isoptions_file) {
       if (left <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
@@ -729,8 +730,8 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  size_t         len = 1,lent;
-  char           *coptions;
+  size_t         len = 1,lent = 0;
+  char           *coptions = PETSC_NULL;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -753,7 +754,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
     if (options->values[i]) {
       ierr = PetscStrcat(coptions,options->values[i]);CHKERRQ(ierr);
       ierr = PetscStrcat(coptions," ");CHKERRQ(ierr);
-    } 
+    }
   }
   *copts = coptions;
   PetscFunctionReturn(0);
@@ -1528,7 +1529,7 @@ PetscErrorCode  PetscOptionsGetBoolArray(const char pre[],const char name[],Pets
     dvalue++;
     n++;
   }
-  ierr  = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 }
@@ -1646,7 +1647,7 @@ PetscErrorCode  PetscOptionsGetScalar(const char pre[],const char name[],PetscSc
         ierr    = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
         *dvalue = re + PETSC_i*im;
       } 
-      ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
+      ierr    = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #endif
       if (set) *set    = PETSC_TRUE;
     } 
@@ -1711,7 +1712,7 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1796,7 +1797,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
     }
     ierr      = PetscTokenFind(token,&value);CHKERRQ(ierr);
   }
-  ierr      = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr      = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1946,9 +1947,43 @@ PetscErrorCode  PetscOptionsGetStringArray(const char pre[],const char name[],ch
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsUsed"
+/*@C
+   PetscOptionsUsed - Indicates if PETSc has used a particular option set in the database
+
+   Not Collective
+
+   Input Parameter:
+.    option - string name of option
+
+   Output Parameter:
+.   used - PETSC_TRUE if the option was used, otherwise false, including if option was not found in options database
+
+   Level: advanced
+
+.seealso: PetscOptionsView(), PetscOptionsLeft(), PetscOptionsAllUsed()
+@*/
+PetscErrorCode  PetscOptionsUsed(const char *option,PetscBool *used)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *used = PETSC_FALSE;
+  for (i=0; i<options->N; i++) {
+    ierr = PetscStrcmp(options->names[i],option,used);CHKERRQ(ierr);
+    if (*used) {
+      *used = options->used[i];
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

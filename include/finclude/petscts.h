@@ -4,6 +4,21 @@
 #include "finclude/petsctsdef.h"
 
 !
+!  Convergence flags
+!
+      PetscEnum TS_CONVERGED_ITERATING
+      PetscEnum TS_CONVERGED_TIME
+      PetscEnum TS_CONVERGED_ITS
+      PetscEnum TS_DIVERGED_NONLINEAR_SOLVE
+      PetscEnum TS_DIVERGED_STEP_REJECTED
+
+      parameter (TS_CONVERGED_ITERATING      = 0)
+      parameter (TS_CONVERGED_TIME           = 1)
+      parameter (TS_CONVERGED_ITS            = 2)
+      parameter (TS_DIVERGED_NONLINEAR_SOLVE = -1)
+      parameter (TS_DIVERGED_STEP_REJECTED   = -2)
+
+!
 !  TSProblemType
 !
       PetscEnum TS_LINEAR
@@ -25,8 +40,6 @@
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !
-      external TSDEFAULTCOMPUTEJACOBIAN
-      external TSDEFAULTCOMPUTEJACOBIANCOLOR
       external TSCOMPUTERHSFUNCTIONLINEAR
       external TSCOMPUTERHSJACOBIANCONSTANT
       external TSCOMPUTEIFUNCTIONLINEAR

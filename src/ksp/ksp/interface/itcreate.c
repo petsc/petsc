@@ -431,6 +431,7 @@ $           set size, type, etc of mat and pmat
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
+  MatNullSpace   nullsp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -444,6 +445,12 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
+  }
+  if (Amat) {
+    ierr = MatGetNullSpace(Amat, &nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -752,7 +759,7 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
 
   Level: advanced
 
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace()
+.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatSetNullSpace()
 @*/
 PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 {

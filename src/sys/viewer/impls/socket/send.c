@@ -105,7 +105,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr_list[0],hp->h_length);CHKERRQ(ierr);
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
@@ -173,7 +173,6 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   PetscErrorCode     ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
-  int                optval = 1; /* Turn on the option */
 
   PetscFunctionBegin;
   ierr = PetscGetHostName(myname,MAXHOSTNAME);CHKERRQ(ierr);
@@ -187,7 +186,12 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   sa.sin_port = htons((u_short)portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
-  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SO_REUSEADDR)
+  {
+    int optval = 1; /* Turn on the option */
+    ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+  }
+#endif
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
@@ -1329,7 +1333,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
   theend:
-  ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
 

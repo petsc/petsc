@@ -16,4 +16,4 @@ matrix 1 norm = 34.0627
   7 KSP Residual norm 0.00013597 
   8 KSP Residual norm 1.24352e-05 
   9 KSP Residual norm < 1.e-11
-Norm of error < 1.e-12, Number of iterations 9
+Norm of error 5.85503e-13 Number of iterations 9

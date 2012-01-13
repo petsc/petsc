@@ -1,7 +1,7 @@
 
 ALL: lib 
 
-CFLAGS    =
+CFLAGS    = ${VALGRIND_INCLUDE}
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = gcomm.c   gtype.c   olist.c    pname.c  tagm.c \
@@ -15,7 +15,7 @@ OBJSC	  = gcomm.o   gtype.o   olist.o    pname.o  tagm.o \
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  = pthread
 LOCDIR	  = src/sys/objects/
 
 include ${PETSC_DIR}/conf/variables

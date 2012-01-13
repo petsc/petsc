@@ -38,7 +38,7 @@ typedef struct {
   VecScatter             gton;               /* vector scatter from global to natural */
   PetscMPIInt            *neighbors;         /* ranks of all neighbors and self */
 
-  ISColoring             localcoloring;       /* set by DMGetColoring() */
+  ISColoring             localcoloring;       /* set by DMCreateColoring() */
   ISColoring             ghostedcoloring;  
 
   DMDAElementType          elementtype;
@@ -110,6 +110,7 @@ extern PetscErrorCode DMView_DA_Private(DM);
 extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
+extern PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
 
 extern PetscLogEvent  DMDA_LocalADFunction;
 

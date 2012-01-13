@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,its,idx[4],count,*rows;
   PetscScalar    val,Ke[16],r[4];
-  PetscReal      x,y,h,norm;
+  PetscReal      x,y,h,norm,tol=1.e-14;
   Vec            u,ustar,b;
   KSP            ksp;
 
@@ -124,7 +124,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm*h,its);CHKERRQ(ierr);
+  }
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&ustar);CHKERRQ(ierr);

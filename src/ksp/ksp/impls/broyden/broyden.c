@@ -31,7 +31,7 @@ PetscErrorCode KSPSetUp_Broyden(KSP ksp)
 
 
    Input Parameter:
-.     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
+   .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPBROYDEN);
 */
 #undef __FUNCT__  
@@ -69,8 +69,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   KSPLogResidualHistory(ksp,gnorm);
   ierr = KSPMonitor(ksp,0,gnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
-
-  if (1) {
+  if (0) {
     PetscScalar rdot,abr;
     Vec         y,w;
     ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
@@ -85,7 +84,6 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   } else {
     ierr = VecAXPY(X,1.0,Pold);CHKERRQ(ierr);                    /*     x = x + p */
   }
-
   for (k=0; k<ksp->max_it; k += cg->msize) {
     for (i=0; i<cg->msize && k+i<ksp->max_it; i++) {
       ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /*     r <- b - Ax     */
@@ -102,38 +100,36 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
-      if (1) {
+      if (0) {
         ierr = VecScale(P,A0);CHKERRQ(ierr);
       }
-
-      for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
+      for (j=0; j<i; j++) {                                     /* p = J^{-1}_{k-1} p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
       }
-      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* w[i] = Pold */
 
-      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* v[i] =       p           */
+      ierr = VecCopy(Pold, W[i]);CHKERRQ(ierr);                 /* w[i] = Pold */
+      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                /* v[i] =       p           */
       ierr = VecDot(W[i],Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
-      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         w[i]'*(Pold - p)    */
+      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                     /*         w[i]'*(Pold - p)    */
       ierr = VecScale(V[i],1.0/gdot);CHKERRQ(ierr);
 
       ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* p = (I + v[i]*w[i]')*p  */
       ierr = VecAXPY(P,gdot,V[i]);CHKERRQ(ierr);
       ierr = VecCopy(P,Pold);CHKERRQ(ierr);
-
-      if (1) {
+      if (0) {
         PetscScalar rdot,abr;
         Vec         y,w;
         ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
         ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
         ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
-    ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
-	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
+	ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
+	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);      /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
         ierr = VecDestroy(&y);CHKERRQ(ierr);
         ierr = VecDestroy(&w);CHKERRQ(ierr);
 	ierr = VecAXPY(X,rdot/abr,P);CHKERRQ(ierr);             /*   x  <- x + scale p */
       } else {
-        ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                    /* x = x + p */
+        ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                  /* x = x + p */
       }
     }
   }
@@ -215,13 +211,13 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPBROYDEN - Limited memory "bad" Broyden method implemented for linear problems.
+     KSPBROYDEN - Limited memory "good" Broyden method implemented for linear problems.
 
    Level: beginner
 
    Notes: Supports only left preconditioning
 
-          Implemented for experimentation reasons, not intended to replace any of the Krylov methods
+   Developer Notes: this code should be rewritten by Peter Brune based on the nonlinear qn code.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 

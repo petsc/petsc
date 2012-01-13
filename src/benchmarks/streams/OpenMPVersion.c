@@ -42,8 +42,8 @@
 /*-----------------------------------------------------------------------*/
 # include <stdio.h>
 # include <math.h>
-# include <float.h>
 # include <limits.h>
+# include <float.h>
 # include <sys/time.h>
 
 /* INSTRUCTIONS:
@@ -58,7 +58,7 @@
 #   define N    2000000
 #endif
 #ifndef NTIMES
-#   define NTIMES       10
+#   define NTIMES       50
 #endif
 #ifndef OFFSET
 #   define OFFSET       0
@@ -128,14 +128,14 @@ int main()
 
     /* --- SETUP --- determine precision and check timing --- */
 
-    printf(HLINE);
+    /*printf(HLINE);
     printf("STREAM version $Revision: 5.9 $\n");
-    printf(HLINE);
+     printf(HLINE); */
     BytesPerWord = sizeof(double);
-    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-        BytesPerWord);
+    /*    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
+     BytesPerWord);
 
-    printf(HLINE);
+     printf(HLINE);
 #ifdef NO_LONG_LONG
     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
 #else
@@ -147,17 +147,18 @@ int main()
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
 
-    printf(HLINE);
+     printf(HLINE); */
 #pragma omp parallel 
     {
 #pragma omp master
         {
             k = omp_get_num_threads();
-            printf ("Number of Threads requested = %i\n",k);
+    printf(HLINE);
+            printf ("Number of OpenMP Threads requested = %i\n",k);
         }
     }
 
-    printf(HLINE);
+
 
     /* Get initial value for system clock. */
 #pragma omp parallel for
@@ -167,14 +168,14 @@ int main()
         c[j] = 0.0;
         }
 
-    printf(HLINE);
+    /*printf(HLINE);*/
 
     if  ( (quantum = checktick()) >= 1) 
-        printf("Your clock granularity/precision appears to be "
-            "%d microseconds.\n", quantum);
+      ;/*  printf("Your clock granularity/precision appears to be "
+        "%d microseconds.\n", quantum);*/
     else {
-        printf("Your clock granularity appears to be "
-            "less than one microsecond.\n");
+      ;/*  printf("Your clock granularity appears to be "
+        "less than one microsecond.\n");*/
         quantum = 1;
     }
 
@@ -184,13 +185,13 @@ int main()
         a[j] = 2.0E0 * a[j];
     t = 1.0E6 * (mysecond() - t);
 
-    printf("Each test below will take on the order"
+    /*printf("Each test below will take on the order"
         " of %d microseconds.\n", (int) t  );
     printf("   (= %d clock ticks)\n", (int) (t/quantum) );
     printf("Increase the size of the arrays if this shows that\n");
     printf("you are not getting at least 20 clock ticks per test.\n");
 
-    printf(HLINE);
+     printf(HLINE);*/
 
     /*  --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
@@ -256,11 +257,11 @@ int main()
 
 	printf("%s%11.4f  \n", label[j], 1.0E-06 * bytes[j]/mintime[j]);
     }
-    printf(HLINE);
+    /* printf(HLINE);*/
 
     /* --- Check Results --- */
     checkSTREAMresults();
-    printf(HLINE);
+    /*    printf(HLINE);*/
 
     return 0;
 }
@@ -375,7 +376,7 @@ void checkSTREAMresults ()
 		printf ("        Observed  : %f \n",csum);
 	}
 	else {
-		printf ("Solution Validates\n");
+          ;/*	printf ("Solution Validates\n"); */
 	}
 }
 

@@ -4,13 +4,17 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/phasefield
-EXAMPLESC       = potentials.c heat.c biharmonic.c biharmonic2.c
+EXAMPLESC       = potentials.c heat.c biharmonic.c biharmonic2.c convert.c
 EXAMPLESF       = 
 EXAMPLESFH      = 
 MANSEC          = TS
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
+
+convert: convert.o  chkopts
+	-${CLINKER} -o convert convert.o  ${PETSC_TS_LIB}
+	${RM} convert.o
 
 potentials: potentials.o  chkopts
 	-${CLINKER} -o potentials potentials.o  ${PETSC_TS_LIB}

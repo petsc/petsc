@@ -59,13 +59,13 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      ierr = MPI_Comm_rank(comm, &commRank);
+      ierr = MPI_Comm_rank(comm, &commRank);CHKERRXX(ierr);
       if (commRank != 0) return;
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscViewerFileSetName(viewer, filename.c_str());
-      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRXX(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRXX(ierr);
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRXX(ierr);
       // Read header
       if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
       // Number of vertices
@@ -80,7 +80,7 @@ namespace ALE {
       x = strtok(NULL, " ");
       // ???
       x = strtok(NULL, " ");
-      ierr = PetscMalloc(numVertices*dim * sizeof(PetscReal), &coords);
+      ierr = PetscMalloc(numVertices*dim * sizeof(PetscReal), &coords);CHKERRXX(ierr);
       for(PetscInt i = 0; i < numVertices; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
@@ -92,7 +92,7 @@ namespace ALE {
         }
       }
       *coordinates = coords;
-      ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);
+      ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);CHKERRXX(ierr);
       for(PetscInt i = 0; i < numElements; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
@@ -108,7 +108,7 @@ namespace ALE {
         }
       }
       *vertices = verts;
-      ierr = PetscViewerDestroy(&viewer);
+      ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
     };
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
@@ -146,11 +146,11 @@ namespace ALE {
       PetscErrorCode ierr;
 
       if (mesh->commRank() != 0) return;
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscViewerFileSetName(viewer, filename.c_str());
-      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRXX(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRXX(ierr);
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRXX(ierr);
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRXX(ierr);
       // Read header
       if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
       // Check file type
@@ -187,7 +187,7 @@ namespace ALE {
         }
         fault->allocatePoint();
       }
-      ierr = PetscViewerDestroy(&viewer);
+      ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
     };
 #endif
   }

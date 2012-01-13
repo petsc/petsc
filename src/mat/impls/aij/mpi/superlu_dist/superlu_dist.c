@@ -22,6 +22,10 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 
+/*
+    GLOBAL - The sparse matrix and right hand side are all stored initially on process 0. Should be called centralized
+    DISTRIBUTED - The sparse matrix and right hand size are initially stored across the entire MPI communicator.
+*/
 typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 const char *SuperLU_MatInputModes[] = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
 
@@ -631,7 +635,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     options.IterRefine = NOREFINE;
     ierr = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) {
-      options.IterRefine = DOUBLE;    
+      options.IterRefine = SLU_DOUBLE;
     }
 
     if (PetscLogPrintInfo) {
@@ -695,7 +699,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscBools[options.Equil != NO]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == DOUBLE]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == SLU_DOUBLE]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
  
@@ -762,7 +766,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 . -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
 . -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern> (choose one of) SamePattern SamePattern_SameRowPerm
+. -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 

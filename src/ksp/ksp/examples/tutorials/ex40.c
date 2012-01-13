@@ -68,9 +68,9 @@ int main(int Argc,char **Args)
 
   /* construct matrix */
   if( comm_size == 1 ) {
-    ierr = DMGetMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
-    ierr = DMGetMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
   }
 
   /* get local corners for this processor, user is responsible for freeing lcs,lce */
@@ -167,7 +167,7 @@ int main(int Argc,char **Args)
 
   /* permutation matrix to check whether H and HtH are identical to the ones in the paper */
 /*   Mat perm; */
-/*   ierr = ADDAGetMatrix(adda, MATSEQAIJ, &perm);CHKERRQ(ierr); */
+/*   ierr = ADDACreatematrix(adda, MATSEQAIJ, &perm);CHKERRQ(ierr); */
 /*   PetscInt row, col; */
 /*   PetscScalar one = 1.0; */
 /*   for(PetscInt i=0; i<n; i++) { */

@@ -4,6 +4,15 @@
 #if !defined(__PETSCDMIGA_H)
 #define __PETSCDMIGA_H
 
+/*S
+  DMIGA - DM object that encapsulates Iso-Geometric Analysis over a Cartesian mesh, which is represented using a DMDA.
+
+  Level: intermediate
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMIGACreate(), DMDA
+S*/
 #include <petscdm.h>
 #include <petscdmda.h>
 

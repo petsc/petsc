@@ -3,6 +3,7 @@
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir:
+	-@${PETSC_DIR}/bin/petscnagupgrade.py
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
@@ -217,6 +218,61 @@ tree: ${ACTION}
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
+	  done
+
+treenodir: ${ACTION}
+	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
+            if [ -d $$dir ]; then \
+	      r=`grep -w requirespackage $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+	      r=`grep -w requiresfunction $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+	      r=`grep -w requiresdefine $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requireslanguage $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requiresscalar $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requiresprecision $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+            else \
+              continue; \
+            fi; \
+            (cd $$dir ; \
+            ${OMAKE} treenodir ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
 	  done
 
 # Performs the specified action throughout the directory tree
@@ -467,6 +523,8 @@ getmpiexec:
 	  if [ "$$?" != 1 ]; then \
           echo "--------------Error detected during compile or link!-----------------------";\
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/faq.html";\
+          echo ${PWD} $* ;\
+          echo "---------------------------------------------------------------------------";\
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
@@ -507,6 +565,8 @@ getmpiexec:
 	  if [ "$$?" != 1 ]; then \
           echo "--------------Error detected during compile or link!-----------------------";\
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/faq.html";\
+          echo ${PWD} $* ;\
+          echo "---------------------------------------------------------------------------";\
 	  cat trashz ; fi; ${RM} trashz;
 
 #--------------------------------------------------------------------------------------
@@ -557,7 +617,7 @@ manualpages_buildcite: chk_manualpage_dir
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
+		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH} ${SOURCECU};  fi 
 #
 #
 manualpages:
@@ -567,7 +627,7 @@ manualpages:
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
-		${SOURCEC} ${SOURCEH}; \
+		${SOURCEC} ${SOURCEH} ${SOURCECU}; \
 		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi 
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions

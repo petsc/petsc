@@ -42,10 +42,7 @@ extern "C" {
 }
 #endif
 #ifdef PETSC_HAVE_PARMETIS
-extern "C" {
   #include <parmetis.h>
-  extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
-}
 #endif
 #ifdef PETSC_HAVE_HMETIS
 extern "C" {
@@ -182,45 +179,45 @@ namespace ALE {
       //   partition: this section is over the partitions and takes points as values
       // TODO: Read parameters from options
       template<typename Section, typename MeshManager>
-      void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
+      void partition(const PetscInt numVertices, const PetscInt start[], const PetscInt adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
         //static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
-        int    nvtxs      = numVertices; // The number of vertices in full graph
-        int   *vtxdist;                  // Distribution of vertices across processes
-        int   *xadj       = const_cast<int*>(start);       // Start of edge list for each vertex
-        int   *adjncy     = const_cast<int*>(adjacency);   // Edge lists for all vertices
-        int   *vwgt       = NULL;        // Vertex weights
-        int   *adjwgt     = NULL;        // Edge weights
-        int    wgtflag    = 0;           // Indicates which weights are present
-        int    numflag    = 0;           // Indicates initial offset (0 or 1)
-        int    ncon       = 1;           // The number of weights per vertex
-        int    nparts     = partition->commSize(); // The number of partitions
-        float *tpwgts;                   // The fraction of vertex weights assigned to each partition
-        float *ubvec;                    // The balance intolerance for vertex weights
-        int    options[5];               // Options
-        int    maxSize    = 0;
+        PetscInt   nvtxs      = numVertices; // The number of vertices in full graph
+        PetscInt  *vtxdist;                  // Distribution of vertices across processes
+        PetscInt  *xadj       = const_cast<PetscInt*>(start);       // Start of edge list for each vertex
+        PetscInt  *adjncy     = const_cast<PetscInt*>(adjacency);   // Edge lists for all vertices
+        PetscInt  *vwgt       = NULL;        // Vertex weights
+        PetscInt  *adjwgt     = NULL;        // Edge weights
+        PetscInt   wgtflag    = 0;           // Indicates which weights are present
+        PetscInt   numflag    = 0;           // Indicates initial offset (0 or 1)
+        PetscInt   ncon       = 1;           // The number of weights per vertex
+        PetscInt   nparts     = partition->commSize(); // The number of partitions
+        PetscReal *tpwgts;                   // The fraction of vertex weights assigned to each partition
+        PetscReal *ubvec;                    // The balance intolerance for vertex weights
+        PetscInt   options[5];               // Options
+        PetscInt   maxSize    = 0;
         // Outputs
-        int        edgeCut;              // The number of edges cut by the partition
+        PetscInt   edgeCut;                  // The number of edges cut by the partition
         part_type *assignment;
 
         options[0] = 0; // Use all defaults
         // Calculate vertex distribution
         //   Not sure this still works in parallel
-        vtxdist    = new int[nparts+1];
+        vtxdist    = new PetscInt[nparts+1];
         vtxdist[0] = 0;
-        MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, partition->comm());
-        for(int p = 2; p <= nparts; ++p) {
+        MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, partition->comm());
+        for(PetscInt p = 2; p <= nparts; ++p) {
           vtxdist[p] += vtxdist[p-1];
         }
         // Calculate weights
-        tpwgts     = new float[ncon*nparts];
+        tpwgts     = new PetscReal[ncon*nparts];
         for(int p = 0; p < nparts; ++p) {
           tpwgts[p] = 1.0/nparts;
         }
-        ubvec      = new float[ncon];
+        ubvec      = new PetscReal[ncon];
         ubvec[0]   = 1.05;
 
         assignment = this->_allocator.allocate(nvtxs);
-        for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
+        for(PetscInt i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
 
         if (partition->commSize() == 1) {
           PetscMemzero(assignment, nvtxs * sizeof(part_type));
@@ -235,7 +232,11 @@ namespace ALE {
           }
           if (vtxdist[1] == vtxdist[nparts]) {
             if (partition->commRank() == 0) {
-              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+              /* Parameters changes (Matt, check to make sure works):
+               * (removed) numflags
+               * (changed) options -> NULL implies all defaults (only for  METIS, not ParMETIS!)
+               */
+              METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
               if (partition->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
             }
           } else {
@@ -249,17 +250,17 @@ namespace ALE {
         delete [] tpwgts;
         delete [] ubvec;
 
-        for(int v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
+        for(PetscInt v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
         partition->allocatePoint();
-        for(int p = 0; p < partition->commSize(); ++p) {
+        for(PetscInt p = 0; p < partition->commSize(); ++p) {
           maxSize = std::max(maxSize, partition->getFiberDimension(p));
         }
         typename Section::value_type *values = new typename Section::value_type[maxSize];
 
-        for(int p = 0; p < partition->commSize(); ++p) {
+        for(PetscInt p = 0; p < partition->commSize(); ++p) {
           int k = 0;
 
-          for(int v = 0; v < nvtxs; ++v) {
+          for(PetscInt v = 0; v < nvtxs; ++v) {
             if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
@@ -267,7 +268,7 @@ namespace ALE {
         }
         delete [] values;
 
-        for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
+        for(PetscInt i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
         this->_allocator.deallocate(assignment, nvtxs);
       };
     };
@@ -385,7 +386,7 @@ namespace ALE {
         int       c       = 0;
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-          const double *coords = mesh->restrictClosure(coordinates, *c_iter);
+          const typename Mesh::real_section_type::value_type *coords = mesh->restrictClosure(coordinates, *c_iter);
 
           for(int d = 0; d < dim; ++d) {
             vCoords[d][c] = 0.0;
@@ -628,6 +629,7 @@ namespace ALE {
           sendOverlap->addArrow(points[i], *p_iter, points[i]);
         }
       }
+      sendOverlap->assemblePoints();
       if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
       const typename RecvPartOverlap::capSequence::iterator rBegin = recvPartOverlap->capBegin();
       const typename RecvPartOverlap::capSequence::iterator rEnd   = recvPartOverlap->capEnd();
@@ -662,6 +664,7 @@ namespace ALE {
           }
         }
       }
+      recvOverlap->assemblePoints();
       if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
     }
     // Create a partition point overlap from a partition
@@ -1405,6 +1408,76 @@ namespace ALE {
       delete [] values;
       PETSc::Log::Event("PartitionClosure").end();
     }
+#undef __FUNCT__
+#define __FUNCT__ "createPartitionClosureV"
+    template<typename Mesh>
+    static PetscErrorCode createPartitionClosureV(const Obj<Mesh>& mesh, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition, const int height = 0) {
+      typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
+      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
+      const PetscInt                       *partArray;
+      PetscInt                             *allPoints;
+      PetscInt                              rStart, rEnd, size;
+      PetscErrorCode                        ierr;
+
+      PetscFunctionBegin;
+      PETSc::Log::Event("PartitionClosure").begin();
+      ierr = PetscSectionGetChart(pointSection, &rStart, &rEnd);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(mesh->comm(), section);CHKERRQ(ierr);
+      ierr = PetscSectionSetChart(*section, rStart, rEnd);CHKERRQ(ierr);
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(PetscInt p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionSetDof(*section, rank, cV.getPoints().size());CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(*section, &size);CHKERRQ(ierr);
+      ierr = PetscMalloc(size * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
+
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset, newOffset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(int p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionGetOffset(*section, rank, &newOffset);CHKERRQ(ierr);
+
+          for(typename std::set<typename Mesh::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++newOffset) {
+            allPoints[newOffset] = *p_iter;
+          }
+        }
+      }
+      ierr = ISRestoreIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(mesh->comm(), size, allPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+      PETSc::Log::Event("PartitionClosure").end();
+      PetscFunctionReturn(0);
+    }
     // Create a section mapping points to partitions
     template<typename Section, typename MapSection>
     static void createPartitionMap(const Obj<Section>& partition, const Obj<MapSection>& partitionMap) {
@@ -1798,36 +1871,36 @@ namespace ALE {
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieve"
         static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
-          int    nvtxs      = 0;    // The number of vertices in full graph
-          int   *vtxdist;           // Distribution of vertices across processes
-          int   *xadj;              // Start of edge list for each vertex
-          int   *adjncy;            // Edge lists for all vertices
-          int   *vwgt       = NULL; // Vertex weights
-          int   *adjwgt     = NULL; // Edge weights
-          int    wgtflag    = 0;    // Indicates which weights are present
-          int    numflag    = 0;    // Indicates initial offset (0 or 1)
-          int    ncon       = 1;    // The number of weights per vertex
-          int    nparts     = bundle->commSize(); // The number of partitions
-          float *tpwgts;            // The fraction of vertex weights assigned to each partition
-          float *ubvec;             // The balance intolerance for vertex weights
-          int    options[5];        // Options
+          PetscInt    nvtxs      = 0;    // The number of vertices in full graph
+          PetscInt   *vtxdist;           // Distribution of vertices across processes
+          PetscInt   *xadj;              // Start of edge list for each vertex
+          PetscInt   *adjncy;            // Edge lists for all vertices
+          PetscInt   *vwgt       = NULL; // Vertex weights
+          PetscInt   *adjwgt     = NULL; // Edge weights
+          PetscInt    wgtflag    = 0;    // Indicates which weights are present
+          PetscInt    numflag    = 0;    // Indicates initial offset (0 or 1)
+          PetscInt    ncon       = 1;    // The number of weights per vertex
+          PetscInt    nparts     = bundle->commSize(); // The number of partitions
+          PetscReal  *tpwgts;            // The fraction of vertex weights assigned to each partition
+          PetscReal  *ubvec;             // The balance intolerance for vertex weights
+          int         options[5];        // Options
           // Outputs
-          int    edgeCut;           // The number of edges cut by the partition
-          int   *assignment = NULL; // The vertex partition
+          PetscInt    edgeCut;           // The number of edges cut by the partition
+          PetscInt   *assignment = NULL; // The vertex partition
 
           options[0] = 0; // Use all defaults
-          vtxdist    = new int[nparts+1];
+          vtxdist    = new PetscInt[nparts+1];
           vtxdist[0] = 0;
-          tpwgts     = new float[ncon*nparts];
-          for(int p = 0; p < nparts; ++p) {
+          tpwgts     = new PetscReal[ncon*nparts];
+          for(PetscInt p = 0; p < nparts; ++p) {
             tpwgts[p] = 1.0/nparts;
           }
-          ubvec      = new float[ncon];
+          ubvec      = new PetscReal[ncon];
           ubvec[0]   = 1.05;
           nvtxs      = bundle->heightStratum(0)->size();
           assignment = new part_type[nvtxs];
-          MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, bundle->comm());
-          for(int p = 2; p <= nparts; ++p) {
+          MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, bundle->comm());
+          for(PetscInt p = 2; p <= nparts; ++p) {
             vtxdist[p] += vtxdist[p-1];
           }
           if (bundle->commSize() == 1) {
@@ -1836,16 +1909,19 @@ namespace ALE {
             ALE::New::Partitioner<bundle_type>::buildDualCSR(bundle, dim, &xadj, &adjncy);
 
             if (bundle->debug() && nvtxs) {
-              for(int p = 0; p <= nvtxs; ++p) {
+              for(PetscInt p = 0; p <= nvtxs; ++p) {
                 std::cout << "["<<bundle->commRank()<<"]xadj["<<p<<"] = " << xadj[p] << std::endl;
               }
-              for(int i = 0; i < xadj[nvtxs]; ++i) {
+              for(PetscInt i = 0; i < xadj[nvtxs]; ++i) {
                 std::cout << "["<<bundle->commRank()<<"]adjncy["<<i<<"] = " << adjncy[i] << std::endl;
               }
             }
             if (vtxdist[1] == vtxdist[nparts]) {
               if (bundle->commRank() == 0) {
-                METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+                /* Parameters changes (Matt, check to make sure it's right):
+                 * (removed) numflags
+                 */
+                METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
                 if (bundle->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
               }
             } else {

@@ -1,33 +1,29 @@
-	[0]PCSetUp_GAMG level 0 N=3362, n data rows=1, n data cols=2, nnz/row (ave)=17, np=4
-	createProlongation ave nnz/row 9 --> 7
-		[0]PCSetUp_GAMG 1) N=578, bs=2, n data cols=2, nnz/row (ave)=20, 1 active pes
-	[0]PCSetUp_GAMG 2 levels
-PCSetUp_GAMG max eigen = 2.296263e+00 min = 3.759780e-01
-  0 KSP Residual norm 27.8099 
-  1 KSP Residual norm 18.8105 
-  2 KSP Residual norm 10.1772 
-  3 KSP Residual norm 7.70393 
-  4 KSP Residual norm 10.7238 
-  5 KSP Residual norm 18.2776 
-  6 KSP Residual norm 7.12598 
-  7 KSP Residual norm 2.43057 
-  8 KSP Residual norm 2.79185 
-  9 KSP Residual norm 1.23595 
- 10 KSP Residual norm 1.04592 
- 11 KSP Residual norm 1.03117 
- 12 KSP Residual norm 0.270989 
- 13 KSP Residual norm 0.385896 
- 14 KSP Residual norm 0.204997 
- 15 KSP Residual norm 0.23623 
- 16 KSP Residual norm 0.0833278 
- 17 KSP Residual norm 0.071674 
- 18 KSP Residual norm 0.0405863 
- 19 KSP Residual norm 0.0256471 
- 20 KSP Residual norm 0.00909964 
- 21 KSP Residual norm 0.0106525 
- 22 KSP Residual norm 0.0123205 
- 23 KSP Residual norm 0.00434756 
- 24 KSP Residual norm 0.00105957 
- 25 KSP Residual norm 0.000700009 
- 26 KSP Residual norm 0.000298224 
- 27 KSP Residual norm 0.000149664 
+  0 KSP Residual norm 0.0253106 
+  1 KSP Residual norm 0.0980575 
+  2 KSP Residual norm 0.0855238 
+  3 KSP Residual norm 0.127044 
+  4 KSP Residual norm 0.132901 
+  5 KSP Residual norm 0.161759 
+  6 KSP Residual norm 0.14078 
+  7 KSP Residual norm 0.113512 
+  8 KSP Residual norm 0.125608 
+  9 KSP Residual norm 0.0872513 
+ 10 KSP Residual norm 0.0795215 
+ 11 KSP Residual norm 0.0549709 
+ 12 KSP Residual norm 0.0343339 
+ 13 KSP Residual norm 0.0283975 
+ 14 KSP Residual norm 0.0188125 
+ 15 KSP Residual norm 0.0126841 
+ 16 KSP Residual norm 0.0163761 
+ 17 KSP Residual norm 0.00855158 
+ 18 KSP Residual norm 0.00512262 
+ 19 KSP Residual norm 0.00382195 
+ 20 KSP Residual norm 0.00319493 
+ 21 KSP Residual norm 0.00159325 
+ 22 KSP Residual norm 0.00073064 
+ 23 KSP Residual norm 0.000232648 
+ 24 KSP Residual norm 0.00012608 
+ 25 KSP Residual norm 4.83712e-05 
+ 26 KSP Residual norm 6.69328e-06 
+ 27 KSP Residual norm 1.05025e-06 
+ 28 KSP Residual norm 1.70947e-07 

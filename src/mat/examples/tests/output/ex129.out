@@ -1,5 +1,0 @@
-MatSolve              : Error of norm < 1.e-12
-MatSolveTranspose     : Error of norm < 1.e-12
-MatSolveAdd           : Error of norm < 1.e-12
-MatSolveTransposeAdd  : Error of norm < 1.e-12
-MatMatSolve           : Error of norm < 1.e-12

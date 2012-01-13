@@ -2,4 +2,4 @@
   1 SNES Function norm 0.0202824 
   2 SNES Function norm 4.38261e-05 
   3 SNES Function norm 2.083e-10 
-Number of Newton iterations = 3
+Number of SNES iterations = 3

@@ -5,6 +5,7 @@
 #if !defined(__PETSCIS_H)
 #define __PETSCIS_H
 #include "petscsys.h"
+#include "petscsf.h"
 PETSC_EXTERN_CXX_BEGIN
 
 #define IS_FILE_CLASSID 1211218
@@ -146,6 +147,9 @@ extern PetscErrorCode    ISDuplicate(IS,IS*);
 extern PetscErrorCode    ISCopy(IS,IS);
 extern PetscErrorCode    ISAllGather(IS,IS*);
 extern PetscErrorCode    ISComplement(IS,PetscInt,PetscInt,IS*);
+extern PetscErrorCode    ISConcatenate(MPI_Comm,PetscInt,const IS[],IS*);
+extern PetscErrorCode    ISListToColoring(MPI_Comm,PetscInt, IS[],IS*,IS*);
+extern PetscErrorCode    ISColoringToList(IS, IS, PetscInt*, IS *[]);
 extern PetscErrorCode    ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 
 /* --------------------------------------------------------------------------*/
@@ -193,6 +197,7 @@ typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
 extern PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
+extern PetscErrorCode  ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 extern PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
@@ -236,7 +241,7 @@ $                         require a "parallel coloring", rather each process col
 $                         Using this can result in much less parallel communication. In the paradigm of 
 $                         DMGetLocalVector() and DMGetGlobalVector() this could be called IS_COLORING_LOCAL
 
-.seealso: DMGetColoring()
+.seealso: DMCreateColoring()
 E*/
 typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
 extern const char *ISColoringTypes[];

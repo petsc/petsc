@@ -165,7 +165,7 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
     icntl=7; ival = 2;
     ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
                      norm,its);CHKERRQ(ierr);
 
   /*

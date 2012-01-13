@@ -151,15 +151,22 @@ int main(int argc,char **argv)
 
   PetscScalar emma;		//absorption-emission constant for air
   PetscScalar pressure1 = 101300; //surface pressure
-  PetscScalar mixratio;           //mixing ratio
-  PetscScalar airtemp;            //temperature of air near boundary layer inversion
-  PetscScalar dewtemp;            //dew point temperature
-  PetscScalar sfctemp;            //temperature at surface
-  PetscScalar pwat;		    //total column precipitable water
-  PetscScalar cloudTemp;	    //temperature at base of cloud
-  AppCtx      user;               /* user-defined work context */
-  MonitorCtx  usermonitor;        /* user-defined monitor context */
+  PetscScalar mixratio;         //mixing ratio
+  PetscScalar airtemp;          //temperature of air near boundary layer inversion
+  PetscScalar dewtemp;          //dew point temperature
+  PetscScalar sfctemp;          //temperature at surface
+  PetscScalar pwat;		//total column precipitable water
+  PetscScalar cloudTemp;	//temperature at base of cloud
+  AppCtx      user;             /* user-defined work context */
+  MonitorCtx  usermonitor;      /* user-defined monitor context */
   PetscMPIInt rank,size;
+  TS          ts;
+  SNES        snes;
+  DM          da;
+  Vec         T,rhs;            /* solution vector */
+  Mat         J;                /* Jacobian matrix */
+  PetscReal   ftime,dt;
+  PetscInt    steps,dof = 5;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -202,14 +209,8 @@ int main(int argc,char **argv)
 
     time = 3600*put.time;                         //sets amount of timesteps to run model
 
-  /* Use PETSc TS solver */
+  /* Configure PETSc TS solver */
   /*------------------------------------------*/
-  TS                     ts;
-  DM                     da;
-  Vec                    T,rhs;                /* solution vector */
-  Mat                    J;                    /* Jacobian matrix */
-  PetscReal              ftime,dt;
-  PetscInt               steps,dof=5;
 
   /*Create grid*/
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
@@ -261,17 +262,18 @@ int main(int argc,char **argv)
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
   PetscBool      use_coloring=PETSC_TRUE;
   MatFDColoring  matfdcoloring=0;
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (use_coloring){
     ISColoring     iscoloring;
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RhsFunc,&user);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else {
-    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /*Define what to print for ts_monitor option*/

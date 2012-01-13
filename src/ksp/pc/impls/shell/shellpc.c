@@ -31,7 +31,7 @@ EXTERN_C_END
     Not Collective
 
     Input Parameter:
-.   pc - should have been created with PCCreateShell()
+.   pc - should have been created with PCSetType(pc,shell)
 
     Output Parameter:
 .   ctx - the user provided context
@@ -43,7 +43,7 @@ EXTERN_C_END
     
 .keywords: PC, shell, get, context
 
-.seealso: PCCreateShell(), PCShellSetContext()
+.seealso: PCShellSetContext()
 @*/
 PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
 {
@@ -76,17 +76,16 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
       unfortunately it cannot be a Fortran array or derived type.
 
 
-.seealso: PCCreateShell(), PCShellGetContext()
+.seealso: PCShellGetContext(), PCSHELL
 @*/
 PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
 {
-  PC_Shell      *shell;
+  PC_Shell      *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  shell = (PC_Shell*)pc->data;
   ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
@@ -98,11 +97,10 @@ PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
 #define __FUNCT__ "PCSetUp_Shell"
 static PetscErrorCode PCSetUp_Shell(PC pc)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->setup) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No setup() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function setup()",ierr  = (*shell->setup)(pc);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -112,11 +110,10 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 #define __FUNCT__ "PCApply_Shell"
 static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->apply) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function apply()",ierr = (*shell->apply)(pc,x,y);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -126,11 +123,10 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyBA_Shell"
 static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->applyBA) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function applyBA()",ierr  = (*shell->applyBA)(pc,side,x,y,w);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -140,11 +136,10 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 #define __FUNCT__ "PCPreSolve_Shell"
 static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->presolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function presolve()",ierr  = (*shell->presolve)(pc,ksp,b,x);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -154,11 +149,10 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 #define __FUNCT__ "PCPostSolve_Shell"
 static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->postsolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function postsolve()",ierr  = (*shell->postsolve)(pc,ksp,b,x);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -168,11 +162,10 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 #define __FUNCT__ "PCApplyTranspose_Shell"
 static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->applytranspose) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function applytranspose()",ierr  = (*shell->applytranspose)(pc,x,y);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -183,10 +176,9 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   if (!shell->applyrich) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function applyrichardson()",ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr));
   PetscFunctionReturn(0);
@@ -236,10 +228,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetDestroy_Shell"
 PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
 {
-  PC_Shell *shell;
+  PC_Shell *shell= (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell          = (PC_Shell*)pc->data;
   shell->destroy = destroy;
   PetscFunctionReturn(0);
 }
@@ -250,10 +241,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetSetUp_Shell"
 PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;;
 
   PetscFunctionBegin;
-  shell        = (PC_Shell*)pc->data;
   shell->setup = setup;
   if (setup) pc->ops->setup = PCSetUp_Shell;
   else       pc->ops->setup = 0;
@@ -266,10 +256,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetApply_Shell"
 PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell        = (PC_Shell*)pc->data;
   shell->apply = apply;
   PetscFunctionReturn(0);
 }
@@ -280,10 +269,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetApplyBA_Shell"
 PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell          = (PC_Shell*)pc->data;
   shell->applyBA = applyBA;
   if (applyBA) pc->ops->applyBA  = PCApplyBA_Shell;
   else         pc->ops->applyBA  = 0;
@@ -296,10 +284,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetPreSolve_Shell"
 PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell           = (PC_Shell*)pc->data;
   shell->presolve = presolve;
   if (presolve) pc->ops->presolve = PCPreSolve_Shell;
   else          pc->ops->presolve = 0;
@@ -312,10 +299,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetPostSolve_Shell"
 PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell            = (PC_Shell*)pc->data;
   shell->postsolve = postsolve;
   if (postsolve) pc->ops->postsolve = PCPostSolve_Shell;
   else           pc->ops->postsolve = 0;
@@ -328,10 +314,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetView_Shell"
 PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell        = (PC_Shell*)pc->data;
   shell->view = view;
   PetscFunctionReturn(0);
 }
@@ -342,10 +327,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetApplyTranspose_Shell"
 PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell                 = (PC_Shell*)pc->data;
   shell->applytranspose = applytranspose;
   if (applytranspose) pc->ops->applytranspose = PCApplyTranspose_Shell;
   else                pc->ops->applytranspose = 0;
@@ -358,10 +342,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
 PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell            = (PC_Shell*)pc->data;
   shell->applyrich = applyrich;
   if (applyrich) pc->ops->applyrichardson  = PCApplyRichardson_Shell;
   else           pc->ops->applyrichardson  = 0;
@@ -374,11 +357,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetName_Shell"
 PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
 {
-  PC_Shell       *shell;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  shell = (PC_Shell*)pc->data;
   ierr = PetscFree(shell->name);CHKERRQ(ierr);    
   ierr = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -390,10 +372,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellGetName_Shell"
 PetscErrorCode  PCShellGetName_Shell(PC pc,char *name[])
 {
-  PC_Shell *shell;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  shell  = (PC_Shell*)pc->data;
   *name  = shell->name;
   PetscFunctionReturn(0);
 }

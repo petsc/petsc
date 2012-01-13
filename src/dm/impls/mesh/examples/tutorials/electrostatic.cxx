@@ -1682,9 +1682,9 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
     if (dim == 2) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
     } else if (dim == 3) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
@@ -1792,9 +1792,9 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
     if (options->dim == 2) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAComputeFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
@@ -1925,7 +1925,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}

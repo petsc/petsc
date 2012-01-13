@@ -33,6 +33,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
   ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
   ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*g);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);

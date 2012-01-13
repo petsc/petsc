@@ -284,7 +284,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
     ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(0,"Number of colors %d\n",nc);CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -392,7 +392,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
 
 
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering(),
-        MatPartitioningSetNParts()
+        MatPartitioningSetNParts(), MatPartitioningApply()
 
 @*/
 PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])

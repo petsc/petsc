@@ -28,7 +28,6 @@ extern PetscErrorCode  KSPCreate_LGMRES(KSP);
 extern PetscErrorCode  KSPCreate_LCD(KSP);
 extern PetscErrorCode  KSPCreate_Broyden(KSP);
 extern PetscErrorCode  KSPCreate_GCR(KSP);
-extern PetscErrorCode  KSPCreate_NGMRES(KSP);
 extern PetscErrorCode  KSPCreate_SpecEst(KSP);
 #if !defined(PETSC_USE_COMPLEX)
 extern PetscErrorCode  KSPCreate_DGMRES(KSP);
@@ -88,7 +87,6 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPLCD,        path,"KSPCreate_LCD",       KSPCreate_LCD);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPBROYDEN,    path,"KSPCreate_Broyden",   KSPCreate_Broyden);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPGCR,        path,"KSPCreate_GCR",       KSPCreate_GCR);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPNGMRES,     path,"KSPCreate_NGMRES",    KSPCreate_NGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSPECEST,    path,"KSPCreate_SpecEst",  KSPCreate_SpecEst);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   ierr = KSPRegisterDynamic(KSPDGMRES,     path,"KSPCreate_DGMRES", KSPCreate_DGMRES); CHKERRQ(ierr);

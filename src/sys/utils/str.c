@@ -326,7 +326,7 @@ PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
 -  b - pointer to second string
 
    Output Parameter:
-.  flg - if the two strings are equal
+.  flg - PETSC_TRUE if the two strings are equal
 
    Level: intermediate
 
@@ -675,8 +675,8 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Not Collective
 
    Input Parameters:
-+  a - pointer to string
--  b - string to find
++  haystack - string to search
+-  needle - string to find
 
    Output Parameter:
 .  tmp - location of occurance, is a PETSC_NULL if the string is not found
@@ -686,10 +686,10 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Level: intermediate
 
 @*/
-PetscErrorCode  PetscStrstr(const char a[],const char b[],char *tmp[])
+PetscErrorCode  PetscStrstr(const char haystack[],const char needle[],char *tmp[])
 {
   PetscFunctionBegin;
-  *tmp = (char *)strstr(a,b);
+  *tmp = (char *)strstr(haystack,needle);
   PetscFunctionReturn(0);
 }
 
@@ -801,13 +801,14 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
 
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
-PetscErrorCode  PetscTokenDestroy(PetscToken a)
+PetscErrorCode  PetscTokenDestroy(PetscToken *a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(a->array);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  if (!*a) PetscFunctionReturn(0);
+  ierr = PetscFree((*a)->array);CHKERRQ(ierr);
+  ierr = PetscFree(*a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

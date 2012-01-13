@@ -340,6 +340,8 @@ namespace ALE {
       // TODO: Rewrite above to use optimized construction
       sendOverlap->assemble();
       recvOverlap->assemble();
+      sendOverlap->assemblePoints();
+      recvOverlap->assemblePoints();
     }
   };
   namespace Pullback {

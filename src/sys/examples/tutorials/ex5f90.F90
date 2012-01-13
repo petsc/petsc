@@ -91,7 +91,6 @@
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
       call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr)
-      call PetscBagDestroy(bag,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',        &
      &      FILE_MODE_READ,viewer,ierr)

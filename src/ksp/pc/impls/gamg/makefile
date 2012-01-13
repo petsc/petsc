@@ -1,7 +1,3 @@
-#requirespackage  'PETSC_HAVE_TRIANGLE'
-#requiresprecision double
-#requiresscalar    real
-
 
 ALL: lib
 

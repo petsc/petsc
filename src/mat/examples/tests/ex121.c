@@ -123,7 +123,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecAXPY(z1,-1.0,z2);CHKERRQ(ierr);
     ierr = VecNorm(z1,NORM_1,&enorm);CHKERRQ(ierr);
     if (enorm > 1.e-11){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %A\n",enorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %G\n",enorm);CHKERRQ(ierr);
     }
 
     /* free spaces */

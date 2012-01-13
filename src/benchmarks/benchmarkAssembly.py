@@ -89,8 +89,8 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description     = 'PETSc Benchmarking',
                                    epilog          = 'This script runs src/<library>/examples/tutorials/ex<num>, For more information, visit http://www.mcs.anl.gov/petsc',
                                    formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('--library', default='KSP',           help='The PETSc library used in this example')
-  parser.add_argument('--num',     type = int, default='4', help='The example number')
+  parser.add_argument('--library', default='SNES',          help='The PETSc library used in this example')
+  parser.add_argument('--num',     type = int, default='5', help='The example number')
   parser.add_argument('--module',  default='summary',       help='The module for timing output')
   parser.add_argument('--saved',                            help='Name of saved data')
   parser.add_argument('--scaling',                          help='Run parallel scaling test')

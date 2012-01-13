@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da */
-  ierr = DMGetMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
   ierr = MatDuplicate(user.M,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);
@@ -82,11 +82,10 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   /* Set the boundary conditions */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Time stepping",&stage_timestep);

@@ -18,7 +18,7 @@
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
        call DMDACreate2D(MPI_COMM_WORLD, DMDA_BOUNDARY_NONE,              &
-     &    DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3,3, PETSC_DECIDE,       &
+     &    DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -3,-3, PETSC_DECIDE,       &
      &    PETSC_DECIDE,1,1, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER,       &
      &    dm, ierr)
        call DMSetInitialGuess(dm,ComputeInitialGuess,ierr)
@@ -59,6 +59,7 @@
 
        subroutine ComputeMatrix(dm,x,A,B,str,ierr)
        implicit none
+#include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
        PetscErrorCode  ierr
@@ -66,13 +67,57 @@
        Vec x
        Mat A,B
        MatStructure str
-       PetscInt  rstart,rend,i
-       PetscScalar h
-       h = 1.0
-       call MatGetOwnershipRange(B,rstart,rend,ierr)
-       do 10, i=rstart,rend-1
-         call MatSetValues(B,1,i,1,i,h,INSERT_VALUES,ierr)
- 10    continue
+
+      PetscInt    i,j,mx,my,xm
+      PetscInt    ym,xs,ys,i1,i5
+      PetscScalar  v(5),Hx,Hy
+      PetscScalar  HxdHy,HydHx
+      MatStencil   row(4),col(4,5)
+
+      i1 = 1
+      i5 = 5
+      call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,ierr)
+
+      Hx = 1.d0 / (mx-1)
+      Hy = 1.d0 / (my-1)
+      HxdHy = Hx/Hy
+      HydHx = Hy/Hx
+      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,            &
+     &     PETSC_NULL_INTEGER,ierr)
+      do 10,j=ys,ys+ym-1
+        do 20,i=xs,xs+xm-1
+          row(MatStencil_i) = i
+          row(MatStencil_j) = j
+          if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 ) then
+            v(1) = 2.d0*(HxdHy + HydHx)
+            call MatSetValuesStencil(B,i1,row,i1,row,v,                 &
+     &           INSERT_VALUES,ierr)
+          else
+            v(1) = -HxdHy
+            col(MatStencil_i,1) = i
+            col(MatStencil_j,1) = j-1
+            v(2) = -HydHx
+            col(MatStencil_i,2) = i-1
+            col(MatStencil_j,2) = j
+            v(3) = 2.d0*(HxdHy + HydHx)
+            col(MatStencil_i,3) = i
+            col(MatStencil_j,3) = j
+            v(4) = -HydHx
+            col(MatStencil_i,4) = i+1
+            col(MatStencil_j,4) = j
+            v(5) = -HxdHy
+            col(MatStencil_i,5) = i
+            col(MatStencil_j,5) = j+1
+            call MatSetValuesStencil(B,i1,row,i5,col,v,                 &
+     &           INSERT_VALUES,ierr)
+            endif
+ 20      continue
+ 10   continue
        call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
        call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
        if ( A .ne. B) then

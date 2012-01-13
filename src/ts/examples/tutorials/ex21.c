@@ -192,7 +192,7 @@ int main(int argc,char **argv)
        - Set timestepping duration info 
      Then set runtime options, which can override these defaults.
      For example,
-          -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+          -ts_max_steps <maxsteps> -ts_final_time <maxtime>
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -455,7 +455,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   */
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&en2);CHKERRQ(ierr);
-  en2s  = sqrt(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
+  en2s  = PetscSqrtReal(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
   ierr = VecNorm(appctx->solution,NORM_MAX,&enmax);CHKERRQ(ierr);
 
   /*

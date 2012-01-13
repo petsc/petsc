@@ -114,28 +114,6 @@ extern PetscErrorCode Initialize(DMMG*);
 extern PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits);
 extern PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its);
 
-/* Physics subroutines */
-extern PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z, Parameter *param);
-extern PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user);
-extern PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user);
-extern PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user);
-extern PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user);
-extern PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user);
-extern PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user);
-extern PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user);
-extern PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user);
-
-/* Utilities for interpolation, ICs and BCs */
-extern PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user);
-extern PassiveScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user);
-extern PassiveScalar Pressure(PetscInt i, PetscInt j, AppCtx *user);
-extern PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user);
-extern PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user);
-extern PetscScalar   UInterp(Field **x, PetscInt i, PetscInt j);
-extern PetscScalar   WInterp(Field **x, PetscInt i, PetscInt j);
-extern PetscScalar   PInterp(Field **x, PetscInt i, PetscInt j);
-extern PetscScalar   TInterp(Field **x, PetscInt i, PetscInt j);
-
 /* Post-processing & misc */
 extern PetscErrorCode ViscosityField(DMMG,Vec,Vec);
 extern PetscErrorCode StressField(DMMG *dmmg);
@@ -301,7 +279,7 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits);
       if (param->stop_solve) goto done;
 
       if (reason<0) {
@@ -350,144 +328,193 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   PHYSICS FUNCTIONS (compute the discrete residual)
   =====================================================================*/
 
+
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
-/*  main call-back function that computes the processor-local piece 
-    of the residual */
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
+#define __FUNCT__ "UInterp"
+PETSC_STATIC_INLINE PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  Parameter      *param = user->param;
-  GridInfo       *grid  = user->grid;
-  PetscScalar    mag_w, mag_u;
-  PetscInt       i,j,mx,mz,ilim,jlim;
-  PetscInt       is,ie,js,je,ivisc,ibound;
+  return 0.25*(x[j][i].u+x[j+1][i].u+x[j][i+1].u+x[j+1][i+1].u);
+}
 
-  PetscFunctionBegin;
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "WInterp"
+PETSC_STATIC_INLINE PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
+/*---------------------------------------------------------------------*/
+{
+  return 0.25*(x[j][i].w+x[j+1][i].w+x[j][i+1].w+x[j+1][i+1].w);
+}
 
-  /* Define global and local grid parameters */
-  mx   = info->mx;     mz   = info->my;
-  ilim = mx-1;         jlim = mz-1;
-  is   = info->xs;     ie   = info->xs+info->xm; 
-  js   = info->ys;     je   = info->ys+info->ym;
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "PInterp"
+PETSC_STATIC_INLINE PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
+/*---------------------------------------------------------------------*/
+{
+  return 0.25*(x[j][i].p+x[j+1][i].p+x[j][i+1].p+x[j+1][i+1].p);
+}
 
-  /* Define geometric and numeric parameters */
-  ivisc = param->ivisc;       ibound = param->ibound;
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "TInterp"
+PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
+/*---------------------------------------------------------------------*/
+{
+  return 0.25*(x[j][i].T+x[j+1][i].T+x[j][i+1].T+x[j+1][i+1].T);
+}
 
-  for (j=js; j<je; j++) { 
-    for (i=is; i<ie; i++) {
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "HorizVelocity"
+/*  isoviscous analytic solution for IC */
+PETSC_STATIC_INLINE PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
+/*---------------------------------------------------------------------*/
+{
+  Parameter   *param = user->param;
+  GridInfo    *grid  = user->grid;
+  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
+  
+  x = (i - grid->jlid)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
+  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
+  return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
+}
 
-      /************* X-MOMENTUM/VELOCITY *************/
-      if (i<j) {
-	  f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "VertVelocity"
+/*  isoviscous analytic solution for IC */
+PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
+/*---------------------------------------------------------------------*/
+{
+  Parameter   *param = user->param;
+  GridInfo    *grid  = user->grid;
+  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
+  
+  x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
+  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
+  return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);  
+}
 
-      } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lithospheric lid */
-	f[j][i].u = x[j][i].u - 0.0;
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "Pressure"
+/*  isoviscous analytic solution for IC */
+PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
+/*---------------------------------------------------------------------*/
+{
+  Parameter   *param = user->param;
+  GridInfo    *grid  = user->grid;
+  PetscScalar x, z, r, st, ct, c=param->c, d=param->d;
 
-      } else if (i==ilim) {
-	/* on the right side boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
-	} else {
-	  f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
-	}
+  x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
+  r = sqrt(x*x+z*z);  st = z/r;  ct = x/r;  
+  return (-2.0*(c*ct-d*st)/r);
+}
 
-      } else if (j==jlim) {
-	/* on the bottom boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
-	} else if (ibound==BC_NOSTRESS) {
-	  f[j][i].u = XMomentumResidual(x,i,j,user);
-	} else {
-	  /* experimental boundary condition */
-	}
+#undef __FUNCT__
+#define __FUNCT__ "CalcSecInv"
+/*  computes the second invariant of the strain rate tensor */
+PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+/*---------------------------------------------------------------------*/
+{
+  Parameter     *param = user->param;
+  GridInfo      *grid  = user->grid;
+  PetscInt           ilim=grid->ni-1, jlim=grid->nj-1;
+  PetscScalar   uN,uS,uE,uW,wN,wS,wE,wW;
+  PetscScalar   eps11, eps12, eps22;
 
-      } else { 
-	/* in the mantle wedge */
-	f[j][i].u = XMomentumResidual(x,i,j,user);
-      }
-      
-      /************* Z-MOMENTUM/VELOCITY *************/
-      if (i<=j) {
-	f[j][i].w = x[j][i].w - SlabVel('W',i,j,user);
+  if (i<j) return EPS_ZERO;
+  if (i==ilim) i--; if (j==jlim) j--;
 
-      } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lithospheric lid */
-	f[j][i].w = x[j][i].w - 0.0;
+  if (ipos==CELL_CENTER) { /* on cell center */
+    if (j<=grid->jlid) return EPS_ZERO;
 
-      } else if (j==jlim) {
-	/* on the bottom boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
-	} else {
-	  f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
-	}
+    uE = x[j][i].u; uW = x[j][i-1].u;
+    wN = x[j][i].w; wS = x[j-1][i].w; 
+    wE = WInterp(x,i,j-1); 
+    if (i==j) { uN = param->cb; wW = param->sb; }
+    else      { uN = UInterp(x,i-1,j); wW = WInterp(x,i-1,j-1); }
 
-      } else if (i==ilim) {
-	/* on the right side boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
-	} else if (ibound==BC_NOSTRESS) {
-	  f[j][i].w = ZMomentumResidual(x,i,j,user);
-	} else {
-	  /* experimental boundary condition */
-	}
+    if (j==grid->jlid+1) uS = 0.0;
+    else                 uS = UInterp(x,i-1,j-1);  
 
-      } else {
-	/* in the mantle wedge */
-	f[j][i].w =  ZMomentumResidual(x,i,j,user);
-      }
+  } else {       /* on CELL_CORNER */
+    if (j<grid->jlid) return EPS_ZERO;
 
-      /************* CONTINUITY/PRESSURE *************/
-      if (i<j || j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lid or slab */
-	f[j][i].p = x[j][i].p;
-	
-      } else if ((i==ilim || j==jlim) && ibound==BC_ANALYTIC) {
-	/* on an analytic boundary */
-	f[j][i].p = x[j][i].p - Pressure(i,j,user);
+    uN = x[j+1][i].u;  uS = x[j][i].u;  
+    wE = x[j][i+1].w;  wW = x[j][i].w; 
+    if (i==j) { wN = param->sb; uW = param->cb; }
+    else      { wN = WInterp(x,i,j); uW = UInterp(x,i-1,j); }           
 
-      } else {
-	/* in the mantle wedge */
-	f[j][i].p = ContinuityResidual(x,i,j,user);
-      }
-
-      /************* TEMPERATURE *************/
-      if (j==0) {
-	/* on the surface */
-	f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(x[j][i].T,0.0);
-
-      } else if (i==0) {
-	/* slab inflow boundary */
-	f[j][i].T = x[j][i].T - PlateModel(j,PLATE_SLAB,user);
-
-      } else if (i==ilim) {
-	/* right side boundary */
-	mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j][i-1].u/param->cb,1.0),0.0)), 5.0 );
-	f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
-
-      } else if (j==jlim) {
-	/* bottom boundary */
-	mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j-1][i].w/param->sb,1.0),0.0)), 5.0 );
-	f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
-
-      } else {
-	/* in the mantle wedge */
-	f[j][i].T = EnergyResidual(x,i,j,user);      
-      }
+    if (j==grid->jlid) {
+      uE = 0.0;  uW = 0.0;
+      uS = -uN;
+      wS = -wN;
+    } else { 
+      uE = UInterp(x,i,j);  
+      wS = WInterp(x,i,j-1);
     }
+  } 
+
+  eps11 = (uE-uW)/grid->dx;  eps22 = (wN-wS)/grid->dz;
+  eps12 = 0.5*((uN-uS)/grid->dz + (wE-wW)/grid->dx);
+
+  return sqrt( 0.5*( eps11*eps11 + 2.0*eps12*eps12 + eps22*eps22 ) );
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "Viscosity"
+/*  computes the shear viscosity */
+PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z, Parameter *param)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar  result=0.0;
+  ViscParam    difn=param->diffusion, disl=param->dislocation;
+  PetscInt          iVisc=param->ivisc;
+  double       eps_scale=param->V/(param->L*1000.0);
+  double       strain_power, v1, v2, P;
+  double       rho_g = 32340.0, R=8.3144;
+
+  P = rho_g*(z*param->L*1000.0); /* Pa */
+
+  if        (iVisc==VISC_CONST) {  
+    /* constant viscosity */
+    return 1.0;
+
+  } else if (iVisc==VISC_DIFN) {   
+    /* diffusion creep rheology */
+    result = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
+
+  } else if (iVisc==VISC_DISL) { 
+    /* dislocation creep rheology */
+    strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
+    result = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
+
+  } else if (iVisc==VISC_FULL) { 
+    /* dislocation/diffusion creep rheology */
+    strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
+    v1 = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
+    v2 = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
+    result = 1.0/(1.0/v1 + 1.0/v2);
   }
-  PetscFunctionReturn(0);
-} 
+
+  /* max viscosity is param->eta0 */
+  result = PetscMin( result, 1.0 );
+  /* min viscosity is param->visc_cutoff */
+  result = PetscMax( result, param->visc_cutoff );
+  /* continuation method */
+  result = pow(result,param->continuation);
+  return result;
+}
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "XMomentumResidual"
 /*  computes the residual of the x-component of eqn (1) above */
-PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter      *param=user->param;
@@ -543,7 +570,7 @@ PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "ZMomentumResidual"
 /*  computes the residual of the z-component of eqn (1) above */
-PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter      *param=user->param;
@@ -602,7 +629,7 @@ PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "ContinuityResidual"
 /*  computes the residual of eqn (2) above */
-PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   GridInfo       *grid =user->grid;
@@ -618,7 +645,7 @@ PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "EnergyResidual"
 /*  computes the residual of eqn (3) above */
-PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter      *param=user->param;
@@ -682,7 +709,7 @@ PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "ShearStress"
 /*  computes the shear stress---used on the boundaries */
-PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter    *param=user->param;
@@ -714,7 +741,7 @@ PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx
 #undef __FUNCT__
 #define __FUNCT__ "XNormalStress"
 /*  computes the normal stress---used on the boundaries */
-PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter      *param=user->param;
@@ -754,7 +781,7 @@ PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppC
 #undef __FUNCT__
 #define __FUNCT__ "ZNormalStress"
 /*  computes the normal stress---used on the boundaries */
-PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter      *param=user->param;
@@ -789,103 +816,6 @@ PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppC
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "CalcSecInv"
-/*  computes the second invariant of the strain rate tensor */
-PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
-/*---------------------------------------------------------------------*/
-{
-  Parameter     *param = user->param;
-  GridInfo      *grid  = user->grid;
-  PetscInt           ilim=grid->ni-1, jlim=grid->nj-1;
-  PetscScalar   uN,uS,uE,uW,wN,wS,wE,wW;
-  PetscScalar   eps11, eps12, eps22;
-
-  if (i<j) return EPS_ZERO;
-  if (i==ilim) i--; if (j==jlim) j--;
-
-  if (ipos==CELL_CENTER) { /* on cell center */
-    if (j<=grid->jlid) return EPS_ZERO;
-
-    uE = x[j][i].u; uW = x[j][i-1].u;
-    wN = x[j][i].w; wS = x[j-1][i].w; 
-    wE = WInterp(x,i,j-1); 
-    if (i==j) { uN = param->cb; wW = param->sb; }
-    else      { uN = UInterp(x,i-1,j); wW = WInterp(x,i-1,j-1); }
-
-    if (j==grid->jlid+1) uS = 0.0;
-    else                 uS = UInterp(x,i-1,j-1);  
-
-  } else {       /* on CELL_CORNER */
-    if (j<grid->jlid) return EPS_ZERO;
-
-    uN = x[j+1][i].u;  uS = x[j][i].u;  
-    wE = x[j][i+1].w;  wW = x[j][i].w; 
-    if (i==j) { wN = param->sb; uW = param->cb; }
-    else      { wN = WInterp(x,i,j); uW = UInterp(x,i-1,j); }           
-
-    if (j==grid->jlid) {
-      uE = 0.0;  uW = 0.0;
-      uS = -uN;
-      wS = -wN;
-    } else { 
-      uE = UInterp(x,i,j);  
-      wS = WInterp(x,i,j-1);
-    }
-  } 
-
-  eps11 = (uE-uW)/grid->dx;  eps22 = (wN-wS)/grid->dz;
-  eps12 = 0.5*((uN-uS)/grid->dz + (wE-wW)/grid->dx);
-
-  return sqrt( 0.5*( eps11*eps11 + 2.0*eps12*eps12 + eps22*eps22 ) );
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Viscosity"
-/*  computes the shear viscosity */
-PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z, 
-		       Parameter *param)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar  result=0.0;
-  ViscParam    difn=param->diffusion, disl=param->dislocation;
-  PetscInt          iVisc=param->ivisc;
-  double       eps_scale=param->V/(param->L*1000.0);
-  double       strain_power, v1, v2, P;
-  double       rho_g = 32340.0, R=8.3144;
-
-  P = rho_g*(z*param->L*1000.0); /* Pa */
-
-  if        (iVisc==VISC_CONST) {  
-    /* constant viscosity */
-    return 1.0;
-
-  } else if (iVisc==VISC_DIFN) {   
-    /* diffusion creep rheology */
-    result = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
-
-  } else if (iVisc==VISC_DISL) { 
-    /* dislocation creep rheology */
-    strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
-    result = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
-
-  } else if (iVisc==VISC_FULL) { 
-    /* dislocation/diffusion creep rheology */
-    strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
-    v1 = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
-    v2 = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
-    result = 1.0/(1.0/v1 + 1.0/v2);
-  }
-
-  /* max viscosity is param->eta0 */
-  result = PetscMin( result, 1.0 );
-  /* min viscosity is param->visc_cutoff */
-  result = PetscMax( result, param->visc_cutoff );
-  /* continuation method */
-  result = pow(result,param->continuation);
-  return result;
-}
 
 /*=====================================================================
   INITIALIZATION, POST-PROCESSING AND OUTPUT FUNCTIONS 
@@ -1337,7 +1267,7 @@ PetscErrorCode StressField(DMMG *dmmg)
 #define __FUNCT__ "SlabVel"
 /* returns the velocity of the subducting slab and handles fault nodes 
    for BC */
-PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter     *param = user->param;
@@ -1365,7 +1295,7 @@ PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "PlateModel"
 /*  solution to diffusive half-space cooling model for BC */
-PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
+PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter     *param = user->param;
@@ -1381,89 +1311,6 @@ PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 #endif
 }
 
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UInterp"
-PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
-{
-  return 0.25*(x[j][i].u+x[j+1][i].u+x[j][i+1].u+x[j+1][i+1].u);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "WInterp"
-PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
-{
-  return 0.25*(x[j][i].w+x[j+1][i].w+x[j][i+1].w+x[j+1][i+1].w);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PInterp"
-PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
-{
-  return 0.25*(x[j][i].p+x[j+1][i].p+x[j][i+1].p+x[j+1][i+1].p);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TInterp"
-PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
-{
-  return 0.25*(x[j][i].T+x[j+1][i].T+x[j][i+1].T+x[j+1][i+1].T);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "HorizVelocity"
-/*  isoviscous analytic solution for IC */
-PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
-{
-  Parameter   *param = user->param;
-  GridInfo    *grid  = user->grid;
-  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
-  
-  x = (i - grid->jlid)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
-  return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VertVelocity"
-/*  isoviscous analytic solution for IC */
-PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
-{
-  Parameter   *param = user->param;
-  GridInfo    *grid  = user->grid;
-  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
-  
-  x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
-  return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);  
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Pressure"
-/*  isoviscous analytic solution for IC */
-PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
-{
-  Parameter   *param = user->param;
-  GridInfo    *grid  = user->grid;
-  PetscScalar x, z, r, st, ct, c=param->c, d=param->d;
-
-  x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z);  st = z/r;  ct = x/r;  
-  return (-2.0*(c*ct-d*st)/r);
-}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -1539,3 +1386,135 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
   return 0;
 }
 
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
+/*  main call-back function that computes the processor-local piece 
+    of the residual */
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
+/*---------------------------------------------------------------------*/
+{
+  AppCtx         *user = (AppCtx*)ptr;
+  Parameter      *param = user->param;
+  GridInfo       *grid  = user->grid;
+  PetscScalar    mag_w, mag_u;
+  PetscInt       i,j,mx,mz,ilim,jlim;
+  PetscInt       is,ie,js,je,ivisc,ibound;
+
+  PetscFunctionBegin;
+
+  /* Define global and local grid parameters */
+  mx   = info->mx;     mz   = info->my;
+  ilim = mx-1;         jlim = mz-1;
+  is   = info->xs;     ie   = info->xs+info->xm; 
+  js   = info->ys;     je   = info->ys+info->ym;
+
+  /* Define geometric and numeric parameters */
+  ivisc = param->ivisc;       ibound = param->ibound;
+
+  for (j=js; j<je; j++) { 
+    for (i=is; i<ie; i++) {
+
+      /************* X-MOMENTUM/VELOCITY *************/
+      if (i<j) {
+	  f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
+
+      } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
+	/* in the lithospheric lid */
+	f[j][i].u = x[j][i].u - 0.0;
+
+      } else if (i==ilim) {
+	/* on the right side boundary */
+	if (ibound==BC_ANALYTIC) {
+	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
+	} else {
+	  f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
+	}
+
+      } else if (j==jlim) {
+	/* on the bottom boundary */
+	if (ibound==BC_ANALYTIC) {
+	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
+	} else if (ibound==BC_NOSTRESS) {
+	  f[j][i].u = XMomentumResidual(x,i,j,user);
+	} else {
+	  /* experimental boundary condition */
+	}
+
+      } else { 
+	/* in the mantle wedge */
+	f[j][i].u = XMomentumResidual(x,i,j,user);
+      }
+      
+      /************* Z-MOMENTUM/VELOCITY *************/
+      if (i<=j) {
+	f[j][i].w = x[j][i].w - SlabVel('W',i,j,user);
+
+      } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
+	/* in the lithospheric lid */
+	f[j][i].w = x[j][i].w - 0.0;
+
+      } else if (j==jlim) {
+	/* on the bottom boundary */
+	if (ibound==BC_ANALYTIC) {
+	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
+	} else {
+	  f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
+	}
+
+      } else if (i==ilim) {
+	/* on the right side boundary */
+	if (ibound==BC_ANALYTIC) {
+	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
+	} else if (ibound==BC_NOSTRESS) {
+	  f[j][i].w = ZMomentumResidual(x,i,j,user);
+	} else {
+	  /* experimental boundary condition */
+	}
+
+      } else {
+	/* in the mantle wedge */
+	f[j][i].w =  ZMomentumResidual(x,i,j,user);
+      }
+
+      /************* CONTINUITY/PRESSURE *************/
+      if (i<j || j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
+	/* in the lid or slab */
+	f[j][i].p = x[j][i].p;
+	
+      } else if ((i==ilim || j==jlim) && ibound==BC_ANALYTIC) {
+	/* on an analytic boundary */
+	f[j][i].p = x[j][i].p - Pressure(i,j,user);
+
+      } else {
+	/* in the mantle wedge */
+	f[j][i].p = ContinuityResidual(x,i,j,user);
+      }
+
+      /************* TEMPERATURE *************/
+      if (j==0) {
+	/* on the surface */
+	f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(x[j][i].T,0.0);
+
+      } else if (i==0) {
+	/* slab inflow boundary */
+	f[j][i].T = x[j][i].T - PlateModel(j,PLATE_SLAB,user);
+
+      } else if (i==ilim) {
+	/* right side boundary */
+	mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j][i-1].u/param->cb,1.0),0.0)), 5.0 );
+	f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
+
+      } else if (j==jlim) {
+	/* bottom boundary */
+	mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j-1][i].w/param->sb,1.0),0.0)), 5.0 );
+	f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
+
+      } else {
+	/* in the mantle wedge */
+	f[j][i].T = EnergyResidual(x,i,j,user);      
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+} 

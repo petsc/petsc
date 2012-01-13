@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement  # For python-2.5
+
 import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.path.abspath('config')))
@@ -44,7 +46,7 @@ class PETScMaker(script.Script):
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
    self.make          = self.framework.require('config.programs',        None)
-   self.cmake         = self.framework.require('PETSc.utilities.CMake',       None)
+   self.cmake         = self.framework.require('PETSc.packages.cmake',       None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
@@ -106,7 +108,7 @@ class PETScMaker(script.Script):
      # 1. the build process for those is different, need to give different build instructions
      # 2. the current WIN32FE workaround does not work with VS project files
      options.append('-GUnix Makefiles')
-   cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
+   cmd = [self.cmake.cmake, '--trace', '--debug-output', self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    try: # Try to remove the old cache because some versions of CMake lose CMAKE_C_FLAGS when reconfiguring this way
      os.remove(os.path.join(archdir, 'CMakeCache.txt'))
@@ -116,6 +118,13 @@ class PETScMaker(script.Script):
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
    if retcode:
      self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
+     cachetxt = os.path.join(archdir, 'CMakeCache.txt')
+     try:
+       with open(cachetxt, 'r') as f:
+         log.write('Contents of %s:\n' % cachetxt)
+         log.write(f.read())
+     except IOError, e:
+       log.write('Could not read file %s: %r\n' % (cachetxt, e))
      return False
    else:
      return True # Configure successful

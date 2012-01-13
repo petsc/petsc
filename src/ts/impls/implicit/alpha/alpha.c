@@ -73,7 +73,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
       if (stepok) break;
     }
   }
-  if (snesreason < 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+  if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
     ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
     PetscFunctionReturn(0);

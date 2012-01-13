@@ -152,7 +152,7 @@ PetscErrorCode MatCUSPUnravelOrderingAndCopyToGPU(Mat A)
     PetscInt int_value=0;
     PetscBool found;
     PetscInt block_size=1;
-    ierr = PetscOptionsGetInt(PETSC_NULL, "-gpu_LU_block_size", &int_value, &found); CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(((PetscObject)A)->prefix, "-gpu_LU_block_size", &int_value, &found); CHKERRQ(ierr);
     if(found == PETSC_TRUE) {
       if(int_value > 0)
 	block_size = int_value;
@@ -1323,6 +1323,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 
 #ifdef PETSC_HAVE_TXPETSCGPU
   if (aij->inode.use)  A->ops->mult    = MatMult_SeqAIJCUSP_Inode;
+  else                 A->ops->mult    = MatMult_SeqAIJCUSP;
 #endif // PETSC_HAVE_TXPETSCGPU
 
   PetscFunctionReturn(0);
@@ -1554,8 +1555,21 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 }
 
 #endif // PETSC_HAVE_TXPETSCGPU
+/*
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateSeqAIJCUSPFromTriple"
+PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt* i, PetscInt* j, PetscScalar*a, Mat *mat, PetscInt nz, PetscBool idx)
+{
+  CUSPMATRIX *gpucsr;
+  PetscErrorCode ierr;
 
-PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
+  PetscFunctionBegin;
+  if (idx){
+  }
+  PetscFunctionReturn(0);
+}*/
+
+extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt *,const PetscScalar*);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 
@@ -1599,9 +1613,10 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 
     
     if (GPU_TRI_SOLVE_ALGORITHM!="none") {    
-      Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
+      Mat_SeqAIJCUSPTriFactors *cuspTriFactors;
       /* NEXT, set the pointers to the triangular factors */
       B->spptr = new Mat_SeqAIJCUSPTriFactors;
+      cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
       cuspTriFactors->loTriFactorPtr = 0;
       cuspTriFactors->upTriFactorPtr = 0;
       

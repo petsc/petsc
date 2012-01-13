@@ -55,9 +55,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Create parallel matrix preallocated according to the DMDA, format AIJ by default.
-     To use symmetric storage, run with -da_mat_type sbaij -mat_ignore_lower_triangular
+     To use symmetric storage, run with -dm_mat_type sbaij -mat_ignore_lower_triangular
   */
-  ierr = DMGetMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -174,7 +174,7 @@ int main(int argc,char **argv)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

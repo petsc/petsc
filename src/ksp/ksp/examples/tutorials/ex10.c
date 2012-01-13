@@ -179,7 +179,7 @@ int main(int argc,char **args)
     */
     
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+    /*  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);*/
     ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecGetSize(b,&m);CHKERRQ(ierr);
     if (M != m) { /* Create a new vector b by padding the old one */
@@ -203,7 +203,8 @@ int main(int argc,char **args)
       ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
     }
-    ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+    
+    ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
     if (initialguessfile) {
       PetscViewer viewer2;
@@ -286,7 +287,7 @@ int main(int argc,char **args)
       }
       if (lsqr) {
 	Mat BtB;
-        ierr = MatMatMultTranspose(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
+        ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
         ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatDestroy(&BtB);CHKERRQ(ierr);
       } else {
@@ -335,7 +336,7 @@ int main(int argc,char **args)
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
           ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",norm);CHKERRQ(ierr);
         }
       } /* while ( num_rhs-- ) */
       ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
@@ -380,7 +381,7 @@ int main(int argc,char **args)
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
       }
       ierr = PetscOptionsGetString(PETSC_NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       if (flg) {
@@ -393,7 +394,7 @@ int main(int argc,char **args)
         ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", norm);CHKERRQ(ierr);
         ierr = VecDestroy(&xstar);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }

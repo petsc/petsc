@@ -7,7 +7,7 @@ static const char help[] = "Time-dependent advection-reaction PDE in 1d. Demonst
    a2 = 0, k2 = 2*k1, s2 = 1
 
    Initial conditions:
-   u(x,0) = 1 * s2*x
+   u(x,0) = 1 + s2*x
    v(x,0) = k0/k1*u(x,0) + s1/k1
 
    Upstream boundary conditions:
@@ -35,14 +35,15 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS             ts;                   /* nonlinear solver */
-  Vec            X;                    /* solution, residual vectors */
-  Mat            J;                    /* Jacobian matrix */
-  PetscInt       steps,maxsteps,mx;
-  PetscErrorCode ierr;
-  DM             da;
-  PetscReal      ftime,dt;
-  struct _User    user;          /* user-defined work context */
+  TS                ts;         /* nonlinear solver */
+  Vec               X;          /* solution, residual vectors */
+  Mat               J;          /* Jacobian matrix */
+  PetscInt          steps,maxsteps,mx;
+  PetscErrorCode    ierr;
+  DM                da;
+  PetscReal         ftime,dt;
+  struct _User      user;       /* user-defined work context */
+  TSConvergedReason reason;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -74,7 +75,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
   ftime = 1.0;
@@ -100,6 +101,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

@@ -1,7 +1,7 @@
 
 #
 # This is the makefile for compiling PETSc. See 
-# http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html for directions on installing PETSc.
+# http://www.mcs.anl.gov/petsc/documentation/installation.html for directions on installing PETSc.
 # See also conf for additional commands.
 #
 ALL: all
@@ -237,6 +237,8 @@ allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
+cmakegen:
+	-@${PYTHON} config/cmakegen.py
 #
 # These are here for the target allci and allco, and etags
 #
@@ -325,7 +327,7 @@ web-snapshot:
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
 	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
 	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
-              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/snapshots/petsc-dev ;\
+              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-dev ;\
 	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /mcs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
@@ -336,9 +338,10 @@ update-web-snapshot: dist web-snapshot
 # This target updates website main pages
 update-web:
 	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
-	/usr/bin/rsync -az -C --exclude=documentation/index.html --exclude=documentation/installation.html \
-	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as
-	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
+	/usr/bin/rsync -az -C --exclude=documentation/index.html \
+          --exclude=documentation/installation.html --exclude=download/index.html \
+	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc
+	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/developers/
 
 #
 #  builds a single list of files for each PETSc library so they may all be built in parallel

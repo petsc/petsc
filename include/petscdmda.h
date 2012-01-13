@@ -35,13 +35,17 @@ M*/
 M*/
 
 /*E
-    DMDABoundaryType - Describes the choice for fill of ghost cells on domain boundaries.
+    DMDABoundaryType - Describes the choice for fill of ghost cells on physical domain boundaries.
 
    Level: beginner
 
    A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes 
-   exist but aren't filled), DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
+   exist but aren't filled, you can put values into them and then apply a stencil that uses those ghost locations),
+   DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
    (ghost nodes filled by the opposite edge of the domain).
+
+   Note: This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between 
+     processes, that width is always determined by the stencil width, see DMDASetStencilWidth().
 
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
@@ -51,11 +55,11 @@ extern const char *DMDABoundaryTypes[];
 
 /*E
     DMDAInterpolationType - Defines the type of interpolation that will be returned by 
-       DMGetInterpolation.
+       DMCreateInterpolation.
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), DMDACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), DMDACreate()
 E*/
 typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
@@ -68,7 +72,7 @@ extern PetscErrorCode   DMDAGetInterpolationType(DM,DMDAInterpolationType*);
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), 
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), 
           DMDASetElementType(), DMDAGetElements(), DMDARestoreElements(), DMDACreate()
 E*/
 typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
@@ -258,13 +262,13 @@ typedef struct {PetscScalar x,y,z;} DMDACoor3d;
     
 extern PetscErrorCode   DMDAGetLocalInfo(DM,DMDALocalInfo*);
 typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
-extern PetscErrorCode   DMDAFormFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
-extern PetscErrorCode   DMDAFormFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
+extern PetscErrorCode   DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
+extern PetscErrorCode   DMDAComputeFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
 extern PetscErrorCode   DMDAFormJacobianLocal(DM, DMDALocalFunction1, Vec, Mat, void *);
-extern PetscErrorCode   DMDAFormFunction1(DM,Vec,Vec,void*);
-extern PetscErrorCode   DMDAFormFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
-extern PetscErrorCode   DMDAFormFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
-extern PetscErrorCode   DMDAFormFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
+extern PetscErrorCode   DMDAComputeFunction1(DM,Vec,Vec,void*);
+extern PetscErrorCode   DMDAComputeFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
+extern PetscErrorCode   DMDAComputeFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
+extern PetscErrorCode   DMDAComputeFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
 extern PetscErrorCode   DMDAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
 extern PetscErrorCode   DMDAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
 extern PetscErrorCode   DMDAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
@@ -341,7 +345,7 @@ extern PetscErrorCode   DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (
 #  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,0)
 #endif
 
-extern PetscErrorCode   DMDAFormFunctioniTest1(DM,void*);
+extern PetscErrorCode   DMDAComputeFunctioniTest1(DM,void*);
 extern PetscErrorCode   DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
 extern PetscErrorCode   DMDASetBlockFills(DM,PetscInt*,PetscInt*);
 extern PetscErrorCode   DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);

@@ -10,7 +10,6 @@ with boundary conditions
 
    This uses multigrid to solve the linear system
 
-   The same as ex22.c except it does not use DMMG, it uses its replacement.
    See src/snes/examples/tutorials/ex50.c
 
    Can also be run with -pc_type exotic -ksp_type fgmres

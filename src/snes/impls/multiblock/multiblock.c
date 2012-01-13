@@ -650,7 +650,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   newblock->next    = PETSC_NULL;
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESPICARD);CHKERRQ(ierr);
+  ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, sizeof prefix, "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
@@ -699,7 +699,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   newblock->next = PETSC_NULL;
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESPICARD);CHKERRQ(ierr);
+  ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, sizeof prefix, "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
@@ -958,7 +958,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESPICARD
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNRICHARDSON
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -975,6 +975,8 @@ PetscErrorCode  SNESCreate_Multiblock(SNES snes)
   snes->ops->view           = SNESView_Multiblock;
   snes->ops->solve	    = SNESSolve_Multiblock;
   snes->ops->reset          = SNESReset_Multiblock;
+
+  snes->usesksp             = PETSC_FALSE;
 
   ierr = PetscNewLog(snes, SNES_Multiblock, &mb);CHKERRQ(ierr);
   snes->data = (void*) mb;

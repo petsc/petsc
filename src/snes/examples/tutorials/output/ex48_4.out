@@ -20,7 +20,7 @@ Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x
         Linear solve converged due to CONVERGED_ITS iterations 1
         8 SNES Function norm 0.032632 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        9 SNES Function norm 7.96769e-07 
+        9 SNES Function norm 7.96768e-07 
       Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
       0 SNES Function norm 1086.02 
         0 KSP Residual norm 1086.02 
@@ -278,29 +278,29 @@ PC Object: 6 MPI processes
       Cycles per PCApply=1
       Not using Galerkin computed coarse grid matrices
   Coarse grid solver -- level -------------------------------
-    KSP Object:    (mg_coarse_)     6 MPI processes    
+    KSP Object:    (mg_coarse_)     6 MPI processes
       type: preonly
       maximum iterations=1, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
       using NONE norm type for convergence test
-    PC Object:    (mg_coarse_)     6 MPI processes    
+    PC Object:    (mg_coarse_)     6 MPI processes
       type: redundant
         Redundant preconditioner: First (color=0) of 6 PCs follows
-      KSP Object:      (mg_coarse_redundant_)       1 MPI processes      
+      KSP Object:      (mg_coarse_redundant_)       1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (mg_coarse_redundant_)       1 MPI processes      
+      PC Object:      (mg_coarse_redundant_)       1 MPI processes
         type: lu
           LU: out-of-place factorization
-          tolerance for zero pivot 1e-12
+          tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5, needed 1.41667
             Factored matrix follows:
-              Matrix Object:               1 MPI processes              
+              Matrix Object:               1 MPI processes
                 type: seqaij
                 rows=64, cols=64
                 package used to perform factorization: petsc
@@ -308,26 +308,26 @@ PC Object: 6 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 16 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes        
+        Matrix Object:         1 MPI processes
           type: seqaij
           rows=64, cols=64
           total: nonzeros=2304, allocated nonzeros=2304
           total number of mallocs used during MatSetValues calls =0
             using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Matrix Object:       6 MPI processes      
+      Matrix Object:       6 MPI processes
         type: mpiaij
         rows=64, cols=64
         total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes          
+          Matrix Object:           6 MPI processes
             type: mpiaij
             rows=64, cols=64
             total: nonzeros=2304, allocated nonzeros=2304
             total number of mallocs used during MatSetValues calls =0
               using I-node (on process 0) routines: found 4 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
-    KSP Object:    (mg_levels_1_)     6 MPI processes    
+    KSP Object:    (mg_levels_1_)     6 MPI processes
       type: gmres
         GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         GMRES: happy breakdown tolerance 1e-30
@@ -336,24 +336,24 @@ PC Object: 6 MPI processes
       left preconditioning
       using nonzero initial guess
       using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_1_)     6 MPI processes    
+    PC Object:    (mg_levels_1_)     6 MPI processes
       type: bjacobi
         block Jacobi: number of blocks = 6
         Local solve is same for all blocks, in the following KSP and PC objects:
-      KSP Object:      (mg_levels_1_sub_)       1 MPI processes      
+      KSP Object:      (mg_levels_1_sub_)       1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (mg_levels_1_sub_)       1 MPI processes      
+      PC Object:      (mg_levels_1_sub_)       1 MPI processes
         type: cholesky
           Cholesky: out-of-place factorization
-          tolerance for zero pivot 1e-12
+          tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
           factor fill ratio given 5, needed 1.32237
             Factored matrix follows:
-              Matrix Object:               1 MPI processes              
+              Matrix Object:               1 MPI processes
                 type: seqsbaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
@@ -361,24 +361,24 @@ PC Object: 6 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                     block size is 2
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes        
+        Matrix Object:         1 MPI processes
           type: seqsbaij
           rows=48, cols=48
           total: nonzeros=608, allocated nonzeros=608
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
-      Matrix Object:       6 MPI processes      
+      Matrix Object:       6 MPI processes
         type: mpisbaij
         rows=256, cols=256
         total: nonzeros=4864, allocated nonzeros=4864
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes          
+          Matrix Object:           6 MPI processes
             type: submatrix
             rows=256, cols=256
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
-    KSP Object:    (mg_levels_2_)     6 MPI processes    
+    KSP Object:    (mg_levels_2_)     6 MPI processes
       type: gmres
         GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         GMRES: happy breakdown tolerance 1e-30
@@ -387,25 +387,25 @@ PC Object: 6 MPI processes
       left preconditioning
       using nonzero initial guess
       using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_2_)     6 MPI processes    
+    PC Object:    (mg_levels_2_)     6 MPI processes
       type: bjacobi
         block Jacobi: number of blocks = 6
         Local solve is same for all blocks, in the following KSP and PC objects:
-      KSP Object:      (mg_levels_2_sub_)       1 MPI processes      
+      KSP Object:      (mg_levels_2_sub_)       1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (mg_levels_2_sub_)       1 MPI processes      
+      PC Object:      (mg_levels_2_sub_)       1 MPI processes
         type: icc
           0 levels of fill
-          tolerance for zero pivot 1e-12
+          tolerance for zero pivot 2.22045e-14
           using Manteuffel shift
           matrix ordering: natural
           factor fill ratio given 1, needed 1.00133
             Factored matrix follows:
-              Matrix Object:               1 MPI processes              
+              Matrix Object:               1 MPI processes
                 type: seqsbaij
                 rows=192, cols=192
                 package used to perform factorization: petsc
@@ -413,24 +413,24 @@ PC Object: 6 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                     block size is 2
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes        
+        Matrix Object:         1 MPI processes
           type: seqsbaij
           rows=192, cols=192
           total: nonzeros=3008, allocated nonzeros=3008
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
-      Matrix Object:       6 MPI processes      
+      Matrix Object:       6 MPI processes
         type: mpisbaij
         rows=1024, cols=1024
         total: nonzeros=19456, allocated nonzeros=19456
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes          
+          Matrix Object:           6 MPI processes
             type: submatrix
             rows=1024, cols=1024
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 3 -------------------------------
-    KSP Object:    (mg_levels_3_)     6 MPI processes    
+    KSP Object:    (mg_levels_3_)     6 MPI processes
       type: gmres
         GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         GMRES: happy breakdown tolerance 1e-30
@@ -439,25 +439,25 @@ PC Object: 6 MPI processes
       left preconditioning
       using nonzero initial guess
       using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_3_)     6 MPI processes    
+    PC Object:    (mg_levels_3_)     6 MPI processes
       type: bjacobi
         block Jacobi: number of blocks = 6
         Local solve is same for all blocks, in the following KSP and PC objects:
-      KSP Object:      (mg_levels_3_sub_)       1 MPI processes      
+      KSP Object:      (mg_levels_3_sub_)       1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (mg_levels_3_sub_)       1 MPI processes      
+      PC Object:      (mg_levels_3_sub_)       1 MPI processes
         type: icc
           0 levels of fill
-          tolerance for zero pivot 1e-12
+          tolerance for zero pivot 2.22045e-14
           using Manteuffel shift
           matrix ordering: natural
           factor fill ratio given 1, needed 1.00054
             Factored matrix follows:
-              Matrix Object:               1 MPI processes              
+              Matrix Object:               1 MPI processes
                 type: seqsbaij
                 rows=384, cols=384
                 package used to perform factorization: petsc
@@ -465,35 +465,35 @@ PC Object: 6 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                     block size is 2
         linear system matrix = precond matrix:
-        Matrix Object:        (thi_)         1 MPI processes        
+        Matrix Object:        (thi_)         1 MPI processes
           type: seqsbaij
           rows=384, cols=384
           total: nonzeros=7424, allocated nonzeros=7424
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
-      Matrix Object:      (thi_)       6 MPI processes      
+      Matrix Object:      (thi_)       6 MPI processes
         type: mpisbaij
         rows=2048, cols=2048
         total: nonzeros=48128, allocated nonzeros=48128
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:          (thi_)           6 MPI processes          
+          Matrix Object:          (thi_)           6 MPI processes
             type: submatrix
             rows=2048, cols=2048
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
-  Matrix Object:  (thi_)   6 MPI processes  
+  Matrix Object:  (thi_)   6 MPI processes
     type: mpisbaij
     rows=2048, cols=2048
     total: nonzeros=48128, allocated nonzeros=48128
     total number of mallocs used during MatSetValues calls =0
-      Matrix Object:      (thi_)       6 MPI processes      
+      Matrix Object:      (thi_)       6 MPI processes
         type: submatrix
         rows=2048, cols=2048
 Solution statistics after solve: Full
-CONVERGED_FNORM_RELATIVE: Number of Newton iterations = 5, total linear iterations = 21
-|X|_2 564267   u in [-187.04, 23814.8]   v in [-979.938, 5720.23]   c in [3.24766, 23904.5] 
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 21
+|X|_2 564267   -187.04 <= u <=  23814.8   -979.938 <= v <=  5720.23   3.24766 <= c <=  23904.5 
 Surface statistics: u in [-6.945709e+01, 2.381387e+04] mean 1.520632e+04
-Global eta range   [2.50736e+09, 9.2273e+12], converged range [2.50736e+09, 3.8249e+10]
-Global beta2 range [0, 4.97763e+09], converged range [0, 4.97763e+09]
+Global eta range   2.50736e+09 to 9.2273e+12 converged range 2.50736e+09 to 3.8249e+10
+Global beta2 range 0 to 4.97763e+09 converged range 0 to 4.97763e+09
 

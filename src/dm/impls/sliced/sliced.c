@@ -8,15 +8,14 @@ typedef struct {
 } DMSlicedBlockFills;
 
 typedef struct  {
-  Vec                globalvector;
   PetscInt           bs,n,N,Nghosts,*ghosts;
   PetscInt           d_nz,o_nz,*d_nnz,*o_nnz;
   DMSlicedBlockFills *dfill,*ofill;
 } DM_Sliced;
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Sliced" 
-PetscErrorCode  DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_Sliced" 
+PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
@@ -227,7 +226,6 @@ PetscErrorCode  DMDestroy_Sliced(DM dm)
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&slice->globalvector);CHKERRQ(ierr);
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   if (slice->dfill) {ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);}
   if (slice->ofill) {ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);}
@@ -239,28 +237,14 @@ PetscErrorCode  DMDestroy_Sliced(DM dm)
 PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
   PetscErrorCode     ierr;
-  PetscInt           bs,cnt;
   DM_Sliced          *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  if (slice->globalvector) {
-    ierr = PetscObjectGetReference((PetscObject)slice->globalvector,&cnt);CHKERRQ(ierr);
-    if (cnt == 1) {             /* Nobody else has a reference so we can just reference it and give it away */
-      *gvec = slice->globalvector;
-      ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr);
-      ierr = VecZeroEntries(*gvec);CHKERRQ(ierr);
-    } else {                    /* Someone else has a reference so we duplicate the global vector */
-      ierr = VecDuplicate(slice->globalvector,gvec);CHKERRQ(ierr);
-    }
-  } else {
-    bs = slice->bs;
-    ierr = VecCreateGhostBlock(((PetscObject)dm)->comm,bs,slice->n*bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
-    *gvec = slice->globalvector;
-    ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr);
-  }
+  ierr = VecCreateGhostBlock(((PetscObject)dm)->comm,slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -276,9 +260,9 @@ PetscErrorCode  DMCreate_Sliced(DM p)
   ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
   p->data = slice;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
-  p->ops->getmatrix          = DMGetMatrix_Sliced;
+  p->ops->creatematrix          = DMCreateMatrix_Sliced;
   p->ops->destroy            = DMDestroy_Sliced;
   PetscFunctionReturn(0);
 }
@@ -332,7 +316,7 @@ PetscErrorCode  DMSlicedCreate(MPI_Comm comm,DM *dm)
     Notes:
        The idx parameters should be freed by the calling routine with PetscFree()
 
-.seealso DMSlicedDestroy(), DMSlicedCreateGlobalVector(), DMSlicedCreate()
+.seealso DMSlicedDestroy(), DMCreateGlobalVector(), DMSlicedCreate()
 
 @*/
 PetscErrorCode  DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])

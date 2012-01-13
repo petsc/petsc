@@ -9,16 +9,20 @@ static char help[] = "Solves heat equation in 1d.\n";
 
 Evolve the  heat equation: 
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve the  Allen-Cahn equation: 
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
 
 Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5  -zoom .25,.45 -wait
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait  -mymonitor
 
+
+The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with 
+./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
+to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain the initial solution file
 
 */
 #include <petscdmda.h>
@@ -28,14 +32,15 @@ Evolve the  Allen-Cahn equation: zoom in on part of the domain
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscReal kappa;PetscBool allencahn;} UserCtx;
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**);
+typedef struct {PetscReal kappa;PetscBool allencahn;PetscDrawViewPorts *ports;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
+  TS                     ts;                   /* time integrator */
+  SNES                   snes;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
   PetscInt               steps,Mx, maxsteps = 1000000;
@@ -47,7 +52,7 @@ int main(int argc,char **argv)
   PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
-
+  PetscBool              mymonitor;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -57,6 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.allencahn = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr); 
@@ -64,7 +70,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -9 ,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10 ,1,2,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt   = 1.0/(ctx.kappa*Mx*Mx);
@@ -96,19 +102,19 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&ctx);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -120,7 +126,10 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
 
-  ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
+  if (mymonitor) {
+    ctx.ports = PETSC_NULL;
+    ierr = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -137,6 +146,7 @@ int main(int argc,char **argv)
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -228,10 +238,14 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
-  PetscScalar    *u,r;
-  PetscReal      hx,x;
+  PetscErrorCode    ierr;
+  PetscInt          i,xs,xm,Mx,scale,N;
+  PetscScalar       *u,r;
+  const PetscScalar *f;
+  PetscReal         hx,x;
+  Vec               finesolution;
+  PetscViewer       viewer;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -249,6 +263,17 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
+  
+  ierr = PetscOptionsHasName(PETSC_NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
+    ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr);
+    scale = N/Mx;
+    ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr);
+  }
   /*
      Compute function over the locally owned part of the grid
   */
@@ -260,6 +285,16 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     } else {
       u[i] = -.5;
     }
+    /* With the initial condition above the method is first order in space */
+    /* this is a smooth initial condition so the method becomes second order in space */
+    /*u[i] = PetscSinScalar(2*PETSC_PI*x); */
+    if (!flg) {
+      u[i] = f[scale*i];
+    }
+  }
+  if (!flg) {
+    ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
+    ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
   }
 
   /*
@@ -288,7 +323,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   int                       colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE};
   const char *const         legend[] = {"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"};
   PetscDrawAxis             axis;
-  static PetscDrawViewPorts *ports = 0;
+  PetscDrawViewPorts        *ports;
 
 
   PetscFunctionBegin;
@@ -305,9 +340,10 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  if (!ports) {
-    ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ports);CHKERRQ(ierr);
+  if (!ctx->ports) {
+    ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ctx->ports);CHKERRQ(ierr);
   }
+  ports = ctx->ports;
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
@@ -400,5 +436,17 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MyDestroy"
+PetscErrorCode  MyDestroy(void **ptr)
+{
+  UserCtx        *ctx = *(UserCtx**)ptr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawViewPortsDestroy(ctx->ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

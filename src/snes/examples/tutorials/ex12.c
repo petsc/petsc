@@ -490,19 +490,19 @@ PetscScalar cubic_2d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
-PetscScalar nonlinear_3d(const double x[]) {
+PetscScalar nonlinear_3d(const PetscReal x[]) {
   return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
 };
 
-PetscScalar linear_3d(const double x[]) {
+PetscScalar linear_3d(const PetscReal x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
 };
 
-PetscScalar quadratic_3d(const double x[]) {
+PetscScalar quadratic_3d(const PetscReal x[]) {
   return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 };
 
-PetscScalar cubic_3d(const double x[]) {
+PetscScalar cubic_3d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
 };
 
@@ -592,8 +592,10 @@ PetscErrorCode SetupSection(AppCtx *user) {
   PetscInt       numDof_0[2] = {1, 0};
   PetscInt       numDof_1[3] = {1, 0, 0};
   PetscInt       numDof_2[4] = {1, 0, 0, 0};
-  PetscInt      *numDof;
-  const char    *bcLabel = PETSC_NULL;
+  PetscInt      *numDof      = PETSC_NULL;
+  PetscInt       numBC       = 0;
+  PetscInt       bcField[1]  = {0};
+  IS             bcPoints[1] = {PETSC_NULL};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -611,10 +613,14 @@ PetscErrorCode SetupSection(AppCtx *user) {
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
   }
   if (user->bcType == DIRICHLET) {
-    bcLabel = "marker";
+    numBC = 1;
+    ierr  = DMMeshGetStratumIS(user->dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHKERRQ(ierr);
-  ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, 1, PETSC_NULL, numDof, numBC, bcField, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMMeshSetDefaultSection(user->dm, section);CHKERRQ(ierr);
+  if (user->bcType == DIRICHLET) {
+    ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -783,17 +789,6 @@ int main(int argc, char **argv)
   ierr = SetupExactSolution(&user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(&user);CHKERRQ(ierr);
-  if (user.bcType == NEUMANN) {
-    /* With Neumann conditions, we tell DMMG that constants are in the null space of the operator
-         Should have a nice one like DMMG that sets it for all MG PCs */
-    KSP          ksp;
-    MatNullSpace nullsp;
-
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-  }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DM; then duplicate for remaining
@@ -814,16 +809,16 @@ int main(int argc, char **argv)
                          products within Newton-Krylov method
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* J can be type of MATAIJ, MATBAIJ or MATSBAIJ */
-  ierr = DMGetMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
   A    = J;
-  ierr = SNESSetJacobian(snes, A, J, SNESMeshFormJacobian, &user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, SNESDMMeshComputeJacobian, &user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, SNESDMMeshComputeFunction, &user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -852,7 +847,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
@@ -866,7 +861,7 @@ int main(int argc, char **argv)
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESMeshFormFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESDMMeshComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
   }
@@ -938,7 +933,6 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
@@ -1157,5 +1151,11 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(Jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullsp;
+
+    ierr = MatNullSpaceCreate(((PetscObject) Jac)->comm, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(Jac, nullsp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

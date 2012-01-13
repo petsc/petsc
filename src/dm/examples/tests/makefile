@@ -164,29 +164,29 @@ ex38:ex38.o   chkopts
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
-	-@${MPIEXEC} -n 2 ./ex2 -nox > ex2_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex2 -nox | grep -v "MPI processes" > ex2_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
-	   else echo "Possible problem with ex2_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
 	-@${MPIEXEC} -n 3 ./ex2 -wrap nonperiodic -local_print -nox > ex2_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
-	   else echo "Possible problem with ex2_2, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex2_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
 	-@${MPIEXEC} -n 3 ./ex2 -wrap xyzghosted -local_print -nox > ex2_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
-	   else echo "Possible problem with ex2_3, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex2_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_3.tmp
 runex3:
 	-@${MPIEXEC} -n 3 ./ex3 -time 50 -nox
 runex4:
 	-@${MPIEXEC} -n 4 ./ex4  -nox  | grep -v -i Object > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo "Possible problem with ex4_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex4_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex4_1.tmp
 runex5:
 	-@${MPIEXEC} -n 3 ./ex5 -time 50 -nox
@@ -194,7 +194,7 @@ runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -testorder -nox
 runex12:
 	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
-	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
 # ex13 uses the output of ex14
@@ -206,11 +206,11 @@ runex14:
 
 runex16:
 	-@${MPIEXEC} -n 3 ./ex16 > ex16_1.tmp 2>&1; \
-	  ${DIFF} output/ex16_1.out ex16_1.tmp || echo "Possible problem with ex16, diffs above"; \
+	  ${DIFF} output/ex16_1.out ex16_1.tmp || echo ${PWD} "\n Possible problem with with ex16, diffs above \n========================================="; \
 	  ${RM} -f ex16_1.tmp
 runex16_2:
 	-@${MPIEXEC} -n 3 ./ex16 -gather_add > ex16_2.tmp 2>&1; \
-	  ${DIFF} output/ex16_2.out ex16_2.tmp || echo "Possible problem with ex16_2, diffs above"; \
+	  ${DIFF} output/ex16_2.out ex16_2.tmp || echo ${PWD} "\n Possible problem with with ex16_2, diffs above \n========================================="; \
 	  ${RM} -f ex16_2.tmp
 
 runex21:
@@ -235,69 +235,69 @@ runex23:
 runex24:
 	-@${MPIEXEC} -n 1 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 1 process, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 1 process, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 	-@${MPIEXEC} -n 2 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 2 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 2 processes, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 	-@${MPIEXEC} -n 3 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 3 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 3 processes, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 	-@${MPIEXEC} -n 4 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 4 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 4 processes, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 	-@${MPIEXEC} -n 5 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 5 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 5 processes, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 	-@${MPIEXEC} -n 6 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-	   else echo "Possible problem with ex24_1 6 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex24_1 6 processes, diffs above \n========================================="; fi; ${RM} -f ex24_1.tmp
 
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 1 process, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 1 process, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 	-@${MPIEXEC} -n 2 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 2 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 2 processes, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 	-@${MPIEXEC} -n 3 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 3 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 3 processes, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 	-@${MPIEXEC} -n 4 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 4 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 4 processes, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 	-@${MPIEXEC} -n 5 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 5 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 5 processes, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 	-@${MPIEXEC} -n 6 ./ex25  | grep -v -i Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-	   else echo "Possible problem with ex25_1 6 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+	   else echo ${PWD} ; echo "Possible problem with with ex25_1 6 processes, diffs above \n========================================="; fi; ${RM} -f ex25_1.tmp
 
 runex30:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type baij -alpha 10 -u0 0.1 > ex30_1.tmp; \
-	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo "Possible problem with ex30_1, diffs above"; \
+	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo ${PWD} "\n Possible problem with with ex30_1, diffs above \n========================================="; \
 	   ${RM} -f ex30_1.tmp
 runex30_2:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 1 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_2.tmp; \
-	   ${DIFF} output/ex30_2.out ex30_2.tmp || echo "Possible problem with ex30_2, diffs above"; \
+	   ${DIFF} output/ex30_2.out ex30_2.tmp || echo ${PWD} "\n Possible problem with with ex30_2, diffs above \n========================================="; \
 	   ${RM} -f ex30_2.tmp
 runex30_3:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_3.tmp; \
-	   ${DIFF} output/ex30_3.out ex30_3.tmp || echo "Possible problem with ex30_3, diffs above"; \
+	   ${DIFF} output/ex30_3.out ex30_3.tmp || echo ${PWD} "\n Possible problem with with ex30_3, diffs above \n========================================="; \
 	   ${RM} -f ex30_3.tmp
 runex31:
 	-@${MPIEXEC} -n 2 ./ex31 
 runex32:
 	-@${MPIEXEC} -n 2 ./ex32 > ex32_1.tmp; \
-	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo "Possible problem with ex32, diffs above"; \
+	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo ${PWD} "\n Possible problem with with ex32, diffs above \n========================================="; \
 	  ${RM} -f ex32_1.tmp
 runex34:
 	-@${MPIEXEC} -n 12 ./ex34 -da_view -dim 3 -da_grid_x 11 -da_grid_y 5 -da_grid_z 7 > ex34_1.tmp; \
-	  ${DIFF} output/ex34_1.out ex34_1.tmp || echo "Possible problem with ex34, diffs above"; \
+	  ${DIFF} output/ex34_1.out ex34_1.tmp || echo ${PWD} "\n Possible problem with with ex34, diffs above \n========================================="; \
 	  ${RM} -f ex34_1.tmp
 
 runex36_1d:
 	-@${MPIEXEC} -n 1 ./ex36 -mx 10 -nl 6 -dim 1 > ex36_1d.tmp; \
-	  ${DIFF} output/ex36_1d.out ex36_1d.tmp || echo "Possible problem with ex36_1d, diffs above"; \
+	  ${DIFF} output/ex36_1d.out ex36_1d.tmp || echo ${PWD} "\n Possible problem with with ex36_1d, diffs above \n========================================="; \
 	  ${RM} -f ex36_1d.tmp
 
 runex36_2d:
@@ -305,25 +305,25 @@ runex36_2d:
 	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 1 >> ex36_2d.tmp; \
 	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 2 >> ex36_2d.tmp; \
 	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 3 >> ex36_2d.tmp; \
-	  ${DIFF} output/ex36_2d.out ex36_2d.tmp || echo "Possible problem with ex36_2d, diffs above"; \
+	  ${DIFF} output/ex36_2d.out ex36_2d.tmp || echo ${PWD} "\n Possible problem with with ex36_2d, diffs above \n========================================="; \
 	  ${RM} -f ex36_2d.tmp
 runex36_2dp1:
 	-@${MPIEXEC} -n 32 ./ex36 -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 4 > ex36_2dp1.tmp; \
-	  ${DIFF} output/ex36_2dp1.out ex36_2dp1.tmp || echo "Possible problem with ex36_2dp1, diffs above"; \
+	  ${DIFF} output/ex36_2dp1.out ex36_2dp1.tmp || echo ${PWD} "\n Possible problem with with ex36_2dp1, diffs above \n========================================="; \
 	  ${RM} -f ex36_2dp1.tmp
 runex36_2dp2:
 	-@${MPIEXEC} -n 32 ./ex36 -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 1 > ex36_2dp2.tmp; \
-	  ${DIFF} output/ex36_2dp2.out ex36_2dp2.tmp || echo "Possible problem with ex36_2dp1, diffs above"; \
+	  ${DIFF} output/ex36_2dp2.out ex36_2dp2.tmp || echo ${PWD} "\nPossible problem with with ex36_2dp1, diffs above \n========================================="; \
 	  ${RM} -f ex36_2dp2.tmp
 
 runex36_3d:
 	-@${MPIEXEC} -n 1 ./ex36 -mx 5 -my 5 -mz 5 -nl 4 -dim 3 -cmap 3 > ex36_3d.tmp; \
-	  ${DIFF} output/ex36_3d.out ex36_3d.tmp || echo "Possible problem with ex36_3d, diffs above"; \
+	  ${DIFF} output/ex36_3d.out ex36_3d.tmp || echo ${PWD} "\nPossible problem with with ex36_3d, diffs above \n========================================="; \
 	  ${RM} -f ex36_3d.tmp
 
 runex36_3dp1:
 	-@${MPIEXEC} -n 32 ./ex36 -mx 5 -my 5 -mz 5 -nl 3 -dim 3 -cmap 1 -da_refine_x 1 -da_refine_y 3 -da_refine_z 4 > ex36_3dp1.tmp; \
-	  ${DIFF} output/ex36_3dp1.out ex36_3dp1.tmp || echo "Possible problem with ex36_3dp1, diffs above"; \
+	  ${DIFF} output/ex36_3dp1.out ex36_3dp1.tmp || echo ${PWD} "\nPossible problem with with ex36_3dp1, diffs above \n========================================="; \
 	  ${RM} -f ex36_3dp1.tmp
 
 runex37:

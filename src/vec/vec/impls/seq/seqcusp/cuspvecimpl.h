@@ -45,7 +45,6 @@ extern PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
 
-extern PetscBool  synchronizeCUSP;
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
 
 #define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
@@ -59,13 +58,18 @@ struct Vec_CUSP {
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPAllocateCheck"
+/*
+    Allocates space for the vector array on the GPU if it does not exist.
+    Does NOT change the PetscCUSPFlag for the vector
+    Does NOT zero the CUSP array
+ 
+*/
 PETSC_STATIC_INLINE PetscErrorCode VecCUSPAllocateCheck(Vec v)
 {
   PetscErrorCode ierr;
-  Vec_Seq        *s = (Vec_Seq*)v->data;;
 
   PetscFunctionBegin;
-  if (v->valid_GPU_array == PETSC_CUSP_UNALLOCATED){
+  if (!v->spptr) {
     try {
       v->spptr = new Vec_CUSP;
       ((Vec_CUSP*)v->spptr)->GPUarray = new CUSPARRAY;
@@ -73,11 +77,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPAllocateCheck(Vec v)
       ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-    if (s->array == 0){
-      v->valid_GPU_array = PETSC_CUSP_GPU;
-    } else{
-      v->valid_GPU_array = PETSC_CUSP_CPU;
     }
   }
   PetscFunctionReturn(0);
@@ -148,9 +147,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->valid_GPU_array != PETSC_CUSP_UNALLOCATED){
-    v->valid_GPU_array = PETSC_CUSP_GPU;
-  }
+  v->valid_GPU_array = PETSC_CUSP_GPU;
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -183,8 +180,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY** a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *a   = 0;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
+  ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
@@ -196,9 +192,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY** a
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->valid_GPU_array != PETSC_CUSP_UNALLOCATED){
-    v->valid_GPU_array = PETSC_CUSP_GPU;
-  }
+  v->valid_GPU_array = PETSC_CUSP_GPU;
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

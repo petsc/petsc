@@ -1,161 +1,87 @@
 static char help[] = "Overlap Tests.\n\n";
 
-#include <petscsys.h>
-#include "overlapTest.hh"
+#include <petscdmmesh.h>
+//#include "overlapTest.hh"
 
 using ALE::Obj;
-typedef ALE::Test::OverlapTest::sieve_type        sieve_type;
-typedef ALE::Test::OverlapTest::topology_type     topology_type;
-typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
-typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
-typedef ALE::Test::OverlapTest::send_section_type send_section_type;
-typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
-typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
-typedef ALE::Test::SupportSizer                   SupportSizer;
 
 typedef struct {
   int debug; // The debugging level
 } Options;
 
 #undef __FUNCT__
-#define __FUNCT__ "DoubletTest"
-// This test has
-//  - A mesh overlapping itself
-//  - Single points overlapping single points
-PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
+#define __FUNCT__ "InsertionTest"
+PetscErrorCode InsertionTest(Options *options)
 {
-  Obj<topology_type>     topology    = new topology_type(sendSection->comm(), options->debug);
-  Obj<send_overlap_type> sendOverlap = new send_overlap_type(sendSection->comm(), options->debug);
-  Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(recvSection->comm(), options->debug);
-  Obj<dsieve_type>       dSieve      = new dsieve_type();
-  Obj<std::set<int> >    cone        = new std::set<int>();
-  int                    debug       = options->debug;
+  typedef PetscInt point_type;
+  typedef short    rank_type;
+  typedef PETSc::SendOverlap<point_type,rank_type> send_overlap_type;
+  MPI_Comm          comm          = PETSC_COMM_WORLD;
+  const char       *stageName     = "Overlap Insertion Test";
+  const char       *eventName     = "Insert";
+  ALE::LogStage     stage         = ALE::LogStageRegister(stageName);
+  const PetscInt    insertRounds  = 6;
+  const PetscInt    baseExp       = 2;
+  const PetscInt    baseInserts   = pow(10, baseExp);
+  PetscLogEvent     insertEvents[insertRounds];
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (sendSection->commSize() != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
-  // Make the sieve
-  ALE::Test::OverlapTest::constructDoublet(topology);
-  Obj<sieve_type>   sieve = topology->getPatch(0);
-  Obj<SupportSizer> sizer = new ALE::Test::SupportSizer(sieve);
-  // Make overlap
-  ALE::Test::OverlapTest::constructDoubletOverlap(sendOverlap, recvOverlap);
-  // Make discrete sieve
-  if (sieve->commRank() == 0) {
-    cone->insert(0);cone->insert(2);
-    dSieve->addPoints(cone);
-    sendSection->getTopology()->setPatch(1, dSieve);
-    recvSection->getTopology()->setPatch(1, dSieve);
-  } else {
-    cone->insert(1);cone->insert(2);
-    dSieve->addPoints(cone);
-    sendSection->getTopology()->setPatch(0, dSieve);
-    recvSection->getTopology()->setPatch(0, dSieve);
+  // Test fast assembly
+  for(PetscInt i = 0; i < insertRounds; ++i) {
+    char name[1024];
+
+    ierr = PetscSNPrintf(name, 1023, "%sE%d", eventName, i+baseExp);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(name, PETSC_OBJECT_CLASSID, &insertEvents[i]);CHKERRQ(ierr);
   }
-  sendSection->getTopology()->stratify();
-  recvSection->getTopology()->stratify();
-  // Setup sections
-  sendSection->construct(sizer);
-  recvSection->construct(sizer);
-  sendSection->allocate();
-  recvSection->allocate();
-  sendSection->constructCommunication(send_section_type::SEND);
-  recvSection->constructCommunication(recv_section_type::RECEIVE);
-  // Fill up sections
-  Obj<send_overlap_type::traits::capSequence> sendPoints = sendOverlap->cap();
+  ALE::LogStagePush(stage);
+  // Use some number of ranks, start with 2
+  for(PetscInt numRanks = 2; numRanks < 3; ++numRanks) {
+    for(PetscInt i = 0, numInsertions = baseInserts; i < insertRounds; ++i, numInsertions *= 10) {
+      send_overlap_type sendOverlap(comm, options->debug);
 
-  if (debug) {std::cout << "Send information" << std::endl;}
-  for(send_overlap_type::traits::capSequence::iterator s_iter = sendPoints->begin(); s_iter != sendPoints->end(); ++s_iter) {
-    const Obj<send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*s_iter);
-    
-    if (debug) {std::cout << "[" << sendOverlap->commRank() << "]Point " << *s_iter << std::endl;}
-    for(send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
-      sendSection->update(*p_iter, *s_iter, sieve->support(*s_iter));
+      sendOverlap.setNumRanks(numRanks);
+      ierr = PetscPrintf(comm, "Insertion Round %d for %d points\n", i, numInsertions);
+      for(rank_type rank = 0; rank < numRanks; ++rank) {
+        sendOverlap.setNumPoints(rank, numInsertions);
+      }
+      sendOverlap.assemble();
+      // Insert some number of points per rank, look at time/insertion, I think its growing quadratically
+      ierr = PetscLogEventBegin(insertEvents[i],0,0,0,0);CHKERRQ(ierr);
+      for(rank_type rank = 0; rank < numRanks; ++rank) {
+        for(PetscInt p = 0; p < numInsertions; ++p) {
+          const point_type localPoint  = p;
+          const point_type remotePoint = numInsertions - p - 1;
 
-      if (debug) {
-        std::cout << "[" << sendOverlap->commRank() << "]  Receiver " << *p_iter << " Matching Point " << p_iter.color() << std::endl;
-        const send_section_type::value_type *values = sendSection->restrictPoint(*p_iter, *s_iter);
-        for(int i = 0; i < sendSection->getAtlas()->size(*p_iter, *s_iter); i++) {
-          std::cout << "[" << recvOverlap->commRank() << "]    " << values[i] << std::endl;
+          sendOverlap.addArrow(localPoint, rank, remotePoint);
         }
       }
+      sendOverlap.assemblePoints();
+      ierr = PetscLogEventEnd(insertEvents[i],0,0,0,0);CHKERRQ(ierr);
     }
   }
-  if (debug) {sendSection->view("Send section");}
-  // Communicate
-  sendSection->startCommunication();
-  recvSection->startCommunication();
-  sendSection->endCommunication();
-  recvSection->endCommunication();
-  // Read out sections and check answer
-  if (debug) {recvSection->view("Receive section");}
-  if (debug) {std::cout << "Receive information" << std::endl;}
-  Obj<recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
+  ALE::LogStagePop(stage);
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog;
 
-  for(recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
-    const Obj<recv_overlap_type::traits::coneSequence>& recvPatches = recvOverlap->cone(*r_iter);
-    
-    if (debug) {std::cout << "[" << recvOverlap->commRank() << "]Point " << *r_iter << std::endl;}
-    for(recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
-      const recv_section_type::value_type *values = recvSection->restrictPoint(*p_iter, *r_iter);
+  ierr = PetscLogGetStageLog(&stageLog);
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+  for(PetscInt i = 0, numInsertions = baseInserts; i < insertRounds; ++i, numInsertions *= 10) {
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[insertEvents[i]];
 
-      if (debug) {
-        std::cout << "[" << recvOverlap->commRank() << "]  Sender " << *p_iter << " Matching Point " << p_iter.color() << std::endl;
-        for(int i = 0; i < recvSection->getAtlas()->size(*p_iter, *r_iter); i++) {
-          std::cout << "[" << recvOverlap->commRank() << "]    " << values[i] << std::endl;
-        }
-      }
-      if (recvOverlap->commRank() == 0) {
-        if (*r_iter == 1) {
-          if ((values[0] != 3) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
-        } else {
-          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
-        }
-      } else {
-        if (*r_iter == 0) {
-          if ((values[0] != 3) || (values[1] != 4)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
-        } else {
-          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
-        }
-      }
+    //CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
+    //CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+    if (options->debug) {
+      ierr = PetscPrintf(comm, " %d: Average time per insertion for 1e%d points: %gs\n", eventInfo.count, i+baseExp, eventInfo.time/(numInsertions));
     }
+    //CPPUNIT_ASSERT((eventInfo.time <  maxTimePerInsertion * numInsertions));
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PartitionTest"
-PetscErrorCode PartitionTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
-{
-  // Construct the proto-overlap
-  //   We say that partition points overlap those on proc 0 (never appear in Sieve)
-  // Construct the send and receive sections
-  //   The send size is the number of points to send from proc 0
-  //   The recv size is the number coming into proc >0
-  // Fill up with points
-  // Communicate
-  // Insert points into overlap
-  // Construct the send and receive sections
-  //   The send size is the cone sizes to send from proc 0
-  //   The recv size is the incoming cone sizes into proc >0
-  // Fill up with cones
-  // Communicate
-  // Insert points into sieve
-
-  // Operator allocation or application:
-  // -----------------------------------
-  // Construct the proto-overlap
-  //   This is just the traditional overlap of boundary points
-  // Construct the send and receive sections
-  //   The send size and recv size are the sizes of the remote cone of influence
-  // Fill up with points in the cone of influence
-  // Communicate
-  // Insert influence points into overlap
-  // Construct the send and receive sections
-  //   The send size and recv size are the value sizes over each point
-  // Fill up with values
-  // Communicate
-  // Combine values into application
-  PetscFunctionBegin;
+  ierr = PetscPrintf(comm, "times = [");
+  for(PetscInt i = 0, numInsertions = baseInserts; i < insertRounds; ++i, numInsertions *= 10) {
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[insertEvents[i]];
+    ierr = PetscPrintf(comm, "%g, ", eventInfo.time/numInsertions);
+  }
+  ierr = PetscPrintf(comm, "]\n");
   PetscFunctionReturn(0);
 }
 
@@ -168,7 +94,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Options for sifter stress test", "Sieve");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Options for overlap stress test", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "overlap1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -185,13 +111,10 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
+  ierr = PetscLogBegin();CHKERRQ(ierr);
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<send_section_type> sendSection = new send_section_type(comm, options.debug);
-    Obj<recv_section_type> recvSection = new recv_section_type(comm, sendSection->getTag(), options.debug);
-
-    ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
-    ierr = PartitionTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    ierr = InsertionTest(&options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

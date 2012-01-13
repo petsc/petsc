@@ -103,7 +103,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       ierr = KSP_PCApplyBAorAB(ksp,z,y,w);CHKERRQ(ierr);  /* y = BAz = BABr */
       ierr  = VecDotNorm2(z,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (Br)^T(BABR); abr = (BABr)^T (BABr) */
       scale = rdot/abr;
-
+      ierr = PetscInfo1(ksp,"Self-scale factor %G\n",PetscRealPart(scale));CHKERRQ(ierr);
       ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ierr = VecAXPY(r,-scale,w);CHKERRQ(ierr);   /*  r <- r - scale*Az */
       ierr = VecAXPY(z,-scale,y);CHKERRQ(ierr);   /*  z <- z - scale*y */
@@ -174,7 +174,11 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
+    if (richardsonP->selfscale) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: using self-scale best computed damping factor\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
+    }
   } else {
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }
