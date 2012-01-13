@@ -248,6 +248,8 @@ acfindx:
       if hasattr(self.framework, 'packages'):
         self.framework.packages.append(self)
     else:
+      if self.framework.clArgDB.get('with-x'):
+        raise RuntimeError("Could not locate X11 *development* package. Perhaps its not installed")
       if not foundInclude:
         self.logPrint('Could not find X11 includes')
       if not foundLibrary:
