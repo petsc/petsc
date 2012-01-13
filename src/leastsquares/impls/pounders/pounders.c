@@ -39,7 +39,7 @@ PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin)
     PetscInt info,its;
     PetscFunctionBegin;
 
-    if (mfqP->usebqpip) {
+    if (! mfqP->usegqt) {
       TaoSolver subtao;
       Vec       x,xl,xu;
       PetscInt i,j;
@@ -872,7 +872,11 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
     ierr = VecGetSize(tao->solution,&mfqP->n); CHKERRQ(ierr);
     ierr = VecGetSize(tao->sep_objective,&mfqP->m); CHKERRQ(ierr);
     mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
-    mfqP->npmax = (mfqP->n+1)*(mfqP->n+2)/2; /* TODO check if manually set */
+    if (mfqP->npmax == PETSC_DEFAULT) {
+      mfqP->npmax = 2*mfqP->n + 1;
+    }
+    mfqP->npmax = PetscMin((mfqP->n+1)*(mfqP->n+2)/2,mfqP->npmax); 
+    mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n+2);
 
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Xhist); CHKERRQ(ierr);
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Fhist); CHKERRQ(ierr);
@@ -1028,8 +1032,10 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("POUNDERS method for least-squares optimization"); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta,0); CHKERRQ(ierr);
-  mfqP->usebqpip = PETSC_FALSE;
-  ierr = PetscOptionsBool("-tao_pounders_bqpip","use internal bqpip solver for subproblem","",mfqP->usebqpip,&mfqP->usebqpip,0); CHKERRQ(ierr);
+  mfqP->npmax = PETSC_DEFAULT;
+  ierr = PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,0); CHKERRQ(ierr);
+  mfqP->usegqt = PETSC_FALSE;
+  ierr = PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
