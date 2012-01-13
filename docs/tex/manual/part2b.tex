@@ -891,12 +891,13 @@ performed.
 \section{Nonlinear Least Squares}
 \label{sec:leastsquares}
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
-squares problem minimizes $f(x)=\half \| F(x) \|_2$.
+squares problem minimizes 
+\[ f(x)=\half \| F(x) \|_2^2 =\half \sum_{i=1}^m F_i(x)^2 .\]
 The nonlinear equations $F$ should be specified with the function
 {\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
-The current version of TAO (2.0) has no second order algorithms 
-for nonlinear least squares, but we do anticipate such an algorithm for the
-next release.
+Although the current version of TAO (2.0) has no derivative-based
+algorithms for nonlinear least squares, we anticipate that such an
+algorithm will be available in the next release. 
 
 \begin{comment}
 Most solvers also require the Jacobian of this function.  
@@ -920,7 +921,8 @@ of the residual vector $F$ is unavailable is the model-based
 derivate-free POUNDerS (Practical Optimization Using No Derivatives for
 sums of Squares) algorithm (\texttt{tao\_pounders}). 
 POUNDerS employs a derivative-free trust region framework as described in
-\cite{Dfobook}. An example of this version of POUNDerS applied to a
+\cite{Dfobook} in order to converge to local minimizers. An example of
+this version of POUNDerS applied to a
 practical least squares problem can be found in \cite{UNEDF0}.
 
 
@@ -937,19 +939,18 @@ $x_+$ to be evaluated is obtained by solving the trust region subproblem
  \min\left\{
  m_k(x) : 
  \|x-x_k\|_{p} \leq \Delta_k, 
- l\leq x \leq u\right
- \}, 
+ \right \}, 
  \label{eq:poundersp}
 \end{equation}
-where $(l,u)$ denote the bound constraints and $\Delta_k$ is the current
+where $\Delta_k$ is the current 
 trust region radius. By default we use a trust region norm with $p=\infty$
 and solve (\ref{eq:poundersp}) with the BQPIP method described in
 Section~\ref{sec:bqpip}. 
 
 The residual vector is then evaluated to obtain $F(x_+)$ and hence
-$f(x_+)$. The ratio of actual decrease to predicted decreased
+$f(x_+)$. The ratio of actual decrease to predicted decrease, 
 \[
- \rho_k = \frac{f(x_k)-f(x_+)}{m_k(x_k)-m_k(x_+)}
+ \rho_k = \frac{f(x_k)-f(x_+)}{m_k(x_k)-m_k(x_+)},
 \]
 as well as an indicator, \texttt{valid}, on the model's quality of
 approximation on the trust region are then used to update the iterate,
@@ -986,7 +987,7 @@ The iteration counter is then updated and the next model $m_{k}$ is
 obtained as described next.
 
 \subsubsection{Forming the Trust Region Model}
-In each iteration POUNDerS uses a subset of the available evaluated
+In each iteration, POUNDerS uses a subset of the available evaluated
 residual vectors $\{ F(y_1), F(y_2), \cdots \}$ to form an interpolatory
 quadratic model of each residual component. The $m$ quadratic models
 \begin{equation}
