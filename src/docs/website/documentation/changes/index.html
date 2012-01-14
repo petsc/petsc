@@ -1,212 +1,158 @@
-<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-    <title>PETSc: Docs:&nbsp; Supplementary:&nbsp; Changes</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes</title>
   </head>
-  <body bgcolor="#d5eaff">
-    <table width="100%">
-      <tbody>
-        <tr>
-          <td valign="top" width="25%">
-            <h1><font color="#ff0000" size="7">PETSc</font></h1>
-            <ul>
-              <li><a href="../../index.html"><strong>Home</strong></a></li>
-            </ul>
-          </td>
-          <td width="75%"><!--##begin-->
-            <h1>Docs:&nbsp; Changes</h1>
-            <!--##end--> </td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#ff5b5b" size="4"> </td>
-        </tr>
-        <tr>
-          <td valign="top" width="25%">
-            <ul>
-              <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-              <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-              <li><a href="../index.html"><strong>Documentation</strong></a>
-                <ul>
-                  <li><a href="../index.html#Manual"><strong>Manual
-                        pages and
-                        Users Manual</strong></a></li>
-                  <li><a href="../referencing.html"><strong>Referencing&nbsp;
-                        PETSc</strong></a></li>
-                  <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-                  <li><strong><a href="../installation.html">Installation</a></strong></li>
-                  <li><strong></strong><strong><a href="../ams.html">AMS</a></strong></li>
-                  <li><strong><font color="#ff0000">Changes</font></strong>
-                    <ul>
-                      <li><a href="dev.html">Development</a></li>
-                      <li><a href="32.html">3.2</a><br>
-                      </li>
-                      <li><a href="31.html">3.1</a><br>
-                      </li>
-                      <li><a href="300.html">3.0.0</a></li>
-                      <li><a href="233.html">2.3.3</a></li>
-                      <li><a href="232.html">2.3.2</a></li>
-                      <li><a href="231.html">2.3.1</a></li>
-                      <li><a href="230.html">2.3.0</a></li>
-                      <li><a href="221.html">2.2.1</a></li>
-                      <li><a href="220.html">2.2.0</a></li>
-                      <li><a href="216.html">2.1.6</a></li>
-                      <li><a href="215.html">2.1.5</a></li>
-                      <li><a href="213.html">2.1.3</a></li>
-                      <li><a href="212.html">2.1.2</a></li>
-                      <li><a href="211.html">2.1.1</a></li>
-                      <li><a href="21.html">2.1.0</a></li>
-                      <li><a href="2029.html">2.0.29</a></li>
-                      <li><a href="2028.html">2.0.28</a></li>
-                      <li><a href="2024.html">2.0.24</a></li>
-                      <li><a href="2022.html">2.0.22</a></li>
-                      <li><a href="2918-21.html">2.0.21</a></li>
-                      <li><a href="2918-21.html">2.0.18-20</a></li>
-                      <li><a href="2017.html">2.0.17</a></li>
-                      <li><a href="2016.html">2.0.16</a></li>
-                      <li><a href="2015.html">2.0.15</a></li>
-                    </ul>
-                  </li>
-                  <li><strong><a href="../bugreporting.html">Bug
-                        Reporting</a></strong></li>
-                  <li><strong><a href="../codemanagement.html">Code
-                        Management</a></strong></li>
-                  <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-                  <li><strong><a href="../copyright.html">License</a></strong>
-                  </li>
-                </ul>
-              </li>
-              <li><a href="../../publications/index.html"><strong>Applications/Publications</strong></a></li>
-              <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-              <li><a href="../../miscellaneous/external.html"><strong>External
-                    Software</strong></a></li>
-              <li><a href="../../developers/index.html"><strong>Developers
-                    Site</strong></a></li>
-            </ul>
-          </td>
-          <td valign="top" width="75%"><!--##begin-->
-            <p align="left">We will continually add new features and
-              enhanced
-              functionality in upcoming releases; <strong>small changes
-                in usage and
-                calling sequences of PETSc routines will continue to
-                occur</strong>.
-              Although keeping one's code accordingly up-to-date can be
-              annoying, all
-              PETSc users will be rewarded in the long run with a
-              cleaner, better
-              designed, and easier-to-use interface.&nbsp; </p>
-            <p align="left"> We suggest that users who want to upgrade
-              their
-              current PETSc application codes from a particular version
-              to the most
-              recent release proceed through the changes listed in this
-              file in
-              increasing order of version numbers. (Note: One can
-              determine the
-              release number of any current PETSc installation by&nbsp;
-              looking in
-              the file include/petscversion.h) Many of the interface
-              changes can be
-              handled quickly and easily by using global replacement via
-              your
-              favorite text editor. See the file <a
-                href="../codemanagement.html">documentation/codemanagement.html</a>
-              for some tips that we find helpful in keeping our own code
-              up to date
-              and that should be generally useful for effective code
-              management. </p>
-            <p><strong>Releases of PETSc: </strong></p>
-            <ul>
-              <li><a href="dev.html">petsc-dev</a> - petsc development
-                copy</li>
-              <li><a href="32.html">3.2</a> - Public Release, Sep 8,
-                2011<br>
-              </li>
-              <li><a href="31.html">3.1</a> - Public release, Mar 25,
-                2010<br>
-              </li>
-              <li><a href="300.html">3.0.0</a> - Public release, Dec 19,
-                2008</li>
-              <li><a href="233.html">2.3.3</a> - Public release, May 23,
-                2007</li>
-              <li><a href="232.html">2.3.2</a> - Public release, Sep 1,
-                2006</li>
-              <li><a href="231.html">2.3.1</a> - Public release, Feb, 3,
-                2006</li>
-              <li><a href="230.html">2.3.0</a> - Public release, Apr,
-                26, 2005<br>
-              </li>
-              <li><a href="221.html">2.2.1</a> - Public release, Aug, 18
-                2004<br>
-              </li>
-              <li><a href="220.html">2.2.0</a> - Public release, Feb 27,
-                2004</li>
-              <li><a href="216.html">2.1.6</a> - Public release, Aug 5,
-                2003</li>
-              <li><a href="215.html">2.1.5</a> - Public release, Jan 27,
-                2003</li>
-              <li>2.1.4 - private - Microsoft Cluster Software CD</li>
-              <li><a href="213.html">2.1.3</a> - Public release, May 31,
-                2002</li>
-              <li><a href="212.html">2.1.2 </a>- public release, April
-                22 ,
-                2002</li>
-              <li><a href="211.html">2.1.1 </a> - public release,
-                December
-                19, 2001</li>
-              <li><a href="21.html">2.1.0 </a> - public release, April
-                11,
-                2001</li>
-              <li><a href="2029.html">2.0.29</a> - public release,
-                September
-                26, 2000</li>
-              <li><a href="2028.html">2.0.28</a> - public release, March
-                27,
-                2000</li>
-              <li>2.0.25, 2.0.26,2.0.27 private releases</li>
-              <li><a href="2024.html">2.0.24</a> - public release, April
-                6,
-                1999</li>
-              <li>2.0.23 - private release, September 29,1998</li>
-              <li><a href="2022.html">2.0.22</a> - public release, April
-                29,
-                1998</li>
-              <li><a href="2918-21.html">2.0.21</a> - public release,
-                November 13, 1997</li>
-              <li><a href="2918-21.html">2.0.18</a>, <a
-                  href="2918-21.html">2.0.19</a>, <a
-                  href="2918-21.html">2.0.20</a> - private releases</li>
-              <li><a href="2017.html">2.0.17</a> - public release, April
-                5,
-                1997</li>
-              <li><a href="2016.html">2.0.16</a> - private release,
-                December
-                10, 1996 for "Bring Your Own Code" Workshop participants</li>
-              <li><a href="2015.html">2.0.15</a> - public release,
-                October 4,
-                1996</li>
-              <li>2.0.13 - public release, April 18, 1996</li>
-              <li>2.0.Beta.10 - public release, December 15, 1995 </li>
-              <li>2.0.Beta.8 - public release, October 13, 1995</li>
-              <li>2.0.Beta.6 - public release, July 30, 1995 </li>
-              <li>2.0.Beta.4 - public release, June 21, 1995 </li>
-            </ul>
-            <p>We announce new PETSc releases to the petsc-announce
-              mailing
-              list, which one can join by sending e-mail to <a
-                href="mailto:majordomo@mcs.anl.gov">majordomo@mcs.anl.gov</a>
-              with the
-              message, "subscribe petsc-announce".<!--##end--> </p>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#ff5b5b" size="4"> </td>
-        </tr>
-      </tbody>
-    </table>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <span class="current">Changes</span>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><a href="2022.html">2.0.22</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><a href="2016.html">2.0.16</a></li>
+                <li><a href="2015.html">2.0.15</a></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <div id="main">
+
+      <p>
+        We will continually add new features and enhanced functionality in
+        upcoming releases; <b>small changes in usage and calling sequences
+          of PETSc routines will continue to occur</b>.  Although keeping
+        one's code accordingly up-to-date can be annoying, all PETSc users will
+        be rewarded in the long run with a cleaner, better designed, and
+        easier-to-use interface.
+      </p>
+
+      <p>
+        We suggest that users who want to upgrade their current PETSc
+        application codes from a particular version to the most recent release
+        proceed through the changes listed in this file in increasing order of
+        version numbers. (Note: One can determine the release number of any
+        current PETSc installation by looking in the file
+        include/petscversion.h) Many of the interface changes can be handled
+        quickly and easily by using global replacement via your favorite text
+        editor. See the file <a href="../codemanagement.html">documentation/codemanagement.html</a>
+        for some tips that we find helpful in keeping our own code up to date
+        and that should be generally useful for effective code management.
+      </p>
+
+      <p><b>Releases of PETSc:</b></p>
+
+      <ul>
+        <li><a href="dev.html">petsc-dev</a> - petsc development copy</li>
+        <li><a href="32.html">3.2</a> - Public Release, Sep 8, 2011</li>
+        <li><a href="31.html">3.1</a> - Public release, Mar 25, 2010</li>
+        <li><a href="300.html">3.0.0</a> - Public release, Dec 19, 2008</li>
+        <li><a href="233.html">2.3.3</a> - Public release, May 23, 2007</li>
+        <li><a href="232.html">2.3.2</a> - Public release, Sep 1, 2006</li>
+        <li><a href="231.html">2.3.1</a> - Public release, Feb, 3, 2006</li>
+        <li><a href="230.html">2.3.0</a> - Public release, Apr, 26, 2005</li>
+        <li><a href="221.html">2.2.1</a> - Public release, Aug, 18 2004</li>
+        <li><a href="220.html">2.2.0</a> - Public release, Feb 27, 2004</li>
+        <li><a href="216.html">2.1.6</a> - Public release, Aug 5, 2003</li>
+        <li><a href="215.html">2.1.5</a> - Public release, Jan 27, 2003</li>
+        <li>2.1.4 - private - Microsoft Cluster Software CD</li>
+        <li><a href="213.html">2.1.3</a> - Public release, May 31, 2002</li>
+        <li><a href="212.html">2.1.2</a>- public release, April 22 , 2002</li>
+        <li><a href="211.html">2.1.1</a> - public release, December 19, 2001</li>
+        <li><a href="21.html">2.1.0</a> - public release, April 11, 2001</li>
+        <li><a href="2029.html">2.0.29</a> - public release, September 26, 2000</li>
+        <li><a href="2028.html">2.0.28</a> - public release, March 27, 2000</li>
+        <li>2.0.25, 2.0.26,2.0.27 private releases</li>
+        <li><a href="2024.html">2.0.24</a> - public release, April 6, 1999</li>
+        <li>2.0.23 - private release, September 29,1998</li>
+        <li><a href="2022.html">2.0.22</a> - public release, April 29, 1998</li>
+        <li><a href="2018-21.html">2.0.21</a> - public release, November 13, 1997</li>
+        <li>
+          <a href="2018-21.html">2.0.18</a>,
+          <a href="2018-21.html">2.0.19</a>,
+          <a href="2018-21.html">2.0.20</a> - private releases
+        </li>
+        <li><a href="2017.html">2.0.17</a> - public release, April 5, 1997</li>
+        <li><a href="2016.html">2.0.16</a> - private release, December 10, 1996 for "Bring Your Own Code" Workshop participants</li>
+        <li><a href="2015.html">2.0.15</a> - public release, October 4, 1996</li>
+        <li>2.0.13 - public release, April 18, 1996</li>
+        <li>2.0.Beta.10 - public release, December 15, 1995</li>
+        <li>2.0.Beta.8 - public release, October 13, 1995</li>
+        <li>2.0.Beta.6 - public release, July 30, 1995</li>
+        <li>2.0.Beta.4 - public release, June 21, 1995</li>
+      </ul>
+
+      <p>
+        We announce new PETSc releases to the petsc-announce mailing list,
+        which one can join by sending e-mail to
+        <a href="mailto:majordomo@mcs.anl.gov">majordomo@mcs.anl.gov</a>
+        with the message, "subscribe petsc-announce".
+      </p>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
   </body>
 </html>

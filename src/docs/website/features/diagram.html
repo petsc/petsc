@@ -1,58 +1,114 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html;
-      charset=ISO-8859-1">
-    <title>PETSc:&nbsp; Features:&nbsp; Diagram</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Features: Diagram</title>
+    <style type="text/css">
+      #diagram {
+        position: relative;
+        width: 31em;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      #diagram hr {
+        background-color: #333;
+      }
+
+      #diagram > div {
+        padding: .8em;
+        margin: .1em;
+        margin-bottom: 1em;
+        text-align: center;
+      }
+
+      #diagram > div > span {
+        border: 2px solid #333;
+        margin: 1em;
+        padding: .5em;
+      }
+
+      /* This hack centers the circle */
+      #diagram > div:first-child {
+        margin-left: 12em;
+      }
+
+      #circle {
+        width: 6em;
+        height: 6em;
+        -moz-border-radius: 3em;
+        -webkit-border-radius: 3em;
+
+        /* align text in the center */
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+
+        background-color: #333;
+        color: #fff;
+      }
+    </style>
   </head>
-  <body bgcolor="#d5eaff">
-    <table border="0" width="100%">
-      <tbody>
-        <tr>
-          <td valign="top" width="25%">
-            <h1><font color="#ff0000" size="7">PETSc</font></h1>
-            <ul>
-              <li><a href="../index.html"><strong>Home</strong></a></li>
-            </ul>
-          </td>
-          <td width="75%">
-            <h1>Features:&nbsp; Diagram</h1>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#ff5b5b" size="4"> </td>
-        </tr>
-        <tr>
-          <td valign="top" width="25%">
-            <ul>
-              <li><a href="../download/index.html"><strong>Download</strong></a></li>
-              <li><a href="index.html"><strong>Features</strong></a>
-                <ul>
-                  <li><a href="details.html"><strong>Component Details</strong></a></li>
-                  <li><font color="#ff0000"><strong>Diagram</strong></font></li>
-                  <li><strong></strong><strong><strong><a
-                          href="gpus.html"><strong>GPUs</strong></a></strong></strong></li>
-                  <li><a href="threads.html"><strong><strong></strong></strong><strong><strong><strong>Threads</strong></strong></strong></a></li>
-                </ul>
-              </li>
-              <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-              <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-              <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-              <li><a href="../miscellaneous/external.html"><strong>External
-                    Software</strong></a></li>
-              <li><a href="../developers/index.html"><strong>Developers
-                    Site</strong></a></li>
-            </ul>
-          </td>
-          <td valign="top" width="75%"><img src="../images/petscwww.png"
-              alt="petscwww.png (8289 bytes)" height="389" width="459"></td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#ff5b5b" size="4"> </td>
-        </tr>
-      </tbody>
-    </table>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1>Features: Diagram</h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li>
+          <a href="../features/index.html">Features</a>
+          <ul>
+            <li><a href="details.html">Component Details</a></li>
+            <li><span class="current">Diagram</span></li>
+            <li><a href="gpus.html">GPUs</a></li>
+            <li><a href="threads.html">Theads</a></li>
+          </ul>
+        </li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <div id="main">
+
+      <div id="diagram">
+        <div><div id="circle">Application Code</div></div>
+        <div>
+          <span id="snes">SNES (Nonlinear Equation Solver)</span>
+          <span id="ts">TS (Timestepping)</span>
+        </div>
+        <div>
+          <span id="ksp">KSP (Krylov Subspace Methods)</span>
+          <span id="pc">PC (Preconditioners)</span>
+        </div>
+        <div>
+          <span id="mat">Matrices</span>
+          <span id="vec">Vectors</span>
+          <span id="is">Index Sets</span>
+        </div>
+        <hr>
+        <div>
+          <span id="blas">BLAS</span>
+          <span id="mpi">MPI</span>
+        </div>
+      </div>
+
+    </div>
+
+    <hr>
   </body>
 </html>

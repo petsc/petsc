@@ -120,7 +120,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
    was requested but is not installed on this machine. Mostly this is for
    testing.
    */
-#if !defined(PETSC_HAVE_X11)
+#if !defined(PETSC_HAVE_X)
   if (!flg) {
     ierr = PetscStrcmp(type,PETSC_DRAW_X,&match);CHKERRQ(ierr);
     if (match) {
@@ -244,7 +244,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   char           vtype[256];
   const char     *def;
   PetscBool      save;
-#if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
+#if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
   PetscBool      warn;
 #endif
   char           filename[PETSC_MAX_PATH_LEN];
@@ -261,9 +261,9 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   } else {
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
-#if defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
+#if defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
     if (!nox) def = PETSC_DRAW_WIN32;
-#elif defined(PETSC_HAVE_X11)
+#elif defined(PETSC_HAVE_X)
     if (!nox) def = PETSC_DRAW_X;
 #else
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);

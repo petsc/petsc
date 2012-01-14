@@ -736,7 +736,7 @@ testx11ex19: ex19.PETSc
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex19 manually"; \
 	elif [ -f ex19 ]; then \
-          D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
+          D2=`grep "#define PETSC_HAVE_X 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
           if [ "$$?" = 0 ]; then \
              ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
 	     if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
@@ -948,7 +948,7 @@ testx11ex50: ex50.PETSc
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex50 manually"; \
 	elif [ -f ex50 ]; then \
-          D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
+          D2=`grep "#define PETSC_HAVE_X 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
           if [ "$$?" = 0 ]; then \
              ${MPIEXEC} -n 1 ./ex50 -da_refine 3 -snes_monitor_draw  > ex50_1.tmp 2>&1; \
 	     if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
