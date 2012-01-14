@@ -1486,7 +1486,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* can get all points "removed" */
   ierr =  MatGetSize( Prol, &kk, &jj ); CHKERRQ(ierr);
   if( jj==0 ) {
-    assert(0);
     *a_isOK = PETSC_FALSE;
     if( verbose ) {
       PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
