@@ -216,14 +216,21 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCMG.html">infr
           <td style="width: 101px;" height="19">&nbsp;</td>
           <td style="width: 170px;" height="19">&nbsp;</td>
           <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DMMG/DMMG.html">geometric
-
-              structured grid</a></td>
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DM.html">geometric (DMDA for structured grid)</a></td>
           <td style="width: 147px;"><br>
           </td>
           <td style="width: 152px;" height="19">&nbsp;</td>
           <td style="width: 66px;" align="center" height="19">X</td>
           <td style="width: 70px;" align="center" height="19">X</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCGAMG.html">geometric/algebraic</a></td>
+          <td></td>
+          <td></td>
+          <td align="center">X</td>
+          <td align="center">X</td>
         </tr>
         <tr>
           <td><br>
@@ -232,7 +239,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DMMG/DMMG.html">ge
           </td>
           <td><br>
           </td>
-          <td>(petsc-dev only)</td>
+          <td>hyprestruct</td>
           <td><a
 href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPFMG.html">PFMG
 
@@ -244,7 +251,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPFMG.html">PF
         <tr>
           <td style="width: 101px;" height="19">&nbsp;</td>
           <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">algebraic</td>
+          <td style="width: 134px;" height="19">classical algebraic</td>
           <td style="width: 147px;">aij</td>
           <td style="width: 152px;" height="19"><a
 href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">BoomerAMG/hypre</a>
@@ -255,7 +262,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">B
         <tr>
           <td style="width: 101px;" height="19">&nbsp;</td>
           <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
+          <td style="width: 134px;" height="19">smoothed aggregation algebraic</td>
           <td style="width: 147px;">aij</td>
           <td style="width: 152px;" height="19"><a
 href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCML.html">ML/Trilinos</a>
@@ -266,13 +273,35 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCML.html">ML/T
         <tr>
           <td style="width: 101px;" height="19">&nbsp;</td>
           <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
+          <td style="width: 134px;" height="19">unstructured geometric/smoothed aggregation</td>
           <td style="width: 147px;">baij</td>
           <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PC.html">Prometheus</a>
-            (LBNL)</td>
+href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPROMETHEUS.html">Prometheus</a>
+            (Columbia)</td>
           <td style="width: 66px;" align="center" height="19">X</td>
           <td style="width: 70px;" align="center" height="19">&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Physics-based splitting</td>
+          <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCFIELDSPLIT.html">relaxation and Schur-complement</a></td>
+          <td>
+            <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a>,
+            <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATBAIJ.html">baij</a>,
+            <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATNEST.html">nest</a>
+          </td>
+          <td></td>
+          <td align="center">X</td>
+          <td align="center">X</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCLSC.html">least squares commutator</a></td>
+          <td>schurcomplement</td>
+          <td></td>
+          <td align="center">X</td>
+          <td align="center">X</td>
         </tr>
         <tr>
           <td style="width: 101px;" height="19">&nbsp;</td>
@@ -308,6 +337,15 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCNN.html">bala
           <td style="width: 152px;" height="38">&nbsp;&nbsp; ---</td>
           <td style="width: 66px;" align="center" height="38">X</td>
           <td style="width: 70px;" align="center" height="38">X</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCBDDC.html">BDDC</a></td>
+          <td>is</td>
+          <td>(petsc-dev only)</td>
+          <td align="center">X</td>
+          <td align="center">X</td>
         </tr>
         <tr>
           <td style="width: 101px;" height="19">Direct solvers</td>
@@ -500,6 +538,15 @@ href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html"
 href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMUMPS.html">MUMPS</a></td>
           <td style="width: 66px;" align="center" height="19">X</td>
           <td style="width: 70px;" align="center" height="19">X</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>seqaij, seqsbaij</td>
+          <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERCHOLMOD.html">CHOLMOD</a></td>
+          <td align="center"></td>
+          <td align="center">X</td>
         </tr>
         <tr>
           <td style="width: 101px;" height="19"><br>
