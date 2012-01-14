@@ -464,6 +464,10 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
 
    Level: beginner
 
+   References:
+   - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
+     algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
+
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
