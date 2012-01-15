@@ -78,7 +78,8 @@ y
   /*
      Demonstrate various basic vector routines.
   */
-  ierr = VecDot(x,x,&dot);CHKERRQ(ierr);
+  MPI_Barrier(PETSC_COMM_WORLD);
+  ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
   ierr = VecMDot(x,3,z,dots);CHKERRQ(ierr);
 
   /* 
