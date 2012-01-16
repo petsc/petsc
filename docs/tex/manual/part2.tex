@@ -455,10 +455,16 @@ variables, the user must be careful
 to select a type of solver that acknowledges these bounds.
 
 \section{Nonlinear Least Squares}\label{sec:evalsof}
-In the case of nonlinear least-square applications, the objective function
-value should be computed as a vector of residuals for better algorithmic 
-results.  This can be done by using a separable objective function, computed
-with a function of the form
+In the case of nonlinear least-square applications, we are solving
+the optimization problem
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & \displaystyle \sum_i (f_i(x) - d_i)^2
+\end{array}
+\]
+For these problems, the objective function value should be computed as a 
+vector of residuals, $f_i(x) - d_i$, for better algorithmic results using 
+a separable objective function, computed with a function of the form
 \begin{verbatim}
    PetscErrorCode EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
@@ -493,7 +499,6 @@ cast as a {\tt void*} pointer.
 \section{PDE-Constrained Applications}\label{sec:pde_applications}
 TAO can solve PDE-constrained optimization applications 
 that have the form
-
 \[
 \begin{array}{ll}
 \displaystyle \min_{u,v} & f(u,v) \\
