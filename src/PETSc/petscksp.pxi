@@ -11,6 +11,7 @@ cdef extern from * nogil:
     PetscKSPType KSPGMRES
     PetscKSPType   KSPFGMRES
     PetscKSPType   KSPLGMRES
+    PetscKSPType   KSPDGMRES
     PetscKSPType KSPTCQMR
     PetscKSPType KSPBCGS
     PetscKSPType   KSPIBCGS

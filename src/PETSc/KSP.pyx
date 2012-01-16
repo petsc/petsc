@@ -11,6 +11,7 @@ class KSPType(object):
     GMRES      = S_(KSPGMRES)
     FGMRES     = S_(KSPFGMRES)
     LGMRES     = S_(KSPLGMRES)
+    DGMRES     = S_(KSPDGMRES)
     TCQMR      = S_(KSPTCQMR)
     BCGS       = S_(KSPBCGS)
     IBCGS      = S_(KSPIBCGS)
