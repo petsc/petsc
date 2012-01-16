@@ -95,10 +95,58 @@ external frameworks, provide function information to a TAO solver, and
 call TAO to solve the application problem.
 
 \section{Changes for Version 2.0}
-Placeholder for changes section.  These changes include new algorithms
-(POUNDerS and LCL), redesign of TAO objects (now just TaoSolver and 
-TaoLineSearch), removal of C++ requirement, and support for single and
-quad (gnu only) precision arithmetic.
+There are many new features and interface changes that have been introduced
+in TAO Version 2, any TAO applications created for previous version will 
+need to be updated
+to work with the new version.  We apologize for the inconvenience this 
+may cause, but we strongly feel that these changes needed to be made
+to keep the interface clean, clear, and easy to use. Some of the most
+important changes are highlighed in this section.
+
+\subsection{New Algorithms}
+One new addition to TAO 2.0 is a new algorithm for solving derivative-free
+ nonlinear
+least square problems, POUNDerS,
+that can efficiently solve parameter optimization problems when no
+derivates are available and function evaluations are expensive 
+See Section~\ref{sec:pounders} for more information on the details of the
+algorithm and Section~\ref{sec:leastsquares} for how to use this algorithm.
+
+TAO 2.0 provides another new algorithm, Linearly Constrained Lagrangian (LCL),
+for the solution of PDE-constrained optimization applications.  More information
+on PDE-constrained optimization and LCL can be found in Section~\ref{sec:lcl}.
+
+\subsection{Closer Relationship with PETSc}
+TAO 2.0 features a tighter association with PETSc styles and practices.
+All TAO constructs now follow PETSc conventions are are written in C.
+There is no longer a separate abstract class for vectors, matrices, and linear
+solvers, TAO now uses these PETSc objects directly. We believe these changes
+make TAO applications much easier to create and maintain for users already 
+familiar with PETSc programming. These changes also allow TAO to relax some
+of the previously imposed requirements on PETSc configuration. TAO can now
+work with PETSc configured with single-precision arithmetic, quad-precision 
+arithmnetic when using GNU compilers, and no longer requires a C++ compiler.
+However, TAO is still not compatible with PETSc installations using complex
+data types.
+
+\subsection{Elimination of TaoApplication object}
+The largest change to the TAO programming interface is the elimination of the
+TaoApplication data structure. In previous versions of TAO, this
+structure was created by the application programmer for application-specific
+data and routines. However, we now feel that it is clearer and more
+closely follows PETSc design principles if this information is directly
+attached to a TaoSolver object instead. Please see 
+Figure~\ref{fig:tao_commands} for a listing of what the most common TAO 
+routines now look like without the TaoApplication object.
+
+\subsection{TaoLineSearch object}
+TAO 2.0 features the promotion of line search structures to a full PETSc 
+class. This means that any of the available TAO line search algorithms (Armijo, 
+Mor\'e-Thuente, GPCG, and unit) can now be selected regardless of the 
+overlying TAO algorithm, and it now possible
+for a user to create a new line search algorithm that may be more suitable 
+for a particular application.  More information on this is available in
+Section~\ref{sec:TaoLineSearch}.
 
 \begin{comment}
 \section{Performance Results}

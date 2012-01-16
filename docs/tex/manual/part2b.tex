@@ -891,12 +891,16 @@ performed.
 \section{Nonlinear Least Squares}
 \label{sec:leastsquares}
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
-squares problem minimizes $f(x)=\half \| F(x) \|_2$.
+squares problem minimizes 
+\begin{equation} 
+ f(x)= \| F(x) \|_2^2 = \sum_{i=1}^m F_i(x)^2.
+ \label{eq:nlsf}
+\end{equation}
 The nonlinear equations $F$ should be specified with the function
 {\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
-The current version of TAO (2.0) has no second order algorithms 
-for nonlinear least squares, but we do anticipate such an algorithm for the
-next release.
+Although the current version of TAO (2.0) has no derivative-based
+algorithms for nonlinear least squares, we anticipate that such an
+algorithm will be available in the next release. 
 
 \begin{comment}
 Most solvers also require the Jacobian of this function.  
@@ -914,13 +918,15 @@ and that if they have a Jacobian, they should use something else/the
 next/beta version.}
 \end{comment}
 
-\subsection{POUNDerS}
-   One algorithm for solving the least squares problem when the Jacobian
+\subsection{POUNDerS}\label{sec:pounders}
+   One algorithm for solving the least squares problem (\ref{eq:nlsf}) when
+the Jacobian
 of the residual vector $F$ is unavailable is the model-based
 derivate-free POUNDerS (Practical Optimization Using No Derivatives for
 sums of Squares) algorithm (\texttt{tao\_pounders}). 
 POUNDerS employs a derivative-free trust region framework as described in
-\cite{Dfobook}. An example of this version of POUNDerS applied to a
+\cite{Dfobook} in order to converge to local minimizers. An example of
+this version of POUNDerS applied to a
 practical least squares problem can be found in \cite{UNEDF0}.
 
 
@@ -937,19 +943,18 @@ $x_+$ to be evaluated is obtained by solving the trust region subproblem
  \min\left\{
  m_k(x) : 
  \|x-x_k\|_{p} \leq \Delta_k, 
- l\leq x \leq u\right
- \}, 
+ \right \}, 
  \label{eq:poundersp}
 \end{equation}
-where $(l,u)$ denote the bound constraints and $\Delta_k$ is the current
+where $\Delta_k$ is the current 
 trust region radius. By default we use a trust region norm with $p=\infty$
 and solve (\ref{eq:poundersp}) with the BQPIP method described in
 Section~\ref{sec:bqpip}. 
 
 The residual vector is then evaluated to obtain $F(x_+)$ and hence
-$f(x_+)$. The ratio of actual decrease to predicted decreased
+$f(x_+)$. The ratio of actual decrease to predicted decrease, 
 \[
- \rho_k = \frac{f(x_k)-f(x_+)}{m_k(x_k)-m_k(x_+)}
+ \rho_k = \frac{f(x_k)-f(x_+)}{m_k(x_k)-m_k(x_+)},
 \]
 as well as an indicator, \texttt{valid}, on the model's quality of
 approximation on the trust region are then used to update the iterate,
@@ -986,7 +991,7 @@ The iteration counter is then updated and the next model $m_{k}$ is
 obtained as described next.
 
 \subsubsection{Forming the Trust Region Model}
-In each iteration POUNDerS uses a subset of the available evaluated
+In each iteration, POUNDerS uses a subset of the available evaluated
 residual vectors $\{ F(y_1), F(y_2), \cdots \}$ to form an interpolatory
 quadratic model of each residual component. The $m$ quadratic models
 \begin{equation}
@@ -1006,8 +1011,8 @@ The gradients and Hessians of the models in (\ref{eq:models}) are then
 used to construct the master model, 
 \begin{equation}
 m_k(x) = f(x_k) + 
-(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
-\frac{1}{2}(x-x_k)^T \sum_{i=1}^{m}
+2(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
+(x-x_k)^T \sum_{i=1}^{m}
 \left( g_k^{(i)} \left(g_k^{(i)}\right)^T +  F_i(x_k)
 H_k^{(i)}\right) (x-x_k).
  \label{eq:newton2}
@@ -1050,9 +1055,9 @@ command line or PETSc options file:
   
   \item[\texttt{-tao\_pounders\_npmax <npmax>}] The maximum number of 
   interpolation points used
-  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This is input is made
-  available to advanced users. We recommend other users to use the default
-  value (\texttt{npmax}$=2n+1$);
+  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This input is made
+  available to advanced users. We recommend the default
+  value (\texttt{npmax}$=2n+1$) be used by others;
 
   \item[\texttt{-tao\_pounders\_gqt}] Use the gqt algorithm to solve the
   subproblem~\ref{eq:poundersp} (uses $p=2$) instead of BQPIP.
@@ -1065,14 +1070,26 @@ command line or PETSc options file:
    
 \end{description}
 In addition the user provides an initial solution vector, a vector for storing
-the separable objective function, an a routine for evaluating the residual
-vector $F$.  These are described in detail in Sections~\ref{sec:fghj} and \ref{sec:evalsof}.
+the separable objective function, and a routine for evaluating the residual
+vector $F$.  These are described in detail in 
+Sections~\ref{sec:fghj} and \ref{sec:evalsof}. 
+Here we remark that, because gradient information is not available for
+scaling purposes, it can be useful to ensure that the problem is
+reasonably well scaled. A simple way to achieve this is to rescale the
+decision variables $x$ so that their typical values are expected to lie
+within the unit hypercube $[0,1]^n$.
+
+
 
 \subsubsection{Convergence Notes}
 Because the gradient function is not provided to POUNDerS, 
-The norm of the gradient of the objective function is not available. Therefore
+the norm of the gradient of the objective function is not available.
+Therefore
 for convergence criteria, this norm is approximated by the norm of the
-model gradient.  
+model gradient and only used when the model gradient is deemed to be a
+reasonable approximation of the gradient of the objective. In practice, the
+typical grounds for termination for expensive derivative-free problems is
+the maximum number of function evaluations allowed. 
 
 
 

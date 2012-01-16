@@ -42,7 +42,7 @@ typedef struct {
 
 
   PetscReal delta; /* Trust region radius (>0) */
-  PetscBool usebqpip;
+  PetscBool usegqt;
   Mat Hs;
   Vec b;
   
