@@ -12,9 +12,12 @@ their needs.  The current version of TAO and the most recent help
 concerning the installation and usage of TAO can be found at  
 \url{http://www.mcs.anl.gov/tao/}.
 
-The current version (2.0) of TAO requires an ANSI C or C++ compiler, 
-an implementation of MPI, and version 3.2 of PETSc (PETSc must be 
-configured without complex variables).
+The current version (2.0) of TAO requires an ANSI C or C++ compiler 
+and version 3.2 of PETSc, availalble at \url{http://www.mcs.anl.gov/petsc}.
+PETSc must be configured without complex variables, but it is now possible 
+for TAO to work when PETSc is configured without a C++ compiler or with
+single-precision arithmetic.
+
 
 During the setup process, the user will have to set an environmental
 variable, \texttt{TAO\_DIR}\findex{TAO_DIR}, indicating the full path of 
@@ -92,7 +95,7 @@ where $n = 2m$ is the number of variables.
 
 Note that while we use the C language to introduce the TAO software,
 the package is also fully usable from C++ and Fortran77/90.
-Section~\ref{chapter:petscfapp} discusses additional issues concerning
+Section~\ref{chapter:fortran} discusses additional issues concerning
 Fortran usage.
 
 The code in Figure~\ref{fig:example1} contains many of the components
@@ -174,9 +177,11 @@ using TAO are shown in Figure \ref{fig:tao_commands}.
    TaoSetType(TaoSolver tao, TaoSolverType type);
    TaoSetInitialVector(TaoSolver tao, Vec x);
    TaoSetObjectiveAndGradientRoutine(TaoSolver tao, 
-        int (*FormFGradient)(TaoSolver,Vec,PetscReal*,Vec,void*), void *user);
+        PetscErrorCode (*FormFGradient)(TaoSolver,Vec,PetscReal*,Vec,void*), 
+        void *user);
    TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre,
-        int (*FormHessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), void *user);
+        PetscErrorCode (*FormHessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,
+        void*), void *user);
    TaoSolve(TaoSolver tao);
    TaoDestroy(TaoSolver tao);
 \end{verbatim}
