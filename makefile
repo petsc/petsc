@@ -109,7 +109,7 @@ tao_build:
 
 # Deletes TAO libraries
 tao_deletelibs: 
-	-${RM} -f ${PETSC_LIB_DIR}/libtao*.*
+	-${RM} -f ${TAO_LIB_DIR}/libtao*.*
 
 
 tao_shared: shared
