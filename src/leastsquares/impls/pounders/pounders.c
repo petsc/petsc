@@ -40,7 +40,6 @@ PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin)
     PetscFunctionBegin;
 
     if (! mfqP->usegqt) {
-      TaoSolver subtao;
       Vec       x,xl,xu;
       PetscInt i,j;
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Xsubproblem,&x); CHKERRQ(ierr);
@@ -56,24 +55,18 @@ PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin)
 	}
       }
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Hres,&mfqP->Hs); CHKERRQ(ierr);
-      ierr = TaoCreate(PETSC_COMM_SELF,&subtao); CHKERRQ(ierr);
-      ierr = TaoSetType(subtao,"tao_bqpip"); CHKERRQ(ierr);
-      ierr = TaoSetOptionsPrefix(subtao,"pounders_subsolver_"); CHKERRQ(ierr);
-      ierr = TaoSetObjectiveAndGradientRoutine(subtao,pounders_fg,(void*)mfqP); CHKERRQ(ierr);
-      ierr = TaoSetInitialVector(subtao,x); CHKERRQ(ierr);
-      ierr = TaoSetHessianRoutine(subtao,mfqP->Hs,mfqP->Hs,pounders_h,(void*)mfqP); CHKERRQ(ierr);
-      ierr = TaoSetTolerances(subtao,PETSC_NULL,PETSC_NULL,*gnorm,*gnorm,PETSC_NULL); CHKERRQ(ierr);
-      ierr = TaoSetMaximumIterations(subtao,mfqP->gqt_maxits); CHKERRQ(ierr);
-      ierr = TaoSetVariableBounds(subtao,xl,xu); CHKERRQ(ierr);
-      ierr = TaoSetFromOptions(subtao); CHKERRQ(ierr);
-      ierr = TaoSolve(subtao); CHKERRQ(ierr);
-      ierr = TaoGetSolutionStatus(subtao,PETSC_NULL,qmin,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoResetStatistics(mfqP->subtao); CHKERRQ(ierr);
+      ierr = TaoSetInitialVector(mfqP->subtao,x); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(mfqP->subtao,mfqP->Hs,mfqP->Hs,pounders_h,(void*)mfqP); CHKERRQ(ierr);
+      ierr = TaoSetTolerances(mfqP->subtao,PETSC_NULL,PETSC_NULL,*gnorm,*gnorm,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoSetVariableBounds(mfqP->subtao,xl,xu); CHKERRQ(ierr);
+      ierr = TaoSolve(mfqP->subtao); CHKERRQ(ierr);
+      ierr = TaoGetSolutionStatus(mfqP->subtao,PETSC_NULL,qmin,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
       ierr = VecDestroy(&x); CHKERRQ(ierr);
       ierr = VecDestroy(&xl); CHKERRQ(ierr);
       ierr = VecDestroy(&xu); CHKERRQ(ierr);
       ierr = VecDestroy(&mfqP->b); CHKERRQ(ierr);
       ierr = MatDestroy(&mfqP->Hs); CHKERRQ(ierr);
-      ierr = TaoDestroy(&subtao); CHKERRQ(ierr);
       
       
 
@@ -947,6 +940,20 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
       ierr = ISDestroy(&isfglob); CHKERRQ(ierr);
 
   }
+
+  if (!mfqP->usegqt) {
+      KSP       ksp;
+      PC        pc;
+      ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao); CHKERRQ(ierr);
+      ierr = TaoSetType(mfqP->subtao,"tao_bqpip"); CHKERRQ(ierr);
+      ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_"); CHKERRQ(ierr);
+      ierr = TaoSetObjectiveAndGradientRoutine(mfqP->subtao,pounders_fg,(void*)mfqP); CHKERRQ(ierr);
+      ierr = TaoSetMaximumIterations(mfqP->subtao,mfqP->gqt_maxits); CHKERRQ(ierr);
+      ierr = TaoGetKSP(mfqP->subtao,&ksp); CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+      ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+      ierr = TaoSetFromOptions(mfqP->subtao); CHKERRQ(ierr);
+  }    
   PetscFunctionReturn(0);
 }
 
@@ -960,6 +967,9 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
   
 
   PetscFunctionBegin;
+  if (!mfqP->usegqt) {
+    ierr = TaoDestroy(&mfqP->subtao); CHKERRQ(ierr);
+  }
   ierr = PetscFree(mfqP->Fres); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->RES); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->work); CHKERRQ(ierr);
@@ -1044,7 +1054,25 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
 #define __FUNCT__ "TaoView_POUNDERS"
 static PetscErrorCode TaoView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 {
-  return 0;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
+  PetscBool isascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    if (mfqP->usegqt) {
+      ierr = PetscViewerASCIIPrintf(viewer, "Subproblem solver: gqt\n"); 
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "Subproblem solver: bqpip\n"); 
+    }      
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NLS",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN

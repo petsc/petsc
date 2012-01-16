@@ -77,6 +77,7 @@ typedef struct {
   PetscReal *beta; /*  r(n+1)/2 */
   PetscReal *omega; /* npmax - np - 1 */
 
+  TaoSolver subtao;
 
     
        
