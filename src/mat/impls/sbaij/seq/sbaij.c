@@ -1109,9 +1109,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
 PetscErrorCode  MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,PetscInt *indices)
 {
-  Mat_SeqSBAIJ *baij = (Mat_SeqSBAIJ *)mat->data;
-  PetscInt     i,nz,n;
-  
+  Mat_SeqSBAIJ   *baij = (Mat_SeqSBAIJ *)mat->data;
+  PetscInt       i,nz,n;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   nz = baij->maxnz;
   n  = mat->cmap->n;
@@ -1122,7 +1123,8 @@ PetscErrorCode  MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,PetscInt *indices)
    for (i=0; i<n; i++) {
      baij->ilen[i] = baij->imax[i];
    }
-   PetscFunctionReturn(0);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -1726,6 +1728,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   b->anew             = 0;
   b->a2anew           = 0;
   b->permute          = PETSC_FALSE;
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

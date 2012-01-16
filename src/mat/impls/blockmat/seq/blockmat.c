@@ -987,7 +987,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   bmat->nz                = 0;
   bmat->maxnz             = nz;
   A->info.nz_unneeded  = (double)bmat->maxnz;
-
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
