@@ -38,6 +38,7 @@ J*/
 #define SNESNGMRES       "ngmres"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
+#define SNESGS           "gs"
 #define SNESNCG          "ncg"
 #define SNESSORQN        "sorqn"
 #define SNESFAS          "fas"
@@ -358,7 +359,7 @@ extern PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
 typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-typedef PetscErrorCode (*SNESGS)(SNES,Vec,Vec,void*);
+typedef PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*);
 extern PetscErrorCode  SNESSetFunction(SNES,Vec,SNESFunction,void*);
 extern PetscErrorCode  SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 extern PetscErrorCode  SNESComputeFunction(SNES,Vec,Vec);
@@ -370,8 +371,8 @@ extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,V
 extern PetscErrorCode  SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJacobian,void*);
 extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,void**);
 
-extern PetscErrorCode  SNESSetGS(SNES,SNESGS,void*);
-extern PetscErrorCode  SNESGetGS(SNES,SNESGS*,void**);
+extern PetscErrorCode  SNESSetGS(SNES,SNESGSFunction,void*);
+extern PetscErrorCode  SNESGetGS(SNES,SNESGSFunction*,void**);
 extern PetscErrorCode  SNESSetUseGS(SNES,PetscBool);
 extern PetscErrorCode  SNESGetUseGS(SNES,PetscBool *);
 extern PetscErrorCode  SNESSetGSSweeps(SNES,PetscInt);

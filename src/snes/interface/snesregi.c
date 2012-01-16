@@ -13,6 +13,7 @@ extern PetscErrorCode  SNESCreate_NGMRES(SNES);
 extern PetscErrorCode  SNESCreate_SORQN(SNES);
 extern PetscErrorCode  SNESCreate_QN(SNES);
 extern PetscErrorCode  SNESCreate_Shell(SNES);
+extern PetscErrorCode  SNESCreate_GS(SNES);
 extern PetscErrorCode  SNESCreate_NCG(SNES);
 extern PetscErrorCode  SNESCreate_FAS(SNES);
 EXTERN_C_END
@@ -60,6 +61,7 @@ PetscErrorCode  SNESRegisterAll(const char path[])
   ierr = SNESRegisterDynamic(SNESNGMRES,      path,"SNESCreate_NGMRES",      SNESCreate_NGMRES);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESQN,          path,"SNESCreate_QN",          SNESCreate_QN);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESSHELL,       path,"SNESCreate_Shell",       SNESCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESGS,          path,"SNESCreate_GS",          SNESCreate_GS);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESSORQN,       path,"SNESCreate_SORQN",       SNESCreate_SORQN);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESNCG,         path,"SNESCreate_NCG",         SNESCreate_NCG);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESFAS,         path,"SNESCreate_FAS",         SNESCreate_FAS);CHKERRQ(ierr);
