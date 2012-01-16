@@ -1,4 +1,4 @@
-\chapter{Introduction to TAO}
+\chapter{Introduction}
 \label{chapter:introduction}
 
 % Very introductory, gentle introduction. Pretty tables and figures.
@@ -15,23 +15,12 @@ reuse of toolkits that provide lower-level support (parallel sparse
 matrix data structures, preconditioners, solvers), and thus we are
 able to build on top of these toolkits instead of having to redevelop
 code. The advantages in terms of efficiency and development time are
-significant.
+significant.  This chapter provides a short introduction to our design 
+philosophy and the importance of this design.
 
-The TAO design philosophy uses object-oriented techniques of data and
-state encapsulation, abstract classes, and limited inheritance to
-create a flexible optimization toolkit.  This chapter provides a short
-introduction to our design philosophy by describing the objects in TAO
-and the importance of this design. 
-
-\begin{comment}   
- Since a major concern in the TAO
-project is the performance and scalability of optimization algorithms
-on large problems, we also present some performance resuls.
-
-
-\end{comment}
-
-\section{TAO Design Philosophy} 
+% The TAO design philosophy uses object-oriented techniques of data and
+% state encapsulation, abstract classes, and limited inheritance to
+% create a flexible optimization toolkit.  
 
 %Use MPI, Microkernal 
 % Goals, Current state of art. AD support
@@ -41,7 +30,7 @@ The TAO design philosophy place strongs emphasis on the reuse of
 external tools where appropriate.  Our design enables bidirectional
 connection to lower-level linear algebra support (e.g. parallel sparse
 matrix data structures) provided in toolkits such as PETSc
-\cite{petsc} \cite{petsc-user-ref,petsc-web-page}
+\cite{petsc,petsc-user-ref,petsc-web-page}
 as well as higher-level application
 frameworks.  Our design decisions are strongly motivated by the
 challenges inherent in the use of large-scale distributed memory
@@ -68,85 +57,29 @@ optimization problems: vectors, index sets, matrices, and linear
 solvers.  The concepts of vectors and matrices are standard, while an
 index set refers to a set of integers used to identify particular
 elements of vectors or matrices.  An optimization algorithm is a
-sequence of well defined operations on these objects.  These
+sequence of well-defined operations on these objects.  These
 operations include vector sums, inner products, and matrix-vector
 multiplication.
 
 With sufficiently flexible abstract interfaces, TAO can support a
 variety of implementations of data structures and algorithms.  These
 abstractions allow us to more easily experiment with a range of
-algorithmic and data structure options for realistic problems, such as
-within this case study.  Such capabilities are critical for making
+algorithmic and data structure options for realistic problems.  
+Such capabilities are critical for making
 high-performance optimization software adaptable to the continual
 evolution of parallel and distributed architectures and the research
 community's discovery of new algorithms that exploit their features.
 
-Our current TAO implementation uses the parallel system
-infrastructure and linear algebra objects offered by PETSc,
-which uses MPI \cite{using-mpi} for all interprocessor communication.
-The PETSc package supports objects for vectors, matrices, index 
-sets, and linear solvers.
-
 The TAO design philosophy eliminates some of the barriers in using
 independently developed software components by accepting data that is
 independent of representation and calling sequence written for
-particular data formats.  The user can initialize an application with
-external frameworks, provide function information to a TAO solver, and
-call TAO to solve the application problem.
-
-\section{Changes for Version 2.0}
-There are many new features and interface changes that have been introduced
-in TAO Version 2, any TAO applications created for previous version will 
-need to be updated
-to work with the new version.  We apologize for the inconvenience this 
-may cause, but we strongly feel that these changes needed to be made
-to keep the interface clean, clear, and easy to use. Some of the most
-important changes are highlighed in this section.
-
-\subsection{New Algorithms}
-One new addition to TAO 2.0 is a new algorithm for solving derivative-free
- nonlinear
-least square problems, POUNDerS,
-that can efficiently solve parameter optimization problems when no
-derivates are available and function evaluations are expensive 
-See Section~\ref{sec:pounders} for more information on the details of the
-algorithm and Section~\ref{sec:leastsquares} for how to use this algorithm.
-
-TAO 2.0 provides another new algorithm, Linearly Constrained Lagrangian (LCL),
-for the solution of PDE-constrained optimization applications.  More information
-on PDE-constrained optimization and LCL can be found in Section~\ref{sec:lcl}.
-
-\subsection{Closer Relationship with PETSc}
-TAO 2.0 features a tighter association with PETSc styles and practices.
-All TAO constructs now follow PETSc conventions are are written in C.
-There is no longer a separate abstract class for vectors, matrices, and linear
-solvers, TAO now uses these PETSc objects directly. We believe these changes
-make TAO applications much easier to create and maintain for users already 
-familiar with PETSc programming. These changes also allow TAO to relax some
-of the previously imposed requirements on PETSc configuration. TAO can now
-work with PETSc configured with single-precision arithmetic, quad-precision 
-arithmnetic when using GNU compilers, and no longer requires a C++ compiler.
-However, TAO is still not compatible with PETSc installations using complex
-data types.
-
-\subsection{Elimination of TaoApplication object}
-The largest change to the TAO programming interface is the elimination of the
-TaoApplication data structure. In previous versions of TAO, this
-structure was created by the application programmer for application-specific
-data and routines. However, we now feel that it is clearer and more
-closely follows PETSc design principles if this information is directly
-attached to a TaoSolver object instead. Please see 
-Figure~\ref{fig:tao_commands} for a listing of what the most common TAO 
-routines now look like without the TaoApplication object.
-
-\subsection{TaoLineSearch object}
-TAO 2.0 features the promotion of line search structures to a full PETSc 
-class. This means that any of the available TAO line search algorithms (Armijo, 
-Mor\'e-Thuente, GPCG, and unit) can now be selected regardless of the 
-overlying TAO algorithm, and it now possible
-for a user to create a new line search algorithm that may be more suitable 
-for a particular application.  More information on this is available in
-Section~\ref{sec:TaoLineSearch}.
+particular data formats.  Our current TAO implementation uses 
+the parallel system infrastructure and linear algebra objects 
+offered by PETSc version 3.2, which uses MPI \cite{using-mpi} 
+for all interprocessor communication.  The PETSc package supports 
+objects for vectors, matrices, index sets, and linear solvers
+using various formats and has links to external linear algebra
+packages.
 
 \begin{comment}
 \section{Performance Results}
