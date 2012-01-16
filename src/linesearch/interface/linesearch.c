@@ -194,7 +194,6 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
      PetscErrorCode ierr;
      const char *default_type=TAOLINESEARCH_MT;
      PetscBool flg;
-     PetscErrorCode ierr;
      PetscFunctionBegin;
      PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
      if (ls->setupcalled) PetscFunctionReturn(0);
