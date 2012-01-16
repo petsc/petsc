@@ -892,7 +892,10 @@ performed.
 \label{sec:leastsquares}
 Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
 squares problem minimizes 
-\[ f(x)=\half \| F(x) \|_2^2 =\half \sum_{i=1}^m F_i(x)^2 .\]
+\begin{equation} 
+ f(x)= \| F(x) \|_2^2 = \sum_{i=1}^m F_i(x)^2.
+ \label{eq:nlsf}
+\end{equation}
 The nonlinear equations $F$ should be specified with the function
 {\tt Tao\-Set\-Separ\-able\-Objective\-Function()}.
 Although the current version of TAO (2.0) has no derivative-based
@@ -916,7 +919,8 @@ next/beta version.}
 \end{comment}
 
 \subsection{POUNDerS}
-   One algorithm for solving the least squares problem when the Jacobian
+   One algorithm for solving the least squares problem (\ref{eq:nlsf}) when
+the Jacobian
 of the residual vector $F$ is unavailable is the model-based
 derivate-free POUNDerS (Practical Optimization Using No Derivatives for
 sums of Squares) algorithm (\texttt{tao\_pounders}). 
@@ -1007,8 +1011,8 @@ The gradients and Hessians of the models in (\ref{eq:models}) are then
 used to construct the master model, 
 \begin{equation}
 m_k(x) = f(x_k) + 
-(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
-\frac{1}{2}(x-x_k)^T \sum_{i=1}^{m}
+2(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
+(x-x_k)^T \sum_{i=1}^{m}
 \left( g_k^{(i)} \left(g_k^{(i)}\right)^T +  F_i(x_k)
 H_k^{(i)}\right) (x-x_k).
  \label{eq:newton2}
@@ -1051,9 +1055,9 @@ command line or PETSc options file:
   
   \item[\texttt{-tao\_pounders\_npmax <npmax>}] The maximum number of 
   interpolation points used
-  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This is input is made
-  available to advanced users. We recommend other users to use the default
-  value (\texttt{npmax}$=2n+1$);
+  ($n+2\leq$ \texttt{npmax} $\leq 0.5(n+1)(n+2)$). This input is made
+  available to advanced users. We recommend the default
+  value (\texttt{npmax}$=2n+1$) be used by others;
 
   \item[\texttt{-tao\_pounders\_gqt}] Use the gqt algorithm to solve the
   subproblem~\ref{eq:poundersp} (uses $p=2$) instead of BQPIP.
@@ -1066,14 +1070,26 @@ command line or PETSc options file:
    
 \end{description}
 In addition the user provides an initial solution vector, a vector for storing
-the separable objective function, an a routine for evaluating the residual
-vector $F$.  These are described in detail in Sections~\ref{sec:fghj} and \ref{sec:evalsof}.
+the separable objective function, and a routine for evaluating the residual
+vector $F$.  These are described in detail in 
+Sections~\ref{sec:fghj} and \ref{sec:evalsof}. 
+Here we remark that, because gradient information is not available for
+scaling purposes, it can be useful to ensure that the problem is
+reasonably well scaled. A simple way to achieve this is to rescale the
+decision variables $x$ so that their typical values are expected to lie
+within the unit hypercube $[0,1]^n$.
+
+
 
 \subsubsection{Convergence Notes}
 Because the gradient function is not provided to POUNDerS, 
-The norm of the gradient of the objective function is not available. Therefore
+the norm of the gradient of the objective function is not available.
+Therefore
 for convergence criteria, this norm is approximated by the norm of the
-model gradient.  
+model gradient and only used when the model gradient is deemed to be a
+reasonable approximation of the gradient of the objective. In practice, the
+typical grounds for termination for expensive derivative-free problems is
+the maximum number of function evaluations allowed. 
 
 
 
