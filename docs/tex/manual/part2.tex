@@ -14,10 +14,10 @@
 \label{chapter:tao_solver}
 
 TAO contains unconstrained minimization, bound constrained minimization, 
-nonlinear complementarity, nonlinear least squares solvers, and pde-constrained
-solvers.
-The structure of these problems can differ significantly, 
-but TAO has a similar interface to all of its solvers.  
+nonlinear complementarity, nonlinear least squares solvers, and solvers
+for optimization problems with partial differential equation constraints.
+The structure of these problems can differ significantly, but TAO has a 
+similar interface to all of its solvers.  
 Routines that most solvers have in common will be discussed in 
 this chapter.
 A complete list of options can be found by consulting the manual pages.
@@ -35,7 +35,7 @@ TAO applications written in C/C++ should have the statement
 in each file that uses a routine in the TAO libraries.
 All of the required lower level include files such as ``taosolver.h''
 and ``tao\_sys.h'' as well as ``petsc.h'', ``petscvec.h'', and ``petscmat.h''
-are automatically included within this high-level file.
+are automatically included by this high-level file.
 
 
 \section{Initialize and Finalize}
@@ -104,7 +104,7 @@ PETSC\_COMM\_WORLD} to indicate all processes known to PETSc in a given run.
 The routine
 \findex{TaoSetType()}
 \begin{verbatim}
-   TaoSetType(TaoSolver tao, TaoType type);
+   TaoSetType(TaoSolver tao,TaoType type);
 \end{verbatim}
 \noindent
 can be used to set the algorithm TAO uses to solve the application.
@@ -180,7 +180,7 @@ Elsewhere in the application,
 this solution vector can be retieved from the application object 
 using the routine \findex{TaoGetSolutionVector()}
 \begin{verbatim}
-   TaoGetSolutionVector(TaoSolver, Vec *);
+   TaoGetSolutionVector(TaoSolver,Vec *);
 \end{verbatim}
 This routine takes the address of a {\tt Vec} in the second argument and sets it to
 the solution vector used in the application.
@@ -250,18 +250,16 @@ the routine \findex{TaoSetObjectiveRoutine()}
 The first argument in this routine is the TAO solver object, 
 the second argument is a function pointer to the routine that 
 evaluates the objective, and the third
-argument is the pointer an appropriate application context.  
-
-Although final argument may point to anything, it must be cast as a {\tt (void*)} type.
+argument is the pointer to an appropriate application context.  
+Although the final argument may point to anything, it must be cast as a {\tt (void*)} type.
 This pointer will be passed back to the developer in the fourth argument of the
 routine that evaluates the objective.  In this routine, the pointer can be cast
 back to the appropriate type.  Examples of these structures and there usage
 are provides in the distribution.
 
-
-   Most TAO solvers also require gradient information from the 
+Many TAO solvers also require gradient information from the 
 application \sindex{gradients}.
-  The gradient of the objective function can be specified in a similar manner.
+  The gradient of the objective function is specified in a similar manner.
 Routines that evaluate the gradient should have the calling sequence
 \begin{verbatim}
    PetscErrorCode EvaluateGradient(TaoSolver,Vec,Vec,void*);
@@ -271,7 +269,7 @@ In this routine, the first
 argument is the TAO solver object, the second argument is the variable
 vector, the third argument is the gradient vector, and the fourth argument is
 the user-defined application context.  Only the third argument in this
-routine is different from the arguments in the routine that evaluates
+routine is different from the arguments in the routine for evaluating
 the objective function.  The numbers in the gradient vector have no
 meaning when passed into this routine, but should represent the gradient
 of the objective at the specified point at the end of the routine.
@@ -287,9 +285,9 @@ In this routine, the first argument is the TaoSolver object, the second argument
 is the function pointer, and the third object is the application context, cast
 to {\tt (void*)}.
 
-   Instead of evaluating the objective and its gradient in separate
+Instead of evaluating the objective and its gradient in separate
 routines, TAO also allows the user to evaluate the function and the gradient
-at the same routine.  In fact, some solvers are more efficient when
+in the same routine.  In fact, some solvers are more efficient when
 both function and gradient information can be computed in the same routine.
 These routines should follow the form
 \begin{verbatim}
@@ -358,7 +356,7 @@ are the Mat object where the Hessian will be stored and the Mat object
 that will be used for the preconditioning (they may be the same). The fourth 
 argument is the function that evaluates the Hessian, 
 and the fifth argument is a pointer to a user defined context,
-cast as a {\tt void*} pointer.
+cast to {\tt (void*)}.
 
 \subsection{Finite Differences} \sindex{finite differences}
 Finite differences approximations can be used to compute the gradient and the
@@ -395,11 +393,10 @@ the last argument.
 \end{verbatim}
 
 It is also possible to use finite difference approximations to directly check
-the correctness of an application's gradient and/or Hessian evaluation routines.
-This can be done from the command lineusing the special TAO solver 
+the correctness of the gradient and/or Hessian evaluation routines.
+This can be done from the command line using the special TAO solver 
 {\tt tao\_fd\_test} together with the options
 {\tt -tao\_test\_gradient} or {\tt -tao\_test\_hessian}.
-
 
 \subsection{Matrix-Free methods}
 TAO fully supports matrix-free methods. The matrices specified in the
