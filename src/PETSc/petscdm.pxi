@@ -23,13 +23,13 @@ cdef extern from * nogil:
     int DMSetVecType(PetscDM,PetscVecType)
     int DMCreateLocalVector(PetscDM,PetscVec*)
     int DMCreateGlobalVector(PetscDM,PetscVec*)
-    int DMGetMatrix(PetscDM,PetscMatType,PetscMat*)
+    int DMCreateMatrix(PetscDM,PetscMatType,PetscMat*)
 
-    int DMGetInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
-    int DMGetInjection(PetscDM,PetscDM,PetscScatter*)
+    int DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
+    int DMCreateInjection(PetscDM,PetscDM,PetscScatter*)
     int DMRefine(PetscDM,MPI_Comm,PetscDM*)
     int DMCoarsen(PetscDM,MPI_Comm,PetscDM*)
-    int DMGetAggregates(PetscDM,PetscDM,PetscMat*)
+    int DMCreateAggregates(PetscDM,PetscDM,PetscMat*)
     int DMRefineHierarchy(PetscDM,PetscInt,PetscDM[])
     int DMCoarsenHierarchy(PetscDM,PetscInt,PetscDM[])
 

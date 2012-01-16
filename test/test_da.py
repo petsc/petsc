@@ -131,25 +131,25 @@ class BaseTestDA(object):
         for item in levels:
             self.assertTrue(isinstance(item, PETSc.DM))
 
-    def testGetInterpolation(self):
+    def testCreateInterpolation(self):
         da = self.da
         if da.dim == 1: return
         rda = da.refine()
-        mat, vec = da.getInterpolation(rda)
+        mat, vec = da.createInterpolation(rda)
 
-    def testGetInjection(self):
+    def testCreateInjection(self):
         da = self.da
         if da.dim == 1: return
         if (da.dim == 3 and
             PETSc.Sys.getVersion() < (3, 2)): return
         rda = da.refine()
-        scatter = da.getInjection(rda)
+        scatter = da.createInjection(rda)
 
-    def testGetAggregates(self):
+    def testCreateAggregates(self):
         da = self.da
         if da.dim == 1: return
         rda = da.refine()
-        mat = da.getAggregates(rda)
+        mat = da.createAggregates(rda)
 
 
 MIRROR   = PETSc.DA.BoundaryType.MIRROR

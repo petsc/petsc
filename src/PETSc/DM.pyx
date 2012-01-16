@@ -117,24 +117,24 @@ cdef class DM(Object):
         mat_type = str2bytes(mat_type, &mtype)
         if mtype == NULL: mtype = MATAIJ
         cdef Mat mat = Mat()
-        CHKERR( DMGetMatrix(self.dm, mtype, &mat.mat) )
+        CHKERR( DMCreateMatrix(self.dm, mtype, &mat.mat) )
         return mat
 
-    def getInterpolation(self, DM dm not None):
+    def createInterpolation(self, DM dm not None):
         cdef Mat A = Mat()
         cdef Vec scale = Vec()
-        CHKERR( DMGetInterpolation(self.dm, dm.dm,
+        CHKERR( DMCreateInterpolation(self.dm, dm.dm,
                                    &A.mat, &scale.vec))
         return(A, scale)
 
-    def getInjection(self, DM dm not None):
+    def createInjection(self, DM dm not None):
         cdef Scatter sct = Scatter()
-        CHKERR( DMGetInjection(self.dm, dm.dm, &sct.sct) )
+        CHKERR( DMCreateInjection(self.dm, dm.dm, &sct.sct) )
         return sct
 
-    def getAggregates(self, DM dm not None):
+    def createAggregates(self, DM dm not None):
         cdef Mat mat = Mat()
-        CHKERR( DMGetAggregates(self.dm, dm.dm, &mat.mat) )
+        CHKERR( DMCreateAggregates(self.dm, dm.dm, &mat.mat) )
         return mat
 
     def refine(self, comm=None):

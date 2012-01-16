@@ -29,7 +29,6 @@ class KSPType(object):
     BROYDEN    = S_(KSPBROYDEN)
     PYTHON     = S_(KSPPYTHON)
     GCR        = S_(KSPGCR)
-    NGMRES     = S_(KSPNGMRES)
     SPECEST    = S_(KSPSPECEST)
 
 class KSPNormType(object):
