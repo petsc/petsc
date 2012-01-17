@@ -231,7 +231,7 @@ Routines should follow the form
 \begin{verbatim}
    PetscErrorCode EvaluateObjective(TaoSolver,Vec,PetscReal*,void*);
 \end{verbatim}
-in in order to evaluate an objective function $f: \, \Re^n \to \Re$. 
+in order to evaluate an objective function $f: \, \Re^n \to \Re$. 
 The first argument is the TAO Solver object, the second argument is the
 $n$-dimensional vector that identifies where the objective should be evaluated, 
 and the fourth argument is an application context.
@@ -457,12 +457,13 @@ to select a type of solver that acknowledges these bounds.
 
 \section{Solving}
 Once the application and solver have been set up, the solver can be 
-\findex{TaoSolve()} called using the routine
+\findex{TaoSolve()} called using the 
 \begin{verbatim}
    TaoSolve(TaoSolver);
 \end{verbatim}
-\noindent
-This routine will call the TAO solver. 
+routine.
+%This routine will call the TAO solver. 
+We discuss several universal options below. 
 
 \subsection{Convergence}\label{sec:customize}
 
@@ -480,7 +481,7 @@ and either
 f(X) - f(X^*)  &\leq& \epsilon_{fatol}, \\
 |f(X) - f(X^*)| / |f(X^*)| &\leq& \epsilon_{frtol},\\
 ||g(X)|| &\leq& \epsilon_{gatol}, \\
-||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, or \\
+||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, \quad \mbox{or} \\
 ||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
 \end{array}
 \]
@@ -532,14 +533,14 @@ several relevant statistics to the screen.
 The user also has access to information about the current solution.
 The current iteration number, objective function value, gradient
 norm, infeasibility norm, and step length 
-can be retrieved with the command 
+can be retrieved with the  
 \findex{TaoGetSolutionStatus()}
 \begin{verbatim}
    TaoGetSolutionStatus(TaoSolver tao, PetscInt *iterate, PetscReal *f,
                      PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
                      TaoSolverTerminationReason *reason)
 \end{verbatim}
-\noindent
+command. 
 The last argument returns a code that indicates the reason that the solver 
 terminated.  Positive 
 numbers indicate that a solution has been found, while negative numbers
@@ -550,13 +551,13 @@ for {\tt Tao\-Get\-Termination\-Reason()}.
 
 After exiting the {\tt Tao\-Solve()} function, the solution, gradient, and 
 \findex{TaoGetSolution()} dual variables (if available) can be recovered 
-with the routines:
+with the 
 \begin{verbatim}
    TaoGetSolutionVector(TaoSolver, Vec *X);
    TaoGetGradientVector(TaoSolver, Vec *G);
    TaoComputeDualVariables(TaoSolver, Vec X, Vec Duals);
 \end{verbatim}
-\noindent
+routines. 
 Note that the {\tt Vec} returned by {\tt TaoGetSolutionVector} will be
 the same vector passed in to {\tt TaoSetInitialVector}.  This information 
 can be obtained during user-defined routines such as a function evaluation 
@@ -565,13 +566,14 @@ and customized monitoring routine, or after the solver has terminated.
 
 
 
-\subsection{Options}
-Options for the TAO solver 
-can be be set from the command line using the routine \sindex{options}
+\subsection{Additional Options}
+Additional options for the TAO solver 
+can be be set from the command line using the  \sindex{options}
 \findex{TaoSetOptions()}
 \begin{verbatim}
    TaoSetFromOptions(TaoSolver)
 \end{verbatim}
+routine. 
 This command also provides information about runtime options when the
 user includes the {\tt -help } option on the command line.
 
@@ -606,7 +608,7 @@ The input and output vectors include the combined state and design
 variables.  Index sets for the state and design variables must be 
 passed to TAO using the function
 \begin{verbatim}
-   TaoSetStateDesignIS(TaoSolver, IS, IS)
+   TaoSetStateDesignIS(TaoSolver, IS, IS);
 \end{verbatim}
 where the first IS is a PETSc Index\-Set containing the indices of the
 state variables and the second IS the design variables.
@@ -615,25 +617,23 @@ Nonlinear equation constraints have the general form $c(x) = 0$ where
 $c: \Re^n \to \Re^m$.  These constraints should be specified in a routine, 
 written by the user, that evaluates $c(x)$.  The routine that evaluates
 the 
-constraint equations should have the form:
+constraint equations should have the form
 \begin{verbatim}
    PetscErrorCode EvaluateConstraints(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
-\noindent
-The first argument of this routine is a TAO solver object.  The second
-argument
-is the variable vector at which the constraint function should be
-evaluated.  
+where the first argument of this routine is a TAO solver object.  The
+second argument is the variable vector at which the constraint function
+should be evaluated.  
 The third argument is the vector of function values $c(x)$, and the fourth
 argument is a pointer to a user-defined context.  This routine and the 
-user-defined context should be set in the TAO solver with the command
+user-defined context should be set in the TAO solver with the 
 \findex{TaoSetConstraintsRoutine()}
 \begin{verbatim}
    TaoSetConstraintsRoutine(TaoSolver,Vec,
                      PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
                      void*);
 \end{verbatim}
-\noindent
+command. 
 In this function, the first argument is the TAO solver object, the second 
 argument a vector in which to store the constraints, the third argument is
 a function point to the routine for evaluating the constraints, and the
@@ -642,13 +642,13 @@ and the fourth argument is a pointer to a user-defined context.
 The Jacobian of $c(x)$ is the matrix in $\Re^{m \times n}$ such that each 
 column contains the partial derivatives of $c(x)$ with respect to one 
 variable.  The evaluation of the Jacobian of $c$ should be performed 
-in routines of the form
+by calling the 
 \begin{verbatim}
    PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,
                      MatStructure*, void*);
    PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
 \end{verbatim}
-\noindent
+routines. 
 In these functions, the second argument is the variable vector at which to 
 evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
 and the last argument is a pointer to a user-defined context. The fourth
@@ -660,7 +660,7 @@ applying
 the inverse of the state Jacobian.  This inverse matrix may be 
 {\tt PETSC\_NULL}, in which case TAO will use a PETSc KSP method to
 solve the state system.  These evaluation routines should be registered 
-with TAO using the routines
+with TAO using the 
 \begin{verbatim}
    TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
                      PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
@@ -669,6 +669,7 @@ with TAO using the routines
                      PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
                      void*);
 \end{verbatim}
+routines. 
 The first argument is the TAO solver object, the second argument is the
 matrix 
 in which the Jacobian information can be stored.  For the state Jacobian,
@@ -700,12 +701,13 @@ a separable objective function, computed with a function of the form
 \begin{verbatim}
    PetscErrorCode EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
-and set with
+and set with the
 \begin{verbatim}
    TaoSetSeparableObjectiveRoutine(TaoSolver,
                      PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
                      void *);
 \end{verbatim}
+routine.
 
 \begin{comment}
 The computation of the Jacobian of the separable objective routine 
@@ -784,11 +786,10 @@ makefile.)
 The TAO directory {\tt \$\{TAO\_DIR\}/include/finclude}
 contains the Fortran include files
 and should be used via statements 
-such as the following:
+such as 
 \begin{verbatim}
    #include "include/finclude/petscvec.h"
 \end{verbatim}
-\noindent
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
 each file needed for the various TAO (or other supplementary)
@@ -808,15 +809,15 @@ an integer error variable, in contrast to the C/C++ interface convention
 of providing the error variable as the routine's return value.  The error
 code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of {\tt TaoSolve()} are
-given, respectively, below, where {\tt ierr} denotes the error variable:
+given, respectively, as 
 \begin{verbatim}
    call TaoSolve(TaoSolver tao, PetscErrorCode ierr)
    ierr = TaoSolve(TaoSolver tao)
 \end{verbatim}
-\noindent
+where {\tt ierr} denotes the error variable.
 
 Fortran programmers can use the error codes in writing their own
-tracebacks.  For example, one could use code such as the following:
+tracebacks.  For example, one could use code such as 
 \begin{verbatim}
    call TaoSolve(tao, ierr)
    if (ierr .ne. 0) then
@@ -824,7 +825,7 @@ tracebacks.  For example, one could use code such as the following:
        return
    endif
 \end{verbatim}
-\noindent
+to define such a traceback. 
 In addition, Fortran programmers can check these error codes with the
 macro {\tt CHKERRQ()}, which terminates all process when an error
 is encountered.  See the PETSc user manual for details.  The most
