@@ -27,7 +27,7 @@ Each solver has a set of options associated with it that can be set with
 command line arguments.  A brief description of these algorithms and the 
 associated options are discussed in this chapter.
 
-\subsection{Nelder-Mead}
+\subsection{Nelder-Mead Method}
 The Nelder-Mead algorithm \cite{nelder.mead:simplex} is a direct search method for finding a local
 minimum of a function $f(x)$.  This algorithm does not require any gradient or Hessian 
 information of $f$, and therefore has some expected advantages and disadvantages compared
@@ -40,9 +40,12 @@ objective function values $f_1 \leq f_2 \leq \ldots \leq f_{N+1}$.  At each iter
 the set and replaced with 
 \[
 x(\mu) = (1+\mu) \frac{1}{N} \sum_{i=1}^N x_i - \mu x_{N+1},
-\]  
-where $\mu$ can be one of ${\mu_0,2\mu_0,\frac{1}{2}\mu_0,-\frac{1}{2}\mu_0}$ depending upon the values of 
+\]
+where $\mu$ can be one of
+${\mu_0,2\mu_0,\frac{1}{2}\mu_0,-\frac{1}{2}\mu_0}$ depending upon the
+values of 
 each possible $f(x(\mu))$.
+
 The algorithm terminates when the residual  $f_{N+1} - f_1$ becomes sufficiently small.  Because of 
 the way new vectors can be added to the sorted set, 
 the minimum function value and/or the residual may not be impacted at each iteration.
@@ -657,7 +660,8 @@ lower bounds on some of the variables.
 These solvers use the bounds on the variables as well as objective
 function, gradient, and possibly Hessian information.
 
-\subsection{Newton Trust Region}\label{sec:tron} \sindex{Newton's method} \sindex{trust region}
+\subsection{TRON}\label{sec:tron} \sindex{Newton's
+method} \sindex{trust region}
 The TRON \cite{lin_c3} algorithm is an active-set method that uses a 
 combination of gradient projections and 
 a preconditioned conjugate gradient method to minimize an objective function.
@@ -684,7 +688,7 @@ rate of convergence for the algorithm and should be
 tuned and adjusted for optimal performance.
 
 
-\subsection{Gradient Projection--Conjugate Gradient Method}
+\subsection{Gradient Projection: Conjugate Gradient Method}
 The GPCG \cite{more-toraldo} algorithm is much like the TRON algorithm, discussed in
 Section \ref{sec:tron}, except that
 it assumes that the objective function is quadratic and convex.
@@ -695,7 +699,7 @@ is quadratic, the algorithm does not use a trust region.
 All of the options that apply to TRON, except for trust region
 options,  also apply to GPCG.
 
-\subsection{Interior-Point Newton Algorithm}\label{sec:bqpip}
+\subsection{Interior-Point Newton's Method}\label{sec:bqpip}
 The BQPIP algorithm is an interior-point method for bound
 constrained quadratic optimization.  It can be set using the
 TAO solver of {\tt tao\_bqpip}.
@@ -718,8 +722,7 @@ also applies to this method.
 \section{PDE-Constrained Optimization}
 \label{sec:lcl}
 
-TAO can use a linearly constrained augmented Lagrangian method
-to solve PDE-constrained optimization problems of the form
+TAO solves PDE-constrained optimization problems of the form
 \[
 \begin{array}{ll}
 \displaystyle \min_{u,v} & f(u,v) \\
@@ -730,7 +733,8 @@ where the state variable $u$ is the solution to the discretized
 partial differential equation defined by $g$ and parametrized by 
 the design variable $v$, and $f$ is an objective function.  The 
 Lagrange multipliers on the constraint will be denoted by $y$.
-This method is set using the TAO solver of {\tt tao\_lcl}.
+This method is set using the linearly-constrained augmented
+Lagrangian TAO solver {\tt tao\_lcl}.
 
 We make two main assumptions when solving these problems: the 
 objective function and partial differential equation constraint 
@@ -740,6 +744,7 @@ $u$ and $v$.
 % If required, we can assume $\|\nabla_u g(u,v)\|$ is uniformly bounded 
 % above and below in an appropriate norm.
 
+\subsection{Linearly-Constrained Augmented Lagrangian Method}
 Given the current iterate $(u_k, v_k, y_k)$, the linearly-constrained
 augmented Lagrangian method approximately solves the optimization 
 problem
@@ -761,7 +766,7 @@ computed a reduced-space direction that maintains feasibility
 with respect to the linearized constraints and improves the
 augmented Lagrangian merit function.
 
-\subsection{Newton Step}
+\subsubsection{Newton Step}
 
 The Newton direction is obtained by fixing the design variables at
 their current value and solving the linearized constraint for the
@@ -807,7 +812,7 @@ point approximately satisfies the linear constraint is no longer true.
 % seem to be useful, unless it is being used perhaps to correct the 
 % multiplier estimates.
 
-\subsection{Modified Reduced-space Step}
+\subsubsection{Modified Reduced-space Step}
 We are now ready to compute a reduced-space step for the modified
 optimization problem:
 \[
@@ -1079,14 +1084,19 @@ command line or PETSc options file:
   \item[\texttt{-tao\_pounders\_gqt}] Use the gqt algorithm to solve the
   subproblem~\ref{eq:poundersp} (uses $p=2$) instead of BQPIP.
 
-  \item[subproblem parameters] If the default BQPIP algorithm is used to solve the 
+  \item[\texttt{-pounders\_subsolver}] If the default
+BQPIP algorithm is used to solve the 
   subproblem~\ref{eq:poundersp}, the parameters of the subproblem solver
-  can be accessed using the command line options prefix \texttt{-pounders\_subsolver\_}.  For example, 
+  can be accessed using the command line options  prefix
+\texttt{-pounders\_subsolver\_}.  For example, 
 \begin{verbatim}
--pounders_subsolver_tao_gatol 1.0e-5
+       -pounders_subsolver_tao_gatol 1.0e-5
 \end{verbatim}  
+sets the gradient tolerance of the subproblem solver to $10^{-5}$.
 \end{description}
-In addition the user provides an initial solution vector, a vector for storing
+
+Additionally,  the user provides an initial solution vector, a vector for
+storing
 the separable objective function, and a routine for evaluating the residual
 vector $F$.  These are described in detail in 
 Sections~\ref{sec:fghj} and \ref{sec:evalsof}. 

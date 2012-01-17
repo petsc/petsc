@@ -129,7 +129,8 @@ yet been initialized elsewhere).  The arguments \texttt{argc} and
 C++ programs. \sindex{command line arguments} The argument
 \texttt{file\_name} optionally indicates an alternative name for an
 options file, which by default is called \texttt{.petscrc} and resides
-in the user's home directory.  See the PETSc users manual for details
+in the user's home directory.  See the PETSc users manual 
+\cite{petsc-user-ref} for details
 regarding runtime option specification.  The final argument,
 \texttt{help\_message}, is an optional character string that will be
 printed if the program is run with the \texttt{-help} option.
@@ -216,7 +217,8 @@ TAO relies heavily on PETSc not only for its vectors, matrices, and linear
 solvers, but also for its programming utilities such as command line option 
 handling, error handling, and compiling system.  We provide here a quick 
 overview of some of these PETSc features.  Please reference the PETSc 
-manual for a more in-depth discussion of PETSc.
+manual \cite{petsc-user-ref} for a more in-depth
+discussion of PETSc.
 
 \subsection*{Vectors}
 
@@ -248,7 +250,7 @@ respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More detailed
 information about PETSc vectors, including their basic operations,
 scattering/gathering, index sets, and distributed arrays, may be found
-in the PETSc users manual.
+in the PETSc users manual \cite{petsc-user-ref}.
 
 \subsection*{Matrices}
 
@@ -282,7 +284,8 @@ matrix, it must be processed with the pair of commands
    ierr = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);
 \end{verbatim}
 \noindent
-The PETSc users manual discusses various matrix formats as
+The PETSc users manual \cite{petsc-user-ref} discusses
+various matrix formats as
 well as the details of some basic matrix manipulation routines.
 
 
@@ -302,7 +305,7 @@ The application can read this option with the following line of code:
 If the command line option is present, the variable \texttt{nx} is set
 accordingly; otherwise, \texttt{nx} remains unchanged. A complete
 description of the options database may be found in the PETSc users
-manual.
+manual \cite{petsc-user-ref}.
 
 \subsection*{Parallel Programming}
 
@@ -390,7 +393,8 @@ The \texttt{MatMult()} routine was called from
 the \texttt{TaoSolve\_NLS()} routine, which was in turn called on line 
 154 of \texttt{TaoSolve()}, called from the \texttt{main()} routine 
 in the program \texttt{rosenbrock1.c}.  The PETSc users
-manual provides further details regarding error checking, including
+manual \cite{petsc-user-ref}provides further details
+regarding error checking, including
 information about error handling in Fortran.
 
 \begin{figure}[htb]
@@ -438,7 +442,63 @@ To manage code portability across a wide variety of UNIX systems, TAO
 uses a makefile system that is integrated with the PETSc makefile system.  This
 section briefly discusses makefile usage from the perspective of
 application programmers; see the ``makefiles'' chapter of the PETSc
-users manual for additional details.
+users manual  \cite{petsc-user-ref} for additional
+details.
+
+
+\subsection{Compiling (NEW!!) }
+
+Portable TAO makefiles follow the rules and definitions
+of PETSc makefiles.
+In Figures \ref{fig:make3} we present a sample makefile.
+
+\begin{figure}[tbh]
+{\footnotesize
+\begin{verbatim}   
+       CFLAGS    = 
+       FFLAGS    = 
+       CPPFLAGS  =
+       FPPFLAGS  =
+       
+       include ${TAO_DIR}/conf/tao_base
+   
+       minsurf1: minsurf1.o tao_chkopts
+            -${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
+            ${RM} minsurf1.o
+\end{verbatim} 
+% $
+\noindent
+}
+\caption{Sample TAO makefile for a single C program}
+\label{fig:make3}
+\end{figure}
+
+This small makefile is suitable for maintaining a single program that
+uses the TAO library.  The most important line in this makefile is the
+line starting with {\tt include}:
+\findex{TAO_LIB}
+\begin{verbatim}
+   include ${TAO_DIR}/conf/tao_base
+\end{verbatim}
+\noindent % $
+This line includes other makefiles that provide the needed definitions
+and rules for the particular base software installations (specified by
+{\tt \$\{TAO\_DIR\}} and {\tt \$\{PETSC\_DIR\}}) and architecture
+(specified by {\tt \$\{PETSC\_ARCH\}}), which are typically set as
+environmental variables prior to compiling TAO source or programs.  As
+listed in the sample makefile, the appropriate {\tt include} file is
+automatically completely specified; the user should {\em not} alter
+this statement within the makefile.
+ 
+TAO applications should be linked with the
+{\tt PETSC\_LIB} library
+as well as the {\tt TAO\_LIB} library. This version of TAO uses
+PETSc 3.2, and the {\tt PETSC\_DIR} variable
+should be set accordingly.  Many sample makefiles
+can be found in the respective {\tt examples} directories.
+
+
+
 
 \subsection{Compiling TAO Programs}
 

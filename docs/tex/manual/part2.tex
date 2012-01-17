@@ -159,7 +159,7 @@ can be used to represent the Hessian of $f$ or the Jacobian of a constraint
 function $c: \, \Re^n \to \Re^m$.  The TAO solvers use
 these objects to compute a solution to the application.
 
-\section{Defining Variables}
+\subsection{Defining Variables}
 In all of the optimization solvers, the application must provide
 a {\bf Vec} object of appropriate dimension to represent the variables.
 This vector will be cloned by the solvers to create additional work
@@ -187,7 +187,7 @@ routine.
 This routine takes the address of a {\tt Vec} in the second argument and sets it to
 the solution vector used in the application.
 
-\section{Application Context}  \sindex{application context}
+\subsection{Application Context}  \sindex{application context}
 Writing a TAO application may require
 use of an {\em application context}.
 An application context is a structure or object defined by an
@@ -218,7 +218,7 @@ these contexts are completely optional -- a NULL pointer can be used.
 
 
 
-\section{Objective Function and Gradient Routines}\label{sec:fghj}
+\subsection{Objective Function and Gradient Routines}\label{sec:fghj}
 
 TAO solvers that minimize an objective function require
 the application to evaluate the objective function.  Some solvers
@@ -320,7 +320,7 @@ All of these routines should return the integer $0$ after
 successful completion and a nonzero integer if the function
 is undefined at that point or an error occurred.
 
-\section{Hessian Evaluation}
+\subsection{Hessian Evaluation}
 \label{sec:matrixfree}
 \label{sec:finitedifference}
 
@@ -358,7 +358,7 @@ argument is the function that evaluates the Hessian,
 and the fifth argument is a pointer to a user defined context,
 cast to {\tt (void*)}.
 
-\subsection{Finite Differences} \sindex{finite differences}
+\subsubsection{Finite Differences} \sindex{finite differences}
 Finite differences approximations can be used to compute the gradient and the
 Hessian of an objective
 function.  These approximations will slow down the solve considerably and 
@@ -397,7 +397,7 @@ This can be done from the command line using the special TAO solver
 {\tt tao\_fd\_test} together with the options
 {\tt -tao\_test\_gradient} or {\tt -tao\_test\_hessian}.
 
-\subsection{Matrix-Free Methods}
+\subsubsection{Matrix-Free Methods}
 TAO fully supports matrix-free methods. The matrices specified in the
 Hessian evaluation routine need not be conventional
 matrices; instead, they can point to the data required to implement a
@@ -412,7 +412,7 @@ Details about using matrix-free methods are provided in the
 PETSc users manual \cite{petsc-user-ref}.
 
 
-\section{Bounds on Variables}\label{sec:bounds}
+\subsection{Bounds on Variables}\label{sec:bounds}
 
 Some optimization problems also impose constraints upon the variables.
 The constraints may impose simple bounds upon the variables, or
@@ -453,194 +453,6 @@ command.
 Since not all solvers recognize the presence of bound constraints on 
 variables, the user must be careful 
 to select a type of solver that acknowledges these bounds.
-
-\section{Nonlinear Least Squares}\label{sec:evalsof}
-In the case of nonlinear least square applications, we are solving
-the optimization problem
-\[
-\begin{array}{ll}
-\displaystyle \min_{x} & \displaystyle \sum_i (f_i(x) - d_i)^2
-\end{array}
-\]
-For these problems, the objective function value should be computed as a 
-vector of residuals, $f_i(x) - d_i$, for better algorithmic results using 
-a separable objective function, computed with a function of the form
-\begin{verbatim}
-   PetscErrorCode EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
-\end{verbatim}
-and set with
-\begin{verbatim}
-   TaoSetSeparableObjectiveRoutine(TaoSolver,
-                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
-                     void *);
-\end{verbatim}
-
-\begin{comment}
-The computation of the Jacobian of the separable objective routine 
-should be in a routine that looks like
-\begin{verbatim}
-   PetscErrorCode EvaluateJacobian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,
-                     void*);
-\end{verbatim}
-This function can be registered with TAO using the function
-\begin{verbatim}
-   TaoSetJacobianRoutine(TaoSolver,Mat J, Mat Jpre,
-                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
-                     MatStructure*,void*), void *);
-\end{verbatim}
-The first argument is the TAO solver object, the second and third arguments
-are the Mat object where the Jacobian will be stored and the Mat object
-that will be used for the preconditioning (they may be the same). The fourth 
-argument is the function that evaluates the Jacobian, 
-and the fifth argument is a pointer to a user defined context,
-cast as a {\tt void*} pointer.
-\end{comment}
-
-\section{PDE-Constrained Applications}\label{sec:pde_applications}
-TAO can solve PDE-constrained optimization applications 
-of the form
-\[
-\begin{array}{ll}
-\displaystyle \min_{u,v} & f(u,v) \\
-\mbox{subject to} & g(u,v) = 0
-\end{array}
-\]
-where the state variable $u$ is the solution to the discretized partial 
-differential equation defined by $g$ and parametrized by the design 
-variable $v$, and $f$ is an objective function.  In this case, the 
-user needs to set routines for computing the objective function
-and its gradient, the constraints, and the Jacobian of the constraints
-with respect to the state and design variables.  TAO also needs to know 
-which variables in the solution vector correspond to state variables, 
-and which to design variables.
-
-The objective and gradient routines are set as for other TAO applications,
-with {\tt Tao\-Set\-Object\-ive\-Routine()} and {\tt Tao\-Set\-Gradient\-Routine()}.  The user can also provide a fused objective function and gradient
-evaluation with {\tt Tao\-Set\-Objective\-And\-Gradient\-Routine()}.
-The input and output vectors include the combined state and design 
-variables.  Index sets for the state and design variables must be 
-passed to TAO using the function
-\begin{verbatim}
-   TaoSetStateDesignIS(TaoSolver, IS, IS)
-\end{verbatim}
-where the first IS is a PETSc Index\-Set containing the indices of the
-state variables and the second IS the design variables.
-
-Nonlinear equation constraints have the general form $c(x) = 0$ where 
-$c: \Re^n \to \Re^m$.  These constraints should be specified in a routine, 
-written by the user, that evaluates $c(x)$.  The routine that evaluates the 
-constraint equations should have the form:
-\begin{verbatim}
-   PetscErrorCode EvaluateConstraints(TaoSolver,Vec,Vec,void*);
-\end{verbatim}
-\noindent
-The first argument of this routine is a TAO solver object.  The second argument
-is the variable vector at which the constraint function should be evaluated.  
-The third argument is the vector of function values $c(x)$, and the fourth
-argument is a pointer to a user-defined context.  This routine and the 
-user-defined context should be set in the TAO solver with the command
-\findex{TaoSetConstraintsRoutine()}
-\begin{verbatim}
-   TaoSetConstraintsRoutine(TaoSolver,Vec,
-                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
-                     void*);
-\end{verbatim}
-\noindent
-In this function, the first argument is the TAO solver object, the second 
-argument a vector in which to store the constraints, the third argument is
-a function point to the routine for evaluating the constraints, and the
-and the fourth argument is a pointer to a user-defined context.
-
-The Jacobian of $c(x)$ is the matrix in $\Re^{m \times n}$ such that each 
-column contains the partial derivatives of $c(x)$ with respect to one 
-variable.  The evaluation of the Jacobian of $c$ should be performed 
-in routines of the form
-\begin{verbatim}
-   PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,
-                     MatStructure*, void*);
-   PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
-\end{verbatim}
-\noindent
-In these functions, the second argument is the variable vector at which to 
-evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
-and the last argument is a pointer to a user-defined context. The fourth and
-fifth arguments of the Jacobian evaluation with respect to the state variables
-are for providing PETSc matrix objects for the preconditioner on for applying
-the inverse of the state Jacobian.  This inverse matrix may be 
-{\tt PETSC\_NULL}, in which case TAO will use a PETSc KSP method to
-solve the state system.  These evaluation routines should be registered 
-with TAO using the routines
-\begin{verbatim}
-   TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
-                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
-                     MatStructure*,void*), void*);
-   TaoSetJacobianDesignRoutine(TaoSolver,Mat,
-                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
-                     void*);
-\end{verbatim}
-The first argument is the TAO solver object, the second argument is the matrix 
-in which the Jacobian inforamation can be stored.  For the state Jacobian, the 
-third argument is the matrix that will be used for preconditioning and the 
-fourth argument is an optional matrix for the inverse of the state Jacobian.
-One can use {\tt PETSC\_NULL} for this inverse argument and let PETSc apply 
-the inverse using a KSP method, but faster results may be obtained by
-manipulating the structure of the Jacobian and providing an inverse.
-The fifth argument is the function pointer, and the sixth argument is
-an optional user-defined context.  Since no solve is performed with the
-design Jacobian, there is no need to provide preconditioner or inverse
-matrices.
-
-\section{Monitors}
-
-By default the TAO solvers run silently without displaying information
-about the iterations. The user can initiate monitoring with the
-command \findex{TaoSetMonitor()} 
-\begin{verbatim}
-   TaoSetMonitor(TaoSolver,
-                     PetscErrorCode (*mon)(TaoSolver,void*),
-                     void*);
-\end{verbatim}
-\noindent
-The routine, {\tt mon} indicates a user-defined monitoring routine
-and the {\tt void*} denotes an optional user-defined context for private 
-data for the monitor routine.
-
-The routine set by {\tt TaoSetMonitor()} is called once during each
-iteration of the optimization solver.  Hence, the user can employ this 
-routine for any application-specific computations that should be done 
-after the solution update. 
-
-% This linear solver object has a method
-% that allows the user to adjust convergence tolerances.
-% Alternatively, the
-% specific data structures of the linear solver can be accessed and modified
-% directly.
-
-\section{Linear Solvers}\label{sec:TaoLinearSolvers}
-One of the most computationally intensive phases of many optimization
-algorithms involves the solution of linear systems of equations.  
-The performance of the linear solver may be critical to an efficient 
-computation of the solution.  Since linear equation solvers often have 
-a wide variety of options associated with them, TAO allows the user to 
-access the linear solver with the command
-
-\findex{TaoGetKSP()}
-\begin{verbatim}
-   TaoGetKSP(TaoSolver, KSP *);
-\end{verbatim}
-
-\noindent
-With access to the KSP object, users can customize it for their application
-to achieve improved performance.
-
-\section{Options}
-Options for the TAO solver 
-can be be set from the command line using the routine \sindex{options} \findex{TaoSetOptions()}
-\begin{verbatim}
-   TaoSetFromOptions(TaoSolver)
-\end{verbatim}
-This command also provides information about runtime options when the
-user includes the {\tt -help } option on the command line.
 
 
 \section{Solving}
@@ -700,7 +512,7 @@ The stopping criteria can
 also be set using command line options such as \texttt{-tao\_fatol}, 
 \texttt{-tao\_max\_it}, and \texttt{-tao\_max\_funcs}.
 
-\subsection{Monitoring Status}
+\subsection{Viewing Status}
 
 To see parameters and performance statistics for the solver, the
 routine
@@ -734,7 +546,7 @@ numbers indicate that a solution has been found, while negative numbers
 indicate a failure.  A list of reasons can be found in the manual page
 for {\tt Tao\-Get\-Termination\-Reason()}.
 
-\subsection{Obtaining Solution}
+\subsection{Obtaining a Solution}
 
 After exiting the {\tt Tao\-Solve()} function, the solution, gradient, and 
 \findex{TaoGetSolution()} dual variables (if available) can be recovered 
@@ -750,56 +562,180 @@ the same vector passed in to {\tt TaoSetInitialVector}.  This information
 can be obtained during user-defined routines such as a function evaluation 
 and customized monitoring routine, or after the solver has terminated.
 
-\section{Compiling and Linking}
 
-Portable TAO makefiles follow the rules and definitions
-of PETSc makefiles.
-In Figures \ref{fig:make3} we present a sample makefile.
 
-\begin{figure}[tbh]
-{\footnotesize
-\begin{verbatim}   
-       CFLAGS    = 
-       FFLAGS    = 
-       CPPFLAGS  =
-       FPPFLAGS  =
-       
-       include ${TAO_DIR}/conf/tao_base
-   
-       minsurf1: minsurf1.o tao_chkopts
-            -${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
-            ${RM} minsurf1.o
-\end{verbatim} 
-% $
-\noindent
-}
-\caption{Sample TAO makefile for a single C program}
-\label{fig:make3}
-\end{figure}
 
-This small makefile is suitable for maintaining a single program that
-uses the TAO library.  The most important line in this makefile is the
-line starting with {\tt include}:
-\findex{TAO_LIB}
+\subsection{Options}
+Options for the TAO solver 
+can be be set from the command line using the routine \sindex{options}
+\findex{TaoSetOptions()}
 \begin{verbatim}
-   include ${TAO_DIR}/conf/tao_base
+   TaoSetFromOptions(TaoSolver)
 \end{verbatim}
-\noindent % $
-This line includes other makefiles that provide the needed definitions
-and rules for the particular base software installations (specified by
-{\tt \$\{TAO\_DIR\}} and {\tt \$\{PETSC\_DIR\}}) and architecture
-(specified by {\tt \$\{PETSC\_ARCH\}}), which are typically set as
-environmental variables prior to compiling TAO source or programs.  As
-listed in the sample makefile, the appropriate {\tt include} file is
-automatically completely specified; the user should {\em not} alter
-this statement within the makefile.
- 
-TAO applications should be linked with the
-{\tt PETSC\_LIB} library
-as well as the {\tt TAO\_LIB} library. This version of TAO uses
-PETSc 3.2, and the {\tt PETSC\_DIR} variable
-should be set accordingly.  Many sample makefiles
-can be found in the respective {\tt examples} directories.
+This command also provides information about runtime options when the
+user includes the {\tt -help } option on the command line.
+
+\section{Special Problem Structures}
+Below we discuss how to exploit the special structures for three classes
+of problems that TAO solves. 
+
+\subsection{PDE-Constrained Optimization}\label{sec:pde_applications}
+TAO can solve PDE-constrained optimization applications 
+of the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{u,v} & f(u,v) \\
+\mbox{subject to} & g(u,v) = 0
+\end{array}
+\]
+where the state variable $u$ is the solution to the discretized partial 
+differential equation defined by $g$ and parametrized by the design 
+variable $v$, and $f$ is an objective function.  In this case, the 
+user needs to set routines for computing the objective function
+and its gradient, the constraints, and the Jacobian of the constraints
+with respect to the state and design variables.  TAO also needs to know 
+which variables in the solution vector correspond to state variables, 
+and which to design variables.
+
+The objective and gradient routines are set as for other TAO applications,
+with {\tt Tao\-Set\-Object\-ive\-Routine()} and {\tt
+Tao\-Set\-Gradient\-Routine()}.  The user can also provide a fused
+objective function and gradient
+evaluation with {\tt Tao\-Set\-Objective\-And\-Gradient\-Routine()}.
+The input and output vectors include the combined state and design 
+variables.  Index sets for the state and design variables must be 
+passed to TAO using the function
+\begin{verbatim}
+   TaoSetStateDesignIS(TaoSolver, IS, IS)
+\end{verbatim}
+where the first IS is a PETSc Index\-Set containing the indices of the
+state variables and the second IS the design variables.
+
+Nonlinear equation constraints have the general form $c(x) = 0$ where 
+$c: \Re^n \to \Re^m$.  These constraints should be specified in a routine, 
+written by the user, that evaluates $c(x)$.  The routine that evaluates
+the 
+constraint equations should have the form:
+\begin{verbatim}
+   PetscErrorCode EvaluateConstraints(TaoSolver,Vec,Vec,void*);
+\end{verbatim}
+\noindent
+The first argument of this routine is a TAO solver object.  The second
+argument
+is the variable vector at which the constraint function should be
+evaluated.  
+The third argument is the vector of function values $c(x)$, and the fourth
+argument is a pointer to a user-defined context.  This routine and the 
+user-defined context should be set in the TAO solver with the command
+\findex{TaoSetConstraintsRoutine()}
+\begin{verbatim}
+   TaoSetConstraintsRoutine(TaoSolver,Vec,
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
+                     void*);
+\end{verbatim}
+\noindent
+In this function, the first argument is the TAO solver object, the second 
+argument a vector in which to store the constraints, the third argument is
+a function point to the routine for evaluating the constraints, and the
+and the fourth argument is a pointer to a user-defined context.
+
+The Jacobian of $c(x)$ is the matrix in $\Re^{m \times n}$ such that each 
+column contains the partial derivatives of $c(x)$ with respect to one 
+variable.  The evaluation of the Jacobian of $c$ should be performed 
+in routines of the form
+\begin{verbatim}
+   PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,
+                     MatStructure*, void*);
+   PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
+\end{verbatim}
+\noindent
+In these functions, the second argument is the variable vector at which to 
+evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
+and the last argument is a pointer to a user-defined context. The fourth
+and
+fifth arguments of the Jacobian evaluation with respect to the state
+variables
+are for providing PETSc matrix objects for the preconditioner on for
+applying
+the inverse of the state Jacobian.  This inverse matrix may be 
+{\tt PETSC\_NULL}, in which case TAO will use a PETSc KSP method to
+solve the state system.  These evaluation routines should be registered 
+with TAO using the routines
+\begin{verbatim}
+   TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
+                     MatStructure*,void*), void*);
+   TaoSetJacobianDesignRoutine(TaoSolver,Mat,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
+                     void*);
+\end{verbatim}
+The first argument is the TAO solver object, the second argument is the
+matrix 
+in which the Jacobian information can be stored.  For the state Jacobian,
+the 
+third argument is the matrix that will be used for preconditioning and the 
+fourth argument is an optional matrix for the inverse of the state
+Jacobian.
+One can use {\tt PETSC\_NULL} for this inverse argument and let PETSc
+apply 
+the inverse using a KSP method, but faster results may be obtained by
+manipulating the structure of the Jacobian and providing an inverse.
+The fifth argument is the function pointer, and the sixth argument is
+an optional user-defined context.  Since no solve is performed with the
+design Jacobian, there is no need to provide preconditioner or inverse
+matrices.
+
+
+\subsection{Nonlinear Least Squares}\label{sec:evalsof}
+In the case of nonlinear least square applications, we are solving
+the optimization problem
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & \displaystyle \sum_i (f_i(x) - d_i)^2
+\end{array}
+\]
+For these problems, the objective function value should be computed as a 
+vector of residuals, $f_i(x) - d_i$, for better algorithmic results using 
+a separable objective function, computed with a function of the form
+\begin{verbatim}
+   PetscErrorCode EvaluateSeparableFunction(TaoSolver,Vec,Vec,void*);
+\end{verbatim}
+and set with
+\begin{verbatim}
+   TaoSetSeparableObjectiveRoutine(TaoSolver,
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
+                     void *);
+\end{verbatim}
+
+\begin{comment}
+The computation of the Jacobian of the separable objective routine 
+should be in a routine that looks like
+\begin{verbatim}
+   PetscErrorCode EvaluateJacobian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,
+                     void*);
+\end{verbatim}
+This function can be registered with TAO using the function
+\begin{verbatim}
+   TaoSetJacobianRoutine(TaoSolver,Mat J, Mat Jpre,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
+                     MatStructure*,void*), void *);
+\end{verbatim}
+The first argument is the TAO solver object, the second and third arguments
+are the Mat object where the Jacobian will be stored and the Mat object
+that will be used for the preconditioning (they may be the same). The
+fourth 
+argument is the function that evaluates the Jacobian, 
+and the fifth argument is a pointer to a user defined context,
+cast as a {\tt void*} pointer.
+\end{comment}
+
+
+
+\subsection{Complementarity}
+
+
+JASON!
+
 
 \section{Using FORTRAN}
 \label{chapter:fortran}
