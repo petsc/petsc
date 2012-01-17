@@ -386,7 +386,7 @@ coloring of the matrix is known.  This coloring can be used by creating a
 PETSc {\tt MatFDColoring} object and registering the Hessian evaluation routine 
 using
 {\tt TaoSetHessianRoutine()} with the {\tt MatFDColoring} object as
-the last argument.
+the last argument (cast to {\tt void *}).
 \begin{verbatim}
    TaoDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, 
                      MatStructure*, void* );
