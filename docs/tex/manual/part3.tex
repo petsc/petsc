@@ -16,15 +16,14 @@ Section \ref{sec:customize}.
 These methods include absolute and relative convergence tolerances as well
 as a maximum number of iterations of function evaluations.
 If these choices are not sufficient, 
-the user can even specify a customized test\sindex{convergence tests}. 
+the user can specify a customized test\sindex{convergence tests}. 
 
 Users can set their own customized convergence tests of the form
 \begin{verbatim}
-   PetscErrorCode  conv(TaoSolver tao, void *cctx);
+   PetscErrorCode  conv(TaoSolver, void*);
 \end{verbatim}
 \noindent
-The second argument
-is a pointer to a structure defined by the user.
+The second argument is a pointer to a structure defined by the user.
 Within this routine, the solver
 can be queried for the solution vector, gradient vector,
 or other statistic at the current iteration through routines such as
@@ -33,14 +32,14 @@ or other statistic at the current iteration through routines such as
 To use this convergence test within a TAO solver, use
 the command \findex{TaoSetConvergenceTest()}
 \begin{verbatim}
-   TaoSetConvergenceTest(TaoSolver tao,
+   TaoSetConvergenceTest(TaoSolver,
                      PetscErrorCode (*conv)(TaoSolver,void*),
-                     void *cctx);
+                     void*);
 \end{verbatim}
 \noindent
 The second argument of this command is the convergence routine, and the
-final argument of the convergence test routine, {\tt cctx},
-denotes an optional user-defined context for private data.  
+final argument of the convergence test routine denotes an optional 
+user-defined context for private data.  
 The convergence routine receives the TAO solver and this private data
 structure. 
 The termination flag can be set using the routine
@@ -55,14 +54,14 @@ The termination flag can be set using the routine
 \label{sec:TaoLineSearch}
 
 Many solvers in TAO require a line search.  While these solvers always
-offer a default line search, alternative line searches can also be used
+offer a default line search, alternative line searches can be applied
 using the function
 \begin{verbatim}
    TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
 \end{verbatim}
 or by using the command line option  {\tt -tao\_ls\_type}.  
 Available line searches 
-include Mor\'{e}-Thuente\cite{more:92}, Armijo, gpcg, and unit.
+include Mor\'{e}-Thuente \cite{more:92}, Armijo, gpcg, and unit.
 
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
