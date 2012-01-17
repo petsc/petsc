@@ -893,6 +893,18 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->xtol, fas->n_cycles, 1000);CHKERRQ(ierr);
   }
 
+  /* control the simple Richardson smoother that is default if there's no upsmooth or downsmooth */
+  if (!fas->downsmooth) {
+    ierr = PetscOptionsInt("-fas_down_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+    if (fas->level == 0) {
+      ierr = PetscOptionsInt("-fas_coarse_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+    }
+  }
+
+  if (!fas->upsmooth) {
+    ierr = PetscOptionsInt("-fas_up_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
+  }
+
   if (monflg) {
     fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
     /* set the monitors for the upsmoother and downsmoother */
