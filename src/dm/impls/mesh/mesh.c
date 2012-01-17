@@ -391,6 +391,18 @@ PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, Pet
     PetscBool isOwned;
 
     /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
+    {
+      PetscInt l;
+
+      isOwned = PETSC_TRUE;
+      ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      for(l = 0; l < nleaves; ++l) {
+        if (p == leaves[l]) {
+          isOwned = PETSC_FALSE;
+          break;
+        }
+      }
+    }
     if (isOwned) {
       const PetscInt *cone;
       PetscInt        coneSize, q, row, rSize;
@@ -411,6 +423,18 @@ PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, Pet
         col    = col >= 0 ? col : -(col+1);
         cSize /= bs;
         /* TODO ierr = PetscSFIsOwned(sf, neighbor, &isOwned);CHKERRQ(ierr); */
+        {
+          PetscInt l;
+
+          isOwned = PETSC_TRUE;
+          ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+          for(l = 0; l < nleaves; ++l) {
+            if (neighbor == leaves[l]) {
+              isOwned = PETSC_FALSE;
+              break;
+            }
+          }
+        }
         if ((bs == 1) || (col%bs == 0)) {ierr = PetscPrintf(comm, "[%d]:   col %d size %d bs %d\n", rank, col, cSize*bs, bs);CHKERRQ(ierr);}
         if (cSize > 0) {
           if (isOwned) {
@@ -457,6 +481,18 @@ PetscErrorCode DMMeshFillMatrixWithZero(DM dm, Mat A, PetscInt bs, PetscSF sf, P
     PetscBool isOwned;
 
     /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
+    {
+      PetscInt l;
+
+      isOwned = PETSC_TRUE;
+      ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      for(l = 0; l < nleaves; ++l) {
+        if (p == leaves[l]) {
+          isOwned = PETSC_FALSE;
+          break;
+        }
+      }
+    }
     if (isOwned) {
       const PetscInt *cone;
       PetscInt        coneSize, q, row, rSize, r;
@@ -505,9 +541,15 @@ PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Using points instead of dofs would decrease the graph size, but we would need to also communicate the section information for new points */
-  /* Create local adjacency graph in global dof numbering (cones are adj dofs) */
+  /* OPT: Using points instead of dofs would decrease the graph size, but we would need to also communicate the section information for new points */
+  /* Create dof SF based on point SF */
+  /* Exchange cone sizes on interface */
+  /* Create cone SF based on dof SF */
   /* Exchange cones on interface */
+  /* Merge cones to get correct boundary cone sizes */
+  /* Allocate DM */
+  /* Fill in boundary cones */
+  /* Create local adjacency graph in global dof numbering (cones are adj dofs) */
 #if 0
   /* Create local adjacency graph */
   ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
