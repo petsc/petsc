@@ -351,7 +351,7 @@ One can set the Hessian evaluation routine by calling the \sindex{Hessian}
                      MatStructure*,void*), void *);
 \end{verbatim}
 routine. 
-The first argument is the TAO application, the second and third arguments
+The first argument is the TAO Solver object, the second and third arguments
 are the Mat object where the Hessian will be stored and the Mat object
 that will be used for the preconditioning (they may be the same). The fourth 
 argument is the function that evaluates the Hessian, 
@@ -381,15 +381,15 @@ TaoSetGradientRoutine()} and
 options {\tt -tao\_fdgrad} and {\tt -tao\_fd}.
 
 The efficiency of the finite difference Hessian can be improved if the
-coloring of the matrix is known.  This coloring can be used by creating a
-PETSc {\tt MatFDColoring} object and registering the Hessian evaluation routine 
-using
-{\tt TaoSetHessianRoutine()} with the {\tt MatFDColoring} object as
-the last argument (cast to {\tt void *}).
+coloring of the matrix is known.  If the application programmer creates
+a PETSc {\tt MatFDColoring} object, it can be applied to the finite 
+difference approximation by setting the Hessian evaluation routine to
 \begin{verbatim}
    TaoDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, 
                      MatStructure*, void* );
 \end{verbatim}
+and using the {\tt MatFDColoring} object as
+the last ({\tt void *}) argument to {\tt TaoSetHessianRoutine()}.
 
 It is also possible to use finite difference approximations to directly check
 the correctness of the gradient and/or Hessian evaluation routines.
@@ -734,9 +734,78 @@ cast as a {\tt void*} pointer.
 
 
 \subsection{Complementarity}
+Complementarity applications have equality constraints in the form of 
+nonlinear equations 
+$C(X) = 0$, where $C: \Re^n \to \Re^m$.
+These constraints should be specified in a 
+routine written by the user with the form
+\begin{verbatim}
+   PetscErrorCode EqualityConstraints(TaoSolver,Vec,Vec,void*);
+\end{verbatim}
+that evaluates {\tt C(X)}.
+\noindent
+The first argument of this routine is a TAO solver object.  The second argument
+is the variable vector $X$ at which the constraint function should be 
+evaluated.  
+The third argument is the output vector of function values $C(X)$, and the fourth
+argument is a pointer to a user-defined context.
+
+This routine and the user-defined context 
+must be registered with TAO by using the
+\findex{TaoSetConstraintsRoutine()}
+\begin{verbatim}
+   TaoSetConstraintRoutine(TaoSolver, Vec,
+                     PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
+                     void*);
+\end{verbatim}
+command. 
+\noindent
+In this command, the first argument is TAO Solver object,
+the second argument is vector in which to store the function values,
+the third argument is the user-defined routine that evaluates $C(X)$,
+and the fourth argument is a pointer to a user-defined context that will
+be passed back to the user.
+
+The Jacobian of the function is the matrix in $\Re^{m \times n}$
+such that each column contains the partial derivatives of {\tt f} with respect
+to one variable. 
+The evaluation of the Jacobian of $C$ should be performed in a routine
+of the form
+\begin{verbatim}
+   PetscErrorCode EvaluateJacobian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,
+                     void*);
+\end{verbatim}
+\noindent
+In this function, the first argument is the TAO Solver object and the 
+second argument is the variable vector at which to evaluate the 
+Jacobian matrix. The third argument is the Jacobian matrix,
+and the sixth argument is a pointer to a user-defined context.
+Since the Jacobian matrix may be used in solving a system of linear equations,
+a preconditioner for the matrix may be needed.  The fourth argument is the matrix that will be used
+for preconditioning the linear system.  In most cases, this
+matrix will be the same as the Hessian matrix.  The fifth
+argument is the flag used to set the Jacobian matrix and
+linear solver in the routine {\tt KSPSetOperators()}.
+
+This routine should be specified to TAO using the
+\findex{TaoAppSetJacobianRoutine()}
+\begin{verbatim}
+   TaoSetJacobianRoutine(TaoSolver,Mat J, Mat Jpre,
+                     PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*, 
+                     MatStructure*,void*), void*);
+\end{verbatim}
+\noindent
+command.
+The first argument is the TAO Solver object, the second
+and third arguments are the Mat objects in which the Jacobian will be stored
+and the Mat object that will be used for the preconditioning (they may
+be the same).
+the fourth argument is the function pointer, and the fifth argument is
+an optional user-defined context.
+The Jacobian matrix should be created in a way such that the product of 
+it and the variable vector can be stored in the constraint vector.
 
 
-JASON!
 
 
 \section{Using FORTRAN}

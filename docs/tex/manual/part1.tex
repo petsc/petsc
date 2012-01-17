@@ -307,74 +307,7 @@ accordingly; otherwise, \texttt{nx} remains unchanged. A complete
 description of the options database may be found in the PETSc users
 manual \cite{petsc-user-ref}.
 
-\subsection*{Parallel Programming}
-
-Since TAO uses the message-passing model for parallel programming and
-employs MPI for all interprocessor communication, the user is free to
-employ MPI routines as needed throughout an application code.
-However, by default the user is shielded from many of the details of
-message passing within TAO, since these are hidden within parallel
-objects, such as vectors, matrices, and solvers.  In addition, TAO
-users can interface to external tools, such as the generalized vector
-scatters/gathers and distributed arrays within PETSc, to assist in the
-management of parallel data.
-
-%\sindex{collective operations} 
-The user must specify a communicator
-upon creation of any PETSc or TAO object (such as a vector, matrix, or 
-solver)
-to indicate the processors over which the object is to be distributed. 
-For example, some commands for matrix, vector, and solver creation
-are:
-\begin{verbatim}
-   ierr = MatCreate(MPI_Comm comm,Mat *H);
-   ierr = VecCreate(MPI_Comm comm,Vec *x);
-   ierr = TaoCreate(MPI_Comm comm,TaoSolver *tao); 
-\end{verbatim}
-\noindent
-In most cases, the value for \texttt{comm} will be either 
-\texttt{PETSC\_COMM\_SELF} for single-process objects or 
-\texttt{PETSC\_COMM\_WORLD} for objects distributed over all processors.
-The creation routines are collective over all processors in the
-communicator; thus, all processors in the communicator {\em must} call
-the creation routine.  In addition, if a sequence of collective
-routines is being used, the routines {\em must} be called in the same
-order on each processor.
-
-\section{Compiling and Running TAO}
-\label{sec:running}
-
-Compilation of the TAO numerical libraries and TAO application codes
-requires three environmental variables to be set.  These three
-variables, \texttt{TAO\_DIR}, \texttt{PETSC\_ARCH}, and \texttt{PETSC\_DIR},
-are discussed more fully in the TAO installation instructions (\url{http:\\www.mcs.anl.gov/tao/documentation/installation.html}).
-
-TAO uses a portable makefile system provided by the
-PETSc~\cite{petsc-web-page,petsc-user-ref} library, which is discussed
-further in Section~\ref{sec:makefiles}.  The TAO library can be
-compiled with the command
-\begin{verbatim}
-   make
-\end{verbatim}
-\noindent
-from the \texttt{TAO\_DIR} directory.  
-
-Running a TAO application on a single processor can be done in the
-usual way by entering the name of the executable and any command line
-options.  Running programs in parallel, however, requires use of the
-MPI library.  All TAO programs use the MPI (Message Passing Interface)
-standard for message-passing communication \cite{MPI-final}.  Thus, to
-execute TAO programs, users must know the procedure for beginning MPI
-jobs on their selected computer system(s).  For instance, when using
-the MPICH implementation of MPI \cite{mpich-web-page} and many others,
-the following command initiates a program that uses eight processors:
-%\findex{mpiexec} \sindex{running TAO programs} 
-\begin{verbatim}
-  mpiexec -np 8 tao_program_name tao_options
-\end{verbatim}
-
-
-\section{Error Checking}
+\subsection*{Error Checking}
 
 All TAO commands begin with the \texttt{Tao} prefix and return an
 integer indicating whether an error has occurred during the call.  The
@@ -435,7 +368,75 @@ status of the memory for corruption.  By putting several (or many) of
 these macros into an application code, one can usually track
 down the code segment where corruption has occurred.
 
-\section{Makefiles}
+\subsection*{Parallel Programming}
+
+Since TAO uses the message-passing model for parallel programming and
+employs MPI for all interprocessor communication, the user is free to
+employ MPI routines as needed throughout an application code.
+However, by default the user is shielded from many of the details of
+message passing within TAO, since these are hidden within parallel
+objects, such as vectors, matrices, and solvers.  In addition, TAO
+users can interface to external tools, such as the generalized vector
+scatters/gathers and distributed arrays within PETSc, to assist in the
+management of parallel data.
+
+%\sindex{collective operations} 
+The user must specify a communicator
+upon creation of any PETSc or TAO object (such as a vector, matrix, or 
+solver)
+to indicate the processors over which the object is to be distributed. 
+For example, some commands for matrix, vector, and solver creation
+are:
+\begin{verbatim}
+   ierr = MatCreate(MPI_Comm comm,Mat *H);
+   ierr = VecCreate(MPI_Comm comm,Vec *x);
+   ierr = TaoCreate(MPI_Comm comm,TaoSolver *tao); 
+\end{verbatim}
+\noindent
+In most cases, the value for \texttt{comm} will be either 
+\texttt{PETSC\_COMM\_SELF} for single-process objects or 
+\texttt{PETSC\_COMM\_WORLD} for objects distributed over all processors.
+The creation routines are collective over all processors in the
+communicator; thus, all processors in the communicator {\em must} call
+the creation routine.  In addition, if a sequence of collective
+routines is being used, the routines {\em must} be called in the same
+order on each processor.
+
+\section{Compiling and Running TAO}
+\label{sec:running}
+
+Compilation of the TAO numerical libraries and TAO application codes
+requires three environmental variables to be set. \texttt{PETSC\_ARCH} and \texttt{PETSC\_DIR} must be identical to the values used when compiling PETSc, \texttt{TAO\_DIR} must be set to top level of the TAO directory tree. These three
+variables are discussed in greater detail in the TAO installation 
+instructions (\url{http:\\www.mcs.anl.gov/tao/documentation/installation.html}).
+
+TAO uses a portable makefile system provided by the
+PETSc~\cite{petsc-web-page,petsc-user-ref} library, which is discussed
+further in Section~\ref{sec:makefiles}.  The TAO library can be
+compiled with the command
+\begin{verbatim}
+   make
+\end{verbatim}
+\noindent
+from the \texttt{TAO\_DIR} directory.  
+
+Running a TAO application on a single processor can be done in the
+usual way by entering the name of the executable and any command line
+options.  Running programs in parallel, however, requires use of the
+MPI library.  All TAO programs use the MPI (Message Passing Interface)
+standard for message-passing communication \cite{MPI-final}.  Thus, to
+execute TAO programs, users must know the procedure for beginning MPI
+jobs on their selected computer system(s).  For instance, when using
+the MPICH implementation of MPI \cite{mpich-web-page} and many others,
+the following command initiates a program that uses eight processors:
+%\findex{mpiexec} \sindex{running TAO programs} 
+\begin{verbatim}
+  mpiexec -np 8 tao_program_name tao_options
+\end{verbatim}
+
+
+
+\subsection*{Makefiles}
 \label{sec:makefiles}
 
 To manage code portability across a wide variety of UNIX systems, TAO
@@ -445,11 +446,6 @@ application programmers; see the ``makefiles'' chapter of the PETSc
 users manual  \cite{petsc-user-ref} for additional
 details.
 
-
-\subsection{Compiling (NEW!!) }
-
-Portable TAO makefiles follow the rules and definitions
-of PETSc makefiles.
 In Figures \ref{fig:make3} we present a sample makefile.
 
 \begin{figure}[tbh]
@@ -469,11 +465,11 @@ In Figures \ref{fig:make3} we present a sample makefile.
 % $
 \noindent
 }
-\caption{Sample TAO makefile for a single C program}
+\caption{Sample TAO makefile for a C application}
 \label{fig:make3}
 \end{figure}
 
-This small makefile is suitable for maintaining a single program that
+This small makefile is suitable for maintaining a  program that
 uses the TAO library.  The most important line in this makefile is the
 line starting with {\tt include}:
 \findex{TAO_LIB}
@@ -483,82 +479,10 @@ line starting with {\tt include}:
 \noindent % $
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base software installations (specified by
-{\tt \$\{TAO\_DIR\}} and {\tt \$\{PETSC\_DIR\}}) and architecture
-(specified by {\tt \$\{PETSC\_ARCH\}}), which are typically set as
-environmental variables prior to compiling TAO source or programs.  As
-listed in the sample makefile, the appropriate {\tt include} file is
-automatically completely specified; the user should {\em not} alter
-this statement within the makefile.
+{\tt TAO\_DIR} and {\tt PETSC\_DIR}) and architecture
+(specified by {\tt PETSC\_ARCH}), which are typically set as
+environmental variables prior to compiling TAO source or programs.
  
-TAO applications should be linked with the
-{\tt PETSC\_LIB} library
-as well as the {\tt TAO\_LIB} library. This version of TAO uses
-PETSc 3.2, and the {\tt PETSC\_DIR} variable
-should be set accordingly.  Many sample makefiles
-can be found in the respective {\tt examples} directories.
-
-
-
-
-\subsection{Compiling TAO Programs}
-
-To make a program named \texttt{rosenbrock1}, one may use the command
-\begin{verbatim}
-   make rosenbrock1
-\end{verbatim}
-\noindent
-The variables \texttt{TAO\_DIR}, \texttt{PETSC\_DIR}, and \texttt{PETSC\_ARCH}
-need to be set either as environment variables or as command line options to make. Error messages such as 
-\begin{verbatim}
-   /conf/variables: No such file or directory
-\end{verbatim}
-or
-\begin{verbatim}
-   make: *** No rule to make target `conf/tao_base'. Stop.
-\end{verbatim}
-are usually the result of not setting these variables correctly.
-
-
-\subsection{Sample Makefiles}
-
-\begin{figure}[tbh]
-{\footnotesize
-\begin{verbatim}   
-       CFLAGS    = 
-       FFLAGS    = 
-       CPPFLAGS  =
-       FPPFLAGS  =
-       
-       include ${TAO_DIR}/conf/tao_base
-   
-       rosenbrock1: rosenbrock1.o tao_chkopts
-            -${CLINKER} -o rosenbrock1 rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}
-            ${RM} rosenbrock1.o
-\end{verbatim} 
-% $
-}
-\caption{Sample TAO Makefile for a Single Program}
-\label{fig:make1}
-\end{figure}
-
-Maintaining portable TAO makefiles is very simple.  Figure
-\ref{fig:make1} presents a minimal makefile for maintaining a single
-program that uses the TAO library.  The most important line in this
-makefile is the line starting with \texttt{include}:
-\begin{verbatim}
-   include ${TAO_DIR}/conf/tao_base
-\end{verbatim} 
-% $
-This line \findex{TAO_LIB} includes other makefiles that provide the
-needed definitions and rules for the particular base software
-installations (specified by \texttt{\$\{TAO\_DIR\}} and {\tt
-  \$\{PETSC\_DIR\}}) and architecture (specified by {\tt
-  \$\{PETSC\_ARCH\}}), which are typically set as environmental
-variables prior to compiling TAO source or programs.  As listed in the
-sample makefile, the appropriate \texttt{include} file is automatically
-completely specified; the user should {\em not} alter this statement
-within the makefile.
-
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
@@ -571,7 +495,6 @@ as follows:
 \item \texttt{TAO\_LIB} - the TAO library flags
              \findex{TAO_LIB}
 \item \texttt{PETSC\_LIB} - the PETSc library flags
-
 \end{itemize}
 
 \section{Directory Structure}
