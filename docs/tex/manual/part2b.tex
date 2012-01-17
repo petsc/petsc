@@ -633,10 +633,10 @@ Name & Value & Default & Description \\
 \end{tabular}
 \end{table}
 
-\section{Bound Constrained Optimization}\sindex{bounds}
+\section{Bound-Constrained Optimization}\sindex{bounds}
 \label{chapter:bound}
 
-Bound constrained optimization algorithms
+Bound-constrained optimization algorithms
 minimize $f: \, \Re^n \to \Re$, subject to upper or
 lower bounds on some of the variables.
 These solvers also bounds on the variables as well as objective
@@ -694,7 +694,7 @@ with the command {\tt TaoGetKSP()}.
 
 \subsection{Limited Memory Variable Metric Method}
 
-This method is the bound constrained variant of the LMVM method for
+This method is the bound-constrained variant of the LMVM method for
 unconstrained optimization.  It uses projected gradients to approximate
 the Hessian -- eliminating the need for Hessian evaluations.
 The method can be set using the TAO solver {\tt tao\_blmvm}.
@@ -1118,7 +1118,7 @@ corresponds to the nonlinear complementarity problem \cite{cottle:nonlinear}.
 
 Simple complementarity conditions arise from the first-order optimality 
 conditions from optimization \cite{karush:minima, kuhn.tucker:nonlinear}.  
-In the simple bound constrained optimization case, these conditions 
+In the simple bound-constrained optimization case, these conditions 
 correspond to MCP($\nabla f$, $\ell$, $u$), where $f: \Re^n \to \Re$ 
 is the objective function.  In a one-dimensional setting these conditions 
 are intuitive.  If the solution is at the lower bound, then the function must 

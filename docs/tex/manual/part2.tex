@@ -13,7 +13,7 @@
 %\sindex{continuous optimization}
 \label{chapter:tao_solver}
 
-TAO contains unconstrained minimization, bound constrained minimization, 
+TAO contains unconstrained minimization, bound-constrained minimization, 
 nonlinear complementarity, nonlinear least squares solvers, and solvers
 for optimization problems with partial differential equation constraints.
 The structure of these problems can differ significantly, but TAO has a 
@@ -450,12 +450,12 @@ This routine can be set with the command
                      PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),void*);
 \end{verbatim}
    
-Since not all solvers recognize the presence of bound-constraints on 
+Since not all solvers recognize the presence of bound constraints on 
 variables, the user must be careful 
 to select a type of solver that acknowledges these bounds.
 
 \section{Nonlinear Least Squares}\label{sec:evalsof}
-In the case of nonlinear least-square applications, we are solving
+In the case of nonlinear least square applications, we are solving
 the optimization problem
 \[
 \begin{array}{ll}
