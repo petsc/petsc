@@ -498,84 +498,78 @@ cast as a {\tt void*} pointer.
 
 \section{PDE-Constrained Applications}\label{sec:pde_applications}
 TAO can solve PDE-constrained optimization applications 
-that have the form
+of the form
 \[
 \begin{array}{ll}
 \displaystyle \min_{u,v} & f(u,v) \\
 \mbox{subject to} & g(u,v) = 0
 \end{array}
 \]
-where the state variable $u$ is the solution to the partial differential 
-equation defined by $g$ and parametrized by the design variable $v$, and 
-$f$ is an objective function.  
-
-
-In this case, the user needs to set routines for computing the objective,
-gradient, constraints, jacobian with respect to the state variables, 
-and jacobian with
-respect to the design variables.  TAO also needs to know which variables
-in the solution vector are state variables, and which are design variables.
+where the state variable $u$ is the solution to the discretized partial 
+differential equation defined by $g$ and parametrized by the design 
+variable $v$, and $f$ is an objective function.  In this case, the 
+user needs to set routines for computing the objective function
+and its gradient, the constraints, and the Jacobian of the constraints
+with respect to the state and design variables.  TAO also needs to know 
+which variables in the solution vector correspond to state variables, 
+and which to design variables.
 
 The objective and gradient routines are set as for other TAO applications,
-with {\tt Tao\-Set\-Object\-ive\-Routine()} and {\tt Tao\-Set\-Gradient\-Routine}.
-These vectors include the combined state and design variables, the index set
-containing the state variables must be passed to TAO using the function
+with {\tt Tao\-Set\-Object\-ive\-Routine()} and {\tt Tao\-Set\-Gradient\-Routine()}.  The user can also provide a fused objective function and gradient
+evaluation with {\tt Tao\-Set\-Objective\-And\-Gradient\-Routine()}.
+The input and output vectors include the combined state and design 
+variables.  Index sets for the state and design variables must be 
+passed to TAO using the function
 \begin{verbatim}
    TaoSetStateDesignIS(TaoSolver, IS, IS)
 \end{verbatim}
-where the first IS is a PETSc Index Set describing which of the variables in the 
-solution vector are state variables and the second IS describes which are
-design variables.
+where the first IS is a PETSc Index\-Set containing the indices of the
+state variables and the second IS the design variables.
 
-Constraints in the form of nonlinear equations have the form
-$C(X) = 0$ where $C: \Re^n \to \Re^m$.
-These constraints should be specified in a 
-routine, written by the user, that evaluates {\tt C(X)}.
-The routine that evaluates the constraint equations should have the form:
+Nonlinear equation constraints have the general form $c(x) = 0$ where 
+$c: \Re^n \to \Re^m$.  These constraints should be specified in a routine, 
+written by the user, that evaluates $c(x)$.  The routine that evaluates the 
+constraint equations should have the form:
 \begin{verbatim}
    PetscErrorCode EvaluateConstraints(TaoSolver,Vec,Vec,void*);
 \end{verbatim}
 \noindent
 The first argument of this routine is a TAO solver object.  The second argument
 is the variable vector at which the constraint function should be evaluated.  
-The third argument is the vector of function values {\tt C}, and the fourth
-argument is a pointer to a user-defined context.
-This routine  and the user-defined context 
-should be set in the TAO solver with the command
+The third argument is the vector of function values $c(x)$, and the fourth
+argument is a pointer to a user-defined context.  This routine and the 
+user-defined context should be set in the TAO solver with the command
 \findex{TaoSetConstraintsRoutine()}
 \begin{verbatim}
-   TaoSetConstraintsRoutine(TaoSolver,
+   TaoSetConstraintsRoutine(TaoSolver,Vec,
                      PetscErrorCode (*)(TaoSolver,Vec,Vec,void*),
                      void*);
 \end{verbatim}
 \noindent
-In this function, first argument is the TAO solver object,
-the second argument is vector where the constraints routine should be
-evaluated, the third argument is a vector in which to store the constraints,
-and the fourth argument is a pointer to a user-defined context that will
-be passed back to the user.
+In this function, the first argument is the TAO solver object, the second 
+argument a vector in which to store the constraints, the third argument is
+a function point to the routine for evaluating the constraints, and the
+and the fourth argument is a pointer to a user-defined context.
 
-The Jacobian of the function {\tt C} is the matrix in $\Re^{m \times n}$
-such that each column contains the partial derivatives of {\tt f} with respect
-to one variable. 
-The evaluation of the Jacobian of {\tt f} should be performed in routines
-of the form
+The Jacobian of $c(x) is the matrix in $\Re^{m \times n}$ such that each 
+column contains the partial derivatives of $c(x)$ with respect to one 
+variable.  The evaluation of the Jacobian of $c$ should be performed 
+in routines of the form
 \begin{verbatim}
    PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,
                      MatStructure*, void*);
    PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
 \end{verbatim}
 \noindent
-In this function, the second argument is the variable vector at which to 
+In these functions, the second argument is the variable vector at which to 
 evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
 and the last argument is a pointer to a user-defined context. The fourth and
-fifth arguments of the state Jacobian evaluation are for providing a matrix
-object 
-for PETSc to apply the preconditioner on and a matrix for applying
-the inverse of the state Jacobian. This inverse matrix may be {\tt
-  PETSC\_NULL},
-TAO will apply the inverse using a PETSc KSP solver.
-These evaluation routines should be registered with TAO using the routines
+fifth arguments of the Jacobian evaluation with respect to the state variables
+are for providing PETSc matrix objects for the preconditioner on for applying
+the inverse of the state Jacobian.  This inverse matrix may be 
+{\tt PETSC\_NULL}, in which case TAO will use a PETSc KSP method to
+solve the state system.  These evaluation routines should be registered 
+with TAO using the routines
 \begin{verbatim}
    TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
                      PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,
@@ -584,20 +578,17 @@ These evaluation routines should be registered with TAO using the routines
                      PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
                      void*);
 \end{verbatim}
-\noindent
-The first argument is the TAO solver object, the second
-argument is the matrix in which the information can be stored.
-For the state Jacobian, 
-the third argument is the matrix that will be used for preconditioning,
-the fourth argument is an optional matrix for the inverse of the state 
-Jacobian.  You can use {\tt PETSC\_NULL} for this inverse argument and let 
-PETSc apply the inverse using a KSP operation, but you may get faster
-results if you can manipulate the structure of the Jacobian to provide your
-own inverse. The fifth argument is the function pointer, and the sixth argument is
-an optional user-defined context. There is no solve performed with the
-design Jacobian, so there is no need to provide preconditioner or inverse
+The first argument is the TAO solver object, the second argument is the matrix 
+in which the Jacobian inforamation can be stored.  For the state Jacobian, the 
+third argument is the matrix that will be used for preconditioning and the 
+fourth argument is an optional matrix for the inverse of the state Jacobian.
+One can use {\tt PETSC\_NULL} for this inverse argument and let PETSc apply 
+the inverse using a KSP method, but faster results may be obtained by
+manipulating the structure of the Jacobian and providing an inverse.
+The fifth argument is the function pointer, and the sixth argument is
+an optional user-defined context.  Since no solve is performed with the
+design Jacobian, there is no need to provide preconditioner or inverse
 matrices.
-
 
 \section{Monitors}
 
@@ -606,35 +597,32 @@ about the iterations. The user can initiate monitoring with the
 command \findex{TaoSetMonitor()} 
 \begin{verbatim}
    TaoSetMonitor(TaoSolver,
-                     PetscErrorCode (*mon)(TaoSolver tao,void* mctx),
-                     void *mctx);
+                     PetscErrorCode (*mon)(TaoSolver,void*),
+                     void*);
 \end{verbatim}
 \noindent
-
 The routine, {\tt mon} indicates a user-defined monitoring routine
-and {\tt mctx} denotes an optional user-defined context for private 
+and the {\tt void*} denotes an optional user-defined context for private 
 data for the monitor routine.
 
 The routine set by {\tt TaoSetMonitor()} is called once during each
-iteration of the optimization solver.  Hence, the
-user can employ this routine for any application-specific computations
-that should be done after the solution update. 
-
+iteration of the optimization solver.  Hence, the user can employ this 
+routine for any application-specific computations that should be done 
+after the solution update. 
 
 % This linear solver object has a method
 % that allows the user to adjust convergence tolerances.
 % Alternatively, the
 % specific data structures of the linear solver can be accessed and modified
 % directly.
+
 \section{Linear Solvers}\label{sec:TaoLinearSolvers}
 One of the most computationally intensive phases of many optimization
-algorithms involves the solution of systems of linear equations.  
-The performance
-of the linear solver may be critical to an efficient computation
-of the solution.
-Since linear equation solvers often have a wide variety of options 
-associated with them, TAO allows the user to access the linear
-solver with the command
+algorithms involves the solution of linear systems of equations.  
+The performance of the linear solver may be critical to an efficient 
+computation of the solution.  Since linear equation solvers often have 
+a wide variety of options associated with them, TAO allows the user to 
+access the linear solver with the command
 
 \findex{TaoGetKSP()}
 \begin{verbatim}
@@ -643,8 +631,7 @@ solver with the command
 
 \noindent
 With access to the KSP object, users can customize it for their application
-to achieve additional performance.
-
+to achieve improved performance.
 
 \section{Options}
 Options for the TAO solver 
@@ -653,20 +640,105 @@ can be be set from the command line using the routine \sindex{options} \findex{T
    TaoSetFromOptions(TaoSolver)
 \end{verbatim}
 This command also provides information about runtime options when the
-user includes the {\tt -help } option on the
-command line.
+user includes the {\tt -help } option on the command line.
+
 
 \section{Solving}
-Once the application and solver have been set up, the solver can be called using the routine
-\findex{TaoSolve()}
+Once the application and solver have been set up, the solver can be 
+\findex{TaoSolve()} called using the routine
 \begin{verbatim}
    TaoSolve(TaoSolver);
 \end{verbatim}
 \noindent
-This  routine will call the TAO solver. 
-After exiting this function, the solution, gradient, and dual variables (if
-available) can be
-recovered with the routines:
+This routine will call the TAO solver. 
+
+\subsection{Convergence}\label{sec:customize}
+
+Although TAO and its solvers set default parameters that are useful
+for many problems, it may be necessary for the user to modify these
+parameters to change the behavior and convergence of various algorithms.
+
+One convergence criterion for most algorithms concerns the
+of digits of accuracy needed in the solution.  In particular,
+the convergence test employed by TAO attempts to stop when
+the error in the constraints is less than $\epsilon_{crtol}$,
+and either
+\[
+\begin{array}{lcl}
+f(X) - f(X^*)  &\leq& \epsilon_{fatol}, \\
+|f(X) - f(X^*)| / |f(X^*)| &\leq& \epsilon_{frtol},\\
+||g(X)|| &\leq& \epsilon_{gatol}, \\
+||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, or \\
+||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
+\end{array}
+\]
+where $X$ is the current approximation to the true solution $X^*$
+and $X_0$ is the initial guess.
+$X^*$ is unknown, so TAO estimates $f(X) - f(X^*)$ with either 
+the square of the norm of the gradient or the duality gap.
+A relative tolerance of $\epsilon_{frtol}=0.01$ indicates that two
+significant digits are desired in the objective function.
+Each solver sets its own  convergence tolerances, but they can
+be changed using the routine
+\findex{TaoSetTolerances()} 
+\sindex{convergence tests}
+{\tt TaoSetTolerances()}.
+Another set of convergence tolerances 
+terminate the solver when the norm of the gradient function
+(or Lagrangian function for bound-constrained problems)
+is sufficiently close to zero.
+
+Other stopping criteria include a minimum trust region radius or 
+a maximum number of iterations.  These parameters can be set with
+the routines {\tt Tao\-Set\-Trust\-Region\-Tolerance()}\sindex{trust region}\findex{TaoSetTrustRegionTolerance}
+and {\tt Tao\-Set\-Max\-imum\-Iter\-ations()}\findex{TaoSetMaximumIterations()}.
+Similarly, a maximum number of function evaluations can be set 
+with the command 
+\findex{TaoSetMaximumFunctionEvaluations()}
+{\tt Tao\-Set\-Max\-imum\-Func\-tion\-Evaluations()}.
+The stopping criteria can
+also be set using command line options such as \texttt{-tao\_fatol}, 
+\texttt{-tao\_max\_it}, and \texttt{-tao\_max\_funcs}.
+
+\subsection{Monitoring Status}
+
+To see parameters and performance statistics for the solver, the
+routine
+\begin{verbatim}
+   TaoView(TaoSolver tao)
+\end{verbatim}
+can be used.  This routine will display to standard output the number
+of function evaluations need by the solver and other information
+specific to the solver.  This same output can be produced by using the 
+command line option {\tt -tao\_view}.
+
+The progress of the optimization solver can be monitored with
+the runtime option {\tt -tao\_monitor}.  Although monitoring routines
+can be customized, the default monitoring routine will print out 
+several relevant statistics to the screen.
+
+The user also has access to information about the current solution.
+The current iteration number, objective function value, gradient
+norm, infeasibility norm, and step length 
+can be retrieved with the command 
+\findex{TaoGetSolutionStatus()}
+\begin{verbatim}
+   TaoGetSolutionStatus(TaoSolver tao, PetscInt *iterate, PetscReal *f,
+                     PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
+                     TaoSolverTerminationReason *reason)
+\end{verbatim}
+\noindent
+The last argument returns a code that indicates the reason that the solver 
+terminated.  Positive 
+numbers indicate that a solution has been found, while negative numbers
+indicate a failure.  A list of reasons can be found in the manual page
+for {\tt Tao\-Get\-Termination\-Reason()}.
+
+\subsection{Obtaining Solution}
+
+After exiting the {\tt Tao\-Solve()} function, the solution, gradient, and 
+\findex{TaoGetSolution()} dual variables (if available) can be recovered 
+with the routines:
 \begin{verbatim}
    TaoGetSolutionVector(TaoSolver, Vec *X);
    TaoGetGradientVector(TaoSolver, Vec *G);
@@ -674,9 +746,9 @@ recovered with the routines:
 \end{verbatim}
 \noindent
 Note that the {\tt Vec} returned by {\tt TaoGetSolutionVector} will be
-the same vector passed in to {\tt TaoSetInitialVector}.
-
-
+the same vector passed in to {\tt TaoSetInitialVector}.  This information 
+can be obtained during user-defined routines such as a function evaluation 
+and customized monitoring routine, or after the solver has terminated.
 
 \section{Compiling and Linking}
 
@@ -708,12 +780,11 @@ In Figures \ref{fig:make3} we present a sample makefile.
 This small makefile is suitable for maintaining a single program that
 uses the TAO library.  The most important line in this makefile is the
 line starting with {\tt include}:
-
+\findex{TAO_LIB}
 \begin{verbatim}
    include ${TAO_DIR}/conf/tao_base
 \end{verbatim}
 \noindent % $
-\findex{TAO_LIB}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base software installations (specified by
 {\tt \$\{TAO\_DIR\}} and {\tt \$\{PETSC\_DIR\}}) and architecture
@@ -725,19 +796,18 @@ this statement within the makefile.
  
 TAO applications should be linked with the
 {\tt PETSC\_LIB} library
-as well as the {\tt TAO\_LIB} library. This version uses
+as well as the {\tt TAO\_LIB} library. This version of TAO uses
 PETSc 3.2, and the {\tt PETSC\_DIR} variable
 should be set accordingly.  Many examples of makefiles
 can be found in the {\tt examples} directories.
 
-
-\section{TAO Applications using FORTRAN}
+\section{Using FORTRAN}
 \label{chapter:fortran}
-Most of the functionality of TAO can be obtained by people who program
-purely in Fortran 77 or Fortran 90.  Note, however, that we recommend
-the use of C and/or C++ because these languages contain several
-extremely powerful concepts that the Fortran77/90 family does not.
-The TAO Fortran interface works with both F77 and F90 compilers.
+Most of the functionality of TAO can be accessed from Fortran 77 or 
+Fortran 90.  Note, however, that we recommend the use of C and/or C++ 
+because these languages contain several extremely powerful concepts 
+that Fortran 77/90 does not.  The TAO Fortran interface works with 
+both F77 and F90 compilers.
 
 Since Fortran77 does not provide type checking of routine input/output
 parameters, we find that many errors encountered within TAO Fortran
@@ -763,7 +833,6 @@ checking variable discussed in Section \ref{sec:fortran_errors}.  In
 addition, the Fortran routines {\tt TaoInitialize(character(*) filename,int ierr)} and {\tt TaoGetConvergenceHistory()}
 differ slightly from their C counterparts; see the manual page for
 details.
-Additional interface differences for Fortran users:
 
 \subsection{Include Files}
 \label{sec:fortran_includes}
@@ -799,10 +868,10 @@ one must explicitly list {\em each} of the include files.
 \label{sec:fortran_errors}
 
 In the Fortran version, each TAO routine has as its final argument
-an integer error variable, in contrast to the C++ convention of
-providing the error variable as the routine's return value.  The error
+an integer error variable, in contrast to the C/C++ interface convention 
+of providing the error variable as the routine's return value.  The error
 code is set to be nonzero if an error has been detected; otherwise, it
-is zero.  For example, the Fortran and C++ variants of {\tt TaoSolve()} are
+is zero.  For example, the Fortran and C variants of {\tt TaoSolve()} are
 given, respectively, below, where {\tt ierr} denotes the error variable:
 \begin{verbatim}
    call TaoSolve(TaoSolver tao, PetscErrorCode ierr)
@@ -822,17 +891,16 @@ tracebacks.  For example, one could use code such as the following:
 \noindent
 In addition, Fortran programmers can check these error codes with the
 macro {\tt CHKERRQ()}, which terminates all process when an error
-is encountered.  See the PETSc users manual for details.  The most
-common reason for crashing TAO or PETSc Fortran code is forgetting the final
-{\tt ierr} argument.
+is encountered.  See the PETSc user manual for details.  The most
+common reason for crashing TAO or PETSc Fortran code is forgetting 
+the final {\tt ierr} argument.
 
 \subsection{Compiling and Linking Fortran Programs}
 \label{sec:fortcompile}
 
 Figure \ref{fig:make4} shows a sample makefile that can be used for
-TAO Fortran programs.  You can compile a debugging
-version of the program {\tt rosenbrock1f} with 
-{\tt make rosenbrock1f}.
+TAO Fortran programs.  A debugging version of the program 
+{\tt rosenbrock1f} can be compiled with {\tt make rosenbrock1f}.
 
 \begin{figure}[tbh]
 {\footnotesize
@@ -854,10 +922,9 @@ version of the program {\tt rosenbrock1f} with
 \label{fig:make4}
 \end{figure}
 
-
 \subsection{Additional Issues}
 
-The TAO library currently interfaces to the PETSc library for
+The TAO library interfaces to the PETSc library for
 low-level system functionality as well as linear algebra support.  The
 PETSc users manual discusses additional Fortran issues in these areas,
 including
@@ -868,106 +935,6 @@ including
 \item duplicating multiple vectors, and
 \item matrix and vector indices.
 \end{itemize}
-
-
-
-
-\section{Convergence}\label{sec:customize}
-
-Although TAO and its solvers set default parameters 
-that are useful
-for many problems, it may be necessary for the user to modify these
-parameters to change the behavior and convergence of various algorithms.
-
-One convergence criterion for most algorithms concerns the
-of digits of accuracy needed in the solution.  In particular,
-the convergence test employed by TAO attempts to stop when
-the error in the constraints is less than $\epsilon_{crtol}$,
- and either
-\[
-\begin{array}{lcl}
-f(X) - f(X^*)  &\leq& \epsilon_{fatol}, \\
-|f(X) - f(X^*)| / |f(X^*)| &\leq& \epsilon_{frtol},\\
-||g(X)|| &\leq& \epsilon_{gatol}, \\
-||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, or \\
-||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
-\end{array}
-\]
-where $X$ is the current approximation to the true solution $X^*$
-and $X_0$ is the initial guess.
-$X^*$ is unknown, so TAO estimates $f(X) - f(X^*)$ with either 
-the square of the norm of the gradient or the duality gap.
-A relative tolerance of $\epsilon_{frtol}=0.01$ indicates that two
-significant digits are desired in the objective function.
-Each solver sets its own  convergence tolerances, but they can
-be changed using the routine
-{\tt TaoSetTolerances()}\findex{TaoSetTolerances()} 
-\sindex{convergence tests}. 
-Another set of convergence tolerances 
-terminate the solver when the norm of the gradient function
-(or Lagrangian function for bound-constrained problems)
-is sufficiently close to zero.
-
-Other stopping criteria include a minimum trust region radius or 
-a maximum number of iterations.  These parameters can be set with
-the routines {\tt Tao\-Set\-Trust\-Region\-Tolerance()}\sindex{trust region}\findex{TaoSetTrustRegionTolerance}
-and {\tt Tao\-Set\-Max\-imum\-Iter\-ations()}\findex{TaoSetMaximumIterations()}.
-Similarly, a maximum number of function evaluations can be set 
-with the command 
-{\tt Tao\-Set\-Max\-imum\-Func\-tion\-Evaluations()}
-\findex{TaoSetMaximumFunctionEvaluations()}.  The stopping criteria can
-also be set using command line options such as \texttt{-tao\_fatol}, 
-\texttt{-tao\_max\_it}, and \texttt{-tao\_max\_funcs}.
-
-\section{Viewing Solutions}
-
-The routine
-\begin{verbatim}
-   TaoSolve(TaoSolver tao)
-\end{verbatim}
-\noindent
-will apply the solver to the application that has been created by the user.
-
-To see parameters and performance statistics for the solver, the
-routine
-\begin{verbatim}
-   TaoView(TaoSolver tao)
-\end{verbatim}
-can be used.  This routine will display to standard output the number
-of function evaluations need by the solver and other information
-specific to the solver.  This same output can be produced by using the 
-command line option {\tt -tao\_view}.
-
-The progress of the optimization solver can be monitored with
-the runtime option {\tt -tao\_monitor}.  Although monitoring routines
-can be customized, the default monitoring routine will print out 
-several relevant statistics to the screen.
-
-The user also has access to information about the current solution.
-The current iteration number, objective function value, gradient
-norm, infeasibility norm, and step length 
-can be retrieved with the command 
-\findex{TaoGetSolutionStatus()}
-\begin{verbatim}
-   TaoGetSolutionStatus(TaoSolver tao, PetscInt *iterate, PetscReal *f,
-                     PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
-                     TaoSolverTerminationReason *reason)
-\end{verbatim}
-\noindent
-The last argument returns a code that indicates the reason that the solver 
-terminated.  Positive 
-numbers indicate that a solution has been found, while negative numbers
-indicate a failure.  A list of reasons can be found in the manual page
-for {\tt Tao\-Get\-Termination\-Reason()}.
-
-The user set
-vectors containing the solution before solving
-the problem, but pointers to these vectors can also be retrieved with the
-command {\tt TaoGetSolution()}\findex{TaoGetSolution()}.
-Dual variables and other relevant information are also available. 
-This information can be obtained during
-user-defined routines such as a function evaluation and customized
-monitoring routine, or after the solver has terminated.
 
 %%% Local Variables: 
 %%% mode: latex
