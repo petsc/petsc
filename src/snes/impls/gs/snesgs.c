@@ -59,7 +59,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   Vec            X;
   Vec            B;
   PetscInt       i;
-  PetscScalar    fnorm;
+  PetscReal      fnorm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
