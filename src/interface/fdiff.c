@@ -166,7 +166,7 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
    Input Parameters:
 +  tao - the TaoSolver context
 .  V - compute Hessian at this point
--  ctx - the PetscColoring object
+-  ctx - the PetscColoring object (must be of type MatFDColoring)
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
