@@ -6,7 +6,7 @@
 % manual_tex.tex is the base file for LaTeX format, while manual.tex is
 % the corresponding base HTML format file.
 %
-\documentclass[dvipdfm,11pt,openright]{book}
+\documentclass[11pt,openright]{book}
 \usepackage{epsf}
 \usepackage{amssymb}
 
@@ -21,7 +21,7 @@
 % url is a form of \verb intended for addresses, hypertext links, 
 % directories/paths,...
 \usepackage{url}
-
+\usepackage{pdfpages}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
 
 % afterpage places documents at the top of the page. See page 150 of the 
@@ -57,9 +57,12 @@
 %0 0 moveto 0.95 setgray (DRAFT) show grestore}def end}
 
 \begin{document}
-
 \pagestyle {empty}
-\input {cover.tex}
+
+
+%\pagestyle {empty}
+\includepdf[pages={1,2,3},lastpage=4]{ANL-MCS-TM-322.pdf}
+%\input {cover.tex}
 
 % Table of contents.
 \cleardoublepage
@@ -99,6 +102,7 @@
 \special{pdf: out 0 << /Title (Bibliography) /Dest [ @thispage /FitH @ypos ] >>}
 \bibliographystyle{plain}
 \bibliography{../tao,mathprog}
+\includepdf[pages={4},lastpage=4]{ANL-MCS-TM-322.pdf}
 
 \end{document}
 

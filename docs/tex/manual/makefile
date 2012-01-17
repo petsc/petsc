@@ -3,13 +3,13 @@ NOADIC    = true
 
 # Build the entire manual as well as the intro part
 # manual.dvi: abstract.tex acknowl.tex manual_tex.tex part1.tex part2.tex routines.red
-manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex
+manual.pdf: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex
 # First build the manual
 	cp ../sty/*.sty .
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	pdflatex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	-bibtex manual_tex
-	/usr/texbin/makeindex manual_tex
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	makeindex manual_tex
+	pdflatex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	echo  \\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
 	grep FUNCTION manual_tex.ind | sed "s/FUNCTION/ /g"  | \
@@ -17,18 +17,17 @@ manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.te
 	echo \\end\{theindex\} >> findex.tex
 	rm -f sindex.tex
 	cat manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	pdflatex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	pdflatex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 
 	cp manual_tex.bbl manual.bbl
 	-@chmod -f g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
-
-
-manual.pdf: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex \
-            part3.tex manual_tex.dvi license.tex
-	dvipdfm manual_tex
 	-@cp manual_tex.pdf ../../tao_manual.pdf
+
+
+#manual.pdf: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex \
+#            part3.tex  license.tex addsolver.tex
 
 
 manual_tex.dvi: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex
