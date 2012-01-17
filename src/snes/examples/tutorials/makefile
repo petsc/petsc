@@ -369,7 +369,7 @@ runex5_5_nrichardson:
 	   ${RM} -f ex5_5_nrichardson.tmp
 
 runex5_5_ngmres_ngs:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_use_gs \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -npc_snes_type gs -npc_snes_max_it 1 \
            > ex5_5_ngmres_ngs.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_ngs.out ex5_5_ngmres_ngs.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_ngs, diffs above \n========================================="; fi; \
@@ -406,7 +406,7 @@ runex5_5_fas_additive:
 	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
-	-@./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly \
+	-@./ex5 -snes_type ngmres -npc_snes_fas_coarse_smoother_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly \
         -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 \
            > ex5_5_ngmres_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \

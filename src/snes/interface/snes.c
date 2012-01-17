@@ -493,9 +493,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
 
     /* GS Options */
-    ierr = PetscOptionsBool("-snes_use_gs","Use user-provided GS routine","SNESSetUseGS",snes->usegs,&snes->usegs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
-
 
     /* line search options */
     ierr = PetscOptionsReal("-snes_ls_alpha","Constant function norm must decrease by","None",snes->ls_alpha,&snes->ls_alpha,0);CHKERRQ(ierr);
@@ -547,7 +545,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
   }
   if (snes->pc) {
-    ierr = SNESSetOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
+    ierr = SNESSetOptionsPrefix(snes->pc, optionsprefix);CHKERRQ(ierr);
+    ierr = SNESAppendOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
     ierr = SNESSetGS(snes->pc, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     /* Should we make a duplicate vector and matrix? Leave the DM to make it? */
