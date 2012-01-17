@@ -2,8 +2,6 @@
 \chapter{Adding a Solver}
 \label{chapter:addsolver}
 
-\section{Adding a Solver to TAO}
-
 New optimization solvers can be added to TAO.  TAO and PETSc provide tools for
 facilitating the implementation of a solver.  The advantages of implementing
 a solver using TAO are several.
@@ -16,7 +14,7 @@ conveniently switch solvers to compare their effectiveness.
 \item TAO provides support for function evaluations and
 derivative information.  It allows for the direct evaluation
 of this information by the application developer, 
-and contains limited support for finite difference, and
+and contains limited support for finite difference approximations, and
 allows the uses of matrix-free methods.
 The solvers can obtain this function and derivative information
 through a simple interface  while the details of its computation 
@@ -64,11 +62,11 @@ TAO solvers must be written in C or C++ and include several routines with
 a particular calling sequence.  Two of these routines are mandatory:
 one that initializes the TAO structure with the appropriate information
 and one that applies the algorithm to a problem instance.
-Additional routines may be written to set some options within the
+Additional routines may be written to set options within the
 solver, view the solver, setup appropriate data structures, and destroy
 these data structures. To implement the conjugate
-gradient algorithm, for instance, the following structure may
-be useful.
+gradient algorithm, for instance, the following structure is
+useful.
 \begin{verbatim}
 typedef struct{
 
@@ -153,7 +151,7 @@ PetscErrorCode TaoSolve_CG(TaoSolver tao){
 }
 \end{verbatim}
 
-The first line of this routine cast the second argument to a pointer
+The first line of this routine casts the second argument to a pointer
 to a {\tt TAO\_CG} data structure.  This structure contains pointers
 to three vectors and a scalar which will be needed in the algorithm.
 
@@ -163,7 +161,7 @@ current point in the using the routine
 {\tt Tao\-Compute\-Objective\-And\-Gradient()}.
 Other routines may be used to evaluate the Hessian matrix or evaluate
 constraints.  TAO may obtain this information using direct evaluation 
-of other means, but the these details do not affect our implementation
+or other means, but the these details do not affect our implementation
 of the algorithm.
 
 The norm of the gradient is a standard measure used
@@ -181,7 +179,6 @@ Most optimization algorithms are iterative in nature, and solvers should
 include this command somewhere in each iteration.  This routine
 records this information, applies any monitoring routines and 
 convergence tests set by default or the user.
-
 In this routine, the second argument is the current
 iteration number, and the third argument is the current function value.
 The fourth argument is a nonnegative error measure associated with the
@@ -213,16 +210,16 @@ The routine
                           TaoLineSearchTerminationReason *lsflag)
 \end{verbatim}
 passes the current solution, gradient, and objective value to the
-solver and returns a new solution, gradient, and objective value.  More
-details on line searches can be found in the Section~\ref{sec:TaoLineSearch}
-The details of this line search should be specified elsewhere, when
+line search and returns a new solution, gradient, and objective value.  More
+details on line searches can be found in the Section~\ref{sec:TaoLineSearch}.
+The details of the line search applied are specified elsewhere, when
 the line search is created.
 
 TAO also includes support for linear solvers using PETSc KSP objects.  
 Although this algorithm
 does not require one, linear solvers are an important part of many
 algorithms.  Details on the use of these solvers can be found in
-The PETSc Users Manual.
+the PETSc Users Manual.
 
 \subsection{Creation Routine}
 The TAO solver is initialized to for a particular algorithm in a separate
@@ -267,11 +264,10 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
 }
 EXTERN_C_END
 \end{verbatim}
-The first thing this routine does after declaring some variables, is allocate
-memory for the {\tt TAO\_CG} data structure. Notice that the TaoSolver object
+This routine declarers some variables and then allocates memory for the 
+{\tt TAO\_CG} data structure. Notice that the \texttt{TaoSolver} object 
 now has a pointer to this data structure (\texttt{tao->data}) so it can be 
-accessed by the other
-functions involving this solver implemenation.
+accessed by the other functions written for this solver implementation.
 
 This routine also sets some default parameters particular to the conjugate
 gradient algorithm, default convergence tolerances, and creates
@@ -289,7 +285,7 @@ function without any name-mangling from the C++ compiler (if used).
 
 \subsection{Destroy Routine}
 Another routine needed by most solvers destroys the data structures
-creates by earlier routines.  For the nonlinear conjugate gradient
+created by earlier routines.  For the nonlinear conjugate gradient
 method discussed earlier, the following routine destroys the two
 work vectors and the {\tt TAO\_CG} structure.
 \begin{verbatim}
@@ -310,16 +306,16 @@ PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
 }
 \end{verbatim}
 This routine is called from within the {\tt TaoDestroy()} routine.
-Only destroy algorithm-specific data objects here, any objects indexed by 
-TAO ({\tt tao->linesearch},{\tt tao->ksp}, {\tt tao->gradient}, etc.)
-will be destroyed by TAO immediately after this algorithm-specific destroy 
-routine.
+Only algorithm-specific data objects are destriyed in this
+routine, any objects indexed by TAO ({\tt tao->linesearch}, {\tt tao->ksp}, {\tt tao->gradient}, etc.)
+will be destroyed by TAO immediately after the algorithm-specific destroy 
+routine completes.
 
 
 \subsection{SetUp Routine}
 If this routine has been set by the initialization routine, TAO
 will call it during the execution of \texttt{TaoSolve()}.
-This routine is optional, but is often a used to allocate
+While this routine is optional, it is often provided to allocate
 the gradient vector, work vectors, and other data structures 
 required by the solver.
 It should have the form
@@ -341,8 +337,8 @@ PetscErrorCode TaoSetUp_CG(TaoSolver tao)
 
 \subsection{SetFromOptions Routine}
 This routine should be used to check for any algorithm-specific options set 
-by the user. This routine will be called when the application makes a call
-to {\tt TaoSetFromOptions()}, it should have the form
+by the user and will be called when the application makes a call
+to {\tt TaoSetFromOptions()}.  It should have the form
 \begin{verbatim}
 PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao, void *solver);
 {
@@ -363,7 +359,7 @@ PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao, void *solver);
 This routine should be used to output any algorithm-specific information
 or statistics at the end of a solve.
 This routine will be called when the application makes a call to 
-{\tt TaoView()} or if the command line options {\tt -tao\_view} is used.
+{\tt TaoView()} or if the command line option {\tt -tao\_view} is used.
 It should have the form
 \begin{verbatim}
 PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
@@ -383,7 +379,7 @@ PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
 
 \subsection{Registering The Solver}
 Once a new solver is completely implemented, TAO needs to know the name of
-your solver and what function to use to create the solver.  This can be done
+the solver and what function to use to create the solver.  This can be done
 with the routine
 \begin{verbatim}
   TaoSolverRegister(const char *name, 
