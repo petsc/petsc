@@ -853,11 +853,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
-    if (fas->level || (fas->levels == 1)) {
-      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_down_");CHKERRQ(ierr);
-    } else {
-      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_coarse_");CHKERRQ(ierr);
-    }
+    ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_down_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
   }
 
@@ -873,11 +869,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESCreate(((PetscObject)snes)->comm, &fas->downsmooth);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(fas->downsmooth,prefix);CHKERRQ(ierr);
-    if (fas->level || (fas->levels == 1)) {
-      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_");CHKERRQ(ierr);
-    } else {
-      ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_coarse_");CHKERRQ(ierr);
-    }
+    ierr = SNESAppendOptionsPrefix(fas->downsmooth,"fas_");CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)fas->downsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
   }
 
