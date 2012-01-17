@@ -239,11 +239,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
  }
 
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
-  if (snes->usegs && snes->ops->computegs) {
-    ierr = VecCopy(X, dX);CHKERRQ(ierr);
-    ierr = SNESComputeGS(snes, B, dX);CHKERRQ(ierr);
-    ierr = VecAYPX(dX, -1.0, X);CHKERRQ(ierr);
-  } else if (snes->pc) {
+  if (snes->pc) {
     ierr = VecCopy(X, dX);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
@@ -300,11 +296,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (snes->usegs && snes->ops->computegs) {
-      ierr = VecCopy(X, dX);CHKERRQ(ierr);
-      ierr = SNESComputeGS(snes, B, dX);CHKERRQ(ierr);
-      ierr = VecAYPX(dX,-1.0,X);CHKERRQ(ierr);
-    } else if (snes->pc) {
+    if (snes->pc) {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);

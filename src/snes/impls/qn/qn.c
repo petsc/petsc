@@ -131,11 +131,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* initialize the search direction as steepest descent */
-  if (snes->usegs && snes->ops->computegs) {
-    ierr = VecCopy(X, D);CHKERRQ(ierr);
-    ierr = SNESComputeGS(snes, B, D);CHKERRQ(ierr);
-    ierr = VecAYPX(D, -1.0, X);CHKERRQ(ierr);
-  } else if (snes->pc) {
+  if (snes->pc) {
     ierr = VecCopy(X, D);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc, B, D);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
@@ -184,11 +180,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (snes->reason) PetscFunctionReturn(0);
 
     /* create the new direction */
-    if (snes->usegs && snes->ops->computegs) {
-      ierr = VecCopy(X, D);CHKERRQ(ierr);
-      ierr = SNESComputeGS(snes, B, D);CHKERRQ(ierr);
-      ierr = VecAYPX(D, -1.0, X);CHKERRQ(ierr);
-    } else if (snes->pc) {
+    if (snes->pc) {
       ierr = VecCopy(X, D);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, D);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);

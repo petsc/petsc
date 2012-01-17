@@ -257,7 +257,6 @@ PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*g
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
-  snes->usegs = use_gs;
   if (gsfunc) {
     ierr = SNESSetGS(cur_snes, gsfunc, ctx);CHKERRQ(ierr);
   }
