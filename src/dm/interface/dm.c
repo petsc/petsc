@@ -689,6 +689,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
 /*@
@@ -944,6 +945,34 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   (*dmc)->leveldown = dm->leveldown + 1;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoarsenLevel"
+/*@
+    DMGetCoarsenLevel - Get's the number of refinements that have generated this DM.
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   level - number of refinements
+
+    Level: developer
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+
+@*/
+PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *level = dm->leveldown;
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefineHierarchy"
