@@ -743,7 +743,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
     Level: developer
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+.seealso DMCoarsen(), DMGetCoarsenLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
 @*/
 PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
@@ -949,7 +949,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 #undef __FUNCT__
 #define __FUNCT__ "DMGetCoarsenLevel"
 /*@
-    DMGetCoarsenLevel - Get's the number of refinements that have generated this DM.
+    DMGetCoarsenLevel - Get's the number of coarsenings that have generated this DM.
 
     Not Collective
 
@@ -957,11 +957,11 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 .   dm - the DM object
 
     Output Parameter:
-.   level - number of refinements
+.   level - number of coarsenings
 
     Level: developer
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+.seealso DMCoarsen(), DMGetRefineLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
 @*/
 PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
