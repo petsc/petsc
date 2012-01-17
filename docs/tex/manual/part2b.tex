@@ -13,11 +13,11 @@ to the amount of derivative information required:
 method ({\tt tao\_lmvm}) and nonlinear conjugate gradient method 
 ({\tt tao\_cg})
 \item Function, gradient, and Hessian evaluations -- Newton line-search 
-method ({\tt tao\_nls}) and Newton trust-region method ({\tt tao\_ntr})
+method ({\tt tao\_nls}) and Newton trust region method ({\tt tao\_ntr})
 \end{enumerate}
 The best method to use depends on the particular problem being solved
 and the accuracy required in the solution.  If a Hessian evaluation 
-routine is available, then the Newton line-search and Newton trust-region 
+routine is available, then the Newton line-search and Newton trust region 
 methods will likely perform best.  When a Hessian evaluation routine
 is not available, then the limited-memory, variable-metric method is 
 likely to perform best.  The Nelder-Mead method should be used only
@@ -397,10 +397,11 @@ convergence rate.
 
 When using {\tt nash}, {\tt stcg}, or {\tt gltr} to solve the linear systems 
 of equation,
-a trust-region radius needs to be initialized and updated.  This trust-region
+a trust region radius needs to be initialized and updated.  This
+trust region
 radius simultaneously limits the size of the step computed and reduces the 
 number of iterations of the conjugate gradient method.  The method for 
-initializing the trust-region radius is set with the command line argument 
+initializing the trust region radius is set with the command line argument 
 {\tt -tao\_nls\_init\_type <constant,direction,interpolation>};
 {\tt interpolation}, which chooses an initial value based on the 
 interpolation scheme found in \cite{CGT}, is the default.  This
@@ -409,17 +410,17 @@ a radius such that the reduction predicted by the quadratic model along the
 gradient direction coincides with the actual reduction in the nonlinear 
 function.  The iterate obtaining the best objective function value is 
 used as the starting point for the main line-search algorithm.  The 
-{\tt constant} method initializes the trust-region radius by using 
+{\tt constant} method initializes the trust region radius by using 
 the value specified with the {\tt -tao\_trust0 <double>} command line 
 argument, where the default value is 100.  The {\tt direction} technique 
 solves the first quadratic optimization problem by using a standard 
-conjugate gradient method and initializes the trust-region to 
+conjugate gradient method and initializes the trust region to 
 $\|s_0\|$.
 
-Finally, the method for updating the trust-region radius is set with the 
+Finally, the method for updating the trust region radius is set with the 
 command line argument 
 {\tt -tao\_nls\_update\_type <step,reduction,interpolation>}; {\tt step} 
-is the default.  The {\tt step} method updates the trust-region 
+is the default.  The {\tt step} method updates the trust region 
 radius based on the value of $\tau_k$.  In particular,
 \[
 \Delta_{k+1} = \left\{\begin{array}{ll}
@@ -450,7 +451,7 @@ $q_k$ is the quadratic model.  The radius is then updated as:
 where $0 < \alpha_1 < \alpha_2 < \alpha_3 = 1 < \alpha_4 < \alpha_5$ and
 $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
-compute a new value for the trust-region radius.
+compute a new value for the trust region radius.
 
 \begin{table}[h]
 \caption{Summary of {\tt nls} options}
@@ -476,7 +477,9 @@ Name & Value & Default & Description \\
 \caption{Summary of {\tt nls} options (continued)}
 \begin{tabular}{l|p{1.5in}|l|p{2.0in}}
 Name & Value & Default & Description \\
-{\tt -tao\_nls\_init\_type} & constant, direction, interpolation & interpolation & Method used to initialize trust-region radius when using {\tt nash}, {\tt stcg}, or {\tt gltr} \\
+{\tt -tao\_nls\_init\_type} & constant, direction, interpolation &
+interpolation & Method used to initialize trust region radius when using
+{\tt nash}, {\tt stcg}, or {\tt gltr} \\
 {\tt -tao\_nls\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
 {\tt -tao\_nls\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
 {\tt -tao\_nls\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
@@ -484,7 +487,9 @@ Name & Value & Default & Description \\
 {\tt -tao\_nls\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
 {\tt -tao\_nls\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
 {\tt -tao\_nls\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_update\_type} & step, reduction, interpolation & step & Method used to update trust-region radius when using {\tt nash}, {\tt stcg}, or {\tt gltr} \\
+{\tt -tao\_nls\_update\_type} & step, reduction, interpolation & step &
+Method used to update trust region radius when using {\tt nash}, {\tt
+stcg}, or {\tt gltr} \\
 {\tt -tao\_nls\_nu1} & double & 0.25 & $\nu_1$ in {\tt step} update \\
 {\tt -tao\_nls\_nu2} & double & 0.50 & $\nu_2$ in {\tt step} update \\
 {\tt -tao\_nls\_nu3} & double & 1.00 & $\nu_3$ in {\tt step} update \\
@@ -513,9 +518,10 @@ Name & Value & Default & Description \\
 \end{tabular}
 \end{table}
 
-\subsection{Newton Trust-Region Method}\sindex{Newton method}\sindex{trust region}
+\subsection{Newton Trust Region Method}\sindex{Newton method}\sindex{trust
+region}
 
-The Newton trust-region method solves the constrained quadratic programming
+The Newton trust region method solves the constrained quadratic programming
 problem
 \[
 \begin{array}{ll}
@@ -525,12 +531,13 @@ problem
 \]
 to obtain a direction $d_k$, where $H_k$ is the Hessian of the objective 
 function at $x_k$, $g_k$ is the gradient of the objective function at $x_k$ 
-and $\Delta_k$ is the trust-region radius.  If $x_k + d_k$ sufficiently 
+and $\Delta_k$ is the trust region radius.  If $x_k + d_k$ sufficiently 
 reduces the nonlinear objective function, then the step is accepted and the 
-trust-region radius is updated.  However, if $x_k + d_k$ does not sufficiently
+trust region radius is updated.  However, if $x_k + d_k$ does not
+sufficiently
 reduce the nonlinear objective function, then the step is rejected, the 
-trust-region radius is reduced, and the quadratic program is re-solved 
-using the updated trust-region radius. The Newton trust-region method 
+trust region radius is reduced, and the quadratic program is re-solved 
+using the updated trust region radius. The Newton trust region method 
 can be set using the TAO solver {\tt tao\_ntr}.  For the best efficiency, 
 function and gradient evaluations should be performed separately when 
 using this algorithm.
@@ -577,7 +584,7 @@ command line argument {\tt -tao\_ntr\_bfgs\_scale\_type <ahess,bfgs>};
 the BFGS options.  The {\tt ahess} scaling matrix is the absolute value of 
 the diagonal of the Hessian matrix.
 
-The method for computing an initial trust-region radius is set with the 
+The method for computing an initial trust region radius is set with the 
 command line argument {\tt -tao\_ntr\_init\_type <constant,direction,interpolation>};
 {\tt interpolation}, which chooses an initial value based on the 
 interpolation scheme found in \cite{CGT}, is the default.  This
@@ -585,15 +592,15 @@ scheme performs a number of function and gradient evaluations to determine
 a radius such that the reduction predicted by the quadratic model along the 
 gradient direction coincides with the actual reduction in the nonlinear 
 function.  The iterate obtaining the best objective function value is 
-used as the starting point for the main trust-region algorithm.  The 
-{\tt constant} method initializes the trust-region radius by using 
+used as the starting point for the main trust region algorithm.  The 
+{\tt constant} method initializes the trust region radius by using 
 the value specified with the {\tt -tao\_trust0 <double>} command line 
 argument, where the default value is 100.  The {\tt direction} technique 
 solves the first quadratic optimization problem by using a standard 
-conjugate gradient method and initializes the trust-region to 
+conjugate gradient method and initializes the trust region to 
 $\|s_0\|$.
 
-Finally, the method for updating the trust-region radius is set with the 
+Finally, the method for updating the trust region radius is set with the 
 command line argument 
 {\tt -tao\_ntr\_update\_type <reduction,interpolation>}; {\tt reduction} 
 is the default.  The {\tt reduction} method computes the ratio of the 
@@ -614,7 +621,7 @@ $q_k$ is the quadratic model.  The radius is then updated as:
 where $0 < \alpha_1 < \alpha_2 < \alpha_3 = 1 < \alpha_4 < \alpha_5$ and
 $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
-compute a new value for the trust-region radius.
+compute a new value for the trust region radius.
 
 \begin{table}[h]
 \caption{Summary of {\tt ntr} options}
@@ -623,7 +630,8 @@ Name & Value & Default & Description \\
 {\tt -tao\_ntr\_ksp\_type} & nash, stcg, gltr & stcg & Type of Krylov subspace method to use when solving linear system \\
 {\tt -tao\_ntr\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
 {\tt -tao\_ntr\_bfgs\_scale\_type} & ahess, bfgs & ahess & Type of scaling matrix to use with BFGS preconditioner \\
-{\tt -tao\_ntr\_init\_type} & constant, direction, interpolation & interpolation & Method used to initialize trust-region radius \\
+{\tt -tao\_ntr\_init\_type} & constant, direction, interpolation &
+interpolation & Method used to initialize trust region radius \\
 {\tt -tao\_ntr\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
 {\tt -tao\_ntr\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
 {\tt -tao\_ntr\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
@@ -631,7 +639,8 @@ Name & Value & Default & Description \\
 {\tt -tao\_ntr\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
 {\tt -tao\_ntr\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
 {\tt -tao\_ntr\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_update\_type} & reduction, interpolation & reduction & Method used to update trust-region radius \\
+{\tt -tao\_ntr\_update\_type} & reduction, interpolation & reduction &
+Method used to update trust region radius \\
 {\tt -tao\_ntr\_eta1} & double & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
 {\tt -tao\_ntr\_eta2} & double & 0.25 & $\eta_2$ in {\tt reduction} update \\
 {\tt -tao\_ntr\_eta3} & double & 0.50 & $\eta_3$ in {\tt reduction} update \\
