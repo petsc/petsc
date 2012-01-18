@@ -705,7 +705,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
-  /*  ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr); */
+  ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
