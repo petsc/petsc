@@ -151,6 +151,30 @@ static PetscErrorCode VecTDot_Nest(Vec x,Vec y,PetscScalar *val)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecDotNorm2_Nest"
+static PetscErrorCode VecDotNorm2_Nest(Vec x,Vec y,PetscScalar *dp, PetscScalar *nm)
+{
+  Vec_Nest       *bx = (Vec_Nest*)x->data;
+  Vec_Nest       *by = (Vec_Nest*)y->data;
+  PetscInt       i,nr;
+  PetscScalar    x_dot_y,norm2_y,_dp,_nm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  nr = bx->nb;
+  _dp = 0.0;
+  _nm = 0.0;
+  for (i=0; i<nr; i++) {
+    ierr = VecDotNorm2(bx->v[i],by->v[i],&x_dot_y,&norm2_y);CHKERRQ(ierr);
+    _dp += x_dot_y;
+    _nm += norm2_y;
+  }
+  *dp = _dp;
+  *nm = _nm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_Nest"
 static PetscErrorCode VecAXPY_Nest(Vec y,PetscScalar alpha,Vec x)
 {
@@ -829,7 +853,7 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
 
   /* 60 */
   ops->stridescatter           = 0;
-  ops->dotnorm2                = 0;
+  ops->dotnorm2                = VecDotNorm2_Nest;
   ops->getsubvector            = VecGetSubVector_Nest;
   ops->restoresubvector        = VecRestoreSubVector_Nest;
 
