@@ -1871,7 +1871,7 @@ namespace ALE {
       }
     };
     // Find the cell in which this point lies (stupid algorithm)
-    point_type locatePoint_2D(const typename real_section_type::value_type point[]) {
+    point_type locatePoint_Simplex_2D(const typename real_section_type::value_type point[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 2;
@@ -1893,8 +1893,37 @@ namespace ALE {
         throw ALE::Exception(msg.str().c_str());
       }
     };
+    point_type locatePoint_General_2D(const typename real_section_type::value_type p[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const PetscInt                faces[8]    = {0, 1, 1, 2, 2, 3, 3, 0};
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
+        PetscInt         crossings = 0;
+
+        std::cout << "Checking cell " << *c_iter << std::endl;
+        for(PetscInt f = 0; f < 4; f++) {
+          PetscReal x_i   = coords[faces[2*f+0]*2+0];
+          PetscReal y_i   = coords[faces[2*f+0]*2+1];
+          PetscReal x_j   = coords[faces[2*f+1]*2+0];
+          PetscReal y_j   = coords[faces[2*f+1]*2+1];
+          PetscReal slope = (y_j - y_i) / (x_j - x_i);
+          bool      cond1 = (x_i <= p[0]) && (p[0] < x_j);
+          bool      cond2 = (x_j <= p[0]) && (p[0] < x_i);
+          bool      above = (p[1] < slope * (p[0] - x_i) + y_i);
+          if ((cond1 || cond2)  && above) ++crossings;
+        }
+        if (crossings % 2) {return *c_iter;}
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << p[0] <<","<< p[1] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
     //   Assume a simplex and 3D
-    point_type locatePoint_3D(const typename real_section_type::value_type point[]) {
+    point_type locatePoint_Simplex_3D(const typename real_section_type::value_type point[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 3;
@@ -1916,14 +1945,52 @@ namespace ALE {
         throw ALE::Exception(msg.str().c_str());
       }
     };
+    point_type locatePoint_General_3D(const typename real_section_type::value_type p[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const PetscInt                faces[24]   = {0, 1, 1, 2, 2, 3, 3, 0};
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
+        PetscInt         crossings = 0;
+
+        std::cout << "Checking cell " << *c_iter << std::endl;
+        for(PetscInt f = 0; f < 8; f++) {
+          /* Check the point is under plane */
+          /*   Get face normal */
+          PetscReal v_i[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal v_j[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
+          PetscReal dot       = normal[0]*p[0] + normal[1]*p[1] + normal[2]*p[2];
+          /* Check that projected point is in face (2D location problem) */
+          if (dot > 0.0) {
+            ++crossings;
+          }
+        }
+        if (crossings % 2) {return *c_iter;}
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << p[0] <<","<< p[1] <<","<< p[2] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
     point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
       if (guess != -1) {
         return guess;
       } else if (this->_dim == 2) {
-        return locatePoint_2D(point);
+        if (this->getSieve()->getMaxConeSize() == 3) {
+          return locatePoint_Simplex_2D(point);
+        } else {
+          return locatePoint_General_2D(point);
+        }
       } else if (this->_dim == 3) {
-        return locatePoint_3D(point);
+        if (this->getSieve()->getMaxConeSize() == 4) {
+          return locatePoint_Simplex_3D(point);
+        } else {
+          return locatePoint_General_2D(point);
+        }
       } else {
         throw ALE::Exception("No point location for mesh dimension");
       }
