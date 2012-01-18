@@ -392,10 +392,11 @@ PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, Pet
 
     /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
     {
-      PetscInt l;
+      const PetscInt *leaves;
+      PetscInt        nleaves, l;
 
       isOwned = PETSC_TRUE;
-      ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
       for(l = 0; l < nleaves; ++l) {
         if (p == leaves[l]) {
           isOwned = PETSC_FALSE;
@@ -424,10 +425,11 @@ PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, Pet
         cSize /= bs;
         /* TODO ierr = PetscSFIsOwned(sf, neighbor, &isOwned);CHKERRQ(ierr); */
         {
-          PetscInt l;
+          const PetscInt *leaves;
+          PetscInt        nleaves, l;
 
           isOwned = PETSC_TRUE;
-          ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
           for(l = 0; l < nleaves; ++l) {
             if (neighbor == leaves[l]) {
               isOwned = PETSC_FALSE;
@@ -482,10 +484,11 @@ PetscErrorCode DMMeshFillMatrixWithZero(DM dm, Mat A, PetscInt bs, PetscSF sf, P
 
     /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
     {
-      PetscInt l;
+      const PetscInt *leaves;
+      PetscInt        nleaves, l;
 
       isOwned = PETSC_TRUE;
-      ierr = PetscSFGetRootRanks(sf, nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
       for(l = 0; l < nleaves; ++l) {
         if (p == leaves[l]) {
           isOwned = PETSC_FALSE;
