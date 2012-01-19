@@ -126,7 +126,7 @@ tao_allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}
 
 tao_manual:
-	cd docs/tex/manual; ${OMAKE} manual.dvi manual.pdf manual.html
+	cd docs/tex/manual; ${OMAKE} manual.pdf
 
 tao_deletemanpages:
 	${RM} -f ${TAO_DIR}/docs/manpages/*/*.html \
