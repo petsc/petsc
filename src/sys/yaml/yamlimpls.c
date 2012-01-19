@@ -726,10 +726,12 @@ PetscErrorCode PetscOptionsInsertFile_YAML(MPI_Comm comm, const char file[], Pet
     vstring[0] = 0;
     cnt = 0;
 
-    ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
+    ierr      = PetscFixFilename(file,fname);CHKERRQ(ierr);
     ierr_file = file_to_string(fname, &ostring);
+    if (ierr_file && require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open YAML Options File %s",fname);
+    if (ierr_file) PetscFunctionReturn(0);
 
-    if (!ierr_file && options_list_populate_yaml(ostring,&options_list)) {
+    if (options_list_populate_yaml(ostring,&options_list)) {
       ierr = PetscInfo1(0,"Read YAML options file %s\n",file);CHKERRQ(ierr);
       for (i=0;i<options_list.count;i++) {
         if (options_list.options[i].arguments.count == 1) {
@@ -760,7 +762,7 @@ PetscErrorCode PetscOptionsInsertFile_YAML(MPI_Comm comm, const char file[], Pet
       ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
       cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
     } else if (require) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open YAML Options File %s",fname);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to process YAML Options File %s",fname);
     }
   }
 
