@@ -3766,7 +3766,8 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
            The size of this array is equal to the number of local rows, i.e 'm'. 
-           You must leave room for the diagonal entry even if it is zero.
+           For matrices that will be factored, you must leave room for (and set)
+           the diagonal entry even if it is zero.
 .  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
