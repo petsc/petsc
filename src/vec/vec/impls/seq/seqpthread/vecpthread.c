@@ -1569,7 +1569,8 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 
   if(affinities == PETSC_NULL) {
     /* PETSc decides affinities */
-    PetscInt        *thread_affinities=0;
+    PetscInt        *thread_affinities;
+    ierr = PetscMalloc(nmax*sizeof(PetscInt),&thread_affinities);CHKERRQ(ierr);
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-vec_thread_affinities","Set CPU affinity for each thread","VecPThreadSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
@@ -1577,11 +1578,11 @@ PetscErrorCode VecPThreadSetThreadAffinities(Vec v,const PetscInt affinities[])
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, vector Threads = %D, CPU affinities set = %D",s->nthreads-PetscMainThreadShareWork,nmax);
       }
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,thread_affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
-      ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
     } else {
       /* Reuse the core affinities set for the first nthreads */
       ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,ThreadCoreAffinity,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
     }
+    ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
   } else {
     /* Set user provided affinities */
     ierr = PetscMemcpy(s->cpu_affinity+PetscMainThreadShareWork,affinities,(s->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));

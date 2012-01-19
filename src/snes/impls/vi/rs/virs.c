@@ -748,8 +748,6 @@ PetscErrorCode SNESReset_VIRS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESVIRS - Reduced space active set solvers for variational inequalities based on Newton's method
@@ -759,6 +757,10 @@ PetscErrorCode SNESReset_VIRS(SNES snes)
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner
+
+   References:
+   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale 
+     Applications, Optimization Methods and Software, 21 (2006).
 
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 

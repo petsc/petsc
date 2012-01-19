@@ -482,9 +482,7 @@ PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (!com->setup) {
-    ierr = DMSetUp(dm);CHKERRQ(ierr);
-  }
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = VecCreateMPI(((PetscObject)dm)->comm,com->n,com->N,gvec);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DMComposite);CHKERRQ(ierr);
@@ -860,6 +858,7 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   next = com->next;
   ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
 
@@ -916,6 +915,8 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,DM_CLASSID,1);
   PetscValidHeaderSpecific(fine,DM_CLASSID,2);
+  ierr = DMSetUp(coarse);CHKERRQ(ierr);
+  ierr = DMSetUp(fine);CHKERRQ(ierr);
   /* use global vectors only for determining matrix layout */
   ierr = DMGetGlobalVector(coarse,&gcoarse);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(fine,&gfine);CHKERRQ(ierr);

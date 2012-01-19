@@ -219,7 +219,7 @@ PetscErrorCode test_axpy_dot_max( void )
   Vec tmp_buf[2];
   Vec X, Y;
   PetscReal real;
-  PetscScalar scalar;
+  PetscScalar scalar, scalar2;
   PetscInt index;
   PetscErrorCode ierr;
 
@@ -260,6 +260,9 @@ PetscErrorCode test_axpy_dot_max( void )
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );
 
+  ierr = VecDotNorm2( X,Y, &scalar, &scalar2 );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf + %lfi\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), PetscRealPart(scalar2), PetscImaginaryPart(scalar2) );
+
 
   ierr = VecAXPY( Y, 1.0, X ); /* Y <- a X + Y */
   ierr = VecNestGetSubVec( Y, 0, &y1 );CHKERRQ(ierr);
@@ -269,7 +272,8 @@ PetscErrorCode test_axpy_dot_max( void )
   ierr = VecDot( X,Y, &scalar );CHKERRQ(ierr);
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );
-
+  ierr = VecDotNorm2( X,Y, &scalar, &scalar2 );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf + %lfi\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), PetscRealPart(scalar2), PetscImaginaryPart(scalar2) );
 
 
   ierr = VecMax( X, &index, &real );CHKERRQ(ierr);

@@ -5,7 +5,7 @@
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_X11)
+#if defined(PETSC_HAVE_X)
 extern PetscErrorCode PetscDrawCreate_X(PetscDraw);
 #endif
 extern PetscErrorCode PetscDrawCreate_Null(PetscDraw);
@@ -31,7 +31,7 @@ PetscErrorCode  PetscDrawRegisterAll(const char *path)
 
   PetscFunctionBegin;
   
-#if defined(PETSC_HAVE_X11)
+#if defined(PETSC_HAVE_X)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
 #elif defined(PETSC_USE_WINDOWS_GRAPHICS)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);

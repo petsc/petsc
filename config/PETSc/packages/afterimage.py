@@ -12,8 +12,8 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.x11             = framework.require('PETSc.packages.X11', self)
-    self.deps = [self.x11]
+    self.x               = framework.require('PETSc.packages.X', self)
+    self.deps = [self.x]
     return
 
   def getSearchDirectories(self):

@@ -219,11 +219,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (snes->usegs && snes->ops->computegs) {
-      ierr = VecCopy(X, Y);CHKERRQ(ierr);
-      ierr = SNESComputeGS(snes, snes->vec_rhs, Y);CHKERRQ(ierr);
-      ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
-    } else if (snes->pc) {
+    else if (snes->pc) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);

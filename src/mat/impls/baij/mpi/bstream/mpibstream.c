@@ -158,6 +158,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBSTRM(Mat B,PetscInt bs,PetscInt d_
   ierr = MatConvert_SeqBAIJ_SeqBSTRM(b->A, MATSEQBSTRM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
   ierr = MatConvert_SeqBAIJ_SeqBSTRM(b->B, MATSEQBSTRM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
 */
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

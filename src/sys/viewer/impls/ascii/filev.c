@@ -4,20 +4,16 @@
 
 #define QUEUESTRINGSIZE 8192
 
-/* ----------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_ASCII" 
-PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileClose_ASCII"
+static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
 {
-  PetscMPIInt       rank;
   PetscErrorCode    ierr;
+  PetscMPIInt       rank;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
-  PetscViewerLink   *vlink;
-  PetscBool         flg;
   int               err;
 
   PetscFunctionBegin;
-  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
@@ -41,6 +37,22 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
     }
   }
   ierr = PetscFree(vascii->filename);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_ASCII" 
+PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  PetscViewerLink   *vlink;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
+  ierr = PetscViewerFileClose_ASCII(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
 
   /* remove the viewer from the list in the MPI Communicator */
@@ -651,8 +663,8 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
   PetscMPIInt       rank;
 
   PetscFunctionBegin;
+  ierr = PetscViewerFileClose_ASCII(viewer);CHKERRQ(ierr);
   if (!name) PetscFunctionReturn(0);
-  ierr = PetscFree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&vascii->filename);CHKERRQ(ierr);
 
   /* Is this file to be compressed */

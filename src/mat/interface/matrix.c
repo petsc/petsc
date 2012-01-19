@@ -4073,7 +4073,7 @@ PetscErrorCode  MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal"
-/*@ 
+/*@
    MatGetDiagonal - Gets the diagonal of a matrix.
 
    Logically Collective on Mat and Vec
@@ -4086,6 +4086,9 @@ PetscErrorCode  MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 .  v - the diagonal of the matrix
 
    Level: intermediate
+
+   Note:
+   Currently only correct in parallel for square matrices.
 
    Concepts: matrices^accessing diagonals
 

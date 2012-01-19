@@ -273,7 +273,7 @@ ex55: ex55.o chkopts
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
-	${RM} ex56.o
+#	${RM} ex56.o
 
 ex57f: ex57f.o  chkopts
 	-${FLINKER} -o ex57f ex57f.o  ${PETSC_KSP_LIB}
@@ -477,10 +477,9 @@ runex8g_debug:
 #	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 #	   ${RM} -f ex10_1.tmp
 runex10:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ../../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
-	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_1.tmp
+	-@${MPIEXEC} -n 1 ./ex10 -f ./binaryoutput -pc_type gamg -pc_gamg_verbose -ksp_monitor -ksp_view
+#valgrind --tool=memcheck --dsymutil=yes --leak-check=full --num-callers=20 
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_2:
 	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type bicg \

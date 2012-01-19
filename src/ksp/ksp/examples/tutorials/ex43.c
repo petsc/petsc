@@ -24,6 +24,8 @@ Options: \n\
                               -sinker_eta0 : the viscosity of the background fluid \n\
                               -sinker_eta1 : the viscosity of the blob \n\
                               -sinker_r : radius of the blob \n\
+          -c_str 3 => Circular and rectangular inclusion\n\
+                         Parameters as for cases 1 and 2 (above)\n\
      -use_gp_coords : evaluate the viscosity and the body force at the global coordinates of the quadrature points.\n\
      By default, eta and the body force are evaulated at the element center and applied as a constant over the entire element.\n";
 
@@ -1198,7 +1200,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   KSP                    ksp_S;
   PetscInt               coefficient_structure = 0;
   PetscInt               cpu_x,cpu_y,*lx = PETSC_NULL,*ly = PETSC_NULL;
-  PetscBool              use_gp_coords = PETSC_FALSE;
+  PetscBool              use_gp_coords = PETSC_FALSE,set;
+  char                   filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -1398,6 +1401,53 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
             element_props[j][i].fy[p]  = -1.0;
           }
         }
+      } else if (coefficient_structure == 3) { /* circular and rectangular inclusion */
+        PetscReal opts_eta0,opts_eta1,opts_r,opts_dx,opts_dy,opts_c0x,opts_c0y,opts_s0x,opts_s0y,opts_phi,radius2;
+
+        opts_eta0 = 1.0;
+        opts_eta1 = 1.0;
+        opts_r    = 0.25;
+        opts_c0x  = 0.35;       /* circle center */
+        opts_c0y  = 0.35;
+        opts_s0x  = 0.7;       /* square center */
+        opts_s0y  = 0.7;
+        opts_dx   = 0.25;
+        opts_dy   = 0.25;
+        opts_phi  = 25;
+
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta0",&opts_eta0,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta1",&opts_eta1,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_r",&opts_r,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_c0x",&opts_c0x,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_c0y",&opts_c0y,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_s0x",&opts_s0x,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_s0y",&opts_s0y,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_dx",&opts_dx,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_dy",&opts_dy,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_phi",&opts_phi,0);CHKERRQ(ierr);
+        opts_phi *= PETSC_PI / 180;
+
+        for (p = 0; p < GAUSS_POINTS; p++) {
+          coord_x = centroid_x;
+          coord_y = centroid_y;
+          if (use_gp_coords == PETSC_TRUE) {
+            coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
+            coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
+          }
+
+          element_props[j][i].eta[p] = opts_eta0;
+          element_props[j][i].fx[p]  = 0.0;
+          element_props[j][i].fy[p]  = -0.2;
+
+          radius2 = PetscSqr(coord_x - opts_c0x) + PetscSqr(coord_y - opts_c0y);
+          if (radius2 < opts_r*opts_r
+              || (   PetscAbs(+(coord_x - opts_s0x)*cos(opts_phi) + (coord_y - opts_s0y)*sin(opts_phi)) < opts_dx/2
+                  && PetscAbs(-(coord_x - opts_s0x)*sin(opts_phi) + (coord_y - opts_s0y)*cos(opts_phi)) < opts_dy/2)) {
+            element_props[j][i].eta[p] =  opts_eta1;
+            element_props[j][i].fx[p]  =  0.0;
+            element_props[j][i].fy[p]  = -1.0;
+          }
+        }
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
     }
   }
@@ -1417,7 +1467,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMCreateMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_Stokes,&f);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
 
   /* assemble A11 */
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -1434,18 +1485,38 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   /* SOLVE */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_S);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ksp_S,"stokes_");CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp_S,da_Stokes);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp_S,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
   {
     PC pc;
     const PetscInt ufields[] = {0,1},pfields[1] = {2};
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetBlockSize(pc,3);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"u",2,ufields);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"p",1,pfields);CHKERRQ(ierr);
   }
 
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof filename,&set);CHKERRQ(ierr);
+  if (set) {
+    char        *ext;
+    PetscViewer viewer;
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+    ierr = PetscStrrchr(filename,'.',&ext);CHKERRQ(ierr);
+    if (!strcmp("vts",ext)) {
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
   ierr = DMDAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X");CHKERRQ(ierr);
 
   ierr = KSPGetIterationNumber(ksp_S,&its);CHKERRQ(ierr);

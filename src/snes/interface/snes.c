@@ -493,9 +493,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
 
     /* GS Options */
-    ierr = PetscOptionsBool("-snes_use_gs","Use user-provided GS routine","SNESSetUseGS",snes->usegs,&snes->usegs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
-
 
     /* line search options */
     ierr = PetscOptionsReal("-snes_ls_alpha","Constant function norm must decrease by","None",snes->ls_alpha,&snes->ls_alpha,0);CHKERRQ(ierr);
@@ -547,7 +545,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
   }
   if (snes->pc) {
-    ierr = SNESSetOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
+    ierr = SNESSetOptionsPrefix(snes->pc, optionsprefix);CHKERRQ(ierr);
+    ierr = SNESAppendOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
     ierr = SNESSetGS(snes->pc, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     /* Should we make a duplicate vector and matrix? Leave the DM to make it? */
@@ -1096,7 +1095,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   snes->ops->converged    = SNESDefaultConverged;
   snes->usesksp           = PETSC_TRUE;
-  snes->usegs             = PETSC_FALSE;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
@@ -1250,60 +1248,6 @@ PetscErrorCode SNESSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void *
   PetscFunctionBegin;
   if (gsfunc) snes->ops->computegs = gsfunc;
   if (ctx) snes->gsP = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUseGS"
-/*@
-   SNESSetUseGS - Toggles use of the user-set nonlinear GS solver in
-   SNES solvers that may use a preconditioning routine.
-
-   Input Parameters:
-+  snes   - the SNES context
--  usegs  - whether to use the nonlinear GS routine or not.
-
-   Notes:
-   The behavior of the nonlinear GS solvers is that if useGS is set, then
-   the update is constructed with the user-defined nonlinear GS method.
-   Otherwise, the update is either formed by the user-customized
-   preconditioner SNES, or by nonlinear richardson if both of these
-   are not provided.
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, set, Gauss-Siedel
-
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGetUseGS()
-@*/
-PetscErrorCode SNESSetUseGS(SNES snes, PetscBool usegs) {
-  PetscFunctionBegin;
-  snes->usegs = usegs;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetUseGS"
-/*@
-   SNESGetUseGS - Returns whether or not the SNES is using a
-   provided nonlinear GS routine.
-
-   Input Parameters:
-+  snes   - the SNES context
--  usegs  - flag indicating whether or not GS is being used
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, set, Gauss-Seidel
-
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetUseGS()
-@*/
-
-PetscErrorCode SNESGetUseGS(SNES snes, PetscBool * usegs) {
-  PetscFunctionBegin;
-  
-  *usegs = snes->usegs;
   PetscFunctionReturn(0);
 }
 

@@ -1,781 +1,720 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta content="en-us" http-equiv="Content-Language">
-    <meta content="text/html; charset=windows-1252"
-      http-equiv="Content-Type">
-    <!--##begin-->
-    <title>Summary of Sparse Linear Solvers Available from PETSc</title>
-    <!--##end-->
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Summary of Sparse Linear Solvers Available from PETSc</title>
   </head>
   <body>
-    <!--##begin-->
-    <h2 align="center">Summary of Sparse Linear Solvers Available from
-      PETSc</h2>
-    <h3 align="center">Requests and contributions welcome</h3>
-    Click on the package name in the "External Package" column for
-    manual pages for that package (e.g. <span style="color: rgb(51, 51,
-      255);">Euclid/hypre</span>).<br>
-    <table style="width: 886px; height: 1361px;" border="1">
-      <tbody>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">Algorithm </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MatType.html">Matrix
 
-              types</a></td>
-          <td style="width: 152px;" height="19"><a href="#external">External
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
 
-              Package*</a></td>
-          <td style="width: 66px;" height="19">
-            <p align="center">Parallel</p>
-          </td>
-          <td style="width: 70px;" height="19">
-            <p align="center">Complex</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">Preconditioners</td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCJACOBI.html">Jacobi</a></td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a>,<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATBAIJ.html">baij</a>,<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a>,<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATDENSE.html">dense</a></td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td><br>
-          </td>
-          <td><br>
-          </td>
-          <td><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPBJACOBI.html">point
+    <div id="header">
+      <h1><!--begin-->Summary of Sparse Linear Solvers Available from PETSc<!--end--></h1>
+    </div>
 
-              block Jacobi</a></td>
-          <td>baij, bs = 2,3,4,5</td>
-          <td><br>
-          </td>
-          <td style="text-align: center;">X</td>
-          <td style="text-align: center;">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSOR.html">SOR</a></td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQDENSE.html">seqdense</a>,<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a>,<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQSBAIJ.html">seqsbaij</a>,<br>
-            <a href="#relax"></a><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATMPIAIJ.html">mpiaij</a>**</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td><br>
-          </td>
-          <td><br>
-          </td>
-          <td>point block SOR<a href="#pbrelax">***</a></td>
-          <td><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQBAIJ.html">seqbaij</a>,
-            bs = 2,3,4,5</td>
-          <td><br>
-          </td>
-          <td><br>
-          </td>
-          <td style="text-align: center;">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCBJACOBI.html">block
+    <hr>
 
-              Jacobi</a></td>
-          <td style="width: 147px;">aij,baij,sbaij</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCASM.html">additive
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li>
+          <a href="../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="index.html">Manual pages and Users Manual</a></li>
+            <li><a href="referencing.html">Referencing PETSc</a></li>
+            <li><a href="tutorials/index.html">Tutorials</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="ams.html">AMS</a></li>
+            <li><a href="changes/index.html">Changes</a></li>
+            <li><a href="bugreporting.html">Bug Reporting</a></li>
+            <li><a href="codemanagement.html">Code Management</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="copyright.html">License</a></li>
+            <li><span class="current">Linear Solver Table</span></li>
+          </ul>
+        </li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
 
-              Schwarz</a></td>
-          <td style="width: 147px;">aij,baij,sbaij</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">Incomplete
-            factorizations</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCILU.html">ILU(k)</a></td>
-          <td style="width: 147px;">seqaij,seqbaij</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">&nbsp;</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCICC.html">ICC(k)</a></td>
-          <td style="width: 147px;">seqaij,seqbaij</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">&nbsp;</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19"><br>
-          </td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19"><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">ILU(k)<br>
-          </td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">Euclid/hypre</a>
-            (LLNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19">ILU dt</td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">pilut/hypre</a>
-            (LLNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19"><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">Matrix-free</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSHELL.html">infrastructure</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp;</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">Multigrid</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCMG.html">infrastructure</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp;</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DMMG/DMMG.html">geometric
+    <!--begin-->
 
-              structured grid</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp;</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td><br>
-          </td>
-          <td><br>
-          </td>
-          <td><br>
-          </td>
-          <td>(petsc-dev only)</td>
-          <td><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPFMG.html">PFMG
+    <!--This controls the style for the 6th and 7th column-->
+    <style type="text/css">
+      tr > td:nth-child(6), tr > td:nth-child(7) {
+        text-align: center;
+      }
+    </style>
 
-              from hypre</a></td>
-          <td style="text-align: center;">X</td>
-          <td><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">algebraic</td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">BoomerAMG/hypre</a>
-            (LLNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCML.html">ML/Trilinos</a>
-            (SNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;">baij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PC.html">Prometheus</a>
-            (LBNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">Approximate inverses</td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">Parasails/hypre</a>
-            (LLNL)</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSPAI.html">SPAI</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="38"><br>
-          </td>
-          <td style="width: 170px;" height="38">Substructuring</td>
-          <td style="width: 134px;" height="38"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCNN.html">balancing
+    <div align="center" id="main" >
 
-              Neumann-Neumann</a></td>
-          <td style="width: 147px;">is</td>
-          <td style="width: 152px;" height="38">&nbsp;&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="38">X</td>
-          <td style="width: 70px;" align="center" height="38">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">Direct solvers</td>
-          <td style="width: 170px;" height="19">LU</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCLU.html">LU</a></td>
-          <td style="width: 147px;">seqaij,seqbaij</td>
-          <td style="width: 152px;" height="19">&nbsp;&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">&nbsp;</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">LU</td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMATLAB.html">MATLAB</a></td>
-          <td style="width: 66px;" align="center" height="19">&nbsp;</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSPOOLES.html">Spooles</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPASTIX.html">PaStiX</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a><br>
-          </td>
-          <td style="width: 152px;" height="19">SuperLU (BNL) <a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSUPERLU.html">Sequential</a>/<a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSUPERLU_DIST.html">Parallel</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMUMPS.html">MUMPS</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERESSL.html">ESSL</a>
-            (IBM)</td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19"><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERUMFPACK.html">UMFPACK</a>
-            (U. Florida)</td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19"><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERLUSOL.html">LUSOL</a></td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19"><br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATDENSE.html">dense</a></td>
-          <td style="width: 152px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPLAPACK.html">PLAPACK</a></td>
-          <td style="height: 19px; text-align: center; width: 66px;">X</td>
-          <td style="height: 19px; text-align: center; width: 70px;">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19">Cholesky</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCCHOLESKY.html">Cholesky</a></td>
-          <td style="width: 147px;">seqaij,seqsbaij</td>
-          <td style="width: 152px;" height="19">&nbsp;&nbsp;&nbsp;&nbsp;
-            ---</td>
-          <td style="width: 66px;" align="center" height="19"><br>
-          </td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSPOOLES.html">Spooles</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPASTIX.html">PaStiX</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMUMPS.html">MUMPS</a></td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><br>
-          </td>
-          <td style="width: 147px;">dense</td>
-          <td style="width: 152px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPLAPACK.html">PLAPACK</a></td>
-          <td style="text-align: center; width: 66px;" height="19">X</td>
-          <td style="text-align: center; width: 70px;" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">QR</td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;">matlab</td>
-          <td style="width: 152px;" height="19">MATLAB</td>
-          <td style="width: 66px;" align="center" height="19">&nbsp;</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">&nbsp;</td>
-          <td style="width: 170px;" height="19">XXt and XYt </td>
-          <td style="width: 134px;" height="19">&nbsp;</td>
-          <td style="width: 147px;">aij</td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19">Krylov methods</td>
-          <td style="width: 170px;" height="19">&nbsp;</td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPRICHARDSON.html">Richardson</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp;&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCHEBYCHEV.html">Chebychev</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCG.html">conjugate
+      <h2>Summary of Sparse Linear Solvers Available from PETSc</h2>
+      <h3>Requests and contributions welcome</h3>
 
-              gradients</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPGMRES.html">GMRES</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPBCGS.html">Bi-CG-stab</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPTFQMR.html">transpose
+      <table border="1" summary="Summary of Sparse Linear Solvers Available from PETSc">
 
-              free QMR</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCR.html">conjugate
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>Algorithm</th>
+            <th><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MatType.html">Matrix types</a></th>
+            <th>External Package<a href="#external">*</a></th>
+            <th>Parallel</th>
+            <th>Complex</th>
+          </tr>
+        </thead>
 
-              residuals</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCGS.html">conjugate
+        <!-- The tfoot *must* be before tbody!!!! -->
+        <tfoot>
+          <tr>
+            <td colspan="7">
 
-              gradient squared</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPBICG.html">bi-conjugate
+              <p>
+                <a name="external">*</a> External Package If this column is filled in you
+                must install the external package indicated to use this feature. See
+                <a href="installation.html">instructions</a>
+              </p>
 
-              gradient</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPMINRES.html">MINRES</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPFGMRES.html">flexible
+              <p>
+                <a name="relax">**</a> A "block Jacobi" style SOR with lits local
+                smoothing followed by update of ghost points from other processors, see
+                <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MatSOR.html">MatSOR()</a>
+              </p>
 
-              GMRES</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPLSQR.html">LSQR</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="16"><br>
-          </td>
-          <td style="width: 170px;" height="16"><br>
-          </td>
-          <td style="width: 134px;" height="16"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPSYMMLQ.html">SYMMLQ</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="16">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="16">X</td>
-          <td style="width: 70px;" align="center" height="16">X</td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="16"><br>
-          </td>
-          <td style="width: 170px;" height="16"><br>
-          </td>
-          <td style="width: 134px;" height="16"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPLGMRES.html">LGMRES</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="16">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="16">X</td>
-          <td style="width: 70px;" align="center" height="16">X</td>
-        </tr>
-        <tr>
-          <td style="vertical-align: top;"><br>
-          </td>
-          <td style="vertical-align: top;"><br>
-          </td>
-          <td style="vertical-align: top;"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPGCR.html">GCR</a><br>
-          </td>
-          <td style="vertical-align: top;"><br>
-          </td>
-          <td style="vertical-align: top;">&nbsp; ---<br>
-          </td>
-          <td style="text-align: center; vertical-align: top;">X<br>
-          </td>
-          <td style="text-align: center; vertical-align: top;">X<br>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 101px;" height="19"><br>
-          </td>
-          <td style="width: 170px;" height="19"><br>
-          </td>
-          <td style="width: 134px;" height="19"><a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCGNE.html">Conjugate
-gradient
-on
-the
+              <p><a name="pbrelax">***</a> Use PCType of PCSOR</p>
 
-              normal equations</a></td>
-          <td style="width: 147px;"><br>
-          </td>
-          <td style="width: 152px;" height="19">&nbsp; ---</td>
-          <td style="width: 66px;" align="center" height="19">X</td>
-          <td style="width: 70px;" align="center" height="19">X</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><a name="external">*External Package</a> If this column is filled
-      in you must install the external package indicated to use this
-      feature. See <a href="installation.html"> instructions</a></p>
-    <span style="text-decoration: underline;"></span>
-    <p><a name="relax"></a>**A "block Jacobi" style SOR with lits local
-      smoothing followed by update of ghost points from other
-      processors, see <a
-href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MatSOR.html">MatSOR()</a><br>
-      <br>
-      <a name="pbrelax"></a>***Use PCType of PCSOR</p>
-    <p>This page was inspired by <a
-        href="http://www.netlib.org/utk/people/JackDongarra/la-sw.html">Jack
-Dongarra's
+            </td>
+          </tr>
+        </tfoot>
 
-        freely available software for linear algebra list</a></p>
-    <!--##end-->
+        <tbody>
+          <tr>
+            <td>Preconditioners</td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCJACOBI.html">Jacobi</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATBAIJ.html">baij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATDENSE.html">dense</a>
+            </td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPBJACOBI.html">point block Jacobi</a></td>
+            <td>baij, bs = 2,3,4,5</td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSOR.html">SOR</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQDENSE.html">seqdense</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQSBAIJ.html">seqsbaij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATMPIAIJ.html">mpiaij</a>
+              <a href="#relax">**</a>
+            </td>
+            <td>---</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>point block SOR<a href="#pbrelax">***</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQBAIJ.html">seqbaij</a>,
+              bs = 2,3,4,5
+            </td>
+            <td></td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCBJACOBI.html">block Jacobi</a></td>
+            <td>aij,baij,sbaij</td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCASM.html">additive Schwarz</a></td>
+            <td>aij,baij,sbaij</td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Incomplete factorizations</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCILU.html">ILU(k)</a></td>
+            <td>seqaij,seqbaij</td>
+            <td>---</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCICC.html">ICC(k)</a></td>
+            <td>seqaij,seqbaij</td>
+            <td>---</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>ILU(k)</td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">Euclid/hypre</a> (LLNL)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>ILU dt</td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">pilut/hypre</a> (LLNL)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Matrix-free</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSHELL.html">infrastructure</a></td>
+            <td></td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Multigrid</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCMG.html">infrastructure</a></td>
+            <td></td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DM.html">geometric (DMDA for structured grid)</a></td>
+            <td></td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+	  <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCGAMG.html">geometric/algebraic</a></td>
+            <td></td>
+            <td></td>
+            <td align="center">X</td>
+            <td align="center">X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>structured geometric</td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DM/MATHYPRESTRUCT.html">hyprestruct</a>
+	    </td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPFMG.html">PFMG from hypre</a></td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>classical algebraic</td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">BoomerAMG/hypre</a> (LLNL)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCML.html">ML/Trilinos</a> (SNL)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>unstructured geometric and smoothed aggregation</td>
+            <td>baij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPROMETHEUS.html">Prometheus</a> (Columbia)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+	  <tr>
+            <td></td>
+            <td>Physics-based splitting</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCFIELDSPLIT.html">relaxation and Schur-complement</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATBAIJ.html">baij</a>,
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATNEST.html">nest</a>
+            </td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCLSC.html">least squares commutator</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/MatCreateSchurComplement.html">schurcomplement</a>
+	    </td>
+            <td></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Approximate inverses</td>
+            <td></td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCHYPRE.html">Parasails/hypre</a> (LLNL)</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>aij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCSPAI.html">SPAI</a></td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Substructuring</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCNN.html">balancing Neumann-Neumann</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATIS.html">is</a>
+	    </td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+	  <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCBDDC.html">BDDC</a></td>
+            <td>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATIS.html">is</a>	      
+	    </td>
+            <td>(petsc-dev only)</td>
+            <td>X</td>
+            <td>X</td>
+	  </tr>
+
+          <tr>
+            <td>Direct solvers</td>
+            <td>LU</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCLU.html">LU</a></td>
+            <td>seqaij,seqbaij</td>
+            <td>---</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td>LU</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMATLAB.html">MATLAB</a></td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSPOOLES.html">Spooles</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPASTIX.html">PaStiX (INRIA)</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
+            <td>
+              SuperLU (BNL)
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSUPERLU.html">Sequential</a> /
+              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSUPERLU_DIST.html">Parallel</a>
+            </td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJ.html">aij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMUMPS.html">MUMPS</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERESSL.html">ESSL</a> (IBM)</td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERUMFPACK.html">UMFPACK</a> (U. Florida)</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSEQAIJ.html">seqaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERLUSOL.html">LUSOL</a></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATDENSE.html">dense</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPLAPACK.html">PLAPACK (U. Texas)</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>Cholesky</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCCHOLESKY.html">Cholesky</a></td>
+            <td>seqaij,seqsbaij</td>
+            <td>---</td>
+            <td></td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERSPOOLES.html">Spooles</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPASTIX.html">PaStiX (INRIA)</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSBAIJ.html">sbaij</a></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERMUMPS.html">MUMPS</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+	  <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>seqaij, seqsbaij</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERCHOLMOD.html">CHOLMOD (U. Florida)</a></td>
+            <td></td>
+            <td>X</td>
+	  </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>dense</td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERPLAPACK.html">PLAPACK (U. Texas)</a></td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>QR</td>
+            <td></td>
+            <td>matlab</td>
+            <td>MATLAB</td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>XXt and XYt</td>
+            <td></td>
+            <td>aij</td>
+            <td>---</td>
+            <td>X</td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td>Krylov methods</td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPRICHARDSON.html">Richardson</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCHEBYCHEV.html">Chebychev</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCG.html">conjugate gradients</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPGMRES.html">GMRES</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPBCGS.html">Bi-CG-stab</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPTFQMR.html">transpose free QMR</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCR.html">conjugate residuals</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCGS.html">conjugate gradient squared</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPBICG.html">bi-conjugate gradient</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPMINRES.html">MINRES</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPFGMRES.html">flexible GMRES</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPLSQR.html">LSQR</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPSYMMLQ.html">SYMMLQ</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPLGMRES.html">LGMRES</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPGCR.html">GCR</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPCGNE.html">Conjugate gradient on the normal equations</a></td>
+            <td></td>
+            <td>---</td>
+            <td>X</td>
+            <td>X</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        This page was inspired by <a href="http://www.netlib.org/utk/people/JackDongarra/la-sw.html">Jack Dongarra's freely available software for linear algebra list</a>
+      </p>
+
+    </div>
+
+    <!--end-->
   </body>
 </html>

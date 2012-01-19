@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
     self.mpi           = framework.require('config.packages.MPI', self)
-    self.x11           = framework.require('PETSc.packages.X11', self)        
+    self.x             = framework.require('PETSc.packages.X', self)        
     return
 
   def configureRegression(self):
@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
-      if self.x11.found:
+      if self.x.found:
         jobs.append('C_X11')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')

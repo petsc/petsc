@@ -7,15 +7,13 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
   def __init__(self, framework):
     config.autoconf.Configure.__init__(self, framework)
     PETSc.package.NewPackage.__init__(self, framework)
+    self.lookforbydefault=1
     return
 
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
-    help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
-    help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
-    help.addArgument('X11', '-with-x-lib=<libraries: e.g. [/Users/..../libX11.a,...]>',nargs.ArgLibrary(None, None,    'Specify X11 library file'))
-    help.addArgument('X11', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
+    help.addArgument('X', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
     return
 
   def setupDependencies(self, framework):
@@ -30,7 +28,7 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
     includeDir = ''
     libraryDir = ''
     # Create Imakefile
-    testDir = os.path.join(self.tmpDir, 'X11testdir')
+    testDir = os.path.join(self.tmpDir, 'Xtestdir')
     oldDir  = os.getcwd()
     if os.path.exists(testDir): shutil.rmtree(testDir)
     os.mkdir(testDir)
@@ -111,11 +109,11 @@ acfindx:
       testLibraries.append('libXt.a') # 'XtMalloc'
     # Guess X location
     (includeDirGuess, libraryDirGuess) = self.checkXMake()
-    yield ('Standard X11 Location', libraryDirGuess, testLibraries, includeDirGuess)
+    yield ('Standard X Location', libraryDirGuess, testLibraries, includeDirGuess)
     return
 
   def configureLibrary(self):
-    '''Checks for X windows, sets PETSC_HAVE_X11 if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''
+    '''Checks for X windows, sets PETSC_HAVE_X if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''
     # This needs to be rewritten to use generateGuesses()
     foundInclude = 0
     includeDirs  = ['/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include',
@@ -153,7 +151,7 @@ acfindx:
     libraryDir   = ''
     # Guess X location
     (includeDirGuess, libraryDirGuess) = self.checkXMake()
-    # Check for X11 includes
+    # Check for X includes
     if self.framework.argDB.has_key('with-x-include'):
       if not os.path.isdir(self.framework.argDB['with-x-include']):
         raise RuntimeError('Invalid X include directory specified by --with-x-include='+os.path.abspath(self.framework.argDB['with-x-include']))
@@ -230,7 +228,7 @@ acfindx:
         self.popLanguage()
           
     if foundInclude and foundLibrary:
-      self.logPrint('Found X11 includes and libraries')
+      self.logPrint('Found X includes and libraries')
       self.found     = 1
       if includeDir:
         self.include = '-I'+includeDir
@@ -248,20 +246,22 @@ acfindx:
       if hasattr(self.framework, 'packages'):
         self.framework.packages.append(self)
     else:
+      if self.framework.clArgDB.get('with-x'):
+        raise RuntimeError("Could not locate X *development* package. Perhaps its not installed")
       if not foundInclude:
-        self.logPrint('Could not find X11 includes')
+        self.logPrint('Could not find X includes')
       if not foundLibrary:
-        self.logPrint('Could not find X11 libraries')
+        self.logPrint('Could not find X libraries')
     self.dlib = self.lib
     return
 
   def configure(self):
     if self.framework.argDB['with-x']:
       if not self.libraryOptions.integerSize == 32:
-        self.logPrintBox('Turning off X11 because integers are not 32 bit', debugSection = None)
+        self.logPrintBox('Turning off X because integers are not 32 bit', debugSection = None)
         return
 #      if not self.scalartypes.precision == 'double':
-#        self.logPrintBox('Turning off X11 because scalars are not doubles', debugSection = None)
+#        self.logPrintBox('Turning off X because scalars are not doubles', debugSection = None)
 #        return
       self.executeTest(self.configureLibrary)
     return

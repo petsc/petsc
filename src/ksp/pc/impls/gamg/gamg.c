@@ -1,5 +1,5 @@
 /*
- GAMG geometric-algebric multiogrid PC - Mark Adams 2011
+ GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
 #include "private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
@@ -1107,10 +1107,12 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("GAMG options"); CHKERRQ(ierr);
   {
+
+    pc_gamg->m_method = 1; /* default to plane aggregation */
     ierr = PetscOptionsString("-pc_gamg_type",
-                              "Solver type: plane aggregation ('pa'), smoothed aggregation ('sa') or geometric multigrid (default)",
+                              "Solver type: plane aggregation ('pa'), smoothed aggregation ('sa') or geometric multigrid ('geo')",
                               "PCGAMGSetSolverType",
-                              pc_gamg->m_type,
+                              "pa",
                               pc_gamg->m_type, 
                               64, 
                               &flag ); 
@@ -1123,16 +1125,16 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
       }
     }
 
-    /* -pc_gamg_verbose */
-    ierr = PetscOptionsBool("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none",pc_gamg->m_verbose,&pc_gamg->m_verbose,PETSC_NULL);CHKERRQ(ierr);
-    
-    pc_gamg->m_method = 1; /* default to plane aggregation */
     if (flag ) {
       if( strcmp(pc_gamg->m_type,"sa") == 0) pc_gamg->m_method = 2;
       else if( strcmp(pc_gamg->m_type,"pa") == 0) pc_gamg->m_method = 1;
       else if( strcmp(pc_gamg->m_type,"geo") == 0) pc_gamg->m_method = 0;
       else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Invalid gamg type: %s",pc_gamg->m_type); 
     }
+
+    /* -pc_gamg_verbose */
+    ierr = PetscOptionsBool("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none",pc_gamg->m_verbose,&pc_gamg->m_verbose,PETSC_NULL);CHKERRQ(ierr);
+
     /* -pc_gamg_repartition */
     pc_gamg->m_repart = PETSC_FALSE;
     ierr = PetscOptionsBool("-pc_gamg_repartition",

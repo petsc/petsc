@@ -369,7 +369,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);}
+  if (flg1) {
+    ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
+  }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_mpiabort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr);}

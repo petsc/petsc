@@ -188,6 +188,7 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,const MatType mtype,Mat *J)
   ISLocalToGlobalMapping ltogmap,ltogmapb;
 
   PetscFunctionBegin;
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype,MATNEST,&usenest);CHKERRQ(ierr);
   if (usenest) {
     ierr = DMCreateMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);

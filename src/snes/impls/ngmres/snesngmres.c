@@ -252,14 +252,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
       ierr = SNESComputeFunction(snes, XM, FM);CHKERRQ(ierr);
       ierr = VecNorm(FM, NORM_2, &fMnorm);CHKERRQ(ierr);
-
-    } else if (snes->usegs && snes->ops->computegs) {
-      /* compute the update using the supplied Gauss-Seidel routine */
-      ierr = VecCopy(X, XM);CHKERRQ(ierr);
-      ierr = SNESComputeGS(snes, B, XM);CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes, XM, FM);CHKERRQ(ierr);
-      ierr = VecNorm(FM, NORM_2, &fMnorm);CHKERRQ(ierr);
-
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F, Y);CHKERRQ(ierr);

@@ -1517,6 +1517,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* This is just a temporary matrix, so explicitly using MATMPIAIJ is probably best */
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* copy over the A part */
@@ -3196,6 +3197,7 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -3684,6 +3686,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],co
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -3763,7 +3766,8 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
            The size of this array is equal to the number of local rows, i.e 'm'. 
-           You must leave room for the diagonal entry even if it is zero.
+           For matrices that will be factored, you must leave room for (and set)
+           the diagonal entry even if it is zero.
 .  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
