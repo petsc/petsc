@@ -370,6 +370,7 @@ class Package(config.base.Configure):
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     self.framework.logPrint('Downloading '+self.name)
+    err =''
     for url in self.download:
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
@@ -377,7 +378,8 @@ class Package(config.base.Configure):
         return
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
-    raise RuntimeError(e)
+        err += str(e)
+    raise RuntimeError(err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
