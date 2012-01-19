@@ -370,8 +370,15 @@ class Package(config.base.Configure):
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     self.framework.logPrint('Downloading '+self.name)
-    err =''
+    # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
+    download_urls = []
     for url in self.download:
+      download_urls.append(url)
+      if url.find('http://ftp.mcs.anl.gov') >=0:
+        download_urls.append(url.replace('http://','ftp://'))
+    # now attempt to download each url until any one succeeds.
+    err =''
+    for url in download_urls:
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))

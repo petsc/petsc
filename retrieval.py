@@ -55,23 +55,9 @@ class Retriever(logger.Logger):
     if os.path.exists(localFile):
       os.unlink(localFile)
 
-    httpfail=-1
-    ftpfail=-1
     try:
       urllib.urlretrieve(url, localFile)
-      httpfail=0
     except Exception, e:
-      httpfail=1
-    if httpfail and (url.find('http://ftp.mcs.anl.gov') >=0):
-      furl = url.replace('http://','ftp://')
-      self.logPrintBox('Warning failed download: '+url+'\nReattempting with: '+furl)
-      try:
-        urllib.urlretrieve(furl, localFile)
-        ftpfail=0
-      except Exception, e:
-        self.logPrintBox('Failed download with alternate: '+furl)
-        ftpfail=1
-    if ((ftpfail == 1) or ((ftpfail == -1) and httpfail)):
       failureMessage = '''\
 Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
