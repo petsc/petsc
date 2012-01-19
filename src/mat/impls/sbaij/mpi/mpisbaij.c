@@ -1906,8 +1906,8 @@ M*/
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
            in the upper triangular and diagonal part of the in diagonal portion of the local
-           (possibly different for each block row) or PETSC_NULL.  You must leave room 
-           for the diagonal entry even if it is zero.
+           (possibly different for each block row) or PETSC_NULL.  If you plan to factor the matrix you must leave room 
+           for the diagonal entry and set a value even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -2015,7 +2015,8 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
            in the upper triangular portion of the in diagonal portion of the local 
            (possibly different for each block block row) or PETSC_NULL.  
-           You must leave room for the diagonal entry even if it is zero.
+           If you plan to factor the matrix you must leave room for the diagonal entry and 
+           set its value even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the

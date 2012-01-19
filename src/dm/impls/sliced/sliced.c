@@ -128,7 +128,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
+           row) or PETSC_NULL.  
 .    o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -    o_nnz - array containing the number of nonzeros in the various block rows of the
