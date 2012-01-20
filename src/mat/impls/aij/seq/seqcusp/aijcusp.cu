@@ -129,103 +129,52 @@ PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
   PetscFunctionBegin;
 
   // cusparse handle creation
-  stat = cusparseCreate(&Mat_CUSPARSE_Handle);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseCreate\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseCreate(&Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
 
   ////////////////////////////////////////////
   //  LOWER TRIANGULAR MATRIX
   ////////////////////////////////////////////
 
   // cusparse matrix description creation
-  stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseCreateMatDescr\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));CHKERRCUSP(stat);
 
   // cusparse set matrix type
-  stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatType\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
 
   // cusparse set matrix fill mode
-  stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatFillMode\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);
 
-  // cusparse set matrix diag type
-  //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);
-  //if (stat!=CUSPARSE_STATUS_SUCCESS) {
-  //  printf("Failed in cusparseSetMatDiagType\n");
-  //  CHKERRCUSP(1);
-  //}
+  // cusparse set matrix diag type ... this doesn't seem to work right now??
+  //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);CHKERRCUSP(stat);
 
   // cusparse set matrix index base
-  stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatIndexBase\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
 
   // cusparse analysis structure info creation
-  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseCreateSolveAnalysisInfo\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
 
   ////////////////////////////////////////////
   //  UPPER TRIANGULAR MATRIX
   ////////////////////////////////////////////
 
   // cusparse matrix description creation
-  stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseCreateMatDescr\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));CHKERRCUSP(stat);
 
   // cusparse set matrix type
-  stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatType\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
 
   // cusparse set matrix fill mode
-  stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatFillMode\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);CHKERRCUSP(stat);
 
   // cusparse set matrix diag type
-  stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatDiagType\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
 
   // cusparse set matrix index base
-  stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseSetMatIndexBase\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
 
   // cusparse analysis structure info creation
-  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in cusparseCreateSolveAnalysisInfo\n");
-    CHKERRCUSP(1);
-  }
+  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
+
 
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){	
     /*************************************************************************/
@@ -342,22 +291,14 @@ PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in lower cusparseScsrsv_analysis ... error=%d\n",stat);
-	CHKERRCUSP(1);
-      }
+				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 #elif defined(PETSC_USE_REAL_DOUBLE)
       stat = cusparseDcsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 				     n, cusparsestructLo->Mat_CUSPARSE_description,
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in lower cusparseDcsrsv_analysis ... error=%d\n",stat);
-	CHKERRCUSP(1);
-      }
+				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 #endif
       
       /* The Upper triangular matrix */
@@ -378,26 +319,17 @@ PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in upper cusparseScsrsv_analysis ... error=%d\n",stat);
-	CHKERRCUSP(1);
-      }
-
+				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 #elif defined(PETSC_USE_REAL_DOUBLE)
       stat = cusparseDcsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 				     n, cusparsestructUp->Mat_CUSPARSE_description,
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
 				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in upper cusparseDcsrsv_analysis ... error=%d\n",stat);
-	CHKERRCUSP(1);
-      }
+				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 #endif
     } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
     }
     A->valid_GPU_matrix = PETSC_CUSP_BOTH;
   }
@@ -463,12 +395,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
 			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast(xGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in lower cusparseScsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
+			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
   
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
@@ -477,12 +404,8 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
 			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in upper cusparseScsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
+			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
+
 #elif defined(PETSC_USE_REAL_DOUBLE)
   stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
@@ -491,12 +414,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
 			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast(xGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in lower cusparseDcsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
+			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
   
   stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
@@ -505,13 +423,8 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
 			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in upper cusparseDcsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
-#endif
+			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
+ #endif
   
   // Copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place.
   thrust::copy(thrust::make_permutation_iterator(xGPU->begin(),   (cusparsestructUp->ordIndicesGPU)->begin()),
@@ -557,13 +470,8 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
 			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast(bGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in lower cusparseScsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
-  
+			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
+    
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
@@ -571,12 +479,8 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
 			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));
+			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
   
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in upper cusparseScsrsv_solve\n");
-    CHKERRCUSP(1);
-  }  
 #elif defined(PETSC_USE_REAL_DOUBLE)	
   stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
@@ -585,12 +489,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
 			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast(bGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in lower cusparseDcsrsv_solve\n");
-    CHKERRCUSP(1);
-  }
+			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
   
   stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
@@ -599,12 +498,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
 			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
 			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));
-  
-  if (stat!=CUSPARSE_STATUS_SUCCESS) {
-    printf("Failed in upper cusparseDcsrsv_solve\n");
-    CHKERRCUSP(1);
-  }  
+			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
 #endif
   ierr = VecCUSPRestoreArrayRead(bb,&bGPU);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(xx,&xGPU);CHKERRQ(ierr);
@@ -1077,23 +971,14 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
       cusparseStatus_t stat;
       
       // cusparse handle destruction
-      stat = cusparseDestroy(Mat_CUSPARSE_Handle);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in cusparseDestroy\n");
-	CHKERRCUSP(1);
-      }
+      stat = cusparseDestroy(Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
+
       // cusparse matrix description destruction
-      stat = cusparseDestroyMatDescr(cusparsestructLo->Mat_CUSPARSE_description);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in cusparseDestroyMatDescr\n");
-	CHKERRCUSP(1);
-      }
+      stat = cusparseDestroyMatDescr(cusparsestructLo->Mat_CUSPARSE_description);CHKERRCUSP(stat);
+
       // cusparse analysis structure info destruction
-      stat = cusparseDestroySolveAnalysisInfo(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in cusparseDestroySolveAnalysisInfo\n");
-	CHKERRCUSP(1);
-      }
+      stat = cusparseDestroySolveAnalysisInfo(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
+
       // destroy the matrix and the container
       if (cusparsestructLo->mat!=0)
 	delete cusparsestructLo->mat;
@@ -1102,17 +987,11 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
       delete cusparsestructLo;
       
       // cusparse matrix description destruction
-      stat = cusparseDestroyMatDescr(cusparsestructUp->Mat_CUSPARSE_description);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in cusparseDestroyMatDescr\n");
-	CHKERRCUSP(1);
-      }
+      stat = cusparseDestroyMatDescr(cusparsestructUp->Mat_CUSPARSE_description);CHKERRCUSP(stat);
+
       // cusparse analysis structure info destruction
-      stat = cusparseDestroySolveAnalysisInfo(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);
-      if (stat!=CUSPARSE_STATUS_SUCCESS) {
-	printf("Failed in cusparseDestroySolveAnalysisInfo\n");
-	CHKERRCUSP(1);
-      }
+      stat = cusparseDestroySolveAnalysisInfo(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
+
       // destroy the matrix and the container
       if (cusparsestructUp->mat!=0)
 	delete cusparsestructUp->mat;
