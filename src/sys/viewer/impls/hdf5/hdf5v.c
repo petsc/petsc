@@ -90,6 +90,9 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
     case FILE_MODE_READ:
       hdf5->file_id = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
       break;
+    case FILE_MODE_APPEND:
+      hdf5->file_id = H5Fopen(name, H5F_ACC_RDWR, plist_id);
+      break;
     case FILE_MODE_WRITE:
       hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
       break;
