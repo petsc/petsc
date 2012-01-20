@@ -167,7 +167,7 @@ PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec v, PetscCUSPIndices ci)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPCopyToGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRCUSP(ierr);
+  ierr = VecCUSPCopyToGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +225,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTA
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheck(v);CHKERRCUSP(ierr);
+  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   s = (Vec_Seq*)v->data;
   if (s->array == 0){
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec v, PetscCUSPIndices ci)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRCUSP(ierr);
+  ierr = VecCUSPCopyFromGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1330,7 +1330,7 @@ PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRCUSP(ierr);
+  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_Seq(vin);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
@@ -1342,7 +1342,7 @@ PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRCUSP(ierr);
+  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
@@ -1355,7 +1355,7 @@ PetscErrorCode VecReplaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRCUSP(ierr);
+  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
@@ -1532,7 +1532,7 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
   V->ops->destroy         = VecDestroy_SeqCUSP;
   V->ops->duplicate       = VecDuplicate_SeqCUSP;
 
-  ierr = VecCUSPAllocateCheck(V);CHKERRCUSP(ierr);
+  ierr = VecCUSPAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_CUSP_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
