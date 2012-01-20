@@ -38,6 +38,23 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices  = to->indices;
   sstarts  = to->starts;
 #if defined(PETSC_HAVE_CUSP)
+
+#if defined(PETSC_HAVE_TXPETSCGPU)
+
+#if 0
+  // This branch messages the entire vector
+  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+#else
+  // This branch messages only the parts that are necessary.
+  // ... this seems to perform worse due to the necessity of calling
+  //     a separate kernel before the SpMV for gathering data into
+  //     a contiguous buffer.
+  if (ctx->spptr) 
+    ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+#endif
+  xv   = *(PetscScalar**)xin->data;
+
+#else
   if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
     if (!ctx->spptr) {
       PetscInt k,*tindices,n = sstarts[nsends],*sindices;
@@ -51,7 +68,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         }
       }
       ierr = PetscFree(tindices);CHKERRQ(ierr);
-      ierr = PetscCUSPIndicesCreate(n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
+      ierr = PetscCUSPIndicesCreate(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindices);CHKERRQ(ierr);
     }
     ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
@@ -59,13 +76,15 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     } else {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
+#endif
+
 #else
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif
+
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (!(mode & SCATTER_LOCAL)) {
-
     if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {  
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
@@ -196,6 +215,10 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   /* wait on sends */
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_TXPETSCGPU)
+  if (ctx->spptr)
+    ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

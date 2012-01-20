@@ -5,15 +5,15 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.functions        = ['cublasInit', 'cufftDestroy']
-    self.includes         = ['cublas.h', 'cufft.h']
-    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a'],
-                             ['cufft.lib','cublas.lib','cudart.lib']]
+    self.includes         = ['cublas.h', 'cufft.h','cusparse.h']
+    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
+                             ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision 
     self.cxx              = 0
     self.requires32bitint = 0
     self.worksonWindows   = 1
 
-    self.CUDAVersion   = '3020' # Version 3.2
+    self.CUDAVersion   = '4000' # Version 4.0
     self.CUSPVersion   = '200' #Version 0.2.0
     self.ThrustVersion = '100400' #Version 1.4.0
 #
