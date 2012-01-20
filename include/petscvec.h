@@ -391,8 +391,6 @@ PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,Vec y,IS is,VecScatter *s),(x
 PetscPolymorphicFunction(VecScatterCreate,(Vec x,Vec y,IS is),(x,PETSC_NULL,y,is,&s),VecScatter,s)
 extern PetscErrorCode  VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 extern PetscErrorCode  VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
-extern PetscErrorCode  VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
-extern PetscErrorCode  VecScatterFinalizeForGPU(VecScatter);
 extern PetscErrorCode  VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 extern PetscErrorCode  VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode); 
 extern PetscErrorCode  VecScatterDestroy(VecScatter*);
@@ -586,6 +584,8 @@ extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
+extern PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
+extern PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 #endif
 
 extern PetscErrorCode  VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
