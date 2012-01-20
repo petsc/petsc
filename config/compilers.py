@@ -1189,7 +1189,7 @@ class Configure(config.base.Configure):
       d = os.path.dirname(os.path.abspath('configtest.mod'))
       self.logPrint('Directory '+d+' contents:\n'+str(os.listdir(d)))
       raise RuntimeError('Fortran module was not created during the compile. %s/CONFIGTEST.mod not found' % os.path.abspath('configtest.mod'))
-    shutil.move(modname, os.path.join(testdir, os.path.filename(modname)))
+    shutil.move(modname, os.path.join(testdir, os.path.basename(modname)))
     fcode = '''\
       use configtest
 
@@ -1212,7 +1212,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if os.path.isfile(modobj):
       os.remove(modobj)
-    os.remove(os.path.join(testdir, os.path.filename(modname)))
+    os.remove(os.path.join(testdir, os.path.basename(modname)))
     os.rmdir(testdir)
     if not found:
       raise RuntimeError('Cannot determine Fortran module include flag')
