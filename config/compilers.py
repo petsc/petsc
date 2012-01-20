@@ -1179,15 +1179,17 @@ class Configure(config.base.Configure):
     if not os.path.isdir(testdir):
       os.mkdir(testdir)
     os.rename(self.compilerObj, modobj)
-    if os.path.isfile('configtest.mod'):
-      modname = 'configtest.mod'
-    elif os.path.isfile('CONFIGTEST.mod'):
-      modname = 'CONFIGTEST.mod'
-    else:
+    foundModule = 0
+    for f in [os.path.abspath('configtest.mod'), os.path.abspath('CONFIGTEST.mod'), os.path.join(os.path.dirname(self.compilerObj),'configtest.mod'), os.path.join(os.path.dirname(self.compilerObj),'CONFIGTEST.mod')]:
+      if os.path.isfile(f):
+        modname     = f
+        foundModule = 1
+        break
+    if not foundModule:
       d = os.path.dirname(os.path.abspath('configtest.mod'))
       self.logPrint('Directory '+d+' contents:\n'+str(os.listdir(d)))
       raise RuntimeError('Fortran module was not created during the compile. %s/CONFIGTEST.mod not found' % os.path.abspath('configtest.mod'))
-    shutil.move(modname, os.path.join(testdir, modname))
+    shutil.move(modname, os.path.join(testdir, os.path.filename(modname)))
     fcode = '''\
       use configtest
 
@@ -1201,7 +1203,7 @@ class Configure(config.base.Configure):
       if not self.checkLink(None, fcode):
         self.logPrint('Fortran module include flag '+flag+' failed', 3, 'compilers')
       else:
-        self.logPrint('Fortran module include flag '+flag+' found', 3, 'compilers')        
+        self.logPrint('Fortran module include flag '+flag+' found', 3, 'compilers')
         self.setCompilers.fortranModuleIncludeFlag = flag
         found = 1
       self.setCompilers.LIBS   = oldLIBS
@@ -1210,7 +1212,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if os.path.isfile(modobj):
       os.remove(modobj)
-    os.remove(os.path.join(testdir, modname))
+    os.remove(os.path.join(testdir, os.path.filename(modname)))
     os.rmdir(testdir)
     if not found:
       raise RuntimeError('Cannot determine Fortran module include flag')
