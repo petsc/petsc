@@ -1184,7 +1184,9 @@ class Configure(config.base.Configure):
     elif os.path.isfile('CONFIGTEST.mod'):
       modname = 'CONFIGTEST.mod'
     else:
-      raise RuntimeError('Fortran module was not created during the compile. configtest.mod/CONFIGTEST.mod not found')
+      d = os.path.dirname(os.path.abspath('configtest.mod'))
+      self.logPrint('Directory '+d+' contents:\n'+str(os.listdir(d)))
+      raise RuntimeError('Fortran module was not created during the compile. %s/CONFIGTEST.mod not found' % os.path.abspath('configtest.mod'))
     shutil.move(modname, os.path.join(testdir, modname))
     fcode = '''\
       use configtest
