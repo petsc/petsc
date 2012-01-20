@@ -184,7 +184,7 @@ Process 0:
 Star Forest Object: 1 MPI processes
   type not yet set
   synchronization=FENCE sort=rank-order
-  [0] Number of roots=24, leaves=24, remote ranks=1
+  [0] Number of roots=-1, leaves=24, remote ranks=1
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)
   [0] 2 <- (0,2)

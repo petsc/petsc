@@ -71,6 +71,9 @@ extern PetscErrorCode DMMeshJoinPoints(DM, PetscInt, const PetscInt [], PetscInt
 extern PetscErrorCode DMMeshMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 extern PetscErrorCode DMMeshGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, const PetscInt *[]);
 
+extern PetscErrorCode DMMeshCreatePartition(DM, PetscSection *, IS *, PetscInt);
+extern PetscErrorCode DMMeshCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
+
 /* Old Sieve Mesh interface */
 extern PetscErrorCode DMMeshDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], DM*);

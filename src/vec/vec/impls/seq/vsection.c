@@ -500,7 +500,18 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for(i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", array[i]);CHKERRQ(ierr);
+        PetscScalar v = array[i];
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(v) > 0.0) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(v) < 0.0) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+#endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
       for(b = 0; b < s->bc->atlasDof[p]; ++b) {
@@ -510,7 +521,18 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
     } else {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for(i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", array[i]);CHKERRQ(ierr);
+        PetscScalar v = array[i];
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(v) > 0.0) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(v) < 0.0) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+#endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     }
@@ -853,5 +875,211 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
     SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   }
   ierr = PetscSectionSetConstraintIndices(s->field[field], point, indices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFConvertPartition"
+PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection, IS partition, ISLocalToGlobalMapping *renumbering, PetscSF *sf)
+{
+  MPI_Comm       comm = ((PetscObject)sfPart)->comm;
+  PetscSF        sfPoints;
+  PetscInt       *partSizes,*partOffsets,p,i,numParts,numMyPoints,numPoints,count;
+  const PetscInt *partArray;
+  PetscSFNode    *sendPoints;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+
+  /* Get the number of parts and sizes that I have to distribute */
+  ierr = PetscSFGetGraph(sfPart,PETSC_NULL,&numParts,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numParts,PetscInt,&partSizes,numParts,PetscInt,&partOffsets);CHKERRQ(ierr);
+  for (p=0,numPoints=0; p<numParts; p++) {
+    ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
+    numPoints += partSizes[p];
+  }
+  numMyPoints = 0;
+  ierr = PetscSFFetchAndOpBegin(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpEnd(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
+  /* I will receive numMyPoints. I will send a total of numPoints, to be placed on remote procs at partOffsets */
+
+  /* Create SF mapping locations (addressed through partition, as indexed leaves) to new owners (roots) */
+  ierr = PetscMalloc(numPoints*sizeof(PetscSFNode),&sendPoints);CHKERRQ(ierr);
+  for (p=0,count=0; p<numParts; p++) {
+    for (i=0; i<partSizes[p]; i++) {
+      sendPoints[count].rank = p;
+      sendPoints[count].index = partOffsets[p]+i;
+      count++;
+    }
+  }
+  if (count != numPoints) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count %D should equal numPoints=%D",count,numPoints);
+  ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
+  ierr = ISGetIndices(partition,&partArray);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&sfPoints);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfPoints,numMyPoints,numPoints,partArray,PETSC_USE_POINTER,sendPoints,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* Invert SF so that the new owners are leaves and the locations indexed through partition are the roots */
+  ierr = PetscSFCreateInverseSF(sfPoints,sf);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfPoints);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(partition,&partArray);CHKERRQ(ierr);
+
+  /* Create the new local-to-global mapping */
+  ierr = ISLocalToGlobalMappingCreateSF(*sf,0,renumbering);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFDistributeSection"
+/*@C
+  PetscSFDistributeSection - Create a new PetscSection reorganized, moving from the root to the leaves of the SF
+
+  Collective
+
+  Input Parameters:
++ sf - The SF
+- rootSection - Section defined on root space
+
+  Output Parameters:
++ remoteOffsets - root offsets in leaf storage, or PETSC_NULL
+- leafSection - Section defined on the leaf space
+
+  Level: intermediate
+
+.seealso: PetscSFCreate()
+@*/
+PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt **remoteOffsets, PetscSection leafSection)
+{
+  PetscSF         embedSF;
+  const PetscInt *ilocal, *indices;
+  IS              selected;
+  PetscInt        nleaves, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, i;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
+  ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+  ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&selected);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(embedSF, PETSC_NULL, &nleaves, &ilocal, PETSC_NULL);CHKERRQ(ierr);
+  if (ilocal) {
+    for(i = 0; i < nleaves; ++i) {
+      lpStart = PetscMin(lpStart, ilocal[i]);
+      lpEnd   = PetscMax(lpEnd,   ilocal[i]);
+    }
+  } else {
+    lpStart = 0;
+    lpEnd   = nleaves;
+  }
+  ++lpEnd;
+  ierr = PetscSectionSetChart(leafSection, lpStart, lpEnd);CHKERRQ(ierr);
+  /* Could fuse these at the cost of a copy and extra allocation */
+  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
+  if (remoteOffsets) {
+    ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
+  }
+  ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(leafSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateSectionSF"
+/*@C
+  PetscSFCreateSectionSF - Create an expanded SF of dofs, assuming the input SF relates points
+
+  Input Parameters:
++ sf - The SF
+. rootSection - Data layout of remote points for outgoing data (this is usually the serial section), or PETSC_NULL
+- remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or PETSC_NULL
+
+  Output Parameters:
++ leafSection - Data layout of local points for incoming data  (this is the distributed section)
+- sectionSF - The new SF
+
+  Note: Either rootSection or remoteOffsets can be specified
+
+  Level: intermediate
+
+.seealso: PetscSFCreate()
+@*/
+PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
+{
+  MPI_Comm           comm = ((PetscObject) sf)->comm;
+  const PetscInt    *localPoints;
+  const PetscSFNode *remotePoints;
+  PetscInt           pStart, pEnd;
+  PetscInt           numRanks;
+  const PetscInt    *ranks, *rankOffsets;
+  PetscInt           numPoints, numIndices = 0;
+  PetscInt          *localIndices;
+  PetscSFNode       *remoteIndices;
+  PetscInt           i, r, ind;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, PETSC_NULL, &numPoints, &localPoints, &remotePoints);CHKERRQ(ierr);
+  for(i = 0; i < numPoints; ++i) {
+    PetscInt localPoint = localPoints ? localPoints[i] : i;
+    PetscInt dof;
+
+    if ((localPoint >= pStart) && (localPoint < pEnd)) {
+      ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
+      numIndices += dof;
+    }
+  }
+  ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
+  /* Get offsets for remote data */
+  if (!remoteOffsets) {
+    PetscSF         embedSF;
+    const PetscInt *indices;
+    IS              selected;
+    PetscInt        lpStart, rpStart, rpEnd;
+
+    ierr = PetscMalloc(numIndices * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(leafSection, &lpStart, PETSC_NULL);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
+    ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+    ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&selected);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
+  }
+  /* Create new index graph */
+  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  for(r = 0, ind = 0; r < numRanks; ++r) {
+    PetscInt rank = ranks[r];
+
+    for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
+      PetscInt localPoint   = localPoints ? localPoints[i] : i;
+
+      if ((localPoint >= pStart) && (localPoint < pEnd)) {
+        PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
+        PetscInt localOffset, dof, d;
+        ierr = PetscSectionGetOffset(leafSection, localPoint, &localOffset);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
+        for(d = 0; d < dof; ++d, ++ind) {
+          localIndices[ind]        = localOffset+d;
+          remoteIndices[ind].rank  = rank;
+          remoteIndices[ind].index = remoteOffset+d;
+        }
+      }
+    }
+  }
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+  if (numIndices != ind) {SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
+  ierr = PetscSFCreate(comm, sectionSF);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sectionSF, PETSC_DETERMINE, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

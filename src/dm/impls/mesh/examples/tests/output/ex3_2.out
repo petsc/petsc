@@ -242,14 +242,14 @@ Process 2:
 Star Forest Object: 3 MPI processes
   type not yet set
   synchronization=FENCE sort=rank-order
-  [0] Number of roots=6, leaves=6, remote ranks=1
+  [0] Number of roots=-1, leaves=6, remote ranks=1
   [0] 0 <- (0,3)
   [0] 1 <- (0,4)
   [0] 2 <- (0,5)
   [0] 3 <- (0,21)
   [0] 4 <- (0,22)
   [0] 5 <- (0,23)
-  [1] Number of roots=9, leaves=9, remote ranks=1
+  [1] Number of roots=-1, leaves=9, remote ranks=1
   [1] 0 <- (0,9)
   [1] 1 <- (0,10)
   [1] 2 <- (0,11)
@@ -259,7 +259,7 @@ Star Forest Object: 3 MPI processes
   [1] 6 <- (0,18)
   [1] 7 <- (0,19)
   [1] 8 <- (0,20)
-  [2] Number of roots=9, leaves=9, remote ranks=1
+  [2] Number of roots=-1, leaves=9, remote ranks=1
   [2] 0 <- (0,0)
   [2] 1 <- (0,1)
   [2] 2 <- (0,2)

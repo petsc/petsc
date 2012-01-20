@@ -154,6 +154,11 @@ extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 
+/* Sieve support */
+extern PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
+extern PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
+extern PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
+
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
 extern PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 
