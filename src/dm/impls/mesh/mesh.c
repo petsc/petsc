@@ -3458,6 +3458,34 @@ PetscErrorCode DMMeshDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   PetscFunctionReturn(0);
 }
 
+MPI_Op ISMax_Local_Op = 0;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "ISMax_Local"
+void MPIAPI ISMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
+  PetscInt *xin = (PetscInt *) in, *xout = (PetscInt *) out;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_INT) {
+    (*PetscErrorPrintf)("Can only handle MPIU_INT data types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (*cnt != 2) {
+    (*PetscErrorPrintf)("Can only handle 2 entries");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (xin[0] > xout[0]) {
+    xout[0] = xin[0];
+    xout[1] = xin[1];
+  } else if (xin[0] == xout[0]) {
+    xout[1] = PetscMin(xin[1], xout[1]);
+  }
+  PetscFunctionReturnVoid(); /* cannot return a value */
+}
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshDistribute"
 /*@C
@@ -3586,6 +3614,47 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       ierr = DMMeshGetCoordinateVec(*dmParallel, &newCoordinates);CHKERRQ(ierr);
 
       ierr = DMMeshDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
+    }
+    /* Create point SF for parallel mesh */
+    {
+      DM_Mesh        *pmesh = (DM_Mesh *) (*dmParallel)->data;
+      const PetscInt *leaves;
+      PetscSFNode    *remotePoints;
+      PetscInt       *rowners, *lowners, *ghostPoints;
+      PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp;
+
+      ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
+      for(p = 0; p < numRoots*2; ++p) {
+        rowners[p] = 0;
+      }
+      for(p = 0; p < numLeaves; ++p) {
+        lowners[p*2+0] = rank;
+        lowners[p*2+1] = leaves ? leaves[p] : p;
+      }
+      ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+      for(p = 0; p < numLeaves; ++p) {
+        if (lowners[p*2+0] != rank) ++numGhostPoints;
+      }
+      ierr = PetscMalloc(numGhostPoints * sizeof(PetscInt),    &ghostPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc(numGhostPoints * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
+      for(p = 0, gp = 0; p < numLeaves; ++p) {
+        if (lowners[p*2+0] != rank) {
+          ghostPoints[gp]       = leaves ? leaves[p] : p;
+          remotePoints[p].rank  = lowners[p*2+0];
+          remotePoints[p].index = lowners[p*2+1];
+          ++gp;
+        }
+      }
+      ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
+      ierr = PetscSFCreate(comm, &pmesh->sf);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(pmesh->sf, PETSC_DETERMINE, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFSetFromOptions(pmesh->sf);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "Parallel Point SF\n");CHKERRQ(ierr);
+      ierr = PetscSFView(pmesh->sf, PETSC_NULL);CHKERRQ(ierr);
     }
     /* Cleanup */
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
