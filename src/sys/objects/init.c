@@ -572,11 +572,22 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
   {
-    int device;
-
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
-    if (flg1) {
-      ierr = cudaSetDevice(device);CHKERRQ(ierr);
+    int size;
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    if (size>1) {
+      int devCount, device, rank;
+      ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+      device = rank % devCount;
+      ierr = cudaSetDevice(device);CHKERRQ(ierr);        
+    }
+    else {
+      int device;
+      // the code below works for serial GPU simulations
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
+      if (flg1) {
+        ierr = cudaSetDevice(device);CHKERRQ(ierr);
+      }
     }
   }
 #endif

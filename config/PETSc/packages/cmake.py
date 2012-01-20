@@ -62,5 +62,4 @@ class Configure(PETSc.package.NewPackage):
     import os
     (dirname,basename) = os.path.split(self.cmake)
     os.environ['PATH'] = dirname+os.pathsep+os.environ['PATH']
-    print os.environ['PATH']
     return

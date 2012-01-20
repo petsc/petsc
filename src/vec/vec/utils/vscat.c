@@ -1541,7 +1541,6 @@ PetscErrorCode  VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,Sca
 #if defined(PETSC_USE_DEBUG)
   PetscInt      to_n,from_n;
 #endif
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
