@@ -21,7 +21,7 @@ EXTERN_C_END
 
 
 /* macros s.t. indices match MUMPS documentation */
-#define ICNTL(I) icntl[(I)-1] 
+#define ICNTL(I) icntl[(I)-1]
 #define CNTL(I) cntl[(I)-1] 
 #define INFOG(I) infog[(I)-1]
 #define INFO(I) info[(I)-1]
