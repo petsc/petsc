@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
@@ -74,6 +73,40 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
   PetscFunctionReturn(0);
 }
 
+
+#ifdef PETSC_HAVE_TXPETSCGPU
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_MPIAIJCUSP"
+PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
+{
+  // This multiplication sequence is different sequence
+  // than the CPU version. In particular, the diagonal block
+  // multiplication kernel is launched in one stream. Then,
+  // in a separate stream, the data transfers from DeviceToHost
+  // (with MPI messaging in between), then HostToDevice are 
+  // launched. Once the data transfer stream is synchronized,
+  // to ensure messaging is complete, the MatMultAdd kerne
+  // is launched in the original (MatMult) stream to protect
+  // against race conditions.
+  //
+  // This sequence should only be called for GPU computation.
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       nt;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
+  if (nt != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%D) and xx (%D)",A->cmap->n,nt);
+  ierr = VecScatterInitializeForGPU(a->Mvctx,xx,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
+  ierr = VecScatterFinalizeForGPU(a->Mvctx);CHKERRQ(ierr);        
+  PetscFunctionReturn(0);
+}
+#endif 
+
 EXTERN_C_BEGIN
 PetscErrorCode  MatCreate_MPIAIJ(Mat);
 EXTERN_C_END
@@ -93,6 +126,9 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat B)
                                       MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
   B->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
+#ifdef PETSC_HAVE_TXPETSCGPU
+  B->ops->mult        = MatMult_MPIAIJCUSP;
+#endif
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

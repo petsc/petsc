@@ -3781,6 +3781,7 @@ PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
