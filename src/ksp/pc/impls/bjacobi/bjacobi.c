@@ -1008,9 +1008,9 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->x[i],xin+bjac->starts[i]);CHKERRQ(ierr);
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
-    ierr = PetscLogEventBegin(PC_SetUpOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(PC_ApplyOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
     ierr = KSPSolve(jac->ksp[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(PC_SetUpOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PC_ApplyOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
 
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
     ierr = VecResetArray(bjac->y[i]);CHKERRQ(ierr);
@@ -1242,7 +1242,9 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
 
   /* apply preconditioner on each matrix block */
+  ierr = PetscLogEventBegin(PC_ApplyOnMproc,mpjac->ksp,mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPSolve(mpjac->ksp,mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
+   ierr = PetscLogEventEnd(PC_ApplyOnMproc,mpjac->ksp,mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
 
   ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
   ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
