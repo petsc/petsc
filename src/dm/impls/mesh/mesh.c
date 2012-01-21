@@ -3628,7 +3628,6 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
           for(s = 0; s < next->numStrata; ++s) {
             for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
               const PetscInt point = next->points[p];
-              PetscBool      found = PETSC_FALSE;
               PetscInt       proc;
 
               for(proc = 0; proc < numProcs; ++proc) {
@@ -3639,13 +3638,10 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
                 for(pPart = off; pPart < off+dof; ++pPart) {
                   if (partArray[pPart] == point) {
                     ++stratumSizes[proc*next->numStrata+s];
-                    found = PETSC_TRUE;
                     break;
                   }
                 }
-                if (found) break;
               }
-              if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
             }
           }
           ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
@@ -3672,7 +3668,6 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
           for(s = 0; s < next->numStrata; ++s) {
             for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
               const PetscInt point = next->points[p];
-              PetscBool      found = PETSC_FALSE;
               PetscInt       proc;
 
               for(proc = 0; proc < numProcs; ++proc) {
@@ -3683,13 +3678,10 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
                 for(pPart = off; pPart < off+dof; ++pPart) {
                   if (partArray[pPart] == point) {
                     points[offsets[proc]++] = point;
-                    found = PETSC_TRUE;
                     break;
                   }
                 }
-                if (found) break;
               }
-              if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
             }
           }
         }
