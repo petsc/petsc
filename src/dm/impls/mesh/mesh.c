@@ -3458,34 +3458,6 @@ PetscErrorCode DMMeshDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   PetscFunctionReturn(0);
 }
 
-MPI_Op ISMax_Local_Op = 0;
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "ISMax_Local"
-void MPIAPI ISMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
-{
-  PetscInt *xin = (PetscInt *) in, *xout = (PetscInt *) out;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_INT) {
-    (*PetscErrorPrintf)("Can only handle MPIU_INT data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-  if (*cnt != 2) {
-    (*PetscErrorPrintf)("Can only handle 2 entries");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-  if (xin[0] > xout[0]) {
-    xout[0] = xin[0];
-    xout[1] = xin[1];
-  } else if (xin[0] == xout[0]) {
-    xout[1] = PetscMin(xin[1], xout[1]);
-  }
-  PetscFunctionReturnVoid(); /* cannot return a value */
-}
-EXTERN_C_END
-
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshDistribute"
 /*@C
@@ -3632,8 +3604,8 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         lowners[p*2+0] = rank;
         lowners[p*2+1] = leaves ? leaves[p] : p;
       }
-      ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
       for(p = 0; p < numLeaves; ++p) {
