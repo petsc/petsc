@@ -3604,8 +3604,12 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         lowners[p*2+0] = rank;
         lowners[p*2+1] = leaves ? leaves[p] : p;
       }
+#if 0 /* Why doesn't this datatype work */
       ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
+#endif
+      ierr = PetscSFFetchAndOpBegin(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFFetchAndOpEnd(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
       for(p = 0; p < numLeaves; ++p) {
@@ -3616,8 +3620,8 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       for(p = 0, gp = 0; p < numLeaves; ++p) {
         if (lowners[p*2+0] != rank) {
           ghostPoints[gp]       = leaves ? leaves[p] : p;
-          remotePoints[p].rank  = lowners[p*2+0];
-          remotePoints[p].index = lowners[p*2+1];
+          remotePoints[gp].rank  = lowners[p*2+0];
+          remotePoints[gp].index = lowners[p*2+1];
           ++gp;
         }
       }
