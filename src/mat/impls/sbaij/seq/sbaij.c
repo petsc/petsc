@@ -1190,7 +1190,7 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
 PetscErrorCode MatSetUpPreallocation_SeqSBAIJ(Mat A)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr =  MatSeqSBAIJSetPreallocation_SeqSBAIJ(A,-PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1586,9 +1586,10 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs,bs2, newbs = PetscAbs(bs);
-  PetscBool      skipallocation = PETSC_FALSE,flg = PETSC_FALSE;
-  
+  PetscBool      skipallocation = PETSC_FALSE,flg = PETSC_FALSE,realalloc = PETSC_FALSE;
+
   PetscFunctionBegin;
+  if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   B->preallocated = PETSC_TRUE;
   if (bs < 0) {
     ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for MPISBAIJ matrix","Mat");CHKERRQ(ierr);
@@ -1728,7 +1729,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   b->anew             = 0;
   b->a2anew           = 0;
   b->permute          = PETSC_FALSE;
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

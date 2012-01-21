@@ -3015,8 +3015,11 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       i, newbs = PetscAbs(bs);
+  PetscBool      d_realalloc = PETSC_FALSE,o_realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (d_nz >= 0 || d_nnz) d_realalloc = PETSC_TRUE;
+  if (o_nz >= 0 || o_nnz) o_realalloc = PETSC_TRUE;
   if (bs < 0) {
     ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for MPIBAIJ matrix","Mat");CHKERRQ(ierr);
       ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatMPIBAIJSetPreallocation",newbs,&newbs,PETSC_NULL);CHKERRQ(ierr);
@@ -3078,8 +3081,10 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
 
   ierr = MatSeqBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
+  /* Do not error if the user did not give real preallocation information. Ugly because this would overwrite a previous user call to MatSetOption(). */
+  if (!d_realalloc) {ierr = MatSetOption(b->A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
+  if (!o_realalloc) {ierr = MatSetOption(b->B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
   B->preallocated = PETSC_TRUE;
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

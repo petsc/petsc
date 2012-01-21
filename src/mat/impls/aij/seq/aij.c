@@ -3379,12 +3379,12 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscInt *nnz)
 {
   Mat_SeqAIJ     *b;
-  PetscBool      skipallocation = PETSC_FALSE;
+  PetscBool      skipallocation = PETSC_FALSE,realalloc = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
-  
+  if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
     nz             = 0;
@@ -3443,7 +3443,7 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   b->nz                = 0;
   b->maxnz             = nz;
   B->info.nz_unneeded  = (double)b->maxnz;
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

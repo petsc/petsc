@@ -200,6 +200,7 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
+  ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=Baij->i[i]; j<Baij->i[i+1]; j++) {
