@@ -167,7 +167,7 @@ PetscErrorCode MatCUSPARSEInitialize(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEInitialize"
+#define __FUNCT__ "MatCUSPARSEBuildLowerTriMatrix"
 PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -255,7 +255,7 @@ PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEInitialize"
+#define __FUNCT__ "MatCUSPARSEBuildUpperTriMatrix"
 PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
