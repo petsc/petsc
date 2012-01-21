@@ -1014,23 +1014,23 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   MPI_Comm           comm = ((PetscObject) sf)->comm;
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
-  PetscInt           pStart, pEnd;
+  PetscInt           lpStart, lpEnd;
   PetscInt           numRanks;
   const PetscInt    *ranks, *rankOffsets;
-  PetscInt           numPoints, numIndices = 0;
+  PetscInt           numRoots, numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
   PetscInt           i, r, ind;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, PETSC_NULL, &numPoints, &localPoints, &remotePoints);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &numRoots, &numPoints, &localPoints, &remotePoints);CHKERRQ(ierr);
   for(i = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;
     PetscInt dof;
 
-    if ((localPoint >= pStart) && (localPoint < pEnd)) {
+    if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
       ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
       numIndices += dof;
     }
@@ -1042,14 +1042,19 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     PetscSF         embedSF;
     const PetscInt *indices;
     IS              selected;
-    PetscInt        lpStart, rpStart, rpEnd;
+    PetscInt        rpStart, rpEnd, isSize;
 
-    ierr = PetscMalloc(numIndices * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(leafSection, &lpStart, PETSC_NULL);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
+    isSize = PetscMin(numRoots, rpEnd - rpStart);
+    ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
     ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
-    ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
+#if 0
+    ierr = PetscSFCreateEmbeddedSF(sf, isSize, indices, &embedSF);CHKERRQ(ierr);
+#else
+    embedSF = sf;
+    ierr = PetscObjectReference((PetscObject) embedSF);CHKERRQ(ierr);
+#endif
     ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
     ierr = ISDestroy(&selected);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
@@ -1064,8 +1069,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
       PetscInt localPoint   = localPoints ? localPoints[i] : i;
 
-      if ((localPoint >= pStart) && (localPoint < pEnd)) {
-        PetscInt remoteOffset = remoteOffsets[localPoint-pStart];
+      if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
+        PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
         PetscInt localOffset, dof, d;
         ierr = PetscSectionGetOffset(leafSection, localPoint, &localOffset);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);

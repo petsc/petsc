@@ -541,7 +541,6 @@ PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscSF        sf   = mesh->sf;
-  PetscInt      *remoteOffsets;
   DM             dmAdj;
   PetscSF        sfDof, sfAdj;
   PetscLayout    layout;
@@ -554,13 +553,17 @@ PetscErrorCode DMMeshPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Input SF for Preallocation:\n");CHKERRQ(ierr);
   ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFCreateSectionSF(sf, PETSC_NULL, remoteOffsets, section, &sfDof);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(sf, section, PETSC_NULL, section, &sfDof);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Dof SF for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSFView(sfDof, PETSC_NULL);CHKERRQ(ierr);
   /* Exchange cone sizes on interface and create Section for cones (adj) */
   /* Create cone SF based on dof SF */
   /* ierr = PetscSFCreateSectionSF(sfDof, adjSection, remoteOffsets, &sfAdj);CHKERRQ(ierr); */
   /* Exchange cones on interface */
   /* Merge cones to get correct boundary cone sizes */
   /* Allocate DM */
+  ierr = DMCreate(comm, &dmAdj);CHKERRQ(ierr);
+  ierr = DMSetType(dmAdj, DMMESH);CHKERRQ(ierr);
   /* Fill in boundary cones */
   /* Create local adjacency graph in global dof numbering (cones are adj dofs) */
 #if 0
@@ -3757,8 +3760,6 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       ierr = PetscSFCreate(comm, &pmesh->sf);CHKERRQ(ierr);
       ierr = PetscSFSetGraph(pmesh->sf, PETSC_DETERMINE, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
       ierr = PetscSFSetFromOptions(pmesh->sf);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "Parallel Point SF\n");CHKERRQ(ierr);
-      ierr = PetscSFView(pmesh->sf, PETSC_NULL);CHKERRQ(ierr);
     }
     /* Cleanup */
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
