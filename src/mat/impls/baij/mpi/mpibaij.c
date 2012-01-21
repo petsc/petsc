@@ -1648,7 +1648,8 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    /* Do not know preallocation information, but must set block size */
+    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL);CHKERRQ(ierr);
   } else {
     B = *matout;
   }

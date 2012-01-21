@@ -30,7 +30,7 @@ int main(int argc,char **args)
            m*n,m*n,PETSC_NULL,&C);CHKERRQ(ierr);
   } else {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRQ(ierr);
+           m*n,m*n,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&C);CHKERRQ(ierr);
   }
 
   /*
