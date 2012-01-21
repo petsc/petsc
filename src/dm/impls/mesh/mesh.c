@@ -3546,10 +3546,6 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingView(renumbering, PETSC_NULL);CHKERRQ(ierr);
     }
-    /* Cleanup */
-    ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
-    ierr = ISDestroy(&part);CHKERRQ(ierr);
     /* Distribute cone section */
     ierr = DMMeshGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
     ierr = DMMeshGetConeSection(*dmParallel, &newConeSection);CHKERRQ(ierr);
@@ -3563,7 +3559,6 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
     ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, PETSC_NULL, newCones);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
@@ -3600,14 +3595,14 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       for(l = 0; l < numLabels; ++l) {
         SieveLabel      newLabel;
         const PetscInt *partArray;
-        PetscInt       *stratumSizes, *points;
-        PetscMPIInt    *sendcnts, *offsets, *displs;
+        PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
+        PetscMPIInt    *sendcnts = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
         PetscInt        nameSize, s, p;
-        size_t          len;
+        size_t          len = 0;
 
         ierr = PetscNew(struct Sieve_Label, &newLabel);CHKERRQ(ierr);
         /* Bcast name (could filter for no points) */
-        ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);
+        if (!rank) {ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);}
         nameSize = len;
         ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscMalloc(nameSize+1, &newLabel->name);CHKERRQ(ierr);
@@ -3623,74 +3618,79 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         if (!rank) {ierr = PetscMemcpy(newLabel->stratumValues, next->stratumValues, next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
         ierr = MPI_Bcast(newLabel->stratumValues, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
         /* Find size on each process and Scatter */
-        ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-        ierr = PetscMalloc(numProcs*next->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
-        ierr = PetscMemzero(stratumSizes, numProcs*next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
-        for(s = 0; s < next->numStrata; ++s) {
-          for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s+1]; ++p) {
-            const PetscInt point = next->points[p];
-            PetscBool      found = PETSC_FALSE;
-            PetscInt       proc;
+        if (!rank) {
+          ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
+          ierr = PetscMalloc(numProcs*next->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
+          ierr = PetscMemzero(stratumSizes, numProcs*next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
+          for(s = 0; s < next->numStrata; ++s) {
+            for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
+              const PetscInt point = next->points[p];
+              PetscBool      found = PETSC_FALSE;
+              PetscInt       proc;
 
-            for(proc = 0; proc < numProcs; ++proc) {
-              PetscInt dof, off, pPart;
+              for(proc = 0; proc < numProcs; ++proc) {
+                PetscInt dof, off, pPart;
 
-              ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-              ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-              for(pPart = off; pPart < off+dof; ++pPart) {
-                if (partArray[pPart] == point) {
-                  ++stratumSizes[proc*next->numStrata+s];
-                  found = PETSC_TRUE;
-                  break;
+                ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
+                ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
+                for(pPart = off; pPart < off+dof; ++pPart) {
+                  if (partArray[pPart] == point) {
+                    ++stratumSizes[proc*next->numStrata+s];
+                    found = PETSC_TRUE;
+                    break;
+                  }
                 }
+                if (found) break;
               }
-              if (found) break;
+              if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
             }
-            if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
           }
+          ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
         }
-        ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
-        ierr = MPI_Scatter(stratumSizes, next->numStrata, MPI_INT, newLabel->stratumSizes, next->numStrata, MPI_INT, 0, comm);CHKERRQ(ierr);
+        ierr = MPI_Scatter(stratumSizes, newLabel->numStrata, MPI_INT, newLabel->stratumSizes, newLabel->numStrata, MPI_INT, 0, comm);CHKERRQ(ierr);
         /* Calculate stratumOffsets */
         newLabel->stratumOffsets[0] = 0;
         for(s = 0; s < newLabel->numStrata; ++s) {
           newLabel->stratumOffsets[s+1] = newLabel->stratumSizes[s] + newLabel->stratumOffsets[s];
         }
         /* Pack points and Scatter */
-        ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
-        displs[0] = 0;
-        for(p = 0; p < numProcs; ++p) {
-          sendcnts[p] = 0;
-          for(s = 0; s < next->numStrata; ++s) {
-            sendcnts[p] += stratumSizes[p*next->numStrata+s];
-          }
-          offsets[p]  = displs[p];
-          displs[p+1] = displs[p] + sendcnts[p];
-        }
-        ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
-        for(s = 0; s < next->numStrata; ++s) {
-          for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s+1]; ++p) {
-            const PetscInt point = next->points[p];
-            PetscBool      found = PETSC_FALSE;
-            PetscInt       proc;
-
-            for(proc = 0; proc < numProcs; ++proc) {
-              PetscInt dof, off, pPart;
-
-              ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-              ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-              for(pPart = off; pPart < off+dof; ++pPart) {
-                if (partArray[pPart] == point) {
-                  points[++offsets[proc]] = point;
-                  found = PETSC_TRUE;
-                  break;
-                }
-              }
-              if (found) break;
+        if (!rank) {
+          ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
+          displs[0] = 0;
+          for(p = 0; p < numProcs; ++p) {
+            sendcnts[p] = 0;
+            for(s = 0; s < next->numStrata; ++s) {
+              sendcnts[p] += stratumSizes[p*next->numStrata+s];
             }
-            if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
+            offsets[p]  = displs[p];
+            displs[p+1] = displs[p] + sendcnts[p];
+          }
+          ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
+          for(s = 0; s < next->numStrata; ++s) {
+            for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
+              const PetscInt point = next->points[p];
+              PetscBool      found = PETSC_FALSE;
+              PetscInt       proc;
+
+              for(proc = 0; proc < numProcs; ++proc) {
+                PetscInt dof, off, pPart;
+
+                ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
+                ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
+                for(pPart = off; pPart < off+dof; ++pPart) {
+                  if (partArray[pPart] == point) {
+                    points[offsets[proc]++] = point;
+                    found = PETSC_TRUE;
+                    break;
+                  }
+                }
+                if (found) break;
+              }
+              if (!found) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not find point %d in partition", point);}
+            }
           }
         }
+        ierr = PetscMalloc(newLabel->stratumOffsets[newLabel->numStrata] * sizeof(PetscInt), &newLabel->points);CHKERRQ(ierr);
         ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, newLabel->points, newLabel->stratumOffsets[newLabel->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscFree(points);CHKERRQ(ierr);
         ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
@@ -3708,9 +3708,14 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
           pmesh->labels = newLabel;
         }
         newNext = newLabel;
-        next = next->next;
+        if (!rank) {next = next->next;}
       }
     }
+    /* Cleanup Partition */
+    ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
+    ierr = ISDestroy(&part);CHKERRQ(ierr);
     /* Create point SF for parallel mesh */
     {
       const PetscInt *leaves;
