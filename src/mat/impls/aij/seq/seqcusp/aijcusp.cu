@@ -110,6 +110,64 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSP(Mat B,Mat A,IS isrow,IS iscol,cons
 
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatCUSPARSEInitialize"
+PetscErrorCode MatCUSPARSEInitialize(Mat A)
+{
+  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
+  Mat_SeqAIJCUSPARSETriFactor* cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
+  Mat_SeqAIJCUSPARSETriFactor* cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
+  cusparseStatus_t stat;
+
+  PetscFunctionBegin;
+  try {	
+    // cusparse handle creation
+    stat = cusparseCreate(&Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
+
+    //  LOWER TRIANGULAR MATRIX
+    // cusparse matrix description creation
+    stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));CHKERRCUSP(stat);
+    
+    // cusparse set matrix type
+    stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
+    
+    // cusparse set matrix fill mode
+    stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);
+    
+    // cusparse set matrix diag type ... this doesn't seem to work right now??
+    //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);CHKERRCUSP(stat);
+    
+    // cusparse set matrix index base
+    stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
+
+    // cusparse analysis structure info creation
+    stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
+  
+    //  UPPER TRIANGULAR MATRIX    
+    // cusparse matrix description creation
+    stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));CHKERRCUSP(stat);
+    
+    // cusparse set matrix type
+    stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
+    
+    // cusparse set matrix fill mode
+    stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);CHKERRCUSP(stat);
+    
+    // cusparse set matrix diag type
+    stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
+    
+    // cusparse set matrix index base
+    stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
+    
+    // cusparse analysis structure info creation
+    stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);  
+  } catch(char* ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
+  }
+  PetscFunctionReturn(0);	  
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatCUSPARSEAnalysiAndCopyToGPU"
 PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
 {
@@ -126,55 +184,11 @@ PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
   PetscInt *AiLo, *AjLo, *AiUp, *AjUp;
   PetscScalar *AALo, *AAUp;
   PetscInt          i,nz, nzLower, nzUpper, offset, rowOffset;
+  PetscErrorCode     ierr;
   PetscFunctionBegin;
 
-  // cusparse handle creation
-  stat = cusparseCreate(&Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
-
-  ////////////////////////////////////////////
-  //  LOWER TRIANGULAR MATRIX
-  ////////////////////////////////////////////
-
-  // cusparse matrix description creation
-  stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-
-  // cusparse set matrix type
-  stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-
-  // cusparse set matrix fill mode
-  stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);
-
-  // cusparse set matrix diag type ... this doesn't seem to work right now??
-  //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);CHKERRCUSP(stat);
-
-  // cusparse set matrix index base
-  stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-
-  // cusparse analysis structure info creation
-  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
-
-  ////////////////////////////////////////////
-  //  UPPER TRIANGULAR MATRIX
-  ////////////////////////////////////////////
-
-  // cusparse matrix description creation
-  stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-
-  // cusparse set matrix type
-  stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-
-  // cusparse set matrix fill mode
-  stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);CHKERRCUSP(stat);
-
-  // cusparse set matrix diag type
-  stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
-
-  // cusparse set matrix index base
-  stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-
-  // cusparse analysis structure info creation
-  stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
-
+  // Initialize the necessary data in CUSPARSE
+  ierr = MatCUSPARSEInitialize(A);CHKERRQ(ierr);
 
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){	
     /*************************************************************************/
@@ -260,7 +274,6 @@ PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
       IS               isrow = b->row,iscol = b->icol;
       PetscBool        row_identity,col_identity;
       const PetscInt   *r,*c;
-      PetscErrorCode     ierr;
 
       ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
       ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr);
