@@ -6,6 +6,45 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
 
+#include <../src/mat/impls/aij/seq/aij.h>
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
+PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+{
+  Mat            B;
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data; 
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscInt       *rows;
+  MatScalar      *aa = a->v;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,A->cmap->n,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  for (i=0; i<A->rmap->n; i++) rows[i] = i;
+
+  for (i=0; i<A->cmap->n; i++) {
+    ierr  = MatSetValues(B,A->rmap->n,rows,1,&i,aa,INSERT_VALUES);CHKERRQ(ierr);
+    aa   += a->lda;
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"
 PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
@@ -2197,6 +2236,7 @@ PetscErrorCode  MatCreate_SeqDense(Mat B)
   b->changelda    = PETSC_FALSE;
 
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_seqaij_C","MatConvert_SeqDense_SeqAIJ",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqdense_petsc",
                                       MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
