@@ -1279,8 +1279,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     }
     /* Checking coarse_sub_mat and coarse basis functios */
     /* It shuld be \Phi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
-    //if(dbg_flag) {
-    if(PETSC_FALSE) { /* waiting for patch on conversion from SEQDENSE to SEQAIJ with new nonzero location errors */
+    if(dbg_flag) {
 
       Mat coarse_sub_mat;
       Mat TM1,TM2,TM3,TM4;
@@ -2153,13 +2152,6 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   /* ierr = MatDuplicate(matis->A,MAT_COPY_VALUES,&mat_adj);CHKERRQ(ierr); */
   ierr = MatGetRowIJ(mat_adj,0,symmetrize_rowij,compressed_rowij,&mat_graph->nvtxs,&mat_graph->xadj,&mat_graph->adjncy,&flg_row);CHKERRQ(ierr);
   if(!flg_row) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ called from PCBDDCManageLocalBoundaries.\n");
-  /* ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&mat_graph->where);CHKERRQ(ierr);
-  ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&mat_graph->count);CHKERRQ(ierr);
-  ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&mat_graph->which_dof);CHKERRQ(ierr);
-  ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&mat_graph->queue);CHKERRQ(ierr);
-  ierr = PetscMalloc((mat_graph->nvtxs+1)*sizeof(PetscInt),&mat_graph->cptr);CHKERRQ(ierr);
-  ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&queue_in_global_numbering);CHKERRQ(ierr);
-  ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscBool),&mat_graph->touched);CHKERRQ(ierr); */
   i = mat_graph->nvtxs;
   ierr = PetscMalloc4(i,PetscInt,&mat_graph->where,i,PetscInt,&mat_graph->count,i+1,PetscInt,&mat_graph->cptr,i,PetscInt,&mat_graph->queue);CHKERRQ(ierr);
   ierr = PetscMalloc3(i,PetscInt,&mat_graph->which_dof,i,PetscBool,&mat_graph->touched,i,PetscInt,&queue_in_global_numbering);CHKERRQ(ierr);
@@ -2698,13 +2690,6 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     ierr = PetscFree(neighbours_set);CHKERRQ(ierr);
     ierr = PetscFree4(mat_graph->where,mat_graph->count,mat_graph->cptr,mat_graph->queue);CHKERRQ(ierr);
     ierr = PetscFree3(mat_graph->which_dof,mat_graph->touched,queue_in_global_numbering);CHKERRQ(ierr);
-    /* ierr = PetscFree(mat_graph->where);CHKERRQ(ierr);
-    ierr = PetscFree(mat_graph->touched);CHKERRQ(ierr);
-    ierr = PetscFree(mat_graph->which_dof);CHKERRQ(ierr);
-    ierr = PetscFree(mat_graph->queue);CHKERRQ(ierr);
-    ierr = PetscFree(mat_graph->cptr);CHKERRQ(ierr);
-    ierr = PetscFree(mat_graph->count);CHKERRQ(ierr);
-    ierr = PetscFree(queue_in_global_numbering);CHKERRQ(ierr);*/
     ierr = PetscFree(mat_graph->where_ncmps);CHKERRQ(ierr);
   }
   ierr = PetscFree(mat_graph);CHKERRQ(ierr);
