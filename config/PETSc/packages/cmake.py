@@ -59,7 +59,8 @@ class Configure(PETSc.package.NewPackage):
         self.addMakeMacro('CMAKE ', self.cmake)
         self.found = 1
     # add cmake location to begining of PATH for parmetis/metis
-    import os
-    (dirname,basename) = os.path.split(self.cmake)
-    os.environ['PATH'] = dirname+os.pathsep+os.environ['PATH']
+    if hasattr(self, 'cmake'):
+      import os
+      (dirname,basename) = os.path.split(self.cmake)
+      os.environ['PATH'] = dirname+os.pathsep+os.environ['PATH']
     return
