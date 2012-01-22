@@ -323,7 +323,6 @@ PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt
 
   PetscFunctionBegin;
   cci = new struct _p_PetscCUSPIndices;
-
 #ifdef PETSC_HAVE_TXPETSCGPU
   cci->sendIndices = new GPU_Indices<PetscInt, PetscScalar>();
   cci->sendIndices->buildIndices(sendIndices, ns);
@@ -353,13 +352,13 @@ PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt
 PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
 {
   PetscFunctionBegin;
-  if (!ci) PetscFunctionReturn(0);
+  if (!(*ci)) PetscFunctionReturn(0);
   try {
 #ifdef PETSC_HAVE_TXPETSCGPU
-    delete (*ci)->sendIndices;
-    delete (*ci)->recvIndices;
+    if ((*ci)->sendIndices) delete (*ci)->sendIndices;
+    if ((*ci)->recvIndices) delete (*ci)->recvIndices;
 #endif  
-    delete *ci;
+    if (ci) delete *ci;
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
