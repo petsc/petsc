@@ -454,6 +454,7 @@ typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} Coa
 extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
 extern PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
 extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
+extern PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
 #endif
 
 PETSC_EXTERN_CXX_END

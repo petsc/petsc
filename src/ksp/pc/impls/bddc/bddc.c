@@ -1,5 +1,4 @@
 /* TODOLIST
-   allow passing array of IS to identify dof splitting per node (see which_dof array)
    change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
      - mind the problem with coarsening_factor 
      - simplify coarse problem structure -> PCBDDC or PCREDUDANT, nothing else -> same comm for all levels?
@@ -73,9 +72,9 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PCBDDCSetCoarseProblemType"
 /*@
- PCBDDCSetCoarseProblemType - brief explanation
+ PCBDDCSetCoarseProblemType - Set coarse problem type in PCBDDC.
 
-   Collective on PC
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -84,7 +83,7 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   usage notes, perhaps an example
+   Not collective but all procs must call this.
 
 .seealso: PCBDDC
 @*/
@@ -108,7 +107,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
+  //ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = ISDuplicate(NeumannBoundaries,&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = ISCopy(NeumannBoundaries,pcbddc->NeumannBoundaries);CHKERRQ(ierr);
@@ -123,16 +122,16 @@ EXTERN_C_END
  PCBDDCSetNeumannBoundaries - Set index set defining subdomain part of
                               Neumann boundaries for the global problem.
 
-   Logically Collective on PC
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  NeumannBoundaries - index set defining the subdomain part of Neumann boundaries
+-  NeumannBoundaries - sequential index set defining the subdomain part of Neumann boundaries (can be PETSC_NULL)
 
    Level: intermediate
 
    Notes:
-   usage notes, perhaps an example
+   The sequential IS is copied; the user must destroy the IS object passed in.
 
 .seealso: PCBDDC
 @*/
@@ -157,7 +156,8 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundarie
   if(pcbddc->NeumannBoundaries) {
     *NeumannBoundaries = pcbddc->NeumannBoundaries;
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Error in %s: Neumann boundaries not set!.\n",__FUNCT__);
+    *NeumannBoundaries = PETSC_NULL;
+    //SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Error in %s: Neumann boundaries not set!.\n",__FUNCT__);
   }
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,7 @@ EXTERN_C_END
  PCBDDCGetNeumannBoundaries - Get index set defining subdomain part of
                               Neumann boundaries for the global problem.
 
-   Logically Collective on PC
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -181,7 +181,7 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   usage notes, perhaps an example
+   If the user has not yet provided such information, PETSC_NULL is returned.
 
 .seealso: PCBDDC
 @*/
@@ -192,6 +192,65 @@ PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscUseMethod(pc,"PCBDDCGetNeumannBoundaries_C",(PC,IS*),(pc,NeumannBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCBDDCSetDofsSplitting_BDDC"
+static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Destroy IS if already set */
+  for(i=0;i<pcbddc->n_ISForDofs;i++) {
+    //ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+    ierr = ISDuplicate(ISForDofs[i],&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+    ierr = ISCopy(ISForDofs[i],pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+  }
+  /* allocate space then copy ISs */
+  ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofs);CHKERRQ(ierr);
+  for(i=0;i<n_is;i++) {
+    ierr = ISDuplicate(ISForDofs[i],&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+    ierr = ISCopy(ISForDofs[i],pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+  }
+  pcbddc->n_ISForDofs=n_is;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PCBDDCSetDofsSplitting"
+/*@
+ PCBDDCSetDofsSplitting - Set index set defining how dofs are splitted.
+
+   Not collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  n - number of index sets defining dofs spltting
+-  IS[] - array of IS describing dofs splitting
+
+   Level: intermediate
+
+   Notes:
+   Sequential ISs are copied, the user must destroy the array of IS passed in.
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -221,7 +280,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (!pc->setupcalled) {
 
     /* For BDDC we need to define a local "Neumann" to that defined in PCISSetup
-       So, we set to pcnone the Neumann problem of pcid in order to avoid unneeded computation
+       So, we set to pcnone the Neumann problem of pcis in order to avoid unneeded computation
        Also, we decide to directly build the (same) Dirichlet problem */
     ierr = PetscOptionsSetValue("-is_localN_pc_type","none");CHKERRQ(ierr);
     ierr = PetscOptionsSetValue("-is_localD_pc_type","none");CHKERRQ(ierr);
@@ -303,11 +362,8 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     - vec1_D for the Dirichlet part (if needed, i.e. prec_flag=PETSC_TRUE)
     - the interface part of the global vector z
   */
-  //ierr = VecScatterBegin(pcis->global_to_B,r,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  //ierr = VecScatterEnd  (pcis->global_to_B,r,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
-  //ierr = MatMultAdd(pcis->A_BI,pcis->vec2_D,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
   if(pcbddc->prec_type) { ierr = MatMultAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
   ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
   ierr = VecCopy(r,z);CHKERRQ(ierr);
@@ -564,6 +620,11 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
     ierr = PetscFree(pcbddc->quadrature_constraint);CHKERRQ(ierr);
     ierr = PetscFree(pcbddc->sizes_of_constraint);CHKERRQ(ierr);
   }
+  PetscInt i;
+  for(i=0;i<pcbddc->n_ISForDofs;i++) {
+    ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pcbddc->ISForDofs);
   /* Free the private data structure that was hanging off the PC */
   ierr = PetscFree(pcbddc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -658,6 +719,8 @@ PetscErrorCode PCCreate_BDDC(PC pc)
                     PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","PCBDDCSetCoarseProblemType_BDDC",
                     PCBDDCSetCoarseProblemType_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetDofsSplitting_C","PCBDDCSetDofsSplitting_BDDC",
+                    PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -957,7 +1020,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       ierr = VecAXPY(temp_vec,m_one,pcbddc->vec1_R);CHKERRQ(ierr);
       ierr = VecNorm(temp_vec,NORM_INFINITY,&value);CHKERRQ(ierr);
       ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for Neumann solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
     /* free Neumann problem's matrix */
@@ -1014,10 +1077,8 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       index=i+pcbddc->n_vertices;
       ierr = MatSetValues(CMAT,1,&index,pcbddc->sizes_of_constraint[i],pcbddc->indices_to_constraint[i],pcbddc->quadrature_constraint[i],INSERT_VALUES);CHKERRQ(ierr);
     }
-    //if(dbg_flag) printf("CMAT assembling\n");
     ierr = MatAssemblyBegin(CMAT,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(CMAT,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    //ierr = MatView(CMAT,PETSC_VIEWER_STDOUT_SELF);
 
     /* Precompute stuffs needed for preprocessing and application of BDDC*/
 
@@ -1042,7 +1103,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
         ierr = MatSetValues(pcbddc->local_auxmat2,n_R,auxindices,1,&index,array,INSERT_VALUES);CHKERRQ(ierr);
         ierr = VecRestoreArray(pcbddc->vec2_R,&array);CHKERRQ(ierr);
       }
-      //if(dbg_flag) printf("pcbddc->local_auxmat2 assembling\n");
       ierr = MatAssemblyBegin(pcbddc->local_auxmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd  (pcbddc->local_auxmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -1073,12 +1133,10 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
         ierr = MatSetValues(M1,pcbddc->n_constraints,auxindices,1,&index,array,INSERT_VALUES);CHKERRQ(ierr);
         ierr = VecRestoreArray(vec2_C,&array);CHKERRQ(ierr);
       }
-      //if(dbg_flag) printf("M1 assembling\n");
       ierr = MatAssemblyBegin(M1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd  (M1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatDestroy(&AUXMAT);CHKERRQ(ierr);
       /* Assemble local_auxmat1 = M1*C_{CR} needed by BDDC application in KSP and in preproc */
-      //if(dbg_flag) printf("pcbddc->local_auxmat1 computing and assembling\n");
       ierr = MatMatMult(M1,C_CR,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->local_auxmat1);CHKERRQ(ierr);
 
     }
@@ -1104,7 +1162,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
         ierr = MatSetValues(M2,n_R,auxindices,1,&index,array,INSERT_VALUES);CHKERRQ(ierr);
         ierr = VecRestoreArray(pcbddc->vec2_R,&array);CHKERRQ(ierr);
       }
-      //if(dbg_flag) printf("M2 assembling\n");
       ierr = MatAssemblyBegin(M2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd  (M2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
@@ -2162,11 +2219,24 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   ierr = PetscMemzero(mat_graph->cptr,(mat_graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   for(i=0;i<mat_graph->nvtxs;i++){mat_graph->touched[i]=PETSC_FALSE;}
   
-  /* TODO: IS for dof splitting */
-  ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
-  for(i=0;i<mat_graph->nvtxs/bs;i++) {
-    for(s=0;s<bs;s++) {
-      mat_graph->which_dof[i*bs+s]=s;
+  /* Setting dofs splitting in mat_graph->which_dof */
+  if(pcbddc->n_ISForDofs) { /* get information about dofs' splitting if provided by the user */
+    PetscInt *is_indices;
+    PetscInt is_size;
+    for(i=0;i<pcbddc->n_ISForDofs;i++) {
+      ierr = ISGetSize(pcbddc->ISForDofs[i],&is_size);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+      for(j=0;j<is_size;j++) {
+        mat_graph->which_dof[is_indices[j]]=i;
+      }
+      ierr = ISRestoreIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    }
+  } else { /* otherwise assume constant block size */
+    ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
+    for(i=0;i<mat_graph->nvtxs/bs;i++) {
+      for(s=0;s<bs;s++) {
+        mat_graph->which_dof[i*bs+s]=s;
+      }
     }
   }
 
@@ -2180,7 +2250,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   }
   /* Take into account Neumann data incrementing number of sharing subdomains for all but faces nodes lying on the interface */
   if(pcbddc->NeumannBoundaries) {
-    ierr = ISGetLocalSize(pcbddc->NeumannBoundaries,&neumann_bsize);CHKERRQ(ierr);
+    ierr = ISGetSize(pcbddc->NeumannBoundaries,&neumann_bsize);CHKERRQ(ierr);
     ierr = ISGetIndices(pcbddc->NeumannBoundaries,&neumann_nodes);CHKERRQ(ierr);
     for(i=0;i<neumann_bsize;i++){
       iindex = neumann_nodes[i];
@@ -2705,7 +2775,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
                                 
 #undef __FUNCT__  
 #define __FUNCT__ "PCBDDCFindConnectedComponents"
-static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph graph, PetscInt n_dist )//, PetscInt *dist_vals)
+static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph graph, PetscInt n_dist )
 {
   PetscInt i, j, k, nvtxs, first, last, nleft, ncmps,pid,cum_queue,n,ncmps_pid;
   PetscInt *xadj, *adjncy, *where, *queue;

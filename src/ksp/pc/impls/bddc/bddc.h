@@ -74,6 +74,8 @@ typedef struct {
   PetscBool     faces_flag;
   PetscBool     edges_flag;
   /* Some customization is possible */
+  PetscInt                   n_ISForDofs;
+  IS                         *ISForDofs;
   IS                         NeumannBoundaries;
   PetscBool                  prec_type;
   CoarseProblemType          coarse_problem_type;
