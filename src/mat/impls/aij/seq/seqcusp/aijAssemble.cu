@@ -14,7 +14,12 @@ PETSC_CUDA_EXTERN_C_END
 #include <cusp/array1d.h>
 #include <cusp/print.h>
 #include <cusp/coo_matrix.h>
+
+#if THRUST_VERSION >= 100500
+#include <thrust/detail/backend/cuda/reduce_by_key.h>
+#else
 #include <cusp/detail/device/reduce_by_key.h>
+#endif
 
 #include <cusp/io/matrix_market.h>
 
@@ -260,17 +265,11 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //     the Cusp one is 2x faster, but still not optimal
   // This could possibly be done in-place
   ierr = PetscInfo(J, "Compressing matrix\n");CHKERRQ(ierr);
-#if 1
-  cusp::detail::device::reduce_by_key
-    (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
-     COO.values.begin(),
-     thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-     A.values.begin(),
-     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-     thrust::plus<ValueType>());
+#if THRUST_VERSION >= 100500
+  thrust::detail::backend::cuda::reduce_by_key
 #else
-  thrust::reduce_by_key
+  cusp::detail::device::reduce_by_key
+#endif
     (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
      thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
      COO.values.begin(),
@@ -278,7 +277,6 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
      A.values.begin(),
      thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
      thrust::plus<ValueType>());
-#endif
 
   // print the final matrix
   if (PetscLogPrintInfo) {cusp::print(A);}

@@ -19,7 +19,9 @@ PETSC_CUDA_EXTERN_C_END
 #ifdef PETSC_HAVE_TXPETSCGPU
 // this is such a hack ... but I don't know of another way to pass this variable
 // from one GPU_Matrix_Ifc class to another. This is necessary for the parallel
-//  SpMV.
+//  SpMV. Essentially, I need to use the same stream variable in two different
+//  data structures. I do this by creating a single instance of that stream
+//  and reuse it.
 cudaStream_t theBodyStream=0;
 
 struct Mat_SeqAIJGPU {
@@ -124,41 +126,20 @@ PetscErrorCode MatCUSPARSEInitialize(Mat A)
     stat = cusparseCreate(&Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
 
     //  LOWER TRIANGULAR MATRIX
-    // cusparse matrix description creation
     stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-    
-    // cusparse set matrix type
     stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-    
-    // cusparse set matrix fill mode
-    stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);
-    
+    stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);    
     // cusparse set matrix diag type ... this doesn't seem to work right now??
     //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);CHKERRCUSP(stat);
-    
-    // cusparse set matrix index base
     stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-
-    // cusparse analysis structure info creation
     stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
   
     //  UPPER TRIANGULAR MATRIX    
-    // cusparse matrix description creation
     stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-    
-    // cusparse set matrix type
     stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-    
-    // cusparse set matrix fill mode
     stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);CHKERRCUSP(stat);
-    
-    // cusparse set matrix diag type
     stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
-    
-    // cusparse set matrix index base
     stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-    
-    // cusparse analysis structure info creation
     stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);  
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
@@ -177,7 +158,7 @@ PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
   const PetscInt    *ai = a->i,*aj = a->j,*vi;
   const MatScalar   *aa = a->a,*v;
   cusparseStatus_t stat;
-
+  PetscErrorCode     ierr;
   PetscInt *AiLo, *AjLo;
   PetscScalar *AALo;
   PetscInt i,nz, nzLower, offset, rowOffset;
@@ -188,11 +169,10 @@ PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
       /* first figure out the number of nonzeros in the lower triangular matrix including 1's on the diagonal. */
       nzLower=n+ai[n]-ai[1];
       
-      cudaError_t err;
       /* Allocate Space for the lower triangular matrix */	
-      err = cudaMallocHost((void **) &AiLo, (n+1)*sizeof(PetscInt));CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AjLo, nzLower*sizeof(PetscInt));CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUSP(err);
+      ierr = cudaMallocHost((void **) &AiLo, (n+1)*sizeof(PetscInt));CHKERRCUSP(ierr);
+      ierr = cudaMallocHost((void **) &AjLo, nzLower*sizeof(PetscInt));CHKERRCUSP(ierr);
+      ierr = cudaMallocHost((void **) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUSP(ierr);
       
       /* Fill the lower triangular matrix */
       AiLo[0]=(PetscInt) 0;
@@ -208,9 +188,9 @@ PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
 	// additional 1 for the term on the diagonal
 	AiLo[i]=rowOffset;
 	rowOffset+=nz+1;
-	
-	memcpy(&(AjLo[offset]), vi, nz*sizeof(PetscInt));
-	memcpy(&(AALo[offset]), v, nz*sizeof(MatScalar));
+
+	ierr = PetscMemcpy(&(AjLo[offset]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
+	ierr = PetscMemcpy(&(AALo[offset]), v, nz*sizeof(MatScalar));CHKERRQ(ierr);
 	
 	offset+=nz;
 	AjLo[offset]=(PetscInt) i;
@@ -268,7 +248,8 @@ PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
   PetscInt *AiUp, *AjUp;
   PetscScalar *AAUp;
   PetscInt i,nz, nzUpper, offset;
-  cudaError_t err;
+  PetscErrorCode     ierr;
+  
   PetscFunctionBegin;
 
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){	
@@ -277,9 +258,9 @@ PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
       nzUpper = adiag[0]-adiag[n];
       
       /* Allocate Space for the upper triangular matrix */
-      err = cudaMallocHost((void **) &AiUp, (n+1)*sizeof(PetscInt));CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AjUp, nzUpper*sizeof(PetscInt));CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUSP(err);
+      ierr = cudaMallocHost((void **) &AiUp, (n+1)*sizeof(PetscInt));CHKERRCUSP(ierr);
+      ierr = cudaMallocHost((void **) &AjUp, nzUpper*sizeof(PetscInt));CHKERRCUSP(ierr);
+      ierr = cudaMallocHost((void **) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUSP(ierr);
       
       /* Fill the upper triangular matrix */
       AiUp[0]=(PetscInt) 0;
@@ -300,9 +281,8 @@ PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
 	AAUp[offset] = 1./v[nz];
 	AiUp[i] = AiUp[i+1] - (nz+1);
 	
-	// copy the off diagonal elements
-	memcpy(&(AjUp[offset+1]), vi, nz*sizeof(PetscInt));
-	memcpy(&(AAUp[offset+1]), v, nz*sizeof(MatScalar));
+	ierr = PetscMemcpy(&(AjUp[offset+1]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
+	ierr = PetscMemcpy(&(AAUp[offset+1]), v, nz*sizeof(MatScalar));CHKERRQ(ierr);
       }      
       /* The Upper triangular matrix */
       cusparsestructUp->mat = new CUSPMATRIX;
@@ -616,7 +596,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 	cuspstruct->mat = GPU_Matrix_Factory::getNew(storageFormat);
 	cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);
 	cuspstruct->mat->setCPRowIndices(ridx, m);
-	// Create the streams and events (if desired) 
+	// Create the streams and events (if desired). 
 	PetscMPIInt    size;
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 	ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theBodyStream);CHKERRCUSP(ierr);	
@@ -1005,13 +985,8 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
       Mat_SeqAIJCUSPARSETriFactor *cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
       cusparseStatus_t stat;
       
-      // cusparse handle destruction
       stat = cusparseDestroy(Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
-
-      // cusparse matrix description destruction
       stat = cusparseDestroyMatDescr(cusparsestructLo->Mat_CUSPARSE_description);CHKERRCUSP(stat);
-
-      // cusparse analysis structure info destruction
       stat = cusparseDestroySolveAnalysisInfo(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 
       // destroy the matrix and the container
@@ -1021,10 +996,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	delete cusparsestructLo->tempvecGPU;
       delete cusparsestructLo;
       
-      // cusparse matrix description destruction
       stat = cusparseDestroyMatDescr(cusparsestructUp->Mat_CUSPARSE_description);CHKERRCUSP(stat);
-
-      // cusparse analysis structure info destruction
       stat = cusparseDestroySolveAnalysisInfo(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
 
       // destroy the matrix and the container

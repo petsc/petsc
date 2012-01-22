@@ -9,6 +9,9 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
 
+// need the thrust version 
+#include <thrust/version.h>
+
 // Old way
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
