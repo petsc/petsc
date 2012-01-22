@@ -51,8 +51,10 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   //     a contiguous buffer. We leaves both branches in for the time being.
   //     I expect that ultimately this branch will be the right choice, however
   //     the just is still out.
-  if (ctx->spptr && xin->valid_GPU_array == PETSC_CUSP_GPU) 
-    ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
+    if (xin->spptr && ctx->spptr) 
+      ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  }
 #endif
   xv   = *(PetscScalar**)xin->data;
 
@@ -218,8 +220,10 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_TXPETSCGPU)
-  if (ctx->spptr  && xin->valid_GPU_array == PETSC_CUSP_CPU)
-    ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  if (yin->valid_GPU_array == PETSC_CUSP_CPU) {
+    if (yin->spptr && ctx->spptr) 
+      ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  }
 #endif
   PetscFunctionReturn(0);
 }
