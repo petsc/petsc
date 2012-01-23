@@ -41,16 +41,20 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
 
-#if 1
+#if 0
   // This branch messages the entire vector
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #else
   // This branch messages only the parts that are necessary.
-  // ... this seems to perform worse due to the necessity of calling
+  // ... this seems to perform about the same due to the necessity of calling
   //     a separate kernel before the SpMV for gathering data into
-  //     a contiguous buffer.
-  if (ctx->spptr) 
-    ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  //     a contiguous buffer. We leaves both branches in for the time being.
+  //     I expect that ultimately this branch will be the right choice, however
+  //     the just is still out.
+  if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
+    if (xin->spptr && ctx->spptr) 
+      ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  }
 #endif
   xv   = *(PetscScalar**)xin->data;
 
@@ -215,11 +219,11 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   /* wait on sends */
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
-#if 0
 #if defined(PETSC_HAVE_TXPETSCGPU)
-  if (ctx->spptr)
-    ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
-#endif
+  if (yin->valid_GPU_array == PETSC_CUSP_CPU) {
+    if (yin->spptr && ctx->spptr) 
+      ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+  }
 #endif
   PetscFunctionReturn(0);
 }
