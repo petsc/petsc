@@ -33,8 +33,8 @@ command \findex{TaoSetMonitor()}
                      void*);
 \end{verbatim}
 \noindent
-The routine, {\tt mon} indicates a user-defined monitoring routine
-and the {\tt void*} denotes an optional user-defined context for private 
+The routine {\tt mon} indicates a user-defined monitoring routine,
+and {\tt void*} denotes an optional user-defined context for private 
 data for the monitor routine.
 
 The routine set by {\tt TaoSetMonitor()} is called once during each
@@ -55,7 +55,7 @@ after the solution update.
 \section{Convergence Tests}
 \label{sec:Taoconvergence}
 
-There are many different ways to define convergence of a solver.
+Convergence of a solver can be defined in many ways.
 The methods TAO uses by default are mentioned in 
 Section \ref{sec:customize}.
 These methods include absolute and relative convergence tolerances as well
@@ -74,7 +74,7 @@ can be queried for the solution vector, gradient vector,
 or other statistic at the current iteration through routines such as
 {\tt TaoGetSolutionStatus()} and  {\tt TaoGetTolerances()}.
 
-To use this convergence test within a TAO solver, use
+To use this convergence test within a TAO solver, one uses
 the command \findex{TaoSetConvergenceTest()}
 \begin{verbatim}
    TaoSetConvergenceTest(TaoSolver,
@@ -87,7 +87,7 @@ final argument of the convergence test routine denotes an optional
 user-defined context for private data.  
 The convergence routine receives the TAO solver and this private data
 structure. 
-The termination flag can be set using the routine
+The termination flag can be set by using the routine
 \begin{verbatim}
    TaoSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
 \end{verbatim}
@@ -99,7 +99,7 @@ The termination flag can be set using the routine
 \label{sec:TaoLineSearch}
 
 Many solvers in TAO require a line search.  While these solvers always
-offer a default line search, alternative line searches can be applied
+offer a default line search, other line searches can be applied by
 using the function
 \begin{verbatim}
    TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
@@ -110,7 +110,7 @@ include Mor\'{e}-Thuente \cite{more:92}, Armijo, gpcg, and unit.
 
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
-can override the defaults by using the following options:
+can override the defaults by using the following options
 \begin{itemize}
 \item {\tt -tao\_ls\_maxfev <max>}
 \item {\tt -tao\_ls\_stepmin <min>}

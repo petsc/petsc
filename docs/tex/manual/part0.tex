@@ -6,8 +6,8 @@
 % Written in C, but good with C++ compilers.  Also can use fortran.
 
 The Toolkit for Advanced Optimization (TAO) focuses on the design and
-implementation of optimization software for the
-solution of large-scale optimization applications on high-performance
+implementation of optimization software for 
+solving large-scale optimization applications on high-performance
 architectures.  Our approach is motivated by the scattered support for
 parallel computations and lack of reuse of linear algebra software in
 currently available optimization software.  The TAO design allows the
@@ -31,7 +31,7 @@ external tools where appropriate.  Our design enables bidirectional
 connection to lower-level linear algebra support (e.g., parallel sparse
 matrix data structures) provided in toolkits such as PETSc
 \cite{petsc-web-page,petsc,petsc-user-ref}
-as well as higher-level application
+vas well as higher-level application
 frameworks.  Our design decisions are strongly motivated by the
 challenges inherent in the use of large-scale distributed memory
 architectures and the reality of working with large and often poorly
@@ -53,7 +53,7 @@ libraries and application code.
 
 
 The TAO solvers use fundamental PETSc objects to define and solve
-optimization problems: vectors, index sets, matrices, and linear
+optimization problems: vectors, matrices, index sets, and linear
 solvers.  The concepts of vectors and matrices are standard, while an
 index set refers to a set of integers used to identify particular
 elements of vectors or matrices.  An optimization algorithm is a
@@ -61,7 +61,7 @@ sequence of well-defined operations on these objects.  These
 operations include vector sums, inner products, and matrix-vector
 multiplication.
 
-With sufficiently flexible abstract interfaces, TAO can support a
+With sufficiently flexible abstract interfaces, PETSc can support a
 variety of implementations of data structures and algorithms.  These
 abstractions allow us to more easily experiment with a range of
 algorithmic and data structure options for realistic problems.  
@@ -70,6 +70,7 @@ high-performance optimization software adaptable to the continual
 evolution of parallel and distributed architectures and the research
 community's discovery of new algorithms that exploit their features.
 
+\begin{comment}
 The TAO design philosophy eliminates some of the barriers in using
 independently developed software components by accepting data that is
 independent of representation and calling sequence written for
@@ -79,9 +80,6 @@ offered by PETSc version 3.2, which uses MPI \cite{using-mpi}
 for all interprocessor communication.  The PETSc package supports 
 objects for vectors, matrices, index sets, and linear solvers
 using various formats and has links to external linear algebra
-packages.
-
-\begin{comment}
 \section{Performance Results}
 
 A major concern in the TAO project is the performance and scalability
