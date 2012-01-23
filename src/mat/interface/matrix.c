@@ -1101,7 +1101,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
   if (v) PetscValidDoublePointer(v,6);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  if (!mat->preallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXXSetPreallocation() or MatSetUpPreallocation() first");
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }

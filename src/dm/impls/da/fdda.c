@@ -82,7 +82,7 @@ $                         0, 1, 1}
 
    Contributed by Glenn Hammond
 
-.seealso DMCreateMatrix(), DMDASetGetMatrix(), DMDASetMatPreallocateOnly()
+.seealso DMCreateMatrix(), DMDASetGetMatrix(), DMSetMatrixPreallocateOnly()
 
 @*/
 PetscErrorCode  DMDASetBlockFills(DM da,PetscInt *dfill,PetscInt *ofill)
