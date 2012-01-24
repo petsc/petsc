@@ -41,6 +41,7 @@ J*/
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMMESH      "mesh"
+#define DMCOMPLEX   "complex"
 #define DMCARTESIAN "cartesian"
 #define DMIGA       "iga"
 #define DMREDUNDANT "redundant"
