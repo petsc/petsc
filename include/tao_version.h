@@ -2,7 +2,7 @@
 #define __TAO_VERSION_H
 
 /* ========================================================================== */
-#define TAO_VERSION_RELEASE  0 /*  1 if official release */
+#define TAO_VERSION_RELEASE  1 /*  1 if official release */
 /* 
    Current TAO version number and release date
 */

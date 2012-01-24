@@ -14,8 +14,8 @@ then
     rm -rf tao-$VERSION
 fi
 
-echo "Cloning /home/aotools/hg/tao -r $REVISION"
-hg clone /home/aotools/hg/tao -r $REVISION tao-$VERSION
+echo "Cloning /home/aotools/hg/tao-2.0 -r $REVISION"
+hg clone /home/aotools/hg/tao-2.0 -r $REVISION tao-$VERSION
 
 cd tao-$VERSION
 export TAO_DIR=$BUILDDIR/tao-$VERSION
