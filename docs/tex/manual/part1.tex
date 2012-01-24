@@ -114,7 +114,7 @@ The include file for TAO should be used via the statement
 The required lower-level include files are automatically included
 within this high-level file.
 
-\section{TAO Initialization}
+\section{TAO Initialization and Finalization}
 \label{sec:initialization}
 
 All TAO programs contain a call to \findex{TaoInitialize()}
@@ -144,7 +144,6 @@ version, each TAO routine has as its final argument an integer error
 variable.  Error tracebacks are discussed in
 Section~\ref{sec:tao_programming}.
 
-\section{TAO Finalization}
 
 All TAO programs should call \texttt{TaoFinalize()}
 \findex{TaoFinalize()} as their final (or nearly final) statement.
@@ -161,12 +160,22 @@ the user is responsible for calling \texttt{PetscFinalize()}.
 
 \section{TAO Solvers}
 
-The primary commands for solving an unconstrained optimization problem
-using TAO are shown in Figure \ref{fig:tao_commands}.
+Many TAO applications will follow an ordered set of procedures for 
+solving an optimization problem:
+The user creates a \texttt{TaoSolver} context and selects a default algorithm. 
+Call-back routines as well as vector (\texttt{Vec}) and matrix (\texttt{Mat}) 
+data structures are then set.  These call-back routines will be used for 
+evaluating the objective function, gradient, and perhaps the Hessian 
+matrix.  The user then invokes TAO to solve the optimization problem and 
+finally destroys
+the \texttt{TaoSolver} context. A list of the necessary functions for 
+performing these steps
+using TAO are shown in Figure \ref{fig:tao_commands}.  Details of these commands are presented in
+Chapter~\ref{chapter:tao_solver}.
+
 \findex{TaoCreate()} \findex{TaoSetObjectiveAndGradientRoutine()}
 \findex{TaoSetRoutine()} \findex{TaoSolve()}
 \findex{TaoDestroy()} \findex{TaoSetInitialVector()}
-
 \begin{figure}[H]
 \begin{verbatim}
    TaoCreate(MPI_Comm comm, TaoSolver *tao); 
@@ -184,15 +193,6 @@ using TAO are shown in Figure \ref{fig:tao_commands}.
 \caption{Commands for Solving an Unconstrained Optimization Problem
 \label{fig:tao_commands}}
 \end{figure}
-
-\noindent
-The user first creates the \texttt{TaoSolver} context. 
-Call-back routines as well as vector (\texttt{Vec}) and matrix (\texttt{Mat}) 
-data structures are then set.  These call-back routines will be use for 
-evaluating the minimization function, gradient, and optionally the Hessian 
-matrix.  The user then solves the minimization problem and destroys
-the \texttt{TaoSolver} context.  Details of these commands are presented in
-Chapter~\ref{chapter:tao_solver}.
 
 Note that the solver algorithm selected through the function 
 \texttt{TaoSetType()} can be overridden
@@ -226,7 +226,7 @@ In the example in Figure \ref{fig:example1}, the vector data structure
 (\texttt{Vec}) is used to store the solution and gradient for the TAO
 unconstrained minimization solvers.  A new parallel or sequential
 vector \texttt{x} of global dimension \texttt{M} is created with the
-command % \findex{VecCreate()} \sindex{vectors}
+command 
 \begin{verbatim}
    info = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
@@ -234,12 +234,12 @@ command % \findex{VecCreate()} \sindex{vectors}
 where \texttt{comm} denotes the MPI communicator. The type of storage
 for the vector may be set with calls either to \texttt{VecSetType()}
 or to \texttt{VecSetFromOptions()}.  Additional vectors of the same type
-can be formed with % \findex{VecSetType()} \findex{VecSetFromOptions} \findex{VecDuplicate()}
+can be formed with 
 \begin{verbatim}
    info = VecDuplicate(Vec old,Vec *new);
 \end{verbatim}
 \noindent
-The commands % \findex{VecSet()} \findex{VecSetValues()}
+The commands
 \begin{verbatim}
    info = VecSet(Vec X,PetscScalar value);
    info = VecSetValues(Vec x,int n,int *indices,
@@ -257,7 +257,7 @@ in the PETSc users manual \cite{petsc-user-ref}.
 Usage of matrices and vectors is similar. \sindex{matrix} 
 The user can create a new parallel or sequential matrix \texttt{H} with 
 \texttt{M} global rows and \texttt{N} global columns, with the routines
-%\findex{MatCreate()}
+
 \begin{verbatim}
    ierr = MatCreate(MPI_Comm comm,Mat *H);
    ierr = MatSetSizes(H,PETSC_DECIDE,PETSC_DECIDE,M,N);
@@ -278,7 +278,7 @@ command
 After %\findex{MatSetValues()} 
 all elements have been inserted into the
 matrix, it must be processed with the pair of commands
-%\findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
+
 \begin{verbatim}
    ierr = MatAssemblyBegin(Mat H,MAT_FINAL_ASSEMBLY);
    ierr = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);

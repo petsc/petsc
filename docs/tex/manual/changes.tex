@@ -1,5 +1,5 @@
 \addcontentsline{toc}{chapter}{Changes for Version 2.0}
-\subsection*{Changes in Version 2.0}
+\section*{Changes in Version 2.0}
 
 Many new features and interface changes have been introduced in TAO version 2.0.
 TAO applications created for previous versions will need to be updated to 
@@ -9,8 +9,17 @@ clean,
 clear, and easy to use. Some of the most important changes are highlighted 
 below.
 
-\subsubsection*{New Algorithms.}
-TAO 2.0 has a new algorithm for solving derivative-free nonlinear least
+\vspace{7mm}
+\noindent \textbf{Elimination of the TaoApplication Object}. The largest change to the TAO programming interface is the elimination of the
+TaoApplication data structure. In previous versions of TAO, this structure was 
+created by the application programmer for application-specific data and 
+routines.  In order to more closely follow PETSc design principles, this 
+information is now directly attached to a TaoSolver object instead.  See 
+Figure~\ref{fig:tao_commands} for a listing of what the most common TAO 
+routines now look like without the TaoApplication object.
+
+\vspace{7mm}
+\noindent \textbf{New Algorithms}. TAO 2.0 has a new algorithm for solving derivative-free nonlinear least
 squares
 problems, POUNDerS, that can efficiently solve parameter optimization problems 
 when no derivatives are available and function evaluations are expensive. 
@@ -23,16 +32,17 @@ linearly constrained augmented Lagrangian (LCL) method.  More
 information on PDE-constrained optimization and LCL can be found 
 in Section~\ref{sec:lcl}.
 
-\subsubsection*{TaoLineSearch Object.}
-TAO 2.0 promotes the line search to a full object.  Any of the available 
+
+\vspace{7mm}
+\noindent \textbf{TaoLineSearch Object}. TAO 2.0 promotes the line search to a full object.  Any of the available 
 TAO line search algorithms (Armijo, Mor\'e-Thuente, GPCG, and unit) can now 
 be selected regardless of the overlying TAO algorithm.  Users can also
 create new line search algorithms that may be more suitable for their
 applications.  More information is available in 
 Section~\ref{sec:TaoLineSearch}.
 
-\subsubsection*{Better Adherence to PETSc Style.}
-TAO 2.0 features a tighter association with PETSc standards and practices.  All 
+\vspace{7mm}
+\noindent \textbf{Better Adherence to PETSc Style}. TAO 2.0 features a tighter association with PETSc standards and practices.  All 
 TAO constructs now follow PETSc conventions and are written in C.  There is 
 no longer a separate abstract class for vectors, matrices, and linear 
 solvers. TAO now uses these PETSc objects directly.  We believe these 
@@ -44,12 +54,4 @@ and quad-precision arithmetic when using GNU compilers and no longer
 requires a C++ compiler.  However, TAO is not compatible with PETSc 
 installations using complex data types.
 
-\subsubsection*{Elimination of the TaoApplication Object.}
-The largest change to the TAO programming interface is the elimination of the
-TaoApplication data structure. In previous versions of TAO, this structure was 
-created by the application programmer for application-specific data and 
-routines.  In order to more closely follow PETSc design principles, this 
-information is now directly attached to a TaoSolver object instead.  See 
-Figure~\ref{fig:tao_commands} for a listing of what the most common TAO 
-routines now look like without the TaoApplication object.
 

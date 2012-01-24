@@ -1,5 +1,14 @@
 
 \chapter{TAO Solvers}
+TAO includes a variety of optimization algorithms for several
+classes of problems (unconstrained, bound-constrained,
+and PDE-constrained minimization, nonlinear least-squares, and complementarity).
+The TAO algorithms for solving these problems are detailed in this section, 
+a particular algorithm can chosen by using the \texttt{TaoSetType()} function
+or using the command line arguments \texttt{-tao\_type <name>}.
+For those interested in extending these algorithms or using new ones, 
+please see Chapter~\ref{chapter:addsolver} for more information.
+
 
 \section{Unconstrained Minimization}
 \label{chapter:unconstrained}
@@ -12,12 +21,12 @@ to the amount of derivative information required:
 \item Function and gradient evaluations -- limited-memory, variable-metric 
 method ({\tt tao\_lmvm}) and nonlinear conjugate gradient method 
 ({\tt tao\_cg})
-\item Function, gradient, and Hessian evaluations -- Newton line-search 
+\item Function, gradient, and Hessian evaluations -- Newton line search 
 method ({\tt tao\_nls}) and Newton trust-region method ({\tt tao\_ntr})
 \end{enumerate}
 The best method to use depends on the particular problem being solved
 and the accuracy required in the solution.  If a Hessian evaluation 
-routine is available, then the Newton line-search and Newton trust-region 
+routine is available, then the Newton line search and Newton trust-region 
 methods will likely perform best.  When a Hessian evaluation routine
 is not available, then the limited-memory, variable-metric method is 
 likely to perform best.  The Nelder-Mead method should be used only
@@ -92,7 +101,8 @@ a solution to the optimization problem.  However, as the number of vectors
 increases, more memory is consumed, and each direction calculation takes
 longer to compute.  Therefore, a tradeoff must be made between the 
 quality of the Hessian approximation, the memory requirements, and
-the time to compute the direction.
+the time to compute the direction.  A list of all available options
+for this algorithm is presented in Table~\ref{table:lmvmoptions}.
 
 During the computation of the direction, the inverse of an ``initial''
 positive-definite Hessian approximation $H_{0,k}$ is applied.  This 
@@ -133,7 +143,7 @@ of past iterate and gradient information used is set by the command line
 argument {\tt -tao\_lmm\_scalar\_history <int>}, which must be less than 
 or equal to the number of vectors kept for the BFGS approximation.  
 The default value is 5.  The choice for $\alpha$ is made with the command 
-line argument {\tt -tao\_lmm\_scalar\_alpha <double>}; $1$ is the default
+line argument {\tt -tao\_lmm\_scalar\_alpha <real>}; $1$ is the default
 value.  This scaling method offers a good compromise between no scaling 
 and {\tt broyden} scaling.
 \item[{\tt broyden}] This scaling method uses a positive-definite diagonal 
@@ -142,7 +152,7 @@ the Hessian for the scaling matrix.  The Broyden approximation is a
 family of approximations parametrized by a constant $\phi$; $\phi = 0$ 
 gives the BFGS formula, and $\phi = 1$ gives the DFP formula.  The value 
 of $\phi$ is set with the command line argument 
-{\tt -tao\_lmm\_broyden\_phi <double>}; the default value is $0.125$.  
+{\tt -tao\_lmm\_broyden\_phi <real>}; the default value is $0.125$.  
 This scaling method requires the most computational effort of the
 available choices but typically results in a significant reduction 
 in the number of function and gradient evaluations taken to compute a 
@@ -180,9 +190,9 @@ used is set by the command line argument
 {\tt -tao\_lmm\_rescale\_history <int>}, which must be less than or equal
 to the number of vectors kept for the BFGS approximation; the default value 
 is 5.  The choice for $\alpha$ is made with the command
-line argument {\tt -tao\_lmm\_rescale\_alpha <double>}; $1$ is the default
+line argument {\tt -tao\_lmm\_rescale\_alpha <real>}; $1$ is the default
 value.  The choice for $\beta$ is made with the command line argument 
-{\tt -tao\_lmm\_rescale\_beta <double>}; $0.5$ is the default value.
+{\tt -tao\_lmm\_rescale\_beta <real>}; $0.5$ is the default value.
 \item[{\tt gl}] This scaling method is the same as the {\tt scalar} rescaling 
 method, but the previous value for the scaling matrix $H_{0,k-1}$ is used when 
 computing $\sigma$.  This is the rescaling method suggested in 
@@ -212,9 +222,9 @@ where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is
 the previous value, and $\nu$ is given.
 \end{description}
 The value for $\mu$ is set with the command line argument 
-{\tt -tao\_lmm\_limit\_mu <double>}; the default value is $1$.
+{\tt -tao\_lmm\_limit\_mu <real>}; the default value is $1$.
 The value for $\nu$ is set with the command line argument 
-{\tt -tao\_lmm\_limit\_nu <double>}; the default value is 100.  
+{\tt -tao\_lmm\_limit\_nu <real>}; the default value is 100.  
 
 The default values for the scaling, rescaling, and limit methods are based 
 on many tests using the unconstrained optimization problems from the 
@@ -223,8 +233,9 @@ a few sets of promising values.  These promising values were then
 run on the unconstrained optimization problems from the CUTEr 
 test set to obtain the default values.
 
-\begin{table}[h]
+\begin{table}[htb]
 \caption{Summary of {\tt lmvm} options}
+\label{table:lmvmoptions}
 \vspace{5mm}
 \begin{tabular}{l|p{1.5in}|l|p{2.0in}}
 \hline
@@ -233,18 +244,19 @@ Name \rule{0pt}{2.6ex} & Value & Default & Description \\
 {\tt -tao\_lmm\_vectors} \rule{0pt}{2.6ex} & int & 5 & Number of vectors for Hessian approximation \\
 {\tt -tao\_lmm\_scale\_type} & none, scalar, broyden & broyden & Type of scaling method to use \\
 {\tt -tao\_lmm\_scalar\_history} & int & 5 & Number of vectors to use when scaling \\
-{\tt -tao\_lmm\_scalar\_alpha} & double & 1 & Value of $\alpha$ for scalar scaling method \\
-{\tt -tao\_lmm\_broyden\_phi} & double & 0.125 & Value of $\alpha$ for scalar scaling method \\
+{\tt -tao\_lmm\_scalar\_alpha} & real & 1 & Value of $\alpha$ for scalar scaling method \\
+{\tt -tao\_lmm\_broyden\_phi} & real & 0.125 & Value of $\alpha$ for scalar scaling method \\
 {\tt -tao\_lmm\_rescale\_type} & none, scalar, gl & scalar & Type of rescaling method to use \\
 {\tt -tao\_lmm\_rescale\_history} & int & 5 & Number of vectors to use when rescaling \\
-{\tt -tao\_lmm\_rescale\_alpha} & double & 1 & Value of $\alpha$ for rescaling method \\
-{\tt -tao\_lmm\_rescale\_beta} & double & 0.5 & Value of $\beta$ for rescaling method \\
+{\tt -tao\_lmm\_rescale\_alpha} & real & 1 & Value of $\alpha$ for rescaling method \\
+{\tt -tao\_lmm\_rescale\_beta} & real & 0.5 & Value of $\beta$ for rescaling method \\
 {\tt -tao\_lmm\_limit\_type} & none, average, relative, absolute & none & Type of limit to impose on scaling matrix \\
-{\tt -tao\_lmm\_limit\_mu} & double & 1 & Value of $\mu$ for limit type\\
-{\tt -tao\_lmm\_limit\_nu} & double & 100 & Value of $\nu$ for limit type\\
+{\tt -tao\_lmm\_limit\_mu} & real & 1 & Value of $\mu$ for limit type\\
+{\tt -tao\_lmm\_limit\_nu} & real & 100 & Value of $\nu$ for limit type\\
 \hline
 \end{tabular}
 \end{table}
+\afterpage{\clearpage}
 
 \subsection{Nonlinear Conjugate Gradient Method}\sindex{line search}\sindex{gradients}
 
@@ -271,11 +283,11 @@ gradient at the previous point by the square of the Euclidean norm of
 the gradient at the current point.  When the absolute value of this 
 ratio is greater than $\eta$, the algorithm restarts using the gradient 
 direction.  The parameter $\eta$ can be set by using the command line argument 
-{\tt -tao\_cg\_eta <double>}; 0.1 is the default value.  
+{\tt -tao\_cg\_eta <real>}; 0.1 is the default value.  
 
-\subsection{Newton Line-Search Method}\sindex{Newton's method}\sindex{line search}
+\subsection{Newton Line Search Method}\sindex{Newton's method}\sindex{line search}
 
-The Newton line-search method solves the symmetric system of equations
+The Newton line search method solves the symmetric system of equations
 \[
 H_k d_k = -g_k
 \]
@@ -295,9 +307,88 @@ problem
 \[
 \min_\tau f(x_k + \tau d_k).
 \]
-The Newton line-search method can be set by using the TAO solver {\tt tao\_nls}.
+The Newton line search method can be selected by using the TAO 
+solver {\tt tao\_nls}.
+The options available for this solver are listed in
+Table~\ref{table:nlsoptions}.
 For the best efficiency, function and gradient evaluations should be 
 performed simultaneously when using this algorithm.
+
+\begin{table}[h]
+\caption{Summary of {\tt nls} options}
+\label{table:nlsoptions}
+\vspace{5mm}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+\hline
+Name \rule{0pt}{2.6ex} & Value & Default & Description \\
+\hline
+{\tt -tao\_nls\_ksp\_type} \rule{0pt}{2.6ex} & cg, nash, stcg, gltr, petsc & stcg & Type of Krylov subspace method to use when solving linear system \\
+{\tt -tao\_nls\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
+{\tt -tao\_nls\_bfgs\_scale\_type} & ahess, phess, bfgs & phess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_nls\_sval} & real & $0$ & Initial perturbation value \\
+{\tt -tao\_nls\_imin} & real & $10^{-4}$ & Minimum initial perturbation value \\
+{\tt -tao\_nls\_imax} & real & $100$ & Maximum initial perturbation value \\
+{\tt -tao\_nls\_imfac} & real & $0.1$ & Factor applied to norm of gradient when initializing perturbation \\
+{\tt -tao\_nls\_pmax} & real & $100$ & Maximum perturbation when increasing value \\
+{\tt -tao\_nls\_pgfac} & real & $10$ & Growth factor applied to perturbation when increasing value \\
+{\tt -tao\_nls\_pmgfac} & real & $0.1$ & Factor applied to norm of gradient when increasing perturbation \\
+{\tt -tao\_nls\_pmin} & real & $10^{-12}$ & Minimum perturbation when decreasing value; smaller values set to zero \\
+{\tt -tao\_nls\_psfac} & real & $0.4$ & Shrink factor applied to perturbation when decreasing value \\
+{\tt -tao\_nls\_pmsfac} & real & $0.1$ & Factor applied to norm of gradient when decreasing perturbation \\
+{\tt -tao\_nls\_init\_type} & constant, direction, interpolation &
+interpolation & Method used to initialize trust-region radius when using
+{\tt nash}, {\tt stcg}, or {\tt gltr} \\
+\hline
+\end{tabular}
+\end{table}
+\afterpage{\clearpage}
+
+\begin{table}[h]
+\caption{Summary of {\tt nls} options (continued)}
+\vspace{5mm}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+\hline
+Name \rule{0pt}{2.6ex} & Value & Default & Description \\
+\hline
+{\tt -tao\_nls\_mu1\_i} \rule{0pt}{2.6ex} & real & 0.35 & $\mu_1$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_mu2\_i} & real & 0.50 & $\mu_2$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma1\_i} & real & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma2\_i} & real & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma3\_i} & real & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma4\_i} & real & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_theta\_i} & real & 0.25 & $\theta$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_update\_type} & step, reduction, interpolation & step &
+Method used to update trust-region radius when using {\tt nash}, {\tt
+stcg}, or {\tt gltr} \\
+{\tt -tao\_nls\_nu1} & real & 0.25 & $\nu_1$ in {\tt step} update \\
+{\tt -tao\_nls\_nu2} & real & 0.50 & $\nu_2$ in {\tt step} update \\
+{\tt -tao\_nls\_nu3} & real & 1.00 & $\nu_3$ in {\tt step} update \\
+{\tt -tao\_nls\_nu4} & real & 1.25 & $\nu_4$ in {\tt step} update \\
+{\tt -tao\_nls\_omega1} & real & 0.25 & $\omega_1$ in {\tt step} update \\
+{\tt -tao\_nls\_omega2} & real & 0.50 & $\omega_2$ in {\tt step} update \\
+{\tt -tao\_nls\_omega3} & real & 1.00 & $\omega_3$ in {\tt step} update \\
+{\tt -tao\_nls\_omega4} & real & 2.00 & $\omega_4$ in {\tt step} update \\
+{\tt -tao\_nls\_omega5} & real & 4.00 & $\omega_5$ in {\tt step} update \\
+{\tt -tao\_nls\_eta1} & real & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta2} & real & 0.25 & $\eta_2$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta3} & real & 0.50 & $\eta_3$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta4} & real & 0.90 & $\eta_4$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha1} & real & 0.25 & $\alpha_1$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha2} & real & 0.50 & $\alpha_2$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha3} & real & 1.00 & $\alpha_3$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha4} & real & 2.00 & $\alpha_4$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha5} & real & 4.00 & $\alpha_5$ in {\tt reduction} update \\
+{\tt -tao\_nls\_mu1} & real & 0.10 & $\mu_1$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_mu2} & real & 0.50 & $\mu_2$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma1} & real & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma2} & real & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma3} & real & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma4} & real & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_theta} & real & 0.05 & $\theta$ in {\tt interpolation} update \\
+\hline
+\end{tabular}
+\end{table}
+\afterpage{\clearpage}
 
 The system of equations is approximately solved by applying the conjugate 
 gradient method, Nash conjugate gradient method, Steihaug-Toint conjugate 
@@ -364,7 +455,7 @@ direction or the Krylov subspace method, the perturbation is initialized to
 \rho_{k+1} = \mbox{median}\left\{\mbox{imin}, \mbox{imfac} * \|g(x_k)\|, \mbox{imax}\right\},
 \]
 where $g(x_k)$ is the gradient of the objective function and {\tt imin} is set 
-with the command line argument {\tt -tao\_nls\_imin <double>} with a default 
+with the command line argument {\tt -tao\_nls\_imin <real>} with a default 
 value of $10^{-4}$, {\tt imfac} by {\tt -tao\_nls\_imfac} with a default 
 value of 0.1, and {\tt imax} by {\tt -tao\_nls\_imax} with a default value 
 of 100.  
@@ -414,9 +505,9 @@ scheme performs a number of function and gradient evaluations to determine
 a radius such that the reduction predicted by the quadratic model along the 
 gradient direction coincides with the actual reduction in the nonlinear 
 function.  The iterate obtaining the best objective function value is 
-used as the starting point for the main line-search algorithm.  The 
+used as the starting point for the main line search algorithm.  The 
 {\tt constant} method initializes the trust-region radius by using 
-the value specified with the {\tt -tao\_trust0 <double>} command line 
+the value specified with the {\tt -tao\_trust0 <real>} command line 
 argument, where the default value is 100.  The {\tt direction} technique 
 solves the first quadratic optimization problem by using a standard 
 conjugate gradient method and initializes the trust region to 
@@ -458,79 +549,6 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
-\begin{table}[h]
-\caption{Summary of {\tt nls} options}
-\vspace{5mm}
-\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
-\hline
-Name \rule{0pt}{2.6ex} & Value & Default & Description \\
-\hline
-{\tt -tao\_nls\_ksp\_type} \rule{0pt}{2.6ex} & cg, nash, stcg, gltr, petsc & stcg & Type of Krylov subspace method to use when solving linear system \\
-{\tt -tao\_nls\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
-{\tt -tao\_nls\_bfgs\_scale\_type} & ahess, phess, bfgs & phess & Type of scaling matrix to use with BFGS preconditioner \\
-{\tt -tao\_nls\_sval} & double & $0$ & Initial perturbation value \\
-{\tt -tao\_nls\_imin} & double & $10^{-4}$ & Minimum initial perturbation value \\
-{\tt -tao\_nls\_imax} & double & $100$ & Maximum initial perturbation value \\
-{\tt -tao\_nls\_imfac} & double & $0.1$ & Factor applied to norm of gradient when initializing perturbation \\
-{\tt -tao\_nls\_pmax} & double & $100$ & Maximum perturbation when increasing value \\
-{\tt -tao\_nls\_pgfac} & double & $10$ & Growth factor applied to perturbation when increasing value \\
-{\tt -tao\_nls\_pmgfac} & double & $0.1$ & Factor applied to norm of gradient when increasing perturbation \\
-{\tt -tao\_nls\_pmin} & double & $10^{-12}$ & Minimum perturbation when decreasing value; smaller values set to zero \\
-{\tt -tao\_nls\_psfac} & double & $0.4$ & Shrink factor applied to perturbation when decreasing value \\
-{\tt -tao\_nls\_pmsfac} & double & $0.1$ & Factor applied to norm of gradient when decreasing perturbation \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[h]
-\caption{Summary of {\tt nls} options (continued)}
-\vspace{5mm}
-\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
-\hline
-Name \rule{0pt}{2.6ex} & Value & Default & Description \\
-\hline
-{\tt -tao\_nls\_init\_type} & constant, direction, interpolation &
-interpolation & Method used to initialize trust-region radius when using
-{\tt nash}, {\tt stcg}, or {\tt gltr} \\
-{\tt -tao\_nls\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_gamma2\_i} & double & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
-{\tt -tao\_nls\_update\_type} & step, reduction, interpolation & step &
-Method used to update trust-region radius when using {\tt nash}, {\tt
-stcg}, or {\tt gltr} \\
-{\tt -tao\_nls\_nu1} & double & 0.25 & $\nu_1$ in {\tt step} update \\
-{\tt -tao\_nls\_nu2} & double & 0.50 & $\nu_2$ in {\tt step} update \\
-{\tt -tao\_nls\_nu3} & double & 1.00 & $\nu_3$ in {\tt step} update \\
-{\tt -tao\_nls\_nu4} & double & 1.25 & $\nu_4$ in {\tt step} update \\
-{\tt -tao\_nls\_omega1} & double & 0.25 & $\omega_1$ in {\tt step} update \\
-{\tt -tao\_nls\_omega2} & double & 0.50 & $\omega_2$ in {\tt step} update \\
-{\tt -tao\_nls\_omega3} & double & 1.00 & $\omega_3$ in {\tt step} update \\
-{\tt -tao\_nls\_omega4} & double & 2.00 & $\omega_4$ in {\tt step} update \\
-{\tt -tao\_nls\_omega5} & double & 4.00 & $\omega_5$ in {\tt step} update \\
-{\tt -tao\_nls\_eta1} & double & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
-{\tt -tao\_nls\_eta2} & double & 0.25 & $\eta_2$ in {\tt reduction} update \\
-{\tt -tao\_nls\_eta3} & double & 0.50 & $\eta_3$ in {\tt reduction} update \\
-{\tt -tao\_nls\_eta4} & double & 0.90 & $\eta_4$ in {\tt reduction} update \\
-{\tt -tao\_nls\_alpha1} & double & 0.25 & $\alpha_1$ in {\tt reduction} update \\
-{\tt -tao\_nls\_alpha2} & double & 0.50 & $\alpha_2$ in {\tt reduction} update \\
-{\tt -tao\_nls\_alpha3} & double & 1.00 & $\alpha_3$ in {\tt reduction} update \\
-{\tt -tao\_nls\_alpha4} & double & 2.00 & $\alpha_4$ in {\tt reduction} update \\
-{\tt -tao\_nls\_alpha5} & double & 4.00 & $\alpha_5$ in {\tt reduction} update \\
-{\tt -tao\_nls\_mu1} & double & 0.10 & $\mu_1$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_mu2} & double & 0.50 & $\mu_2$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_gamma1} & double & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_gamma2} & double & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_gamma3} & double & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_gamma4} & double & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
-{\tt -tao\_nls\_theta} & double & 0.05 & $\theta$ in {\tt interpolation} update \\
-\hline
-\end{tabular}
-\end{table}
-
 \subsection{Newton Trust-Region Method}\sindex{Newton method}\sindex{trust
 region}
 
@@ -551,9 +569,54 @@ sufficiently
 reduce the nonlinear objective function, then the step is rejected, the 
 trust-region radius is reduced, and the quadratic program is re-solved 
 by using the updated trust-region radius. The Newton trust-region method 
-can be set by using the TAO solver {\tt tao\_ntr}.  For the best efficiency, 
+can be set by using the TAO solver {\tt tao\_ntr}. The options available 
+for this solver are listed in Table~\ref{table:ntroptions}. For the best 
+efficiency, 
 function and gradient evaluations should be performed separately when 
 using this algorithm.
+
+\begin{table}[h]
+\caption{Summary of {\tt ntr} options}
+\label{table:ntroptions}
+\vspace{5mm}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+\hline
+Name \rule{0pt}{2.6ex} & Value & Default & Description \\
+\hline
+{\tt -tao\_ntr\_ksp\_type} \rule{0pt}{2.6ex} & nash, stcg, gltr & stcg & Type of Krylov subspace method to use when solving linear system \\
+{\tt -tao\_ntr\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
+{\tt -tao\_ntr\_bfgs\_scale\_type} & ahess, bfgs & ahess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_ntr\_init\_type} & constant, direction, interpolation &
+interpolation & Method used to initialize trust-region radius \\
+{\tt -tao\_ntr\_mu1\_i} & real & 0.35 & $\mu_1$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_mu2\_i} & real & 0.50 & $\mu_2$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma1\_i} & real & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma2\_i} & real & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma3\_i} & real & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma4\_i} & real & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_theta\_i} & real & 0.25 & $\theta$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_update\_type} & reduction, interpolation & reduction &
+Method used to update trust-region radius \\
+{\tt -tao\_ntr\_eta1} & real & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta2} & real & 0.25 & $\eta_2$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta3} & real & 0.50 & $\eta_3$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta4} & real & 0.90 & $\eta_4$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha1} & real & 0.25 & $\alpha_1$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha2} & real & 0.50 & $\alpha_2$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha3} & real & 1.00 & $\alpha_3$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha4} & real & 2.00 & $\alpha_4$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha5} & real & 4.00 & $\alpha_5$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_mu1} & real & 0.10 & $\mu_1$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_mu2} & real & 0.50 & $\mu_2$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma1} & real & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma2} & real & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma3} & real & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma4} & real & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_theta} & real & 0.05 & $\theta$ in {\tt interpolation} update \\
+\hline
+\end{tabular}
+\end{table}
+\afterpage{\clearpage}
 
 The quadratic optimization problem is approximately solved by applying
 the Nash or Steihaug-Toint conjugate gradient methods or the 
@@ -607,7 +670,7 @@ gradient direction coincides with the actual reduction in the nonlinear
 function.  The iterate obtaining the best objective function value is 
 used as the starting point for the main trust-region algorithm.  The 
 {\tt constant} method initializes the trust-region radius by using 
-the value specified with the {\tt -tao\_trust0 <double>} command line 
+the value specified with the {\tt -tao\_trust0 <real>} command line 
 argument, where the default value is 100.  The {\tt direction} technique 
 solves the first quadratic optimization problem by using a standard 
 conjugate gradient method and initializes the trust region to 
@@ -636,46 +699,6 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
-\begin{table}[h]
-\caption{Summary of {\tt ntr} options}
-\vspace{5mm}
-\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
-\hline
-Name \rule{0pt}{2.6ex} & Value & Default & Description \\
-\hline
-{\tt -tao\_ntr\_ksp\_type} \rule{0pt}{2.6ex} & nash, stcg, gltr & stcg & Type of Krylov subspace method to use when solving linear system \\
-{\tt -tao\_ntr\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
-{\tt -tao\_ntr\_bfgs\_scale\_type} & ahess, bfgs & ahess & Type of scaling matrix to use with BFGS preconditioner \\
-{\tt -tao\_ntr\_init\_type} & constant, direction, interpolation &
-interpolation & Method used to initialize trust-region radius \\
-{\tt -tao\_ntr\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_gamma2\_i} & double & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
-{\tt -tao\_ntr\_update\_type} & reduction, interpolation & reduction &
-Method used to update trust-region radius \\
-{\tt -tao\_ntr\_eta1} & double & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_eta2} & double & 0.25 & $\eta_2$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_eta3} & double & 0.50 & $\eta_3$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_eta4} & double & 0.90 & $\eta_4$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_alpha1} & double & 0.25 & $\alpha_1$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_alpha2} & double & 0.50 & $\alpha_2$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_alpha3} & double & 1.00 & $\alpha_3$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_alpha4} & double & 2.00 & $\alpha_4$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_alpha5} & double & 4.00 & $\alpha_5$ in {\tt reduction} update \\
-{\tt -tao\_ntr\_mu1} & double & 0.10 & $\mu_1$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_mu2} & double & 0.50 & $\mu_2$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_gamma1} & double & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_gamma2} & double & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_gamma3} & double & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_gamma4} & double & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
-{\tt -tao\_ntr\_theta} & double & 0.05 & $\theta$ in {\tt interpolation} update \\
-\hline
-\end{tabular}
-\end{table}
 
 \section{Bound-Constrained Optimization}\sindex{bounds}
 \label{chapter:bound}
@@ -704,7 +727,8 @@ The TRON algorithm solves a reduced linear system
 defined by the rows and columns corresponding to the variables that
 lie between the upper and lower bounds.
 The TRON algorithm applies a trust region to the 
-conjugate gradients to ensure convergence.  The initial trust region
+conjugate gradients to ensure convergence.  The initial trust-region
+radius
 can be set by using the command 
 {\tt Tao\-Set\-Initial\-Trust\-Region\-Radius()},
 and the current trust region size can be found by using the command
@@ -938,7 +962,7 @@ approximation to the reduced Hessian matrix used in the next
 iteration of the code.  The update is skipped if it cannot be
 performed.
 
-\section{Nonlinear Least Squares}
+\section{Nonlinear Least-Squares}
 \label{sec:leastsquares}
 Given a function $F: \Re^n \to \Re^m$, the nonlinear least-squares 
 problem minimizes 
