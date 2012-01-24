@@ -25,9 +25,8 @@ tao_info:
 	-@echo "for help with installation problems. Please send EVERYTHING"
 	-@echo "printed out below when reporting problems."
 	-@echo " "
-	-@echo "To subscribe to the TAO users mailing list, send mail to "
-	-@echo "majordomo@mcs.anl.gov with the message: "
-	-@echo "subscribe tao-news"
+	-@echo "To subscribe to the TAO users mailing list, please "
+	-@echo "visit https://lists.mcs.anl.gov/mailman/listinfo/tao-news"
 	-@echo " "
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`

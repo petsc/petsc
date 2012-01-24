@@ -1,6 +1,6 @@
 #!/bin/bash
 export BUILDDIR=$HOME/working/taobuild
-export VERSION=2.0-beta9
+export VERSION=2.0
 export REVISION=default
 export HERE=$PWD
 if [ ! -d "$BUILDDIR" ]
@@ -14,15 +14,14 @@ then
     rm -rf tao-$VERSION
 fi
 
-echo "Cloning ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION"
-hg clone ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION tao-$VERSION
+echo "Cloning /home/aotools/hg/tao -r $REVISION"
+hg clone /home/aotools/hg/tao -r $REVISION tao-$VERSION
 
 cd tao-$VERSION
 export TAO_DIR=$BUILDDIR/tao-$VERSION
 
 echo "Generating fortran stubs..."
 make tao_allfortranstubs BFORT=bfort
-#BFORT=/home/sarich/software/sowing/bin/bfort
 
 echo "Generating etags..."
 make tao_alletags
