@@ -3,6 +3,7 @@
  */
 #include "private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
+#include <private/kspimpl.h>
 
 #if defined PETSC_USE_LOG 
 PetscLogEvent gamg_setup_events[NUM_SET];
@@ -162,8 +163,8 @@ PetscErrorCode createLevel( const PC a_pc,
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
   MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
-  PetscMPIInt      mype,npe,new_npe,nactive;
-  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new,ncrs0;
+  PetscMPIInt      mype,npe,new_npe,nactive = *a_nactive_proc;
+  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new,ncrs0,rfactor;
  
   PetscFunctionBegin;  
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
@@ -187,192 +188,191 @@ PetscErrorCode createLevel( const PC a_pc,
   ierr = MatGetSize( Cmat, &neq, &NN );  CHKERRQ(ierr);
   new_npe = (PetscMPIInt)((float)neq/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
   if( new_npe == 0 || neq < coarse_max ) new_npe = 1; 
-  else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
-  if( a_isLast ) new_npe = 1; 
+  else if (new_npe >= nactive ) new_npe = nactive; /* no change, rare */
+  if( a_isLast ) new_npe = 1;
   
-  if( !repart && !(new_npe == 1 && *a_nactive_proc != 1) ) { 
+  if( !repart && new_npe==nactive ) { 
     *a_Amat_crs = Cmat; /* output - no repartitioning or reduction */
   }
   else {
     /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
-    Mat              adj;
     const PetscInt *idx,data_sz=a_ndata_rows*a_ndata_cols;
     const PetscInt  stride0=ncrs0*a_ndata_rows;
-    PetscInt        is_sz,*newproc_idx,ii,jj,kk,strideNew,*tidx;
-    /* create sub communicator  */
-    MPI_Comm        cm;
-    MPI_Group       wg, g2;
-    PetscInt       *counts,inpe,targetPE;
-    PetscMPIInt    *ranks;
-    IS              isscat;
+    PetscInt        *counts,is_sz,*newproc_idx,ii,jj,kk,strideNew,*tidx,inpe,targetPE;
+    IS              isnewproc;
+    VecScatter      vecscat;
     PetscScalar    *array;
     Vec             src_crd, dest_crd;
     PetscReal      *data = *a_coarse_data;
-    VecScatter      vecscat;
-    IS              isnewproc;
+    IS              isscat;
 
-    ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
-    ierr = PetscMalloc( npe*sizeof(PetscInt), &counts ); CHKERRQ(ierr); 
+    ierr = PetscMalloc( npe*sizeof(PetscInt), &counts ); CHKERRQ(ierr);
 
-    ierr = MPI_Allgather( &ncrs0, 1, MPIU_INT, counts, 1, MPIU_INT, wcomm ); CHKERRQ(ierr); 
-    assert(counts[mype]==ncrs0);
-    /* count real active pes */
-    for( nactive = jj = 0, targetPE = -1 ; jj < npe ; jj++) {
-      if( counts[jj] != 0 ) {
-	ranks[nactive++] = jj;
-        if( targetPE == -1 ) targetPE = jj; /* find lowest active PE */
-      }
-    }
-    
-    if (nactive < new_npe) {
-      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s reducing number of target PEs: %d --> %d (?)\n",mype,__FUNCT__,new_npe,nactive); 
-      new_npe = nactive; /* this can happen with empty input procs */
-    }
-
-    if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
-
-    *a_nactive_proc = new_npe; /* output */
-
-    ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
-    ierr = MPI_Group_incl( wg, nactive, ranks, &g2 ); CHKERRQ(ierr); 
-    ierr = MPI_Comm_create( wcomm, g2, &cm ); CHKERRQ(ierr); 
-
-    ierr = MPI_Group_free( &wg );                            CHKERRQ(ierr);
-    ierr = MPI_Group_free( &g2 );                            CHKERRQ(ierr);
-
-    /* MatPartitioningApply call MatConvert, which is collective */
 #if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
-    if( a_cbs == 1) { 
-      ierr = MatConvert( Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
-    }
-    else{
-      /* make a scalar matrix to partition */
-      Mat tMat;
-      PetscInt ncols,jj,Ii; 
-      const PetscScalar *vals; 
-      const PetscInt *idx;
-      PetscInt *d_nnz, *o_nnz;
-      static int llev = 0;
+    if( repart ) {
+      /* create sub communicator  */
+      Mat             adj;
 
-      ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
-      ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
-      for ( Ii = Istart0, jj = 0 ; Ii < Iend0 ; Ii += a_cbs, jj++ ) {
-        ierr = MatGetRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
-        d_nnz[jj] = ncols/a_cbs;
-        o_nnz[jj] = ncols/a_cbs;
-        ierr = MatRestoreRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
-        if( d_nnz[jj] > ncrs0 ) d_nnz[jj] = ncrs0;
-        if( o_nnz[jj] > (neq/a_cbs-ncrs0) ) o_nnz[jj] = neq/a_cbs-ncrs0;
+      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s repartition: npe (active): %d --> %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
+
+      /* MatPartitioningApply call MatConvert, which is collective */
+      if( a_cbs == 1 ) { 
+	ierr = MatConvert( Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
       }
-
-      ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
-                              PETSC_DETERMINE, PETSC_DETERMINE,
-                              0, d_nnz, 0, o_nnz,
-                              &tMat );
-      CHKERRQ(ierr);
-      ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
-      ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
-
-      for ( ii = Istart0; ii < Iend0; ii++ ) {
-        PetscInt dest_row = ii/a_cbs;
-        ierr = MatGetRow(Cmat,ii,&ncols,&idx,&vals); CHKERRQ(ierr);
-        for( jj = 0 ; jj < ncols ; jj++ ){
-          PetscInt dest_col = idx[jj]/a_cbs;
-          PetscScalar v = 1.0;
-          ierr = MatSetValues(tMat,1,&dest_row,1,&dest_col,&v,ADD_VALUES); CHKERRQ(ierr);
-        }
-        ierr = MatRestoreRow(Cmat,ii,&ncols,&idx,&vals); CHKERRQ(ierr);
-      }
-      ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-      if( llev++ == -1 ) {
-	PetscViewer viewer; char fname[32];
-	sprintf(fname,"part_mat_%d.mat",llev);
-	PetscViewerBinaryOpen(wcomm,fname,FILE_MODE_WRITE,&viewer);
-	ierr = MatView( tMat, viewer ); CHKERRQ(ierr);
-	ierr = PetscViewerDestroy( &viewer );
-      }
-      
-      ierr = MatConvert( tMat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
-
-      ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
-    }
-
-    if( ncrs0 != 0 ){
-      const PetscInt *is_idx;
-      MatPartitioning  mpart;
-      IS proc_is;
-      /* hack to fix global data that pmetis.c uses in 'adj' */
-      for( nactive = jj = 0 ; jj < npe ; jj++ ) {
-	if( counts[jj] != 0 ) {
-	  adj->rmap->range[nactive++] = adj->rmap->range[jj];
+      else{
+	/* make a scalar matrix to partition */
+	Mat tMat;
+	PetscInt ncols,jj,Ii; 
+	const PetscScalar *vals; 
+	const PetscInt *idx;
+	PetscInt *d_nnz, *o_nnz;
+	static int llev = 0;
+	
+	ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+	ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
+	for ( Ii = Istart0, jj = 0 ; Ii < Iend0 ; Ii += a_cbs, jj++ ) {
+	  ierr = MatGetRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+	  d_nnz[jj] = ncols/a_cbs;
+	  o_nnz[jj] = ncols/a_cbs;
+	  ierr = MatRestoreRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+	  if( d_nnz[jj] > ncrs0 ) d_nnz[jj] = ncrs0;
+	  if( o_nnz[jj] > (neq/a_cbs-ncrs0) ) o_nnz[jj] = neq/a_cbs-ncrs0;
 	}
+	
+	ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
+				PETSC_DETERMINE, PETSC_DETERMINE,
+				0, d_nnz, 0, o_nnz,
+				&tMat );
+	CHKERRQ(ierr);
+	ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
+	ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
+	
+	for ( ii = Istart0; ii < Iend0; ii++ ) {
+	  PetscInt dest_row = ii/a_cbs;
+	  ierr = MatGetRow(Cmat,ii,&ncols,&idx,&vals); CHKERRQ(ierr);
+	  for( jj = 0 ; jj < ncols ; jj++ ){
+	    PetscInt dest_col = idx[jj]/a_cbs;
+	    PetscScalar v = 1.0;
+	    ierr = MatSetValues(tMat,1,&dest_row,1,&dest_col,&v,ADD_VALUES); CHKERRQ(ierr);
+	  }
+	  ierr = MatRestoreRow(Cmat,ii,&ncols,&idx,&vals); CHKERRQ(ierr);
+	}
+	ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	
+	if( llev++ == -1 ) {
+	  PetscViewer viewer; char fname[32];
+	  sprintf(fname,"part_mat_%d.mat",llev);
+	  PetscViewerBinaryOpen(wcomm,fname,FILE_MODE_WRITE,&viewer);
+	  ierr = MatView( tMat, viewer ); CHKERRQ(ierr);
+	  ierr = PetscViewerDestroy( &viewer );
+	}
+	
+	ierr = MatConvert( tMat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
+	
+	ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
       }
-      adj->rmap->range[nactive] = adj->rmap->range[npe];
-      
-      if( new_npe == 1 ) {
-        /* simply dump on one proc w/o partitioner for final reduction */
-        ierr = MatGetLocalSize( adj, &is_sz, &ii );  CHKERRQ(ierr);
-        ierr = ISCreateStride( cm, is_sz, targetPE, 0, &proc_is );  CHKERRQ(ierr);
-      } else {
-        char prefix[256];
-        const char *pcpre;
-        ierr = MatPartitioningCreate( cm, &mpart ); CHKERRQ(ierr);
-        ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
-        ierr = PCGetOptionsPrefix(a_pc,&pcpre);CHKERRQ(ierr);
-        ierr = PetscSNPrintf(prefix,sizeof prefix,"%spc_gamg_",pcpre?pcpre:"");CHKERRQ(ierr);
-        ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
-        ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
-        ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
-        ierr = MatPartitioningApply( mpart, &proc_is ); CHKERRQ(ierr);
-        ierr = MatPartitioningDestroy( &mpart );          CHKERRQ(ierr);
-      }
-      /* collect IS info */
-      ierr = ISGetLocalSize( proc_is, &is_sz );       CHKERRQ(ierr);
-      ierr = PetscMalloc( a_cbs*is_sz*sizeof(PetscInt), &newproc_idx ); CHKERRQ(ierr);
-      ierr = ISGetIndices( proc_is, &is_idx );        CHKERRQ(ierr);
-      
-      NN = 1; /* bring to "front" of machine */
-      /*NN = npe/new_npe;*/ /* spread partitioning across machine */
-      for( kk = jj = 0 ; kk < is_sz ; kk++ ){
-        for( ii = 0 ; ii < a_cbs ; ii++, jj++ ) {
-          newproc_idx[jj] = is_idx[kk] * NN; /* distribution */
-        }
-      }
-      ierr = ISRestoreIndices( proc_is, &is_idx );     CHKERRQ(ierr);
-      ierr = ISDestroy( &proc_is );                    CHKERRQ(ierr);
-      ierr = MPI_Comm_free( &cm );              CHKERRQ(ierr);  
 
-      is_sz *= a_cbs;
-    }
-    else{
-      newproc_idx = 0;
-      is_sz = 0;
-    }
+      { /* partition: get newproc_idx, set is_sz */
+	char prefix[256];
+	const char *pcpre;
+	const PetscInt *is_idx;
+	MatPartitioning  mpart;
+	IS proc_is;
+	
+	ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
+	ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
+	ierr = PCGetOptionsPrefix(a_pc,&pcpre);CHKERRQ(ierr);
+	ierr = PetscSNPrintf(prefix,sizeof prefix,"%spc_gamg_",pcpre?pcpre:"");CHKERRQ(ierr);
+	ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
+	ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
+	ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+	ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+#endif
+	ierr = MatPartitioningApply( mpart, &proc_is ); CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+	ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+#endif
+	ierr = MatPartitioningDestroy( &mpart );          CHKERRQ(ierr);
+      
+	/* collect IS info */
+	ierr = ISGetLocalSize( proc_is, &is_sz );       CHKERRQ(ierr);
+	ierr = PetscMalloc( a_cbs*is_sz*sizeof(PetscInt), &newproc_idx ); CHKERRQ(ierr);
+	ierr = ISGetIndices( proc_is, &is_idx );        CHKERRQ(ierr);
+	NN = 1; /* bring to "front" of machine */
+	/*NN = npe/new_npe;*/ /* spread partitioning across machine */
+	for( kk = jj = 0 ; kk < is_sz ; kk++ ){
+	  for( ii = 0 ; ii < a_cbs ; ii++, jj++ ){
+	    newproc_idx[jj] = is_idx[kk] * NN; /* distribution */
+	  }
+	}
+	ierr = ISRestoreIndices( proc_is, &is_idx );     CHKERRQ(ierr);
+	ierr = ISDestroy( &proc_is );                    CHKERRQ(ierr);
 
-    ierr = MatDestroy( &adj );                       CHKERRQ(ierr);
-    ierr = ISCreateGeneral( wcomm, is_sz, newproc_idx, PETSC_COPY_VALUES, &isnewproc );
-    if( newproc_idx != 0 ) {
-      ierr = PetscFree( newproc_idx );  CHKERRQ(ierr);
+	is_sz *= a_cbs;
+      }
+      ierr = MatDestroy( &adj );                       CHKERRQ(ierr);
+
+      ierr = ISCreateGeneral( wcomm, is_sz, newproc_idx, PETSC_COPY_VALUES, &isnewproc );
+      CHKERRQ(ierr);
+      if( newproc_idx != 0 ) {
+	ierr = PetscFree( newproc_idx );  CHKERRQ(ierr);
+      }
+    }
+    else { /* simple aggreagtion of parts */
+      /* find factor */
+      if( new_npe == 1 ) rfactor = npe; /* easy */
+      else {
+	PetscReal best_fact = 0.;
+	jj = -1;
+	for( kk = 1 ; kk <= npe ; kk++ ){
+	  if( npe%kk==0 ) { /* a candidate */
+	    PetscReal nactpe = (PetscReal)npe/(PetscReal)kk, fact = nactpe/(PetscReal)new_npe;
+	    if(fact > 1.0) fact = 1./fact; /* keep fact < 1 */
+	    if( fact > best_fact ) {
+	      best_fact = fact; jj = kk;
+	    }
+	  }
+	}
+	if(jj!=-1) rfactor = jj;
+	else rfactor = 1; /* prime? */
+      }
+      new_npe = npe/rfactor;
+      
+      if( new_npe==nactive ) { 
+	*a_Amat_crs = Cmat; /* output - no repartitioning or reduction */
+	ierr = PetscFree( counts );  CHKERRQ(ierr);
+	*a_nactive_proc = new_npe; /* output */
+	if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s aggregate processors noop: new_npe=%d, neq=%d\n",mype,__FUNCT__,new_npe,neq);
+	PetscFunctionReturn(0);
+      }
+
+      /* reduce - isnewproc */
+      targetPE = mype/rfactor;
+
+      if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s aggregate processors: npe: %d --> %d, neq=%d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
+      is_sz = ncrs0*a_cbs;
+      ierr = ISCreateStride( wcomm, is_sz, targetPE, 0, &isnewproc );
+      CHKERRQ(ierr);
     }
 
     /*
-     Create an index set from the isnewproc index set to indicate the mapping TO
-     */
+      Create an index set from the isnewproc index set to indicate the mapping TO
+    */
     ierr = ISPartitioningToNumbering( isnewproc, &isnum ); CHKERRQ(ierr);
     /*
-     Determine how many elements are assigned to each processor
-     */
+      Determine how many elements are assigned to each processor
+    */
     inpe = npe;
     ierr = ISPartitioningCount( isnewproc, inpe, counts ); CHKERRQ(ierr);
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype]/a_cbs;
     strideNew = ncrs_new*a_ndata_rows;
 #if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
 #endif
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate( wcomm, &dest_crd );
@@ -471,8 +471,9 @@ PetscErrorCode createLevel( const PC a_pc,
 
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
     ierr = PetscFree( counts );  CHKERRQ(ierr);
-    ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
+
+  *a_nactive_proc = new_npe; /* output */
 
   PetscFunctionReturn(0);
 }
@@ -719,8 +720,16 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
         ierr = PCSetType( pc, type ); CHKERRQ(ierr); /* should be same as eigen estimates op. */
         
         ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+
+	/* solve - keep stuff out of logging */
+	ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
+	ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
         ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
+	ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
+	ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
+
         ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+
         ierr = VecDestroy( &xx );       CHKERRQ(ierr);
         ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
         ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
@@ -1319,7 +1328,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
     PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
     PetscLogEventRegister("  PL repartition", cookie, &gamg_setup_events[SET12]);
 
-    /* PetscLogEventRegister("  PL 1", cookie, &gamg_setup_events[SET13]); */
+    PetscLogEventRegister("    apply part.", cookie, &gamg_setup_events[SET13]);
     /* PetscLogEventRegister("  PL 2", cookie, &gamg_setup_events[SET14]); */
     /* PetscLogEventRegister("  PL 3", cookie, &gamg_setup_events[SET15]); */
 

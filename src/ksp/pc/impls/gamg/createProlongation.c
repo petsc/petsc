@@ -3,6 +3,7 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>
+#include <private/kspimpl.h>
 
 #if defined(PETSC_HAVE_TRIANGLE) 
 #define REAL PetscReal
@@ -1277,11 +1278,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
   for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
     ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
-    d_nnz[jj] = ncols/bs_in; o_nnz[jj] = ncols/bs_in;
+    d_nnz[jj] = ncols; /* very pessimistic */
+    o_nnz[jj] = ncols/2+1;
     if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
     if( o_nnz[jj] > (NN/bs_in-nloc) ) o_nnz[jj] = NN/bs_in-nloc;
     nnz0 += ncols;
-    ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);    
+    ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
   }
   nnz0 /= (nloc+1);
 
@@ -1674,7 +1676,14 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
+      
+      /* solve - keep stuff out of logging */
+      ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
+      ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
+      ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
+
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
       if( verbose ) {
         PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
