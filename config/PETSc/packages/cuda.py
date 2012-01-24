@@ -82,8 +82,11 @@ class Configure(PETSc.package.NewPackage):
     self.popLanguage()
 
   def configureTypes(self):
+    import config.setCompilers
     if self.scalartypes.scalartype == 'complex':
       raise RuntimeError('Must use real numbers with CUDA') 
+    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+      raise RuntimeError('Must use GNU compilers with CUDA')
     if not self.scalartypes.precision in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA') 
     else:
