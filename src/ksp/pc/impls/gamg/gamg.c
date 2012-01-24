@@ -228,11 +228,11 @@ PetscErrorCode createLevel( const PC a_pc,
       if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s reducing number of target PEs: %d --> %d (?)\n",mype,__FUNCT__,new_npe,nactive); 
       new_npe = nactive; /* this can happen with empty input procs */
     }
-    
+
     if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
 
     *a_nactive_proc = new_npe; /* output */
-    
+
     ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
     ierr = MPI_Group_incl( wg, nactive, ranks, &g2 ); CHKERRQ(ierr); 
     ierr = MPI_Comm_create( wcomm, g2, &cm ); CHKERRQ(ierr); 
@@ -253,24 +253,28 @@ PetscErrorCode createLevel( const PC a_pc,
       PetscInt ncols,jj,Ii; 
       const PetscScalar *vals; 
       const PetscInt *idx;
-      PetscInt *d_nnz;
+      PetscInt *d_nnz, *o_nnz;
       static int llev = 0;
 
       ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+      ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
       for ( Ii = Istart0, jj = 0 ; Ii < Iend0 ; Ii += a_cbs, jj++ ) {
         ierr = MatGetRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
         d_nnz[jj] = ncols/a_cbs;
-        if( d_nnz[jj] > ncrs0 ) d_nnz[jj] = ncrs0; 
-        ierr = MatRestoreRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);    
+        o_nnz[jj] = ncols/a_cbs;
+        ierr = MatRestoreRow(Cmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+        if( d_nnz[jj] > ncrs0 ) d_nnz[jj] = ncrs0;
+        if( o_nnz[jj] > (neq/a_cbs-ncrs0) ) o_nnz[jj] = neq/a_cbs-ncrs0;
       }
-      
+
       ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
                               PETSC_DETERMINE, PETSC_DETERMINE,
-                              0, d_nnz, 0, d_nnz,
+                              0, d_nnz, 0, o_nnz,
                               &tMat );
       CHKERRQ(ierr);
-      ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
-      
+      ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
+      ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
+
       for ( ii = Istart0; ii < Iend0; ii++ ) {
         PetscInt dest_row = ii/a_cbs;
         ierr = MatGetRow(Cmat,ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -514,6 +518,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     /* PCSetUp_MG seems to insists on setting this to GMRES */
     ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
 
+    if( pc_gamg->m_Nlevels > 1 ) {
     /* currently only handle case where mat and pmat are the same on coarser levels */
     ierr = KSPGetOperators(mglevels[pc_gamg->m_Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
     /* (re)set to get dirty flag */
@@ -536,7 +541,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       /* setup KSP/PC */
       ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
     }
-
+    }
 #define PRINT_MATS PETSC_FALSE
     /* plot levels - A */
     if( PRINT_MATS ) {
@@ -658,9 +663,10 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   pc_gamg->m_Nlevels = level + 1;
   fine_level = level;
   ierr = PCMGSetLevels(a_pc,pc_gamg->m_Nlevels,PETSC_NULL);CHKERRQ(ierr);
-
+  
+  if( pc_gamg->m_Nlevels > 1 ) { /* don't setup MG if  */
   /* set default smoothers */
-  for ( lidx=1, level = pc_gamg->m_Nlevels-2;
+  for ( lidx = 1, level = pc_gamg->m_Nlevels-2;
         lidx <= fine_level;
         lidx++, level--) {
     PetscReal emax, emin;
@@ -750,7 +756,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr); 
     ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
   }
- 
+  
   /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
   ierr = PCSetFromOptions_MG(a_pc); CHKERRQ(ierr);
   {
@@ -787,7 +793,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
     ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
   }
-  
+
   /* setupcalled is set to 0 so that MG is setup from scratch */
   a_pc->setupcalled = 0;
   ierr = PCSetUp_MG( a_pc );CHKERRQ( ierr );
@@ -799,7 +805,18 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
     ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
   }
-
+  }
+  else {
+    KSP smoother;
+    if (pc_gamg->m_verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s one level solver used (system is seen as DD). Using default solver.\n",mype,__FUNCT__);
+    ierr = PCMGGetSmoother( a_pc, 0, &smoother ); CHKERRQ(ierr);
+    ierr = KSPSetOperators( smoother, Aarr[0], Aarr[0], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
+    ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
+    /* setupcalled is set to 0 so that MG is setup from scratch */
+    a_pc->setupcalled = 0;
+    ierr = PCSetUp_MG( a_pc );CHKERRQ( ierr );
+    a_pc->setupcalled = 1; /* use 1 as signal that this has not been re-setup */
+  }
   PetscFunctionReturn(0);
 }
 

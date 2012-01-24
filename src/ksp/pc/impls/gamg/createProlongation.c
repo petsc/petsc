@@ -226,13 +226,13 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 	      }
 	      if(hav!=1){
                 flid2 = lid_sel_lid[lidj];
-                PetscPrintf(PETSC_COMM_SELF,"[%d]%s ERROR looking for %d\n",mype,__FUNCT__,lidj);     
+                PetscPrintf(PETSC_COMM_SELF,"[%d]%s ERROR %d is looking for %d in %d's list\n",mype,__FUNCT__,lid,lidj,flid2);
                 for( ix=1,flid=a_id_llist[flid2] ; flid!=-1 ; flid=a_id_llist[flid], ix++ ) {
                   PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) adjac lid = %d\n",mype,__FUNCT__,ix,flid);               
                 }
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,
-                         "found %d vertices.  (if==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
-                         hav);
+                SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,
+                         "found %d vertices.  (if %d==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
+                         hav,hav);
               }
 	    }
 	    else{
@@ -1250,20 +1250,21 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   const PetscInt  dim = a_pc_gamg->m_dim, data_cols = a_pc_gamg->m_data_cols, method = a_pc_gamg->m_method;
   const PetscReal vfilter = a_pc_gamg->m_threshold;
   PetscErrorCode ierr;
-  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1;
+  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1,NN,MM;
   Mat            Prol, Gmat, AuxMat;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
   IS             rankIS, permIS, llist_1, selected_1, selected_2;
   const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(method!=0 ? data_cols : bs_in);
   const PetscScalar *vals;
-  PetscInt       *d_nnz;
+  PetscInt       *d_nnz, *o_nnz;
 
   PetscFunctionBegin;
   *a_isOK = PETSC_TRUE;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( a_Amat, &Istart, &Iend ); CHKERRQ(ierr);
+  ierr = MatGetSize( a_Amat, &MM, &NN ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs_in; my0 = Istart/bs_in; assert((Iend-Istart)%bs_in==0);
 
 #if defined PETSC_USE_LOG
@@ -1273,11 +1274,13 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
   /* count nnz, there is sparcity in here so this might not be enough! */
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
   for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
     ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
-    d_nnz[jj] = ncols;
-    if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc; 
-    nnz0 += d_nnz[jj];
+    d_nnz[jj] = ncols/bs_in; o_nnz[jj] = ncols/bs_in;
+    if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
+    if( o_nnz[jj] > (NN/bs_in-nloc) ) o_nnz[jj] = NN/bs_in-nloc;
+    nnz0 += ncols;
     ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);    
   }
   nnz0 /= (nloc+1);
@@ -1285,7 +1288,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* get scalar copy (norms) of matrix */
   ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
                           PETSC_DETERMINE, PETSC_DETERMINE,
-                          0, d_nnz, 0, d_nnz, &Gmat );
+                          0, d_nnz, 0, o_nnz, &Gmat );
 
   for( Ii = Istart; Ii < Iend ; Ii++ ) {
     PetscInt dest_row = Ii/bs_in;
@@ -1318,7 +1321,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
   {
     Mat Gmat2; 
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,0,d_nnz,0,d_nnz,&Gmat2);
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,0,d_nnz,0,o_nnz,&Gmat2);
     CHKERRQ(ierr);
     for( Ii = Istart, nnz1 = 0 ; Ii < Iend; Ii++ ){
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -1328,7 +1331,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
           ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&sv,INSERT_VALUES); CHKERRQ(ierr);
 	  nnz1++;
         }
-        /* else PetscPrintf(PETSC_COMM_SELF,"\t%s filtered %d, v=%e\n",__FUNCT__,Ii,vals[jj]); */
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     }
@@ -1376,20 +1378,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatCheckCompressedRow(mpimat->B,&Bmat->compressedrow,Bmat->i,Gmat->rmap->n,-1.0);
     CHKERRQ(ierr);
     assert( Bmat->compressedrow.use );
-  }
-
-  /* view */
-  if( PETSC_FALSE ) {
-    PetscViewer        viewer;
-    ierr = PetscViewerASCIIOpen(wcomm, "Gmat_2.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); CHKERRQ(ierr);
-    ierr = MatView(Gmat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
-    
-    ierr = PetscViewerASCIIOpen(wcomm, "Gmat_1.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); CHKERRQ(ierr);
-    ierr = MatView(AuxMat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
   }
 
   /* Mat subMat = Gmat -- get degree of vertices */
@@ -1495,6 +1483,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);    
     ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
+    ierr = PetscFree( o_nnz ); CHKERRQ(ierr);
+    *a_emax = -1.0; /* no estimate */
     PetscFunctionReturn(0);
   }
 
@@ -1719,6 +1709,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
   ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
   ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
+  ierr = PetscFree( o_nnz ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
