@@ -14,18 +14,6 @@ extern PetscBool TaoLineSearchInitialized;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_taolinesearch"
-PetscErrorCode PetscDLLibraryRegister_taolinesearch(const char path[]) 
-{
-    PetscErrorCode ierr;
-    ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-    PetscFunctionBegin;
-    ierr = TaoLineSearchInitializePackage(path); CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-}
-EXTERN_C_END
 #else
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,d)
 #endif

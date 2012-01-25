@@ -58,9 +58,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     PetscValidPointer(newtao,2);
     *newtao = PETSC_NULL;
 
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
     ierr = TaoInitializePackage(PETSC_NULL); CHKERRQ(ierr);
-#endif
+    ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 
     ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",0,0,comm,TaoDestroy,TaoView); CHKERRQ(ierr);
     

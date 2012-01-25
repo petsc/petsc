@@ -49,7 +49,7 @@ PetscErrorCode TaoInitializePackage(const char path[])
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_taosolver"
+#define __FUNCT__ "PetscDLLibraryRegister_tao"
 /*
   PetscDLLibraryRegister - this function is called when the dynamic library it
   is in is opened.
@@ -61,7 +61,7 @@ EXTERN_C_BEGIN
 . path - library path
 */
 
-PetscErrorCode PetscDLLibraryRegister_taosolver(const char path[])
+PetscErrorCode PetscDLLibraryRegister_tao(const char path[])
 {
     PetscErrorCode ierr;
 
