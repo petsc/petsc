@@ -56,6 +56,10 @@ def help(args=None):
         ts = PETSc.TS().create(comm=COMM)
         ts.setFromOptions()
         del ts
+    if 'da' in args:
+        da = PETSc.DA().create(comm=COMM)
+        da.setFromOptions()
+        del da
 
 if __name__ == '__main__':
     help()
