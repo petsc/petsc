@@ -171,6 +171,21 @@ class ExampleList:
         self.list = retlist
 
 class TaoExamples(ExampleList):
+    """
+    Tests to see if installation is ok.  Less thorough than TaoTests
+    """
+    def __init__(self):
+        self.list = []
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_smonitor -mx 10 -my 8",method="nls",tags=["minsurf","single","unconstrained","c","nls"],name="minsurf1",section="unconstrained"))
+        self.add(Example(example="minsurf2",nprocs=2,options="-tao_smonitor",method="nls",tags=["minsurf","multiprocessor","unconstrained","dm","c","nls"],name="minsurf2_2",section="unconstrained"))
+        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="ntr",tags=["rosenbrock","single","unconstrained","c","ntr"],name="rosenbrock1_3",section="unconstrained"))
+        self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="rosenbrock1f",section="unconstrained"))
+        self.add(Example(example="eptorsion2",nprocs=1,options="-tao_smonitor",method="nls",tags=["eptorsion","single","unconstrained","c","nls","dm"],name="eptorsion2",section="unconstrained"))
+        self.add(Example(example="eptorsion2f",nprocs=2,options="-tao_smonitor",method="nls",tags=["eptorsion","multiprocessor","unconstrained","fortran","nls","dm"],name="eptorsion2f_2",section="unconstrained"))
+        self.add(Example(example="plate2",nprocs=3,options="-tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask",method="tron",tags=["bound","plate","multiprocessor","c","tron","dm"],name="plate2_4",section="bound"))
+        self.add(Example(example="plate2f",nprocs=1,options="-tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2",method="blmvm",tags=["bound","plate","single","fortran","tron","dm"],name="plate2f",section="bound"))
+
+class TaoTests(ExampleList):
     def __init__(self):
         self.list = []
 

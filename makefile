@@ -119,7 +119,17 @@ tao_alletags:
 
 
 tao_testexamples: 
-	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d -e c
+
+tao_testexamples_uni:
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d -e c single
+
+tao_testfortran: 
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d -e fortran
+
+tao_testfortran_uni:
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runTests.py -d -e fortran single
+
 
 tao_allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}

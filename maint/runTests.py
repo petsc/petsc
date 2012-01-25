@@ -6,8 +6,8 @@ import TaoExamples
 
 def printHelp():
     sys.stdout.write("""
-usage: testExamples.py [option] [-]tag1 [[-]tag2] ...
-Use command line tags to match either the names of the TAO examples or any
+usage: runTests.py [option] [-]tag1 [[-]tag2] ...
+Use command line tags to match either the names of the TAO tests or any
 of the examples's tags.  - means to exclude any examples with that tag.
 If multiple tags with no dash(-) are given, the example must match all tags.
 -h     : print this message and exit (also --help)
@@ -18,6 +18,7 @@ If multiple tags with no dash(-) are given, the example must match all tags.
 -l     : list all examples and their tags (also --list)
 -p     : print executables that match tags (also --print)
 -d     : compare results against output in $TAO_DIR/tests/ouptut directory (also --diff)
+-e     : run examples (small subset of tests) (also --examples)
 
 """)
 
@@ -28,8 +29,9 @@ if __name__=="__main__":
     showdiff = False        
     compileonly = False
     printexec = False
-    examples = TaoExamples.TaoExamples()
+    examplesonly = False
     args = sys.argv[1:]
+    
     
     for arg in ['--verbose','-v']:
         if arg in args:
@@ -56,6 +58,10 @@ if __name__=="__main__":
         if arg in args:
             args.remove(arg)
             showoutput=True
+    for arg in ['--examples','-e']:
+        if arg in args:
+            args.remove(arg)
+            examplesonly=True
     for arg in ['--compile','-c']:
         if arg in args:
             args.remove(arg)
@@ -70,6 +76,10 @@ if __name__=="__main__":
                 sys.stdout.write("\n")
             sys.exit(0)
     
+    if examplesonly:
+        examples = TaoExamples.TaoExamples()
+    else:
+        examples = TaoExamples.TaoTests()
             
         
     examples.setWithTags(args)
