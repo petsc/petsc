@@ -32,7 +32,6 @@ void PETSC_STDCALL taoinitialize_(CHAR filename PETSC_MIXED_LEN(len), PetscError
     if (*ierr) return;
     TaoBeganPetsc = PETSC_TRUE;
   }
-  *ierr = TaoInitialize_DynamicLibraries();
   TaoInitializeCalled = PETSC_TRUE;
   *ierr = PetscInfo(0,"TAO succesfully started from Fortran\n");
   return;

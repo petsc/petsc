@@ -52,8 +52,6 @@ extern PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
 extern PetscErrorCode TaoFinalize();
 
 
-extern PetscErrorCode TaoInitialize_DynamicLibraries();
-extern PetscErrorCode TaoFinalize_DynamicLibraries();
 extern PetscErrorCode TaoInitializePackage(const char []);
 
 #if defined PETSC_USE_DYNAMIC_LIBRARIES

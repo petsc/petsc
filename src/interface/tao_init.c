@@ -51,7 +51,6 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
     printf("Error initializing PETSc -- aborting.\n");
     exit(1);
   }
-  ierr = TaoInitialize_DynamicLibraries();  CHKERRQ(ierr);
   TaoInitializeCalled = PETSC_TRUE;
   return 0;
 }
@@ -69,44 +68,9 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
 @*/
 PetscErrorCode TaoFinalize()
 {
-  TaoFinalize_DynamicLibraries();
   if (TaoBeganPetsc) {
     PetscFinalize();
   } 
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoInitialize_DynamicLibraries"
-PetscErrorCode TaoInitialize_DynamicLibraries(void)
-{
-  PetscErrorCode ierr;
-  char path[PETSC_MAX_PATH_LEN];
-  PetscFunctionBegin;
-
-
-  ierr = PetscStrcpy(path,TAO_LIB_DIR); CHKERRQ(ierr);
-  ierr = PetscStrcat(path,"/libtaosolver"); CHKERRQ(ierr);
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,path); CHKERRQ(ierr);
-#endif
-
-  ierr = PetscStrcpy(path,TAO_LIB_DIR); CHKERRQ(ierr);
-  ierr = PetscStrcat(path,"/libtaolinesearch"); CHKERRQ(ierr);
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,path); CHKERRQ(ierr);
-#endif
-
-
-  PetscFunctionReturn(0);
-  
-}    
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoFinalize_DynamicLibraries"
-PetscErrorCode TaoFinalize_DynamicLibraries(void)
-{
-    PetscFunctionBegin;
-    PetscFunctionReturn(0);
-    
-}
