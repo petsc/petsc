@@ -93,11 +93,15 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
   ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
   ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr);
-  ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
 
   /* now compute the right hand side function */
-  ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE); CHKERRABORT(comm,ierr);
-  ierr = VecScale(yyd,-1.);CHKERRQ(ierr);
+  if (!ts->userops->ifunction) {
+    ierr = TSComputeRHSFunction(ts,t,yy,yyd);CHKERRQ(ierr);
+  } else {                      /* If rhsfunction is also set, this computes both parts and shifts them to the right */
+    ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
+    ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE); CHKERRABORT(comm,ierr);
+    ierr = VecScale(yyd,-1.);CHKERRQ(ierr);
+  }
   ierr = VecResetArray(yy); CHKERRABORT(comm,ierr);
   ierr = VecResetArray(yyd); CHKERRABORT(comm,ierr);
   PetscFunctionReturn(0);
@@ -111,15 +115,12 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 PetscErrorCode TSStep_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
   PetscInt       flag;
   long int       its,nsteps;
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
-  SNES           snes;
-  Vec            res; /* This, together with snes, will check if the SNES vec_func has been set */
 
   PetscFunctionBegin;
   mem  = cvode->mem;
@@ -127,13 +128,6 @@ PetscErrorCode TSStep_Sundials(TS ts)
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
   N_VSetArrayPointer((realtype *)y_data,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-
-  /* Should think about moving this outside the loop */
-  ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  if (!res) {
-    ierr = TSSetIFunction(ts, sol, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  }
 
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
@@ -199,7 +193,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
   ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
   ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
   ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
-  ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
+  ierr = VecCopy(cvode->update,ts->vec_sol);CHKERRQ(ierr);
   ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
   ierr = CVSpilsGetNumLinIters(mem, &its);
   ts->nonlinear_its = its; ts->linear_its = its;
