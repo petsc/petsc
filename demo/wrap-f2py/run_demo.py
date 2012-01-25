@@ -43,7 +43,7 @@ N = OptDB.getInt('N', 16)
 lambda_ = OptDB.getReal('lambda', 6.0)
 do_plot = OptDB.getBool('plot', False)
 
-da = PETSc.DA().create([N, N])
+da = PETSc.DA().create([N, N], stencil_width=1)
 app = App(da, lambda_)
 
 snes = PETSc.SNES().create()
