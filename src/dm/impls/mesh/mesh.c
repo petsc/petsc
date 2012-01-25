@@ -4083,8 +4083,8 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
     {
       const PetscInt *leaves;
       PetscSFNode    *remotePoints;
-      PetscInt       *rowners, *lowners, *ghostPoints;
-      PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp;
+      PetscMPIInt    *rowners, *lowners;
+      PetscInt       *ghostPoints, numRoots, numLeaves, numGhostPoints = 0, p, gp;
 
       ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
@@ -4093,16 +4093,12 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       }
       for(p = 0; p < numLeaves; ++p) {
         lowners[p*2+0] = rank;
-        lowners[p*2+1] = leaves ? leaves[p] : p;
+        lowners[p*2+1] = PetscMPIIntCast(leaves ? leaves[p] : p);
       }
-#if 0 /* Why doesn't this datatype work */
-      ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-      ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-#endif
-      ierr = PetscSFFetchAndOpBegin(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-      ierr = PetscSFFetchAndOpEnd(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
       for(p = 0; p < numLeaves; ++p) {
         if (lowners[p*2+0] != rank) ++numGhostPoints;
       }
