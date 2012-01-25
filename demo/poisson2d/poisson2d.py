@@ -68,7 +68,7 @@ n  = OptDB.getInt('n', 16)
 nx = OptDB.getInt('nx', n)
 ny = OptDB.getInt('ny', n)
 
-da = PETSc.DA().create([nx, ny])
+da = PETSc.DA().create([nx, ny], stencil_width=1)
 pde = Poisson2D(da)
 
 x = da.createGlobalVec()
