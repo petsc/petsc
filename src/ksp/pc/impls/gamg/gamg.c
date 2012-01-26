@@ -289,13 +289,7 @@ PetscErrorCode createLevel( const PC a_pc,
 	ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
 	ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
 	ierr = MatPartitioningSetNParts( mpart, new_npe );CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-	ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
-#endif
 	ierr = MatPartitioningApply( mpart, &proc_is ); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-	ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
-#endif
 	ierr = MatPartitioningDestroy( &mpart );          CHKERRQ(ierr);
       
 	/* collect IS info */
@@ -437,12 +431,19 @@ PetscErrorCode createLevel( const PC a_pc,
     }
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
     ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+#endif
     /*
       Invert for MatGetSubMatrix
     */
     ierr = ISInvertPermutation( isnum, ncrs_new*a_cbs, &new_indices ); CHKERRQ(ierr);
     ierr = ISSort( new_indices ); CHKERRQ(ierr); /* is this needed? */
     ierr = ISDestroy( &isnum ); CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
+#endif
     /* A_crs output */
     ierr = MatGetSubMatrix( Cmat, new_indices, new_indices, MAT_INITIAL_MATRIX, a_Amat_crs );
     CHKERRQ(ierr);
@@ -450,11 +451,16 @@ PetscErrorCode createLevel( const PC a_pc,
     ierr = MatDestroy( &Cmat ); CHKERRQ(ierr);
     Cmat = *a_Amat_crs; /* output */
     ierr = MatSetBlockSize( Cmat, a_cbs );      CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
+#endif
     /* prolongator */
     ierr = MatGetOwnershipRange( Pold, &Istart, &Iend );    CHKERRQ(ierr);
     {
       IS findices;
+#if defined PETSC_USE_LOG
+      ierr = PetscLogEventBegin(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
+#endif
       ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
 #ifdef USE_R
       ierr = MatGetSubMatrix( Pold, new_indices, findices, MAT_INITIAL_MATRIX, &Pnew );
@@ -462,13 +468,13 @@ PetscErrorCode createLevel( const PC a_pc,
       ierr = MatGetSubMatrix( Pold, findices, new_indices, MAT_INITIAL_MATRIX, &Pnew );
 #endif
       CHKERRQ(ierr);
-
       ierr = ISDestroy( &findices ); CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+      ierr = PetscLogEventEnd(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
+#endif
     }
-
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
     *a_P_inout = Pnew; /* output - repartitioned */
-
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
     ierr = PetscFree( counts );  CHKERRQ(ierr);
   }
@@ -1326,11 +1332,10 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
     /* PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_events[SET8]); */
     PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_events[SET9]);
     PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
-    PetscLogEventRegister("  PL repartition", cookie, &gamg_setup_events[SET12]);
-
-    PetscLogEventRegister("    apply part.", cookie, &gamg_setup_events[SET13]);
-    /* PetscLogEventRegister("  PL 2", cookie, &gamg_setup_events[SET14]); */
-    /* PetscLogEventRegister("  PL 3", cookie, &gamg_setup_events[SET15]); */
+    PetscLogEventRegister("  repartition", cookie, &gamg_setup_events[SET12]);
+    PetscLogEventRegister("  Invert-Sort", cookie, &gamg_setup_events[SET13]);
+    PetscLogEventRegister("  Move A", cookie, &gamg_setup_events[SET14]); 
+    PetscLogEventRegister("  Move P", cookie, &gamg_setup_events[SET15]); 
 
     /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_events[SET13]); */
     /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_events[SET10]); */
