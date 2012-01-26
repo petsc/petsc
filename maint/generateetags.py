@@ -52,6 +52,12 @@ def processDir(tagfile,dirname,names):
 	if 'quadratic' in names: del names[names.index('quadratic')]
 	if 'least_squares' in names: del names[names.index('least_squares')]
 	if 'test' in names: del names[names.index('test')]
+	if 'oldtao' in names: del names[names.index('oldtao')]
+	if 'sqpcon' in names: del names[names.index('sqpcon')]
+	if 'lm' in names: del names[names.index('lm')]
+	if 'pounder' in names: del names[names.index('pounder')]
+	if 'taodm' in names: del names[names.index('taodm')]
+	if 'nlstests' in names: del names[names.index('nlstests')]
 
 def main():
 	try: os.unlink('TAGS')
