@@ -97,18 +97,22 @@ public:
       }
     }
   };
-  index_type getRank(index_type r) {
+  PetscErrorCode getRank(index_type r, index_type *rank) {
     assert(r >= 0 && r < numRanks);
-    return ranks[r];
+    *rank = ranks[r];
+    return 0;
   };
   /* getRankIndex - Map from a process rank to an index in [0, numRanks) */
-  index_type getRankIndex(index_type rank) {
+  PetscErrorCode getRankIndex(index_type rank, index_type *rankIndex) {
+    *rankIndex = -1;
     for(index_type r = 0; r < numRanks; ++r) {
       if (ranks[r] == rank) {
-        return r;
+        *rankIndex = r;
+        return 0;
       }
     }
-    throw ALE::Exception("Invalid rank was not contained in this overlap");
+    //SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank %d was not contained in this overlap", rank);
+    return PETSC_ERR_ARG_OUTOFRANGE;
   };
   /* setNumPoints - Set the number of points matched to partner process 'rank'
 
@@ -144,9 +148,12 @@ public:
     return this->pointsOffset[r+1] - this->pointsOffset[r];
   };
   /* getNumPointsByRank - Return the number of points matched to partner process 'rank' */
-  index_type getNumPointsByRank(index_type rank) {
-    const index_type r = this->getRankIndex(rank);
-    return this->pointsOffset[r+1] - this->pointsOffset[r];
+  PetscErrorCode getNumPointsByRank(index_type rank, index_type *numPoints) {
+    index_type     r;
+    PetscErrorCode ierr;
+    ierr = this->getRankIndex(rank, &r);CHKERRQ(ierr);
+    *numPoints = this->pointsOffset[r+1] - this->pointsOffset[r];
+    return 0;
   };
   /* SLOW, since it involves a search */
   void getRanks(point_type point, index_type *size, const rank_type **ranks, const point_type **remotePoints) {
@@ -418,7 +425,7 @@ public:
 public:
   SendOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~SendOverlap() {};
-  void addArrow(source_type s, target_type t, color_type c) {
+  PetscErrorCode addArrow(source_type s, target_type t, color_type c) {
     if (!this->ranks) {
       // Add rank
       bool addRank = true;
@@ -446,13 +453,15 @@ public:
       }
     } else {
       // Could speed this up using a sort after all the insertion
-      const index_type r = this->getRankIndex(t);
-      index_type       i;
+      index_type     r, i;
+      PetscErrorCode ierr;
 
+      ierr                  = this->getRankIndex(t, &r);CHKERRQ(ierr);
       i                     = this->insertOffset[r]++;
       this->points[i]       = s;
       this->remotePoints[i] = c;
     }
+    return 0;
   };
   void copy(SendOverlap *overlap) {
     for(index_type r = 0; r < this->numRanks; ++r) {
@@ -493,9 +502,13 @@ public:
     this->setNumPoints(rank, size);
   };
   int getConeSize(rank_type rank) {
-    try {
-      return this->getNumPointsByRank(rank);
-    } catch(ALE::Exception e) {
+    index_type     numPoints;
+    PetscErrorCode ierr;
+
+    ierr = this->getNumPointsByRank(rank, &numPoints);
+    if (!ierr) {
+      return numPoints;
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexPoints.find(rank) != this->flexPoints.end()) {
         return this->flexPoints[rank].size();
@@ -505,15 +518,16 @@ public:
     return 0;
   };
   int getConeSize(rank_type rank, point_type remotePoint) {
-    try {
-      const index_type r = this->getRankIndex(rank);
-      index_type       n = 0;
+    index_type     r, n = 0;
+    PetscErrorCode ierr;
 
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       for(index_type p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
         if (remotePoint == this->remotePoints[p]) ++n;
       }
-      return  n;
-    } catch(ALE::Exception e) {
+      return n;
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         index_type n = 0;
@@ -528,12 +542,15 @@ public:
     return 0;
   };
   typename coneSequence::iterator coneBegin(rank_type rank) {
-    try {
-      const index_type r = this->getRankIndex(rank);
+    index_type     r;
+    PetscErrorCode ierr;
+
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       assert(this->pointsOffset);
       assert(this->points);
       return typename coneSequence::iterator(&this->points[this->pointsOffset[r]], &this->remotePoints[this->pointsOffset[r]]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         return typename coneSequence::iterator(&(this->flexPoints[rank][0]), &(this->flexRemotePoints[rank][0]));
@@ -542,17 +559,18 @@ public:
     }
   };
   typename coneSequence::iterator coneBegin(rank_type rank, point_type remotePoint) {
-    try {
-      const index_type r = this->getRankIndex(rank);
-      index_type       p;
+    index_type     r, p;
+    PetscErrorCode ierr;
 
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       assert(this->pointsOffset);
       assert(this->points);
       for(p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
         if (remotePoint == this->remotePoints[p]) break;
       }
       return typename coneSequence::iterator(&this->points[p], &this->remotePoints[p]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         index_type p = 0;
@@ -566,12 +584,15 @@ public:
     }
   };
   typename coneSequence::iterator coneEnd(rank_type rank) {
-    try {
-      const index_type r = this->getRankIndex(rank);
+    index_type     r;
+    PetscErrorCode ierr;
+
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       assert(this->pointsOffset);
       assert(this->points);
       return typename coneSequence::iterator(&this->points[this->pointsOffset[r+1]], &this->remotePoints[this->pointsOffset[r+1]]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         return typename coneSequence::iterator(&(this->flexPoints[rank][this->flexPoints[rank].size()-1])+1, &(this->flexRemotePoints[rank][this->flexRemotePoints[rank].size()-1])+1);
@@ -609,7 +630,7 @@ public:
 public:
   RecvOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~RecvOverlap() {};
-  void addArrow(source_type s, target_type t, color_type c) {
+  PetscErrorCode addArrow(source_type s, target_type t, color_type c) {
     if (!this->ranks) {
       // Add rank
       bool addRank = true;
@@ -636,13 +657,15 @@ public:
         this->flexRemotePoints[s].push_back(c);
       }
     } else {
-      const index_type r = this->getRankIndex(s);
-      index_type       i;
+      index_type     r, i;
+      PetscErrorCode ierr;
 
+      ierr = this->getRankIndex(s, &r);CHKERRQ(ierr);
       i                     = this->insertOffset[r]++;
       this->points[i]       = t;
       this->remotePoints[i] = c;
     }
+    return 0;
   };
   void copy(RecvOverlap *overlap) {
     for(index_type r = 0; r < this->numRanks; ++r) {
@@ -674,9 +697,13 @@ public:
     this->setNumPoints(rank, size);
   };
   int getSupportSize(rank_type rank) {
-    try {
-      return this->getNumPointsByRank(rank);
-    } catch(ALE::Exception e) {
+    index_type     numPoints;
+    PetscErrorCode ierr;
+
+    ierr = this->getNumPointsByRank(rank, &numPoints);
+    if (!ierr) {
+      return numPoints;
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexPoints.find(rank) != this->flexPoints.end()) {
         return this->flexPoints[rank].size();
@@ -686,15 +713,16 @@ public:
     return 0;
   };
   int getSupportSize(rank_type rank, point_type remotePoint) {
-    try {
-      const index_type r = this->getRankIndex(rank);
-      index_type       n = 0;
+    index_type     r, n = 0;
+    PetscErrorCode ierr;
 
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       for(index_type p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
         if (remotePoint == this->remotePoints[p]) ++n;
       }
       return n;
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         index_type n = 0;
@@ -709,12 +737,15 @@ public:
     return 0;
   };
   typename supportSequence::iterator supportBegin(rank_type rank) {
-    try {
-      const index_type r = this->getRankIndex(rank);
+    index_type     r;
+    PetscErrorCode ierr;
+
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       assert(this->pointsOffset);
       assert(this->points);
       return typename supportSequence::iterator(&this->points[this->pointsOffset[r]], &this->remotePoints[this->pointsOffset[r]]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         return typename supportSequence::iterator(&(this->flexPoints[rank][0]), &(this->flexRemotePoints[rank][0]));
@@ -723,8 +754,11 @@ public:
     }
   };
   typename supportSequence::iterator supportBegin(rank_type rank, point_type remotePoint) {
-    try {
-      const index_type r = this->getRankIndex(rank);
+    index_type     r;
+    PetscErrorCode ierr;
+
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       index_type       p;
 
       assert(this->pointsOffset);
@@ -733,7 +767,7 @@ public:
         if (remotePoint == this->remotePoints[p]) break;
       }
       return typename supportSequence::iterator(&this->points[p], &this->remotePoints[p]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         index_type p = 0;
@@ -747,12 +781,15 @@ public:
     }
   };
   typename supportSequence::iterator supportEnd(rank_type rank) {
-    try {
-      const index_type r = this->getRankIndex(rank);
+    index_type     r;
+    PetscErrorCode ierr;
+
+    ierr = this->getRankIndex(rank, &r);
+    if (!ierr) {
       assert(this->pointsOffset);
       assert(this->points);
       return typename supportSequence::iterator(&this->points[this->pointsOffset[r+1]], &this->remotePoints[this->pointsOffset[r+1]]);
-    } catch(ALE::Exception e) {
+    } else {
       /* Slow query to flexible assembly stuff */
       if (this->flexRemotePoints.find(rank) != this->flexRemotePoints.end()) {
         return typename supportSequence::iterator(&(this->flexPoints[rank][this->flexPoints[rank].size()-1])+1, &(this->flexRemotePoints[rank][this->flexRemotePoints[rank].size()-1])+1);
