@@ -139,7 +139,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   /* ------
      Setup code depends on the number of blocks
   */
-  if (jac->n_local == 0) {
+  if (jac->n_local == 1) {
     ierr = PCSetUp_BJacobi_Singleblock(pc,mat,pmat);CHKERRQ(ierr);
   } else {
     ierr = PCSetUp_BJacobi_Multiblock(pc,mat,pmat);CHKERRQ(ierr);
