@@ -1279,7 +1279,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
     ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
     d_nnz[jj] = ncols; /* very pessimistic */
-    o_nnz[jj] = ncols/2+1;
+    o_nnz[jj] = ncols;
     if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
     if( o_nnz[jj] > (NN/bs_in-nloc) ) o_nnz[jj] = NN/bs_in-nloc;
     nnz0 += ncols;
@@ -1298,7 +1298,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     for(jj=0;jj<ncols;jj++){
       PetscInt dest_col = idx[jj]/bs_in;
       PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
-      ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&sv,ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&sv,ADD_VALUES);  CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
   }
