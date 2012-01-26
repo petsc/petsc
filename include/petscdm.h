@@ -41,6 +41,7 @@ J*/
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMMESH      "mesh"
+#define DMCOMPLEX   "complex"
 #define DMCARTESIAN "cartesian"
 #define DMIGA       "iga"
 #define DMREDUNDANT "redundant"
@@ -153,6 +154,7 @@ extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 
 extern PetscErrorCode   DMGetRefineLevel(DM,PetscInt*);
+extern PetscErrorCode   DMGetCoarsenLevel(DM,PetscInt*);
 extern PetscErrorCode   DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;

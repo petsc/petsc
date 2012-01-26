@@ -282,7 +282,10 @@ class VTKViewer {
     Obj<typename Mesh::label_sequence> elements;
     Obj<typename Mesh::numbering_type> cNumbering;
     Obj<typename Mesh::numbering_type> vNumbering;
+    PetscErrorCode                     ierr;
 
+    /* Empty portions of the mesh can give rise to 0 for 'depth', and we need the same value */
+    ierr = MPI_Allreduce(&depth, &depth, 1, MPI_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
     if (mesh->hasLabel("censored depth")) {
       elements   = mesh->getLabelStratum("censored depth", depth);
       cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);

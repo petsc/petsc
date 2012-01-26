@@ -616,8 +616,8 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   SNES_FAS * fas = (SNES_FAS *)snes->data;
 
   PetscFunctionBegin;
-  if (fas->upsmooth)     ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
-  if (fas->downsmooth)   ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
+  if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
+  if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
   if (fas->inject) {
     ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
   }
@@ -645,8 +645,7 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
 
   PetscFunctionBegin;
   /* recursively resets and then destroys */
-  if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
-  if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
+  ierr = SNESReset(snes);CHKERRQ(ierr);
   if (fas->next)         ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   ierr = PetscFree(fas);CHKERRQ(ierr);
 
@@ -699,6 +698,55 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     ierr = SNESDefaultGetWork(snes, 4);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   }
 
+  if (snes->dm) {
+    /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
+    if (fas->next) {
+      /* for now -- assume the DM and the evaluation functions have been set externally */
+      if (!fas->next->dm) {
+        ierr = DMCoarsen(snes->dm, ((PetscObject)fas->next)->comm, &fas->next->dm);CHKERRQ(ierr);
+        ierr = SNESSetDM(fas->next, fas->next->dm);CHKERRQ(ierr);
+      }
+      /* set the interpolation and restriction from the DM */
+      if (!fas->interpolate) {
+        ierr = DMCreateInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
+        fas->restrct = fas->interpolate;
+      }
+      /* set the injection from the DM */
+      if (!fas->inject) {
+        ierr = DMCreateInjection(fas->next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
+        ierr = MatCreateScatter(((PetscObject)snes)->comm, injscatter, &fas->inject);CHKERRQ(ierr);
+        ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
+      }
+    }
+    /* set the DMs of the pre and post-smoothers here */
+    if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
+    if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
+  }
+  /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
+
+ if (fas->next) {
+    if (fas->galerkin) {
+      ierr = SNESSetFunction(fas->next, PETSC_NULL, SNESFASGalerkinDefaultFunction, fas->next);CHKERRQ(ierr);
+    } else {
+      if (snes->ops->computefunction && !fas->next->ops->computefunction) {
+        ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+      }
+      if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
+        ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+      }
+      if (snes->ops->computegs && !fas->next->ops->computegs) {
+        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  if (fas->next) {
+    /* gotta set up the solution vector for this to work */
+    if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
+    if (!fas->next->vec_rhs) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_rhs);CHKERRQ(ierr);}
+    ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
+  }
+
   /* setup the pre and post smoothers and set their function, jacobian, and gs evaluation routines if the user has neglected this */
   if (fas->upsmooth) {
     if (snes->ops->computefunction && !fas->upsmooth->ops->computefunction) {
@@ -724,46 +772,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);
   }
-  /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
-  if (fas->next) {
-    if (fas->galerkin) {
-      ierr = SNESSetFunction(fas->next, PETSC_NULL, SNESFASGalerkinDefaultFunction, fas->next);CHKERRQ(ierr);
-    } else {
-      if (snes->ops->computefunction && !fas->next->ops->computefunction) {
-        ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
-      }
-      if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
-        ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
-      }
-      if (snes->ops->computegs && !fas->next->ops->computegs) {
-        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
-      }
-    }
-  }
-  if (snes->dm) {
-    /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
-    if (fas->next) {
-      /* for now -- assume the DM and the evaluation functions have been set externally */
-      if (!fas->next->dm) {
-        ierr = DMCoarsen(snes->dm, ((PetscObject)fas->next)->comm, &fas->next->dm);CHKERRQ(ierr);
-        ierr = SNESSetDM(fas->next, fas->next->dm);CHKERRQ(ierr);
-      }
-      /* set the interpolation and restriction from the DM */
-      if (!fas->interpolate) {
-        ierr = DMCreateInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
-        fas->restrct = fas->interpolate;
-      }
-      /* set the injection from the DM */
-      if (!fas->inject) {
-        ierr = DMCreateInjection(fas->next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
-        ierr = MatCreateScatter(((PetscObject)snes)->comm, injscatter, &fas->inject);CHKERRQ(ierr);
-        ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
-      }
-    }
-    /* set the DMs of the pre and post-smoothers here */
-    if (fas->upsmooth)  {ierr = SNESSetDM(fas->upsmooth,   snes->dm);CHKERRQ(ierr);}
-    if (fas->downsmooth){ierr = SNESSetDM(fas->downsmooth, snes->dm);CHKERRQ(ierr);}
-  }
 
   /* setup FAS work vectors */
   if (fas->galerkin) {
@@ -771,12 +779,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     ierr = VecDuplicate(snes->vec_sol, &fas->Fg);CHKERRQ(ierr);
   }
 
-  if (fas->next) {
-   /* gotta set up the solution vector for this to work */
-    if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
-    if (!fas->next->vec_rhs) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_rhs);CHKERRQ(ierr);}
-    ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
-  }
+
   /* got to set them all up at once */
   PetscFunctionReturn(0);
 }
@@ -789,9 +792,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   PetscInt       levels = 1;
   PetscBool      flg, smoothflg, smoothupflg, smoothdownflg, smoothcoarseflg = PETSC_FALSE, monflg;
   PetscErrorCode ierr;
-  const char     *def_smooth = SNESNRICHARDSON;
-  char           pre_type[256];
-  char           post_type[256];
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNESFASType    fastype;
   const char     *optionsprefix;
@@ -810,10 +810,6 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     }
     ierr = SNESFASSetLevels(snes, levels, PETSC_NULL);CHKERRQ(ierr);
   }
-
-  /* type of pre and/or post smoothers -- set both at once */
-  ierr = PetscMemcpy(post_type, def_smooth, 256);CHKERRQ(ierr);
-  ierr = PetscMemcpy(pre_type, def_smooth, 256);CHKERRQ(ierr);
   fastype = fas->fastype;
   ierr = PetscOptionsEnum("-snes_fas_type","FAS correction type","SNESFASSetType",SNESFASTypes,(PetscEnum)fastype,(PetscEnum*)&fastype,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -895,14 +891,14 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   /* control the simple Richardson smoother that is default if there's no upsmooth or downsmooth */
   if (!fas->downsmooth) {
-    ierr = PetscOptionsInt("-fas_down_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-fas_down_snes_max_it","Down smooth iterations","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
     if (fas->level == 0) {
-      ierr = PetscOptionsInt("-fas_coarse_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-fas_coarse_snes_max_it","Coarse smooth iterations","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
     }
   }
 
   if (!fas->upsmooth) {
-    ierr = PetscOptionsInt("-fas_up_snes_max_it","Number of cycles","SNESFASSetCycles",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-fas_up_snes_max_it","Upsmooth iterations","SNESFASSetCycles",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
   }
 
   if (monflg) {

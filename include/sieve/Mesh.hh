@@ -1948,14 +1948,15 @@ namespace ALE {
     point_type locatePoint_General_3D(const typename real_section_type::value_type p[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
-      const PetscInt                faces[24]   = {0, 1, 1, 2, 2, 3, 3, 0};
+      const PetscInt                faces[24]   = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 5, 4,
+                                                   3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
         PetscInt         crossings = 0;
 
         std::cout << "Checking cell " << *c_iter << std::endl;
-        for(PetscInt f = 0; f < 8; f++) {
+        for(PetscInt f = 0; f < 6; f++) {
           /* Check the point is under plane */
           /*   Get face normal */
           PetscReal v_i[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
@@ -1989,7 +1990,7 @@ namespace ALE {
         if (this->getSieve()->getMaxConeSize() == 4) {
           return locatePoint_Simplex_3D(point);
         } else {
-          return locatePoint_General_2D(point);
+          return locatePoint_General_3D(point);
         }
       } else {
         throw ALE::Exception("No point location for mesh dimension");

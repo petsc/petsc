@@ -269,8 +269,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     if (fminnorm > fMnorm) fminnorm = fMnorm;  /* the minimum norm is now of F^M */
 
     /* construct the right hand side and xi factors */
+    ierr = VecMDot(FM, l, Fdot, xi);CHKERRQ(ierr);
+
     for (i = 0; i < l; i++) {
-      ierr = VecDot(Fdot[i], FM, &xi[i]);CHKERRQ(ierr);
       beta[i] = nu - xi[i];
     }
 
@@ -335,9 +336,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecCopy(XM, XA);CHKERRQ(ierr);
     ierr = VecScale(XA, 1. - alph_total);CHKERRQ(ierr);
 
-    for(i=0;i<l;i++){
-      ierr= VecAXPY(XA, beta[i], Xdot[i]);CHKERRQ(ierr);
-    }
+    ierr = VecMAXPY(XA, l, beta, Xdot);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, XA, FA);CHKERRQ(ierr);
     ierr = VecNorm(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
 
