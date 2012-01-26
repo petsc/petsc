@@ -128,6 +128,15 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
   PetscFunctionBegin;
   ierr = MPI_Comm_rank( wcomm, &mype );   CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(a_Gmat_1,&my0,&Iend);  CHKERRQ(ierr);
+
+  if( !PETSC_TRUE ) {
+    PetscViewer viewer; char fname[32]; static int llev=0;
+    sprintf(fname,"Gmat1_%d.mat",llev++);
+    PetscViewerASCIIOpen(wcomm,fname,&viewer);
+    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
+    ierr = MatView(a_Gmat_1, viewer ); CHKERRQ(ierr);
+    ierr = PetscViewerDestroy( &viewer );
+  }
   
   /* get submatrices */
   ierr = PetscTypeCompare( (PetscObject)a_Gmat_2, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
@@ -227,14 +236,16 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 	      }
 	      if(hav!=1){
                 flid2 = lid_sel_lid[lidj];
-                PetscPrintf(PETSC_COMM_SELF,"[%d]%s ERROR %d is looking for %d in %d's list\n",mype,__FUNCT__,lid,lidj,flid2);
+                /* PetscPrintf(PETSC_COMM_SELF,"[%d]%s ERROR %d is looking for %d in %d's list\n",mype,__FUNCT__,lid,lidj,flid2); */
                 for( ix=1,flid=a_id_llist[flid2] ; flid!=-1 ; flid=a_id_llist[flid], ix++ ) {
-                  PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) adjac lid = %d\n",mype,__FUNCT__,ix,flid);               
+                  /* PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) adjac lid = %d\n",mype,__FUNCT__,ix,flid); */              
                 }
-                SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,
-                         "found %d vertices.  (if %d==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
-                         hav,hav);
-              }
+		if(hav!=0){
+		  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,
+			   "found %d vertices.  (if %d==0) failed to find self in 'selected' lists.  probably structurally unsymmetric matrix",
+			   hav,hav);
+		}
+	      }
 	    }
 	    else{
 	      /* I'm stealing this local, owned by a ghost */
@@ -259,17 +270,17 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
               PetscInt new_sel_gid = (PetscInt)statej, hv=0, flid;
               hav++;
               /* remove from list */
-	      if( old_sel_lid != -1 ){ 
-		assert(a_deleted_parent_gid[lid]==-1.0); 
+	      if( old_sel_lid != -1 ) {
+		/* assert(a_deleted_parent_gid[lid]==-1.0 ); */
 		for( lastid=old_sel_lid, flid=a_id_llist[old_sel_lid] ; flid != -1 ; flid=a_id_llist[flid] ) {
 		  if( flid == lid ) {
 		    a_id_llist[lastid] = a_id_llist[lid];   /* remove lid from 'old_sel_lid' list */
 		    hv++;
-		    /*break;*/
+		    break;
 		  }
 		  lastid = flid;
 		}
-		assert(hv==1);
+		/* assert(hv==1); */
 	      }
 	      else {
 		assert(a_deleted_parent_gid[lid] != -1.0); /* stealing from one ghost, giving to another */
