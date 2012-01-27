@@ -29,6 +29,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Ma
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)M,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)M,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+  ierr = MatSetUpPreallocation(M);CHKERRQ(ierr);
   if (isseqsbaij || ismpisbaij) {ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);}
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
