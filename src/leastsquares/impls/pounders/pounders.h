@@ -45,7 +45,7 @@ typedef struct {
   PetscBool usegqt;
   Mat Hs;
   Vec b;
-  
+
   PetscReal deltamax;
   PetscReal deltamin;
   PetscReal c1; /* Factor for checking validity */
@@ -86,7 +86,7 @@ typedef struct {
 
 PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, PetscInt *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
 
-PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin);
+PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin);
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
 PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
 PetscErrorCode morepoints(TAO_POUNDERS *mfqP);

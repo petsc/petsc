@@ -186,7 +186,7 @@ static PetscErrorCode TaoSolve_POUNDER(TaoSolver tao)
     iter++;
 
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
-    ierr = gqtwrap(mfqP,&gnorm,&mdec); CHKERRQ(ierr);
+    ierr = gqtwrap(tao,&gnorm,&mdec); CHKERRQ(ierr);
     /* Evaluate the function at the new point */
 
     for (i=0;i<mfqP->n;i++) {
