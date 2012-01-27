@@ -151,7 +151,7 @@ public:
   PetscErrorCode getNumPointsByRank(index_type rank, index_type *numPoints) {
     index_type     r;
     PetscErrorCode ierr;
-    ierr = this->getRankIndex(rank, &r); if (ierr) {return ierr};
+    ierr = this->getRankIndex(rank, &r); if (ierr) {return ierr;}
     *numPoints = this->pointsOffset[r+1] - this->pointsOffset[r];
     return 0;
   };
