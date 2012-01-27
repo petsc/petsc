@@ -173,3 +173,15 @@ test_parabolic: test_parabolic.o tao_chkopts
 test_elliptic: test_elliptic.o tao_chkopts
 	-${CLINKER} -o test_elliptic test_elliptic.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_elliptic.o
+
+test_bqpip: test_bqpip.o tao_chkopts
+	-${CLINKER} -o test_bqpip test_bqpip.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_bqpip.o
+
+test_chwirut1_bound: test_chwirut1_bound.o tao_chkopts
+	-${CLINKER} -o test_chwirut1_bound test_chwirut1_bound.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut1_bound.o
+
+test_chwirut2_bound: test_chwirut2_bound.o tao_chkopts
+	-${CLINKER} -o test_chwirut2_bound test_chwirut2_bound.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut2_bound.o

@@ -39,6 +39,7 @@ typedef struct{
   Vec DS;
   Vec GZwork;
   Vec TSwork;
+  Vec XL,XU;
 
   /* Work Vectors */
   Vec R3;
