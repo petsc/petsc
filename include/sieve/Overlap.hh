@@ -151,15 +151,15 @@ public:
   PetscErrorCode getNumPointsByRank(index_type rank, index_type *numPoints) {
     index_type     r;
     PetscErrorCode ierr;
-    ierr = this->getRankIndex(rank, &r);CHKERRQ(ierr);
+    ierr = this->getRankIndex(rank, &r); if (ierr) {return ierr};
     *numPoints = this->pointsOffset[r+1] - this->pointsOffset[r];
     return 0;
   };
   /* SLOW, since it involves a search */
   void getRanks(point_type point, index_type *size, const rank_type **ranks, const point_type **remotePoints) {
-    std::vector<rank_type> pRanks;
-    std::vector<rank_type> pPoints;
-    PetscErrorCode ierr;
+    std::vector<rank_type>  pRanks;
+    std::vector<point_type> pPoints;
+    PetscErrorCode          ierr;
 
     ierr = PetscFree2(pointRanks, pointRemotePoints);CHKERRXX(ierr);
     if (this->ranks || !this->flexRanks.size()) {
