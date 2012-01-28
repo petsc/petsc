@@ -112,7 +112,8 @@
         <li>Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()</li>
         <li>Added MatMatTransposeMult() for C=A*B^T</li>
         <li>Added MatRARt() for C=R*A*R^T</li>
-        <li>Preallocation routines set MAT_NEW_NONZERO_ALLOCATION_ERR, disable using MatSetOption() if you intentionally preallocate less than necessary.</li>
+        <li>Preallocation routines now automatically set MAT_NEW_NONZERO_ALLOCATION_ERR, if you intentionally preallocate less than necessary then use MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE) to disable the error generation.</li>
+        <li>You MUST now call MatXXXSetPreallocation() or MatSetUpPreallocation() on any matrix you create directly (not using DMCreateMatrix()) before calling MatSetValues(), MatSetValuesBlocked() etc.</li>
       </ul>
 
       <h4>PC:</h4>

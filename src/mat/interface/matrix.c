@@ -1065,6 +1065,9 @@ PetscErrorCode  MatDestroy(Mat *A)
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or 
+      MatSetUpPreallocation() before using this routine
+
    By default the values, v, are row-oriented. See MatSetOption() for other options.
 
    Calls to MatSetValues() with the INSERT_VALUES and ADD_VALUES 
@@ -1101,7 +1104,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
   if (v) PetscValidDoublePointer(v,6);
-  if (!mat->preallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXXSetPreallocation() or MatSetUpPreallocation() first");
+  if (!mat->preallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXXSetPreallocation() or MatSetUpPreallocation() before MatSetValues()");
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
@@ -1912,8 +1915,10 @@ PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rm
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   Before calling MatSetValuesLocal(), the user must first set the
-   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or 
+      MatSetUpPreallocation() before using this routine
+
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetLocalToGlobalMapping() before using this routine
 
    Calls to MatSetValuesLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
@@ -1997,10 +2002,11 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   Before calling MatSetValuesBlockedLocal(), the user must first set the
-   block size using MatSetBlockSize(), and the local-to-global mapping by
-   calling MatSetLocalToGlobalMappingBlock(), where the mapping MUST be
-   set for matrix blocks, not for matrix elements.
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or 
+      MatSetUpPreallocation() before using this routine
+
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetBlockSize() and MatSetLocalToGlobalMappingBlock() 
+      before using this routineBefore calling MatSetValuesLocal(), the user must first set the
 
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
