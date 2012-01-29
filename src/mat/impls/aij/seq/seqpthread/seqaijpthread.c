@@ -411,7 +411,7 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   B->ops->mult    = MatMult_SeqAIJPThread;
   B->ops->destroy = MatDestroy_SeqAIJPThread;
   B->ops->multadd = MatMultAdd_SeqAIJPThread;
-  B->ops->assemblyend = MatAssemblyEnd_SeqAIJPThread;
+  /*  B->ops->assemblyend = MatAssemblyEnd_SeqAIJPThread; */
 
   if(mats_created == 0) {
     ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Mat_KernelData),&mat_kerneldatap);CHKERRQ(ierr);
