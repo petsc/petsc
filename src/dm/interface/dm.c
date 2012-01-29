@@ -716,15 +716,17 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
-  (*dmf)->ops->initialguess = dm->ops->initialguess;
-  (*dmf)->ops->function     = dm->ops->function;
-  (*dmf)->ops->functionj    = dm->ops->functionj;
-  if (dm->ops->jacobian != DMComputeJacobianDefault) {
-    (*dmf)->ops->jacobian     = dm->ops->jacobian;
+  if (*dmf) {
+    (*dmf)->ops->initialguess = dm->ops->initialguess;
+    (*dmf)->ops->function     = dm->ops->function;
+    (*dmf)->ops->functionj    = dm->ops->functionj;
+    if (dm->ops->jacobian != DMComputeJacobianDefault) {
+      (*dmf)->ops->jacobian     = dm->ops->jacobian;
+    }
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
+    (*dmf)->ctx     = dm->ctx;
+    (*dmf)->levelup = dm->levelup + 1;
   }
-  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
-  (*dmf)->ctx     = dm->ctx;
-  (*dmf)->levelup = dm->levelup + 1;
   PetscFunctionReturn(0);
 }
 
