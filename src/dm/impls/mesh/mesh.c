@@ -138,15 +138,15 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
   } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     mesh->view("Mesh");
   } else {
-    PetscInt  dim   = mesh->getDimension();
-    PetscInt  size  = mesh->commSize();
-    PetscInt  depth = mesh->depth();
+    PetscInt  dim      = mesh->getDimension();
+    PetscInt  size     = mesh->commSize();
+    PetscInt  locDepth = mesh->depth(), depth;
     PetscInt  num   = 0;
     PetscInt *sizes;
 
     ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&depth, &depth, 1, MPIU_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, mesh->comm());CHKERRQ(ierr);
     if (depth == 1) {
       num  = mesh->depthStratum(0)->size();
       ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
@@ -1190,8 +1190,9 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   if (mesh->useNewImpl) {
     PetscSection s;
 
+    /* DOES NOT WORK IN PARALLEL, CHANGE TO DMCOMPLEX */
     ierr = DMMeshGetDefaultSection(dm, &s);CHKERRQ(ierr);
-    ierr = PetscSectionGetOwnedStorageSize(s, mesh->sf, &localSize);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(s, &localSize);CHKERRQ(ierr);
     globalSize = PETSC_DETERMINE;
   } else {
     ALE::Obj<PETSC_MESH_TYPE> m;
@@ -5375,37 +5376,4 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
   for(int i = 0; i < -interval.prefix; i++) {
     indices[(*indx)++] = -1;
   }
-}
-
-
-/******************************** FEM Support **********************************/
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshPrintCellVector"
-PetscErrorCode DMMeshPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[]) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
-  for(PetscInt f = 0; f < len; ++f) {
-    PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", x[f]);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshPrintCellMatrix"
-PetscErrorCode DMMeshPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[]) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
-  for(int f = 0; f < rows; ++f) {
-    PetscPrintf(PETSC_COMM_SELF, "  |");
-    for(int g = 0; g < cols; ++g) {
-      PetscPrintf(PETSC_COMM_SELF, " % 9.5g", A[f*cols+g]);
-    }
-    PetscPrintf(PETSC_COMM_SELF, " |\n");
-  }
-  PetscFunctionReturn(0);
 }

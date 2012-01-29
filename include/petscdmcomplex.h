@@ -49,7 +49,7 @@ extern PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscIn
 extern PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 
 extern PetscErrorCode DMComplexGenerate(DM, PetscBool , DM *);
-extern PetscErrorCode DMComplexRefine(DM, double, PetscBool , DM*);
+extern PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
 extern PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMComplexLoad(PetscViewer, DM);
 
@@ -57,22 +57,25 @@ extern PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *
 extern PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
-extern PetscErrorCode DMComplexGetDefaultSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexSetDefaultSection(DM, PetscSection);
 extern PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
 extern PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
 extern PetscErrorCode DMComplexGetCoordinateVec(DM, Vec *);
 extern PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 
-typedef struct {
-  PetscInt         numQuadPoints; /* The number of quadrature points on an element */
-  const PetscReal *quadPoints;    /* The quadrature point coordinates */
-  const PetscReal *quadWeights;   /* The quadrature weights */
-  PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
-  PetscInt         numComponents; /* The number of components for each basis function */
-  const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
-  const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
-} PetscQuadrature;
+/* FEM Support */
+extern PetscErrorCode DMComplexGetDefaultSection(DM, PetscSection *);
+extern PetscErrorCode DMComplexSetDefaultSection(DM, PetscSection);
+extern PetscErrorCode DMComplexGetDefaultGlobalSection(DM, PetscSection *);
+extern PetscErrorCode DMComplexGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Vec, void *));
+extern PetscErrorCode DMComplexSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void *));
+extern PetscErrorCode DMComplexGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, void *));
+extern PetscErrorCode DMComplexSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, void *));
+typedef PetscErrorCode (*DMComplexLocalFunction1)(DM, Vec, Vec, void*);
+typedef PetscErrorCode (*DMComplexLocalJacobian1)(DM, Vec, Mat, void*);
+
+extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+extern PetscErrorCode DMComplexVecGetClosure(DM, Vec, PetscInt, const PetscScalar *[]);
+extern PetscErrorCode DMComplexVecSetClosure(DM, Vec, PetscInt, const PetscScalar[], InsertMode);
+extern PetscErrorCode DMComplexMatSetClosure(DM, Mat, PetscInt, PetscScalar[], InsertMode);
 
 #endif

@@ -1,6 +1,7 @@
 
 #include <petscdmda.h>      /*I      "petscdmda.h"    I*/
 #include <petscdmmesh.h>    /*I      "petscdmmesh.h"  I*/
+#include <petscdmcomplex.h> /*I      "petscdmcomplex.h" I*/
 #include <private/daimpl.h> 
 /* It appears that preprocessor directives are not respected by bfort */
 #include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
@@ -374,6 +375,114 @@ PetscErrorCode SNESDMMeshComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatSt
   PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESDMComplexComputeFunction"
+/*@C
+  SNESDMComplexComputeFunction - This is a universal function evaluation routine that
+  may be used with SNESSetFunction() as long as the user context has a DMComplex
+  as its first record and the user has called DMComplexSetLocalFunction().
+
+  Collective on SNES
+
+  Input Parameters:
++ snes - the SNES context
+. X - input vector
+. F - function vector
+- ptr - pointer to a structure that must have a DMComplex as its first entry.
+        This ptr must have been passed into SNESDMComplexComputeFunction() as the context.
+
+  Level: intermediate
+
+.seealso: DMComplexSetLocalFunction(), DMComplexSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+@*/
+PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
+  DM               dm = *(DM*) ptr;
+  PetscErrorCode (*lf)(DM, Vec, Vec, void *);
+  Vec              localX, localF;
+  PetscInt         N, n;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
+  if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESDMComplexComputeFunction,) without the DMComplex context");
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 4);
+
+  /* determine whether X = localX */
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localF);CHKERRQ(ierr);
+  ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
+
+  if (n != N){ /* X != localX */
+    /* Scatter ghost points to local vector, using the 2-step process
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+    */
+    ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  } else {
+    ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+    localX = X;
+  }
+  ierr = DMComplexGetLocalFunction(dm, &lf);CHKERRQ(ierr);
+  ierr = (*lf)(dm, localX, localF, ptr);CHKERRQ(ierr);
+  if (n != N){
+    ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  }
+  ierr = DMLocalToGlobalBegin(dm, localF, ADD_VALUES, F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localF, ADD_VALUES, F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESDMComplexComputeJacobian"
+/*
+  SNESDMComplexComputeJacobian - This is a universal Jacobian evaluation routine that
+  may be used with SNESSetJacobian() as long as the user context has a DMComplex
+  as its first record and the user has called DMComplexSetLocalJacobian().
+
+  Collective on SNES
+
+  Input Parameters:
++ snes - the SNES context
+. X - input vector
+. J - Jacobian
+. B - Jacobian used in preconditioner (usally same as J)
+. flag - indicates if the matrix changed its structure
+- ptr - pointer to a structure that must have a DMComplex as its first entry.
+        This ptr must have been passed into SNESDMComplexComputeFunction() as the context.
+
+  Level: intermediate
+
+.seealso: DMComplexSetLocalFunction(), DMComplexSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+*/
+PetscErrorCode SNESDMComplexComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
+{
+  DM               dm = *(DM*) ptr;
+  PetscErrorCode (*lj)(DM, Vec, Mat, void *);
+  Vec              localX;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMComplexGetLocalJacobian(dm, &lj);CHKERRQ(ierr);
+  ierr = (*lj)(dm, localX, *B, ptr);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------------------------*/
 #include <private/matimpl.h>        /*I "petscmat.h" I*/

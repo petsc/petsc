@@ -168,5 +168,19 @@ extern PetscErrorCode  PetscViewerBinaryMatlabOutputVec(PetscViewer, const char 
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DM);
 
 #define DM_FILE_CLASSID 1211221
+
+/* FEM support */
+extern PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
+extern PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
+
+typedef struct {
+  PetscInt         numQuadPoints; /* The number of quadrature points on an element */
+  const PetscReal *quadPoints;    /* The quadrature point coordinates */
+  const PetscReal *quadWeights;   /* The quadrature weights */
+  PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
+  PetscInt         numComponents; /* The number of components for each basis function */
+  const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
+  const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
+} PetscQuadrature;
 PETSC_EXTERN_CXX_END
 #endif

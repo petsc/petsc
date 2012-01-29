@@ -147,12 +147,12 @@ extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscI
 extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
 extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
-extern PetscErrorCode PetscSectionGetOwnedStorageSize(PetscSection, PetscSF, PetscInt *);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
+extern PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
 
 /* Sieve support */
 extern PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);

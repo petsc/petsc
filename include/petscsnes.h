@@ -353,8 +353,10 @@ extern PetscErrorCode  SNESDMDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStr
 extern PetscErrorCode  SNESDMDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDMDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-extern PetscErrorCode  SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode SNESDMComplexComputeFunction(SNES,Vec,Vec,void *);
+extern PetscErrorCode SNESDMComplexComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);

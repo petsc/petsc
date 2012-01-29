@@ -370,27 +370,50 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
   PetscFunctionBegin;
   for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
-    n += s->atlasDof[p];
+    n += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
   }
   *size = n;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetOwnedStorageSize"
+#define __FUNCT__ "PetscSectionCreateGlobalSection"
 /*
-  This gives the storage only for points owned by this process.
+  This gives negative offsets to points not owned by this process
 */
-PetscErrorCode PetscSectionGetOwnedStorageSize(PetscSection s, PetscSF sf, PetscInt *size)
+PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscSection *gsection)
 {
-  PetscInt p, n = 0;
+  PetscInt      *neg;
+  PetscInt       pStart, pEnd, dof, off, globalOff, p;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
-    /* Discount points that are not owned using the SF */
-    n += s->atlasDof[p];
+  ierr = PetscSectionCreate(s->atlasLayout.comm, gsection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+  /* Mark ghost points with negative dof */
+  for(p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
+    neg[p-pStart] = -(dof+1);
   }
-  *size = n;
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  for(p = 0, off = 0; p < pEnd-pStart; ++p) {
+    (*gsection)->atlasOff[p] = off;
+    off += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
+  }
+  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
+  for(p = 0, off = 0; p < pEnd-pStart; ++p) {
+    (*gsection)->atlasOff[p] += globalOff;
+    neg[p-pStart] = -((*gsection)->atlasOff[p]+1);
+  }
+  /* Put in negative offsets for ghost points */
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+  ierr = PetscFree(neg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

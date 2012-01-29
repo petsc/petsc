@@ -53,7 +53,7 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
     for(e = 0; e < numEdges; ++e) {
       ierr = DMComplexSetConeSize(dm, e, 2);CHKERRQ(ierr);
     }
-    ierr = DMComplexSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     for(vy = 0; vy <= edges[1]; vy++) {
       for(ex = 0; ex < edges[0]; ex++) {
         PetscInt edge    = vy*edges[0]     + ex;
@@ -145,7 +145,7 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
     for(f = 0; f < numFaces; ++f) {
       ierr = DMComplexSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
-    ierr = DMComplexSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     for(v = 0; v < numFaces+numVertices; ++v) {
       ierr = DMComplexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
@@ -249,7 +249,6 @@ extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);
-extern PetscErrorCode DMCoarsenHierarchy_Complex(DM dm, int numLevels, DM *coarseHierarchy);
 extern PetscErrorCode DMSetUp_Complex(DM dm);
 extern PetscErrorCode DMDestroy_Complex(DM dm);
 extern PetscErrorCode DMView_Complex(DM dm, PetscViewer viewer);
@@ -278,6 +277,7 @@ PetscErrorCode DMCreate_Complex(DM dm)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
+  mesh->refinementLimit = -1.0;
 
   mesh->meetTmpA       = PETSC_NULL;
   mesh->meetTmpB       = PETSC_NULL;
@@ -285,7 +285,13 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->joinTmpB       = PETSC_NULL;
   mesh->closureTmpA    = PETSC_NULL;
   mesh->closureTmpB    = PETSC_NULL;
-  mesh->defaultSection = PETSC_NULL;
+
+  mesh->labels               = PETSC_NULL;
+  mesh->defaultSection       = PETSC_NULL;
+  mesh->defaultGlobalSection = PETSC_NULL;
+  mesh->lf                   = PETSC_NULL;
+  mesh->lj                   = PETSC_NULL;
+  mesh->printSetValues       = PETSC_FALSE;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Complex;
@@ -297,13 +303,13 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->ops->createlocaltoglobalmappingblock = 0;
   dm->ops->getcoloring        = 0;
   dm->ops->creatematrix       = DMCreateMatrix_Complex;
-  dm->ops->createinterpolation= DMCreateInterpolation_Complex;
+  dm->ops->createinterpolation= 0;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
   dm->ops->refine             = DMRefine_Complex;
   dm->ops->coarsen            = 0;
   dm->ops->refinehierarchy    = 0;
-  dm->ops->coarsenhierarchy   = DMCoarsenHierarchy_Complex;
+  dm->ops->coarsenhierarchy   = 0;
   dm->ops->forminitialguess   = 0;
   dm->ops->formfunction       = 0;
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Complex;

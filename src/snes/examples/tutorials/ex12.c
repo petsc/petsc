@@ -693,7 +693,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
     ierr = DMMeshVecGetClosure(user->dm, localX, c, &x);CHKERRQ(ierr);
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
     for(int q = 0; q < numQuadPoints; ++q) {
       for(int d = 0; d < dim; d++) {
         coords[d] = v0[d];
@@ -1012,7 +1012,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
     ierr = DMMeshVecGetClosure(user->dm, X, c, &x);CHKERRQ(ierr);
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
 
     for(int q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
@@ -1060,7 +1060,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
         elemVec[f] -= basis[q*numBasisFuncs+f]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
       }
     }
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
     ierr = DMMeshVecSetClosure(user->dm, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
@@ -1137,7 +1137,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
         }
       }
     }
-    if (debug) {ierr = DMMeshPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
     ierr = DMMeshMatSetClosure(user->dm, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);

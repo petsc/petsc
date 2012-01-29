@@ -20,7 +20,10 @@ typedef struct {
   PetscInt             dim; /* Topological mesh dimension */
   PetscSF              sf;  /* SF for parallel point overlap */
 
-  /*   Sieve */
+  /* Compatiblity */
+  VecScatter           defaultScatter;
+
+  /* Sieve */
   PetscSection         coneSection;    /* Layout of cones (inedges for DAG) */
   PetscInt             maxConeSize;    /* Cached for fast lookup */
   PetscInt            *cones;          /* Cone for each point */
@@ -30,6 +33,7 @@ typedef struct {
   PetscInt            *supports;       /* Cone for each point */
   PetscSection         coordSection;   /* Layout for coordinates */
   Vec                  coordinates;    /* Coordinate values */
+  PetscReal            refinementLimit; /* Maximum volume for refined cell */
 
   PetscInt            *meetTmpA,    *meetTmpB;    /* Work space for meet operation */
   PetscInt            *joinTmpA,    *joinTmpB;    /* Work space for join operation */
@@ -38,7 +42,13 @@ typedef struct {
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
 
-  PetscSection         defaultSection;
+  PetscSection            defaultSection;
+  PetscSection            defaultGlobalSection;
+  DMComplexLocalFunction1 lf;
+  DMComplexLocalJacobian1 lj;
+
+  /* Debugging */
+  PetscBool               printSetValues;
 } DM_Complex;
 
 #endif /* _COMPLEXIMPL_H */

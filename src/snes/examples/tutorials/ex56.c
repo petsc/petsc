@@ -477,7 +477,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMMeshPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
       }
       for(PetscInt q = 0; q < numQuadPoints; ++q) {
         for(PetscInt d = 0; d < dim; d++) {
@@ -691,7 +691,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     assert(Nq <= NUM_QUADRATURE_POINTS_0);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-      ierr = DMMeshPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
+      ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
     for(PetscInt q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
@@ -869,7 +869,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
                                      user->q, f0, f1, &elemVec[offset*cellDof], user);CHKERRQ(ierr);
   }
   for(PetscInt c = cStart; c < cEnd; ++c) {
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
     ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
@@ -1142,7 +1142,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
     mesh->getSieve()->setDebug(debug);
   }
   for(PetscInt c = cStart; c < cEnd; ++c) {
-    if (debug) {ierr = DMMeshPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
+    if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
     ierr = DMMeshMatSetClosure(dm, Jac, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemMat);CHKERRQ(ierr);
