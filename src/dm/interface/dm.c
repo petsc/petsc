@@ -1867,10 +1867,10 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 #define __FUNCT__ "DMPrintCellVector"
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[]) {
   PetscErrorCode ierr;
-
+  PetscInt f;
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
-  for(PetscInt f = 0; f < len; ++f) {
+  for(f = 0; f < len; ++f) {
     PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", x[f]);
   }
   PetscFunctionReturn(0);
@@ -1880,12 +1880,13 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 #define __FUNCT__ "DMPrintCellMatrix"
 PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[]) {
   PetscErrorCode ierr;
+  int f,g;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
-  for(int f = 0; f < rows; ++f) {
+  for(f = 0; f < rows; ++f) {
     PetscPrintf(PETSC_COMM_SELF, "  |");
-    for(int g = 0; g < cols; ++g) {
+    for(g = 0; g < cols; ++g) {
       PetscPrintf(PETSC_COMM_SELF, " % 9.5g", A[f*cols+g]);
     }
     PetscPrintf(PETSC_COMM_SELF, " |\n");
