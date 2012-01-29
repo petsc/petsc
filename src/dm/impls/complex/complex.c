@@ -1977,7 +1977,6 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
       }
     }
     ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
-    ierr = PetscSFCreate(comm, &pmesh->sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(pmesh->sf, PETSC_DETERMINE, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions(pmesh->sf);CHKERRQ(ierr);
   }
@@ -2130,7 +2129,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
   ierr = PetscFree(in.holelist);CHKERRQ(ierr);
 
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMMESH);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
   ierr = DMComplexSetDimension(*dm, dim);CHKERRQ(ierr);
   {
     DM_Complex    *mesh        = (DM_Complex *) (*dm)->data;
@@ -2247,6 +2246,7 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
+
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(refinementLimit,  2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
@@ -2262,9 +2262,10 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexCreate(comm, dmRefined);CHKERRQ(ierr);
   ierr = DMComplexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
+  if (refinementLimit == 0.0) PetscFunctionReturn(0);
   SETERRQ(comm, PETSC_ERR_SUP, "Refinement not yet implemented");
+  ierr = DMComplexCreate(comm, dmRefined);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
