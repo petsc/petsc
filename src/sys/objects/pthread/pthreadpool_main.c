@@ -70,7 +70,7 @@ extern void*          (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void PetscPthreadSetAffinity(PetscInt);
+extern void DoCoreAffinity(void);
 #endif
 
 extern void* FuncFinish(void*);
@@ -87,7 +87,7 @@ void* PetscThreadFunc_Main(void* arg) {
   int ThreadId = *pId;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
+  DoCoreAffinity();
 #endif
 
   ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);

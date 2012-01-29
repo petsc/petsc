@@ -61,8 +61,7 @@ extern void*          (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void PetscPthreadSetAffinity(PetscInt);
-extern void PetscSetMainThreadAffinity(PetscInt);
+extern void DoCoreAffinity(void);
 #endif
 
 void* FuncFinish_LockFree(void* arg) {
@@ -85,7 +84,7 @@ void* PetscThreadFunc_LockFree(void* arg)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   int* pId      = (int*)arg;
   int  ThreadId = *pId; 
-  PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
+  DoCoreAffinity();
 #endif
 
   /* Spin loop */

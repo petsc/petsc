@@ -75,7 +75,7 @@ extern void*           (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void PetscPthreadSetAffinity(PetscInt);
+extern void DoCoreAffinity(void);
 #endif
 
 extern void* FuncFinish(void*);
@@ -94,6 +94,7 @@ void* PetscThreadFunc_Chain(void* arg) {
   PetscBool PeeOn;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  DoCoreAffinity();
   PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);
 #endif
   if(ThreadId==(PetscMaxThreads-1)) {
