@@ -1866,8 +1866,9 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "DMPrintCellVector"
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[]) {
+  PetscInt       f;
   PetscErrorCode ierr;
-  PetscInt f;
+
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
   for(f = 0; f < len; ++f) {
@@ -1879,8 +1880,8 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 #undef __FUNCT__
 #define __FUNCT__ "DMPrintCellMatrix"
 PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[]) {
+  PetscInt       f, g;
   PetscErrorCode ierr;
-  int f,g;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);

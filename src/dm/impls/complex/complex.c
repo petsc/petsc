@@ -2729,7 +2729,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, Vec v, PetscInt point, const PetscS
 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
     for(f = 0; f < numFields; ++f) {
-      ierr = PetscSectionGetFieldDof(section, points[p], f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
       offsets[f+1] += fdof;
     }
     size += dof;
@@ -2895,7 +2895,7 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, Vec v, PetscInt point, const PetscS
     PetscInt fdof;
 
     for(f = 0; f < numFields; ++f) {
-      ierr = PetscSectionGetFieldDof(section, points[p], f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
       offsets[f+1] += fdof;
     }
   }
@@ -3112,7 +3112,7 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar 
 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
     for(f = 0; f < numFields; ++f) {
-      ierr = PetscSectionGetFieldDof(section, points[p], f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
       offsets[f+1] += fdof;
     }
     numIndices += dof;
