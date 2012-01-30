@@ -190,9 +190,388 @@ PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexPreallocateOperator"
+PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
+{
+  DM_Complex        *mesh = (DM_Complex *) dm->data;
+  MPI_Comm           comm = ((PetscObject) dm)->comm;
+  PetscSF            sf   = mesh->sf, sfDof, sfAdj;
+  PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
+  PetscInt           nleaves, l, p;
+  const PetscInt    *leaves;
+  const PetscSFNode *remotes;
+  PetscInt           pStart, pEnd, numDof, numCols;
+  PetscInt          *tmpAdj, *adj, *rootAdj, *cols;
+  PetscInt           maxConeSize, maxSupportSize, maxAdjSize, adjSize;
+  PetscInt           rStart, rEnd, r;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
+  /* Create dof SF based on point SF */
+  ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Input SF for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSFView(sf, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(sf, section, PETSC_NULL, section, &sfDof);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Dof SF for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSFView(sfDof, PETSC_NULL);CHKERRQ(ierr);
+  /* Create section for dof adjacency (dof ==> # adj dof) */
+  /*   Two points p and q are adjacent if q \in closure(star(p)) */
+  ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(leafSectionAdj, 0, numDof);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &rootSectionAdj);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSectionAdj, 0, numDof);CHKERRQ(ierr);
+  /*   Fill in the ghost dofs on the interface */
+  ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
+  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  maxAdjSize = maxSupportSize*maxConeSize;
+  ierr = PetscMalloc(maxAdjSize * sizeof(PetscInt), &tmpAdj);CHKERRQ(ierr);
+  for(l = 0; l < nleaves; ++l) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        dof, off, d, q;
+    PetscInt        p = leaves[l], numAdj = 0;
+
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(q = 0; q < numAdj; ++q) {
+      PetscInt ndof, noff;
+
+      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+      for(d = off; d < off+dof; ++d) {
+        ierr = PetscSectionAddDof(leafSectionAdj, d, ndof);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscPrintf(comm, "Adjacency Section for Preallocation on Leaves:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(leafSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* Get maximum remote adjacency sizes for owned dofs on interface (roots) */
+  ierr = PetscSFReduceBegin(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Adjancency Section for Preallocation on Roots:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(rootSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* Add in local adjacency sizes for owned dofs on interface (roots) */
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        numAdj = 0, adof, dof, off, d, q;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
+    if (adof <= 0) continue;
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    for(q = 0; q < numAdj; ++q) {
+      PetscInt ndof, noff;
+
+      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+      for(d = off; d < off+dof; ++d) {
+        ierr = PetscSectionAddDof(rootSectionAdj, d, ndof);CHKERRQ(ierr);
+      }
+    }
+  }
+  /* Create adj SF based on dof SF */
+  ierr = PetscSFCreateSectionSF(sfDof, leafSectionAdj, PETSC_NULL, rootSectionAdj, &sfAdj);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Adjacency SF for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSFView(sfAdj, PETSC_NULL);CHKERRQ(ierr);
+  /* Create leaf adjacency */
+  ierr = PetscSectionSetUp(leafSectionAdj);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(leafSectionAdj, &adjSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &adj);CHKERRQ(ierr);
+  ierr = PetscMemzero(adj, adjSize * sizeof(PetscInt));CHKERRQ(ierr);
+  for(l = 0; l < nleaves; ++l) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        dof, off, d, q;
+    PetscInt        p = leaves[l], numAdj = 0;
+
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(d = off; d < off+dof; ++d) {
+      PetscInt aoff, i = 0;
+
+      ierr = PetscSectionGetOffset(leafSectionAdj, d, &aoff);CHKERRQ(ierr);
+      for(q = 0; q < numAdj; ++q) {
+        PetscInt ndof, noff, nd;
+
+        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+        for(nd = 0; nd < ndof; ++nd, ++i) {
+          adj[aoff+i] = noff+nd;
+        }
+      }
+    }
+  }
+  /* Debugging */
+  {
+    IS tmp;
+    ierr = ISCreateGeneral(comm, adjSize, adj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
+    ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
+  }
+  /* Gather adjacenct indices to root */
+  ierr = PetscSectionGetStorageSize(rootSectionAdj, &adjSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &rootAdj);CHKERRQ(ierr);
+  ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
+  /* Compress indices */
+  ierr = PetscSectionSetUp(rootSectionAdj);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof,  off, d;
+    PetscInt adof, aoff;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
+    if (adof <= 0) continue;
+    for(d = off; d < off+dof; ++d) {
+      ierr = PetscSectionGetDof(rootSectionAdj, d, &adof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(rootSectionAdj, d, &aoff);CHKERRQ(ierr);
+      ierr = PetscSortRemoveDupsInt(&adof, &rootAdj[off]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(rootSectionAdj, d, adof);CHKERRQ(ierr);
+    }
+  }
+  /* Build adjacency section */
+  ierr = PetscSectionCreate(comm, &sectionAdj);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionAdj, 0, numDof);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        numAdj = 0, dof, off, d, q;
+    PetscBool       found = PETSC_TRUE;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(d = off; d < off+dof; ++d) {
+      PetscInt ldof, rdof;
+
+      ierr = PetscSectionGetDof(leafSectionAdj, d, &ldof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(rootSectionAdj, d, &rdof);CHKERRQ(ierr);
+      if (ldof > 0) {
+        ierr = PetscSectionSetDof(sectionAdj, d, -(ldof+1));CHKERRQ(ierr);
+      } else if (rdof > 0) {
+        ierr = PetscSectionSetDof(sectionAdj, d, rdof);CHKERRQ(ierr);
+      } else {
+        found = PETSC_FALSE;
+      }
+    }
+    if (found) continue;
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(q = 0; q < numAdj; ++q) {
+      PetscInt ndof, noff;
+
+      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+      for(d = off; d < off+dof; ++d) {
+        ierr = PetscSectionAddDof(sectionAdj, d, ndof);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(sectionAdj);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Adjacency Section for Preallocation:\n");CHKERRQ(ierr);
+  ierr = PetscSectionView(sectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* Get adjacent indices */
+  ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
+  ierr = PetscMalloc(numCols * sizeof(PetscInt), &cols);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        numAdj = 0, dof, off, d, q;
+    PetscBool       found = PETSC_TRUE;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(d = off; d < off+dof; ++d) {
+      PetscInt ldof, rdof;
+
+      ierr = PetscSectionGetDof(leafSectionAdj, d, &ldof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(rootSectionAdj, d, &rdof);CHKERRQ(ierr);
+      if (ldof > 0) {
+      } else if (rdof > 0) {
+        PetscInt off, roff;
+
+        ierr = PetscSectionGetOffset(sectionAdj, d, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(rootSectionAdj, d, &roff);CHKERRQ(ierr);
+        ierr = PetscMemcpy(&cols[off], &rootAdj[roff], rdof * sizeof(PetscInt));CHKERRQ(ierr);
+      } else {
+        found = PETSC_FALSE;
+      }
+    }
+    if (found) continue;
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for(d = off; d < off+dof; ++d) {
+      PetscInt aoff, i = 0;
+
+      ierr = PetscSectionGetOffset(sectionAdj, d, &aoff);CHKERRQ(ierr);
+      for(q = 0; q < numAdj; ++q) {
+        PetscInt ndof, noff, nd;
+
+        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+        for(nd = 0; nd < ndof; ++nd, ++i) {
+          cols[aoff+i] = noff+nd;
+        }
+      }
+    }
+  }
+  /* Create allocation vectors from adjacency graph */
+  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+  for(r = rStart; r < rEnd; ++r) {
+    PetscInt numCols, cStart, c;
+
+    ierr = PetscSectionGetDof(sectionAdj, r, &numCols);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(sectionAdj, r, &cStart);CHKERRQ(ierr);
+    for(c = cStart; c < cStart+numCols; ++c) {
+      if ((cols[c] >= rStart) && (cols[c] < rEnd)) {
+        ++dnz[r-rStart];
+        if (cols[c] >= r) {++dnzu[r-rStart];}
+      } else {
+        ++onz[r-rStart];
+        if (cols[c] >= r) {++onzu[r-rStart];}
+      }
+    }
+  }
+  /* Set matrix pattern */
+  ierr = MatXAIJSetPreallocation(A, bs, 0, dnz, 0, onz, 0, dnzu, 0, onzu);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  /* Fill matrix with zeros */
+  if (fillMatrix) {
+    PetscScalar *values;
+    PetscInt     maxRowLen = 0;
+
+    for(r = rStart; r < rEnd; ++r) {
+      PetscInt len;
+
+      ierr = PetscSectionGetDof(sectionAdj, r, &len);CHKERRQ(ierr);
+      maxRowLen = PetscMax(maxRowLen, len);
+    }
+    ierr = PetscMalloc(maxRowLen * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+    for(r = rStart; r < rEnd; ++r) {
+      PetscInt numCols, cStart;
+
+      ierr = PetscSectionGetDof(sectionAdj, r, &numCols);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(sectionAdj, r, &cStart);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, numCols, &cols[cStart], values, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Complex"
 PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
 {
+  PetscSection   section, sectionGlobal;
+  PetscInt       bs = -1;
+  PetscInt       localSize;
+  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -200,7 +579,56 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
-  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not yet implemented");
+  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject) dm)->comm, J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  /* Check for symmetric storage */
+  isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
+  if (isSymmetric) {
+    ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
+  }
+  if (!isShell) {
+    PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
+    PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
+
+    if (bs < 0) {
+      if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
+        PetscInt pStart, pEnd, p, dof;
+
+        ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+        for(p = pStart; p < pEnd; ++p) {
+          ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+          if (dof) {
+            bs = dof;
+            break;
+          }
+        }
+      } else {
+        bs = 1;
+      }
+      /* Must have same blocksize on all procs (some might have no points) */
+      bsLocal = bs;
+      ierr = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
+    ierr = PetscMemzero(dnz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemzero(onz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemzero(dnzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemzero(onzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = DMComplexPreallocateOperator(dm, bs, section, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
+    ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2355,8 +2783,8 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
 PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
   PetscInt      *numDofTot, *maxConstraints;
   PetscInt       pStart = 0, pEnd = 0;
+  PetscInt       p, d, f, bc;
   PetscErrorCode ierr;
-  PetscInt d, p, f, bc;
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(dim+1,PetscInt,&numDofTot,numFields+1,PetscInt,&maxConstraints);CHKERRQ(ierr);
@@ -2393,7 +2821,7 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
     for(bc = 0; bc < numBC; ++bc) {
       PetscInt        field = 0;
       const PetscInt *idx;
-      PetscInt        n,i;
+      PetscInt        n, i;
 
       if (numFields) {field = bcField[bc];}
       ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
@@ -2641,8 +3069,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm)
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
   ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
   for(p = pStart, l = 0; p < pEnd; ++p) {
-    PetscInt dof, off;
-    PetscInt c;
+    PetscInt dof, off, c;
 
     /* Should probably use constrained dofs */
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -3136,7 +3563,7 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar 
     PetscErrorCode ierr2;
 
     ierr2 = MPI_Comm_rank(((PetscObject) A)->comm, &rank);CHKERRQ(ierr2);
-    ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in DMMeshMatSetClosure\n", rank);CHKERRQ(ierr2);
+    ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in DMComplexMatSetClosure\n", rank);CHKERRQ(ierr2);
     ierr2 = DMComplexPrintMatSetValues(A, point, numIndices, indices, values);CHKERRQ(ierr2);
     CHKERRQ(ierr);
   }
