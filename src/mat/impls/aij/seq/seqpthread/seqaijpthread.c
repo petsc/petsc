@@ -242,8 +242,8 @@ PetscErrorCode MatPThreadSetNThreads(Mat A,PetscInt nthreads)
     }
     s->nthreads = nthreads + PetscMainThreadShareWork;
   }
-  Q = A->rmap->n/s->nthreads;
-  R = A->rmap->n-Q*s->nthreads;
+  Q = A->rmap->N/s->nthreads;
+  R = A->rmap->N-Q*s->nthreads;
 
   /* Set starting row and nrows each thread */
   ierr = PetscMalloc2(s->nthreads,PetscInt,&s->rstart,s->nthreads,PetscInt,&s->nrows);CHKERRQ(ierr);
