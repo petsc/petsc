@@ -1593,7 +1593,7 @@ PetscErrorCode DMComplexMeetPoints(DM dm, PetscInt numPoints, const PetscInt poi
 PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency) {
   const PetscInt maxFaceCases = 30;
   PetscInt       numFaceCases = 0;
-  PetscInt       numFaceVertices[maxFaceCases];
+  PetscInt       numFaceVertices[30]; /* maxFaceCases, The Windows compiler is shit */
   PetscInt      *off, *adj;
   PetscInt       dim, depth, cStart, cEnd, c, numCells, cell;
   PetscErrorCode ierr;
