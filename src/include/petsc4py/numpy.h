@@ -20,6 +20,9 @@
 #elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #  define NPY_PETSC_REAL    NPY_LONGDOUBLE
 #  define NPY_PETSC_COMPLEX NPY_CLONGDOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#  define NPY_PETSC_REAL    NPY_FLOAT128
+#  define NPY_PETSC_COMPLEX NPY_COMPLEX256
 #else
 #  error "unsupported real precision"
 #endif

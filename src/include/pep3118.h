@@ -19,6 +19,9 @@
 #elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 # define _PyPetsc_FMT_PETSC_REAL    "g"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
+#elif defined(PETSC_USE_REAL___FLOAT128)
+# define _PyPetsc_FMT_PETSC_REAL    "g"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
 #else
 # error "unsupported real precision"
 #endif
