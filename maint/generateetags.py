@@ -58,6 +58,7 @@ def processDir(tagfile,dirname,names):
 	if 'pounder' in names: del names[names.index('pounder')]
 	if 'taodm' in names: del names[names.index('taodm')]
 	if 'nlstests' in names: del names[names.index('nlstests')]
+	if 'tex' in names: del names[names.index('nlstests')]
 
 def main():
 	try: os.unlink('TAGS')
