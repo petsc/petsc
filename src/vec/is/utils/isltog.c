@@ -483,6 +483,9 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 
     Level: advanced
 
+    Developer Note: The manual page states that idx and idxout may be identical but the calling
+       sequence declares idx as const so it cannot be the same as idxout. 
+
     Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
