@@ -42,8 +42,8 @@ Mat_KernelData **mat_pdata;
 void* MatMult_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
-  const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
-  const MatScalar   *aa = (const MatScalar*)data->aa;
+  const PetscInt    *ai = (const PetscInt*)data->ai,*ajbase = (const PetscInt*)data->aj,*aj;
+  const MatScalar   *aabase = (const MatScalar*)data->aa,*aa;
   const PetscScalar *x = (const PetscScalar*)data->x; 
   PetscScalar       *y = data->y;
   PetscInt           nrows = data->nrows;
@@ -54,8 +54,8 @@ void* MatMult_Kernel(void* arg)
   data->nonzerorow = 0;
   for(i=0;i<nrows;i++) {
     nz = ai[i+1] - ai[i];
-    aj = data->aj + ai[i];
-    aa = data->aa + ai[i];
+    aj = ajbase + ai[i];
+    aa = aabase + ai[i];
     sum = 0.0;
     data->nonzerorow += (nz>0);
     PetscSparseDensePlusDot(sum,x,aa,aj,nz);

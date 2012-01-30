@@ -726,7 +726,6 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   PetscInt       i,j,j_rem;
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
   switch(j_rem = nv&0x3) {
   case 3:
@@ -832,20 +831,20 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
     ierr = VecRestoreArray(yy[3],&y3);CHKERRQ(ierr);
 
     z[0] = kerneldatap[0].result0;
-    for(j=1;j<x->nthreads;j++) {
-      z[0] += kerneldatap[j].result0;
+    for(i=1;i<x->nthreads;i++) {
+      z[0] += kerneldatap[i].result0;
     }
     z[1] = kerneldatap[0].result1;
-    for(j=1;j<x->nthreads;j++) {
-      z[1] += kerneldatap[j].result1;
+    for(i=1;i<x->nthreads;i++) {
+      z[1] += kerneldatap[i].result1;
     }
     z[2] = kerneldatap[0].result2;
-    for(j=1;j<x->nthreads;j++) {
-      z[2] += kerneldatap[j].result2;
+    for(i=1;i<x->nthreads;i++) {
+      z[2] += kerneldatap[i].result2;
     }
     z[3] = kerneldatap[0].result3;
-    for(j=1;j<x->nthreads;j++) {
-      z[3] += kerneldatap[j].result3;
+    for(i=1;i<x->nthreads;i++) {
+      z[3] += kerneldatap[i].result3;
     }
     yy += 4;
     z  += 4;
