@@ -604,8 +604,8 @@ cdef class Mat(Object):
         cdef const_PetscScalar *vals = NULL
         for irow from 0 <= irow < nrows:
             CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
-            CHKERR( PetscMemcpy(AJ+AI[irow], cols, ncols*sizeof(PetscInt)) )
-            CHKERR( PetscMemcpy(AV+AI[irow], vals, ncols*sizeof(PetscScalar)) )
+            CHKERR( PetscMemcpy(AJ+AI[irow], cols, <size_t>ncols*sizeof(PetscInt)) )
+            CHKERR( PetscMemcpy(AV+AI[irow], vals, <size_t>ncols*sizeof(PetscScalar)) )
             CHKERR( MatRestoreRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
         #
         return (ai, aj, av)
