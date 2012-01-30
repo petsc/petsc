@@ -15,7 +15,7 @@
     ((TAO_VERSION_MAJOR == (MAJOR)) &&       \
     (TAO_VERSION_MINOR == (MINOR)) &&       \
      (TAO_VERSION_SUBMINOR == (SUBMINOR)))
-#define TAO_VERSION_DATE     "Jan 25, 2012"
+#define TAO_VERSION_DATE     "Jan 30, 2012"
 #define TAO_AUTHOR_INFO      "The TAO Team:\
  Todd Munson, Jason Sarich, Stefan Wild\n\
 Bug reports, questions: tao-comments@mcs.anl.gov\n\
