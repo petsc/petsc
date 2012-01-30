@@ -75,6 +75,7 @@ extern void*           (*MainWait)(void*);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+void PetscPthreadSetAffinity(PetscInt);
 extern void DoCoreAffinity(void);
 #endif
 
