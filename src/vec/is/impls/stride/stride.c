@@ -348,6 +348,7 @@ PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  if (n < 0) {SETERRQ1(((PetscObject) is)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Negative length %d not valid", n);}
   ierr = PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
