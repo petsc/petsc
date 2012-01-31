@@ -268,6 +268,7 @@ PetscErrorCode DMCreate_Complex(DM dm)
 
   mesh->dim            = 0;
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sf);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sfDefault);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
   mesh->maxConeSize    = 0;
   mesh->cones          = PETSC_NULL;

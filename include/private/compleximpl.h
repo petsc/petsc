@@ -17,11 +17,9 @@ struct Sieve_Label {
 };
 
 typedef struct {
-  PetscInt             dim; /* Topological mesh dimension */
-  PetscSF              sf;  /* SF for parallel point overlap */
-
-  /* Compatiblity */
-  VecScatter           defaultScatter;
+  PetscInt             dim;   /* Topological mesh dimension */
+  PetscSF              sf;    /* SF for parallel point overlap */
+  PetscSF              sfDefault; /* SF for parallel dof overlap using default section */
 
   /* Sieve */
   PetscSection         coneSection;    /* Layout of cones (inedges for DAG) */
