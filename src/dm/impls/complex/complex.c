@@ -126,9 +126,8 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscSectionDestroy(&mesh->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->defaultGlobalSection);CHKERRQ(ierr);
 
-  ierr = VecScatterDestroy(&mesh->defaultScatter);CHKERRQ(ierr);
-
   ierr = PetscSFDestroy(&mesh->sf);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&mesh->sfDefault);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->coneSection);CHKERRQ(ierr);
   ierr = PetscFree(mesh->cones);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->supportSection);CHKERRQ(ierr);
@@ -3000,15 +2999,83 @@ PetscErrorCode DMComplexGetCoordinateVec(DM dm, Vec *coordinates) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateDefaultSF"
+PetscErrorCode  DMComplexCreateDefaultSF(DM dm)
+{
+  DM_Complex     *mesh = (DM_Complex *) dm->data;
+  PetscSection    gSection;
+  PetscLayout     layout;
+  const PetscInt *ranges;
+  PetscInt       *local;
+  PetscSFNode    *remote;
+  PetscInt        pStart, pEnd, p, nroots, nleaves, l;
+  PetscMPIInt     size;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  ierr = DMComplexGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(gSection, &nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(((PetscObject) dm)->comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
+  for(p = pStart, nleaves = 0; p < pEnd; ++p) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
+    if (dof < 0) {nleaves += -(dof+1);}
+  }
+  ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
+  ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
+  for(p = pStart, l = 0; p < pEnd; ++p) {
+    PetscInt dof, off, d;
+
+    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
+    if (dof < 0) {
+      for(d = 0; d < -(dof+1); ++d) {
+        PetscInt goff = -(off+1) + d, r;
+
+        for(r = 0; r < size; ++r) {
+          if ((goff >= ranges[r]) && (goff < ranges[r+1])) break;
+        }
+        remote[l].rank  = r;
+        remote[l].index = goff - ranges[r];
+      }
+    }
+  }
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(mesh->sfDefault, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalBegin_Complex"
 PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
+  MPI_Op         op;
+  PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = VecScatterBegin(mesh->defaultScatter, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
+  switch(mode) {
+  case INSERT_VALUES:
+    op = MPI_REPLACE; break;
+  case ADD_VALUES:
+    op = MPI_SUM; break;
+  default:
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);
+  }
+  ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(mesh->sfDefault, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
+  ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3017,11 +3084,25 @@ PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec 
 PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
+  MPI_Op         op;
+  PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = VecScatterEnd(mesh->defaultScatter, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
+  switch(mode) {
+  case INSERT_VALUES:
+    op = MPI_REPLACE; break;
+  case ADD_VALUES:
+    op = MPI_SUM; break;
+  default:
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);
+  }
+  ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(mesh->sfDefault, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
+  ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3030,11 +3111,17 @@ PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 PetscErrorCode  DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode, Vec l)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = VecScatterBegin(mesh->defaultScatter, g, l, mode, SCATTER_REVERSE);CHKERRQ(ierr);
+  if (mode == ADD_VALUES) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);}
+  ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(mesh->sfDefault, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3043,11 +3130,17 @@ PetscErrorCode  DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode, Vec 
 PetscErrorCode  DMGlobalToLocalEnd_Complex(DM dm, Vec g, InsertMode mode, Vec l)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = VecScatterEnd(mesh->defaultScatter, g, l, mode, SCATTER_REVERSE);CHKERRQ(ierr);
+  if (mode == ADD_VALUES) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);}
+  ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(mesh->sfDefault, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3065,7 +3158,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm)
   ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
+  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
   for(p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt dof, off, c;
 
