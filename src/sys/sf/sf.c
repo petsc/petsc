@@ -952,6 +952,11 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(multi,2);
+  if (sf->nroots < 0) {
+    ierr = PetscSFCreate(((PetscObject)sf)->comm,&sf->multi);CHKERRQ(ierr);
+    *multi = sf->multi;
+    PetscFunctionReturn(0);
+  }
   if (!sf->multi) {
     const PetscInt *indegree;
     PetscInt i,*inoffset,*outones,*outoffset;
@@ -1204,6 +1209,7 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   MPI_Win win;
 
   PetscFunctionBegin;
+  if (!sf->wins) {PetscFunctionReturn(0);}
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
   ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
