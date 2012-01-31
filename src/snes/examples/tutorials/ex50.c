@@ -473,9 +473,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         bjiu = 0.0;
         bjiv = 0.0;
       }
-      fu     = x[j][i].u;
-      fv     = x[j][i].v;
-
       x[j][i].u     = 0.0 + bjiu;
       x[j][i].v     = 0.0 + bjiv;
     }
@@ -494,9 +491,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         bjiu = 0.0;
         bjiv = 0.0;
       }
-      fu     = x[j][i].u - lid;
-      fv     = x[j][i].v;
-
       x[j][i].u     = lid + bjiu;
       x[j][i].v     = bjiv;
     }
@@ -515,9 +509,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         bjiu = 0.0;
         bjiv = 0.0;
       }
-      fu     = x[j][i].u;
-      fv     = x[j][i].v;
-
       x[j][i].u     = 0.0 + bjiu;
       x[j][i].v     = 0.0 + bjiv;
     }
@@ -536,8 +527,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         bjiu = 0.0;
         bjiv = 0.0;
       }
-      fu     = x[j][i].u;
-      fv     = x[j][i].v;
       x[j][i].u     = 0.0 + bjiu;
       x[j][i].v     = 0.0 + bjiv;
     }
@@ -597,14 +586,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
                vym*(x[j+1][i].omega - u)) * hx -
               .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy - bjiomega;
             /* convective coefficient derivatives */
-            dfodo = 2.0*(hydhx + hxdhy) + (vxp - vxm*hy + vyp - vym*hx);
+            dfodo = 2.0*(hydhx + hxdhy) + ((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) {
-              dfodu = u - x[j][i-1].omega;
+              dfodu = (u - x[j][i-1].omega)*hy;
             } else {
               dfodu = (x[j][i+1].omega - u)*hy;
             }
             if (PetscRealPart(vy) > 0.0) {
-              dfodv = u - x[j-1][i].omega;
+              dfodv = (u - x[j-1][i].omega)*hx;
             } else {
               dfodv = (x[j+1][i].omega - u)*hx;
             }
@@ -617,14 +606,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
                vxm*(x[j][i+1].temp - u)) * hy +
               (vyp*(u - x[j-1][i].temp) +
                vym*(x[j+1][i].temp - u)) * hx) - bjitemp;
-            dftdt = 2.0*(hydhx + hxdhy) + prandtl*(vxp - vxm*hy + vyp - vym*hx);
+            dftdt = 2.0*(hydhx + hxdhy) + prandtl*((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) {
-              dftdu = prandtl*(u - x[j][i-1].temp);
+              dftdu = prandtl*(u - x[j][i-1].temp)*hy;
             } else {
               dftdu = prandtl*(x[j][i+1].temp - u)*hy;
             }
             if (PetscRealPart(vy) > 0.0) {
-              dftdv = prandtl*(u - x[j-1][i].temp);
+              dftdv = prandtl*(u - x[j-1][i].temp)*hx;
             } else {
               dftdv = prandtl*(x[j+1][i].temp - u)*hx;
             }
@@ -647,18 +636,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             x[j][i].temp  = x[j][i].temp - yt;
             x[j][i].omega = x[j][i].omega - yo;
           }
-          if (j == 0) {
-            fomega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy - bjiomega;
-            ftemp  = x[j][i].temp-x[j+1][i].temp - bjitemp;
-            x[j][i].omega = x[j][i].omega - fomega;
-            x[j][i].temp  = x[j][i].temp - ftemp;
-          }
-          if (j == info.my - 1) {
-            fomega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy - bjiomega;
-            ftemp  = x[j][i].temp-x[j-1][i].temp - bjitemp;
-            x[j][i].omega = x[j][i].omega - fomega;
-            x[j][i].temp  = x[j][i].temp - ftemp;
-          }
           if (i == 0) {
             fomega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx - bjiomega;
             ftemp  = x[j][i].temp - bjitemp;
@@ -668,6 +645,18 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
           if (i == info.mx - 1) {
             fomega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx - bjiomega;
             ftemp  = x[j][i].temp - (PetscReal)(grashof>0) - bjitemp;
+            x[j][i].omega = x[j][i].omega - fomega;
+            x[j][i].temp  = x[j][i].temp - ftemp;
+          }
+          if (j == 0) {
+            fomega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy - bjiomega;
+            ftemp  = x[j][i].temp-x[j+1][i].temp - bjitemp;
+            x[j][i].omega = x[j][i].omega - fomega;
+            x[j][i].temp  = x[j][i].temp - ftemp;
+          }
+          if (j == info.my - 1) {
+            fomega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy - bjiomega;
+            ftemp  = x[j][i].temp-x[j-1][i].temp - bjitemp;
             x[j][i].omega = x[j][i].omega - fomega;
             x[j][i].temp  = x[j][i].temp - ftemp;
           }
