@@ -246,7 +246,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatRow(Mat A,PetscInt row,Mat *B)
   PetscFunctionBegin;
   sub = (row < vs->nc) ? vs->m[row][row] : PETSC_NULL; /* Prefer to find on the diagonal */
   for (j=0; !sub && j<vs->nc; j++) sub = vs->m[row][j];
-  if (sub) {ierr = MatPreallocated(sub);CHKERRQ(ierr);} /* Ensure that the sizes are available */
+  if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
   PetscFunctionReturn(0);
 }
@@ -263,7 +263,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatCol(Mat A,PetscInt col,Mat *B)
   PetscFunctionBegin;
   sub = (col < vs->nr) ? vs->m[col][col] : PETSC_NULL; /* Prefer to find on the diagonal */
   for (i=0; !sub && i<vs->nr; i++) sub = vs->m[i][col];
-  if (sub) {ierr = MatPreallocated(sub);CHKERRQ(ierr);} /* Ensure that the sizes are available */
+  if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
   PetscFunctionReturn(0);
 }

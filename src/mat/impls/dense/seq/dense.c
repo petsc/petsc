@@ -1607,8 +1607,8 @@ PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_SeqDense"
-PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
+#define __FUNCT__ "MatSetUp_SeqDense"
+PetscErrorCode MatSetUp_SeqDense(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1951,7 +1951,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,       
        0,
        0,
-/*29*/ MatSetUpPreallocation_SeqDense,
+/*29*/ MatSetUp_SeqDense,
        0,
        0,
        MatGetArray_SeqDense,

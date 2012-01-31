@@ -2334,8 +2334,8 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_SeqAIJ"
-PetscErrorCode MatSetUpPreallocation_SeqAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_SeqAIJ"
+PetscErrorCode MatSetUp_SeqAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -2925,7 +2925,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_SeqAIJ,
+/*29*/ MatSetUp_SeqAIJ,
        0,
        0,
        MatGetArray_SeqAIJ,
@@ -4247,6 +4247,8 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
 #define CHKERRQ(ierr) CHKERRABORT(((PetscObject)A)->comm,ierr) 
 #undef SETERRQ2
 #define SETERRQ2(comm,ierr,b,c,d) CHKERRABORT(comm,ierr) 
+#undef SETERRQ3
+#define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr) 
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -4266,7 +4268,7 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
   PetscBool      roworiented = a->roworiented;
 
   PetscFunctionBegin;  
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  MatCheckPreallocated(A,1);
   imax = a->imax;
   ai = a->i;
   ailen = a->ilen;

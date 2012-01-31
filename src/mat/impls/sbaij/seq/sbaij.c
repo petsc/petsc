@@ -1186,8 +1186,8 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_SeqSBAIJ"
-PetscErrorCode MatSetUpPreallocation_SeqSBAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_SeqSBAIJ"
+PetscErrorCode MatSetUp_SeqSBAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1440,7 +1440,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_SeqSBAIJ,
+/*29*/ MatSetUp_SeqSBAIJ,
        0,
        0,
        MatGetArray_SeqSBAIJ,

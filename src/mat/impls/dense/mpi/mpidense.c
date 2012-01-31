@@ -1023,8 +1023,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
 extern PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPIDense"
-PetscErrorCode MatSetUpPreallocation_MPIDense(Mat A)
+#define __FUNCT__ "MatSetUp_MPIDense"
+PetscErrorCode MatSetUp_MPIDense(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1555,7 +1555,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPIDense,
+/*29*/ MatSetUp_MPIDense,
        0,
        0,
        MatGetArray_MPIDense,

@@ -1954,8 +1954,8 @@ PetscErrorCode MatCopy_MPIBAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPIBAIJ"
-PetscErrorCode MatSetUpPreallocation_MPIBAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_MPIBAIJ"
+PetscErrorCode MatSetUp_MPIBAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -2794,7 +2794,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPIBAIJ,
+/*29*/ MatSetUp_MPIBAIJ,
        0,
        0,
        0,
