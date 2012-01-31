@@ -3160,7 +3160,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm)
   ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
+  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
   for(p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt dof, off, c;
 

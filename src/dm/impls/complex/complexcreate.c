@@ -149,27 +149,27 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
     for(v = 0; v < numFaces+numVertices; ++v) {
       ierr = DMComplexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
-    { // Side 0 (Front)
+    { /* Side 0 (Front) */
       PetscInt cone[4] = {numFaces+4, numFaces+5, numFaces+7, numFaces+6};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
-    { // Side 1 (Back)
+    { /* Side 1 (Back) */
       PetscInt cone[4] = {numFaces+1, numFaces+0, numFaces+2, numFaces+3};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
-    { // Side 0 (Bottom)
+    { /* Side 0 (Bottom) */
       PetscInt cone[4] = {numFaces+0, numFaces+1, numFaces+5, numFaces+4};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
-    { // Side 0 (Top)
+    { /* Side 0 (Top) */
       PetscInt cone[4] = {numFaces+6, numFaces+7, numFaces+3, numFaces+2};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
-    { // Side 0 (Left)
+    { /* Side 0 (Left) */
       PetscInt cone[4] = {numFaces+0, numFaces+4, numFaces+6, numFaces+2};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
-    { // Side 0 (Right)
+    { /* Side 0 (Right) */
       PetscInt cone[4] = {numFaces+5, numFaces+1, numFaces+3, numFaces+7};
       ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
