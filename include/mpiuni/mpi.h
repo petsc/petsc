@@ -136,6 +136,7 @@ extern void *MPIUNI_TMP;
 #define MPI_ERRORS_RETURN    0
 #define MPI_UNDEFINED      (-32766)
 #define MPI_ERRORS_ARE_FATAL (-32765)
+#define MPI_MAXLOC           5
 
 
 /* External types */
