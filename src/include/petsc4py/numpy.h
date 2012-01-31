@@ -2,7 +2,26 @@
 #define PETSC4PY_NUMPY_H
 
 #include "Python.h"
+
+/*#define NPY_NO_DEPRECATED_API*/
 #include "numpy/arrayobject.h"
+
+#ifndef NPY_ARRAY_ALIGNED
+#define NPY_ARRAY_ALIGNED NPY_ALIGNED
+#endif
+#ifndef NPY_ARRAY_WRITEABLE
+#define NPY_ARRAY_WRITEABLE NPY_WRITEABLE
+#endif
+#ifndef NPY_ARRAY_NOTSWAPPED
+#define NPY_ARRAY_NOTSWAPPED NPY_NOTSWAPPED
+#endif
+#ifndef NPY_ARRAY_CARRAY
+#define NPY_ARRAY_CARRAY NPY_CARRAY
+#endif
+#ifndef NPY_ARRAY_FARRAY
+#define NPY_ARRAY_FARRAY NPY_FARRAY
+#endif
+
 #include "petsc.h"
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -20,6 +39,9 @@
 #elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #  define NPY_PETSC_REAL    NPY_LONGDOUBLE
 #  define NPY_PETSC_COMPLEX NPY_CLONGDOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#  define NPY_PETSC_REAL    NPY_FLOAT128
+#  define NPY_PETSC_COMPLEX NPY_COMPLEX256
 #else
 #  error "unsupported real precision"
 #endif

@@ -10,9 +10,7 @@ cdef extern from "petsc4py/numpy.h":
         pass
 
     ctypedef extern class numpy.ndarray [object PyArrayObject]:
-        cdef char*     c_data  "data"
-        cdef int       c_ndim  "nd"
-        cdef npy_intp* c_shape "dimensions"
+        pass
 
     void*     PyArray_DATA(ndarray)
     npy_intp  PyArray_SIZE(ndarray)
@@ -24,16 +22,11 @@ cdef extern from "petsc4py/numpy.h":
     dtype   PyArray_DescrFromType(int)
     object  PyArray_TypeObjectFromType(int)
 
-    enum: NPY_C_CONTIGUOUS
-    enum: NPY_F_CONTIGUOUS
-    enum: NPY_ALIGNED
-    enum: NPY_NOTSWAPPED
-    enum: NPY_WRITEABLE
-
-    enum: NPY_CARRAY
-    enum: NPY_CARRAY_RO
-    enum: NPY_FARRAY
-    enum: NPY_FARRAY_RO
+    enum: NPY_ARRAY_ALIGNED
+    enum: NPY_ARRAY_WRITEABLE
+    enum: NPY_ARRAY_NOTSWAPPED
+    enum: NPY_ARRAY_CARRAY
+    enum: NPY_ARRAY_FARRAY
 
     ndarray PyArray_FROM_O(object)
     ndarray PyArray_FROM_OT(object,int)
@@ -114,7 +107,8 @@ cdef inline ndarray array_s(PetscInt size, const_PetscScalar* data):
 # --------------------------------------------------------------------
 
 cdef inline ndarray iarray(object ob, int typenum):
-    cdef ndarray ary = PyArray_FROM_OTF(ob, typenum, NPY_ALIGNED)
+    cdef ndarray ary = PyArray_FROM_OTF(
+        ob, typenum, NPY_ARRAY_ALIGNED|NPY_ARRAY_NOTSWAPPED)
     if PyArray_ISCONTIGUOUS(ary): return ary
     if PyArray_ISFORTRAN(ary):    return ary
     return PyArray_Copy(ary)
@@ -140,7 +134,8 @@ cdef inline ndarray iarray_s(object ob, PetscInt* size, PetscScalar** data):
 # --------------------------------------------------------------------
 
 cdef inline ndarray oarray(object ob, int typenum):
-    cdef ndarray ary = PyArray_FROM_OTF(ob, typenum, NPY_ALIGNED|NPY_WRITEABLE)
+    cdef ndarray ary = PyArray_FROM_OTF(
+        ob, typenum, NPY_ARRAY_ALIGNED|NPY_ARRAY_WRITEABLE|NPY_ARRAY_NOTSWAPPED)
     if PyArray_ISCONTIGUOUS(ary): return ary
     if PyArray_ISFORTRAN(ary):    return ary
     return PyArray_Copy(ary)
@@ -172,13 +167,15 @@ cdef inline ndarray oarray_p(object ob, PetscInt* size, void** data):
 # --------------------------------------------------------------------
 
 cdef inline ndarray ocarray_s(object ob, PetscInt* size, PetscScalar** data):
-    cdef ndarray ary = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_CARRAY)
+    cdef ndarray ary = PyArray_FROM_OTF(
+        ob, NPY_PETSC_SCALAR, NPY_ARRAY_CARRAY|NPY_ARRAY_NOTSWAPPED)
     if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
     if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray ofarray_s(object ob, PetscInt* size, PetscScalar** data):
-    cdef ndarray ary = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_FARRAY)
+    cdef ndarray ary = PyArray_FROM_OTF(
+        ob, NPY_PETSC_SCALAR, NPY_ARRAY_FARRAY|NPY_ARRAY_NOTSWAPPED)
     if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
     if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
