@@ -650,7 +650,11 @@ namespace ALE {
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new numbering: fixed depth value " << depth << std::endl;}
-        this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->depthStratum(depth)->begin(), bundle->depthStratum(depth)->end());
+        if (depth == -1) {
+          this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->getSieve()->getChart().begin(), bundle->getSieve()->getChart().end());
+        } else {
+          this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->depthStratum(depth)->begin(), bundle->depthStratum(depth)->end());
+        }
         this->_numberings[bundle.ptr()]["depth"][depth] = numbering;
       } else {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: fixed depth value " << depth << std::endl;}
