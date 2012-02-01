@@ -155,7 +155,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   if (!Y->assembled) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (Y->factortype) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  ierr = MatPreallocated(Y);CHKERRQ(ierr);
+  MatCheckPreallocated(Y,1);
 
   if (Y->ops->shift) {
     ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);

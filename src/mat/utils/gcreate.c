@@ -205,41 +205,6 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation"
-/*@
-   MatSetUpPreallocation - If the user has not set preallocation for this matrix then a default preallocation that is likely to be inefficient is used.
-
-   Collective on Mat
-
-   Input Parameter:
-.  A - the matrix
-
-   Level: advanced
-
-   Notes: See the Performance chapter of the PETSc users manual for how to preallocate matrices
-
-.keywords: matrix, create
-
-.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
-          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
-          MatConvert()
-@*/
-PetscErrorCode  MatSetUpPreallocation(Mat B)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!B->preallocated && B->ops->setuppreallocation) {
-    ierr = PetscInfo(B,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
-    ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
-  }
-  B->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatXAIJSetPreallocation"
 /*@

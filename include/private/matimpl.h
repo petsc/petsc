@@ -51,7 +51,7 @@ struct _MatOps {
   PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,const MatFactorInfo*);
   /*29*/
-  PetscErrorCode (*setuppreallocation)(Mat);
+  PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getarray)(Mat,PetscScalar**);
@@ -213,6 +213,15 @@ extern PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscI
 extern PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
+#if defined(PETSC_USE_DEBUG)
+#  define MatCheckPreallocated(A,arg) do {                              \
+    if (PetscUnlikely(!(A)->preallocated))                              \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXSetPreallocation() or MatSetUp() on argument %D \"%s\" before %s()",(arg),#A,PETSC_FUNCTION_NAME); \
+  } while (0)
+#else
+#  define MatCheckPreallocated(A,arg) do {} while (0)
+#endif
+
 /* 
   The stash is used to temporarily store inserted matrix values that 
   belong to another processor. During the assembly phase the stashed 
@@ -316,7 +325,6 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   };
 
-#define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
 extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 extern PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
 /*

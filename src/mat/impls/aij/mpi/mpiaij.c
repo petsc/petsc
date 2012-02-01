@@ -2173,8 +2173,8 @@ PetscErrorCode MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPIAIJ"
-PetscErrorCode MatSetUpPreallocation_MPIAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_MPIAIJ"
+PetscErrorCode MatSetUp_MPIAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -2999,7 +2999,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 #endif
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPIAIJ,
+/*29*/ MatSetUp_MPIAIJ,
 #ifdef PETSC_HAVE_PBGL
        0,
 #else
@@ -5647,6 +5647,8 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 #define CHKERRQ(ierr) CHKERRABORT(PETSC_COMM_WORLD,ierr) 
 #undef SETERRQ2
 #define SETERRQ2(comm,ierr,b,c,d) CHKERRABORT(comm,ierr) 
+#undef SETERRQ3
+#define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr)
 #undef SETERRQ
 #define SETERRQ(c,ierr,b) CHKERRABORT(c,ierr) 
 
@@ -5662,7 +5664,7 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   PetscScalar     value;
   PetscErrorCode  ierr;
 
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  MatCheckPreallocated(mat,1);
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }

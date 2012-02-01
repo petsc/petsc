@@ -892,6 +892,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   /* control the simple Richardson smoother that is default if there's no upsmooth or downsmooth */
   if (!fas->downsmooth) {
     ierr = PetscOptionsInt("-fas_down_snes_max_it","Down smooth iterations","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-fas_snes_max_it","Down smooth iterations","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
     if (fas->level == 0) {
       ierr = PetscOptionsInt("-fas_coarse_snes_max_it","Coarse smooth iterations","SNESFASSetCycles",fas->max_down_it,&fas->max_down_it,&flg);CHKERRQ(ierr);
     }
@@ -899,6 +900,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   if (!fas->upsmooth) {
     ierr = PetscOptionsInt("-fas_up_snes_max_it","Upsmooth iterations","SNESFASSetCycles",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-fas_snes_max_it","Upsmooth iterations","SNESFASSetCycles",fas->max_up_it,&fas->max_up_it,&flg);CHKERRQ(ierr);
   }
 
   if (monflg) {

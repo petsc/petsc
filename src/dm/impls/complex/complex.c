@@ -1818,15 +1818,13 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
 #include <unistd.h>
 #endif
 /* Chaco does not have an include file */
-extern "C" {
-  extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+PETSC_EXTERN_C int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                        float *ewgts, float *x, float *y, float *z, char *outassignname,
                        char *outfilename, short *assignment, int architecture, int ndims_tot,
                        int mesh_dims[3], double *goal, int global_method, int local_method,
                        int rqi_flag, int vmax, int ndims, double eigtol, long seed);
 
-  extern int FREE_GRAPH;
-}
+extern int FREE_GRAPH;
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexPartition_Chaco"
@@ -3210,7 +3208,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm)
   ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
+  ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
   for(p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt dof, off, c;
 

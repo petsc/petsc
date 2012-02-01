@@ -169,7 +169,6 @@ PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 extern PetscErrorCode  MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode  MatSetType(Mat,const MatType);
 extern PetscErrorCode  MatSetFromOptions(Mat);
-extern PetscErrorCode  MatSetUpPreallocation(Mat);
 extern PetscErrorCode  MatRegisterAll(const char[]);
 extern PetscErrorCode  MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
 extern PetscErrorCode  MatRegisterBaseName(const char[],const char[],const char[]);

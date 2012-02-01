@@ -63,7 +63,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   rstart = A->rmap->rstart;
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
@@ -265,7 +265,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscValidPointer(ij,2);
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   rstart = A->rmap->rstart;

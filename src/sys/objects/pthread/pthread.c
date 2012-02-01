@@ -267,11 +267,13 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     }
     tstr[7] = '\0';
   }
-  
+
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread Options","Sys");CHKERRQ(ierr);
   /* Get thread affinity policy */
   ierr = PetscOptionsEnum("-thread_aff_policy","Type of thread affinity policy"," ",ThreadAffinityPolicyTypes,(PetscEnum)thread_aff_policy,(PetscEnum*)&thread_aff_policy,&flg1);CHKERRQ(ierr);
   /* Get thread synchronization scheme */
   ierr = PetscOptionsEnum("-thread_sync_type","Type of thread synchronization algorithm"," ",ThreadSynchronizationTypes,(PetscEnum)thread_sync_type,(PetscEnum*)&thread_sync_type,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   
   switch(thread_sync_type) {
   case THREADSYNC_TREEPOOL:
