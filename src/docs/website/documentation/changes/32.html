@@ -235,9 +235,7 @@
               <li>VecDestroy() now zeros the pointer to the destroyed
                 vector
                 so it cannot be reused</li>
-              <li>VecDestroyVecs(PetscInt n,Vec **) instead of
-                VecDestroyVecs(Vec**,PetscInt n)<br>
-              </li>
+              <li>VecDestroyVecs(PetscInt n,Vec **) instead of VecDestroyVecs(Vec**,PetscInt n), also VecDestroyVecsF90(PetscInt n,{Vec, pointer :: x},PetscErrorCode ierr)</li>
             </ul>
             <p><u><b> </b></u></p>
             <p><u><b>VecScatter:<br>
