@@ -411,8 +411,9 @@ int main(int argc, char *argv[])
     break;
   case 2:
     ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
-    /* This example does not correctly allocate off-diagonal blocks. This option allows new nonzeros (slow). */
+    /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
