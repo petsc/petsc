@@ -66,6 +66,7 @@ extern PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 extern PetscErrorCode DMComplexGetDefaultSection(DM, PetscSection *);
 extern PetscErrorCode DMComplexSetDefaultSection(DM, PetscSection);
 extern PetscErrorCode DMComplexGetDefaultGlobalSection(DM, PetscSection *);
+extern PetscErrorCode DMComplexCreateDefaultSF(DM);
 extern PetscErrorCode DMComplexGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Vec, void *));
 extern PetscErrorCode DMComplexSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void *));
 extern PetscErrorCode DMComplexGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, void *));
@@ -74,8 +75,8 @@ typedef PetscErrorCode (*DMComplexLocalFunction1)(DM, Vec, Vec, void*);
 typedef PetscErrorCode (*DMComplexLocalJacobian1)(DM, Vec, Mat, void*);
 
 extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
-extern PetscErrorCode DMComplexVecGetClosure(DM, Vec, PetscInt, const PetscScalar *[]);
-extern PetscErrorCode DMComplexVecSetClosure(DM, Vec, PetscInt, const PetscScalar[], InsertMode);
-extern PetscErrorCode DMComplexMatSetClosure(DM, Mat, PetscInt, PetscScalar[], InsertMode);
+extern PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *[]);
+extern PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
+extern PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 
 #endif

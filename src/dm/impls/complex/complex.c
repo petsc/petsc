@@ -162,7 +162,8 @@ PetscErrorCode DMCreateGlobalVector_Complex(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = DMComplexGetDefaultGlobalSection(dm, &s);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(s, &localSize);CHKERRQ(ierr);
+  /* ierr = PetscSectionGetStorageSize(s, &localSize);CHKERRQ(ierr); */
+  ierr = PetscSectionGetConstrainedStorageSize(s, &localSize);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
@@ -207,7 +208,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
   PetscFunctionBegin;
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(section, &numDof);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
   ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -398,12 +399,13 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   for(p = pStart; p < pEnd; ++p) {
     const PetscInt *support;
     PetscInt        supportSize, s;
-    PetscInt        numAdj = 0, dof, off, d, q;
+    PetscInt        numAdj = 0, dof, cdof, off, d, q;
     PetscBool       found = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    for(d = off; d < off+dof; ++d) {
+    for(d = off; d < off+dof-cdof; ++d) {
       PetscInt ldof, rdof;
 
       ierr = PetscSectionGetDof(leafSectionAdj, d, &ldof);CHKERRQ(ierr);
@@ -440,12 +442,13 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     for(q = 0; q < numAdj; ++q) {
-      PetscInt ndof, noff;
+      PetscInt ndof, ncdof, noff;
 
       ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
-      for(d = off; d < off+dof; ++d) {
-        ierr = PetscSectionAddDof(sectionAdj, d, ndof);CHKERRQ(ierr);
+      for(d = off; d < off+dof-cdof; ++d) {
+        ierr = PetscSectionAddDof(sectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
     }
   }
@@ -458,12 +461,13 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   for(p = pStart; p < pEnd; ++p) {
     const PetscInt *support;
     PetscInt        supportSize, s;
-    PetscInt        numAdj = 0, dof, off, d, q;
+    PetscInt        numAdj = 0, dof, cdof, off, d, q;
     PetscBool       found = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    for(d = off; d < off+dof; ++d) {
+    for(d = off; d < off+dof-cdof; ++d) {
       PetscInt ldof, rdof;
 
       ierr = PetscSectionGetDof(leafSectionAdj, d, &ldof);CHKERRQ(ierr);
@@ -500,18 +504,17 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    for(d = off; d < off+dof; ++d) {
+    for(d = off; d < off+dof-cdof; ++d) {
       PetscInt aoff, i = 0;
 
       ierr = PetscSectionGetOffset(sectionAdj, d, &aoff);CHKERRQ(ierr);
       for(q = 0; q < numAdj; ++q) {
-        PetscInt ndof, noff, nd;
+        PetscInt ndof, ncdof, noff, nd;
 
         ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
-        for(nd = 0; nd < ndof; ++nd, ++i) {
+        for(nd = 0; nd < ndof-ncdof; ++nd, ++i) {
           cols[aoff+i] = noff+nd;
         }
       }
@@ -567,7 +570,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 #define __FUNCT__ "DMCreateMatrix_Complex"
 PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
 {
-  PetscSection   section, sectionGlobal;
+  PetscSection   sectionGlobal;
   PetscInt       bs = -1;
   PetscInt       localSize;
   PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
@@ -578,9 +581,9 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
-  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
+  /* ierr = PetscSectionGetStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr); */
+  ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject) dm)->comm, J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
@@ -607,7 +610,7 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
 
         ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
         for(p = pStart; p < pEnd; ++p) {
-          ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
           if (dof) {
             bs = dof;
             break;
@@ -625,7 +628,7 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
     ierr = PetscMemzero(onz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemzero(dnzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemzero(onzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = DMComplexPreallocateOperator(dm, bs, section, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
+    ierr = DMComplexPreallocateOperator(dm, bs, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2940,6 +2943,27 @@ PetscErrorCode DMComplexGetDefaultGlobalSection(DM dm, PetscSection *section) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexGetDefaultSF"
+/*
+  Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
+*/
+PetscErrorCode DMComplexGetDefaultSF(DM dm, PetscSF *sf) {
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       nroots;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  ierr = PetscSFGetGraph(mesh->sfDefault, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (nroots < 0) {
+    ierr = DMComplexCreateDefaultSF(dm);CHKERRQ(ierr);
+  }
+  *sf = mesh->sfDefault;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetCoordinateSection"
 PetscErrorCode DMComplexGetCoordinateSection(DM dm, PetscSection *section) {
   DM_Complex *mesh = (DM_Complex *) dm->data;
@@ -3000,55 +3024,77 @@ PetscErrorCode DMComplexGetCoordinateVec(DM dm, Vec *coordinates) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateDefaultSF"
-PetscErrorCode  DMComplexCreateDefaultSF(DM dm)
+PetscErrorCode DMComplexCreateDefaultSF(DM dm)
 {
   DM_Complex     *mesh = (DM_Complex *) dm->data;
-  PetscSection    gSection;
+  PetscSection    section, gSection;
   PetscLayout     layout;
   const PetscInt *ranges;
   PetscInt       *local;
   PetscSFNode    *remote;
   PetscInt        pStart, pEnd, p, nroots, nleaves, l;
-  PetscMPIInt     size;
+  PetscMPIInt     size, rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(gSection, &nroots);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gSection, &nroots);CHKERRQ(ierr);
+  ierr = PetscSectionView(gSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = PetscSectionGetConstrainedStorageSize(gSection, &nroots);CHKERRQ(ierr); */
   ierr = PetscLayoutCreate(((PetscObject) dm)->comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
   for(p = pStart, nleaves = 0; p < pEnd; ++p) {
-    PetscInt dof;
+    PetscInt dof, cdof;
 
     ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-    if (dof < 0) {nleaves += -(dof+1);}
+    ierr = PetscSectionGetConstraintDof(gSection, p, &cdof);CHKERRQ(ierr);
+    nleaves += dof < 0 ? -(dof+1)-cdof : dof-cdof;
   }
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
   for(p = pStart, l = 0; p < pEnd; ++p) {
-    PetscInt dof, off, d;
+    PetscInt *cind;
+    PetscInt  dof, gdof, cdof, dim, off, goff, d, c;
 
-    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
-    if (dof < 0) {
-      for(d = 0; d < -(dof+1); ++d) {
-        PetscInt goff = -(off+1) + d, r;
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintIndices(section, p, &cind);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(gSection, p, &gdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(gSection, p, &goff);CHKERRQ(ierr);
+    dim  = dof-cdof;
+    for(d = 0, c = 0; d < dof; ++d) {
+      if ((c < cdof) && (cind[c] == d)) {++c; continue;}
+      local[l+d-c] = off+d;
+    }
+    if (gdof < 0) {
+      for(d = 0; d < dim; ++d, ++l) {
+        PetscInt offset = -(goff+1) + d, r;
 
         for(r = 0; r < size; ++r) {
-          if ((goff >= ranges[r]) && (goff < ranges[r+1])) break;
+          if ((offset >= ranges[r]) && (offset < ranges[r+1])) break;
         }
         remote[l].rank  = r;
-        remote[l].index = goff - ranges[r];
+        remote[l].index = offset - ranges[r];
+      }
+    } else {
+      for(d = 0; d < dim; ++d, ++l) {
+        remote[l].rank  = rank;
+        remote[l].index = goff+d;
       }
     }
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(mesh->sfDefault, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFView(mesh->sfDefault, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3056,13 +3102,14 @@ PetscErrorCode  DMComplexCreateDefaultSF(DM dm)
 #define __FUNCT__ "DMLocalToGlobalBegin_Complex"
 PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscSF        sf;
   MPI_Op         op;
   PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   switch(mode) {
   case INSERT_VALUES:
     op = MPI_REPLACE; break;
@@ -3073,7 +3120,7 @@ PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec 
   }
   ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(mesh->sfDefault, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
   ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3083,13 +3130,14 @@ PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec 
 #define __FUNCT__ "DMLocalToGlobalEnd_Complex"
 PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscSF        sf;
   MPI_Op         op;
   PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   switch(mode) {
   case INSERT_VALUES:
     op = MPI_REPLACE; break;
@@ -3100,7 +3148,7 @@ PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
   }
   ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(mesh->sfDefault, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
   ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3110,16 +3158,17 @@ PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
 #define __FUNCT__ "DMGlobalToLocalBegin_Complex"
 PetscErrorCode  DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode, Vec l)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscSF        sf;
   PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (mode == ADD_VALUES) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);}
+  ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(mesh->sfDefault, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3129,16 +3178,17 @@ PetscErrorCode  DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode, Vec 
 #define __FUNCT__ "DMGlobalToLocalEnd_Complex"
 PetscErrorCode  DMGlobalToLocalEnd_Complex(DM dm, Vec g, InsertMode mode, Vec l)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscSF        sf;
   PetscScalar   *lArray, *gArray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (mode == ADD_VALUES) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", mode);}
+  ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(mesh->sfDefault, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3226,22 +3276,50 @@ PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVecGetClosure"
-/* This is a borrowed array, do not free */
-PetscErrorCode DMComplexVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[]) {
-  PetscSection    section;
-  PetscScalar    *array;
-  const PetscInt *points;
+/*@C
+  DMComplexVecGetClosure - Get an array of the values on the closure of 'point'
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+. section - The section describing the layout in v
+- point - The sieve point in the DM
+
+  Output Parameters:
+. values - The array of values, which is a borrowed array and should not be freed
+
+  Level: intermediate
+
+.seealso DMComplexVecSetClosure(), DMComplexMatSetClosure()
+*/
+PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar *values[]) {
+  PetscScalar    *array, *vArray;
+  PetscInt       *points;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
-  PetscInt        numFields, size, numPoints, p, f;
+  PetscInt        numFields, size, numPoints, pStart, pEnd, p, q, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  if (!section) {
+    ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  /* Compress out points not in the section */
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = 0, q = 0; p < numPoints; ++p) {
+    if ((points[p] >= pStart) && (points[p] < pEnd)) {
+      points[q] = points[p];
+      ++q;
+    }
+  }
+  numPoints = q;
   for(p = 0, size = 0; p < numPoints; ++p) {
     PetscInt dof, fdof;
 
@@ -3253,13 +3331,14 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, Vec v, PetscInt point, const PetscS
     size += dof;
   }
   ierr = DMGetWorkArray(dm, 2*size, &array);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for(p = 0; p < numPoints; ++p) {
     PetscInt     dof, off, d;
-    PetscScalar *v;
+    PetscScalar *varr;
 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, points[p], &off);CHKERRQ(ierr);
-    v    = &array[off];
+    varr = &vArray[off];
     if (numFields) {
       PetscInt fdof, foff, fcomp, f, c;
 
@@ -3267,13 +3346,13 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, Vec v, PetscInt point, const PetscS
         ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
         if (orientation >= 0) {
           for(d = 0; d < fdof; ++d, ++offsets[f]) {
-            array[offsets[f]] = v[foff+d];
+            array[offsets[f]] = varr[foff+d];
           }
         } else {
           ierr = PetscSectionGetFieldComponents(section, f, &fcomp);CHKERRQ(ierr);
           for(d = fdof/fcomp-1; d >= 0; --d) {
             for(c = 0; c < fcomp; ++c, ++offsets[f]) {
-              array[offsets[f]] = v[foff+d*fcomp+c];
+              array[offsets[f]] = varr[foff+d*fcomp+c];
             }
           }
         }
@@ -3282,15 +3361,16 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, Vec v, PetscInt point, const PetscS
     } else {
       if (orientation >= 0) {
         for(d = 0; d < dof; ++d, ++offsets[0]) {
-          array[offsets[0]] = v[d];
+          array[offsets[0]] = varr[d];
         }
       } else {
         for(d = dof-1; d >= 0; --d, ++offsets[0]) {
-          array[offsets[0]] = v[d];
+          array[offsets[0]] = varr[d];
         }
       }
     }
   }
+  ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
   *values = array;
   PetscFunctionReturn(0);
 }
@@ -3394,21 +3474,34 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVecSetClosure"
-PetscErrorCode DMComplexVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
-  PetscSection    section;
+PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
   PetscScalar    *array;
-  const PetscInt *points;
+  PetscInt       *points;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
-  PetscInt        numFields, numPoints, off, dof, p, f;
+  PetscInt        numFields, numPoints, off, dof, pStart, pEnd, p, q, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  if (!section) {
+    ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  }
   ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  /* Compress out points not in the section */
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = 0, q = 0; p < numPoints; ++p) {
+    if ((points[p] >= pStart) && (points[p] < pEnd)) {
+      points[q] = points[p];
+      ++q;
+    }
+  }
+  numPoints = q;
   for(p = 0; p < numPoints; ++p) {
     PetscInt fdof;
 
@@ -3607,24 +3700,44 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexMatSetClosure"
-PetscErrorCode DMComplexMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar values[], InsertMode mode)
+PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, PetscScalar values[], InsertMode mode)
 {
   DM_Complex     *mesh = (DM_Complex *) dm->data;
-  PetscSection    section, globalSection;
-  const PetscInt *points;
+  PetscInt       *points;
   PetscInt       *indices;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
-  PetscInt        numFields, numPoints, numIndices, dof, off, globalOff, p, f;
+  PetscInt        numFields, numPoints, numIndices, dof, off, globalOff, pStart, pEnd, p, q, f;
+  PetscBool       useDefault       =       !section ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool       useGlobalDefault = !globalSection ? PETSC_TRUE : PETSC_FALSE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMComplexGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
+  if (useDefault) {
+    ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  }
+  if (useGlobalDefault) {
+    if (useDefault) {
+      ierr = DMComplexGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSectionCreateGlobalSection(section, mesh->sf, &globalSection);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  /* Compress out points not in the section */
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = 0, q = 0; p < numPoints; ++p) {
+    if ((points[p] >= pStart) && (points[p] < pEnd)) {
+      points[q] = points[p];
+      ++q;
+    }
+  }
+  numPoints = q;
   for(p = 0, numIndices = 0; p < numPoints; ++p) {
     PetscInt fdof;
 
@@ -3646,6 +3759,9 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar 
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
       indicesPoint_private(section, points[p], dof, globalOff, PETSC_FALSE, orientation, &indices[off]);
     }
+  }
+  if (useGlobalDefault && !useDefault) {
+    ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
   }
   if (mesh->printSetValues) {ierr = DMComplexPrintMatSetValues(A, point, numIndices, indices, values);CHKERRQ(ierr);}
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, values, mode);
@@ -3672,16 +3788,16 @@ PetscErrorCode DMComplexComputeTriangleGeometry_private(DM dm, PetscInt e, Petsc
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
-      v0[d] = coords[d];
+      v0[d] = PetscRealPart(coords[d]);
     }
   }
   if (J) {
     for(d = 0; d < dim; d++) {
       for(f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
     *detJ = J[0]*J[3] - J[1]*J[2];
@@ -3729,16 +3845,16 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
-      v0[d] = coords[d];
+      v0[d] = PetscRealPart(coords[d]);
     }
   }
   if (J) {
     for(d = 0; d < dim; d++) {
       for(f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
     *detJ = J[0]*J[3] - J[1]*J[2];
@@ -3768,16 +3884,16 @@ PetscErrorCode DMComplexComputeTetrahedronGeometry_private(DM dm, PetscInt e, Pe
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
-      v0[d] = coords[d];
+      v0[d] = PetscRealPart(coords[d]);
     }
   }
   if (J) {
     for(d = 0; d < dim; d++) {
       for(f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
     /* The minus sign is here since I orient the first face to get the outward normal */
@@ -3814,17 +3930,17 @@ PetscErrorCode DMComplexComputeHexahedronGeometry_private(DM dm, PetscInt e, Pet
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
-      v0[d] = coords[d];
+      v0[d] = PetscRealPart(coords[d]);
     }
   }
   if (J) {
     for(d = 0; d < dim; d++) {
-      J[d*dim+0] = 0.5*(coords[(0+1)*dim+d] - coords[0*dim+d]);
-      J[d*dim+1] = 0.5*(coords[(1+1)*dim+d] - coords[0*dim+d]);
-      J[d*dim+2] = 0.5*(coords[(3+1)*dim+d] - coords[0*dim+d]);
+      J[d*dim+0] = 0.5*(PetscRealPart(coords[(0+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+1] = 0.5*(PetscRealPart(coords[(1+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+2] = 0.5*(PetscRealPart(coords[(3+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
     *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
              J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
