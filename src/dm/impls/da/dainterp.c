@@ -85,7 +85,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
   
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {

@@ -212,6 +212,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATLOCALREF);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
 
   B->ops->destroy = MatDestroy_LocalRef;
 
