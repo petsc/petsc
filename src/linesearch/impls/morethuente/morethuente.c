@@ -327,6 +327,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     if (!g_computed) {
       ierr = TaoLineSearchComputeGradient(ls,mt->work,g); CHKERRQ(ierr);
     }
+
     PetscFunctionReturn(0);
 }
 
