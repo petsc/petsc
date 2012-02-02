@@ -14,7 +14,7 @@ void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_
   PetscInt  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCBJacobiGetSubKSP(*pc,&nloc,first_local,&tksp);
+  *ierr = PCBJacobiGetSubKSP(*pc,&nloc,first_local,&tksp); if (*ierr) return;
   if (n_local) *n_local = nloc;
   CHKFORTRANNULLOBJECT(ksp);
   if (ksp) {

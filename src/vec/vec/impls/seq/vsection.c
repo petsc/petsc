@@ -377,6 +377,21 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetConstrainedStorageSize"
+PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *size)
+{
+  PetscInt p, n = 0;
+
+  PetscFunctionBegin;
+  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+    const PetscInt cdof = s->bc ? s->bc->atlasDof[p] : 0;
+    n += s->atlasDof[p] > 0 ? s->atlasDof[p] - cdof : 0;
+  }
+  *size = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreateGlobalSection"
 /*
   This gives negative offsets to points not owned by this process
@@ -384,7 +399,7 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscSection *gsection)
 {
   PetscInt      *neg;
-  PetscInt       pStart, pEnd, dof, off, globalOff, p;
+  PetscInt       pStart, pEnd, dof, cdof, off, globalOff, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -396,16 +411,20 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   for(p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
     neg[p-pStart] = -(dof+1);
   }
+  ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   for(p = 0, off = 0; p < pEnd-pStart; ++p) {
+    cdof = s->bc ? s->bc->atlasDof[p] : 0;
     (*gsection)->atlasOff[p] = off;
-    off += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
+    off += s->atlasDof[p] > 0 ? s->atlasDof[p]-cdof : 0;
   }
-  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
+  ierr = MPI_Exscan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
   for(p = 0, off = 0; p < pEnd-pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
     neg[p-pStart] = -((*gsection)->atlasOff[p]+1);

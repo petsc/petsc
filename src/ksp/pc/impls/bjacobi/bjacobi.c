@@ -849,7 +849,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   PetscInt               m;
   KSP                    ksp;
   PC_BJacobi_Singleblock *bjac;
-  PetscBool              wasSetup;
+  PetscBool              wasSetup = PETSC_TRUE;
 
   PetscFunctionBegin;
 
@@ -897,7 +897,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscLogObjectParent(pc,bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,bjac->y);CHKERRQ(ierr);
   } else {
-    wasSetup = PETSC_TRUE;
     ksp = jac->ksp[0];
     bjac = (PC_BJacobi_Singleblock *)jac->data;
   }
@@ -1264,11 +1263,13 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   PetscInt             m,n; 
   MPI_Comm             comm = ((PetscObject)pc)->comm,subcomm=0;
   const char           *prefix;
+  PetscBool            wasSetup = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (jac->n_local > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only a single block in a subcommunicator is supported");
   jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
   if (!pc->setupcalled) {
+    wasSetup = PETSC_FALSE;
     ierr = PetscNewLog(pc,PC_BJacobi_Multiproc,&mpjac);CHKERRQ(ierr);
     jac->data = (void*)mpjac;
 
@@ -1330,7 +1331,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
   }
 
-  if (pc->setfromoptionscalled){
+  if (!wasSetup && pc->setfromoptionscalled){
     ierr = KSPSetFromOptions(mpjac->ksp);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
