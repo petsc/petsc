@@ -180,12 +180,19 @@ choke me
       self.addDefine('HAVE___VA_COPY', 1)
     return
 
+  def checkNanosleep(self):
+    '''Check for functional nanosleep() - as time.h behaves differently for different compiler flags - like -std=c89'''
+    if self.checkLink('#include <time.h>','struct timespec tp;\n tp.tv_sec = 0;\n tp.tv_nsec = (long)(1e9);\n nanosleep(&tp,0);\n'):
+      self.addDefine('HAVE_NANOSLEEP', 1)
+    return
+
   def configure(self):
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
     self.executeTest(self.checkVFPrintf)
-    self.executeTest(self.checkVSNPrintf)        
+    self.executeTest(self.checkVSNPrintf)
+    self.executeTest(self.checkNanosleep)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
