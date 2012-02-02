@@ -253,6 +253,15 @@ extern "C" {
     self.headers.check('dlfcn.h')
     return
 
+  def checkNanosleep(self):
+    '''Check for functional nanosleep() - as time.h behaves differently for different compiler flags - like -std=c89'''
+    funcs = ['nanosleep']
+    prototypes = ['#include <time.h>']
+    calls = ['struct timespec tp; tp.tv_sec = 0; tp.tv_nsec = (long)(1e9);nanosleep(&tp,0);']
+    if self.check('', funcs, prototype=prototypes, call=calls):
+      self.addDefine('HAVE_NANOSLEEP', 1)
+    return
+
   def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
@@ -395,4 +404,5 @@ int checkInit(void) {
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
+    self.executeTest(self.checkNanosleep)
     return
