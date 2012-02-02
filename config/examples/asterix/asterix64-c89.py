@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-mpi-dir=/home/balay/soft/linux64/mpich2-1.1-c89',
-  'CFLAGS=-std=c89 -pedantic',
+  'CFLAGS=-std=c89 -pedantic -Wno-long-long',
   '--with-shared-libraries=1'
   ]
 
