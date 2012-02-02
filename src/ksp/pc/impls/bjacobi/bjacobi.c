@@ -221,7 +221,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       } else if (jac->psubcomm && !jac->psubcomm->color){
         ierr = PetscViewerASCIIGetStdout(mpjac->psubcomm->comm,&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = KSPView(mpjac->ksp,sviewer);CHKERRQ(ierr);
+        ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     } else {
@@ -1202,7 +1202,7 @@ static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
   ierr = VecDestroy(&mpjac->ysub);CHKERRQ(ierr);
   ierr = VecDestroy(&mpjac->xsub);CHKERRQ(ierr);
   ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
-  if (mpjac->ksp){ierr = KSPReset(mpjac->ksp);CHKERRQ(ierr);}
+  if (jac->ksp){ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1216,7 +1216,8 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_BJacobi_Multiproc(pc);CHKERRQ(ierr);
-  ierr = KSPDestroy(&mpjac->ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->ksp[0]);CHKERRQ(ierr);
+  ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&mpjac->psubcomm);CHKERRQ(ierr);
 
   ierr = PetscFree(mpjac);CHKERRQ(ierr);
@@ -1241,9 +1242,9 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
 
   /* apply preconditioner on each matrix block */
-  ierr = PetscLogEventBegin(PC_ApplyOnMproc,mpjac->ksp,mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
-  ierr = KSPSolve(mpjac->ksp,mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
-   ierr = PetscLogEventEnd(PC_ApplyOnMproc,mpjac->ksp,mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
 
   ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
   ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
@@ -1288,15 +1289,16 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    ierr = KSPCreate(subcomm,&mpjac->ksp);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mpjac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,mpjac->ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);
-    ierr = KSPGetPC(mpjac->ksp,&mpjac->pc);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+    ierr = KSPCreate(subcomm,&jac->ksp[0]);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0],(PetscObject)pc,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,jac->ksp[0]);CHKERRQ(ierr);
+    ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);
+    ierr = KSPGetPC(jac->ksp[0],&mpjac->pc);CHKERRQ(ierr);
 
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(mpjac->ksp,prefix);CHKERRQ(ierr); 
-    ierr = KSPAppendOptionsPrefix(mpjac->ksp,"sub_");CHKERRQ(ierr); 
+    ierr = KSPSetOptionsPrefix(jac->ksp[0],prefix);CHKERRQ(ierr); 
+    ierr = KSPAppendOptionsPrefix(jac->ksp[0],"sub_");CHKERRQ(ierr); 
     /*
       PetscMPIInt rank,subsize,subrank;
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1328,11 +1330,11 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     } else {
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
+    ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);   
   }
 
   if (!wasSetup && pc->setfromoptionscalled){
-    ierr = KSPSetFromOptions(mpjac->ksp);CHKERRQ(ierr); 
+    ierr = KSPSetFromOptions(jac->ksp[0]);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }
