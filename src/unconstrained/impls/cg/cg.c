@@ -91,7 +91,8 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
 	ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
-	if (ls_status < 0) {
+	if (ls_status != TAOLINESEARCH_SUCCESS &&
+	    ls_status != TAOLINESEARCH_SUCCESS_USER) {
 	    /*  Linesearch failed */
 	    /*  Reset factors and use scaled gradient step */
 	    ++cgP->nresetsteps;
@@ -117,7 +118,8 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 	    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
 	    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 	    
-	    if (ls_status < 0) {
+	    if (ls_status != TAOLINESEARCH_SUCCESS &&
+		ls_status != TAOLINESEARCH_SUCCESS_USER) {
 		/*  Linesearch failed again */
 		/*  switch to unscaled gradient */
 		f = f_old;
@@ -131,13 +133,17 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 		ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 		ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
 		ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
-		if (ls_status < 0) {
-		    /*  Line search failed for last time -- give up */
-		    f = f_old;
-		    gnorm2 = gnorm2_old;
-		    ierr = VecCopy(cgP->X_old, tao->solution); CHKERRQ(ierr);
-		    ierr = VecCopy(cgP->G_old, tao->gradient); CHKERRQ(ierr);
-		    step = 0.0;
+		if (ls_status != TAOLINESEARCH_SUCCESS &&
+		    ls_status != TAOLINESEARCH_SUCCESS_USER) {
+		  
+		  /*  Line search failed for last time -- give up */
+		  f = f_old;
+		  gnorm2 = gnorm2_old;
+		  ierr = VecCopy(cgP->X_old, tao->solution); CHKERRQ(ierr);
+		  ierr = VecCopy(cgP->G_old, tao->gradient); CHKERRQ(ierr);
+		  step = 0.0;
+		  reason = TAO_DIVERGED_LS_FAILURE;
+		  tao->reason = TAO_DIVERGED_LS_FAILURE;
 		}
 	    }
 	}

@@ -688,8 +688,9 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
-    while (ls_reason < 0  && stepType != NLS_GRADIENT) {
-      /* Linesearch failed */
+    while (ls_reason != TAOLINESEARCH_SUCCESS &&
+	   ls_reason != TAOLINESEARCH_SUCCESS_USER &&
+	   stepType != NLS_GRADIENT) {      /* Linesearch failed */
       f = fold;
       ierr = VecCopy(nlsP->Xold, tao->solution); CHKERRQ(ierr);
       ierr = VecCopy(nlsP->Gold, tao->gradient); CHKERRQ(ierr);
@@ -802,7 +803,8 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
     }
 
-    if (ls_reason < 0) {
+    if (ls_reason != TAOLINESEARCH_SUCCESS &&
+	ls_reason != TAOLINESEARCH_SUCCESS_USER) {
       /* Failed to find an improving point */
       f = fold;
       ierr = VecCopy(nlsP->Xold, tao->solution); CHKERRQ(ierr);

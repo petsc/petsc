@@ -116,7 +116,9 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
     ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
     
 
-    while (((int)ls_status < 0) && (stepType != LMVM_GRADIENT)) {
+    while (ls_status != TAOLINESEARCH_SUCCESS && 
+	   ls_status != TAOLINESEARCH_SUCCESS_USER
+	   && (stepType != LMVM_GRADIENT)) {
       /*  Linesearch failed */
       /*  Reset factors and use scaled gradient step */
       f = fold;
@@ -169,12 +171,15 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
       
     }
 
-    if ((int)ls_status < 0) {
+    if (ls_status != TAOLINESEARCH_SUCCESS &&
+	ls_status != TAOLINESEARCH_SUCCESS_USER) {
       /*  Failed to find an improving point */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution); CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient); CHKERRQ(ierr);
       step = 0.0;
+      reason = TAO_DIVERGED_LS_FAILURE;
+      tao->reason = TAO_DIVERGED_LS_FAILURE;
     }
     /*  Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);

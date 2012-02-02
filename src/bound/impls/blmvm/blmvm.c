@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, blmP->unprojected_gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
-    if (ls_status<0) {
+    if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
       /* Linesearch failed
 	 Reset factors and use scaled (projected) gradient step */
       ++blmP->reset;
@@ -116,8 +116,9 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
-      if ((int) ls_status < 0) {
-
+      if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
+	tao->reason = TAO_DIVERGED_LS_FAILURE;
+	break;
       }
     }
 
