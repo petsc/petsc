@@ -20,6 +20,7 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscReal      soft_alpha = 1.e-3;
   MPI_Comm       wcomm;
+  PetscBool      use_coords = PETSC_FALSE;
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[8][8],DD2[8][8];
@@ -44,6 +45,7 @@ int main(int argc,char **args)
   h = 1./ne;
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coordinates",&use_coords,PETSC_NULL); CHKERRQ(ierr);
   M = 2*(ne+1)*(ne+1); /* global number of equations */
   m = (ne+1)*(ne+1)/npe;
   if(mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
@@ -194,7 +196,9 @@ int main(int argc,char **args)
     
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
+    if( use_coords ) {
+      ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
+    }
   }
 
   if( !PETSC_TRUE ) {

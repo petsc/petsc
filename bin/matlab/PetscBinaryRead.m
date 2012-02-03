@@ -72,13 +72,13 @@ end
   
 if arecell
   narg = arecell;
-  result = cell(1);
+  sult = cell(1);
 else
   narg = nargout;
 end
 
 for l=1:narg
-  header = double(read(fd,1,indices));
+  header = double(read(fd,1,indices));  
   if isempty(header)
     if arecell
       varargout(1) = {result};
@@ -89,6 +89,7 @@ for l=1:narg
     return
   end
   if header == 1211216 % Petsc Mat Object 
+    
     header = double(read(fd,3,indices));
     m      = header(1);
     n      = header(2);
