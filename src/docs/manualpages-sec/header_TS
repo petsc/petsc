@@ -4,12 +4,19 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2>Time-steppers - ODE integrators - TS</H2>
+<H2>Time steppers for ODE and DAE - TS: <A HREF="PETSC_DIRsrc/ts/examples/tutorials/index.html">Examples</A></H2>
 
-The time-stepping (TS) component provides ODE integrators and
+The time-stepping (TS) component provides ODE and DAE integrators as well as
 pseudo-timestepping.  TS internally
 employs <A HREF="PETSC_DIRdocs/manualpages/SNES/index.html">SNES</A> to solve the nonlinear
-problems at each time step (except for the PVODE functions, which
-use nonlinear solvers within PVODE).
+problems at each time step (except for the Sundials functions, which
+use nonlinear solvers within Sundials).
+
+TS users can also set SNES options directly in application codes by first extracting the SNES context from the TS context via
+<A HREF="PETSC_DIRdocs/manualpages/TS/TSGetSNES.html">TSGetSNES()</A>
+and then directly calling various SNES (and KSP and PC with further unwrapping) routines (e.g.,
+<A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
+).
+
 
 <P>
