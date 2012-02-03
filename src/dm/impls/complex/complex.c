@@ -3856,7 +3856,7 @@ PetscErrorCode DMComplexComputeTriangleGeometry_private(DM dm, PetscInt e, Petsc
     PetscLogFlops(5.0);
   }
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeRectangleGeometry_private"
@@ -3987,7 +3987,7 @@ PetscErrorCode DMComplexComputeHexahedronGeometry_private(DM dm, PetscInt e, Pet
   }
   *detJ *= 8.0;
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeCellGeometry"
