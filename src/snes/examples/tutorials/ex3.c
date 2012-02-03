@@ -606,7 +606,7 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
 /*
    PostSetSubKSP - Optional user-defined routine that reset SubKSP options when hierarchical bjacobi PC is used
    e.g, 
-     mpiexec -n 8 ./ex3 -nox -n 10000 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 4 -sub_ksp_type gmres -sub_ksp_max_it 3 -post_check_h -sub_ksp_rtol 1.e-16
+     mpiexec -n 8 ./ex3 -nox -n 10000 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 4 -sub_ksp_type gmres -sub_ksp_max_it 3 -post_setsubksp -sub_ksp_rtol 1.e-16
    Set by SNESLineSearchSetPostCheck().
 
    Input Parameters:
