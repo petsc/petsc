@@ -975,6 +975,11 @@ runex43_2:
 	   ${DIFF} output/ex43_1.out ex43_2.tmp || echo ${PWD} "\nPossible problem with with ex43_2, diffs above \n========================================="; \
 	   ${RM} -f ex43_2.tmp
 
+runex43_3:
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
+	   ${DIFF} output/ex43_3.out ex43_3.tmp || echo ${PWD} "\nPossible problem with with ex43_3, diffs above \n========================================="; \
+	   ${RM} -f ex43_3.tmp
+
 runex45:
 	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_type fgmres -ksp_monitor_short  > ex45_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex45_1.out ex45_1.tmp || echo ${PWD} "\nPossible problem with with ex45_1, diffs above \n========================================="; \
@@ -1066,7 +1071,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex38.PETSc runex38 ex38.rm \
-                                 ex43.PETSc runex43 runex43_2 ex43.rm \
+                                 ex43.PETSc runex43 runex43_2 runex43_3 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
