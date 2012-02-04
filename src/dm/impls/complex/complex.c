@@ -2598,7 +2598,8 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for(c = 0; c < numCells; ++c) {
-      PetscInt cone[numCorners] = {cells[c*numCorners+0]+numCells, cells[c*numCorners+1]+numCells, cells[c*numCorners+2]+numCells};
+      /* Should be numCorners, but c89 sucks shit */
+      PetscInt cone[3] = {cells[c*numCorners+0]+numCells, cells[c*numCorners+1]+numCells, cells[c*numCorners+2]+numCells};
 
       ierr = DMComplexSetCone(*dm, c, cone);CHKERRQ(ierr);
     }
@@ -3855,7 +3856,7 @@ PetscErrorCode DMComplexComputeTriangleGeometry_private(DM dm, PetscInt e, Petsc
     PetscLogFlops(5.0);
   }
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeRectangleGeometry_private"
@@ -3986,7 +3987,7 @@ PetscErrorCode DMComplexComputeHexahedronGeometry_private(DM dm, PetscInt e, Pet
   }
   *detJ *= 8.0;
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeCellGeometry"
