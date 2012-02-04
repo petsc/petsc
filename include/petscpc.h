@@ -447,6 +447,9 @@ extern PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 extern PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 extern PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 extern PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
+#define PCGAMGType char*
+extern PetscErrorCode PCGAMGSetType( PC,const PCGAMGType );
+extern PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */

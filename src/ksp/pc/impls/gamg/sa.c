@@ -2,7 +2,7 @@
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
 
-#include <../src/ksp/pc/impls/gamg/gamg.h>
+#include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <private/kspimpl.h>
 
 #include <assert.h>
@@ -13,9 +13,9 @@ typedef struct {
 } PC_GAMG_AGG;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGAMGSetNSmooths_AGG"
+#define __FUNCT__ "PCGAMGSetNSmooths"
 /*@
-   PCGAMGSetNSmooths_AGG - Set number of smoothing steps (1 is typical)
+   PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical)
 
    Not Collective on PC
 
@@ -31,41 +31,42 @@ typedef struct {
 
 .seealso: ()
 @*/
-PetscErrorCode  PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
+PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGAMGSetNSmooths_AGG_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCGAMGSetNSmooths_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCGAMGSetNSmooths_AGG_GAMG"
-PetscErrorCode PCGAMGSetNSmooths_AGG_GAMG(PC pc, PetscInt n)
+#define __FUNCT__ "PCGAMGSetNSmooths_GAMG"
+PetscErrorCode PCGAMGSetNSmooths_GAMG(PC pc, PetscInt n)
 {
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   PC_GAMG_AGG      *pc_gamg_sa = (PC_GAMG_AGG*)pc_gamg->subctx;
   
   PetscFunctionBegin;
-  if(n>=0) pc_gamg_sa->smooths = n;
+  assert(n>=0); 
+  pc_gamg_sa->smooths = n;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetFromOptions_AGG
+   PCSetFromOptions_GAMG_AGG
 
   Input Parameter:
    . pc - 
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_AGG"
-PetscErrorCode PCSetFromOptions_AGG( PC pc )
+#define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
+PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
 {
   PetscErrorCode  ierr;
   PC_MG           *mg = (PC_MG*)pc->data;
@@ -74,22 +75,22 @@ PetscErrorCode PCSetFromOptions_AGG( PC pc )
   PetscBool        flag;
   
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-SA options"); CHKERRQ(ierr);
+  /* call base class */
+  ierr = PCSetFromOptions_GAMG( pc ); CHKERRQ(ierr);
+
+  ierr = PetscOptionsHead("GAMG-AGG options"); CHKERRQ(ierr);
   {
     /* -pc_gamg_sa_nsmooths */
     pc_gamg_sa->smooths = 0;
     ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths",
                            "smoothing steps for smoothed aggregation, usually 1 (0)",
-                           "PCGAMGSetNSmooths_AGG",
+                           "PCGAMGSetNSmooths",
                            pc_gamg_sa->smooths,
                            &pc_gamg_sa->smooths,
                            &flag); 
     CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  
-  /* call base class */
-  ierr = PCSetFromOptions_GAMG( pc ); CHKERRQ(ierr);
 
   if( pc_gamg->verbose ) {
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done\n",0,__FUNCT__);
@@ -239,7 +240,7 @@ PetscErrorCode  PCCreateGAMG_AGG( PC pc )
   assert(!pc_gamg->subctx);
   pc_gamg->subctx = pc_gamg_sa;
   
-  pc->ops->setfromoptions = PCSetFromOptions_AGG;
+  pc->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
   pc->ops->destroy        = PCDestroy_AGG;
   /* reset does not do anything; setup not virtual */
 

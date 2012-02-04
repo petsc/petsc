@@ -27,8 +27,6 @@ typedef struct gamg_TAG{
   void          *subctx;
 } PC_GAMG;
 
-#define PCGAMGType char*
-
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,0)
 #else
@@ -36,9 +34,6 @@ typedef struct gamg_TAG{
 #endif
 
 PetscErrorCode PCGAMGRegister(const char *implname,const char *path,const char *fname,PetscErrorCode (*cfunc)(PC));
-
-PetscErrorCode PCGAMGSetType( PC,const PCGAMGType );
-
 #define GAMGAGG "agg"
 #define GAMGGEO "geo"
 

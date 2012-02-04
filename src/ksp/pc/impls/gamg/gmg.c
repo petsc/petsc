@@ -2,7 +2,7 @@
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
 
-#include <../src/ksp/pc/impls/gamg/gamg.h>
+#include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <private/kspimpl.h>
 
 #if defined(PETSC_HAVE_TRIANGLE) 
