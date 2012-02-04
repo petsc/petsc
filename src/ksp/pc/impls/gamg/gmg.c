@@ -149,7 +149,7 @@ PetscErrorCode  PCCreateGAMG_GEO( PC pc )
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
                                             "PCSetCoordinates_C",
                                             "PCSetCoordinates_GEO",
-                                            PCSetCoordinates_GEO);
+                                            PCSetCoordinates_GEO);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

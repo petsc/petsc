@@ -1824,13 +1824,13 @@ EXTERN_C_END
 
 .seealso: ()
 @*/
-PetscErrorCode PCGAMGSetType( PC pc, PCGAMGType type )
+PetscErrorCode PCGAMGSetType( PC pc, const PCGAMGType type )
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGAMGSetType_C",(PC,PCGAMGType),(pc,type));
+  ierr = PetscTryMethod(pc,"PCGAMGSetType_C",(PC,const PCGAMGType),(pc,type));
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1838,7 +1838,7 @@ PetscErrorCode PCGAMGSetType( PC pc, PCGAMGType type )
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGAMGSetType_GAMG"
-PetscErrorCode PCGAMGSetType_GAMG( PC pc, PCGAMGType type )
+PetscErrorCode PCGAMGSetType_GAMG( PC pc, const PCGAMGType type )
 {
   PetscErrorCode ierr,(*r)(PC);
   
