@@ -72,7 +72,7 @@ end
   
 if arecell
   narg = arecell;
-  sult = cell(1);
+  rsult = cell(1);
 else
   narg = nargout;
 end
