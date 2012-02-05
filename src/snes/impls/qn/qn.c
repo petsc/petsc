@@ -1,15 +1,15 @@
 #include <private/snesimpl.h>
 
 typedef struct {
-  Vec * dX;           /* The change in X */
-  Vec * dD;           /* The change in F */
+  Vec *dX;           /* The change in X */
+  Vec *dD;           /* The change in F */
   PetscInt m;         /* the number of kept previous steps */
-  PetscScalar * alpha;
-  PetscScalar * beta;
-  PetscScalar * rho;
+  PetscScalar *alpha;
+  PetscScalar *beta;
+  PetscScalar *rho;
   PetscViewer monitor;
   PetscReal gamma;    /* Powell restart constant */
-} QNContext;
+} SNES_QN;
 
 #undef __FUNCT__
 #define __FUNCT__ "LBGFSApplyJinv_Private"
@@ -17,14 +17,14 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
 
   PetscErrorCode ierr;
 
-  QNContext * qn = (QNContext *)snes->data;
+  SNES_QN *qn = (SNES_QN*)snes->data;
 
-  Vec * dX = qn->dX;
-  Vec * dD = qn->dD;
+  Vec *dX = qn->dX;
+  Vec *dD = qn->dD;
 
-  PetscScalar * alpha = qn->alpha;
-  PetscScalar * beta = qn->beta;
-  PetscScalar * rho = qn->rho;
+  PetscScalar *alpha = qn->alpha;
+  PetscScalar *beta = qn->beta;
+  PetscScalar *rho = qn->rho;
 
   PetscInt k, i;
   PetscInt m = qn->m;
@@ -71,7 +71,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 {
 
   PetscErrorCode ierr;
-  QNContext * qn = (QNContext*) snes->data;
+  SNES_QN *qn = (SNES_QN*) snes->data;
 
   Vec X, Xold;
   Vec F, G, B;
@@ -85,9 +85,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   PetscScalar rhosc;
 
-  Vec * dX = qn->dX;
-  Vec * dD = qn->dD;
-  PetscScalar * rho = qn->rho;
+  Vec *dX = qn->dX;
+  Vec *dD = qn->dD;
+  PetscScalar *rho = qn->rho;
   PetscScalar DolddotD, DolddotDold;
 
   /* basically just a regular newton's method except for the application of the jacobian */
@@ -238,7 +238,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 #define __FUNCT__ "SNESSetUp_QN"
 static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
-  QNContext * qn = (QNContext *)snes->data;
+  SNES_QN *qn = (SNES_QN*)snes->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dX);CHKERRQ(ierr);
@@ -253,10 +253,10 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 static PetscErrorCode SNESReset_QN(SNES snes)
 {
   PetscErrorCode ierr;
-  QNContext * qn;
+  SNES_QN *qn;
   PetscFunctionBegin;
   if (snes->data) {
-    qn = (QNContext *)snes->data;
+    qn = (SNES_QN*)snes->data;
     if (qn->dX) {
       ierr = VecDestroyVecs(qn->m, &qn->dX);CHKERRQ(ierr);
     }
@@ -286,11 +286,11 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 {
 
   PetscErrorCode ierr;
-  QNContext * qn;
+  SNES_QN *qn;
   PetscBool monflg = PETSC_FALSE;
   PetscFunctionBegin;
 
-  qn = (QNContext *)snes->data;
+  qn = (SNES_QN*)snes->data;
 
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m", "Number of past states saved for L-Broyden methods", "SNES", qn->m, &qn->m, PETSC_NULL);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
 {
 
   PetscErrorCode ierr;
-  QNContext * qn;
+  SNES_QN *qn;
 
   PetscFunctionBegin;
   snes->ops->setup           = SNESSetUp_QN;
@@ -378,7 +378,7 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   snes->usespc          = PETSC_TRUE;
   snes->usesksp         = PETSC_FALSE;
 
-  ierr = PetscNewLog(snes, QNContext, &qn);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,SNES_QN,&qn);CHKERRQ(ierr);
   snes->data = (void *) qn;
   qn->m       = 10;
   qn->dX      = PETSC_NULL;
