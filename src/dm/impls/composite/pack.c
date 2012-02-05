@@ -540,6 +540,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = PetscMalloc((com->nDM)*sizeof(ISLocalToGlobalMapping),ltogs);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
