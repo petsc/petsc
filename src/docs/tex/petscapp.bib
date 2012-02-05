@@ -1852,6 +1852,16 @@ year    = 2005
 % LiteralHTML:
 % LiteralHTML:  <a name="cfd"><H3><center>CFD</center></H3>
 % LiteralHTML:
+@article{bpr:cfl,
+   author    ="H.~M. B{\"u}cker and B. Pollul and A. Rasch",
+   title     ="{On {CFL} Evolution Strategies for  Implicit Upwind Methods in Linearized {E}uler Equations}",
+   journal   ="International Journal for Numerical Methods in Fluids",
+   year      = 2009,
+   volume     = 59,
+   number     = 1,
+   pages      = "1--18",
+   doi       = "10.1002/fld.1798",
+}
 @inbook{Bonfiglioli_Campobasso_Carpentieri_2010,
   author   = {Bonfiglioli, A and Campobasso, M S and Carpentieri, B},
   title    = {Parallel unstructured three-dimensional turbulent flow analyses using efficiently preconditioned newton-krylov solver},
@@ -4407,15 +4417,29 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   number = 3,
   pages = {753--777}
 }
-@techreport{04-04,
-   author    ="F. D. Bramkamp and H. M. B{\"u}cker and A. Rasch",
-   title     ="{Using Exact {J}acobians in an Implicit {N}ewton-{K}rylov Method}",
-   institution ="RWTH Aachen University",
-   year    = 2004,
-   type    ="Preprint of the Institute for Scientific Computing",
-   number  ="RWTH--CS--SC--04--04",
-   address = "Aachen",
+
+
+@ARTICLE{Bramkamp2006UEJ,
+       author = "F. D. Bramkamp and H. M. B{\"u}cker and A. Rasch",
+       title = "Using Exact {J}acobians in an Implicit {N}ewton-{K}rylov Method",
+       journal = "Computers \& Fluids",
+       volume = "35",
+       number = "10",
+       pages = "1063--1073",
+       doi = "10.1016/j.compfluid.2005.10.003 <http://dx.doi.org/10.1016/j.compfluid.2005.10.003>",
+       abstract = "In an implicit Newton-Krylov method for inviscid, compressible fluid flow, the
+         derivation of the analytic flux Jacobian can become quite complicated depending on the complexity of
+         the numerical flux calculation. Practically, the derivation of the exact Jacobian by hand is an
+         unrealistic option because of the enormous man-hour investment needed. In this work, automatic
+         differentiation is used to evaluate the exact Jacobian of upwind schemes implemented in the flow
+         solver QUADFLOW. We compare the use of exact Jacobians and Jacobians numerically approximated by
+         first-order forward differences. For a two-dimensional airfoil under three different flight
+         conditions (quasi-incompressible flow, compressible subsonic flow, and transonic flow), we show that
+         the robustness and performance of the present finite volume scheme is significantly improved by
+         using exact Jacobians.",
+       year = "2006",
 }
+
 @Article{shahbazi1,
   author = {Khosro Shahbazi},
   title = {An explicit expression for the penalty parameter of the interior penalty method},
