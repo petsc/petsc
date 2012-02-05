@@ -265,7 +265,6 @@ static PetscErrorCode SNESReset_QN(SNES snes)
     }
     ierr = PetscFree3(qn->alpha, qn->beta, qn->rho);CHKERRQ(ierr);
   }
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -277,6 +276,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionBegin;
   ierr = SNESReset_QN(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

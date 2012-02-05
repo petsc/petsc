@@ -5,10 +5,8 @@
 #define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

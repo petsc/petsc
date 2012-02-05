@@ -42,7 +42,6 @@ PetscErrorCode SNESReset_Multiblock(SNES snes)
     next   = blocks->next;
     blocks = next;
   }
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork, &snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
