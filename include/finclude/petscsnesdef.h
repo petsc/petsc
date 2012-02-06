@@ -39,6 +39,12 @@
 !
 #define SNESMSEULER     'euler'
 #define SNESMSM62       'm62'
+#define SNESMSJAMESON83 'jameson83'
+#define SNESMSVLTP21    'vltp21'
+#define SNESMSVLTP31    'vltp31'
+#define SNESMSVLTP41    'vltp41'
+#define SNESMSVLTP51    'vltp51'
+#define SNESMSVLTP61    'vltp61'
 
 !
 ! MatSNESMF
