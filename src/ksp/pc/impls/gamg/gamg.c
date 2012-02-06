@@ -1335,7 +1335,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     /* cache eigen estimate */
     if( pc_gamg->emax_id != -1 ){
       PetscBool flag;
-      ierr = PetscObjectComposedDataGetScalar( (PetscObject)Aarr[level], pc_gamg->emax_id, emaxs[level], flag );
+      ierr = PetscObjectComposedDataGetReal( (PetscObject)Aarr[level], pc_gamg->emax_id, emaxs[level], flag );
       CHKERRQ( ierr );
       if( !flag ) emaxs[level] = -1.;
     }
