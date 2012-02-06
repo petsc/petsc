@@ -1,0 +1,310 @@
+lid velocity = 200, prandtl # = 1, grashof # = 10000
+      0 SNES Function norm 2240.15 
+      1 SNES Function norm 2074.86 
+      2 SNES Function norm 1437.65 
+      3 SNES Function norm 1253.51 
+      4 SNES Function norm 582.89 
+      5 SNES Function norm 192.637 
+      6 SNES Function norm 23.3105 
+      7 SNES Function norm 3.61753 
+      8 SNES Function norm 1.00318 
+      9 SNES Function norm 0.554757 
+     10 SNES Function norm 0.0743359 
+     11 SNES Function norm 0.021079 
+     12 SNES Function norm 0.00151397 
+     13 SNES Function norm 0.000858208 
+    SNES Object:     2 MPI processes
+      type: ngmres
+        line search variant: QUADRATIC
+        Number of stored past updates: 10
+        Residual selection: gammaA=2e+00, gammaC=2e+00
+        Difference restart: epsilonB=1e-01, deltaB=9e-01
+      maximum iterations=50, maximum function evaluations=10000
+      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+      total number of linear solver iterations=0
+      total number of function evaluations=27
+      SNES Object:      (npc_)       2 MPI processes
+        type: fas
+        FAS, levels = 1
+          level: 0
+          no up-smoother on level 0
+          down-smoother on level 0:
+            SNES Object:            (npc_fas_coarse_)             2 MPI processes
+              type: ls
+                line search variant: CUBIC
+                alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+                damping factor=1.000000000000e+00
+              maximum iterations=1, maximum function evaluations=1000
+              tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+              total number of linear solver iterations=1
+              total number of function evaluations=14
+              KSP Object:              (npc_fas_coarse_)               2 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:              (npc_fas_coarse_)               2 MPI processes
+                type: bjacobi
+                  block Jacobi: number of blocks = 2
+                  Local solve is same for all blocks, in the following KSP and PC objects:
+                KSP Object:                (npc_fas_coarse_sub_)                 1 MPI processes
+                  type: preonly
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object:                (npc_fas_coarse_sub_)                 1 MPI processes
+                  type: ilu
+                    ILU: out-of-place factorization
+                    0 levels of fill
+                    tolerance for zero pivot 2.22045e-14
+                    using diagonal shift to prevent zero pivot
+                    matrix ordering: natural
+                    factor fill ratio given 1, needed 1
+                      Factored matrix follows:
+                        Matrix Object:                         1 MPI processes
+                          type: seqaij
+                          rows=32, cols=32
+                          package used to perform factorization: petsc
+                          total: nonzeros=448, allocated nonzeros=448
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 8 nodes, limit used is 5
+                  linear system matrix = precond matrix:
+                  Matrix Object:                   1 MPI processes
+                    type: seqaij
+                    rows=32, cols=32
+                    total: nonzeros=448, allocated nonzeros=448
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 8 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Matrix Object:                 2 MPI processes
+                  type: mpiaij
+                  rows=64, cols=64
+                  total: nonzeros=1024, allocated nonzeros=1024
+                  total number of mallocs used during MatSetValues calls =0
+                    Matrix Object:                     2 MPI processes
+                      type: mpiaij
+                      rows=64, cols=64
+                      total: nonzeros=1024, allocated nonzeros=1024
+                      total number of mallocs used during MatSetValues calls =0
+                        using I-node (on process 0) routines: found 8 nodes, limit used is 5
+        maximum iterations=1, maximum function evaluations=10000
+        tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+        total number of linear solver iterations=0
+        total number of function evaluations=2
+    Nonlinear solve did not converge due to DIVERGED_INNER
+    0 SNES Function norm 3455.4 
+    1 SNES Function norm 3455.35 
+    2 SNES Function norm 3455.72 
+    3 SNES Function norm 910.501 
+    4 SNES Function norm 662.489 
+    5 SNES Function norm 321.465 
+    6 SNES Function norm 262.044 
+    7 SNES Function norm 172.859 
+    8 SNES Function norm 84.9922 
+    9 SNES Function norm 29.0643 
+   10 SNES Function norm 7.28821 
+   11 SNES Function norm 2.84479 
+   12 SNES Function norm 1.3607 
+   13 SNES Function norm 0.846567 
+   14 SNES Function norm 0.283215 
+   15 SNES Function norm 0.227522 
+   16 SNES Function norm 0.125991 
+   17 SNES Function norm 0.0407282 
+   18 SNES Function norm 0.0228629 
+   19 SNES Function norm 0.0180045 
+   20 SNES Function norm 0.0131249 
+   21 SNES Function norm 0.00869061 
+   22 SNES Function norm 0.00219634 
+   23 SNES Function norm 0.000955632 
+   24 SNES Function norm 0.000477377 
+   25 SNES Function norm 0.000225364 
+   26 SNES Function norm 0.000126276 
+   27 SNES Function norm 3.47334e-05 
+   28 SNES Function norm 1.62848e-05 
+  SNES Object:   2 MPI processes
+    type: ngmres
+      line search variant: QUADRATIC
+      Number of stored past updates: 10
+      Residual selection: gammaA=2e+00, gammaC=2e+00
+      Difference restart: epsilonB=1e-01, deltaB=9e-01
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=0
+    total number of function evaluations=57
+    SNES Object:    (npc_)     2 MPI processes
+      type: fas
+      FAS, levels = 2
+        level: 1
+        up-smoother on level 1:
+          SNES Object:          (npc_fas_)           2 MPI processes
+            type: ms
+              multi-stage method type: m62
+            maximum iterations=1, maximum function evaluations=1000
+            tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+            total number of linear solver iterations=0
+            total number of function evaluations=6
+            KSP Object:            (npc_fas_)             2 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object:            (npc_fas_)             2 MPI processes
+              type: none
+              linear system matrix = precond matrix:
+              Matrix Object:               2 MPI processes
+                type: mpiaij
+                rows=196, cols=196
+                total: nonzeros=3472, allocated nonzeros=3472
+                total number of mallocs used during MatSetValues calls =0
+                  Matrix Object:                   2 MPI processes
+                    type: mpiaij
+                    rows=196, cols=196
+                    total: nonzeros=3472, allocated nonzeros=3472
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node (on process 0) routines: found 28 nodes, limit used is 5
+        down-smoother on level 1:
+          SNES Object:          (npc_fas_)           2 MPI processes
+            type: ms
+              multi-stage method type: m62
+            maximum iterations=1, maximum function evaluations=1000
+            tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+            total number of linear solver iterations=0
+            total number of function evaluations=6
+            KSP Object:            (npc_fas_)             2 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object:            (npc_fas_)             2 MPI processes
+              type: none
+              linear system matrix = precond matrix:
+              Matrix Object:               2 MPI processes
+                type: mpiaij
+                rows=196, cols=196
+                total: nonzeros=3472, allocated nonzeros=3472
+                total number of mallocs used during MatSetValues calls =0
+                  Matrix Object:                   2 MPI processes
+                    type: mpiaij
+                    rows=196, cols=196
+                    total: nonzeros=3472, allocated nonzeros=3472
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node (on process 0) routines: found 28 nodes, limit used is 5
+      maximum iterations=1, maximum function evaluations=10000
+      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+      total number of linear solver iterations=0
+      total number of function evaluations=3
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+  0 SNES Function norm 3580.49 
+  1 SNES Function norm 936.225 
+  2 SNES Function norm 552.668 
+  3 SNES Function norm 454.189 
+  4 SNES Function norm 342.904 
+  5 SNES Function norm 159.277 
+  6 SNES Function norm 58.4114 
+  7 SNES Function norm 19.5459 
+  8 SNES Function norm 6.10295 
+  9 SNES Function norm 2.91813 
+ 10 SNES Function norm 2.53489 
+ 11 SNES Function norm 1.4045 
+ 12 SNES Function norm 0.810248 
+ 13 SNES Function norm 0.300248 
+ 14 SNES Function norm 0.126726 
+ 15 SNES Function norm 0.0828642 
+ 16 SNES Function norm 0.0602029 
+ 17 SNES Function norm 0.026873 
+ 18 SNES Function norm 0.0238798 
+ 19 SNES Function norm 0.0165977 
+ 20 SNES Function norm 0.0136425 
+ 21 SNES Function norm 0.0079147 
+ 22 SNES Function norm 0.00585092 
+ 23 SNES Function norm 0.00368557 
+ 24 SNES Function norm 0.00206948 
+ 25 SNES Function norm 0.00163577 
+ 26 SNES Function norm 0.00152023 
+ 27 SNES Function norm 0.00120776 
+ 28 SNES Function norm 0.000548351 
+ 29 SNES Function norm 0.000449833 
+ 30 SNES Function norm 0.000205696 
+ 31 SNES Function norm 0.000100093 
+ 32 SNES Function norm 5.45111e-05 
+ 33 SNES Function norm 2.32733e-05 
+SNES Object: 2 MPI processes
+  type: ngmres
+    line search variant: QUADRATIC
+    Number of stored past updates: 10
+    Residual selection: gammaA=2e+00, gammaC=2e+00
+    Difference restart: epsilonB=1e-01, deltaB=9e-01
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=0
+  total number of function evaluations=67
+  SNES Object:  (npc_)   2 MPI processes
+    type: fas
+    FAS, levels = 3
+      level: 2
+      up-smoother on level 2:
+        SNES Object:        (npc_fas_)         2 MPI processes
+          type: ms
+            multi-stage method type: m62
+          maximum iterations=1, maximum function evaluations=1000
+          tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+          total number of linear solver iterations=0
+          total number of function evaluations=6
+          KSP Object:          (npc_fas_)           2 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (npc_fas_)           2 MPI processes
+            type: none
+            linear system matrix = precond matrix:
+            Matrix Object:             2 MPI processes
+              type: mpiaij
+              rows=676, cols=676
+              total: nonzeros=12688, allocated nonzeros=12688
+              total number of mallocs used during MatSetValues calls =0
+                Matrix Object:                 2 MPI processes
+                  type: mpiaij
+                  rows=676, cols=676
+                  total: nonzeros=12688, allocated nonzeros=12688
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node (on process 0) routines: found 91 nodes, limit used is 5
+      down-smoother on level 2:
+        SNES Object:        (npc_fas_)         2 MPI processes
+          type: ms
+            multi-stage method type: m62
+          maximum iterations=1, maximum function evaluations=1000
+          tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+          total number of linear solver iterations=0
+          total number of function evaluations=6
+          KSP Object:          (npc_fas_)           2 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (npc_fas_)           2 MPI processes
+            type: none
+            linear system matrix = precond matrix:
+            Matrix Object:             2 MPI processes
+              type: mpiaij
+              rows=676, cols=676
+              total: nonzeros=12688, allocated nonzeros=12688
+              total number of mallocs used during MatSetValues calls =0
+                Matrix Object:                 2 MPI processes
+                  type: mpiaij
+                  rows=676, cols=676
+                  total: nonzeros=12688, allocated nonzeros=12688
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node (on process 0) routines: found 91 nodes, limit used is 5
+    maximum iterations=1, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=0
+    total number of function evaluations=3
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+Number of SNES iterations = 33

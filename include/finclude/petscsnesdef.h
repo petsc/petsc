@@ -10,6 +10,7 @@
 #define SNES PetscFortranAddr
 #endif
 #define SNESType character*(80)
+#define SNESMSType character*(80)
 #define SNESConvergedReason PetscEnum
 #define SNESLineSearchType  PetscEnum
 #define MatMFFD PetscFortranAddr
@@ -31,6 +32,13 @@
 #define SNESNCG         'ncg'
 #define SNESSORQN       'sorqn'
 #define SNESFAS         'fas'
+#define SNESMS          'ms'
+
+!
+!  SNESMSType
+!
+#define SNESMSEULER     'euler'
+#define SNESMSM62       'm62'
 
 !
 ! MatSNESMF

@@ -47,6 +47,8 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   PetscFunctionBegin;
   if (SNESPackageInitialized) PetscFunctionReturn(0);
   SNESPackageInitialized = PETSC_TRUE;
+  /* Initialize subpackages */
+  ierr = SNESMSInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */

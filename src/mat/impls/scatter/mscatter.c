@@ -287,6 +287,7 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
   ierr = MatSetSizes(*A,scatter->to_n,scatter->from_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSCATTER);CHKERRQ(ierr);
   ierr = MatScatterSetVecScatter(*A,scatter);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

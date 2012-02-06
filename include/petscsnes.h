@@ -42,6 +42,7 @@ J*/
 #define SNESNCG          "ncg"
 #define SNESSORQN        "sorqn"
 #define SNESFAS          "fas"
+#define SNESMS           "ms"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
@@ -438,6 +439,24 @@ extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, con
 extern PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
 extern PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
 extern PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+
+/*J
+    SNESMSType - String with the name of a PETSc SNESMS method.
+
+   Level: intermediate
+
+.seealso: SNESMSSetType(), SNES
+J*/
+#define SNESMSType char*
+#define SNESMSM62   "m62"
+#define SNESMSEULER "euler"
+
+extern PetscErrorCode SNESMSRegister(const SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode SNESMSSetType(SNES,const SNESMSType);
+extern PetscErrorCode SNESMSFinalizePackage(void);
+extern PetscErrorCode SNESMSInitializePackage(const char path[]);
+extern PetscErrorCode SNESMSRegisterDestroy(void);
+extern PetscErrorCode SNESMSRegisterAll(void);
 
 PETSC_EXTERN_CXX_END
 #endif
