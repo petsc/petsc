@@ -1140,6 +1140,53 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateMatrix"
+/*@C
+  DMMeshCreateMatrix - Creates a matrix with the correct parallel layout required for
+    computing the Jacobian on a function defined using the information in the Section.
+
+  Collective on DMMesh
+
+  Input Parameters:
++ mesh    - the mesh object
+. section - the section which determines data layout
+- mtype   - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
+            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
+
+  Output Parameter:
+. J  - matrix with the correct nonzero preallocation
+       (obviously without the correct Jacobian values)
+
+  Level: advanced
+
+  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you
+       do not need to do it yourself.
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
+@*/
+PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, const MatType mtype, Mat *J)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  if (!mtype) mtype = MATAIJ;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  try {
+    ierr = DMMeshCreateMatrix(m, s, mtype, J, -1, !dm->prealloc_only);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
+  }
+  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Mesh"
 PetscErrorCode DMDestroy_Mesh(DM dm)
 {
