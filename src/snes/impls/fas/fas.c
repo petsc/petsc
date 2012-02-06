@@ -468,11 +468,12 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
 
 .keywords:  FAS, multigrid, set, interpolate, level
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRscale()
+.seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRScale()
 @*/
 PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscInt top_level = fas->level,i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (level > top_level)
@@ -483,6 +484,7 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetInterpolation");
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   fas->interpolate = mat;
   PetscFunctionReturn(0);
 }
@@ -517,6 +519,7 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
 PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscInt top_level = fas->level,i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (level > top_level)
@@ -527,6 +530,7 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   fas->restrct = mat;
   PetscFunctionReturn(0);
 }
@@ -555,6 +559,7 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
 PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscInt top_level = fas->level,i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (level > top_level)
@@ -565,6 +570,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
+  ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
   fas->rscale = rscale;
   PetscFunctionReturn(0);
 }
@@ -594,6 +600,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
 PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscInt top_level = fas->level,i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (level > top_level)
@@ -604,6 +611,7 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level)
     SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetInjection");
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   fas->inject = mat;
   PetscFunctionReturn(0);
 }
@@ -616,19 +624,12 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   SNES_FAS * fas = (SNES_FAS *)snes->data;
 
   PetscFunctionBegin;
-  if (fas->upsmooth)     ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
-  if (fas->downsmooth)   ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
-  if (fas->inject) {
-    ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
-  }
-  if (fas->interpolate == fas->restrct) {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    fas->restrct = PETSC_NULL;
-  } else {
-    if (fas->interpolate)  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-    if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
-  }
-  if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
+  ierr = SNESDestroy(&fas->upsmooth);CHKERRQ(ierr);
+  ierr = SNESDestroy(&fas->downsmooth);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
+  ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
 
   if (fas->upsmooth)   ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth) ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
@@ -709,7 +710,10 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       /* set the interpolation and restriction from the DM */
       if (!fas->interpolate) {
         ierr = DMCreateInterpolation(fas->next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
-        fas->restrct = fas->interpolate;
+        if (!fas->restrct) {
+          ierr = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
+          fas->restrct = fas->interpolate;
+        }
       }
       /* set the injection from the DM */
       if (!fas->inject) {
