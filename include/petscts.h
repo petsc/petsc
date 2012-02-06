@@ -652,7 +652,7 @@ J*/
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 extern PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
-extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 extern PetscErrorCode TSRosWFinalizePackage(void);
 extern PetscErrorCode TSRosWInitializePackage(const char path[]);
 extern PetscErrorCode TSRosWRegisterDestroy(void);
