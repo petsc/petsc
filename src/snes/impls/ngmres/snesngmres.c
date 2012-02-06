@@ -20,18 +20,16 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
 PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 {
   PetscErrorCode ierr;
+  SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
 
   PetscFunctionBegin;
   ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
-  if (snes->data) {
-    SNES_NGMRES * ngmres = (SNES_NGMRES *)snes->data;
-    ierr = PetscFree5(ngmres->h, ngmres->beta, ngmres->xi, ngmres->fnorms, ngmres->q);CHKERRQ(ierr);
-    ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
+  ierr = PetscFree5(ngmres->h, ngmres->beta, ngmres->xi, ngmres->fnorms, ngmres->q);CHKERRQ(ierr);
+  ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
 #if PETSC_USE_COMPLEX
-    ierr = PetscFree(ngmres->rwork);
+  ierr = PetscFree(ngmres->rwork);
 #endif
-    ierr = PetscFree(ngmres->work);
-  }
+  ierr = PetscFree(ngmres->work);
   ierr = PetscFree(snes->data);
   PetscFunctionReturn(0);
 }
@@ -45,33 +43,34 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  msize         = ngmres->msize;  /* restart size */
-  hsize         = msize * msize;
+  ierr = SNESDefaultGetWork(snes,5);CHKERRQ(ierr);
+  if (!ngmres->Xdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);}
+  if (!ngmres->Fdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);}
+  if (!ngmres->setup_called) {
+    msize         = ngmres->msize;  /* restart size */
+    hsize         = msize * msize;
 
-
-  /* explicit least squares minimization solve */
-  ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
-                      msize,PetscScalar,&ngmres->beta,
-                      msize,PetscScalar,&ngmres->xi,
-                      msize,PetscReal,  &ngmres->fnorms,
-                      hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
-  ngmres->nrhs = 1;
-  ngmres->lda = msize;
-  ngmres->ldb = msize;
-  ierr = PetscMalloc(msize*sizeof(PetscScalar),&ngmres->s);CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
-  ngmres->lwork = 12*msize;
+    /* explicit least squares minimization solve */
+    ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
+                        msize,PetscScalar,&ngmres->beta,
+                        msize,PetscScalar,&ngmres->xi,
+                        msize,PetscReal,  &ngmres->fnorms,
+                        hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
+    ngmres->nrhs = 1;
+    ngmres->lda = msize;
+    ngmres->ldb = msize;
+    ierr = PetscMalloc(msize*sizeof(PetscScalar),&ngmres->s);CHKERRQ(ierr);
+    ierr = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ngmres->lwork = 12*msize;
 #if PETSC_USE_COMPLEX
-  ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);
+    ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);
 #endif
-  ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);
-
-  ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->Xdot);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->Fdot);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes, 5);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);
+  }
+  ngmres->setup_called = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

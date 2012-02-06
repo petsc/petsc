@@ -43,6 +43,7 @@ typedef struct {
   PetscBLASInt lwork;          /* the size of the work vector */
   PetscBLASInt info;           /* the output condition */
 
+  PetscBool    setup_called;    /* indicates whether SNESSetUp_NGMRES() has been called  */
 } SNES_NGMRES;
 
 #define H(i,j)  ngmres->h[i*ngmres->msize + j]
