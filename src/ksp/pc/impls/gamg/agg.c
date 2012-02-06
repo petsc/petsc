@@ -23,7 +23,7 @@ typedef struct {
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_gamg_sa_nsmooths
+.  -pc_gamg_agg_nsmooths
 
    Level: intermediate
 
@@ -80,7 +80,7 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
 
   ierr = PetscOptionsHead("GAMG-AGG options"); CHKERRQ(ierr);
   {
-    /* -pc_gamg_sa_nsmooths */
+    /* -pc_gamg_agg_nsmooths */
     pc_gamg_sa->smooths = 0;
     ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths",
                            "smoothing steps for smoothed aggregation, usually 1 (0)",
