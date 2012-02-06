@@ -2076,8 +2076,8 @@ PetscErrorCode  SNESReset(SNES snes)
   ierr = VecDestroy(&snes->vec_func);CHKERRQ(ierr);
   ierr = MatDestroy(&snes->jacobian);CHKERRQ(ierr);
   ierr = MatDestroy(&snes->jacobian_pre);CHKERRQ(ierr);
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
-  if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
+  ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);
   snes->nwork = snes->nvwork = 0;
   snes->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
