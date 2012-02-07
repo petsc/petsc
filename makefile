@@ -258,6 +258,7 @@ alldoc: alldoc1 alldoc2 alldoc3
 
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
+	-${PYTHON} bin/maint/countpetsccits.py
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
