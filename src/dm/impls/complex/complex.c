@@ -2692,7 +2692,7 @@ PetscErrorCode DMComplexGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(dm, interpolate, 2);
+  PetscValidLogicalCollectiveBool(boundary, interpolate, 2);
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = DMComplexGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
