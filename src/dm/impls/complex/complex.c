@@ -2647,6 +2647,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       ierr = DMComplexSetCone(*dm, c, cone);CHKERRQ(ierr);
     }
     ierr = DMComplexSymmetrize(*dm);CHKERRQ(ierr);
+    ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
     if (interpolate) {
       DM        imesh;
       PetscInt *off, *adj, *cellConeSizes;
@@ -2657,7 +2658,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       numEdges = off[numCells]/2;
       /* Account for boundary edges */
       for(c = 0; c < numCells; ++c) {
-        numEdges += off[c+1] - off[c] - 3;
+        numEdges += 3 - (off[c+1] - off[c]);
       }
       /* Create interpolated mesh */
       ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
@@ -2706,12 +2707,12 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       ierr = PetscFree(off);CHKERRQ(ierr);
       ierr = PetscFree(adj);CHKERRQ(ierr);
       ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
+      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
       ierr = DMSetFromOptions(imesh);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = imesh;
       SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
     }
-    ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {
       ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
