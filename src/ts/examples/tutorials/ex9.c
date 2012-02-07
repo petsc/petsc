@@ -169,7 +169,7 @@ static void Limit_CadaTorrilhon3R100(LimitInfo info,const PetscScalar *jL,const 
 typedef enum {FVBC_PERIODIC, FVBC_OUTFLOW} FVBCType;
 static const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","FVBCType","FVBC_",0};
 typedef PetscErrorCode (*RiemannFunction)(void*,PetscInt,const PetscScalar*,const PetscScalar*,PetscScalar*,PetscReal*);
-typedef PetscErrorCode (*ReconstructFunction)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*ReconstructFunction)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*);
 
 typedef struct {
   PetscErrorCode (*sample)(void*,PetscInt,FVBCType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*);
@@ -194,6 +194,7 @@ typedef struct {
   PetscScalar *cslope;          /* Limited slope, written in characteristic basis */
   PetscScalar *uLR;             /* Solution at left and right of interface, conservative variables, len=2*dof */
   PetscScalar *flux;            /* Flux across interface */
+  PetscReal   *speeds;          /* Speeds of each wave */
 
   PetscReal cfl_idt;            /* Max allowable value of 1/Delta t */
   PetscReal cfl;
@@ -263,7 +264,7 @@ PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,Reconstruct
 /* First a few functions useful to several different physics */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_Conservative"  
-static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   PetscInt i,j;
 
@@ -272,6 +273,7 @@ static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,c
     for (j=0; j<m; j++) {
       Xi[i*m+j] = X[i*m+j] = (PetscScalar)(i==j);
     }
+    speeds[i] = PETSC_MAX_REAL; /* Indicates invalid */
   }
   PetscFunctionReturn(0);
 }
@@ -674,10 +676,10 @@ static inline void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscSca
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysicsCharacteristic_Acoustics"
-static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   AcousticsCtx *phys = (AcousticsCtx*)vctx;
-  PetscReal z = phys->z;
+  PetscReal z = phys->z,c = phys->c;
 
   PetscFunctionBegin;
   X[0*2+0] = -z;
@@ -688,6 +690,8 @@ static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,cons
   Xi[0*2+1] = 1./2;
   Xi[1*2+0] = 1./(2*z);
   Xi[1*2+1] = 1./2;
+  speeds[0] = -c;
+  speeds[1] = c;
   PetscFunctionReturn(0);
 }
 
@@ -717,7 +721,7 @@ static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCTy
   AcousticsCtx *phys = (AcousticsCtx*)vctx;
   PetscReal c = phys->c;
   PetscReal x0a,x0b,u0a[2],u0b[2],tmp[2];
-  PetscReal X[2][2],Xi[2][2];
+  PetscReal X[2][2],Xi[2][2],dummy[2];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -734,7 +738,7 @@ static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCTy
   }
   ierr = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0a,u0a);CHKERRQ(ierr);
   ierr = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0b,u0b);CHKERRQ(ierr);
-  ierr = PhysicsCharacteristic_Acoustics(vctx,2,u,&X[0][0],&Xi[0][0]);CHKERRQ(ierr);
+  ierr = PhysicsCharacteristic_Acoustics(vctx,2,u,&X[0][0],&Xi[0][0],dummy);CHKERRQ(ierr);
   tmp[0] = Xi[0][0]*u0a[0] + Xi[0][1]*u0a[1];
   tmp[1] = Xi[1][0]*u0b[0] + Xi[1][1]*u0b[1];
   u[0]   = X[0][0]*tmp[0] + X[0][1]*tmp[1];
@@ -969,17 +973,19 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysicsCharacteristic_IsoGas"
-static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   IsoGasCtx *phys = (IsoGasCtx*)vctx;
   PetscReal c = phys->acoustic_speed;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  speeds[0] = u[1]/u[0] - c;
+  speeds[1] = u[1]/u[0] + c;
   X[0*2+0] = 1;
-  X[0*2+1] = u[1]/u[0] - c;
+  X[0*2+1] = speeds[0];
   X[1*2+0] = 1;
-  X[1*2+1] = u[1]/u[0] + c;
+  X[1*2+1] = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
   ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1140,7 +1146,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysicsCharacteristic_Shallow"
-static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   ShallowCtx *phys = (ShallowCtx*)vctx;
   PetscReal c;
@@ -1148,10 +1154,12 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
 
   PetscFunctionBegin;
   c = PetscSqrtScalar(u[0]*phys->gravity);
+  speeds[0] = u[1]/u[0] - c;
+  speeds[1] = u[1]/u[0] + c;
   X[0*2+0] = 1;
-  X[0*2+1] = u[1]/u[0] - c;
+  X[0*2+1] = speeds[0];
   X[1*2+0] = 1;
-  X[1*2+1] = u[1]/u[0] + c;
+  X[1*2+1] = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
   ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1238,7 +1246,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     struct _LimitInfo info;
     PetscScalar *cjmpL,*cjmpR;
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv);CHKERRQ(ierr);
+    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
     ierr = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
     cjmpL = &ctx->cjmpLR[0];
@@ -1302,6 +1310,59 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",dt,ctx->cfl/ctx->cfl_idt);
       }
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SmallMatMultADB"
+static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScalar *A,const PetscReal *D,const PetscScalar *B)
+{
+  PetscInt i,j,k;
+
+  PetscFunctionBegin;
+  for (i=0; i<bs; i++) {
+    for (j=0; j<bs; j++) {
+      PetscScalar tmp = 0;
+      for (k=0; k<bs; k++) {
+        tmp += A[i*bs+k] * D[k] * B[k*bs+j];
+      }
+      C[i*bs+j] = tmp;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FVIJacobian"
+static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,void *vctx)
+{
+  FVCtx *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt i,j,xs,xm,dof = ctx->physics.dof;
+  PetscScalar *x,*J;
+  DM da;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*dof*sizeof(PetscScalar),&J);CHKERRQ(ierr);
+  for (i=xs; i<xs+xm; i++) {
+    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+    for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
+    ierr = SmallMatMultADB(J,dof,ctx->R,ctx->speeds,ctx->Rinv);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(*B,1,&i,1,&j,J,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(J);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1405,6 +1466,7 @@ int main(int argc,char *argv[])
   TS ts;
   DM da;
   Vec X,X0,R;
+  Mat B;
   FVCtx ctx;
   PetscInt i,dof,xs,xm,Mx,draw = 0;
   PetscBool  view_final = PETSC_FALSE;
@@ -1489,17 +1551,20 @@ int main(int argc,char *argv[])
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
   ierr = PetscMalloc4(dof*dof,PetscScalar,&ctx.R,dof*dof,PetscScalar,&ctx.Rinv,2*dof,PetscScalar,&ctx.cjmpLR,1*dof,PetscScalar,&ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux,dof,PetscReal,&ctx.speeds);CHKERRQ(ierr);
 
   /* Create a vector to store the solution and to save the initial state */
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
 
+  ierr = DMCreateMatrix(da,PETSC_NULL,&B);CHKERRQ(ierr);
+
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,B,B,FVIJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,10);CHKERRQ(ierr);
 
@@ -1552,10 +1617,11 @@ int main(int argc,char *argv[])
   ierr = (*ctx.physics.destroy)(ctx.physics.user);CHKERRQ(ierr);
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx.uLR,ctx.flux,ctx.speeds);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&X0);CHKERRQ(ierr);
   ierr = VecDestroy(&R);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
