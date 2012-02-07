@@ -227,7 +227,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
     ++dim;
   }
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
@@ -247,7 +247,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
     } else {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
     }
-} else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
+} else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
   }
 
@@ -272,7 +272,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   count[dim] = PetscHDF5IntCast(n)/bs;
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     count[dim] = bs;
     ++dim;
   }
@@ -292,7 +292,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   offset[dim] = PetscHDF5IntCast(low/bs);
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     offset[dim] = 0;
     ++dim;
   }
