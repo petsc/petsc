@@ -1187,6 +1187,42 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, const MatType mtyp
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateVector"
+/*@
+  DMMeshCreateVector - Creates a global vector matching the input section
+
+  Collective on DMMesh
+
+  Input Parameters:
++ mesh - the DMMesh
+- section - the Section
+
+  Output Parameter:
+. vec - the global vector
+
+  Level: advanced
+
+  Notes: The vector can safely be destroyed using VecDestroy().
+.seealso DMMeshCreate()
+@*/
+PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+
+  ierr = VecCreate(m->comm(), vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Mesh"
 PetscErrorCode DMDestroy_Mesh(DM dm)
 {
