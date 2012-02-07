@@ -1,6 +1,15 @@
 #include <private/sfimpl.h>
 #include <petscctable.h>
 
+#if defined(PETSC_USE_DEBUG)
+#  define PetscSFCheckGraphSet(sf,arg) do {                          \
+    if (PetscUnlikely(!(sf)->graphset))                              \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() on argument %D \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
+  } while (0)
+#else
+#  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
+#endif
+
 const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFSynchronizationType","PETSCSF_SYNCHRONIZATION_",0};
 
 #if !defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -66,6 +75,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   b->rankorder = PETSC_TRUE;
   b->ingroup   = MPI_GROUP_NULL;
   b->outgroup  = MPI_GROUP_NULL;
+  b->graphset  = PETSC_FALSE;
   *sf = b;
   PetscFunctionReturn(0);
 }
@@ -92,6 +102,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscInt i;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   sf->mine = PETSC_NULL;
   ierr = PetscFree(sf->mine_alloc);CHKERRQ(ierr);
   sf->remote = PETSC_NULL;
@@ -119,6 +130,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
   if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
+  sf->graphset = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -267,6 +279,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (nleaves && ilocal) PetscValidIntPointer(ilocal,4);
   if (nleaves) PetscValidPointer(iremote,6);
+  if (nroots < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"roots %D, cannot be negative",nroots);
+  if (nleaves < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %D, cannot be negative",nleaves);
   ierr = PetscSFReset(sf);CHKERRQ(ierr);
   sf->nroots = nroots;
   sf->nleaves = nleaves;
@@ -379,6 +393,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     ierr = PetscFree4(numRankLeaves,leafOff,numRankRoots,rootOff);CHKERRQ(ierr);
     sf->nroots = maxRoots;
   }
+  sf->graphset = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1102,6 +1117,8 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootda
   MPI_Win            win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
@@ -1138,6 +1155,8 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata
   MPI_Win win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1172,6 +1191,8 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   MPI_Win            win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
@@ -1209,6 +1230,8 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   MPI_Win win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   if (!sf->wins) {PetscFunctionReturn(0);}
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
@@ -1239,6 +1262,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
   if (!sf->degree) {
     PetscInt i;
@@ -1274,6 +1298,8 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   if (sf->degreetmp) {
     ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
@@ -1318,6 +1344,8 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   MPI_Win            win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
@@ -1357,6 +1385,8 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,
   MPI_Win        win;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
   /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscSFFetchAndOpBegin(), rendering this implementation synchronous. */
   ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_FALSE,0,&win);CHKERRQ(ierr);
@@ -1418,6 +1448,8 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscSF        multi;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1448,6 +1480,8 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *mult
   PetscSF        multi;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1478,6 +1512,8 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   PetscSF        multi;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);

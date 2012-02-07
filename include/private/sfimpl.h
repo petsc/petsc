@@ -48,6 +48,7 @@ struct _p_PetscSF {
   MPI_Group       ingroup;      /* Group of processes connected to my roots */
   MPI_Group       outgroup;     /* Group of processes connected to my leaves */
   PetscSF         multi;        /* Internal graph used to implement gather and scatter operations */
+  PetscBool       graphset;     /* Flag indicating that the graph has been set, required before calling communication routines */
 };
 
 #endif
