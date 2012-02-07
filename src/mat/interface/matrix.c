@@ -4333,7 +4333,7 @@ PetscErrorCode  MatGetRowSum(Mat mat, Vec v)
 
    Input Parameter:
 +  mat - the matrix to transpose
--  reuse - store the transpose matrix in the provided B
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameters:
 .  B - the transpose 
