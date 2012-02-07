@@ -18,8 +18,10 @@ def main():
       tcount = tcount + 1
     line  = f.readline()
   f.close()
-  print("<li> Publications that have used PETSc "+str(tcount)+" (incomplete)")
-  print("<ul>")
+  g = open(os.path.join('src','docs','website','publications','generated_topics.html'),'w')
+  g.write("<ul>")
+  g.write("<li> Publications that have used PETSc "+str(tcount)+" (incomplete)")
+  g.write("<ul>")
 
   f     = open(os.path.join('src','docs','tex','petscapp.bib'))
   line  = f.readline()
@@ -29,7 +31,7 @@ def main():
   while line:
     if '<center>' in line and '</center>' in line:
       if topic and count > 0:
-        print('<li><a href="petscapps.html#'+name+'">'+topic+' '+str(count)+'</a></li>')
+        g.write('<li><a href="petscapps.html#'+name+'">'+topic+' '+str(count)+'</a></li>')
       count = 0
       topic = mat.findall(line)[0]
       topic = topic[8:-9]
@@ -41,8 +43,9 @@ def main():
       count = count + 1
     line = f.readline()
   f.close()
-  print('<li><a href="petscapps.html#'+name+'">'+topic+' '+str(count)+'</a></li>')
-  print("</ul></li>")
+  g.write('<li><a href="petscapps.html#'+name+'">'+topic+' '+str(count)+'</a></li>')
+  g.write("</ul></li></ul>")
+  g.close()
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
