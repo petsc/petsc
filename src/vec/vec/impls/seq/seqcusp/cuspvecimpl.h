@@ -43,6 +43,7 @@ extern PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec *);
 extern PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecCUSPCopyToGPU(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck(Vec);
+//extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
 EXTERN_C_BEGIN
 extern PetscErrorCode  VecCreate_SeqCUSP(Vec);
 EXTERN_C_END
@@ -146,7 +147,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY** a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
+  //ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
+  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }

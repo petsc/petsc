@@ -166,7 +166,7 @@ PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
+. -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
 
   Level: beginner
 

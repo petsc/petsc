@@ -10,6 +10,36 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPAllocateCheckHost"
+/*
+    Allocates space for the vector array on the Host if it does not exist.
+    Does NOT change the PetscCUSPFlag for the vector
+    Does NOT zero the CUSP array 
+ */
+PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *array;
+  Vec_Seq        *s;
+  PetscInt       n = v->map->n;
+  PetscFunctionBegin;
+  s = (Vec_Seq*)v->data;
+  if (s->array == 0) {
+    //#ifdef PETSC_HAVE_TXPETSCGPU
+    //if (n>0)
+    // ierr = cudaMallocHost((void **) &array, n*sizeof(PetscScalar));CHKERRCUSP(ierr);
+    //#else
+    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    s->array           = array;
+    s->array_allocated = array;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPAllocateCheck"
 /*
@@ -20,6 +50,10 @@ PETSC_CUDA_EXTERN_C_END
  */
 PetscErrorCode VecCUSPAllocateCheck(Vec v)
 {
+  PetscErrorCode ierr;
+  int rank;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
   PetscFunctionBegin;
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
@@ -30,33 +64,24 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 
 #ifdef PETSC_HAVE_TXPETSCGPU
       PetscErrorCode ierr;
-      ((Vec_CUSP*)v->spptr)->GPUvector = new GPU_Vector<PetscInt, PetscScalar>(((Vec_CUSP*)v->spptr)->GPUarray);
+      ((Vec_CUSP*)v->spptr)->GPUvector = new GPU_Vector<PetscInt, PetscScalar>(((Vec_CUSP*)v->spptr)->GPUarray, rank);
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->buildStreamsAndEvents();CHKERRCUSP(ierr);
 
-      // this data management is explicit to PETSc
       Vec_Seq        *s;
       s = (Vec_Seq*)v->data;  
-
-      // Next, reallocate the CPU data structure as page-locked memory
-      // must check to see if v->map->n>0, otherwise we see seg faults in the destructor ??
       if (v->map->n>0) {
-	PetscScalar *tempArray;
-	tempArray = ((Vec_CUSP*)v->spptr)->GPUvector->reallocateHostMemory();
-	if (!tempArray)CHKERRCUSP(1);
-	ierr = WaitForGPU();CHKERRCUSP(ierr);
-	if (s->array) {
-	  // Copy any existing data over to the new page-locked memory
-	  memcpy(tempArray, s->array, v->map->n*sizeof(PetscScalar));
-	  
-	  // Free old CPU Memory
-	  ierr = PetscFree(s->array);CHKERRQ(ierr);
+	if (s->array==0) {
+	  // In this branch, GPUvector owns the ptr and manages the memory
+	  ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
+	  s->array           = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
+	  s->array_allocated = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
 	}
-	
-	// reassign pointers to page locked memory
-	s->array           = tempArray;
-	s->array_allocated = tempArray;
-      }  
-      
+	else {
+	  // In this branch, Petsc owns the ptr and manages the memory
+	  ((Vec_CUSP*)v->spptr)->GPUvector->assignHostMemory(s->array);
+	}
+	ierr = WaitForGPU();CHKERRCUSP(ierr);
+      }        
       v->ops->destroy = VecDestroy_SeqCUSP;
 #endif
     } catch(char* ex) {
@@ -138,19 +163,8 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 PetscErrorCode VecCUSPCopyFromGPU(Vec v)
 {
   PetscErrorCode ierr;
-  PetscScalar    *array;
-  Vec_Seq        *s;
-  PetscInt       n = v->map->n;
-
   PetscFunctionBegin;
-  s = (Vec_Seq*)v->data;
-  if (s->array == 0){
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    s->array           = array;
-    s->array_allocated = array;
-  }
-
+  ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU){
     ierr       = PetscLogEventBegin(VEC_CUSPCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     try{
@@ -180,27 +194,20 @@ PetscErrorCode VecCUSPCopyFromGPU(Vec v)
 */
 PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 {
-  Vec_Seq        *s;
-  PetscInt       n = v->map->n;
-  PetscScalar    *array;
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  s = (Vec_Seq*)v->data;
-  if (s->array == 0){
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    s->array           = array;
-    s->array_allocated = array;
-  }
+  ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray  = ((Vec_CUSP*)v->spptr)->GPUarray;
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUSome(varray, ci->sendIndices);CHKERRCUSP(ierr);
 #else    
+  Vec_Seq        *s;
+  s = (Vec_Seq*)v->data;
     CUSPINTARRAYCPU *indicesCPU=&ci->sendIndicesCPU;
     CUSPINTARRAYGPU *indicesGPU=&ci->sendIndicesGPU;
     

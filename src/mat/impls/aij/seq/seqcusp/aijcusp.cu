@@ -405,7 +405,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 
 #if defined(PETSC_USE_REAL_SINGLE)  
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
+			      n, 1.0f, cusparsestructLo->Mat_CUSPARSE_description,
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
@@ -414,7 +414,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
   
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
+			      n, 1.0f, cusparsestructUp->Mat_CUSPARSE_description,
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
@@ -474,13 +474,12 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJCUSPARSETriFactor *cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
   
   PetscFunctionBegin;
-  // Get the GPU pointers
   ierr = VecCUSPGetArrayWrite(xx,&xGPU);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayRead(bb,&bGPU);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_REAL_SINGLE)  
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
+			      n, 1.0f, cusparsestructLo->Mat_CUSPARSE_description,
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
@@ -489,7 +488,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
     
   stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
+			      n, 1.0f, cusparsestructUp->Mat_CUSPARSE_description,
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
 			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
@@ -589,18 +588,26 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       std::string storageFormat;
       ierr = PetscOptionsGetString(PETSC_NULL, "-cusp_storage_format", input, 4, &found);CHKERRQ(ierr);
       storageFormat.assign(input);
-      if(storageFormat!="csr" && storageFormat!="dia"&& storageFormat!="ell"&& storageFormat!="coo") 
+      if(storageFormat!="csr" && storageFormat!="dia"&& storageFormat!="ell"&& storageFormat!="coo")
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Bad argument to -cusp_storage_format. Must be either 'csr', 'dia' (diagonal), 'ell' (ellpack), or 'coo' (coordinate)\n");
       else {
-	// Next Build the data structures explicitly
 	cuspstruct->mat = GPU_Matrix_Factory::getNew(storageFormat);
-	cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);
-	cuspstruct->mat->setCPRowIndices(ridx, m);
+
 	// Create the streams and events (if desired). 
 	PetscMPIInt    size;
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 	ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theBodyStream);CHKERRCUSP(ierr);	
 
+	// Determine which library to use : cusp or cusparse
+	PetscBool flg = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_cusparse",&flg,PETSC_NULL);CHKERRQ(ierr);
+	if (flg)
+	  cuspstruct->mat->initializeCusparse();
+	
+	// lastly, build the matrix
+	cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);
+	cuspstruct->mat->setCPRowIndices(ridx, m);
+	
 	///
 	// INODES : Determine the inode data structure for the GPU.
 	//   This only really matters for the CSR format.
@@ -776,8 +783,9 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   ierr = VecCUSPGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
   try {
 #ifdef PETSC_HAVE_TXPETSCGPU
-    ierr = cuspstruct->mat->multiply(thrust::raw_pointer_cast(xarray->data()),
-				     thrust::raw_pointer_cast(yarray->data()));CHKERRCUSP(ierr);
+    ierr = cuspstruct->mat->multiply(xarray, yarray);CHKERRCUSP(ierr);
+    //ierr = cuspstruct->mat->multiply(thrust::raw_pointer_cast(xarray->data()),
+    //				     thrust::raw_pointer_cast(yarray->data()));CHKERRCUSP(ierr);
 #else
     if (usecprow){ /* use compressed row format */
       cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
@@ -826,7 +834,6 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
 #endif
   CUSPARRAY      *xarray,*yarray,*zarray;
-
   PetscFunctionBegin;
   // The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
   // ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr);
@@ -836,9 +843,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
     ierr = VecCUSPGetArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_TXPETSCGPU
-    ierr = cuspstruct->mat->multiplyAdd(thrust::raw_pointer_cast(xarray->data()),
-					thrust::raw_pointer_cast(zarray->data()));CHKERRCUSP(ierr);
-
+    ierr = cuspstruct->mat->multiplyAdd(xarray, zarray);CHKERRCUSP(ierr);
 #else
     if (a->compressedrow.use) {
       cusp::multiply(*cuspstruct->mat,*xarray, *cuspstruct->tempvec);
