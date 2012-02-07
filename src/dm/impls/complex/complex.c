@@ -917,10 +917,10 @@ PetscErrorCode DMComplexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(cone, 3);
-  if ((p < pStart) || (p >= pEnd)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %d is not in the valid range [%d, %d)", p, pStart, pEnd);}
   ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
+  if ((p < pStart) || (p >= pEnd)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %d is not in the valid range [%d, %d)", p, pStart, pEnd);}
   for(c = 0; c < dof; ++c) {
     if ((cone[c] < pStart) || (cone[c] >= pEnd)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);}
     mesh->cones[off+c] = cone[c];
