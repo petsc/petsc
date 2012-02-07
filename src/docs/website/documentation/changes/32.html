@@ -240,7 +240,7 @@
           VecLoad() that takes a partially constructed vector as input and
           loads according to any type or sizes that have previously been set
           into the Vec.
-        </li>
+              <li>VecDestroyVecs(PetscInt n,Vec **) instead of VecDestroyVecs(Vec**,PetscInt n), also VecDestroyVecsF90(PetscInt n,{Vec, pointer :: x},PetscErrorCode ierr)</li>
 
         <li>
           VecLoad() does NOT access the options database to check for the

@@ -1581,7 +1581,7 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
     and makes them accessible via a Fortran90 pointer.
 
     Synopsis:
-    VecDuplicateVecsF90(Vec x,int n,{Vec, pointer :: y(:)},integer ierr)
+    VecDuplicateVecsF90(Vec x,PetscInt n,{Vec, pointer :: y(:)},integer ierr)
 
     Collective on Vec
 
@@ -1651,13 +1651,13 @@ M*/
     VecDestroyVecsF90 - Frees a block of vectors obtained with VecDuplicateVecsF90().
 
     Synopsis:
-    VecDestroyVecsF90({Vec, pointer :: x(:)},integer n,integer ierr)
+    VecDestroyVecsF90(PetscInt n,{Vec, pointer :: x(:)},PetscErrorCode ierr)
 
     Collective on Vec
 
     Input Parameters:
-+   x - pointer to array of vector pointers
--   n - the number of vectors previously obtained
++   n - the number of vectors previously obtained
+-   x - pointer to array of vector pointers
 
     Output Parameter:
 .   ierr - error code
