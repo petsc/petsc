@@ -6,6 +6,9 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
   "                u_t       + (u^2/2)_x             = 0\n"
   "  traffic     - Traffic equation\n"
   "                u_t       + (u*(1-u))_x           = 0\n"
+  "  acoustics   - Acoustic wave propagation\n"
+  "                u_t       + (c*z*v)_x             = 0\n"
+  "                v_t       + (c/z*u)_x             = 0\n"
   "  isogas      - Isothermal gas dynamics\n"
   "                rho_t     + (rho*u)_x             = 0\n"
   "                (rho*u)_t + (rho*u^2 + c^2*rho)_x = 0\n"
@@ -184,7 +187,7 @@ typedef struct {
 
   MPI_Comm comm;
   char prefix[256];
-  DM da;
+
   /* Local work arrays */
   PetscScalar *R,*Rinv;         /* Characteristic basis, and it's inverse.  COLUMN-MAJOR */
   PetscScalar *cjmpLR;          /* Jumps at left and right edge of cell, in characteristic basis, len=2*dof */
@@ -645,8 +648,155 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   PetscFunctionReturn(0);
 }
 
+/* --------------------------------- Linear Acoustics ----------------------------------- */
+/* Flux: u_t + (A u)_x
+ * z = sqrt(rho*bulk), c = sqrt(rho/bulk)
+ * Spectral decomposition: A = R * D * Rinv
+ * [    cz] = [-z   z] [-c    ] [-1/2z  1/2]
+ * [c/z   ] = [ 1   1] [     c] [ 1/2z  1/2]
+ *
+ * We decompose this into the left-traveling waves Al = R * D^- Rinv
+ * and the right-traveling waves Ar = R * D^+ * Rinv
+ * Multiplying out these expressions produces the following two matrices
+ */
 
 
+typedef struct {
+  PetscReal c;                  /* speed of sound: c = sqrt(bulk/rho) */
+  PetscReal z;                  /* impedence: z = sqrt(rho*bulk) */
+} AcousticsCtx;
+
+static inline void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
+{
+  f[0] = ctx->c*ctx->z*u[1];
+  f[1] = ctx->c/ctx->z*u[0];
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysicsCharacteristic_Acoustics"
+static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+{
+  AcousticsCtx *phys = (AcousticsCtx*)vctx;
+  PetscReal z = phys->z;
+
+  PetscFunctionBegin;
+  X[0*2+0] = -z;
+  X[0*2+1] = z;
+  X[1*2+0] = 1;
+  X[1*2+1] = 1;
+  Xi[0*2+0] = -1./(2*z);
+  Xi[0*2+1] = 1./2;
+  Xi[1*2+0] = 1./(2*z);
+  Xi[1*2+1] = 1./2;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSample_Acoustics_Initial"
+static PetscErrorCode PhysicsSample_Acoustics_Initial(AcousticsCtx *phys,PetscInt initial,PetscReal xmin,PetscReal xmax,PetscReal x,PetscReal *u)
+{
+  PetscFunctionBegin;
+  switch (initial) {
+  case 0:
+    u[0] = (PetscAbs((x - xmin)/(xmax - xmin) - 0.2) < 0.1) ? 1 : 0.5;
+    u[1] = (PetscAbs((x - xmin)/(xmax - xmin) - 0.7) < 0.1) ? 1 : -0.5;
+    break;
+  case 1:
+    u[0] = cos(3 * 2*PETSC_PI*x/(xmax-xmin));
+    u[1] = exp(-PetscSqr(x - (xmax + xmin)/2) / (2*PetscSqr(0.2*(xmax - xmin)))) - 0.5;
+    break;
+  default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysicsSample_Acoustics"
+static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
+{
+  AcousticsCtx *phys = (AcousticsCtx*)vctx;
+  PetscReal c = phys->c;
+  PetscReal x0a,x0b,u0a[2],u0b[2],tmp[2];
+  PetscReal X[2][2],Xi[2][2];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (bctype) {
+  case FVBC_OUTFLOW:
+    x0a = x+c*t;
+    x0b = x-c*t;
+    break;
+  case FVBC_PERIODIC:
+    x0a = RangeMod(x+c*t,xmin,xmax);
+    x0b = RangeMod(x-c*t,xmin,xmax);
+    break;
+  default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+  }
+  ierr = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0a,u0a);CHKERRQ(ierr);
+  ierr = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0b,u0b);CHKERRQ(ierr);
+  ierr = PhysicsCharacteristic_Acoustics(vctx,2,u,&X[0][0],&Xi[0][0]);CHKERRQ(ierr);
+  tmp[0] = Xi[0][0]*u0a[0] + Xi[0][1]*u0a[1];
+  tmp[1] = Xi[1][0]*u0b[0] + Xi[1][1]*u0b[1];
+  u[0]   = X[0][0]*tmp[0] + X[0][1]*tmp[1];
+  u[1]   = X[1][0]*tmp[0] + X[1][1]*tmp[1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysicsRiemann_Acoustics_Exact"
+static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
+{
+  AcousticsCtx *phys = (AcousticsCtx*)vctx;
+  PetscReal c = phys->c,z = phys->z;
+  PetscReal
+    Al[2][2] = {{-c/2     , c*z/2  },
+                {c/(2*z)  , -c/2   }}, /* Left traveling waves */
+    Ar[2][2] = {{c/2      , c*z/2  },
+                {c/(2*z)  , c/2    }}; /* Right traveling waves */
+
+  PetscFunctionBegin;
+  flux[0] = Al[0][0]*uR[0] + Al[0][1]*uR[1] + Ar[0][0]*uL[0] + Ar[0][1]*uL[1];
+  flux[1] = Al[1][0]*uR[0] + Al[1][1]*uR[1] + Ar[1][0]*uL[0] + Ar[1][1]*uL[1];
+  *maxspeed = c;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysicsCreate_Acoustics"
+static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
+{
+  PetscErrorCode ierr;
+  AcousticsCtx *user;
+  PetscFList rlist = 0,rclist = 0;
+  char rname[256] = "exact",rcname[256] = "characteristic";
+
+  PetscFunctionBegin;
+  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ctx->physics.sample         = PhysicsSample_Acoustics;
+  ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
+  ctx->physics.user           = user;
+  ctx->physics.dof            = 2;
+  ierr = PetscStrallocpy("u",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("v",&ctx->physics.fieldname[1]);CHKERRQ(ierr);
+  user->c = 1;
+  user->z = 1;
+  ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Acoustics_Exact);CHKERRQ(ierr);
+  ierr = ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_Acoustics);CHKERRQ(ierr);
+  ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for linear Acoustics","");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsReal("-physics_acoustics_c","c = sqrt(bulk/rho)","",user->c,&user->c,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_acoustics_z","z = sqrt(bulk*rho)","",user->z,&user->z,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_riemann","Riemann solver","",rlist,rname,rname,sizeof rname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof rcname,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
+  ierr = ReconstructListFind(rclist,rcname,&ctx->physics.characteristic);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&rclist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* --------------------------------- Isothermal Gas Dynamics ----------------------------------- */
 
@@ -1287,6 +1437,7 @@ int main(int argc,char *argv[])
   ierr = PetscFListAdd(&physics,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
   ierr = PetscFListAdd(&physics,"burgers"         ,"",(void(*)(void))PhysicsCreate_Burgers);CHKERRQ(ierr);
   ierr = PetscFListAdd(&physics,"traffic"         ,"",(void(*)(void))PhysicsCreate_Traffic);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&physics,"acoustics"       ,"",(void(*)(void))PhysicsCreate_Acoustics);CHKERRQ(ierr);
   ierr = PetscFListAdd(&physics,"isogas"          ,"",(void(*)(void))PhysicsCreate_IsoGas);CHKERRQ(ierr);
   ierr = PetscFListAdd(&physics,"shallow"         ,"",(void(*)(void))PhysicsCreate_Shallow);CHKERRQ(ierr);
 
