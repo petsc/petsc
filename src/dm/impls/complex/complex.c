@@ -2516,7 +2516,7 @@ PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
 PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm             comm = ((PetscObject) boundary)->comm;
-  DM_Complex             *bd   = (DM_Complex *) boundary->data;
+  DM_Complex          *bd   = (DM_Complex *) boundary->data;
   PetscInt             dim              = 2;
   const PetscBool      createConvexHull = PETSC_FALSE;
   const PetscBool      constrained      = PETSC_FALSE;
@@ -2527,6 +2527,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  if (interpolate) {SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = InitInput_Triangle(&in);CHKERRQ(ierr);
   ierr = InitOutput_Triangle(&out);CHKERRQ(ierr);
@@ -2615,6 +2616,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     for(c = 0; c < numCells; ++c) {
       ierr = DMComplexSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
     }
+    /*  */
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for(c = 0; c < numCells; ++c) {
       /* Should be numCorners, but c89 sucks shit */
@@ -2690,8 +2692,7 @@ PetscErrorCode DMComplexGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
-  /* PetscValidLogicalCollectiveLogical(dm, interpolate, 2); */
-  if (interpolate) {SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+  PetscValidLogicalCollectiveBool(dm, interpolate, 2);
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = DMComplexGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else

@@ -206,7 +206,6 @@ PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool int
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
-  if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
   ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(boundary,dim,2);
   ierr = DMSetType(boundary, DMCOMPLEX);CHKERRQ(ierr);
