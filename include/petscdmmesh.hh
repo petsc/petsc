@@ -33,9 +33,6 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
   // Check for symmetric storage
   isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
-  if (isSymmetric) {
-    ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
-  }
   if (!isShell) {
     PetscInt *dnz, *onz, bsLocal;
 
@@ -63,6 +60,9 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
     ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
 #endif
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+    if (isSymmetric) {
+      ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
