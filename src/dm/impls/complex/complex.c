@@ -3087,8 +3087,6 @@ PetscErrorCode DMComplexCreateDefaultSF(DM dm)
   ierr = DMComplexGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &nroots);CHKERRQ(ierr);
-  ierr = PetscSectionView(gSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /* ierr = PetscSectionGetConstrainedStorageSize(gSection, &nroots);CHKERRQ(ierr); */
   ierr = PetscLayoutCreate(((PetscObject) dm)->comm, &layout);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
@@ -3137,7 +3135,6 @@ PetscErrorCode DMComplexCreateDefaultSF(DM dm)
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(mesh->sfDefault, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFView(mesh->sfDefault, PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
