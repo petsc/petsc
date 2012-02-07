@@ -1064,7 +1064,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscInt           lpStart, lpEnd;
   PetscInt           numRanks;
   const PetscInt    *ranks, *rankOffsets;
-  PetscInt           numRoots, numPoints, numIndices = 0;
+  PetscInt           numRoots, numSectionRoots, numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
   PetscInt           i, r, ind;
@@ -1073,6 +1073,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscFunctionBegin;
   ierr = PetscSFCreate(comm, sectionSF);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(rootSection, &numSectionRoots);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &numRoots, &numPoints, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots < 0) {PetscFunctionReturn(0);}
   for(i = 0; i < numPoints; ++i) {
@@ -1133,6 +1134,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   }
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (numIndices != ind) {SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
-  ierr = PetscSFSetGraph(*sectionSF, PETSC_DETERMINE, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

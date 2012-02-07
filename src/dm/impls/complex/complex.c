@@ -2443,7 +2443,9 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
     PetscSFNode    *remotePoints;
     PetscInt       *rowners, *lowners, *ghostPoints;
     PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp;
+    PetscInt        pStart, pEnd;
 
+    ierr = DMComplexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
     for(p = 0; p < numRoots*2; ++p) {
@@ -2475,7 +2477,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
       }
     }
     ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(pmesh->sf, PETSC_DETERMINE, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(pmesh->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions(pmesh->sf);CHKERRQ(ierr);
   }
   /* Cleanup */
