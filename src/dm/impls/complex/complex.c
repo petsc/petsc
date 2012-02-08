@@ -1654,7 +1654,7 @@ PetscErrorCode DMComplexMeetPoints(DM dm, PetscInt numPoints, const PetscInt poi
     i = 1-i;
   }
   *numCoveringPoints = meetSize;
-  *coveringPoints    = meet[1-i];
+  *coveringPoints    = meet[i];
   PetscFunctionReturn(0);
 }
 
@@ -2662,10 +2662,8 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, &adj);CHKERRQ(ierr);
       numEdges = off[numCells]/2;
-      /* Account for boundary edges */
-      for(c = 0; c < numCells; ++c) {
-        numEdges += 3 - (off[c+1] - off[c]);
-      }
+      /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+      numEdges += 3*numCells - off[numCells];
       /* Create interpolated mesh */
       ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
       ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
@@ -2682,6 +2680,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       for(c = 0, edge = firstEdge; c < numCells; ++c) {
         PetscInt n;
 
+        /* ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr); */
         for(n = off[c]; n < off[c+1]; ++n) {
           PetscInt        cellPair[2] = {c, adj[n]};
           PetscInt        meetSize, e;
@@ -2695,7 +2694,10 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
             const PetscInt *cone;
 
             ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
-            if (((meet[0] == cone[0]) && (meet[1] == cone[1])) || ((meet[0] == cone[1]) && (meet[1] == cone[0]))) {found = PETSC_TRUE;}
+            if (((meet[0] == cone[0]) && (meet[1] == cone[1])) || ((meet[0] == cone[1]) && (meet[1] == cone[0]))) {
+              found = PETSC_TRUE;
+              break;
+            }
           }
           if (!found) {
             ierr = DMComplexSetCone(imesh, edge, meet);CHKERRQ(ierr);
