@@ -41,6 +41,7 @@ struct _p_PetscSF {
   PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
   PetscSFWinLink  wins;         /* List of active windows */
+  PetscBool       degreeknown;  /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;      /* Degree of each of my root vertices */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
   PetscSFSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */

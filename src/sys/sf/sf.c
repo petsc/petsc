@@ -1302,9 +1302,10 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
-  if (sf->degreetmp) {
+  if (!sf->degreeknown) {
     ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
+    sf->degreeknown = PETSC_TRUE;
   }
   *degree = sf->degree;
   PetscFunctionReturn(0);
