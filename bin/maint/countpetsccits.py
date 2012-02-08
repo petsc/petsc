@@ -19,6 +19,7 @@ def main():
     line  = f.readline()
   f.close()
   g = open(os.path.join('src','docs','website','publications','generated_topics.html'),'w')
+  g.write('<base target="_parent" />')
   g.write("<ul>")
   g.write("<li> Publications that have used PETSc "+str(tcount)+" (incomplete)")
   g.write("<ul>")
