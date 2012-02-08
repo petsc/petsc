@@ -299,6 +299,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
     ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
@@ -414,6 +415,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
     for(d = off; d < off+dof-cdof; ++d) {
