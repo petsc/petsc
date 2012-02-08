@@ -324,7 +324,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       PetscInt ndof, ncdof;
 
       ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
       for(d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(rootSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
