@@ -159,7 +159,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   Vec                 X, F, B, D, Y;
 
   /* candidate linear combination answers */
-  Vec                 XA, FA, XM, FM;
+  Vec                 XA, FA, XM, FM, FPC;
 
   /* previous iterations to construct the subspace */
   Vec                 *Fdot = ngmres->Fdot;
@@ -248,8 +248,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESComputeFunction(snes, XM, FM);CHKERRQ(ierr);
-      ierr = VecNorm(FM, NORM_2, &fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes->pc, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecCopy(FPC, FM);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes->pc, &fMnorm);CHKERRQ(ierr);
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
