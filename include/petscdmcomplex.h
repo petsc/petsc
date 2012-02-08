@@ -41,8 +41,8 @@ extern PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 extern PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 
-extern PetscErrorCode DMComplexJoinPoints(DM, const PetscInt [], PetscInt *);
 extern PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+extern PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 extern PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, const PetscInt *[]);
 
 extern PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
