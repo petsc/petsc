@@ -976,7 +976,7 @@ PetscErrorCode DMComplexGetConeOrientation(DM dm, PetscInt p, const PetscInt *co
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexSetConeOrientation"
 /*@
-  DMComplexSetCone - Set the orientations on the in-edges for this point in the Sieve DAG
+  DMComplexSetConeOrientation - Set the orientations on the in-edges for this point in the Sieve DAG
 
   Not collective
 
