@@ -433,6 +433,8 @@ extern PetscErrorCode SNESSetDM(SNES,DM);
 extern PetscErrorCode SNESGetDM(SNES,DM*);
 extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
+extern PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
+extern PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
 
 /* Routines for Multiblock solver */
 extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

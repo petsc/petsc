@@ -33,6 +33,14 @@ struct _SNESOps {
   PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 };
 
+typedef struct _SNESRestrictHookLink *SNESRestrictHookLink;
+struct _SNESRestrictHookLink {
+  PetscErrorCode (*runhook)(SNES,SNES,void*);
+  PetscErrorCode (*destroyhook)(SNES,void*);
+  void *ctx;
+  SNESRestrictHookLink next;
+};
+
 /*
    Nonlinear solver context
  */
@@ -66,6 +74,8 @@ struct _p_SNES {
 
   Vec  scaling;                  /* scaling vector */
   void *scaP;                    /* scaling context */
+
+  SNESRestrictHookLink restricthook; /* For transfering auxiliary problem data to coarser grids */
 
   void *precheck;                /* user-defined step-checking context (optional) */
   void *postcheck;               /* user-defined step-checking context (optional) */

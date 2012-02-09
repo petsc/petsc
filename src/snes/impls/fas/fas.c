@@ -734,6 +734,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     /* gotta set up the solution vector for this to work */
     if (!fas->next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_sol);CHKERRQ(ierr);}
     if (!fas->next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_rhs);CHKERRQ(ierr);}
+    ierr = SNESRestrictHooksRun(snes,fas->next);CHKERRQ(ierr);
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
 
