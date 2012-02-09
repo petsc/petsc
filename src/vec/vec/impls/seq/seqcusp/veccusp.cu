@@ -1,4 +1,3 @@
-
 /*
    Implements the sequential cusp vectors.
 */
@@ -77,8 +76,18 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 	  s->array_allocated = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
 	}
 	else {
-	  // In this branch, Petsc owns the ptr and manages the memory
-	  ((Vec_CUSP*)v->spptr)->GPUvector->assignHostMemory(s->array);
+	  // In this branch, Petsc owns the ptr to start, however we want to use
+	  // page locked host memory for faster data transfers. So, a new 
+	  // page-locked buffer is allocated. Then, the old Petsc memory 
+	  // is copied in to the new buffer. Then the old Petsc memory is freed.
+	  // GPUvector owns the new ptr.
+	  ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
+	  PetscScalar * temp = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
+
+	  ierr = PetscMemcpy(temp,s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+	  ierr = PetscFree(s->array);CHKERRQ(ierr);
+	  s->array           = temp;
+	  s->array_allocated = temp;
 	}
 	ierr = WaitForGPU();CHKERRCUSP(ierr);
       }        
@@ -382,8 +391,10 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
 PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices ci)
 {
   PetscFunctionBegin;
-  ci->sendIndices->resetStatusFlag();
-  ci->recvIndices->resetStatusFlag();
+  if (ci->sendIndices)
+    ci->sendIndices->resetStatusFlag();
+  if (ci->recvIndices)
+    ci->recvIndices->resetStatusFlag();
   PetscFunctionReturn(0);
 }
 #endif  
