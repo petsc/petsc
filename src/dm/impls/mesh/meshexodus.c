@@ -288,3 +288,399 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
   *numVertexSets = m->getLabel("VertexSets")->getCapSize();
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateExodusNG"
+/*@C
+  DMMeshCreateExodusNG - Create a Mesh from an ExodusII file.
+
+  Collective on comm
+
+  Input Parameters:
++ comm - The MPI communicator
+- filename - The ExodusII filename
+
+  Output Parameter:
+. dmBody  - The DM object representing the body
+. dmFS    - The DM object representing the face sets or PETSC_NULL
+
+  Face Sets (Side Sets in Exodus terminology) are ignored if dmFS is PETSC_NULL
+
+  Interpolated meshes are not supported.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: MeshCreate() MeshCreateExodus()
+@*/
+PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm,const char filename[],DM *dmBody,DM *dmFS)
+{
+  PetscBool               debug = PETSC_FALSE;
+  PetscMPIInt             numproc,rank;
+  PetscErrorCode          ierr;
+
+  int                     exoid;
+  int                     CPU_word_size = 0;
+  int                     IO_word_size  = 0;
+  int                     num_dim,num_vertices = 0,num_cell = 0;
+  int                     num_cs = 0,num_vs = 0,num_fs = 0;
+  float                   version;
+  char                    title[MAX_LINE_LENGTH+1];
+  char                    buffer[MAX_LINE_LENGTH+1];
+
+  int                    *cs_id;
+  int                     num_cell_in_set,num_vertex_per_cell,num_attr;
+  int                    *cs_connect;
+
+  int                    *vs_id;
+  int                     num_vertex_in_set;
+  int                    *vs_vertex_list;
+  float                  *x,*y,*z;
+  PetscReal              *coords;
+
+  int                    *fs_id;
+  int                     num_face_in_set;
+  int                    *num_vertex_in_face,*fs_vertex_list,*fs_elem_list,*fs_face_list;
+
+  PetscInt                my_num_cells,my_num_vertices;
+  PetscInt                *local_points;
+  ISLocalToGlobalMapping  point_mapping;
+
+
+  DM                      dmBodySeq;
+  PetscInt                f,v,c,f_loc,v_loc,c_loc,fs,vs,cs;
+
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  typedef PETSC_MESH_TYPE::sieve_type     sieve_type;
+  ALE::Obj<PETSC_MESH_TYPE>               meshBody,meshBodySeq,meshFS;
+  ALE::Obj<FlexMesh::sieve_type>          sBody,sFS;
+  ALE::Obj<FlexMesh>                      mBody,mFS;
+  ALE::Obj<PETSC_MESH_TYPE::sieve_type>   sieveBody,sieveFS;
+  std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumberingBody,renumberingFS;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_EXODUSII)
+  ierr = MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&numproc);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-debug",&debug,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = DMMeshCreate(comm,&dmBodySeq);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dmBodySeq,&comm);CHKERRQ(ierr);
+  if (numproc == 1) {
+    *dmBody = dmBodySeq;
+  } else {
+    ierr = DMMeshCreate(comm,dmBody);CHKERRQ(ierr);
+  }
+  meshBodySeq = new PETSC_MESH_TYPE(comm,-1,debug);
+  ierr = DMMeshSetMesh(dmBodySeq,meshBodySeq);CHKERRQ(ierr);
+
+  sieveBody = new PETSC_MESH_TYPE::sieve_type(meshBodySeq->comm(),meshBodySeq->debug());
+  sBody = new FlexMesh::sieve_type(meshBodySeq->comm(),meshBodySeq->debug());
+
+  if (dmFS != PETSC_NULL) {
+    ierr = DMMeshCreate(comm,dmFS);CHKERRQ(ierr);
+    meshFS = new PETSC_MESH_TYPE(comm,-1,debug);
+    ierr = DMMeshSetMesh(*dmFS,meshFS);CHKERRQ(ierr);
+  }
+
+  /*
+    Open EXODUS II file and read basic informations on rank 0,
+    then broadcast to all processors
+  */
+  if (rank == 0) {
+    exoid = ex_open(filename,EX_READ,&CPU_word_size,&IO_word_size,&version);CHKERRQ(!exoid);
+    ierr = ex_get_init(exoid,title,&num_dim,&num_vertices,&num_cell,&num_cs,&num_vs,&num_fs);CHKERRQ(ierr);
+    if (num_cs == 0) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
+    }
+  }
+
+  ierr = MPI_Bcast(&num_dim,1,MPI_INT,0,comm);
+  ierr = MPI_Bcast(&num_cs,1,MPI_INT,0,comm);
+  ierr = MPI_Bcast(&num_vs,1,MPI_INT,0,comm);
+  ierr = MPI_Bcast(&num_fs,1,MPI_INT,0,comm);
+
+  meshBodySeq->setDimension(num_dim);
+  meshFS->setDimension(num_dim-1);
+
+  /*
+    Read cell sets information then broadcast them
+  */
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = meshBodySeq->createLabel("Cell Sets");
+  if (rank == 0) {
+    /*
+      Get cell sets IDs
+    */
+    ierr = PetscMalloc(num_cs*sizeof(int),&cs_id);CHKERRQ(ierr);
+    ierr = ex_get_elem_blk_ids(exoid,cs_id);CHKERRQ(ierr);
+
+    /*
+      Read the cell set connectivity table and build mesh topology
+      EXO standard requires that cells in cell sets be numbered sequentially
+      and be pairwise disjoint.
+    */
+    for (c=0,cs = 0; cs < num_cs; cs++) {
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Building cell set %i\n",cs);CHKERRQ(ierr);
+      }
+      ierr = ex_get_elem_block(exoid,cs_id[cs],buffer,&num_cell_in_set,&num_vertex_per_cell,&num_attr);CHKERRQ(ierr);
+      ierr = PetscMalloc(num_vertex_per_cell*num_cell_in_set*sizeof(int),&cs_connect);CHKERRQ(ierr);
+      ierr = ex_get_elem_conn(exoid,cs_id[cs],cs_connect);CHKERRQ(ierr);
+      /*
+        EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices.
+      */
+      for (v = 0,c_loc = 0; c_loc < num_cell_in_set; c_loc++,c++) {
+        for (v_loc = 0; v_loc < num_vertex_per_cell; v_loc++,v++) {
+          if (debug) {
+            ierr = PetscPrintf(PETSC_COMM_SELF,"[%i]:\tinserting vertex \t%i in cell \t%i local vertex number \t%i\n",
+                               rank,cs_connect[v]+num_cell-1,c,v_loc);CHKERRQ(ierr);
+          }
+          sBody->addArrow(sieve_type::point_type(cs_connect[v]+num_cell-1),
+                          sieve_type::point_type(c),
+                          v_loc);
+        }
+        meshBodySeq->setValue(cellSets,c,cs_id[cs]);
+      }
+      ierr = PetscFree(cs_connect);CHKERRQ(ierr);
+    }
+  }
+  /*
+    We do not interpolate and know that the numbering is compact (this is required in exo)
+    so no need to renumber (renumber = false)
+  */
+  ALE::ISieveConverter::convertSieve(*sBody,*sieveBody,renumberingBody,false);
+  meshBodySeq->setSieve(sieveBody);
+  meshBodySeq->stratify();
+  mBody = new FlexMesh(meshBodySeq->comm(),meshBodySeq->debug());
+  ALE::ISieveConverter::convertOrientation(*sBody,*sieveBody,renumberingBody,mBody->getArrowSection("orientation").ptr());
+
+  /*
+    Create Vertex set label
+  */
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = meshBodySeq->createLabel("Vertex Sets");
+  if (num_vs >0) {
+    if (rank == 0) {
+      /*
+        Get vertex set ids
+      */
+      ierr = PetscMalloc(num_vs*sizeof(int),&vs_id);
+      ierr = ex_get_node_set_ids(exoid,vs_id);CHKERRQ(ierr);
+      for (vs = 0; vs < num_vs; vs++) {
+        ierr = ex_get_node_set_param(exoid,vs_id[vs],&num_vertex_in_set,&num_attr);CHKERRQ(ierr);
+        ierr = PetscMalloc(num_vertex_in_set * sizeof(int),&vs_vertex_list);CHKERRQ(ierr);
+        ierr = ex_get_node_set(exoid,vs_id[vs],vs_vertex_list);
+        for (v = 0; v < num_vertex_in_set; v++) {
+          meshBodySeq->addValue(vertexSets,vs_vertex_list[v]+num_cell-1,vs_id[vs]);
+        }
+        ierr = PetscFree(vs_vertex_list);
+      }
+      PetscFree(vs_id);
+    }
+  }
+  /*
+    Read coordinates
+  */
+    ierr = PetscMalloc4(num_vertices,float,&x,
+                        num_vertices,float,&y,
+                        num_vertices,float,&z,
+                        num_dim*num_vertices,PetscReal,&coords);CHKERRQ(ierr);
+  if (rank == 0) {
+    ierr = ex_get_coord(exoid,x,y,z);CHKERRQ(ierr);
+    ierr = PetscMalloc(num_dim*num_vertices * sizeof(PetscReal), &coords);CHKERRQ(ierr);
+    if (num_dim > 0) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+0] = x[v];}}
+    if (num_dim > 1) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+1] = y[v];}}
+    if (num_dim > 2) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+2] = z[v];}}
+  }
+  ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(meshBodySeq,num_dim,coords);
+  if (rank == 0) {
+    ierr = PetscFree4(x,y,z,coords);CHKERRQ(ierr);
+  }
+
+  if (debug) {
+    meshBodySeq->view("meshBodySeq");
+    cellSets->view("Cell Sets");
+    vertexSets->view("Vertex Sets");
+  }
+
+  /*
+    Distribute
+  */
+  if (numproc>1) {
+    ierr = DMMeshCreate(comm,dmBody);CHKERRQ(ierr);
+    ierr = DMMeshDistribute(dmBodySeq,PETSC_NULL,dmBody);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmBodySeq);CHKERRQ(ierr);
+  }
+  ierr = DMMeshGetMesh(*dmBody,meshBody);CHKERRQ(ierr);
+  my_num_cells     = meshBody->heightStratum(0)->size();
+  my_num_vertices = meshBody->depthStratum(0)->size();
+  if (debug) {
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%i]:\t my_num_cells: %i my_num_vertices: %i\n",rank,my_num_cells,my_num_vertices);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  }
+  if(debug) {
+    const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = meshBody->getLabel("Cell Sets");
+    const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = meshBody->getLabel("Vertex Sets");
+    meshBody->view("meshBody");
+    cellSets->view("Cell sets");
+    vertexSets->view("Vertex sets");
+  }
+
+  /*
+    Reading Face Sets (sidesets in exodusII linguo)
+    - if numproc == 1: read face set vertex list and create face set mesh
+    - if numproc > 1: create LocalToGlobalMapping using the renumbering iterator
+                      read face set
+                      broadcast face set
+                      renumber face set, keeping only faces owned by a local element
+                      create face set mesh
+  */
+
+  /*
+    Build LocalToGlobalMapping from the sequential to the distributed mesh
+  */
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& faceSets = meshFS->createLabel("Face Sets");
+  sieveFS = new PETSC_MESH_TYPE::sieve_type(meshFS->comm(),meshFS->debug());
+  sFS = new FlexMesh::sieve_type(meshFS->comm(),meshFS->debug());
+  if (num_fs > 0) {
+
+    FlexMesh::renumbering_type&            renumberingBody2 = meshBody->getRenumbering();
+    if (numproc > 1) {
+      ierr = PetscMalloc((my_num_cells + my_num_vertices) * sizeof(PetscInt),&local_points);CHKERRQ(ierr);
+      for(FlexMesh::renumbering_type::const_iterator r_iter = renumberingBody2.begin(); r_iter != renumberingBody2.end(); ++r_iter) {
+        /*
+          r_iter->first  is a point number in the sequential mesh
+          r_iter->second is the matching local point number in the distributed mesh
+        */
+        local_points[r_iter->second] = r_iter->first;
+      }
+      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,my_num_cells + my_num_vertices,local_points,PETSC_OWN_POINTER,&point_mapping);CHKERRQ(ierr);
+      if (debug) {
+        ierr = ISLocalToGlobalMappingView(point_mapping,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      }
+    }
+
+    /*
+      Build the face set mesh
+    */
+    /*
+      Get face set ids
+    */
+    ierr = PetscMalloc(num_fs*sizeof(int),&fs_id);
+    if (rank == 0) {
+      ierr = ex_get_side_set_ids(exoid,fs_id);CHKERRQ(ierr);
+    }
+    ierr = MPI_Bcast(fs_id,num_fs,MPI_INT,0,comm);
+    int local_face = 0;
+    for (f = 0,fs = 0; fs < num_fs; fs++) {
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Building face set %i\n",fs);CHKERRQ(ierr);
+      }
+      if (rank == 0) {
+        ierr = ex_get_side_set_param(exoid,fs_id[fs],&num_face_in_set,&num_attr);CHKERRQ(ierr);
+        ierr = ex_get_side_set_node_list_len(exoid,fs_id[fs],&num_vertex_in_set);CHKERRQ(ierr);
+      }
+      ierr = MPI_Bcast(&num_face_in_set,1,MPI_INT,0,comm);
+      ierr = MPI_Bcast(&num_vertex_in_set,1,MPI_INT,0,comm);
+      ierr = PetscMalloc4(num_face_in_set,int,&num_vertex_in_face,
+                          num_vertex_in_set,int,&fs_vertex_list,
+                          num_face_in_set,int,&fs_elem_list,
+                          num_face_in_set,int,&fs_face_list);
+      if (rank == 0) {
+        ierr = ex_get_side_set_node_list(exoid,fs_id[fs],num_vertex_in_face,fs_vertex_list);
+        /*
+          num_vertex_in_face[f] is the number of vertices in face f
+          fs_vertex_list is the list of all vertices in the current set (size = sum(num_vertex_in_face))
+        */
+        ierr = ex_get_side_set(exoid,fs_id[fs],fs_elem_list,fs_face_list);
+        /*
+          fs_elem_list[f] is the number of the element owning the face f (in exo numbering)
+          fs_face_list[f] is the local face number of f in element fs_elem_list[f] (unused here)
+        */
+
+        for (v_loc = 0; v_loc < num_face_in_set; v_loc++) {
+          fs_elem_list[v_loc]--;
+        }
+        for (f_loc=0; f_loc < num_vertex_in_set; f_loc++) {
+          fs_vertex_list[f_loc] += num_cell-1;
+        }
+        if (debug) {
+          PetscPrintf(PETSC_COMM_SELF,"fs_elem_list: ");
+          PetscIntView(num_face_in_set,fs_elem_list,PETSC_VIEWER_STDOUT_SELF);
+          PetscPrintf(PETSC_COMM_SELF,"fs_vertex_list: ");
+          PetscIntView(num_vertex_in_set,fs_vertex_list,PETSC_VIEWER_STDOUT_SELF);
+        }
+      }
+      ierr = MPI_Bcast(num_vertex_in_face,num_face_in_set,MPI_INT,0,comm);
+      ierr = MPI_Bcast(fs_vertex_list,num_vertex_in_set,MPI_INT,0,comm);
+      ierr = MPI_Bcast(fs_elem_list,num_face_in_set,MPI_INT,0,comm);
+      ierr = MPI_Bcast(fs_face_list,num_face_in_set,MPI_INT,0,comm);
+
+      /*
+        Converting global cell and vertex numbers into local ones
+      */
+
+      if (numproc > 1) {
+        ierr = ISGlobalToLocalMappingApply(point_mapping,IS_GTOLM_MASK,num_vertex_in_set,fs_vertex_list,PETSC_NULL,fs_vertex_list);
+        ierr = ISGlobalToLocalMappingApply(point_mapping,IS_GTOLM_MASK,num_face_in_set,fs_elem_list,PETSC_NULL,fs_elem_list);
+        if (debug) {
+          PetscPrintf(PETSC_COMM_SELF,"[%i]:\trenumbered fs_elem_list: ",rank);
+          PetscIntView(num_face_in_set,fs_elem_list,PETSC_VIEWER_STDOUT_SELF);
+          PetscPrintf(PETSC_COMM_SELF,"[%i]:\trenumbered fs_vertex_list: ",rank);
+          PetscIntView(num_vertex_in_set,fs_vertex_list,PETSC_VIEWER_STDOUT_SELF);
+        }
+      }
+
+      for (v = 0,f_loc = 0; f_loc < num_face_in_set; f_loc++,f++) {
+        if (fs_elem_list[f_loc] != -1) {
+          for (v_loc = 0; v_loc <  num_vertex_in_face[f_loc]; v_loc++,v++) {
+            if (debug) {
+              ierr = PetscPrintf(PETSC_COMM_SELF,"[%i]:\tinserting vertex \t%i in face \t%i local vertex number \t%i\n",
+                                 rank,fs_vertex_list[v],local_face,v_loc);CHKERRQ(ierr);
+            }
+            sFS->addArrow(sieve_type::point_type(fs_vertex_list[v]),
+                          sieve_type::point_type(local_face),
+                          v_loc);
+          }
+          meshFS->addValue(faceSets,local_face,fs_id[fs]);
+          local_face++;
+        } else {
+          if (debug) {
+            ierr = PetscPrintf(PETSC_COMM_SELF,"[%i]:\t... skipping non-local face %i\n",rank,f_loc);
+          }
+          v += num_vertex_in_face[f_loc];
+        }
+      }
+      ierr = PetscFree4(num_vertex_in_face,fs_vertex_list,fs_elem_list,fs_face_list);
+    }
+    PetscFree(fs_id);
+
+    if (numproc>1) {
+      ierr = ISLocalToGlobalMappingDestroy(&point_mapping);CHKERRQ(ierr);
+    }
+    /*
+      The numbering is NOT compact, but we want to preserve an ordering compatible with that
+      of the body mesh, so we do not renumber (renumber = false)
+    */
+    ALE::ISieveConverter::convertSieve(*sFS,*sieveFS,renumberingFS,false);
+    meshFS->setSieve(sieveFS);
+    meshFS->stratify();
+    mFS = new FlexMesh(meshFS->comm(),meshFS->debug());
+    ALE::ISieveConverter::convertOrientation(*sFS,*sieveFS,renumberingFS,mFS->getArrowSection("orientation").ptr());
+  } else {
+    ALE::ISieveConverter::convertSieve(*sFS,*sieveFS,renumberingFS,false);
+    meshFS->setSieve(sieveFS);
+    meshFS->stratify();
+  }
+  if (debug) {
+    meshFS->view("meshFS");
+    faceSets->view("Face Sets");
+  }
+
+  if (rank == 0) {
+    ierr = ex_close(exoid);CHKERRQ(ierr);
+  }
+#else
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
+#endif
+  PetscFunctionReturn(0);
+}
