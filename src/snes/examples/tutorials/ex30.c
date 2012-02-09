@@ -26,29 +26,32 @@ static char help[] =
 ---------------------------------ex30 help---------------------------------\n";
 
 
-/* ------------------------------------------------------------------------
+/*F-----------------------------------------------------------------------
    
     This PETSc 2.2.0 example by Richard F. Katz
     http://www.ldeo.columbia.edu/~katz/
 
     The problem is modeled by the partial differential equation system
-  
-       (1)   -Grad(P) + Div[Eta (Grad(v) + Grad(v)^T)] = 0
-       (2)                                    Div(U,W) = 0
-       (3)             dT/dt + Div(vT) - 1/Pe Del^2(T) = 0
-       (4)   Eta(T,Eps_dot) = constant                             if ivisc==0
-                            = diffusion creep (T,P-dependent)      if ivisc==1
-        	            = dislocation creep (T,P,v-dependent)  if ivisc==2
-      		            = mantle viscosity (difn & disl)       if ivisc==3
+
+\begin{eqnarray}
+         -\nabla P + \nabla \cdot [\eta (\nabla v + \nabla v^T)] & = & 0  \\
+                                           \nabla \cdot v & = & 0   \\
+                    dT/dt + \nabla \cdot (vT) - 1/Pe \triangle^2(T) & = & 0  \\
+\end{eqnarray}
+
+ \begin{eqnarray}
+        \eta(T,Eps\_dot) &  = & \hbox{constant                        }    \hbox{if ivisc} ==0  \\
+                      &  = & \hbox{diffusion creep (T,P-dependent)    }     \hbox{if ivisc} ==1  \\
+                      &  = & \hbox{dislocation creep (T,P,v-dependent)}  \hbox{if ivisc} ==2  \\
+                      &  = & \hbox{mantle viscosity (difn and disl)   }  \hbox{if ivisc} ==3
+\end{eqnarray}
 
     which is uniformly discretized on a staggered mesh:
-                      -------w_ij------
-                      |               |
-                  u_i-1j    P,T_ij   u_ij
-                      |               |
- 		      ------w_ij-1-----
+                      -------$w_{ij}$------
+                  $u_{i-1j}$    $P,T_{ij}$   $u_{ij}$
+ 		      ------$w_{ij-1}$-----
 
-  ------------------------------------------------------------------------- */
+  ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
 #include <petscdmda.h>
