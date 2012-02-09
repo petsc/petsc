@@ -619,6 +619,7 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   if (fas->upsmooth)   ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth) ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
   if (fas->next)       ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
