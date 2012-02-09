@@ -732,8 +732,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   if (fas->next) {
     /* gotta set up the solution vector for this to work */
-    if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
-    if (!fas->next->vec_rhs) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_rhs);CHKERRQ(ierr);}
+    if (!fas->next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_sol);CHKERRQ(ierr);}
+    if (!fas->next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_rhs);CHKERRQ(ierr);}
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
 
@@ -1047,6 +1047,34 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESFASCreateCoarseVec"
+/*@
+   SNESFASCreateCoarseVec - create Vec corresponding to a state vector on one level coarser than current level
+
+   Collective
+
+   Input Arguments:
+.  snes - SNESFAS
+
+   Output Arguments:
+.  Xcoarse - vector on level one coarser than snes
+
+   Level: developer
+
+.seealso: SNESFASSetRestriction(), SNESFASRestrict()
+@*/
+PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
+{
+  PetscErrorCode ierr;
+  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+
+  PetscFunctionBegin;
+  if (fas->rscale) {ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);}
+  else if (fas->inject) {ierr = MatGetVecs(fas->inject,Xcoarse,PETSC_NULL);CHKERRQ(ierr);}
+  else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define __FUNCT__ "FASCoarseCorrection"
 /*
 
@@ -1074,13 +1102,7 @@ PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
     F_c  = fas->next->vec_func;
     B_c  = fas->next->vec_rhs;
 
-    /* inject the solution */
-    if (fas->inject) {
-      ierr = MatRestrict(fas->inject, X, Xo_c);CHKERRQ(ierr);
-    } else {
-      ierr = MatRestrict(fas->restrct, X, Xo_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
-    }
+    ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
     ierr = VecScale(F, -1.0);CHKERRQ(ierr);
 
     /* restrict the defect */
@@ -1153,13 +1175,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     F_c  = fas->next->vec_func;
     B_c  = fas->next->vec_rhs;
 
-    /* inject the solution */
-    if (fas->inject) {
-      ierr = MatRestrict(fas->inject, Xhat, Xo_c);CHKERRQ(ierr);
-    } else {
-      ierr = MatRestrict(fas->restrct, Xhat, Xo_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
-    }
+    ierr = SNESFASRestrict(snes,Xhat,Xo_c);CHKERRQ(ierr);
     ierr = VecScale(F, -1.0);CHKERRQ(ierr);
 
     /* restrict the defect */

@@ -38,4 +38,6 @@ extern PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
 extern PetscErrorCode SNESFASSetGS(SNES, PetscErrorCode (*)(SNES,Vec,Vec,void *), void *, PetscBool);
 extern PetscErrorCode SNESFASSetGSOnLevel(SNES, PetscInt, PetscErrorCode (*)(SNES,Vec,Vec,void *), void *, PetscBool);
 
+extern PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
+
 #endif
