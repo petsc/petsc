@@ -1075,6 +1075,43 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASRestrict"
+/*@
+   SNESFASRestrict - restrict a Vec to the next coarser level
+
+   Collective
+
+   Input Arguments:
++  fine - SNES from which to restrict
+-  Xfine - vector to restrict
+
+   Output Arguments:
+.  Xcoarse - result of restriction
+
+   Level: developer
+
+.seealso: SNESFASSetRestriction(), SNESFASSetInjection()
+@*/
+PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
+{
+  PetscErrorCode ierr;
+  SNES_FAS       *fas = (SNES_FAS*)fine->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fine,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(Xfine,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Xcoarse,VEC_CLASSID,3);
+  if (fas->inject) {
+    ierr = MatRestrict(fas->inject,Xfine,Xcoarse);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestrict(fas->restrct,Xfine,Xcoarse);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xcoarse,fas->rscale,Xcoarse);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FASCoarseCorrection"
 /*
 
