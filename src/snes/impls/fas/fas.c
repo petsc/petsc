@@ -473,6 +473,7 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   fas->interpolate = mat;
   PetscFunctionReturn(0);
 }
@@ -517,6 +518,7 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   fas->restrct = mat;
   PetscFunctionReturn(0);
 }
@@ -554,6 +556,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   }
   if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
   fas->rscale = rscale;
   PetscFunctionReturn(0);
 }
@@ -593,6 +596,7 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
   }
   if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
   fas->inject = mat;
   PetscFunctionReturn(0);
 }
@@ -920,7 +924,7 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "FAS, levels = %D\n",  fas->levels);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);
-    ierr = PetscViewerASCIIPrintf(viewer, "level: %d\n",  fas->level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "level: %D\n",  fas->level);CHKERRQ(ierr);
     if (fas->upsmooth) {
       ierr = PetscViewerASCIIPrintf(viewer, "up-smoother on level %D:\n",  fas->level);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);
