@@ -119,8 +119,8 @@ PetscErrorCode SNESSolve_GS(SNES snes)
       ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
+      ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     }
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
