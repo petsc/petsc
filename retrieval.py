@@ -75,11 +75,7 @@ Unable to download package %s from: %s
       output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+localFile+' | head -n 1', log = self.log)
       dirname = os.path.normpath(output[0].strip())
     else:
-      import tarfile
-      try:
-        tf  = tarfile.open(os.path.join(root, localFile))
-      except tarfile.ReadError:
-        failureMessage = '''\
+      failureMessage = '''\
 Downloaded package %s from: %s is not a tarball.
 [or installed python cannot process compressed files]
 * If you are behind a firewall - please fix your proxy and rerun ./configure
@@ -88,8 +84,14 @@ Downloaded package %s from: %s is not a tarball.
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
 ''' % (name, url, filename, name.lower(), filename)
+      import tarfile
+      try:
+        tf  = tarfile.open(os.path.join(root, localFile))
+      except tarfile.ReadError:
         raise RuntimeError(failureMessage)
       # some tarfiles list packagename/ but some list packagename/filename in the first entry
+      if not tf: raise RuntimeError(failureMessage)
+      if not tf.firstmember: raise RuntimeError(failureMessage)
       if tf.firstmember.isdir():
         dirname = tf.firstmember.name
       else:
