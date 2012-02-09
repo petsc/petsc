@@ -265,26 +265,28 @@ PetscErrorCode DMCreate_Complex(DM dm)
   ierr = PetscNewLog(dm, DM_Complex, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
-  mesh->dim            = 0;
+  mesh->dim              = 0;
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sf);CHKERRQ(ierr);
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sfDefault);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
-  mesh->maxConeSize    = 0;
-  mesh->cones          = PETSC_NULL;
+  mesh->maxConeSize      = 0;
+  mesh->cones            = PETSC_NULL;
+  mesh->coneOrientations = PETSC_NULL;
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
-  mesh->maxSupportSize = 0;
-  mesh->supports       = PETSC_NULL;
+  mesh->maxSupportSize   = 0;
+  mesh->supports         = PETSC_NULL;
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
-  mesh->refinementLimit = -1.0;
+  mesh->refinementLimit  = -1.0;
 
-  mesh->meetTmpA       = PETSC_NULL;
-  mesh->meetTmpB       = PETSC_NULL;
-  mesh->joinTmpA       = PETSC_NULL;
-  mesh->joinTmpB       = PETSC_NULL;
-  mesh->closureTmpA    = PETSC_NULL;
-  mesh->closureTmpB    = PETSC_NULL;
+  mesh->meetTmpA         = PETSC_NULL;
+  mesh->meetTmpB         = PETSC_NULL;
+  mesh->joinTmpA         = PETSC_NULL;
+  mesh->joinTmpB         = PETSC_NULL;
+  mesh->closureTmpA      = PETSC_NULL;
+  mesh->closureTmpB      = PETSC_NULL;
+  mesh->facesTmp         = PETSC_NULL;
 
   mesh->labels               = PETSC_NULL;
   mesh->defaultSection       = PETSC_NULL;

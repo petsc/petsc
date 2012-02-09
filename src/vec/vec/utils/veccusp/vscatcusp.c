@@ -51,7 +51,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
   sstartsRecvs  = from->starts;
   //printf("%d\t%d\t%d\n",x->map->n,to->local.n,x->valid_GPU_array);
   //if (!x->map->n || (x->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))
-  if (x->valid_GPU_array == PETSC_CUSP_GPU && (nsends>0 || nrecvs>0))
+  if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED && (nsends>0 || nrecvs>0))
   {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;

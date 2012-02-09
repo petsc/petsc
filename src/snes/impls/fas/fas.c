@@ -973,7 +973,7 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
   PetscReal           fnorm, gnorm, ynorm, xnorm = 0.0;
   SNESConvergedReason reason;
   SNES_FAS            *fas = (SNES_FAS *)snes->data;
-  Vec                 G, W, Y;
+  Vec                 G, W, Y, FPC;
   PetscBool           lssuccess;
   PetscInt            k;
   PetscFunctionBegin;
@@ -988,6 +988,8 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
+    ierr = SNESGetFunction(fas->downsmooth, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   } else {
     /* basic richardson smoother */
     for (k = 0; k < fas->max_up_it; k++) {
@@ -1020,7 +1022,7 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
   PetscReal           fnorm, gnorm, ynorm, xnorm = 0.0;
   SNESConvergedReason reason;
   SNES_FAS            *fas = (SNES_FAS *)snes->data;
-  Vec                 G, W, Y;
+  Vec                 G, W, Y, FPC;
   PetscBool           lssuccess;
   PetscInt            k;
   PetscFunctionBegin;
@@ -1035,6 +1037,8 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
+    ierr = SNESGetFunction(fas->upsmooth, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   } else {
     /* basic richardson smoother */
     for (k = 0; k < fas->max_up_it; k++) {
@@ -1079,8 +1083,6 @@ PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
   SNESConvergedReason reason;
   PetscFunctionBegin;
   if (fas->next) {
-    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-
     X_c  = fas->next->vec_sol;
     Xo_c = fas->next->work[0];
     F_c  = fas->next->vec_func;
@@ -1193,7 +1195,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     /* smooth on this level */
     ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
 
-   ierr = SNESGetConvergedReason(fas->next,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(fas->next,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);

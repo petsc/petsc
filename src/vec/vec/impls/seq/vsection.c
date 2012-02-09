@@ -399,7 +399,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscSection *gsection)
 {
   PetscInt      *neg;
-  PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff, nroots;
+  PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

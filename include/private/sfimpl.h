@@ -35,12 +35,13 @@ struct _p_PetscSF {
   PetscSFNode     *remote;      /* Remote references to roots for each local leaf */
   PetscSFNode     *remote_alloc;
   PetscInt        nranks;       /* Number of ranks owning roots connected to my leaves */
-  PetscInt        *ranks;       /* List of ranks referenced by "remote" */
+  PetscMPIInt     *ranks;       /* List of ranks referenced by "remote" */
   PetscInt        *roffset;     /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscMPIInt     *rmine;       /* Concatenated array holding local indices referencing each remote rank */
   PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
   PetscSFWinLink  wins;         /* List of active windows */
+  PetscBool       degreeknown;  /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;      /* Degree of each of my root vertices */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
   PetscSFSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */

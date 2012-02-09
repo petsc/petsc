@@ -635,6 +635,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   ierr = MatCreate(((PetscObject)B)->comm,C);CHKERRQ(ierr);
   ierr = MatSetSizes(*C,m,n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*C,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(*C,PETSC_NULL);CHKERRQ(ierr); 
   ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   (*C)->ops->matmult = MatMatMult_MPIAIJ_MPIDense;
@@ -642,7 +643,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
   /* Create work matrix used to store off processor rows of B needed for local product */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap->N,PETSC_NULL,&contents->workB);CHKERRQ(ierr);
-  /* Create work arrays needed */
+  /* Create work arrays needed */ 
   ierr = PetscMalloc4(B->cmap->N*from->starts[from->n],PetscScalar,&contents->rvalues,
                       B->cmap->N*to->starts[to->n],PetscScalar,&contents->svalues,
                       from->n,MPI_Request,&contents->rwaits,

@@ -42,8 +42,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
       for(c = off; c < off+dof; ++c) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d <---- %d\n", rank, p, mesh->cones[c]);CHKERRQ(ierr);
-        /* ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d <---- %d: %d\n", rank, p, mesh->cones[c], mesh->coneOrientations[c]);CHKERRQ(ierr); */
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d <---- %d (%d)\n", rank, p, mesh->cones[c], mesh->coneOrientations[c]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -58,11 +57,10 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    ierr = DMComplexGetLabelSize(dm, "depth", &locDepth);CHKERRQ(ierr);
+    ierr = DMComplexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
-    ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
-    if (depth == 2) {
+    if (depth == 1) {
       ierr = DMComplexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
@@ -130,6 +128,7 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscSFDestroy(&mesh->sfDefault);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->coneSection);CHKERRQ(ierr);
   ierr = PetscFree(mesh->cones);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->coneOrientations);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->supportSection);CHKERRQ(ierr);
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->coordSection);CHKERRQ(ierr);
@@ -137,6 +136,7 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->closureTmpA,mesh->closureTmpB);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   while(next) {
     SieveLabel tmp;
 
@@ -201,8 +201,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
   PetscInt           pStart, pEnd, numDof, numOwnedDof, numCols;
-  PetscInt          *tmpAdj, *adj, *rootAdj, *cols;
-  PetscInt           maxConeSize, maxSupportSize, maxAdjSize, adjSize;
+  PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols;
+  PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size, debug = 0;
@@ -235,9 +235,11 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   ierr = PetscSectionSetChart(rootSectionAdj, 0, numDof);CHKERRQ(ierr);
   /*   Fill in the ghost dofs on the interface */
   ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  maxAdjSize = maxSupportSize*maxConeSize;
-  ierr = PetscMalloc(maxAdjSize * sizeof(PetscInt), &tmpAdj);CHKERRQ(ierr);
+  maxClosureSize = 2*PetscMax(pow(mesh->maxConeSize, depth)+1, pow(mesh->maxSupportSize, depth)+1);
+  maxAdjSize = pow(mesh->maxConeSize, depth)*pow(mesh->maxSupportSize, depth);
+  ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
   for(l = 0; l < nleaves; ++l) {
     const PetscInt *support;
     PetscInt        supportSize, s;
@@ -298,6 +300,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
     ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
@@ -324,7 +327,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       PetscInt ndof, ncdof;
 
       ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
       for(d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(rootSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
@@ -413,6 +416,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
     for(d = off; d < off+dof-cdof; ++d) {
@@ -427,7 +431,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   ierr = PetscSectionCreate(comm, &sectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionAdj, 0, numOwnedDof);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
-    const PetscInt *support;
+    const PetscInt *support = tmpClosure;
     PetscInt        supportSize, s;
     PetscInt        numAdj = 0, dof, cdof, off, goff, d, q;
     PetscBool       found = PETSC_TRUE;
@@ -450,15 +454,26 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
+#define USE_TRANS
+#ifdef USE_TRANS
+    ierr = DMComplexGetTransitiveClosure(dm, p, PETSC_FALSE, &supportSize, (PetscInt **) &support);CHKERRQ(ierr);
+    for(s = 2; s < supportSize*2; s += 2) {
+#else
     ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
     ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
     for(s = 0; s < supportSize; ++s) {
+#endif
       const PetscInt *cone;
       PetscInt        coneSize, c;
 
+#ifdef USE_TRANS
+      ierr = DMComplexGetTransitiveClosure(dm, support[s], PETSC_TRUE, &coneSize, (PetscInt **) &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize*2; c += 2) {
+#else
       ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
       ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
       for(c = 0; c < coneSize; ++c) {
+#endif
         for(q = 0; q < numAdj; ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
@@ -492,7 +507,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
   ierr = PetscMalloc(numCols * sizeof(PetscInt), &cols);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
-    const PetscInt *support;
+    const PetscInt *support = tmpClosure;
     PetscInt        supportSize, s;
     PetscInt        numAdj = 0, dof, cdof, off, goff, d, q;
     PetscBool       found = PETSC_TRUE;
@@ -518,15 +533,25 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
+#ifdef USE_TRANS
+    ierr = DMComplexGetTransitiveClosure(dm, p, PETSC_FALSE, &supportSize, (PetscInt **) &support);CHKERRQ(ierr);
+    for(s = 2; s < supportSize*2; s += 2) {
+#else
     ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
     ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
     for(s = 0; s < supportSize; ++s) {
+#endif
       const PetscInt *cone;
       PetscInt        coneSize, c;
 
+#ifdef USE_TRANS
+      ierr = DMComplexGetTransitiveClosure(dm, support[s], PETSC_TRUE, &coneSize, (PetscInt **) &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize*2; c += 2) {
+#else
       ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
       ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
       for(c = 0; c < coneSize; ++c) {
+#endif
         for(q = 0; q < numAdj; ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
@@ -558,6 +583,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       if (i != adof) {SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %d != %d for dof %d (point %d)", i, adof, d, p);}
     }
   }
+  ierr = PetscFree2(tmpClosure, tmpAdj);CHKERRQ(ierr);
   /* Create allocation vectors from adjacency graph */
   ierr = MatGetLocalSize(A, &locRows, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(((PetscObject) A)->comm, &rLayout);CHKERRQ(ierr);
@@ -933,6 +959,92 @@ PetscErrorCode DMComplexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexGetConeOrientation"
+/*@C
+  DMComplexGetConeOrientation - Return the orientations on the in-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMComplex
+- p - The Sieve point, which must lie in the chart set with DMComplexSetChart()
+
+  Output Parameter:
+. coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
+                    integer giving the prescription for cone traversal. If it is negative, the cone is
+                    traversed in the opposite direction. Its value 'o', or if negative '-(o+1)', gives
+                    the index of the cone point on which to start.
+
+  Level: beginner
+
+  Note:
+  This routine is not available in Fortran.
+
+.seealso: DMComplexCreate(), DMComplexGetCone(), DMComplexSetCone(), DMComplexSetChart()
+@*/
+PetscErrorCode DMComplexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coneOrientation, 3);
+  ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
+  *coneOrientation = &mesh->coneOrientations[off];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexSetConeOrientation"
+/*@
+  DMComplexSetConeOrientation - Set the orientations on the in-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMComplex
+. p - The Sieve point, which must lie in the chart set with DMComplexSetChart()
+- coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
+                    integer giving the prescription for cone traversal. If it is negative, the cone is
+                    traversed in the opposite direction. Its value 'o', or if negative '-(o+1)', gives
+                    the index of the cone point on which to start.
+
+  Output Parameter:
+
+  Note:
+  This should be called after all calls to DMComplexSetConeSize() and DMSetUp().
+
+  Level: beginner
+
+.seealso: DMComplexCreate(), DMComplexGetConeOrientation(), DMComplexSetCone(), DMComplexSetChart(), DMComplexSetConeSize(), DMSetUp()
+@*/
+PetscErrorCode DMComplexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOrientation[])
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       pStart, pEnd;
+  PetscInt       dof, off, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coneOrientation, 3);
+  ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
+  if ((p < pStart) || (p >= pEnd)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %d is not in the valid range [%d, %d)", p, pStart, pEnd);}
+  for(c = 0; c < dof; ++c) {
+    PetscInt cdof, o = coneOrientation[c];
+
+    ierr = PetscSectionGetDof(mesh->coneSection, mesh->cones[off+c], &cdof);CHKERRQ(ierr);
+    if ((o < -(cdof+1)) || (o >= cdof)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %d is not in the valid range [%d. %d)", o, -(cdof+1), cdof);}
+    mesh->coneOrientations[off+c] = o;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexInsertCone"
 PetscErrorCode DMComplexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt conePoint)
 {
@@ -1025,50 +1137,140 @@ PetscErrorCode DMComplexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
   Input Parameters:
 + mesh - The DMComplex
 . p - The Sieve point, which must lie in the chart set with DMComplexSetChart()
-- useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
+. useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
+- points - If points is PETSC_NULL on input, internal storage will be returned, otherwise the provided array is used
 
   Output Parameters:
-+ numPoints - The number of points in the closure
-- points - The points
++ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
+- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
 
- Note: THIS SHOULD ALSO RETURN THE POINT ORIENTATIONS
+  Note:
+  If using internal storage (points is PETSC_NULL on input), each call overwrites the last output.
 
   Level: beginner
 
 .seealso: DMComplexCreate(), DMComplexSetCone(), DMComplexSetChart(), DMComplexGetCone()
 @*/
-PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, const PetscInt *points[])
+PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
   DM_Complex     *mesh = (DM_Complex *) dm->data;
-  const PetscInt *tmp;
+  PetscInt       *closure, *fifo;
+  const PetscInt *tmp, *tmpO = PETSC_NULL;
   PetscInt        tmpSize, t;
-  PetscInt        closureSize = 1;
+  PetscInt        closureSize = 2, fifoSize = 0, fifoStart = 0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!mesh->closureTmpA) {
-    PetscInt maxSize = PetscMax(mesh->maxConeSize, mesh->maxSupportSize)+1;
-    /* ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
-    --depth;
-    pow(maxSize, depth)+1; */
+    PetscInt depth, maxSize;
 
+    ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+    maxSize = 2*PetscMax(pow(mesh->maxConeSize, depth)+1, pow(mesh->maxSupportSize, depth)+1);
     ierr = PetscMalloc2(maxSize,PetscInt,&mesh->closureTmpA,maxSize,PetscInt,&mesh->closureTmpB);CHKERRQ(ierr);
   }
-  mesh->closureTmpA[0] = p;
+  closure = *points ? *points : mesh->closureTmpA;
+  fifo    = mesh->closureTmpB;
+  closure[0] = p; closure[1] = 0;
   /* This is only 1-level */
   if (useCone) {
     ierr = DMComplexGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
     ierr = DMComplexGetCone(dm, p, &tmp);CHKERRQ(ierr);
+    ierr = DMComplexGetConeOrientation(dm, p, &tmpO);CHKERRQ(ierr);
   } else {
     ierr = DMComplexGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
     ierr = DMComplexGetSupport(dm, p, &tmp);CHKERRQ(ierr);
   }
-  for(t = 0; t < tmpSize; ++t) {
-    mesh->closureTmpA[closureSize++] = tmp[t];
+  for(t = 0; t < tmpSize; ++t, closureSize += 2, fifoSize += 2) {
+    const PetscInt cp = tmp[t];
+    const PetscInt co = tmpO ? tmpO[t] : 0;
+
+    closure[closureSize]   = cp;
+    closure[closureSize+1] = co;
+    fifo[fifoSize]         = cp;
+    fifo[fifoSize+1]       = co;
   }
-  if (numPoints) *numPoints = closureSize;
-  if (points)    *points    = mesh->closureTmpA;
+  while(fifoSize - fifoStart) {
+    const PetscInt q   = fifo[fifoStart];
+    const PetscInt o   = fifo[fifoStart+1];
+    const PetscInt rev = o >= 0 ? 0 : 1;
+    const PetscInt off = rev ? -(o+1) : o;
+
+    if (useCone) {
+      ierr = DMComplexGetConeSize(dm, q, &tmpSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, q, &tmp);CHKERRQ(ierr);
+      ierr = DMComplexGetConeOrientation(dm, q, &tmpO);CHKERRQ(ierr);
+    } else {
+      ierr = DMComplexGetSupportSize(dm, q, &tmpSize);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, q, &tmp);CHKERRQ(ierr);
+      tmpO = PETSC_NULL;
+    }
+    for(t = 0; t < tmpSize; ++t) {
+      const PetscInt i  = ((rev ? tmpSize-t : t) + off)%tmpSize;
+      const PetscInt cp = tmp[i];
+      const PetscInt co = tmpO ? tmpO[i] : 0;
+      PetscInt       c;
+
+      /* Check for duplicate */
+      for(c = 0; c < closureSize; c += 2) {
+        if (closure[c] == cp) break;
+      }
+      if (c == closureSize) {
+        closure[closureSize]   = cp;
+        closure[closureSize+1] = co;
+        fifo[fifoSize]         = cp;
+        fifo[fifoSize+1]       = co;
+        closureSize += 2;
+        fifoSize    += 2;
+      }
+    }
+    fifoStart += 2;
+  }
+  if (numPoints) *numPoints = closureSize/2;
+  if (points)    *points    = closure;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetFaces"
+/*
+  DMComplexGetFaces - 
+
+  Note: This will only work for cell-vertex meshes.
+*/
+PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+{
+  DM_Complex     *mesh = (DM_Complex *) dm->data;
+  const PetscInt *cone;
+  PetscInt        depth, dim, coneSize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (depth > 1) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Faces can only be returned for cell-vertex meshes.");}
+  if (!mesh->facesTmp) {ierr = PetscMalloc(mesh->maxConeSize*mesh->maxSupportSize * sizeof(PetscInt), &mesh->facesTmp);CHKERRQ(ierr);}
+  ierr = DMComplexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+  ierr = DMComplexGetCone(dm, p, &cone);CHKERRQ(ierr);
+  switch(dim) {
+  case 2:
+    switch(coneSize) {
+    case 3:
+      mesh->facesTmp[0] = cone[0]; mesh->facesTmp[1] = cone[1];
+      mesh->facesTmp[2] = cone[1]; mesh->facesTmp[3] = cone[2];
+      mesh->facesTmp[4] = cone[2]; mesh->facesTmp[5] = cone[0];
+      *numFaces = 3;
+      *faceSize = 2;
+      *faces    = mesh->facesTmp;
+      break;
+    default:
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %d not supported for dimension %", coneSize, dim);
+    }
+    break;
+  default:
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension % not supported", dim);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1114,6 +1316,8 @@ PetscErrorCode DMSetUp_Complex(DM dm)
   ierr = PetscSectionSetUp(mesh->coneSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(mesh->coneSection, &size);CHKERRQ(ierr);
   ierr = PetscMalloc(size * sizeof(PetscInt), &mesh->cones);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(PetscInt), &mesh->coneOrientations);CHKERRQ(ierr);
+  ierr = PetscMemzero(mesh->coneOrientations, size * sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1189,6 +1393,29 @@ PetscErrorCode DMComplexSymmetrize(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetDepth_Private"
+PetscErrorCode DMComplexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
+{
+  PetscInt       d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetLabelValue(dm, "depth", p, &d);CHKERRQ(ierr);
+  if (d < 0) {
+    /* We are guaranteed that the point has a cone since the depth was not yet set */
+    const PetscInt *cone;
+    PetscInt        dCone;
+
+    ierr = DMComplexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    ierr = DMComplexSetDepth_Private(dm, cone[0], &dCone);CHKERRQ(ierr);
+    d    = dCone+1;
+    ierr = DMComplexSetLabelValue(dm, "depth", p, d);CHKERRQ(ierr);
+  }
+  *depth = d;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexStratify"
 /*@
   DMComplexStratify - The Sieve DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
@@ -1228,8 +1455,8 @@ PetscErrorCode DMComplexStratify(DM dm)
   for(p = pStart; p < pEnd; ++p) {
     PetscInt coneSize, supportSize;
 
-    ierr = PetscSectionGetDof(mesh->coneSection, p, &coneSize);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(mesh->supportSection, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
     if (!coneSize && supportSize) {
       ++numRoots;
       ierr = DMComplexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
@@ -1241,14 +1468,19 @@ PetscErrorCode DMComplexStratify(DM dm)
     for(p = pStart; p < pEnd; ++p) {
       PetscInt coneSize, supportSize;
 
-      ierr = PetscSectionGetDof(mesh->coneSection, p, &coneSize);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(mesh->supportSection, p, &supportSize);CHKERRQ(ierr);
+      ierr = DMComplexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
       if (!supportSize && coneSize) {
         ierr = DMComplexSetLabelValue(dm, "depth", p, 1);CHKERRQ(ierr);
       }
     }
   } else {
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Have not yet coded general stratification");
+    /* This might be slow since lookup is not fast */
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt depth;
+
+      ierr = DMComplexSetDepth_Private(dm, p, &depth);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1266,7 +1498,7 @@ PetscErrorCode DMComplexStratify(DM dm)
 - point - The mesh point
 
   Output Parameter:
-. value - The label value for this point, or 0 if the point is not in the label
+. value - The label value for this point, or -1 if the point is not in the label
 
   Level: beginner
 
@@ -1284,7 +1516,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  *value = 0;
+  *value = -1;
   while(next) {
     ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
     if (flg) break;
@@ -1600,13 +1832,48 @@ PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, I
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexJoinPoints"
 /* This is a 1-level join */
-PetscErrorCode DMComplexJoinPoints(DM dm, const PetscInt points[], PetscInt *coveredPoint)
+PetscErrorCode DMComplexJoinPoints(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt      *join[2];
+  PetscInt       joinSize, i = 0;
+  PetscInt       dof, off, p, c, m;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(points, 2);
-  PetscValidPointer(coveredPoint, 3);
-  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not yet supported");
+  PetscValidPointer(numCoveredPoints, 3);
+  PetscValidPointer(coveredPoints, 4);
+  if (!mesh->joinTmpA) {ierr = PetscMalloc2(mesh->maxSupportSize,PetscInt,&mesh->joinTmpA,mesh->maxSupportSize,PetscInt,&mesh->joinTmpB);CHKERRQ(ierr);}
+  join[0] = mesh->joinTmpA; join[1] = mesh->joinTmpB;
+  /* Copy in support of first point */
+  ierr = PetscSectionGetDof(mesh->supportSection, points[0], &dof);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(mesh->supportSection, points[0], &off);CHKERRQ(ierr);
+  for(joinSize = 0; joinSize < dof; ++joinSize) {
+    join[i][joinSize] = mesh->supports[off+joinSize];
+  }
+  /* Check each successive cone */
+  for(p = 1; p < numPoints; ++p) {
+    PetscInt newJoinSize = 0;
+
+    ierr = PetscSectionGetDof(mesh->supportSection, points[p], &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(mesh->supportSection, points[p], &off);CHKERRQ(ierr);
+    for(c = 0; c < dof; ++c) {
+      const PetscInt point = mesh->supports[off+c];
+
+      for(m = 0; m < joinSize; ++m) {
+        if (point == join[i][m]) {
+          join[1-i][newJoinSize++] = point;
+          break;
+        }
+      }
+    }
+    joinSize = newJoinSize;
+    i = 1-i;
+  }
+  *numCoveredPoints = joinSize;
+  *coveredPoints    = join[i];
   PetscFunctionReturn(0);
 }
 
@@ -1671,8 +1938,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
   PetscFunctionBegin;
   /* For parallel partitioning, I think you have to communicate supports */
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
-  --depth;
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd - cStart == 0) {
     if (numVertices) *numVertices = 0;
@@ -2091,8 +2357,8 @@ PetscErrorCode DMComplexCreatePartitionClosure(DM dm, PetscSection pointSection,
     ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p) {
-      PetscInt        point = partArray[offset+p], closureSize;
-      const PetscInt *closure;
+      PetscInt  point   = partArray[offset+p], closureSize, c;
+      PetscInt *closure = PETSC_NULL;
 
       /* TODO Include support for height > 0 case */
       ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -2106,7 +2372,9 @@ PetscErrorCode DMComplexCreatePartitionClosure(DM dm, PetscSection pointSection,
         ierr = PetscFree(partPoints);CHKERRQ(ierr);
         partPoints = tmpPoints;
       }
-      ierr = PetscMemcpy(&partPoints[partSize], closure, closureSize * sizeof(PetscInt));CHKERRQ(ierr);
+      for(c = 0; c < closureSize; ++c) {
+        partPoints[partSize+c] = closure[c*2];
+      }
       partSize += closureSize;
       ierr = PetscSortRemoveDupsInt(&partSize, partPoints);CHKERRQ(ierr);
     }
@@ -2123,13 +2391,15 @@ PetscErrorCode DMComplexCreatePartitionClosure(DM dm, PetscSection pointSection,
     ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p) {
-      PetscInt        point = partArray[offset+p], closureSize;
-      const PetscInt *closure;
+      PetscInt  point   = partArray[offset+p], closureSize, c;
+      PetscInt *closure = PETSC_NULL;
 
       /* TODO Include support for height > 0 case */
       ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* Merge into existing points */
-      ierr = PetscMemcpy(&partPoints[partSize], closure, closureSize * sizeof(PetscInt));CHKERRQ(ierr);
+      for(c = 0; c < closureSize; ++c) {
+        partPoints[partSize+c] = closure[c*2];
+      }
       partSize += closureSize;
       ierr = PetscSortRemoveDupsInt(&partSize, partPoints);CHKERRQ(ierr);
     }
@@ -2656,11 +2926,11 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
     if (interpolate) {
       DM        imesh;
-      PetscInt *off, *adj, *cellConeSizes;
+      PetscInt *off;
       PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
 
       /* Count edges using algorithm from CreateNeighborCSR */
-      ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, &adj);CHKERRQ(ierr);
+      ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
       numEdges = off[numCells]/2;
       /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
       numEdges += 3*numCells - off[numCells];
@@ -2676,50 +2946,65 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
         ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
       }
       ierr = DMSetUp(imesh);CHKERRQ(ierr);
-      ierr = PetscMalloc(numCells * sizeof(PetscInt), &cellConeSizes);CHKERRQ(ierr);
       for(c = 0, edge = firstEdge; c < numCells; ++c) {
-        PetscInt n;
+        const PetscInt *faces;
+        PetscInt        numFaces, faceSize, f;
 
-        /* ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr); */
-        for(n = off[c]; n < off[c+1]; ++n) {
-          PetscInt        cellPair[2] = {c, adj[n]};
-          PetscInt        meetSize, e;
-          const PetscInt *meet;
-          PetscBool       found = PETSC_FALSE;
+        ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (faceSize != 2) {SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %d", faceSize);}
+        for(f = 0; f < numFaces; ++f) {
+          PetscBool found = PETSC_FALSE;
 
-          ierr = DMComplexMeetPoints(*dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
-          if (meetSize != 2) {SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have meet of size %d", meetSize);}
           /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
           for(e = firstEdge; e < edge; ++e) {
             const PetscInt *cone;
 
             ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
-            if (((meet[0] == cone[0]) && (meet[1] == cone[1])) || ((meet[0] == cone[1]) && (meet[1] == cone[0]))) {
+            if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
+                ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
               found = PETSC_TRUE;
               break;
             }
           }
           if (!found) {
-            ierr = DMComplexSetCone(imesh, edge, meet);CHKERRQ(ierr);
-            ierr = DMComplexInsertCone(imesh, cellPair[0], cellConeSizes[cellPair[0]], edge);CHKERRQ(ierr);
-            ierr = DMComplexInsertCone(imesh, cellPair[1], cellConeSizes[cellPair[1]], edge);CHKERRQ(ierr);
+            ierr = DMComplexSetCone(imesh, edge, &faces[f*faceSize]);CHKERRQ(ierr);
             ++edge;
-            ++cellConeSizes[cellPair[0]];
-            ++cellConeSizes[cellPair[1]];
+          }
+          ierr = DMComplexInsertCone(imesh, c, f, e);CHKERRQ(ierr);
+        }
+      }
+      if (edge != firstEdge+numEdges) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %d should be %d", edge-firstEdge, numEdges);}
+      ierr = PetscFree(off);CHKERRQ(ierr);
+      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
+      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
+      mesh = (DM_Complex *) (imesh)->data;
+      for(c = 0; c < numCells; ++c) {
+        const PetscInt *cone, *faces;
+        PetscInt        coneSize, coff, numFaces, faceSize, f;
+
+        ierr = DMComplexGetConeSize(imesh, c, &coneSize);CHKERRQ(ierr);
+        ierr = DMComplexGetCone(imesh, c, &cone);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
+        ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (coneSize != numFaces) {SETERRQ3(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %d for cell %d should be %d", coneSize, c, numFaces);}
+        for(f = 0; f < numFaces; ++f) {
+          const PetscInt *econe;
+          PetscInt        esize;
+
+          ierr = DMComplexGetConeSize(imesh, cone[f], &esize);CHKERRQ(ierr);
+          ierr = DMComplexGetCone(imesh, cone[f], &econe);CHKERRQ(ierr);
+          if (esize != 2) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %d for edge %d should be 2", esize, cone[f]);}
+          if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+            /* Correctly oriented */
+            mesh->coneOrientations[coff+f] = 0;
+          } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+            /* Start at index 1, and reverse orientation */
+            mesh->coneOrientations[coff+f] = -(1+1);
           }
         }
       }
-      ierr = PetscFree(cellConeSizes);CHKERRQ(ierr);
-      if (edge != firstEdge+numEdges) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %d should be %d", edge-firstEdge, numEdges);}
-      /* TODO Need to set cell orientations, get from original mesh */
-      ierr = PetscFree(off);CHKERRQ(ierr);
-      ierr = PetscFree(adj);CHKERRQ(ierr);
-      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
-      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
-      ierr = DMSetFromOptions(imesh);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm = imesh;
-      SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
+      *dm  = imesh;
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {
@@ -2744,10 +3029,245 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
       for(e = 0; e < out.numberofedges; e++) {
         if (out.edgemarkerlist[e]) {
           const PetscInt vertices[2] = {out.edgelist[e*2+0]+numCells, out.edgelist[e*2+1]+numCells};
-          PetscInt       edge;
+          const PetscInt *edges;
+          PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dm, vertices, &edge);CHKERRQ(ierr); /* 1-level join */
-          ierr = DMComplexSetLabelValue(*dm, "marker", edge, out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexJoinPoints(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          if (numEdges != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %d", numEdges);}
+          ierr = DMComplexSetLabelValue(*dm, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+#if 0 /* Do not currently support holes */
+  ierr = DMComplexCopyHoles(*dm, boundary);CHKERRQ(ierr);
+#endif
+  ierr = FiniOutput_Triangle(&out);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexRefine_Triangle"
+PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
+{
+  MPI_Comm             comm = ((PetscObject) dm)->comm;
+  DM_Complex          *mesh = (DM_Complex *) dm->data;
+  PetscInt             dim  = 2;
+  struct triangulateio in;
+  struct triangulateio out;
+  PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth;
+  PetscMPIInt          rank;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = InitInput_Triangle(&in);CHKERRQ(ierr);
+  ierr = InitOutput_Triangle(&out);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  in.numberofpoints = vEnd - vStart;
+  if (in.numberofpoints > 0) {
+    PetscScalar *array;
+
+    ierr = PetscMalloc(in.numberofpoints*dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = VecGetArray(mesh->coordinates, &array);CHKERRQ(ierr);
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt idx = v - vStart;
+      PetscInt       off, d;
+
+      ierr = PetscSectionGetOffset(mesh->coordSection, v, &off);CHKERRQ(ierr);
+      for(d = 0; d < dim; ++d) {
+        in.pointlist[idx*dim + d] = array[off+d];
+      }
+      ierr = DMComplexGetLabelValue(dm, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(mesh->coordinates, &array);CHKERRQ(ierr);
+  }
+  ierr  = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  in.numberofcorners   = 3;
+  in.numberoftriangles = cEnd - cStart;
+  in.trianglearealist  = (double *) maxVolumes;
+  if (in.numberoftriangles > 0) {
+    ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRQ(ierr);
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt idx     = c - cStart;
+      PetscInt      *closure = PETSC_NULL;
+      PetscInt       closureSize;
+
+      ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if ((closureSize != 4) && (closureSize != 7)) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a triangle, %d vertices in closure", closureSize);}
+      for(v = 0; v < 3; ++v) {
+        in.trianglelist[idx*in.numberofcorners + v] = closure[(v+closureSize-3)*2] - vStart;
+      }
+    }
+  }
+#if 0 /* Do not currently support holes */
+  PetscReal *holeCoords;
+  PetscInt   h, d;
+
+  ierr = DMComplexGetHoles(boundary, &in.numberofholes, &holeCords);CHKERRQ(ierr);
+  if (in.numberofholes > 0) {
+    ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRQ(ierr);
+    for(h = 0; h < in.numberofholes; ++h) {
+      for(d = 0; d < dim; ++d) {
+        in.holelist[h*dim+d] = holeCoords[h*dim+d];
+      }
+    }
+  }
+#endif
+  if (!rank) {
+    char args[32];
+
+    /* Take away 'Q' for verbose output */
+    ierr = PetscStrcpy(args, "pqezQra");CHKERRQ(ierr);
+    triangulate(args, &in, &out, PETSC_NULL);
+  }
+  ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.segmentlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
+  ierr = PetscFree(in.trianglelist);CHKERRQ(ierr);
+
+  ierr = DMCreate(comm, dmRefined);CHKERRQ(ierr);
+  ierr = DMSetType(*dmRefined, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(*dmRefined, dim);CHKERRQ(ierr);
+  {
+    DM_Complex    *mesh        = (DM_Complex *) (*dmRefined)->data;
+    const PetscInt numCorners  = 3;
+    const PetscInt numCells    = out.numberoftriangles;
+    const PetscInt numVertices = out.numberofpoints;
+    int           *cells       = out.trianglelist;
+    double        *meshCoords  = out.pointlist;
+    PetscBool      interpolate = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
+    PetscInt       coordSize, c, e;
+    PetscScalar   *coords;
+
+    ierr = DMComplexSetChart(*dmRefined, 0, numCells+numVertices);CHKERRQ(ierr);
+    for(c = 0; c < numCells; ++c) {
+      ierr = DMComplexSetConeSize(*dmRefined, c, numCorners);CHKERRQ(ierr);
+    }
+    ierr = DMSetUp(*dmRefined);CHKERRQ(ierr);
+    for(c = 0; c < numCells; ++c) {
+      /* Should be numCorners, but c89 sucks shit */
+      PetscInt cone[3] = {cells[c*numCorners+0]+numCells, cells[c*numCorners+1]+numCells, cells[c*numCorners+2]+numCells};
+
+      ierr = DMComplexSetCone(*dmRefined, c, cone);CHKERRQ(ierr);
+    }
+    ierr = DMComplexSymmetrize(*dmRefined);CHKERRQ(ierr);
+    ierr = DMComplexStratify(*dmRefined);CHKERRQ(ierr);
+
+    if (interpolate) {
+      DM        imesh;
+      PetscInt *off;
+      PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
+
+      /* Count edges using algorithm from CreateNeighborCSR */
+      ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
+      numEdges = off[numCells]/2;
+      /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+      numEdges += 3*numCells - off[numCells];
+      /* Create interpolated mesh */
+      ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
+      ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
+      ierr = DMComplexSetDimension(imesh, dim);CHKERRQ(ierr);
+      ierr = DMComplexSetChart(imesh, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
+      for(c = 0; c < numCells; ++c) {
+        ierr = DMComplexSetConeSize(imesh, c, numCorners);CHKERRQ(ierr);
+      }
+      for(e = firstEdge; e < firstEdge+numEdges; ++e) {
+        ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
+      }
+      ierr = DMSetUp(imesh);CHKERRQ(ierr);
+      for(c = 0, edge = firstEdge; c < numCells; ++c) {
+        const PetscInt *faces;
+        PetscInt        numFaces, faceSize, f;
+
+        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (faceSize != 2) {SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %d", faceSize);}
+        for(f = 0; f < numFaces; ++f) {
+          PetscBool found = PETSC_FALSE;
+
+          /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
+          for(e = firstEdge; e < edge; ++e) {
+            const PetscInt *cone;
+
+            ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
+            if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
+                ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
+              found = PETSC_TRUE;
+              break;
+            }
+          }
+          if (!found) {
+            ierr = DMComplexSetCone(imesh, edge, &faces[f*faceSize]);CHKERRQ(ierr);
+            ++edge;
+          }
+          ierr = DMComplexInsertCone(imesh, c, f, e);CHKERRQ(ierr);
+        }
+      }
+      if (edge != firstEdge+numEdges) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %d should be %d", edge-firstEdge, numEdges);}
+      ierr = PetscFree(off);CHKERRQ(ierr);
+      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
+      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
+      mesh = (DM_Complex *) (imesh)->data;
+      for(c = 0; c < numCells; ++c) {
+        const PetscInt *cone, *faces;
+        PetscInt        coneSize, coff, numFaces, faceSize, f;
+
+        ierr = DMComplexGetConeSize(imesh, c, &coneSize);CHKERRQ(ierr);
+        ierr = DMComplexGetCone(imesh, c, &cone);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
+        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (coneSize != numFaces) {SETERRQ3(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %d for cell %d should be %d", coneSize, c, numFaces);}
+        for(f = 0; f < numFaces; ++f) {
+          const PetscInt *econe;
+          PetscInt        esize;
+
+          ierr = DMComplexGetConeSize(imesh, cone[f], &esize);CHKERRQ(ierr);
+          ierr = DMComplexGetCone(imesh, cone[f], &econe);CHKERRQ(ierr);
+          if (esize != 2) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %d for edge %d should be 2", esize, cone[f]);}
+          if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+            /* Correctly oriented */
+            mesh->coneOrientations[coff+f] = 0;
+          } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+            /* Start at index 1, and reverse orientation */
+            mesh->coneOrientations[coff+f] = -(1+1);
+          }
+        }
+      }
+      ierr = DMDestroy(dmRefined);CHKERRQ(ierr);
+      *dmRefined  = imesh;
+    }
+    ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+    for(v = numCells; v < numCells+numVertices; ++v) {
+      ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
+    ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    for(v = 0; v < numVertices; ++v) {
+      coords[v*dim+0] = meshCoords[v*dim+0];
+      coords[v*dim+1] = meshCoords[v*dim+1];
+    }
+    ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    for(v = 0; v < numVertices; ++v) {
+      if (out.pointmarkerlist[v]) {
+        ierr = DMComplexSetLabelValue(*dmRefined, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+      }
+    }
+    if (interpolate) {
+      for(e = 0; e < out.numberofedges; e++) {
+        if (out.edgemarkerlist[e]) {
+          const PetscInt vertices[2] = {out.edgelist[e*2+0]+numCells, out.edgelist[e*2+1]+numCells};
+          const PetscInt *edges;
+          PetscInt        numEdges;
+
+          ierr = DMComplexJoinPoints(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          if (numEdges != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %d", numEdges);}
+          ierr = DMComplexSetLabelValue(*dmRefined, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
         }
       }
     }
@@ -2827,14 +3347,38 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 #define __FUNCT__ "DMRefine_Complex"
 PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
+  double        *maxVolumes;
   PetscReal      refinementLimit;
+  PetscInt       cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMComplexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
   if (refinementLimit == 0.0) PetscFunctionReturn(0);
-  SETERRQ(comm, PETSC_ERR_SUP, "Refinement not yet implemented");
-  ierr = DMComplexCreate(comm, dmRefined);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
+  for(c = 0; c < cEnd-cStart; ++c) {
+    maxVolumes[c] = refinementLimit;
+  }
+#ifdef PETSC_HAVE_TRIANGLE
+  ierr = DMComplexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetDepth"
+PetscErrorCode DMComplexGetDepth(DM dm, PetscInt *depth) {
+  PetscInt       d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(depth, 2);
+  ierr = DMComplexGetLabelSize(dm, "depth", &d);CHKERRQ(ierr);
+  *depth = d-1;
   PetscFunctionReturn(0);
 }
 
@@ -3431,7 +3975,7 @@ PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Ma
 */
 PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar *values[]) {
   PetscScalar    *array, *vArray;
-  PetscInt       *points;
+  PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
   PetscInt        numFields, size, numPoints, pStart, pEnd, p, q, f;
@@ -3446,17 +3990,18 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   /* Compress out points not in the section */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = 0, q = 0; p < numPoints; ++p) {
+  for(p = 0, q = 0; p < numPoints*2; p += 2) {
     if ((points[p] >= pStart) && (points[p] < pEnd)) {
-      points[q] = points[p];
+      points[q*2]   = points[p];
+      points[q*2+1] = points[p+1];
       ++q;
     }
   }
   numPoints = q;
-  for(p = 0, size = 0; p < numPoints; ++p) {
+  for(p = 0, size = 0; p < numPoints*2; p += 2) {
     PetscInt dof, fdof;
 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
@@ -3468,7 +4013,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
   }
   ierr = DMGetWorkArray(dm, 2*size, &array);CHKERRQ(ierr);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
-  for(p = 0; p < numPoints; ++p) {
+  for(p = 0; p < numPoints*2; p += 2) {
     PetscInt     dof, off, d;
     PetscScalar *varr;
 
@@ -3612,7 +4157,7 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 #define __FUNCT__ "DMComplexVecSetClosure"
 PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
   PetscScalar    *array;
-  PetscInt       *points;
+  PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
   PetscInt        numFields, numPoints, off, dof, pStart, pEnd, p, q, f;
@@ -3628,17 +4173,18 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   /* Compress out points not in the section */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = 0, q = 0; p < numPoints; ++p) {
+  for(p = 0, q = 0; p < numPoints*2; p += 2) {
     if ((points[p] >= pStart) && (points[p] < pEnd)) {
-      points[q] = points[p];
+      points[q*2]   = points[p];
+      points[q*2+1] = points[p+1];
       ++q;
     }
   }
   numPoints = q;
-  for(p = 0; p < numPoints; ++p) {
+  for(p = 0; p < numPoints*2; p += 2) {
     PetscInt fdof;
 
     for(f = 0; f < numFields; ++f) {
@@ -3650,19 +4196,19 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
   if (numFields) {
     switch(mode) {
     case INSERT_VALUES:
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         updatePointFields_private(section, points[p], offsets, insert, PETSC_FALSE, orientation, values, array);
       } break;
     case INSERT_ALL_VALUES:
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         updatePointFields_private(section, points[p], offsets, insert, PETSC_TRUE,  orientation, values, array);
       } break;
     case ADD_VALUES:
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         updatePointFields_private(section, points[p], offsets, add,    PETSC_FALSE, orientation, values, array);
       } break;
     case ADD_ALL_VALUES:
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         updatePointFields_private(section, points[p], offsets, add,    PETSC_TRUE,  orientation, values, array);
       } break;
     default:
@@ -3671,22 +4217,22 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
   } else {
     switch(mode) {
     case INSERT_VALUES:
-      for(p = 0, off = 0; p < numPoints; ++p, off += dof) {
+      for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, insert, PETSC_FALSE, orientation, &values[off], array);
       } break;
     case INSERT_ALL_VALUES:
-      for(p = 0, off = 0; p < numPoints; ++p, off += dof) {
+      for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, insert, PETSC_TRUE,  orientation, &values[off], array);
       } break;
     case ADD_VALUES:
-      for(p = 0, off = 0; p < numPoints; ++p, off += dof) {
+      for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, add,    PETSC_FALSE, orientation, &values[off], array);
       } break;
     case ADD_ALL_VALUES:
-      for(p = 0, off = 0; p < numPoints; ++p, off += dof) {
+      for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, add,    PETSC_TRUE,  orientation, &values[off], array);
       } break;
@@ -3838,8 +4384,8 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 #define __FUNCT__ "DMComplexMatSetClosure"
 PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, PetscScalar values[], InsertMode mode)
 {
-  DM_Complex     *mesh = (DM_Complex *) dm->data;
-  PetscInt       *points;
+  DM_Complex     *mesh   = (DM_Complex *) dm->data;
+  PetscInt       *points = PETSC_NULL;
   PetscInt       *indices;
   PetscInt        offsets[32];
   PetscInt        orientation = 0;
@@ -3864,17 +4410,18 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %d limited to 32", numFields);}
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, (const PetscInt **) &points);CHKERRQ(ierr);
+  ierr = DMComplexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   /* Compress out points not in the section */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = 0, q = 0; p < numPoints; ++p) {
+  for(p = 0, q = 0; p < numPoints*2; p += 2) {
     if ((points[p] >= pStart) && (points[p] < pEnd)) {
-      points[q] = points[p];
+      points[q*2]   = points[p];
+      points[q*2+1] = points[p+1];
       ++q;
     }
   }
   numPoints = q;
-  for(p = 0, numIndices = 0; p < numPoints; ++p) {
+  for(p = 0, numIndices = 0; p < numPoints*2; p += 2) {
     PetscInt fdof;
 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
@@ -3886,12 +4433,12 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
   }
   ierr = DMGetWorkArray(dm, numIndices, (PetscScalar **) &indices);CHKERRQ(ierr);
   if (numFields) {
-    for(p = 0; p < numPoints; ++p) {
+    for(p = 0; p < numPoints*2; p += 2) {
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
       indicesPointFields_private(section, points[p], globalOff, offsets, PETSC_FALSE, orientation, indices);
     }
   } else {
-    for(p = 0, off = 0; p < numPoints; ++p, off += dof) {
+    for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
       indicesPoint_private(section, points[p], dof, globalOff, PETSC_FALSE, orientation, &indices[off]);
     }

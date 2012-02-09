@@ -25,6 +25,8 @@ extern PetscErrorCode DMComplexGetConeSize(DM, PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexSetConeSize(DM, PetscInt, PetscInt);
 extern PetscErrorCode DMComplexGetCone(DM, PetscInt, const PetscInt *[]);
 extern PetscErrorCode DMComplexSetCone(DM, PetscInt, const PetscInt[]);
+extern PetscErrorCode DMComplexGetConeOrientation(DM, PetscInt, const PetscInt *[]);
+extern PetscErrorCode DMComplexSetConeOrientation(DM, PetscInt, const PetscInt[]);
 extern PetscErrorCode DMComplexGetSupportSize(DM, PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexGetSupport(DM, PetscInt, const PetscInt *[]);
 extern PetscErrorCode DMComplexGetConeSection(DM, PetscSection *);
@@ -41,9 +43,9 @@ extern PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 extern PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 
-extern PetscErrorCode DMComplexJoinPoints(DM, const PetscInt [], PetscInt *);
 extern PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
-extern PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, const PetscInt *[]);
+extern PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+extern PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 
 extern PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
 extern PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
@@ -54,6 +56,7 @@ extern PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMComplexLoad(PetscViewer, DM);
 
 extern PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
+extern PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
 extern PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
