@@ -800,7 +800,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     setupDownload
   which is called only when the package is downloaded (as opposed to being used from a tar file).
   By default this method constructs self.download from the other instance variables as follows:
-    self.download = [self.downloadpath+self.downloadversion+self.downloadext]
+    self.download = [self.downloadpath+self.downloadname+self.downloadversion+self.downloadext]
   Variables self.downloadpath, self.downloadext and self.downloadversion can be set in __init__ or
   using the following hook, which is called at the beginning of setupDownload:
     setupVersion
