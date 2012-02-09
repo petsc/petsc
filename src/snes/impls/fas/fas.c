@@ -67,6 +67,9 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   snes->usesksp             = PETSC_FALSE;
   snes->usespc              = PETSC_FALSE;
 
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
+
   ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
   snes->data                  = (void*) fas;
   fas->level                  = 0;

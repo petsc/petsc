@@ -331,6 +331,9 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
 
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
 

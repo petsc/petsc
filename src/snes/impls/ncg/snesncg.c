@@ -385,6 +385,9 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
 
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
+
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->monitor = PETSC_NULL;

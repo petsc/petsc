@@ -167,6 +167,9 @@ PetscErrorCode SNESCreate_GS(SNES snes)
   snes->usesksp             = PETSC_FALSE;
   snes->usespc              = PETSC_FALSE;
 
+  snes->max_its             = 10000;
+  snes->max_funcs           = 10000;
+
   ierr = PetscNewLog(snes, SNES_GS, &gs);CHKERRQ(ierr);
   snes->data = (void*) gs;
   gs->norms = PETSC_FALSE;

@@ -509,6 +509,9 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data = (void*) ngmres;
   ngmres->msize = 10;
 
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
+
   ngmres->restart_it = 2;
   ngmres->gammaA     = 2.0;
   ngmres->gammaC     = 2.0;
