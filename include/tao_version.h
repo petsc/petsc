@@ -10,7 +10,7 @@
 #define TAO_VERSION_MAJOR    2
 #define TAO_VERSION_MINOR    0
 #define TAO_VERSION_SUBMINOR 0
-#define TAO_PATCH_LEVEL      0
+#define TAO_PATCH_LEVEL      1
 #define TAO_VERSION_(MAJOR,MINOR,SUBMINOR) \
     ((TAO_VERSION_MAJOR == (MAJOR)) &&       \
     (TAO_VERSION_MINOR == (MINOR)) &&       \
