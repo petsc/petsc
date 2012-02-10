@@ -16,7 +16,7 @@ calfun: dfovec.o calfun.f
 runtests: wallclock.o driver.o dfovec.o dfoxs.o tao_chkopts
 	${CLINKER} -o runtests driver.o wallclock.o dfovec.o dfoxs.o ${TAO_LIB} ${PETSC_LIB}
 
-runmatlab: wallclock.o mdriver.o dfovec.o dfoxs.o tao_chkopts
-	${CLINKER} -o runtests mdriver.o wallclock.o dfovec.o dfoxs.o ${TAO_LIB} ${PETSC_LIB}
+runmatlab: wallclock.o mdriver.o dfovec.o dfoxs.o calfun tao_chkopts 
+	${CLINKER} -o runmatlab mdriver.o wallclock.o dfovec.o dfoxs.o ${TAO_LIB} ${PETSC_LIB}
 
 

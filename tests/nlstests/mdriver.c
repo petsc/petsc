@@ -60,11 +60,10 @@ int main(int argc, char **argv)
     FILE *datfile,*parfile;
     double wctime1, wctime2;
     double wctime;
-    double *x,*f;
-    int nprob,n,m,nstart;
-    TaoSolver tao;
+    double *x;
+    int nprob,n,m,nstart,i;
     PetscErrorCode ierr;
-    Vec X,F;
+    Vec X;
 
     PetscInitialize(&argc, &argv, 0,0);
     TaoInitialize(&argc, &argv,0,0);
@@ -82,7 +81,6 @@ int main(int argc, char **argv)
         user.factor = PetscPowScalar(10,nstart);
 	
 	ierr = VecCreateSeq(PETSC_COMM_SELF,n,&X); CHKERRQ(ierr);
-	ierr = VecCreateSeq(PETSC_COMM_SELF,m,&F); CHKERRQ(ierr);
 	ierr = FormStartingPoint(X,&user); CHKERRQ(ierr);
 	printf(" Problem %d: %30s\n",nprob,dfonames[nprob]);
 	printf(" Number of components: %d\n",user.n);
@@ -93,15 +91,16 @@ int main(int argc, char **argv)
 	parfile = fopen("parameters.m","w");
 	fprintf(parfile,"m=%d;\n",user.m);
 	fprintf(parfile,"n=%d;\n",user.n);
+	fprintf(parfile,"np=%d;\n",user.nprob);
 	fprintf(parfile,"X0=[\n");
 	ierr = VecGetArray(X,&x); CHKERRQ(ierr);
 	for (i=0;i<n;i++) {
-	  fprintf(parfile,"%g20.12\n",x[i]);
+	  fprintf(parfile,"%20.12g\n",x[i]);
 	}
-	fprintf(parfile,"];\n");
+	fprintf(parfile,"]';\n");
 	fclose(parfile);
-
-	system("matlab < runpounders.m");
+	ierr = VecDestroy(&X); CHKERRQ(ierr);
+	system("matlab -q < runpounders.m");
 	wallclock_(&wctime2);
 	wctime = wctime2 - wctime1;
 	printf("time = %g\n",wctime);
