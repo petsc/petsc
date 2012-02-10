@@ -31,8 +31,6 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
   PetscInt m = qn->m;
   PetscScalar t;
   PetscInt l = m;
-  
-  Vec         X = snes->vec_sol;
 
   PetscFunctionBegin;
 
@@ -137,9 +135,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   /* initialize the scaling */
   ierr = VecDot(X, F, &fdotf);CHKERRQ(ierr);
-  qn->scaling = fdotf;
+  qn->scaling = PetscRealPart(fdotf);
   ierr = VecDot(F, F, &fdotf);CHKERRQ(ierr);
-  qn->scaling /= fdotf;
+  qn->scaling = qn->scaling / PetscRealPart(fdotf);
 
   /* initialize the search direction as steepest descent */
   ierr = VecCopy(F, D);CHKERRQ(ierr);
@@ -226,7 +224,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = VecDot(dX[k], dD[k], &rhosc);CHKERRQ(ierr);
       rho[k] = 1. / rhosc;
       ierr = VecDot(dD[k], dD[k], &a);CHKERRQ(ierr);
-      qn->scaling = rhosc / a;
+      qn->scaling = PetscRealPart(rhosc) / PetscRealPart(a);
 
       /* general purpose update */
       if (snes->ops->update) {
