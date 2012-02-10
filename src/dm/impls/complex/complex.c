@@ -407,6 +407,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
   }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
   /* Compress indices */
   ierr = PetscSectionSetUp(rootSectionAdj);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
@@ -446,7 +447,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       ierr = PetscSectionGetDof(leafSectionAdj, off+d, &ldof);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(rootSectionAdj, off+d, &rdof);CHKERRQ(ierr);
       if (ldof > 0) {
-        ierr = PetscSectionSetDof(sectionAdj, goff+d, -(ldof+1));CHKERRQ(ierr);
+        /* We do not own this point */
       } else if (rdof > 0) {
         ierr = PetscSectionSetDof(sectionAdj, goff+d, rdof);CHKERRQ(ierr);
       } else {
@@ -463,7 +464,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
     for(s = 0; s < supportSize; ++s) {
 #endif
-      const PetscInt *cone;
+      const PetscInt *cone = PETSC_NULL;
       PetscInt        coneSize, c;
 
 #ifdef USE_TRANS
@@ -522,6 +523,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       ierr = PetscSectionGetDof(leafSectionAdj, off+d, &ldof);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(rootSectionAdj, off+d, &rdof);CHKERRQ(ierr);
       if (ldof > 0) {
+        /* We do not own this point */
       } else if (rdof > 0) {
         PetscInt aoff, roff;
 
@@ -541,7 +543,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
     for(s = 0; s < supportSize; ++s) {
 #endif
-      const PetscInt *cone;
+      const PetscInt *cone = PETSC_NULL;
       PetscInt        coneSize, c;
 
 #ifdef USE_TRANS
@@ -583,7 +585,14 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       if (i != adof) {SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %d != %d for dof %d (point %d)", i, adof, d, p);}
     }
   }
+  ierr = PetscFree(rootAdj);CHKERRQ(ierr);
   ierr = PetscFree2(tmpClosure, tmpAdj);CHKERRQ(ierr);
+  /* Debugging */
+  if (debug) {
+    IS tmp;
+    ierr = ISCreateGeneral(comm, numCols, cols, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
+    ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
+  }
   /* Create allocation vectors from adjacency graph */
   ierr = MatGetLocalSize(A, &locRows, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(((PetscObject) A)->comm, &rLayout);CHKERRQ(ierr);
@@ -630,6 +639,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       ierr = PetscSectionGetOffset(sectionAdj, r, &cStart);CHKERRQ(ierr);
       ierr = MatSetValues(A, 1, &r, numCols, &cols[cStart], values, INSERT_VALUES);CHKERRQ(ierr);
     }
+    ierr = PetscFree(values);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -3642,6 +3652,7 @@ PetscErrorCode DMComplexGetDefaultSF(DM dm, PetscSF *sf) {
   if (nroots < 0) {
     ierr = DMComplexCreateDefaultSF(dm);CHKERRQ(ierr);
   }
+  ierr = PetscSFView(mesh->sfDefault, PETSC_NULL);CHKERRQ(ierr);
   *sf = mesh->sfDefault;
   PetscFunctionReturn(0);
 }
@@ -3769,7 +3780,7 @@ PetscErrorCode DMComplexCreateDefaultSF(DM dm)
     } else {
       for(d = 0; d < dim; ++d, ++l) {
         remote[l].rank  = rank;
-        remote[l].index = goff+d;
+        remote[l].index = goff+d - ranges[rank];
       }
     }
   }
