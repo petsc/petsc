@@ -397,17 +397,86 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   /* Debugging */
   if (debug) {
     IS tmp;
+    ierr = PetscPrintf(comm, "Leaf adjacency indices\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, adj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Gather adjacenct indices to root */
   ierr = PetscSectionGetStorageSize(rootSectionAdj, &adjSize);CHKERRQ(ierr);
   ierr = PetscMalloc(adjSize * sizeof(PetscInt), &rootAdj);CHKERRQ(ierr);
+  for(r = 0; r < adjSize; ++r) {
+    rootAdj[r] = -1;
+  }
   if (size > 1) {
     ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
   }
   ierr = PetscFree(adj);CHKERRQ(ierr);
+  /* Debugging */
+  if (debug) {
+    IS tmp;
+    ierr = PetscPrintf(comm, "Root adjacency indices after gather\n");CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
+    ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
+  }
+  /* Add in local adjacency indices for owned dofs on interface (roots) */
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *support;
+    PetscInt        supportSize, s;
+    PetscInt        numAdj = 0, adof, dof, off, d, q;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    if (!dof) continue;
+    ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
+    if (adof <= 0) continue;
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj; ++q) {
+          if (cone[c] == tmpAdj[q]) break;
+        }
+        if (q == numAdj) {
+          if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%d)", maxAdjSize);}
+          tmpAdj[q] = cone[c];
+          ++numAdj;
+        }
+      }
+    }
+    ierr = PetscSortRemoveDupsInt(&numAdj, tmpAdj);CHKERRQ(ierr);
+    for(d = off; d < off+dof; ++d) {
+      PetscInt adof, aoff, i;
+
+      ierr = PetscSectionGetDof(rootSectionAdj, d, &adof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(rootSectionAdj, d, &aoff);CHKERRQ(ierr);
+      i    = adof-1;
+      for(q = 0; q < numAdj; ++q) {
+        PetscInt ndof, ncdof, ngoff, nd;
+
+        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
+        for(nd = 0; nd < ndof-ncdof; ++nd) {
+          if (ngoff < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid global index %d for root %d", ngoff, d);}
+          rootAdj[aoff+i] = ngoff+nd;
+          --i;
+        }
+      }
+    }
+  }
+  /* Debugging */
+  if (debug) {
+    IS tmp;
+    ierr = PetscPrintf(comm, "Root adjacency indices\n");CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
+    ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
+  }
   /* Compress indices */
   ierr = PetscSectionSetUp(rootSectionAdj);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
@@ -423,9 +492,18 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     for(d = off; d < off+dof-cdof; ++d) {
       ierr = PetscSectionGetDof(rootSectionAdj, d, &adof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(rootSectionAdj, d, &aoff);CHKERRQ(ierr);
-      ierr = PetscSortRemoveDupsInt(&adof, &rootAdj[off]);CHKERRQ(ierr);
+      ierr = PetscSortRemoveDupsInt(&adof, &rootAdj[aoff]);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(rootSectionAdj, d, adof);CHKERRQ(ierr);
     }
+  }
+  /* Debugging */
+  if (debug) {
+    IS tmp;
+    ierr = PetscPrintf(comm, "Adjancency Section for Preallocation on Roots after compression:\n");CHKERRQ(ierr);
+    ierr = PetscSectionView(rootSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Root adjacency indices after compression\n");CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
+    ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Build adjacency section */
   ierr = PetscSectionGetStorageSize(sectionGlobal, &numOwnedDof);CHKERRQ(ierr);
@@ -579,7 +657,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         ierr = PetscSectionGetConstraintIndices(section, tmpAdj[q], &ncind);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
         for(nd = 0; nd < ndof-ncdof; ++nd, ++i) {
-          cols[aoff+i] = ngoff+nd;
+          cols[aoff+i] = ngoff < 0 ? -(-(ngoff+1)+nd+1): ngoff+nd;
         }
       }
       if (i != adof) {SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %d != %d for dof %d (point %d)", i, adof, d, p);}
@@ -590,6 +668,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   /* Debugging */
   if (debug) {
     IS tmp;
+    ierr = PetscPrintf(comm, "Column indices\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, numCols, cols, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
   }
