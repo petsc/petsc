@@ -53,46 +53,6 @@ PetscLogEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
 PetscLogEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscBool  asa_events_registered = PETSC_FALSE;
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCASASetDM"
-/*@C
-    PCASASetDM - Sets the coarse grid information for the grids
-
-    Collective on PC
-
-    Input Parameter:
-+   pc - the context
--   dm - the DM object
-
-    Level: advanced
-
-@*/
-PetscErrorCode  PCASASetDM(PC pc,DM dm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCASASetDM_C",(PC,DM),(pc,dm));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCASASetDM_ASA"
-PetscErrorCode  PCASASetDM_ASA(PC pc, DM dm)
-{
-  PetscErrorCode ierr;
-  PC_ASA         *asa = (PC_ASA *) pc->data;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  asa->dm = dm;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetTolerances"
 /*@C
@@ -1043,10 +1003,11 @@ PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializationStage_ASA"
-PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
+PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       l;
+  PC_ASA         *asa = (PC_ASA*)pc->data;
   PC_ASA_level   *asa_lev, *asa_next_lev;
   PetscRandom    rctx;     /* random number generator context */
 
@@ -1084,8 +1045,8 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->mu_initial);CHKERRQ(ierr);
 
   /* Set DM */
-  asa_lev->dm = asa->dm;
-  ierr = PetscObjectReference((PetscObject)asa->dm);CHKERRQ(ierr);
+  asa_lev->dm = pc->dm;
+  ierr = PetscObjectReference((PetscObject)pc->dm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(asa_lev->comm, "Initialization stage\n");CHKERRQ(ierr);
 
@@ -1649,7 +1610,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     asa->A = pc->pmat;
   }
   /* Initialization stage */
-  ierr = PCInitializationStage_ASA(asa, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCInitializationStage_ASA(pc, PETSC_NULL);CHKERRQ(ierr);
   
   /* get first level */
   asa_lev = asa->levellist;
@@ -1902,8 +1863,6 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
   ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
   ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
 
-  if (asa->dm) {ierr = DMDestroy(&asa->dm);CHKERRQ(ierr);}
-
   /* Destroy each of the levels */
   while(asa_lev) {
     asa_next_level = asa_lev->next;
@@ -2054,7 +2013,6 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   /* Set the data to pointer to 0 */
   pc->data                = (void*)0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetDM_C","PCASASetDM_ASA",PCASASetDM_ASA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
 
   /* register events */
@@ -2109,8 +2067,6 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   asa->x           = 0;
   asa->r           = 0;
 
-  asa->dm = 0;
-  
   asa->levels    = 0;
   asa->levellist = 0;
 

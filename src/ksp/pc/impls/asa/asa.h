@@ -121,9 +121,6 @@ typedef struct {
   Vec        x;                            /* Solution */
   Vec        r;                            /* Residual */
 
-  /* grid information, not sure how to treat unstructured grids yet */
-  DM         dm;                           /* Grid information about the layout */
-
   /* the actual levels */
   PetscInt   levels;                       /* number of active levels used */
   PC_ASA_level *levellist;                 /* linked list of all levels */
