@@ -18,7 +18,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   int   CPU_word_size = 0, IO_word_size = 0;
   const PetscMPIInt rank = mesh->commRank();
   float version;
-  char  title[MAX_LINE_LENGTH+1], elem_type[MAX_STR_LENGTH+1];
+  char  title[PETSC_MAX_PATH_LEN+1], elem_type[PETSC_MAX_PATH_LEN+1];
   int   num_dim, num_nodes, num_elem, num_elem_blk, num_node_sets, num_side_sets;
   int   ierr;
 
@@ -41,7 +41,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     ierr = PetscMalloc5(num_elem_blk,int,&eb_ids,num_elem_blk,int,&num_elem_in_block,num_elem_blk,int,&num_nodes_per_elem,num_elem_blk,int,&num_attr,num_elem_blk,char*,&block_names);CHKERRQ(ierr);
     ierr = ex_get_elem_blk_ids(exoid, eb_ids);CHKERRQ(ierr);
     for(int eb = 0; eb < num_elem_blk; ++eb) {
-      ierr = PetscMalloc((MAX_STR_LENGTH+1) * sizeof(char), &block_names[eb]);CHKERRQ(ierr);
+      ierr = PetscMalloc((PETSC_MAX_PATH_LEN+1) * sizeof(char), &block_names[eb]);CHKERRQ(ierr);
     }
     ierr = ex_get_names(exoid, EX_ELEM_BLOCK, block_names);CHKERRQ(ierr);
     for(int eb = 0; eb < num_elem_blk; ++eb) {
@@ -313,7 +313,7 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
 .keywords: mesh,ExodusII
 .seealso: MeshCreate() MeshCreateExodus()
 @*/
-PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm,const char filename[],DM *dmBody,DM *dmFS)
+PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmBody, DM *dmFS)
 {
   PetscBool               debug = PETSC_FALSE;
   PetscMPIInt             numproc,rank;
@@ -325,8 +325,8 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm,const char filename[],DM *dmBo
   int                     num_dim,num_vertices = 0,num_cell = 0;
   int                     num_cs = 0,num_vs = 0,num_fs = 0;
   float                   version;
-  char                    title[MAX_LINE_LENGTH+1];
-  char                    buffer[MAX_LINE_LENGTH+1];
+  char                    title[PETSC_MAX_PATH_LEN+1];
+  char                    buffer[PETSC_MAX_PATH_LEN+1];
 
   int                    *cs_id;
   int                     num_cell_in_set,num_vertex_per_cell,num_attr;
