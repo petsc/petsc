@@ -175,10 +175,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
 
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-    snes->iter = i + 1;
-    snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);
+    ierr = SNESSetFunctionNorm(snes, fnorm);CHKERRQ(ierr);
+
     SNESLogConvHistory(snes,snes->norm,snes->iter);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* set parameter for default relative tolerance convergence test */

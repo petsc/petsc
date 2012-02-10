@@ -155,7 +155,9 @@ extern PetscErrorCode  SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,Pets
 extern PetscErrorCode  SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 extern PetscErrorCode  SNESSetTrustRegionTolerance(SNES,PetscReal);
 extern PetscErrorCode  SNESGetFunctionNorm(SNES,PetscReal*);
+extern PetscErrorCode  SNESSetFunctionNorm(SNES,PetscReal);
 extern PetscErrorCode  SNESGetIterationNumber(SNES,PetscInt*);
+extern PetscErrorCode  SNESSetIterationNumber(SNES,PetscInt);
 
 extern PetscErrorCode  SNESGetNonlinearStepFailures(SNES,PetscInt*);
 extern PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
