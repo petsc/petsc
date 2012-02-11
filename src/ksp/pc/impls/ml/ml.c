@@ -539,9 +539,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
 
   PetscFunctionBegin;
-  /* Since PCMG tries to use DM assocated with PC must delete it */
-  ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
-
   A = pc->pmat;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
 

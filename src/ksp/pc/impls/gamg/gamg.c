@@ -1513,14 +1513,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   }
   
   /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
+  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
-  {
-    PetscBool galerkin;
-    ierr = PCMGGetGalerkin( pc,  &galerkin); CHKERRQ(ierr);
-    if(galerkin){
-      SETERRQ(wcomm,PETSC_ERR_ARG_WRONG, "GAMG does galerkin manually so it must not be used in PC_MG.");
-    }
-  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (mg->galerkin != 2) SETERRQ(wcomm,PETSC_ERR_USER,"GAMG does Galerkin manually so the -pc_mg_galerkin option must not be used.");
 
   /* set interpolation between the levels, clean up */  
   for (lidx=0,level=pc_gamg->Nlevels-1;
@@ -1965,6 +1961,7 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog( pc, PC_GAMG, &pc_gamg ); CHKERRQ(ierr);
   mg = (PC_MG*)pc->data;
+  mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
   mg->innerctx = pc_gamg;
 
   pc_gamg->setup_count = 0;

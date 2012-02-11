@@ -505,7 +505,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
-  if (pc->dm && !pc->setupcalled) {
+  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. */
+  if (pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
@@ -530,8 +531,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
+  }
 
-    /* finest smoother also gets DM but it is not active */
+  if (pc->dm && !pc->setupcalled) {
+    /* finest smoother also gets DM but it is not active, independent of whether galerkin==2 */
     ierr = KSPSetDM(mglevels[n-1]->smoothd,pc->dm);CHKERRQ(ierr);
     ierr = KSPSetDMActive(mglevels[n-1]->smoothd,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -556,7 +559,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
         dB   = B;
       }
     }
-  } else if (pc->dm && pc->dm->x) {
+  } else if (!mg->galerkin && pc->dm && pc->dm->x) {
     /* need to restrict Jacobian location to coarser meshes for evaluation */
     for (i=n-2;i>-1; i--) {
       Mat R;
