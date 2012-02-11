@@ -982,15 +982,22 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     ierr = PetscSFComputeDegreeEnd(sf,&indegree);CHKERRQ(ierr);
     ierr = PetscMalloc3(sf->nroots+1,PetscInt,&inoffset,sf->nleaves,PetscInt,&outones,sf->nleaves,PetscInt,&outoffset);CHKERRQ(ierr);
     inoffset[0] = 0;
+#if 1
+    for (i=0; i<sf->nroots; i++) inoffset[i] = i;
+    if (sf->nroots) {inoffset[sf->nroots] = sf->nroots-1 + indegree[sf->nroots-1];}
+#else
     for (i=0; i<sf->nroots; i++) inoffset[i+1] = inoffset[i] + indegree[i];
+#endif
     for (i=0; i<sf->nleaves; i++) outones[i] = 1;
     ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
+#if 0
 #if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
     for (i=0; i<sf->nroots; i++) {
       if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
     }
+#endif
 #endif
     ierr = PetscMalloc(sf->nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
