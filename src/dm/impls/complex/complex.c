@@ -462,8 +462,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
         for(nd = 0; nd < ndof-ncdof; ++nd) {
-          if (ngoff < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid global index %d for root %d", ngoff, d);}
-          rootAdj[aoff+i] = ngoff+nd;
+          rootAdj[aoff+i] = ngoff < 0 ? -(ngoff+1)+nd: ngoff+nd;
           --i;
         }
       }
@@ -3015,13 +3014,15 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     if (interpolate) {
       DM        imesh;
       PetscInt *off;
-      PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
+      PetscInt  firstEdge = numCells+numVertices, numEdges = 0, edge, e;
 
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
-      numEdges = off[numCells]/2;
-      /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
-      numEdges += 3*numCells - off[numCells];
+      if (off) {
+        numEdges = off[numCells]/2;
+        /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+        numEdges += 3*numCells - off[numCells];
+      }
       /* Create interpolated mesh */
       ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
       ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);

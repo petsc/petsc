@@ -6,6 +6,7 @@
 #define __FUNCT__ "DMSetFromOptions_Complex"
 PetscErrorCode  DMSetFromOptions_Complex(DM dm)
 {
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -14,6 +15,7 @@ PetscErrorCode  DMSetFromOptions_Complex(DM dm)
     /* Handle DMComplex refinement */
     /* Handle associated vectors */
     /* Handle viewing */
+    ierr = PetscOptionsBool("-dm_complex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
