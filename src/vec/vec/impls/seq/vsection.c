@@ -1062,8 +1062,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
   PetscInt           lpStart, lpEnd;
-  PetscInt           numRanks;
-  const PetscInt    *ranks, *rankOffsets;
   PetscInt           numRoots, numSectionRoots, numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
@@ -1112,23 +1110,20 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   }
   /* Create new index graph */
-  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  for(r = 0, ind = 0; r < numRanks; ++r) {
-    PetscInt rank = ranks[r];
+  for(i = 0, ind = 0; i < numPoints; ++i) {
+    PetscInt localPoint = localPoints ? localPoints[i] : i;
+    PetscInt rank       = remotePoints[i].rank;
 
-    for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
-      PetscInt localPoint   = localPoints ? localPoints[i] : i;
+    if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
+      PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
+      PetscInt loff, dof, d;
 
-      if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
-        PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
-        PetscInt localOffset, dof, d;
-        ierr = PetscSectionGetOffset(leafSection, localPoint, &localOffset);CHKERRQ(ierr);
-        ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
-        for(d = 0; d < dof; ++d, ++ind) {
-          localIndices[ind]        = localOffset+d;
-          remoteIndices[ind].rank  = rank;
-          remoteIndices[ind].index = remoteOffset+d;
-        }
+      ierr = PetscSectionGetOffset(leafSection, localPoint, &loff);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d, ++ind) {
+        localIndices[ind]        = loff+d;
+        remoteIndices[ind].rank  = rank;
+        remoteIndices[ind].index = remoteOffset+d;
       }
     }
   }
