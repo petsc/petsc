@@ -210,7 +210,6 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) debug = 1;
   /* Create dof SF based on point SF */
   if (debug) {
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
@@ -657,7 +656,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         ierr = PetscSectionGetConstraintIndices(section, tmpAdj[q], &ncind);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
         for(nd = 0; nd < ndof-ncdof; ++nd, ++i) {
-          cols[aoff+i] = ngoff < 0 ? -(-(ngoff+1)+nd+1): ngoff+nd;
+          cols[aoff+i] = ngoff < 0 ? -(ngoff+1)+nd: ngoff+nd;
         }
       }
       if (i != adof) {SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %d != %d for dof %d (point %d)", i, adof, d, p);}
@@ -3731,7 +3730,6 @@ PetscErrorCode DMComplexGetDefaultSF(DM dm, PetscSF *sf) {
   if (nroots < 0) {
     ierr = DMComplexCreateDefaultSF(dm);CHKERRQ(ierr);
   }
-  ierr = PetscSFView(mesh->sfDefault, PETSC_NULL);CHKERRQ(ierr);
   *sf = mesh->sfDefault;
   PetscFunctionReturn(0);
 }
@@ -3958,7 +3956,7 @@ PetscErrorCode  DMGlobalToLocalEnd_Complex(DM dm, Vec g, InsertMode mode, Vec l)
   ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4067,7 +4065,6 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
   PetscScalar    *array, *vArray;
   PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
-  PetscInt        orientation = 0;
   PetscInt        numFields, size, numPoints, pStart, pEnd, p, q, f;
   PetscErrorCode  ierr;
 
@@ -4104,6 +4101,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
   ierr = DMGetWorkArray(dm, 2*size, &array);CHKERRQ(ierr);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for(p = 0; p < numPoints*2; p += 2) {
+    PetscInt     o = points[p+1];
     PetscInt     dof, off, d;
     PetscScalar *varr;
 
@@ -4115,7 +4113,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
 
       for(f = 0, foff = 0; f < numFields; ++f) {
         ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
-        if (orientation >= 0) {
+        if (o >= 0) {
           for(d = 0; d < fdof; ++d, ++offsets[f]) {
             array[offsets[f]] = varr[foff+d];
           }
@@ -4130,7 +4128,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
         foff += fdof;
       }
     } else {
-      if (orientation >= 0) {
+      if (o >= 0) {
         for(d = 0; d < dof; ++d, ++offsets[0]) {
           array[offsets[0]] = varr[d];
         }
@@ -4249,7 +4247,6 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
   PetscScalar    *array;
   PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
-  PetscInt        orientation = 0;
   PetscInt        numFields, numPoints, off, dof, pStart, pEnd, p, q, f;
   PetscErrorCode  ierr;
 
@@ -4287,19 +4284,23 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
     switch(mode) {
     case INSERT_VALUES:
       for(p = 0; p < numPoints*2; p += 2) {
-        updatePointFields_private(section, points[p], offsets, insert, PETSC_FALSE, orientation, values, array);
+        PetscInt o = points[p+1];
+        updatePointFields_private(section, points[p], offsets, insert, PETSC_FALSE, o, values, array);
       } break;
     case INSERT_ALL_VALUES:
       for(p = 0; p < numPoints*2; p += 2) {
-        updatePointFields_private(section, points[p], offsets, insert, PETSC_TRUE,  orientation, values, array);
+        PetscInt o = points[p+1];
+        updatePointFields_private(section, points[p], offsets, insert, PETSC_TRUE,  o, values, array);
       } break;
     case ADD_VALUES:
       for(p = 0; p < numPoints*2; p += 2) {
-        updatePointFields_private(section, points[p], offsets, add,    PETSC_FALSE, orientation, values, array);
+        PetscInt o = points[p+1];
+        updatePointFields_private(section, points[p], offsets, add,    PETSC_FALSE, o, values, array);
       } break;
     case ADD_ALL_VALUES:
       for(p = 0; p < numPoints*2; p += 2) {
-        updatePointFields_private(section, points[p], offsets, add,    PETSC_TRUE,  orientation, values, array);
+        PetscInt o = points[p+1];
+        updatePointFields_private(section, points[p], offsets, add,    PETSC_TRUE,  o, values, array);
       } break;
     default:
       SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
@@ -4308,23 +4309,27 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
     switch(mode) {
     case INSERT_VALUES:
       for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-        updatePoint_private(section, points[p], dof, insert, PETSC_FALSE, orientation, &values[off], array);
+        updatePoint_private(section, points[p], dof, insert, PETSC_FALSE, o, &values[off], array);
       } break;
     case INSERT_ALL_VALUES:
       for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-        updatePoint_private(section, points[p], dof, insert, PETSC_TRUE,  orientation, &values[off], array);
+        updatePoint_private(section, points[p], dof, insert, PETSC_TRUE,  o, &values[off], array);
       } break;
     case ADD_VALUES:
       for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-        updatePoint_private(section, points[p], dof, add,    PETSC_FALSE, orientation, &values[off], array);
+        updatePoint_private(section, points[p], dof, add,    PETSC_FALSE, o, &values[off], array);
       } break;
     case ADD_ALL_VALUES:
       for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-        updatePoint_private(section, points[p], dof, add,    PETSC_TRUE,  orientation, &values[off], array);
+        updatePoint_private(section, points[p], dof, add,    PETSC_TRUE,  o, &values[off], array);
       } break;
     default:
       SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
@@ -4478,7 +4483,6 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
   PetscInt       *points = PETSC_NULL;
   PetscInt       *indices;
   PetscInt        offsets[32];
-  PetscInt        orientation = 0;
   PetscInt        numFields, numPoints, numIndices, dof, off, globalOff, pStart, pEnd, p, q, f;
   PetscBool       useDefault       =       !section ? PETSC_TRUE : PETSC_FALSE;
   PetscBool       useGlobalDefault = !globalSection ? PETSC_TRUE : PETSC_FALSE;
@@ -4524,13 +4528,15 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
   ierr = DMGetWorkArray(dm, numIndices, (PetscScalar **) &indices);CHKERRQ(ierr);
   if (numFields) {
     for(p = 0; p < numPoints*2; p += 2) {
+      PetscInt o = points[p+1];
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
-      indicesPointFields_private(section, points[p], globalOff, offsets, PETSC_FALSE, orientation, indices);
+      indicesPointFields_private(section, points[p], globalOff < 0 ? -(globalOff+1) : globalOff, offsets, PETSC_FALSE, o, indices);
     }
   } else {
     for(p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+      PetscInt o = points[p+1];
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
-      indicesPoint_private(section, points[p], dof, globalOff, PETSC_FALSE, orientation, &indices[off]);
+      indicesPoint_private(section, points[p], dof, globalOff < 0 ? -(globalOff+1) : globalOff, PETSC_FALSE, o, &indices[off]);
     }
   }
   if (useGlobalDefault && !useDefault) {
