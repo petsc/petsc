@@ -559,14 +559,18 @@ PetscErrorCode PCSetUp_MG(PC pc)
   } else if (pc->dm && pc->dm->x) {
     /* need to restrict Jacobian location to coarser meshes for evaluation */
     for (i=n-2;i>-1; i--) {
+      Mat R;
+      Vec rscale;
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
         ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,PETSC_NULL);CHKERRQ(ierr);
         mglevels[i]->smoothd->dm->x = vecs[0];
         ierr = PetscFree(vecs);CHKERRQ(ierr);
       }
-      ierr = MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,mglevels[i+1]->rscale);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i+1,&R);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
+      ierr = MatRestrict(R,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,rscale);CHKERRQ(ierr);
     }
   }
 
@@ -580,17 +584,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
     for (i=1; i<n; i++) {
-      if (mglevels[i]->restrct && !mglevels[i]->interpolate) {
-        ierr = PCMGSetInterpolation(pc,i,mglevels[i]->restrct);CHKERRQ(ierr);
-      }
-      if (!mglevels[i]->restrct && mglevels[i]->interpolate) {
-        ierr = PCMGSetRestriction(pc,i,mglevels[i]->interpolate);CHKERRQ(ierr);
-      }
-#if defined(PETSC_USE_DEBUG)
-      if (!mglevels[i]->restrct || !mglevels[i]->interpolate) {
-        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to set restriction or interpolation on level %d",(int)i);
-      }
-#endif
+      ierr = PCMGGetInterpolation(pc,i,&mglevels[i]->interpolate);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i,&mglevels[i]->restrct);CHKERRQ(ierr);
     }
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {

@@ -147,6 +147,46 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCMGGetInterpolation"
+/*@
+   PCMGGetInterpolation - Gets the function to be used to calculate the 
+   interpolation from l-1 to the lth level
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context 
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Output Parameter:
+.  mat - the interpolation matrix
+
+   Level: advanced
+
+.keywords: MG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale()
+@*/
+PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
+{
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(mat,3);
+  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l <= 0 || mg->nlevels <= l) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  if (!mglevels[l]->interpolate) {
+    if (!mglevels[l]->restrct) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetInterpolation()");
+    ierr = PCMGSetInterpolation(pc,l,mglevels[l]->restrct);CHKERRQ(ierr);
+  }
+  *mat = mglevels[l]->interpolate;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCMGSetRestriction"
 /*@
    PCMGSetRestriction - Sets the function to be used to restrict vector
@@ -156,8 +196,8 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  mat - the restriction matrix
--  l - the level (0 is coarsest) to supply [Do not supply 0]
+.  l - the level (0 is coarsest) to supply [Do not supply 0]
+-  mat - the restriction matrix
 
    Level: advanced
 
@@ -183,6 +223,7 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
@@ -192,16 +233,56 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCMGSetRScale"
+#define __FUNCT__ "PCMGGetRestriction"
 /*@
-   PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1. 
+   PCMGGetRestriction - Gets the function to be used to restrict vector
+   from level l to l-1. 
 
    Logically Collective on PC and Mat
 
    Input Parameters:
 +  pc - the multigrid context 
-.  rscale - the scaling
 -  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Output Parameter:
+.  mat - the restriction matrix
+
+   Level: advanced
+
+.keywords: MG, get, multigrid, restriction, level
+
+.seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale()
+@*/
+PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
+{
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(mat,3);
+  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l <= 0 || mg->nlevels <= l) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  if (!mglevels[l]->restrct) {
+    if (!mglevels[l]->interpolate) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
+    ierr = PCMGSetRestriction(pc,l,mglevels[l]->interpolate);CHKERRQ(ierr);
+  }
+  *mat = mglevels[l]->restrct;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCMGSetRScale"
+/*@
+   PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1.
+
+   Logically Collective on PC and Vec
+
+   Input Parameters:
++  pc - the multigrid context
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+.  rscale - the scaling
 
    Level: advanced
 
@@ -210,7 +291,7 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 
 .keywords: MG, set, multigrid, restriction, level
 
-.seealso: PCMGSetInterpolation(), PCMGSetRestriction()
+.seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale()
 @*/
 PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
 {
@@ -221,10 +302,61 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  if (l <= 0 || mg->nlevels <= l) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
   ierr = VecDestroy(&mglevels[l]->rscale);CHKERRQ(ierr);
-  mglevels[l]->rscale  = rscale;  
+  mglevels[l]->rscale  = rscale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCMGGetRScale"
+/*@
+   PCMGGetRScale - Gets the pointwise scaling for the restriction operator from level l to l-1.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context
+.  rscale - the scaling
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Level: advanced
+
+   Notes: 
+       When evaluating a function on a coarse level one does not want to do F( R * x) one does F( rscale * R * x) where rscale is 1 over the row sums of R. 
+
+.keywords: MG, set, multigrid, restriction, level
+
+.seealso: PCMGSetInterpolation(), PCMGGetRestriction()
+@*/
+PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l <= 0 || mg->nlevels <= l) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  if (!mglevels[l]->rscale) {
+    Mat R;
+    Vec X,Y,coarse,fine;
+    PetscInt M,N;
+    ierr = PCMGGetRestriction(pc,l,&R);CHKERRQ(ierr);
+    ierr = MatGetVecs(R,&X,&Y);CHKERRQ(ierr);
+    ierr = MatGetSize(R,&M,&N);CHKERRQ(ierr);
+    if (M < N) {fine = X; coarse = Y;}
+    else if (N < M) {fine = Y; coarse = X;}
+    else SETERRQ(((PetscObject)R)->comm,PETSC_ERR_SUP,"Restriction matrix is square, cannot determine which Vec is coarser");
+    ierr = VecSet(fine,1.);CHKERRQ(ierr);
+    ierr = MatRestrict(R,fine,coarse);CHKERRQ(ierr);
+    ierr = VecDestroy(&fine);CHKERRQ(ierr);
+    ierr = VecReciprocal(coarse);CHKERRQ(ierr);
+    mglevels[l]->rscale = coarse;
+  }
+  *rscale = mglevels[l]->rscale;
   PetscFunctionReturn(0);
 }
 
