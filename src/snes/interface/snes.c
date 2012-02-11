@@ -688,6 +688,35 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt* iter)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESSetIterationNumber"
+/*@
+   SNESSetIterationNumber - Sets the current iteration number.
+
+   Not Collective
+
+   Input Parameter:
+.  snes - SNES context
+.  iter - iteration number
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, iteration, number, 
+
+.seealso:   SNESGetFunctionNorm(), SNESGetLinearSolveIterations()
+@*/
+PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter = iter;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESGetFunctionNorm"
 /*@
    SNESGetFunctionNorm - Gets the norm of the current function that was set
@@ -713,6 +742,37 @@ PetscErrorCode  SNESGetFunctionNorm(SNES snes,PetscReal *fnorm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidScalarPointer(fnorm,2);
   *fnorm = snes->norm;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetFunctionNorm"
+/*@
+   SNESSetFunctionNorm - Sets the 2-norm of the current function computed using VecNorm().
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - SNES context
+.  fnorm - 2-norm of function
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm
+
+.seealso: SNESSetFunction(), SNESSetIterationNumber(), VecNorm().
+@*/
+PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
+{
+
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->norm = fnorm;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

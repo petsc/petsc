@@ -229,7 +229,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-    ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X, Y, PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes, X, F, Y, fnorm, 0.0, W, G, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -330,6 +331,9 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
 
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
+
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);

@@ -50,7 +50,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 /*
-  SNESSetFromOptions_NCG - Sets various parameters for the SNESLS method.
+  SNESSetFromOptions_NCG - Sets various parameters for the SNESNCG method.
 
   Input Parameter:
 . snes - the SNES context
@@ -257,7 +257,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (ncg->betatype == 1 || ncg->betatype == 2 || ncg->betatype == 3 || ncg->betatype == 4) { /* prp, hs, dy, cd need dXold*/
       ierr = VecCopy(dX, dXold);CHKERRQ(ierr);
     }
-    ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, lX, fnorm, 0.0, G, W, &dummyNorm, &gnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X, lX, PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes, X, F, lX, fnorm, 0.0, W, G, &dummyNorm, &gnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -384,6 +385,9 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
+
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;

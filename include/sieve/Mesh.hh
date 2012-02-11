@@ -1948,7 +1948,7 @@ namespace ALE {
     point_type locatePoint_General_3D(const typename real_section_type::value_type p[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
-      const PetscInt                faces[24]   = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 5, 4,
+      const PetscInt                faces[24]   = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
                                                    3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {

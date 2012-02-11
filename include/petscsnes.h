@@ -155,7 +155,9 @@ extern PetscErrorCode  SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,Pets
 extern PetscErrorCode  SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 extern PetscErrorCode  SNESSetTrustRegionTolerance(SNES,PetscReal);
 extern PetscErrorCode  SNESGetFunctionNorm(SNES,PetscReal*);
+extern PetscErrorCode  SNESSetFunctionNorm(SNES,PetscReal);
 extern PetscErrorCode  SNESGetIterationNumber(SNES,PetscInt*);
+extern PetscErrorCode  SNESSetIterationNumber(SNES,PetscInt);
 
 extern PetscErrorCode  SNESGetNonlinearStepFailures(SNES,PetscInt*);
 extern PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
@@ -402,6 +404,10 @@ extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,PetscReal,
 extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchQuadraticSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+
+extern PetscErrorCode  SNESLineSearchApply(SNES,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchPreCheckApply(SNES,Vec,Vec,PetscBool*);
+extern PetscErrorCode  SNESLineSearchPostCheckApply(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*);
 
 extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
