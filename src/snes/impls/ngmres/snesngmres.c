@@ -85,6 +85,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ngmres_additive", "Use additive variant vs. choice",    "SNES", ngmres->additive,  &ngmres->additive, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_anderson", "Use Anderson mixing storage",        "SNES", ngmres->anderson,  &ngmres->anderson, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_m",         "Number of directions",               "SNES", ngmres->msize,  &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_restart_it","Tolerance iterations before restart","SNES", ngmres->restart_it,  &ngmres->restart_it, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ngmres_monitor",  "Monitor actions of NGMRES",          "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
@@ -437,25 +438,46 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       k_restart = 1;
       l = 1;
       /* q_{00} = nu */
-      ngmres->fnorms[0] = fnorm;
-      nu = fnorm*fnorm;
-      Q(0,0) = nu;
-      /* Fdot[0] = F */
-      ierr = VecCopy(X, Xdot[0]);CHKERRQ(ierr);
-      ierr = VecCopy(F, Fdot[0]);CHKERRQ(ierr);
+      if (ngmres->anderson) {
+        ngmres->fnorms[0] = fMnorm;
+        nu = fMnorm*fMnorm;
+        Q(0,0) = nu;
+        /* Fdot[0] = F */
+        ierr = VecCopy(XM, Xdot[0]);CHKERRQ(ierr);
+        ierr = VecCopy(FM, Fdot[0]);CHKERRQ(ierr);
+      } else {
+        ngmres->fnorms[0] = fnorm;
+        nu = fnorm*fnorm;
+        Q(0,0) = nu;
+        /* Fdot[0] = F */
+        ierr = VecCopy(X, Xdot[0]);CHKERRQ(ierr);
+        ierr = VecCopy(F, Fdot[0]);CHKERRQ(ierr);
+      }
     } else {
       /* select the current size of the subspace */
       if (l < ngmres->msize) l++;
       k_restart++;
       /* place the current entry in the list of previous entries */
-      ierr = VecCopy(F, Fdot[ivec]);CHKERRQ(ierr);
-      ierr = VecCopy(X, Xdot[ivec]);CHKERRQ(ierr);
-      ngmres->fnorms[ivec] = fnorm;
-      if (fminnorm > fnorm) fminnorm = fnorm;  /* the minimum norm is now of r^A */
-      for (i = 0; i < l; i++) {
-        ierr = VecDot(F, Fdot[i], &qentry);CHKERRQ(ierr);
-        Q(i, ivec) = qentry;
-        Q(ivec, i) = qentry;
+      if (ngmres->anderson) {
+        ierr = VecCopy(FM, Fdot[ivec]);CHKERRQ(ierr);
+        ierr = VecCopy(XM, Xdot[ivec]);CHKERRQ(ierr);
+        ngmres->fnorms[ivec] = fMnorm;
+        if (fminnorm > fMnorm) fminnorm = fMnorm;  /* the minimum norm is now of FM */
+        for (i = 0; i < l; i++) {
+          ierr = VecDot(FM, Fdot[i], &qentry);CHKERRQ(ierr);
+          Q(i, ivec) = qentry;
+          Q(ivec, i) = qentry;
+        }
+      } else {
+        ierr = VecCopy(F, Fdot[ivec]);CHKERRQ(ierr);
+        ierr = VecCopy(X, Xdot[ivec]);CHKERRQ(ierr);
+        ngmres->fnorms[ivec] = fnorm;
+        if (fminnorm > fnorm) fminnorm = fnorm;  /* the minimum norm is now of FA */
+        for (i = 0; i < l; i++) {
+          ierr = VecDot(F, Fdot[i], &qentry);CHKERRQ(ierr);
+          Q(i, ivec) = qentry;
+          Q(ivec, i) = qentry;
+        }
       }
     }
 
@@ -508,10 +530,13 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   ierr = PetscNewLog(snes, SNES_NGMRES, &ngmres);CHKERRQ(ierr);
   snes->data = (void*) ngmres;
-  ngmres->msize = 10;
+  ngmres->msize = 30;
 
   snes->max_funcs = 30000;
   snes->max_its   = 10000;
+
+  ngmres->additive   = PETSC_FALSE;
+  ngmres->anderson   = PETSC_FALSE;
 
   ngmres->restart_it = 2;
   ngmres->gammaA     = 2.0;
