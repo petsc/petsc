@@ -999,7 +999,8 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
-      ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
+      ierr = SNESLineSearchPreCheckApply(snes,X,Y,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESLineSearchApply(snes,X,F,Y,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
       if (!lssuccess) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -1048,7 +1049,8 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
-      ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
+      ierr = SNESLineSearchPreCheckApply(snes,X,Y,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESLineSearchApply(snes,X,F,Y,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
       if (!lssuccess) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -1212,7 +1214,8 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
     ierr = VecScale(Xhat, -1.0);CHKERRQ(ierr);
-    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Xhat,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X,Xhat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes,X,F,Xhat,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = VecCopy(W, X);CHKERRQ(ierr);
     ierr = VecCopy(G, F);CHKERRQ(ierr);
     fnorm = gnorm;

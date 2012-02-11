@@ -191,6 +191,110 @@ PetscErrorCode  SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *ma
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchApply"
+/*@
+   SNESLineSearchApply - Applies the line search routine.
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+.  F       - The current residual
+.  Y       - The search direction
+.  fnorm   - The norm of F
+-  xnorm   - The norm of X (Optional for most line searches)
+
+   Output Parameters:
++  W       - The solution after line search
+.  G       - The residual after line search
+.  ynorm   - The norm of Y
+.  gnorm   - The norm of G
+-  flg     - Line search success or failure
+
+   Level: developer
+
+.keywords: SNES, nonlinear, line search, apply
+
+.seealso: SNESLineSearchPreCheckApply() SNESLineSearchPostCheckApply()
+@*/
+PetscErrorCode  SNESLineSearchApply(SNES snes, Vec X, Vec F, Vec Y, PetscReal fnorm, PetscReal xnorm, Vec W, Vec G, PetscReal *ynorm, PetscReal *gnorm, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (snes->ops->linesearch) {
+    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,ynorm,gnorm,flg);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Line search is unavailable for this SNES");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchPreCheckApply"
+/*@
+   SNESLineSearchPreCheckApply - Applies the optional precheck step for the line search
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+.  Y       - The search direction
+
+   Output Parameters:
+.  changed - set if Y has been changed
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, line search, precheck, apply
+
+.seealso: SNESLineSearchSet()
+@*/
+PetscErrorCode SNESLineSearchPreCheckApply(SNES snes, Vec X, Vec Y, PetscBool *changed)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (changed)
+    *changed = PETSC_FALSE;
+  if (snes->ops->precheckstep) {
+    ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,changed);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchPostCheckApply"
+/*@
+   SNESLineSearchPostCheckApply - Applies the optional postcheck step for the line search
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+-  Y       - The search direction
+
+   Output Parameters:
++  changed_y - set if Y has been changed
+-  changed_w - set if W has been changed
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, line search, precheck, apply
+
+.seealso: SNESLineSearchSet()
+@*/
+PetscErrorCode SNESLineSearchPostCheckApply(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (changed_y)
+    *changed_y = PETSC_FALSE;
+  if (changed_w)
+    *changed_w = PETSC_FALSE;
+  if (snes->ops->postcheckstep) {
+    ierr = (*snes->ops->postcheckstep)(snes,X,Y,W,snes->precheck,changed_y, changed_w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetPreCheck"
 /*@C
    SNESLineSearchSetPreCheck - Sets a routine to check the validity of a new direction given by the linear solve
