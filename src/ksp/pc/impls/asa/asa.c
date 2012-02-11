@@ -315,7 +315,6 @@ PetscErrorCode PCSetSORomega_ASA(PC pc, PetscReal sor_omega)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCSORSetSymmetric(pc, SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);
   if (sor_omega != PETSC_DECIDE) {
     ierr = PCSORSetOmega(pc, sor_omega);CHKERRQ(ierr);
   }
