@@ -734,7 +734,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     /* gotta set up the solution vector for this to work */
     if (!fas->next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_sol);CHKERRQ(ierr);}
     if (!fas->next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_rhs);CHKERRQ(ierr);}
-    ierr = SNESRestrictHooksRun(snes,fas->next);CHKERRQ(ierr);
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
 
@@ -746,10 +745,10 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (snes->ops->computejacobian && !fas->upsmooth->ops->computejacobian) {
       ierr = SNESSetJacobian(fas->upsmooth, fas->upsmooth->jacobian, fas->upsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
     }
-   if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
+    if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
       ierr = SNESSetGS(fas->upsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     }
-   ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
   }
   if (fas->downsmooth) {
     if (snes->ops->computefunction && !fas->downsmooth->ops->computefunction) {
@@ -758,7 +757,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (snes->ops->computejacobian && !fas->downsmooth->ops->computejacobian) {
       ierr = SNESSetJacobian(fas->downsmooth, fas->downsmooth->jacobian, fas->downsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
     }
-   if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
+    if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
      ierr = SNESSetGS(fas->downsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     }
     ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);
@@ -1306,7 +1305,9 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscInt       i, maxits;
   Vec            X, F;
   PetscReal      fnorm;
-  SNES_FAS       *fas = (SNES_FAS *)snes->data;
+  SNES_FAS       *fas = (SNES_FAS *)snes->data,*ffas;
+  DM             dm;
+
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -1336,6 +1337,15 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
+
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  for (ffas=fas; ffas->next; ffas=(SNES_FAS*)ffas->next->data) {
+    DM dmcoarse;
+    ierr = SNESGetDM(ffas->next,&dmcoarse);CHKERRQ(ierr);
+    ierr = DMRestrict(dm,ffas->restrct,ffas->rscale,ffas->inject,dmcoarse);CHKERRQ(ierr);
+    dm = dmcoarse;
+  }
+
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
 

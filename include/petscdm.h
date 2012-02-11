@@ -127,6 +127,8 @@ extern PetscErrorCode   DMRefine(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMCoarsen(DM,MPI_Comm,DM*);
 extern PetscErrorCode   DMRefineHierarchy(DM,PetscInt,DM[]);
 extern PetscErrorCode   DMCoarsenHierarchy(DM,PetscInt,DM[]);
+extern PetscErrorCode   DMCoarsenHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,Mat,Vec,Mat,DM,void*),void*);
+extern PetscErrorCode   DMRestrict(DM,Mat,Vec,Mat,DM);
 extern PetscErrorCode   DMSetFromOptions(DM);
 extern PetscErrorCode   DMSetUp(DM);
 extern PetscErrorCode   DMCreateInterpolationScale(DM,DM,Mat,Vec*);

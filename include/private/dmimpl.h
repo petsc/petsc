@@ -43,6 +43,14 @@ struct _DMOps {
   PetscErrorCode (*destroy)(DM);
 };
 
+typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
+struct _DMCoarsenHookLink {
+  PetscErrorCode (*coarsenhook)(DM,DM,void*);
+  PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*);
+  void *ctx;
+  DMCoarsenHookLink next;
+};
+
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 struct _p_DM {
@@ -64,6 +72,7 @@ struct _p_DM {
   PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                   *data;
+  DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
 };
 
 extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

@@ -2055,7 +2055,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
 PetscErrorCode  SNESReset(SNES snes)
 {
   PetscErrorCode ierr;
-  SNESRestrictHookLink link,next;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2066,11 +2065,6 @@ PetscErrorCode  SNESReset(SNES snes)
   if (snes->pc) {
     ierr = SNESReset(snes->pc);CHKERRQ(ierr);
   }
-  for (link=snes->restricthook; link; link=next) {
-    next = link->next;
-    ierr = PetscFree(link);CHKERRQ(ierr);
-  }
-  snes->restricthook = PETSC_NULL;
 
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
@@ -2856,83 +2850,6 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   snes->conv_hist_max   = na;
   snes->conv_hist_len   = 0;
   snes->conv_hist_reset = reset;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESRestrictHooksRun"
-/*@
-   SNESRestrictHooksRun - run all the restrict hooks to configure coarse from information associated with fine
-
-   Collective on fine
-
-   Input Arguments:
-+  fine - nonlinear solver context from which we are restricting from
--  coarse - nonlinear solver context that we are restricting to
-
-   Level: developer
-
-.seealso: SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
-@*/
-PetscErrorCode SNESRestrictHooksRun(SNES fine,SNES coarse)
-{
-  PetscErrorCode ierr;
-  SNESRestrictHookLink link;
-
-  PetscFunctionBegin;
-  for (link=fine->restricthook; link; link=link->next) {
-    if (link->runhook) {ierr = (*link->runhook)(fine,coarse,link->ctx);CHKERRQ(ierr);}
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESRestrictHookAdd"
-/*@
-   SNESRestrictHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
-
-   Logically Collective
-
-   Input Arguments:
-+  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
-.  runhook - function to run when setting up a coarser level
--  ctx - [optional] user-defined context for provide data for the runhook routine (may be PETSC_NULL)
-
-   Calling sequence of run:
-$    runhook(SNES fine,SNES coarse,void *ctx);
-
-+  fine - fine level SNES
-.  coarse - coarse level snes to restrict problem to
--  ctx - optional user-defined function context
-
-   Level: advanced
-
-   Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
-
-   If this function is called multiple times, the hooks will be run in the order they are added.
-
-   Hooks are called by SNESSetUp() and thus will be called again if SNESReset() is used (e.g. to change the problem
-   size). The implementation of a hook should thus be written so that it is safe to call multiple times.
-
-   In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
-
-.seealso: SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
-@*/
-PetscErrorCode SNESRestrictHookAdd(SNES fine,PetscErrorCode (*runhook)(SNES,SNES,void*),void *ctx)
-{
-  PetscErrorCode ierr;
-  SNESRestrictHookLink link,*p;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(fine,SNES_CLASSID,1);
-  for (p=&fine->restricthook; *p; *p=(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _SNESRestrictHookLink),&link);CHKERRQ(ierr);
-  link->runhook = runhook;
-  link->ctx = ctx;
-  *p = link;
-  if (fine->pc) {ierr = SNESRestrictHookAdd(fine->pc,runhook,ctx);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
