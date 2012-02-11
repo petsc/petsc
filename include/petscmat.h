@@ -1795,6 +1795,8 @@ extern PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
 
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
+extern PetscErrorCode MatNestGetISs(Mat,IS[],IS[]);
+extern PetscErrorCode MatNestGetLocalISs(Mat,IS[],IS[]);
 extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
 extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
