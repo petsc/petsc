@@ -274,6 +274,51 @@ PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetAdjacencySingleLevel_Private"
+PetscErrorCode DMComplexGetAdjacencySingleLevel_Private(DM dm, PetscInt p, PetscBool useClosure, const PetscInt *tmpClosure, PetscInt *adjSize, PetscInt adj[])
+{
+  const PetscInt *support = PETSC_NULL;
+  PetscInt        numAdj  = 0, maxAdjSize = *adjSize, supportSize, s;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (useClosure) {
+    ierr = DMComplexGetConeSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone = PETSC_NULL;
+      PetscInt        coneSize, c, q;
+
+      ierr = DMComplexGetSupportSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj || (adj[numAdj++] = cone[c],0); ++q) {
+          if (cone[c] == adj[q]) break;
+        }
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+      }
+    }
+  } else {
+    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for(s = 0; s < supportSize; ++s) {
+      const PetscInt *cone = PETSC_NULL;
+      PetscInt        coneSize, c, q;
+
+      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for(c = 0; c < coneSize; ++c) {
+        for(q = 0; q < numAdj || (adj[numAdj++] = cone[c],0); ++q) {
+          if (cone[c] == adj[q]) break;
+        }
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+      }
+    }
+  }
+  *adjSize = numAdj;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetAdjacency_Private"
@@ -2134,25 +2179,30 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
   for(cell = cStart; cell < cEnd; ++cell) {
     PetscInt numNeighbors = maxNeighbors, n;
 
-    ierr = DMComplexGetAdjacency_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacencySingleLevel_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for(n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2] = {cell, neighborCells[n]};
+      PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
       PetscInt        meetSize;
       const PetscInt *meet;
 
-      /* Reject non-cells */
-      if ((cellPair[0] == cellPair[1]) || ((cellPair[1] < cStart) || (cellPair[1] >= cEnd))) continue;
-      ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
-      if (meetSize) {
-        PetscInt f;
+      if (cellPair[0] == cellPair[1]) continue;
+      if (!found) {
+        ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
+        if (meetSize) {
+          PetscInt f;
 
-        for(f = 0; f < numFaceCases; ++f) {
-          if (numFaceVertices[f] == meetSize) {
-            ++off[cell-cStart+1];
-            break;
+          for(f = 0; f < numFaceCases; ++f) {
+            if (numFaceVertices[f] == meetSize) {
+              found = PETSC_TRUE;
+              break;
+            }
           }
         }
+      }
+      if (found) {
+        ++off[cell-cStart+1];
       }
     }
   }
@@ -2167,26 +2217,31 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
       PetscInt numNeighbors = maxNeighbors, n;
       PetscInt cellOffset   = 0;
 
-      ierr = DMComplexGetAdjacency_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
+      ierr = DMComplexGetAdjacencySingleLevel_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for(n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2] = {cell, neighborCells[n]};
+        PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
         PetscInt        meetSize;
         const PetscInt *meet;
 
-        /* Reject non-cells */
-        if ((cellPair[0] == cellPair[1]) || ((cellPair[1] < cStart) || (cellPair[1] >= cEnd))) continue;
-        ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
-        if (meetSize) {
-          PetscInt f;
+        if (cellPair[0] == cellPair[1]) continue;
+        if (!found) {
+          ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
+          if (meetSize) {
+            PetscInt f;
 
-          for(f = 0; f < numFaceCases; ++f) {
-            if (numFaceVertices[f] == meetSize) {
-              adj[off[cell-cStart]+cellOffset] = neighborCells[n];
-              ++cellOffset;
-              break;
+            for(f = 0; f < numFaceCases; ++f) {
+              if (numFaceVertices[f] == meetSize) {
+                found = PETSC_TRUE;
+                break;
+              }
             }
           }
+        }
+        if (found) {
+          adj[off[cell-cStart]+cellOffset] = neighborCells[n];
+          ++cellOffset;
         }
       }
     }
