@@ -191,6 +191,10 @@ PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexPreallocateOperator"
+/* TODO:
+  - Remove extra sorts of points
+  - Put in transitive closure for leaf and root
+*/
 PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   DM_Complex        *mesh = (DM_Complex *) dm->data;
@@ -200,7 +204,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   PetscInt           nleaves, l, p;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
-  PetscInt           pStart, pEnd, numDof, numOwnedDof, numCols;
+  PetscInt           pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
   PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols;
   PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
@@ -503,10 +507,10 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, PETSC_NULL);CHKERRQ(ierr);
   }
-  /* Build adjacency section */
-  ierr = PetscSectionGetStorageSize(sectionGlobal, &numOwnedDof);CHKERRQ(ierr);
+  /* Build adjacency section: Maps global indices to sets of adjacent global indices */
+  ierr = PetscSectionGetOffsetRange(sectionGlobal, &globalOffStart, &globalOffEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &sectionAdj);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionAdj, 0, numOwnedDof);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionAdj, globalOffStart, globalOffEnd);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
     const PetscInt *support = tmpClosure;
     PetscInt        supportSize, s;
