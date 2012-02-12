@@ -468,6 +468,28 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffsetRange"
+PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
+{
+  PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
+
+    if (off >= 0) {
+      os = PetscMin(os, off);
+      oe = PetscMax(oe, off+dof);
+    }
+  }
+  if (start) *start = os;
+  if (end)   *end   = oe;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionView_ASCII"
 PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 {
@@ -1065,7 +1087,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscInt           numRoots, numSectionRoots, numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
-  PetscInt           i, r, ind;
+  PetscInt           i, ind;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
