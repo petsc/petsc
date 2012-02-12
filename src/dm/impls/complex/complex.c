@@ -218,10 +218,6 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexPreallocateOperator"
-/* TODO:
-  - Remove extra sorts of points
-  - Put in transitive closure for leaf and root
-*/
 PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   DM_Complex        *mesh = (DM_Complex *) dm->data;
@@ -2534,6 +2530,10 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
     ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFView(coneSF, PETSC_NULL);CHKERRQ(ierr);
   }
+  ierr = DMComplexGetConeOrientations(dm, &cones);CHKERRQ(ierr);
+  ierr = DMComplexGetConeOrientations(*dmParallel, &newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
   /* Create supports and stratify sieve */
   ierr = DMComplexSymmetrize(*dmParallel);CHKERRQ(ierr);
@@ -2762,6 +2762,7 @@ PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
   outputCtx->neighborlist = PETSC_NULL;
   outputCtx->segmentlist = PETSC_NULL;
   outputCtx->segmentmarkerlist = PETSC_NULL;
+  outputCtx->numberofedges = 0;
   outputCtx->edgelist = PETSC_NULL;
   outputCtx->edgemarkerlist = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -3660,6 +3661,17 @@ PetscErrorCode DMComplexGetCones(DM dm, PetscInt *cones[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cones) *cones = mesh->cones;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetConeOrientations"
+PetscErrorCode DMComplexGetConeOrientations(DM dm, PetscInt *coneOrientations[]) {
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (coneOrientations) *coneOrientations = mesh->coneOrientations;
   PetscFunctionReturn(0);
 }
 
