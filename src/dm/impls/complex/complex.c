@@ -189,6 +189,33 @@ PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetAdjacency_Private"
+PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClosure, const PetscInt *tmpClosure, PetscInt *adjSize, PetscInt adj[])
+{
+  const PetscInt *star   = tmpClosure;
+  PetscInt        numAdj = 0, maxAdjSize = *adjSize, starSize, s;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetTransitiveClosure(dm, p, useClosure, &starSize, (PetscInt **) &star);CHKERRQ(ierr);
+  for(s = 2; s < starSize*2; s += 2) {
+    const PetscInt *closure = PETSC_NULL;
+    PetscInt        closureSize, c, q;
+
+    ierr = DMComplexGetTransitiveClosure(dm, star[s], !useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
+    for(c = 0; c < closureSize*2; c += 2) {
+      for(q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
+        if (closure[c] == adj[q]) break;
+      }
+      if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+    }
+  }
+  *adjSize = numAdj;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexPreallocateOperator"
 /* TODO:
@@ -279,7 +306,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
       }
     }
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -331,7 +358,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
       }
     }
     for(q = 0; q < numAdj; ++q) {
@@ -378,7 +405,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
       }
     }
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -448,7 +475,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
           if (cone[c] == tmpAdj[q]) break;
         }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
+        if (numAdj > maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
       }
     }
     for(d = off; d < off+dof; ++d) {
@@ -533,32 +560,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
-#define USE_TRANS
-#ifdef USE_TRANS
-    ierr = DMComplexGetTransitiveClosure(dm, p, PETSC_FALSE, &supportSize, (PetscInt **) &support);CHKERRQ(ierr);
-    for(s = 2; s < supportSize*2; s += 2) {
-#else
-    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
-    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
-    for(s = 0; s < supportSize; ++s) {
-#endif
-      const PetscInt *cone = PETSC_NULL;
-      PetscInt        coneSize, c;
-
-#ifdef USE_TRANS
-      ierr = DMComplexGetTransitiveClosure(dm, support[s], PETSC_TRUE, &coneSize, (PetscInt **) &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize*2; c += 2) {
-#else
-      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize; ++c) {
-#endif
-        for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
-          if (cone[c] == tmpAdj[q]) break;
-        }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
-      }
-    }
+    numAdj = maxAdjSize;
+    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
     for(q = 0; q < numAdj; ++q) {
@@ -608,31 +611,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
-#ifdef USE_TRANS
-    ierr = DMComplexGetTransitiveClosure(dm, p, PETSC_FALSE, &supportSize, (PetscInt **) &support);CHKERRQ(ierr);
-    for(s = 2; s < supportSize*2; s += 2) {
-#else
-    ierr = DMComplexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
-    ierr = DMComplexGetSupport(dm, p, &support);CHKERRQ(ierr);
-    for(s = 0; s < supportSize; ++s) {
-#endif
-      const PetscInt *cone = PETSC_NULL;
-      PetscInt        coneSize, c;
-
-#ifdef USE_TRANS
-      ierr = DMComplexGetTransitiveClosure(dm, support[s], PETSC_TRUE, &coneSize, (PetscInt **) &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize*2; c += 2) {
-#else
-      ierr = DMComplexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize; ++c) {
-#endif
-        for(q = 0; q < numAdj || (tmpAdj[numAdj++] = cone[c],0); ++q) {
-          if (cone[c] == tmpAdj[q]) break;
-        }
-        if (numAdj >= maxAdjSize) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);}
-      }
-    }
+    numAdj = maxAdjSize;
+    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);
     for(d = goff; d < goff+dof-cdof; ++d) {
       PetscInt adof, aoff, i = 0;
 
