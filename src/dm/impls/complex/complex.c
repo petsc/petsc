@@ -626,6 +626,57 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   PetscFunctionReturn(0);
 }
 
+#if 0
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexPreallocateOperator_2"
+PetscErrorCode DMComplexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
+{
+  PetscErrorCode ierr;
+  PetscInt c,cStart,cEnd,pStart,pEnd;
+  PetscInt *tmpClosure,*tmpAdj,*visits;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  maxClosureSize = 2*PetscMax(pow(mesh->maxConeSize, depth)+1, pow(mesh->maxSupportSize, depth)+1);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  npoints = pEnd - pStart;
+  ierr = PetscMalloc3(maxClosureSize,PetscInt,&tmpClosure,npoints,PetscInt,&lvisits,npoints,PetscInt,&visits);CHKERRQ(ierr);
+  ierr = PetscMemzero(lvisits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(visits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c=cStart; c<cEnd; c++) {
+    PetscInt *support = tmpClosure;
+    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_FALSE, &supportSize, (PetscInt**)&support);CHKERRQ(ierr);
+    for (p=0; p<supportSize; p++) {
+      lvisits[support[p]]++;
+    }
+  }
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,lvisits,visits,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPIU_INT,lvisits,visits,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,visits,lvisits);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_INT,visits,lvisits);CHKERRQ(ierr);
+
+  ierr = PetscSFGetRanks();CHKERRQ(ierr);
+
+
+  ierr = PetscMalloc2(maxClosureSize*maxClosureSize,PetscInt,&cellmat,npoints,PetscInt,&owner);CHKERRQ(ierr);
+  for (c=cStart; c<cEnd; c++) {
+    ierr = PetscMemzero(cellmat,maxClosureSize*maxClosureSize*sizeof(PetscInt));CHKERRQ(ierr);
+    /*
+     Depth-first walk of transitive closure.
+     At each leaf frame f of transitive closure that we see, add 1/visits[f] to each pair (p,q) not marked as done in cellmat.
+     This contribution is added to dnz if owning ranks of p and q match, to onz otherwise.
+     */
+  }
+
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,ldnz,dnz,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPIU_INT,lonz,onz,MPI_SUM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Complex"
 PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
