@@ -47,6 +47,91 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_LATEX) {
+    const char  *name;
+    const char  *colors[3] = {"red", "blue", "green"};
+    const int    numColors = 3;
+    PetscScalar *coords;
+    PetscInt     cStart, cEnd, c, vStart, vEnd, v, p;
+    PetscMPIInt  rank, size;
+
+    ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\documentclass{beamer}\n\n\
+\\usepackage{tikz}\n\
+\\usepackage{pgflibraryshapes}\n\
+\\usetikzlibrary{backgrounds}\n\
+\\usetikzlibrary{arrows}\n\
+\\newenvironment{changemargin}[2]{%%\n\
+  \\begin{list}{}{%%\n\
+    \\setlength{\\topsep}{0pt}%%\n\
+    \\setlength{\\leftmargin}{#1}%%\n\
+    \\setlength{\\rightmargin}{#2}%%\n\
+    \\setlength{\\listparindent}{\\parindent}%%\n\
+    \\setlength{\\itemindent}{\\parindent}%%\n\
+    \\setlength{\\parsep}{\\parskip}%%\n\
+  }%%\n\
+  \\item[]}{\\end{list}}\n\n\
+\\begin{document}\n\
+\\begin{frame}{%s}\n\
+\\begin{changemargin}{-1cm}{0cm}\n\
+\\begin{center}\n\
+\\begin{tikzpicture}[scale = 5.00,font=\\fontsize{8}{8}\\selectfont]\n", name);CHKERRQ(ierr);
+    /* Plot vertices */
+    ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\path\n");CHKERRQ(ierr);
+    for(v = vStart; v < vEnd; ++v) {
+      PetscInt off, dof, d;
+
+      ierr = PetscSectionGetDof(mesh->coordSection, v, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(mesh->coordSection, v, &off);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d) {
+        if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", coords[off+d]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%d_%d) [draw,shape=circle,color=%s] {%d} --\n", v, rank, colors[rank%numColors], v);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "(0,0);\n");CHKERRQ(ierr);
+    /* Plot cells */
+    ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt *closure = PETSC_NULL;
+      PetscInt        closureSize, firstPoint = -1;
+
+      ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
+      for(p = 0; p < closureSize*2; p += 2) {
+        const PetscInt point = closure[p];
+
+        if ((point < vStart) || (point >= vEnd)) continue;
+        if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%d_%d)", point, rank);CHKERRQ(ierr);
+        if (firstPoint < 0) firstPoint = point;
+      }
+      /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%d_%d);\n", firstPoint, rank);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n\\end{center}\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Mesh for processes ");CHKERRQ(ierr);
+    for(p = 0; p < size; ++p) {
+      if (p == size-1) {
+        ierr = PetscViewerASCIIPrintf(viewer, ", and ", colors[p%numColors], p);CHKERRQ(ierr);
+      } else if (p > 0) {
+        ierr = PetscViewerASCIIPrintf(viewer, ", ", colors[p%numColors], p);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "{\\textcolor{%s}%d}", colors[p%numColors], p);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, ".\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\end{changemargin}\n\
+\\end{frame}\n\
+\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm = ((PetscObject) dm)->comm;
     PetscInt   *sizes;

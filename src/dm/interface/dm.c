@@ -242,7 +242,7 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg;
   PetscErrorCode ierr;
   char           typeName[256] = MATAIJ;
 
@@ -252,6 +252,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view_detail", "Exhaustive mesh description", "DMView", flg2, &flg2, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view_vtk", "Output mesh in VTK format", "DMView", flg3, &flg3, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_view_latex", "Output mesh in LaTeX TikZ format", "DMView", flg4, &flg4, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -288,6 +289,16 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+    ierr = DMView(dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  if (flg4) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_LATEX);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesh.tex");CHKERRQ(ierr);
     ierr = DMView(dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
