@@ -306,6 +306,24 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 };
 
 #undef __FUNCT__
+#define __FUNCT__ "VecChop"
+PetscErrorCode VecChop(Vec v, PetscReal tol)
+{
+  PetscScalar   *a;
+  PetscInt       n, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for(i = 0; i < n; ++i) {
+    if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -1252,6 +1270,7 @@ int main(int argc, char **argv)
     /* Check residual */
     ierr = SNESDMComplexComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
+    ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
@@ -1270,6 +1289,7 @@ int main(int argc, char **argv)
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
+      ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
       ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
