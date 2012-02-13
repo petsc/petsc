@@ -334,7 +334,7 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
     const PetscInt *closure = PETSC_NULL;
     PetscInt        closureSize, c, q;
 
-    ierr = DMComplexGetTransitiveClosure(dm, star[s], !useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
+    ierr = DMComplexGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
     for(c = 0; c < closureSize*2; c += 2) {
       for(q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
         if (closure[c] == adj[q]) break;
