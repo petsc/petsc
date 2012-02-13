@@ -189,7 +189,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
 
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
-                                                               # Parallel tests
+                                                               # Parallel tests 6-17
                                                                {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
                                                                {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -show_jacobian'},
@@ -203,7 +203,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_jacobian'},
                                                                {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_jacobian'},
                                                                {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_jacobian'},
-                                                               # Full solutions
+                                                               # Full solutions 18-
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
                                                                #{'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
                                                                #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
