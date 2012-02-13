@@ -983,7 +983,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     ierr = PetscMalloc3(sf->nroots+1,PetscInt,&inoffset,sf->nleaves,PetscInt,&outones,sf->nleaves,PetscInt,&outoffset);CHKERRQ(ierr);
     inoffset[0] = 0;
 #if 1
-    for (i=0; i<sf->nroots; i++) inoffset[i+1] = PetscMax(i, inoffset[i] + indegree[i]);
+    for (i=0; i<sf->nroots; i++) inoffset[i+1] = PetscMax(i+1, inoffset[i] + indegree[i]);
 #else
     for (i=0; i<sf->nroots; i++) inoffset[i+1] = inoffset[i] + indegree[i];
 #endif

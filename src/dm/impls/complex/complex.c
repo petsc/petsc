@@ -101,8 +101,8 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     /* Plot cells */
     ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     for(c = cStart; c < cEnd; ++c) {
-      const PetscInt *closure = PETSC_NULL;
-      PetscInt        closureSize, firstPoint = -1;
+      PetscInt *closure = PETSC_NULL;
+      PetscInt  closureSize, firstPoint = -1;
 
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
@@ -362,10 +362,12 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
-  PetscMPIInt        size, debug = 0;
+  PetscMPIInt        size;
+  PetscBool          debug = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-dm_view_preallocation", &debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
