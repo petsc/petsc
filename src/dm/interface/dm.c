@@ -132,6 +132,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 PetscErrorCode  DMDestroy(DM *dm)
 {
   PetscInt       i, cnt = 0;
+  DMCoarsenHookLink link,next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -161,6 +162,13 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
     ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
   }
+
+  /* Destroy the list of hooks */
+  for (link=(*dm)->coarsenhook; link; link=next) {
+    next = link->next;
+    ierr = PetscFree(link);CHKERRQ(ierr);
+  }
+  (*dm)->coarsenhook = PETSC_NULL;
 
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
@@ -234,7 +242,7 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg;
   PetscErrorCode ierr;
   char           typeName[256] = MATAIJ;
 
@@ -244,6 +252,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view_detail", "Exhaustive mesh description", "DMView", flg2, &flg2, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view_vtk", "Output mesh in VTK format", "DMView", flg3, &flg3, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_view_latex", "Output mesh in LaTeX TikZ format", "DMView", flg4, &flg4, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -280,6 +289,16 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+    ierr = DMView(dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  if (flg4) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_LATEX);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesh.tex");CHKERRQ(ierr);
     ierr = DMView(dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
@@ -932,6 +951,7 @@ PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *s
 PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 {
   PetscErrorCode ierr;
+  DMCoarsenHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -945,6 +965,97 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->leveldown = dm->leveldown + 1;
+  for (link=dm->coarsenhook; link; link=link->next) {
+    if (link->coarsenhook) {ierr = (*link->coarsenhook)(dm,*dmc,link->ctx);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHookAdd"
+/*@
+   DMCoarsenHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
+
+   Logically Collective
+
+   Input Arguments:
++  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
+.  coarsenhook - function to run when setting up a coarser level
+.  restricthook - function to run to update data on coarser levels (once per SNESSolve())
+-  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+
+   Calling sequence of coarsenhook:
+$    coarsenhook(DM fine,DM coarse,void *ctx);
+
++  fine - fine level DM
+.  coarse - coarse level DM to restrict problem to
+-  ctx - optional user-defined function context
+
+   Calling sequence for restricthook:
+$    restricthook(DM fine,Mat mrestrict,Mat inject,DM coarse,void *ctx)
+
++  fine - fine level DM
+.  mrestrict - matrix restricting a fine-level solution to the coarse grid
+.  inject - matrix restricting by applying the transpose of injection
+.  coarse - coarse level DM to update
+-  ctx - optional user-defined function context
+
+   Level: advanced
+
+   Notes:
+   This function is only needed if auxiliary data needs to be set up on coarse grids.
+
+   If this function is called multiple times, the hooks will be run in the order they are added.
+
+   The 
+
+   In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
+   extract the finest level information from its context (instead of from the SNES).
+
+.seealso: SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
+@*/
+PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMCoarsenHookLink link,*p;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fine,DM_CLASSID,1);
+  for (p=&fine->coarsenhook; *p; *p=(*p)->next) {} /* Scan to the end of the current list of hooks */
+  ierr = PetscMalloc(sizeof(struct _DMCoarsenHookLink),&link);CHKERRQ(ierr);
+  link->coarsenhook = coarsenhook;
+  link->restricthook = restricthook;
+  link->ctx = ctx;
+  *p = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRestrict"
+/*@
+   DMRestrict - restricts user-defined problem data to a coarser DM by running hooks registered by DMCoarsenHookAdd()
+
+   Collective if any hooks are
+
+   Input Arguments:
++  fine - finer DM to use as a base
+.  restrct - restriction matrix, apply using MatRestrict()
+.  inject - injection matrix, also use MatRestrict()
+-  coarse - coarer DM to update
+
+   Level: developer
+
+.seealso: DMCoarsenHookAdd(), MatRestrict()
+@*/
+PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
+{
+  PetscErrorCode ierr;
+  DMCoarsenHookLink link;
+
+  PetscFunctionBegin;
+  for (link=fine->coarsenhook; link; link=link->next) {
+    if (link->restricthook) {ierr = (*link->restricthook)(fine,restrct,rscale,inject,coarse,link->ctx);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1484,6 +1595,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
 
   if (dm->ops->destroy) {
     ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+    dm->ops->destroy = PETSC_NULL;
   } 
   ierr = (*r)(dm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);

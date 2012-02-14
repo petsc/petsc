@@ -148,7 +148,7 @@ int main(int argc,char **args)
       for(i=0;i<24;i++)
 	for(j=0;j<24;j++)
 	  if(i<12 || j < 12)
-	    if(i==j) DD2[i][j] = .1*DD1[i][j];
+	    if(i==j) DD2[i][j] = 0.*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */
@@ -162,7 +162,6 @@ int main(int argc,char **args)
         else if(i%3==1 && i>=12) v2[i] = 2.0*h*h;
         else v2[i] = .0;
       }
-      
     }
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);

@@ -405,6 +405,10 @@ extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,PetscReal,Pets
 extern PetscErrorCode  SNESLineSearchSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchQuadraticSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 
+extern PetscErrorCode  SNESLineSearchApply(SNES,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchPreCheckApply(SNES,Vec,Vec,PetscBool*);
+extern PetscErrorCode  SNESLineSearchPostCheckApply(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*);
+
 extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchPreCheckPicard(SNES,Vec,Vec,void*,PetscBool*);
@@ -435,6 +439,8 @@ extern PetscErrorCode SNESSetDM(SNES,DM);
 extern PetscErrorCode SNESGetDM(SNES,DM*);
 extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
+extern PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
+extern PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
 
 /* Routines for Multiblock solver */
 extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

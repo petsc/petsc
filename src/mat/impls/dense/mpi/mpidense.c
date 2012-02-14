@@ -146,6 +146,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
       }
     } else {
       if (!A->donotstash) {
+        mat->assembled = PETSC_FALSE;
         if (roworiented) {
           ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
@@ -1818,7 +1819,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIDense"
 /*@C
-   MatCreateMPIDense - Creates a sparse parallel matrix in dense format.
+   MatCreateMPIDense - Creates a parallel matrix in dense format.
 
    Collective on MPI_Comm
 

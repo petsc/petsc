@@ -195,6 +195,8 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetISs_C",      "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetLocalISs_C", "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",   "",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -847,6 +849,94 @@ PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatNestGetISs_Nest"
+PETSC_EXTERN_C PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
+{
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (rows) for (i=0; i<vs->nr; i++) rows[i] = vs->isglobal.row[i];
+  if (cols) for (i=0; i<vs->nc; i++) cols[i] = vs->isglobal.col[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestGetISs"
+/*@C
+ MatNestGetISs - Returns the index sets partitioning the row and column spaces
+
+ Not collective
+
+ Input Parameters:
+.   A  - nest matrix
+
+ Output Parameter:
++   rows - array of row index sets
+-   cols - array of column index sets
+
+ Level: advanced
+
+ Notes: 
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetLocalISs()
+@*/
+PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscUseMethod(A,"MatNestGetISs_C",(Mat,IS[],IS[]),(A,rows,cols));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatNestGetLocalISs_Nest"
+PETSC_EXTERN_C PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
+{
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (rows) for (i=0; i<vs->nr; i++) rows[i] = vs->islocal.row[i];
+  if (cols) for (i=0; i<vs->nc; i++) cols[i] = vs->islocal.col[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestGetLocalISs"
+/*@C
+ MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces
+
+ Not collective
+
+ Input Parameters:
+.   A  - nest matrix
+
+ Output Parameter:
++   rows - array of row index sets (or PETSC_NULL to ignore)
+-   cols - array of column index sets (or PETSC_NULL to ignore)
+
+ Level: advanced
+
+ Notes:
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetISs()
+@*/
+PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscUseMethod(A,"MatNestGetLocalISs_C",(Mat,IS[],IS[]),(A,rows,cols));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatNestSetVecType_Nest"
@@ -1325,6 +1415,8 @@ PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "MatNestSetSubMat_Nest",   MatNestSetSubMat_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "MatNestGetSubMats_Nest",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "MatNestGetSize_Nest",     MatNestGetSize_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetISs_C",      "MatNestGetISs_Nest",      MatNestGetISs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetLocalISs_C", "MatNestGetLocalISs_Nest", MatNestGetLocalISs_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "MatNestSetVecType_Nest",  MatNestSetVecType_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",  "MatNestSetSubMats_Nest",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
 

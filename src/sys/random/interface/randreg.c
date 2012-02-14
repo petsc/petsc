@@ -44,6 +44,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
 
   if (rnd->ops->destroy) {
     ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
+    rnd->ops->destroy = PETSC_NULL;
   }
   ierr = (*r)(rnd);CHKERRQ(ierr); 
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);

@@ -468,6 +468,28 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffsetRange"
+PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
+{
+  PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
+
+    if (off >= 0) {
+      os = PetscMin(os, off);
+      oe = PetscMax(oe, off+dof);
+    }
+  }
+  if (start) *start = os;
+  if (end)   *end   = oe;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionView_ASCII"
 PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 {
@@ -1062,12 +1084,10 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
   PetscInt           lpStart, lpEnd;
-  PetscInt           numRanks;
-  const PetscInt    *ranks, *rankOffsets;
   PetscInt           numRoots, numSectionRoots, numPoints, numIndices = 0;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
-  PetscInt           i, r, ind;
+  PetscInt           i, ind;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -1112,23 +1132,20 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   }
   /* Create new index graph */
-  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  for(r = 0, ind = 0; r < numRanks; ++r) {
-    PetscInt rank = ranks[r];
+  for(i = 0, ind = 0; i < numPoints; ++i) {
+    PetscInt localPoint = localPoints ? localPoints[i] : i;
+    PetscInt rank       = remotePoints[i].rank;
 
-    for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
-      PetscInt localPoint   = localPoints ? localPoints[i] : i;
+    if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
+      PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
+      PetscInt loff, dof, d;
 
-      if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
-        PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
-        PetscInt localOffset, dof, d;
-        ierr = PetscSectionGetOffset(leafSection, localPoint, &localOffset);CHKERRQ(ierr);
-        ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
-        for(d = 0; d < dof; ++d, ++ind) {
-          localIndices[ind]        = localOffset+d;
-          remoteIndices[ind].rank  = rank;
-          remoteIndices[ind].index = remoteOffset+d;
-        }
+      ierr = PetscSectionGetOffset(leafSection, localPoint, &loff);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(leafSection, localPoint, &dof);CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d, ++ind) {
+        localIndices[ind]        = loff+d;
+        remoteIndices[ind].rank  = rank;
+        remoteIndices[ind].index = remoteOffset+d;
       }
     }
   }

@@ -98,10 +98,10 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGetLevels"
 /*@
-   SNESFASGetLevels - Gets the number of levels in a FAS.
+   SNESFASGetLevels - Gets the number of levels in a FAS, including fine and coarse grids
 
    Input Parameter:
-.  snes - the preconditioner context
+.  snes - the nonlinear solver context
 
    Output parameter:
 .  levels - the number of levels
@@ -122,7 +122,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt * levels) {
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetCycles"
 /*@
-   SNESFASSetCycles - Sets the type cycles to use.  Use SNESFASSetCyclesOnLevel() for more
+   SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use SNESFASSetCyclesOnLevel() for more
    complicated cycling.
 
    Logically Collective on SNES
@@ -174,14 +174,12 @@ PetscErrorCode SNESFASSetCyclesOnLevel(SNES snes, PetscInt level, PetscInt cycle
   PetscInt top_level = fas->level,i;
 
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetCyclesOnLevel", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D cycle count from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   fas->n_cycles = cycles;
   PetscFunctionReturn(0);
 }
@@ -220,7 +218,7 @@ PetscErrorCode SNESFASSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,voi
     /* assume that the user has set the GS solver at this level */
     if (fas->next) ierr = SNESFASSetGS(fas->next, PETSC_NULL, PETSC_NULL, use_gs);CHKERRQ(ierr);
   } else if (use_gs) {
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "No user Gauss-Seidel function provided in SNESFASSetGS on level %d", fas->level);
+    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "No user Gauss-Seidel function provided in SNESFASSetGS on level %D", fas->level);
   }
   PetscFunctionReturn(0);
 }
@@ -251,15 +249,13 @@ PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*g
   PetscInt       top_level = fas->level,i;
   SNES           cur_snes = snes;
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetCyclesOnLevel", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D GS from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
     cur_snes = fas->next;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetCyclesOnLevel");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   if (gsfunc) {
     ierr = SNESSetGS(cur_snes, gsfunc, ctx);CHKERRQ(ierr);
   }
@@ -283,23 +279,19 @@ PetscErrorCode SNESFASSetGSOnLevel(SNES snes, PetscInt level, PetscErrorCode (*g
 
 .seealso: SNESFASSetLevels(), SNESFASGetLevels()
 @*/
-PetscErrorCode SNESFASGetSNES(SNES snes, PetscInt level, SNES * lsnes) {
-  SNES_FAS * fas = (SNES_FAS *)snes->data;
-  PetscInt levels = fas->level;
+PetscErrorCode SNESFASGetSNES(SNES snes,PetscInt level,SNES *lsnes) {
+  SNES_FAS *fas = (SNES_FAS*)snes->data;
   PetscInt i;
+
   PetscFunctionBegin;
+  if (level > fas->levels-1) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
+  if (fas->level < level) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS on level %D, must call from SNES at least as fine as level",level,fas->level);
   *lsnes = snes;
-  if (fas->level < level) {
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "SNESFASGetSNES should only be called on a finer SNESFAS instance than the level.");
-  }
-  if (level > levels - 1) {
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Level %d doesn't exist in the SNESFAS.");
-  }
   for (i = fas->level; i > level; i--) {
     *lsnes = fas->next;
     fas = (SNES_FAS *)(*lsnes)->data;
   }
-  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "SNESFASGetSNES didn't return the right level!");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   PetscFunctionReturn(0);
 }
 
@@ -321,8 +313,6 @@ PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
   fas->fastype = fastype;
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetLevels"
@@ -479,15 +469,14 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetInterpolation", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D interpolation from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetInterpolation");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   fas->interpolate = mat;
   PetscFunctionReturn(0);
 }
@@ -525,19 +514,17 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetRestriction", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D restriction from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   fas->restrct = mat;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASSetRScale"
@@ -565,15 +552,14 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetRestriction", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D rscale from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetRestriction");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
   fas->rscale = rscale;
   PetscFunctionReturn(0);
 }
@@ -606,15 +592,14 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (level > top_level)
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetInjection", level);
+  if (level > top_level) SETERRQ3(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot set level %D injection from level %D of SNESFAS with %D levels total",level,top_level,fas->levels);
   /* get to the correct level */
   for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
-  if (fas->level != level)
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "Inconsistent level labelling in SNESFASSetInjection");
+  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
   fas->inject = mat;
   PetscFunctionReturn(0);
 }
@@ -637,6 +622,7 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   if (fas->upsmooth)   ierr = SNESReset(fas->upsmooth);CHKERRQ(ierr);
   if (fas->downsmooth) ierr = SNESReset(fas->downsmooth);CHKERRQ(ierr);
   if (fas->next)       ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -673,7 +659,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     dm_levels++;
     if (dm_levels > fas->levels) {
 
-      /* we don't want the solution and func vectors to be destroyed in the SNESReset when it's called in SNESSetUp_FAS*/
+      /* we don't want the solution and func vectors to be destroyed in the SNESReset when it's called in SNESFASSetLevels_FAS*/
       vec_sol = snes->vec_sol;
       vec_func = snes->vec_func;
       vec_sol_update = snes->vec_sol_update;
@@ -749,8 +735,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   if (fas->next) {
     /* gotta set up the solution vector for this to work */
-    if (!fas->next->vec_sol) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);}
-    if (!fas->next->vec_rhs) {ierr = VecDuplicate(fas->rscale, &fas->next->vec_rhs);CHKERRQ(ierr);}
+    if (!fas->next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_sol);CHKERRQ(ierr);}
+    if (!fas->next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&fas->next->vec_rhs);CHKERRQ(ierr);}
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
 
@@ -762,10 +748,10 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (snes->ops->computejacobian && !fas->upsmooth->ops->computejacobian) {
       ierr = SNESSetJacobian(fas->upsmooth, fas->upsmooth->jacobian, fas->upsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
     }
-   if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
+    if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
       ierr = SNESSetGS(fas->upsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     }
-   ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
   }
   if (fas->downsmooth) {
     if (snes->ops->computefunction && !fas->downsmooth->ops->computefunction) {
@@ -774,7 +760,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (snes->ops->computejacobian && !fas->downsmooth->ops->computejacobian) {
       ierr = SNESSetJacobian(fas->downsmooth, fas->downsmooth->jacobian, fas->downsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
     }
-   if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
+    if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
      ierr = SNESSetGS(fas->downsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
     }
     ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);
@@ -940,9 +926,9 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "FAS, levels = %d\n",  fas->levels);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "FAS, levels = %D\n",  fas->levels);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);
-    ierr = PetscViewerASCIIPrintf(viewer, "level: %d\n",  fas->level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "level: %D\n",  fas->level);CHKERRQ(ierr);
     if (fas->upsmooth) {
       ierr = PetscViewerASCIIPrintf(viewer, "up-smoother on level %D:\n",  fas->level);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);
@@ -999,7 +985,8 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
-      ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
+      ierr = SNESLineSearchPreCheckApply(snes,X,Y,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESLineSearchApply(snes,X,F,Y,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
       if (!lssuccess) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -1048,7 +1035,8 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
-      ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
+      ierr = SNESLineSearchPreCheckApply(snes,X,Y,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESLineSearchApply(snes,X,F,Y,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssuccess);CHKERRQ(ierr);
       if (!lssuccess) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -1059,6 +1047,71 @@ PetscErrorCode FASUpSmooth (SNES snes, Vec B, Vec X, Vec F) {
       ierr = VecCopy(G, F);CHKERRQ(ierr);
       fnorm = gnorm;
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASCreateCoarseVec"
+/*@
+   SNESFASCreateCoarseVec - create Vec corresponding to a state vector on one level coarser than current level
+
+   Collective
+
+   Input Arguments:
+.  snes - SNESFAS
+
+   Output Arguments:
+.  Xcoarse - vector on level one coarser than snes
+
+   Level: developer
+
+.seealso: SNESFASSetRestriction(), SNESFASRestrict()
+@*/
+PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
+{
+  PetscErrorCode ierr;
+  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+
+  PetscFunctionBegin;
+  if (fas->rscale) {ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);}
+  else if (fas->inject) {ierr = MatGetVecs(fas->inject,Xcoarse,PETSC_NULL);CHKERRQ(ierr);}
+  else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASRestrict"
+/*@
+   SNESFASRestrict - restrict a Vec to the next coarser level
+
+   Collective
+
+   Input Arguments:
++  fine - SNES from which to restrict
+-  Xfine - vector to restrict
+
+   Output Arguments:
+.  Xcoarse - result of restriction
+
+   Level: developer
+
+.seealso: SNESFASSetRestriction(), SNESFASSetInjection()
+@*/
+PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
+{
+  PetscErrorCode ierr;
+  SNES_FAS       *fas = (SNES_FAS*)fine->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fine,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(Xfine,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Xcoarse,VEC_CLASSID,3);
+  if (fas->inject) {
+    ierr = MatRestrict(fas->inject,Xfine,Xcoarse);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestrict(fas->restrct,Xfine,Xcoarse);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xcoarse,fas->rscale,Xcoarse);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1091,13 +1144,7 @@ PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
     F_c  = fas->next->vec_func;
     B_c  = fas->next->vec_rhs;
 
-    /* inject the solution */
-    if (fas->inject) {
-      ierr = MatRestrict(fas->inject, X, Xo_c);CHKERRQ(ierr);
-    } else {
-      ierr = MatRestrict(fas->restrct, X, Xo_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
-    }
+    ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
     ierr = VecScale(F, -1.0);CHKERRQ(ierr);
 
     /* restrict the defect */
@@ -1170,13 +1217,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     F_c  = fas->next->vec_func;
     B_c  = fas->next->vec_rhs;
 
-    /* inject the solution */
-    if (fas->inject) {
-      ierr = MatRestrict(fas->inject, Xhat, Xo_c);CHKERRQ(ierr);
-    } else {
-      ierr = MatRestrict(fas->restrct, Xhat, Xo_c);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
-    }
+    ierr = SNESFASRestrict(snes,Xhat,Xo_c);CHKERRQ(ierr);
     ierr = VecScale(F, -1.0);CHKERRQ(ierr);
 
     /* restrict the defect */
@@ -1212,7 +1253,8 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
     ierr = VecScale(Xhat, -1.0);CHKERRQ(ierr);
-    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Xhat,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X,Xhat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes,X,F,Xhat,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = VecCopy(W, X);CHKERRQ(ierr);
     ierr = VecCopy(G, F);CHKERRQ(ierr);
     fnorm = gnorm;
@@ -1269,7 +1311,9 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscInt       i, maxits;
   Vec            X, F;
   PetscReal      fnorm;
-  SNES_FAS       *fas = (SNES_FAS *)snes->data;
+  SNES_FAS       *fas = (SNES_FAS *)snes->data,*ffas;
+  DM             dm;
+
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -1299,6 +1343,15 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
+
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  for (ffas=fas; ffas->next; ffas=(SNES_FAS*)ffas->next->data) {
+    DM dmcoarse;
+    ierr = SNESGetDM(ffas->next,&dmcoarse);CHKERRQ(ierr);
+    ierr = DMRestrict(dm,ffas->restrct,ffas->rscale,ffas->inject,dmcoarse);CHKERRQ(ierr);
+    dm = dmcoarse;
+  }
+
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
 

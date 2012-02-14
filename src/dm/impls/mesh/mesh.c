@@ -1719,13 +1719,13 @@ PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshIn
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for(p = 0; p < ctx->n; ++p) {
-    PetscInt           e = ctx->cells[p];
-    const PetscScalar *c = m->restrictClosure(s, e);
-    PetscReal          xi[4];
-    PetscInt           d, f, comp;
+    PetscInt  e = ctx->cells[p];
+    PetscReal xi[4];
+    PetscInt  d, f, comp;
 
     if ((ctx->dim+1)*ctx->dof != m->sizeWithBC(s, e)) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), (ctx->dim+1)*ctx->dof);}
     m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
     for(comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] = c[0*ctx->dof+comp];
     }
@@ -1735,7 +1735,7 @@ PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshIn
         xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
       }
       for(comp = 0; comp < ctx->dof; ++comp) {
-        a[p*ctx->dof+comp] += (c[d*ctx->dof+comp] - c[0*ctx->dof+comp])*xi[d];
+        a[p*ctx->dof+comp] += (c[(d+1)*ctx->dof+comp] - c[0*ctx->dof+comp])*xi[d];
       }
     }
   }

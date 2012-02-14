@@ -48,11 +48,52 @@ typedef struct {
   PetscBool   imex;
   TSStepStatus status;
 } TS_ARKIMEX;
+/*MC
+     TSARKIMEXARS122 - Second order ARK IMEX scheme.
 
+     This method has one explicit stage and one implicit stage.
+
+     References:
+     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151–167.
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
+
+     This method has an explicit stage and one implicit stage, and has an A-stable implicit scheme. This method was provided by Emil Constantinescu.
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
+
+     This method has two implicit stages, and L-stable implicit scheme.
+
+    References:
+     L. Pareschi, G. Russo, Implicit-Explicit Runge-Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005, pp. 129-155
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and two implicit stages. The implicit part is the same as in TSARKIMEX2D and TSARKIMEX2E, but the explicit part has a larger stability region on the negative real axis. This method was provided by Emil Constantinescu.
+
+     Level: advanced
+
+.seealso: TSARKIMEX
+M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
-     This method has one explicit stage and two implicit stages.
+     This method has one explicit stage and two implicit stages. This method was provided by Emil Constantinescu.
 
      Level: advanced
 
@@ -164,18 +205,64 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
   PetscFunctionBegin;
   if (TSARKIMEXRegisterAllCalled) PetscFunctionReturn(0);
   TSARKIMEXRegisterAllCalled = PETSC_TRUE;
-
   {
     const PetscReal
+      A[2][2] = {{0.0,0.0},
+                 {0.5,0.0}},
+      At[2][2] = {{0.0,0.0},
+                  {0.0,0.5}},
+        b[2] = {0.0,1.0},
+          bembedt[2] = {0.5,0.5};
+          /* binterpt[2][2] = {{1.0,-1.0},{0.0,1.0}};  second order dense output has poor stability properties and hence it is not currently in use*/
+          ierr = TSARKIMEXRegister(TSARKIMEXARS122,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[2][2] = {{0.0,0.0},
+                 {1.0,0.0}},
+      At[2][2] = {{0.0,0.0},
+                  {0.5,0.5}},
+        b[2] = {0.5,0.5},
+          bembedt[2] = {0.0,1.0};
+          /* binterpt[2][2] = {{1.0,-0.5},{0.0,0.5}}  second order dense output has poor stability properties and hence it is not currently in use*/
+          ierr = TSARKIMEXRegister(TSARKIMEXA2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal us2 = 1.0-1.0/PetscSqrtReal((PetscReal)2.0);
+    const PetscReal
+      A[2][2] = {{0.0,0.0},
+                 {1.0,0.0}},
+      At[2][2] = {{us2,0.0},
+                  {1.0-2.0*us2,us2}},
+        b[2] = {0.5,0.5},
+          bembedt[2] = {0.0,1.0},
+            binterpt[2][2] = {{(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))},{1-(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))}},
+              binterp[2][2] = {{1.0,-0.5},{0.0,0.5}};
+              ierr = TSARKIMEXRegister(TSARKIMEXL2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,2,binterpt[0],binterp[0]);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
       A[3][3] = {{0,0,0},
-                 {0.41421356237309504880,0,0},
+                 {2-s2,0,0},
+                 {0.55,0.45,0}},
+      At[3][3] = {{0,0,0},
+                  {1-1/s2,1-1/s2,0},
+                  {1/(2*s2),1/(2*s2),1-1/s2}},
+      bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
+        binterpt[3][2] = {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,0},{1.0-s2,0.5}};
+    ierr = TSARKIMEXRegister(TSARKIMEX2C,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
+      A[3][3] = {{0,0,0},
+                 {2-s2,0,0},
                  {0.75,0.25,0}},
       At[3][3] = {{0,0,0},
-                  {0.12132034355964257320,0.29289321881345247560,0},
-                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
+                  {1-1/s2,1-1/s2,0},
+                  {1/(2*s2),1/(2*s2),1-1/s2}},
       bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
       binterpt[3][2] = {{1,-0.5},{0,0},{0,0.5}};
-    ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
     const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
@@ -185,8 +272,9 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
                   {1/(2*s2),1/(2*s2),1-1/s2}},
+      bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
       binterpt[3][2] = {{1,-0.5},{0,0},{0,0.5}};
-    ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
     const PetscReal

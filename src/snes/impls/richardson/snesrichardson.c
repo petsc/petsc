@@ -229,7 +229,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-    ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X, Y, PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes, X, F, Y, fnorm, 0.0, W, G, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

@@ -31,6 +31,7 @@ extern PetscErrorCode DMComplexGetSupportSize(DM, PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexGetSupport(DM, PetscInt, const PetscInt *[]);
 extern PetscErrorCode DMComplexGetConeSection(DM, PetscSection *);
 extern PetscErrorCode DMComplexGetCones(DM, PetscInt *[]);
+extern PetscErrorCode DMComplexGetConeOrientations(DM, PetscInt *[]);
 extern PetscErrorCode DMComplexGetMaxSizes(DM, PetscInt *, PetscInt *);
 extern PetscErrorCode DMComplexSetUp(DM);
 extern PetscErrorCode DMComplexSymmetrize(DM);

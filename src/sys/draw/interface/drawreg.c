@@ -140,6 +140,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   if (draw->data) {
     /* destroy the old private PetscDraw context */
     ierr       = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
+    draw->ops->destroy = PETSC_NULL;
     draw->data = 0;
   }
 

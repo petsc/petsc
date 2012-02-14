@@ -511,6 +511,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitionin
 
   if (part->setupcalled) {
     ierr =  (*part->ops->destroy)(part);CHKERRQ(ierr);
+    part->ops->destroy = PETSC_NULL;
     part->data        = 0;
     part->setupcalled = 0;
   }

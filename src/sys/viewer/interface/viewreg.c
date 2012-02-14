@@ -79,6 +79,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type
   /* cleanup any old type that may be there */
   if (viewer->data) {
     ierr         = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
+    viewer->ops->destroy = PETSC_NULL;
     viewer->data = 0;
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);

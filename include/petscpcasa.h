@@ -8,7 +8,6 @@
 PETSC_EXTERN_CXX_BEGIN
 
 
-extern PetscErrorCode  PCASASetDM(PC, DM);
 extern PetscErrorCode  PCASASetTolerances(PC, PetscReal,PetscReal, PetscReal, PetscInt);
 extern PetscErrorCode PCSolve_ASA(PC, Vec, Vec);
 

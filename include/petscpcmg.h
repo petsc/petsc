@@ -70,8 +70,11 @@ extern PetscErrorCode  PCMGSetX(PC,PetscInt,Vec);
 extern PetscErrorCode  PCMGSetR(PC,PetscInt,Vec);
 
 extern PetscErrorCode  PCMGSetRestriction(PC,PetscInt,Mat);
+extern PetscErrorCode  PCMGGetRestriction(PC,PetscInt,Mat*);
 extern PetscErrorCode  PCMGSetInterpolation(PC,PetscInt,Mat);
+extern PetscErrorCode  PCMGGetInterpolation(PC,PetscInt,Mat*);
 extern PetscErrorCode  PCMGSetRScale(PC,PetscInt,Vec);
+extern PetscErrorCode  PCMGGetRScale(PC,PetscInt,Vec*);
 extern PetscErrorCode  PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 extern PetscErrorCode  PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 

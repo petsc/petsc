@@ -15,36 +15,34 @@ typedef struct gamg_TAG{
   PetscInt       coarse_eq_limit;
   PetscReal      threshold; /* common quatity to many AMG methods so keep it up here */
   PetscInt       verbose;
-  PetscInt       emax_id;
+  PetscInt       emax_id; /* stashing places */
   PetscInt       col_bs_id;
-  PetscInt       data_sz;   /* these 4 things are all related to the method data and should be in the subctx */
-  PetscInt       data_rows;
-  PetscInt       data_cols;
-  PetscReal     *data; /* blocked vector of vertex data on fine grid (coordinates) */
-  PetscErrorCode (*createprolongator)( PC, const Mat A, const PetscReal [], Mat *P, PetscReal** );
-  PetscErrorCode (*createdefaultdata)( PC );
+  /* these 4 are all related to the method data and should be in the subctx */
+  PetscInt       data_sz; /* nloc*data_rows*data_cols */
+  PetscInt       data_cell_rows; 
+  PetscInt       data_cell_cols;
+  PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
+  PetscErrorCode (*graph)( PC, const Mat, Mat * );
+  PetscErrorCode (*coarsen)( PC, const Mat, IS*, IS* );
+  PetscErrorCode (*prolongator)( PC, const Mat, const Mat, IS, IS, Mat* );
+  PetscErrorCode (*optprol)( PC, const Mat, Mat* );
 
+  PetscErrorCode (*createdefaultdata)( PC ); /* for data methods that have a default (SA) */
   void          *subctx;
 } PC_GAMG;
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,0)
-#else
-#  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,d)
-#endif
+/* #if defined(PETSC_USE_DYNAMIC_LIBRARIES) */
+/* #  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,0) */
+/* #else */
+/* #  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,d) */
+/* #endif */
+/* PetscErrorCode PCGAMGRegister(const char *implname,const char *path,const char *fname,PetscErrorCode (*cfunc)(PC)); */
 
-PetscErrorCode PCGAMGRegister(const char *implname,const char *path,const char *fname,PetscErrorCode (*cfunc)(PC));
 #define GAMGAGG "agg"
 #define GAMGGEO "geo"
 
-/* Private context for the GAMG preconditioner */
-typedef struct{
-  PetscInt       lid;      /* local vertex index */
-  PetscInt       degree;   /* vertex degree */
-} GAMGNode;
-
-PetscErrorCode PCSetFromOptions_MG(PC);
-PetscErrorCode PCReset_MG(PC);
+PetscErrorCode PCSetFromOptions_MG( PC );
+PetscErrorCode PCReset_MG( PC );
 
 /* hooks create derivied classes */
 PetscErrorCode  PCCreateGAMG_GEO( PC pc );
@@ -53,14 +51,22 @@ PetscErrorCode  PCCreateGAMG_AGG( PC pc );
 PetscErrorCode PCSetFromOptions_GAMG( PC pc );
 PetscErrorCode PCDestroy_GAMG(PC pc);
 
-PetscErrorCode PCGAMGcreateProl_AGG( PC, const Mat, const PetscReal [], Mat *, PetscReal **);
-PetscErrorCode PCGAMGcreateProl_GEO( PC, const Mat, const PetscReal [], Mat *, PetscReal **);
 /* helper methods */
+PetscErrorCode createSimpleGraph( const Mat, Mat * );
+PetscErrorCode scaleFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
 PetscErrorCode getDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
                                   PetscInt *a_stride, PetscReal **a_data_out );
-PetscErrorCode maxIndSetAgg( const IS a_perm, const Mat a_Gmat, const Mat a_Auxmat,
-			     const PetscBool a_strict_aggs, IS *a_selected, IS *a_locals_llist );
-PetscErrorCode createGraph(PC a_pc, const Mat a_Amat, Mat *, Mat *, IS * );
+PetscErrorCode maxIndSetAgg( const IS, const Mat, const PetscBool, const PetscInt, IS *a_selected, IS *a_locals_llist );
+
+
+/* typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState; */
+/* use int instead of enum to facilitate passing them via Scatters */
+typedef int NState;
+static const NState NOT_DONE=-2;
+static const NState DELETED=-1;
+static const NState REMOVED=-3;
+
+#define IS_SELECTED(s) (s!=DELETED && s!=NOT_DONE && s!=REMOVED)
 
 #if defined PETSC_USE_LOG
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};

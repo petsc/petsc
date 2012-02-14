@@ -87,7 +87,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   PetscReal fnorm, xnorm = 0, ynorm, gnorm;
   PetscInt m = qn->m;
-  PetscBool lssucceed;
+  PetscBool lssucceed, changed;
 
   PetscScalar rhosc;
 
@@ -143,7 +143,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ynorm = 1; gnorm = fnorm;
     ierr = VecCopy(F, Fold);CHKERRQ(ierr);
     ierr = VecCopy(X, Xold);CHKERRQ(ierr);
-    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes,X,Y,&changed);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes,X,F,Y,fnorm,xnorm,W,G,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
