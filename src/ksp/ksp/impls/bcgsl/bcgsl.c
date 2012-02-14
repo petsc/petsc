@@ -519,15 +519,16 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
    Contributed by: Joel M. Malard, email jm.malard@pnl.gov
 
    Options Database Keys:
-+  -ksp_bcgsl_ell <ell> Number of Krylov search directions
--  -ksp_bcgsl_cxpol Use a convex function of the MR and OR polynomials after the BiCG step
--  -ksp_bcgsl_xres <res> Threshold used to decide when to refresh computed residuals
++  -ksp_bcgsl_ell <ell> Number of Krylov search directions -- KSPBCGSLSetEll()
+.  -ksp_bcgsl_cxpol - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes -- KSPBCGSLSetPol()
+.  -ksp_bcgsl_mrpoly - Use the default MinRes polynomial after the BiCG step  -- KSPBCGSLSetPol()
+-  -ksp_bcgsl_xres <res> Threshold used to decide when to refresh computed residuals -- KSPBCGSLSetXRes()
 
    Notes: Supports left preconditioning only
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
 
 M*/
 EXTERN_C_BEGIN
