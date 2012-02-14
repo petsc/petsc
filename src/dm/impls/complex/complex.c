@@ -334,7 +334,7 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
     const PetscInt *closure = PETSC_NULL;
     PetscInt        closureSize, c, q;
 
-    ierr = DMComplexGetTransitiveClosure(dm, star[s], !useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
+    ierr = DMComplexGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
     for(c = 0; c < closureSize*2; c += 2) {
       for(q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
         if (closure[c] == adj[q]) break;
@@ -3168,7 +3168,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
   PetscInt             dim  = 2;
   struct triangulateio in;
   struct triangulateio out;
-  PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth;
+  PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
 
@@ -3177,6 +3177,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
   ierr = InitInput_Triangle(&in);CHKERRQ(ierr);
   ierr = InitOutput_Triangle(&out);CHKERRQ(ierr);
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
@@ -3252,7 +3253,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
     const PetscInt numVertices = out.numberofpoints;
     int           *cells       = out.trianglelist;
     double        *meshCoords  = out.pointlist;
-    PetscBool      interpolate = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
     PetscInt       coordSize, c, e;
     PetscScalar   *coords;
 
@@ -3277,9 +3278,11 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
 
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
-      numEdges = off[numCells]/2;
-      /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
-      numEdges += 3*numCells - off[numCells];
+      if (off) {
+        numEdges = off[numCells]/2;
+        /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+        numEdges += 3*numCells - off[numCells];
+      }
       /* Create interpolated mesh */
       ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
       ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
