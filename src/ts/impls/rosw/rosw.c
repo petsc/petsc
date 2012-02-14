@@ -235,16 +235,19 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal
       A = 0,
       Gamma = 1,
-      b = 1;
-    ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+      b = 1,
+      binterpt=1;
+
+    ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
     const PetscReal
       A= 0,
       Gamma = 0.5,
-      b = 1;
-    ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+      b = 1,
+      binterpt=1;
+    ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
@@ -254,7 +257,12 @@ PetscErrorCode TSRosWRegisterAll(void)
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
       b[2] = {0.5,0.5},
       b1[2] = {1.0,0.0};
-    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,b1,0,PETSC_NULL);CHKERRQ(ierr);
+      PetscReal  binterpt[2][2];
+      binterpt[0][0]=g-1.0;
+      binterpt[1][0]=2.0-g;
+      binterpt[0][1]=g-1.5;
+      binterpt[1][1]=1.5-g;
+      ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,b1,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     const PetscReal g = 1. - 1./PetscSqrtReal(2.0);
@@ -263,10 +271,16 @@ PetscErrorCode TSRosWRegisterAll(void)
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
       b[2] = {0.5,0.5},
       b1[2] = {1.0,0.0};
-    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,b1,0,PETSC_NULL);CHKERRQ(ierr);
+      PetscReal  binterpt[2][2];
+      binterpt[0][0]=g-1.0;
+      binterpt[1][0]=2.0-g;
+      binterpt[0][1]=g-1.5;
+      binterpt[1][1]=1.5-g;
+    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,b1,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     const PetscReal g = 7.8867513459481287e-01;
+    PetscReal  binterpt[3][2];
     const PetscReal
       A[3][3] = {{0,0,0},
                  {1.5773502691896257e+00,0,0},
@@ -276,7 +290,14 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {-6.7075317547305480e-01,-1.7075317547305482e-01,g}},
       b[3] = {1.0566243270259355e-01,4.9038105676657971e-02,8.4529946162074843e-01},
       b2[3] = {-1.7863279495408180e-01,1./3.,8.4529946162074843e-01};
-    ierr = TSRosWRegister(TSROSWRA3PW,3,3,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+
+      binterpt[0][0]=-0.8094010767585034;
+      binterpt[1][0]=-0.5;
+      binterpt[2][0]=2.3094010767585034;
+      binterpt[0][1]=0.9641016151377548;
+      binterpt[1][1]=0.5;
+      binterpt[2][1]=-1.4641016151377548;
+      ierr = TSRosWRegister(TSROSWRA3PW,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     PetscReal  binterpt[4][3];
@@ -334,7 +355,16 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {0,1.74927148125794685173529749738960,g}},
       b[3] = {-0.75457412385404315829818998646589,1.94100407061964420292840123379419,-0.18642994676560104463021124732829},
       b2[3] = {-1.53358745784149585370766523913002,2.81745131148625772213931745457622,-0.28386385364476186843165221544619};
-    ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+
+      PetscReal  binterpt[3][2];
+      binterpt[0][0]=3.793692883777660870425141387941;
+      binterpt[1][0]=-2.918692883777660870425141387941;
+      binterpt[2][0]=0.125;
+      binterpt[0][1]=-0.725741064379812106687651020584;
+      binterpt[1][1]=0.559074397713145440020984353917;
+      binterpt[2][1]=0.16666666666666666666666666666667;
+
+      ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     const PetscReal s3 = PetscSqrtReal(3.),g = (3.0+s3)/6.0;

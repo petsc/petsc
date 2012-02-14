@@ -610,6 +610,10 @@ extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 .seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
 J*/
 #define TSARKIMEXType char*
+#define TSARKIMEXA2     "a2"
+#define TSARKIMEXL2     "l2"
+#define TSARKIMEXARS122 "ars122"
+#define TSARKIMEX2C     "2c"
 #define TSARKIMEX2D     "2d"
 #define TSARKIMEX2E     "2e"
 #define TSARKIMEXPRSSP2 "prssp2"
