@@ -324,6 +324,42 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatChop"
+PetscErrorCode MatChop(Mat A, PetscReal tol)
+{
+  PetscScalar   *newVals;
+  PetscInt      *newCols;
+  PetscInt       rStart, rEnd, r, colMax = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+  for(r = rStart; r < rEnd; ++r) {
+    PetscInt ncols;
+
+    ierr = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
+  for(r = rStart; r < rEnd; ++r) {
+    const PetscScalar *vals;
+    const PetscInt    *cols;
+    PetscInt           ncols, c;
+
+    ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    for(c = 0; c < ncols; ++c) {
+      newCols[c] = cols[c];
+      newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+    }
+    ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -1198,6 +1234,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
 
   if (user->showJacobian) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Jacobian:\n");CHKERRQ(ierr);
+    ierr = MatChop(Jac, 1.0e-10);CHKERRQ(ierr);
     ierr = MatView(Jac, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
