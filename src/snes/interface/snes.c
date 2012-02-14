@@ -3279,7 +3279,10 @@ PetscErrorCode  SNESSetType(SNES snes,const SNESType type)
   ierr =  PetscFListFind(SNESList,((PetscObject)snes)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
-  if (snes->ops->destroy) { ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr); }
+  if (snes->ops->destroy) {
+    ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);
+    snes->ops->destroy = PETSC_NULL;
+  }
   /* Reinitialize function pointers in SNESOps structure */
   snes->ops->setup          = 0;
   snes->ops->solve          = 0;

@@ -84,6 +84,7 @@ PetscErrorCode  ISSetType(IS is, const ISType method)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+    is->ops->destroy = PETSC_NULL;
   }
   ierr = (*r)(is);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)is,method);CHKERRQ(ierr);

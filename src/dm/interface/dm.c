@@ -1595,6 +1595,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
 
   if (dm->ops->destroy) {
     ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+    dm->ops->destroy = PETSC_NULL;
   } 
   ierr = (*r)(dm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);

@@ -658,7 +658,10 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   ierr =  PetscFListFind(KSPList,((PetscObject)ksp)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
-  if (ksp->ops->destroy) { ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr); }
+  if (ksp->ops->destroy) {
+    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
+    ksp->ops->destroy = PETSC_NULL;
+  }
   /* Reinitialize function pointers in KSPOps structure */
   ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
