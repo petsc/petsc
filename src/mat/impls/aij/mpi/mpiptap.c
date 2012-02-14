@@ -24,6 +24,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 
   PetscFunctionBegin;
   if (ptap){
+    Mat_Merge_SeqsToMPI  *merge=ptap->merge;
     ierr = PetscFree2(ptap->startsj_s,ptap->startsj_r);CHKERRQ(ierr);
     ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
@@ -31,26 +32,26 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
     if (ptap->api){ierr = PetscFree(ptap->api);CHKERRQ(ierr);}
     if (ptap->apj){ierr = PetscFree(ptap->apj);CHKERRQ(ierr);}
+    if (merge) {
+      ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+      ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
+      ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
+      ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+      ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+      ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
+      ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
+      ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
+      ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
+      ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+      ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+      ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
+      ierr = merge->destroy(A);CHKERRQ(ierr);
+      ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ptap);CHKERRQ(ierr);
   }
-  if (ptap->merge) {
-    Mat_Merge_SeqsToMPI  *merge=ptap->merge;
-    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
-    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-    ierr = merge->destroy(A);CHKERRQ(ierr);
-    ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(ptap);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

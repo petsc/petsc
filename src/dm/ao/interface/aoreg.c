@@ -42,6 +42,7 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
     ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+    ao->ops->destroy = PETSC_NULL;
   }
   
   ierr = (*r)(ao);CHKERRQ(ierr);

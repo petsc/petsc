@@ -1819,7 +1819,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIDense"
 /*@C
-   MatCreateMPIDense - Creates a sparse parallel matrix in dense format.
+   MatCreateMPIDense - Creates a parallel matrix in dense format.
 
    Collective on MPI_Comm
 

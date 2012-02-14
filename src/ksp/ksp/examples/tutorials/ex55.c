@@ -51,8 +51,8 @@ int main(int argc,char **args)
   if(mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,12,PETSC_NULL,&Amat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,12,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,2);      CHKERRQ(ierr);
   ierr = MatSetBlockSize(Pmat,2);      CHKERRQ(ierr);

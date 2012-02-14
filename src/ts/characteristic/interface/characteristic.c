@@ -179,6 +179,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
   if (c->data) {
     /* destroy the old private Characteristic context */
     ierr = (*c->ops->destroy)(c);CHKERRQ(ierr);
+    c->ops->destroy = PETSC_NULL;
     c->data = 0;
   }
 

@@ -66,7 +66,11 @@ PetscErrorCode  PCSetType(PC pc,const PCType type)
   ierr =  PetscFListFind(PCList,((PetscObject)pc)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
-  if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); pc->data = 0;}
+  if (pc->ops->destroy) {
+    ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+    pc->ops->destroy = PETSC_NULL;
+    pc->data = 0;
+  }
   ierr = PetscFListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
   /* Reinitialize function pointers in PCOps structure */
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
