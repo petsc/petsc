@@ -232,6 +232,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
     } else {  /* off processor entry */
       if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
+        mat->assembled = PETSC_FALSE;
         n_loc = 0;
         for (j=0; j<n; j++){
           if (im[i]/bs > in[j]/bs) continue; /* ignore lower triangular blocks */
