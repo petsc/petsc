@@ -269,7 +269,7 @@ ex54: ex54.o chkopts
 
 ex55: ex55.o chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
-#	${RM} ex55.o
+	${RM} ex55.o
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
@@ -1038,32 +1038,32 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo  > ex54.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex54 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo  -ksp_converged_reason -pc_gamg_verbose 0  > ex54.tmp 2>&1;	  \
          ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_0, diffs above \n========================================="; \
         ${RM} -f ex54.tmp
 
 runex54_SA:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  > ex54_sa.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex54 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_verbose 0  > ex54_sa.tmp 2>&1; \
          ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
         ${RM} -f ex54_sa.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -use_coordinates  > ex55.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -use_coordinates  -ksp_converged_reason -pc_gamg_verbose 0  > ex55.tmp 2>&1;	  \
          ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_0, diffs above \n========================================="; \
         ${RM} -f ex55.tmp
 
 runex55_SA:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates  > ex55_sa.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_verbose 0  > ex55_sa.tmp 2>&1; \
          ${DIFF} output/ex55_1.out ex55_sa.tmp || echo ${PWD} "\nPossible problem with with ex55_1, diffs above \n========================================="; \
         ${RM} -f ex55_sa.tmp
 
 runex55_NC:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  > ex55_nc.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_verbose 0  > ex55_nc.tmp 2>&1; \
          ${DIFF} output/ex54_2.out ex55_nc.tmp || echo ${PWD} "\nPossible problem with with ex54_2, diffs above \n======================================"; \
         ${RM} -f ex55_nc.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 39 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
 
