@@ -135,7 +135,7 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
   if showEventTime:
     data  = []
     names = []
-    for event, color in zip(eventName, ['b', 'g', 'r', 'y']:
+    for event, color in zip(eventName, ['b', 'g', 'r', 'y']):
       for arch, style in zip(arches, ['-', ':']):
         names.append(arch+' '+event)
         data.append(sizes[arch])
@@ -152,7 +152,7 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
   if showEventFlops:
     data  = []
     names = []
-    for event, color in zip(eventName, ['b', 'g', 'r', 'y']:
+    for event, color in zip(eventName, ['b', 'g', 'r', 'y']):
       for arch, style in zip(arches, ['-', ':']):
         names.append(arch+' '+event)
         data.append(sizes[arch])
