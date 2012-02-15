@@ -420,6 +420,9 @@ PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index)
   CHKMEMQ;
   ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
+  if (PetscIsInfOrNanReal(mfqP->Fres[mfqP->nHist])) {
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  }
   mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
 
   /* Add new vector to model */
@@ -614,7 +617,11 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
   CHKMEMQ;
   ierr = TaoComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
+  
   ierr = VecNorm(mfqP->Fhist[0],NORM_2,&mfqP->Fres[0]); CHKERRQ(ierr);
+  if (PetscIsInfOrNanReal(mfqP->Fres[0])) {
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  }
   mfqP->Fres[0]*=mfqP->Fres[0];
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
@@ -629,6 +636,9 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
       CHKMEMQ;
       ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
       ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
+	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+      }
       mfqP->Fres[i]*=mfqP->Fres[i];
       if (mfqP->Fres[i] < minnorm) {
 	  mfqP->minindex = i;
@@ -769,6 +779,9 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
 
     ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(mfqP->Fres[mfqP->nHist])) {
+      SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+    }
     mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
     rho = (mfqP->Fres[mfqP->minindex] - mfqP->Fres[mfqP->nHist]) / mdec;
     mfqP->nHist++;
@@ -859,8 +872,9 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     mfqP->model_indices[0] = mfqP->minindex;
     ierr = morepoints(mfqP); CHKERRQ(ierr);
     if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
-      reason = TAO_DIVERGED_USER;
-      tao->reason = TAO_DIVERGED_USER;
+      ierr = PetscInfo(tao,"Cannot add enough model points");
+      reason = TAO_DIVERGED_LS_FAILURE;
+      tao->reason = TAO_DIVERGED_LS_FAILURE;
       continue;
     }
     for (i=0;i<mfqP->nmodelpoints;i++) {
