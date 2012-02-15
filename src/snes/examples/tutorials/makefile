@@ -193,10 +193,10 @@ ex50: ex50.o  chkopts
 ex51: ex51.o  chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
 	${RM} ex51.o
-ex52: ex52.o  integrateLaplacianQuadrature.o chkopts
-	${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 ex52.h
-	-${CLINKER} -o ex52 ex52.o integrateLaplacianQuadrature.o ${PETSC_SNES_LIB}
-	${RM} ex52.o
+ex52: ex52.o ex52_integrateElement.o chkopts
+	${PYTHON} ${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 ex52.h
+	-${CLINKER} -o ex52 ex52.o ex52_integrateElement.o  ${PETSC_SNES_LIB}
+	${RM} ex52.o ex52_integrateElement.o
 ex53: ex53.o  chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_SNES_LIB}
 	${RM} ex53.o
