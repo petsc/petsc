@@ -27,11 +27,11 @@ const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","Pets
 #define MPI_Get(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #define MPI_Accumulate(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,op,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 /* Independent of MPI_Win, but also not in MPI-1 */
-#define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_get_contents(datatype,num_ints,num_addrs,num_dtypes,ints,addrs,dtypes) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_dup(datatype,newtype) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_create_indexed_block(count,blocklength,displs,oldtype,newtype) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_get_true_extent(type,lb,bytes) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) (*(num_ints)=0,*(num_addrs)=0,*(num_dtypes)=0,*(combiner)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_get_contents(datatype,num_ints,num_addrs,num_dtypes,ints,addrs,dtypes) (*(ints)=0,*(addrs)=0,*(dtypes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_dup(datatype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_create_indexed_block(count,blocklength,displs,oldtype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#define MPI_Type_get_true_extent(type,lb,bytes) (*(lb)=0,*(bytes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #define MPI_COMBINER_DUP   0
 #define MPI_MODE_NOPUT     0
 #define MPI_MODE_NOPRECEDE 0
