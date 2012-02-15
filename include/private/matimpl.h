@@ -1413,7 +1413,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
   next = lnk[5];       /* first node */
   nlnk = lnk[0]; 
   for (k=0; k<nlnk; k++){
+#if 0                           /* Debugging code */
     printf("%d value %d len %d next %d\n",next,lnk[next],lnk[next+1],lnk[next+2]);
+#endif
     next = lnk[next + 2];
   }
   return 0;
