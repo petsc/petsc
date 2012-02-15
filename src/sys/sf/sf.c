@@ -355,6 +355,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     rcount[irank]++;
   }
   ierr = PetscFree2(rcount,ranks);CHKERRQ(ierr);
+#if !defined(PETSC_USE_64BIT_INDICES)
   if (nroots == PETSC_DETERMINE) {
     /* Jed, if you have a better way to do this, put it in */
     PetscInt *numRankLeaves, *leafOff, *leafIndices, *numRankRoots, *rootOff, *rootIndices, maxRoots = 0;
@@ -394,6 +395,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     ierr = PetscFree4(numRankLeaves,leafOff,numRankRoots,rootOff);CHKERRQ(ierr);
     sf->nroots = maxRoots;
   }
+#endif
 
   sf->graphset = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -642,8 +644,8 @@ PetscErrorCode PetscSFGetDataTypes(PetscSF sf,MPI_Datatype unit,const MPI_Dataty
   PetscErrorCode ierr;
   PetscSFDataLink link;
   PetscInt i,nranks;
-  const PetscInt *ranks,*roffset;
-  const PetscMPIInt *rmine,*rremote;
+  const PetscInt *roffset;
+  const PetscMPIInt *ranks,*rmine,*rremote;
 
   PetscFunctionBegin;
   /* Look for types in cache */

@@ -65,7 +65,7 @@ extern PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt nroots,const Pets
 extern PetscErrorCode PetscSFCreateArray(PetscSF,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscSFDestroyArray(PetscSF,MPI_Datatype,void*,void*);
 extern PetscErrorCode PetscSFReset(PetscSF);
-extern PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
+extern PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
 extern PetscErrorCode PetscSFGetDataTypes(PetscSF,MPI_Datatype,const MPI_Datatype**,const MPI_Datatype**);
 extern PetscErrorCode PetscSFGetWindow(PetscSF,MPI_Datatype,void*,PetscBool,PetscMPIInt,PetscMPIInt,PetscMPIInt,MPI_Win*);
 extern PetscErrorCode PetscSFFindWindow(PetscSF,MPI_Datatype,const void*,MPI_Win*);
