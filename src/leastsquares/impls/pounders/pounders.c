@@ -43,6 +43,7 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
 
     if (! mfqP->usegqt) {
       Vec       x,xl,xu,pdel,ndel;
+      PetscReal maxval;
       PetscInt i,j;
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Xsubproblem,&x); CHKERRQ(ierr);
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Gres,&mfqP->b); CHKERRQ(ierr);
@@ -66,7 +67,6 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
       ierr = TaoSetTolerances(mfqP->subtao,PETSC_NULL,PETSC_NULL,*gnorm,*gnorm,PETSC_NULL); CHKERRQ(ierr);
       /* enforce bound constraints -- experimental */
       if (tao->XU && tao->XL) {
-	PetscReal maxval;
 	ierr = VecCopy(tao->XU,xu); CHKERRQ(ierr);
 	ierr = VecAXPY(xu,-1.0,tao->solution); CHKERRQ(ierr);
 	ierr = VecScale(xu,1.0/mfqP->delta); CHKERRQ(ierr);
@@ -76,28 +76,32 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
 	
 	ierr = VecPointwiseMin(xu,xu,pdel); CHKERRQ(ierr);
 	ierr = VecPointwiseMax(xl,xl,ndel); CHKERRQ(ierr);
-	/* Make sure xu > xl */
-	ierr = VecCopy(x,pdel); CHKERRQ(ierr);
-	ierr = VecAXPY(pdel,-1.0,xu);  CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"upper bound < lower bound in subproblem");
-	}
-	/* Make sure xu > tao->solution > xl */
-	ierr = VecCopy(xl,pdel); CHKERRQ(ierr);
-	ierr = VecAXPY(pdel,-1.0,x);  CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"initial guess < lower bound in subproblem");
-	}
-
-	ierr = VecCopy(x,pdel); CHKERRQ(ierr);
-	ierr = VecAXPY(pdel,-1.0,xu);  CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
-	}
+      } else {
+	ierr = VecCopy(pdel,xu); CHKERRQ(ierr);
+	ierr = VecCopy(ndel,xl); CHKERRQ(ierr);
       }
+      /* Make sure xu > xl */
+      ierr = VecCopy(x,pdel); CHKERRQ(ierr);
+      ierr = VecAXPY(pdel,-1.0,xu);  CHKERRQ(ierr);
+      ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
+      if (maxval > 1e-10) {
+	SETERRQ(PETSC_COMM_WORLD,1,"upper bound < lower bound in subproblem");
+      }
+      /* Make sure xu > tao->solution > xl */
+      ierr = VecCopy(xl,pdel); CHKERRQ(ierr);
+      ierr = VecAXPY(pdel,-1.0,x);  CHKERRQ(ierr);
+      ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
+      if (maxval > 1e-10) {
+	SETERRQ(PETSC_COMM_WORLD,1,"initial guess < lower bound in subproblem");
+      }
+
+      ierr = VecCopy(x,pdel); CHKERRQ(ierr);
+      ierr = VecAXPY(pdel,-1.0,xu);  CHKERRQ(ierr);
+      ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
+      if (maxval > 1e-10) {
+	SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
+      }
+
       ierr = TaoSetVariableBounds(mfqP->subtao,xl,xu); CHKERRQ(ierr);
       ierr = TaoSolve(mfqP->subtao); CHKERRQ(ierr);
       ierr = TaoGetSolutionStatus(mfqP->subtao,PETSC_NULL,qmin,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
