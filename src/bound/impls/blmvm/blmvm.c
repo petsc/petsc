@@ -24,6 +24,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
   /*  Project initial point onto bounds */
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient); CHKERRQ(ierr);
@@ -169,7 +170,6 @@ static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
       ierr = VecDuplicate(tao->solution,&tao->XU); CHKERRQ(ierr);
       ierr = VecSet(tao->XU,TAO_INFINITY); CHKERRQ(ierr);
   }
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
   /* Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n); CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N); CHKERRQ(ierr);

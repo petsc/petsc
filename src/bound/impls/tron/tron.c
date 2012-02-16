@@ -104,7 +104,6 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
       ierr = VecDuplicate(tao->solution, &tao->XU); CHKERRQ(ierr);
       ierr = VecSet(tao->XU, TAO_INFINITY); CHKERRQ(ierr);
   }
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -130,6 +129,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
   /*   Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
 
   
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
