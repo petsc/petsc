@@ -193,10 +193,10 @@ ex50: ex50.o  chkopts
 ex51: ex51.o  chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
 	${RM} ex51.o
-ex52: ex52.o  integrateLaplacianQuadrature.o chkopts
-	${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 ex52.h
-	-${CLINKER} -o ex52 ex52.o integrateLaplacianQuadrature.o ${PETSC_SNES_LIB}
-	${RM} ex52.o
+ex52: ex52.o ex52_integrateElement.o chkopts
+	${PYTHON} ${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 ex52.h
+	-${CLINKER} -o ex52 ex52.o ex52_integrateElement.o  ${PETSC_SNES_LIB}
+	${RM} ex52.o ex52_integrateElement.o
 ex53: ex53.o  chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_SNES_LIB}
 	${RM} ex53.o
@@ -577,6 +577,12 @@ runex50_ngmres_fas_ms: #test ex50 with NGMRES preconditioned by FAS with multi-s
 	-@${MPIEXEC} -n 2 ./ex50 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type ls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex50_ngmres_fas_ms.tmp 2>&1; \
 	   ${DIFF} output/ex50_ngmres_fas_ms.out ex50_ngmres_fas_ms.tmp || echo  ${PWD} "\nPossible problem with ex50_ngmres_fas_ms, diffs above \n========================================="; \
            ${RM} -f ex50_ngmres_fas_ms.tmp
+
+runex50_bjacobi: #test hierarchical pc
+	-@${MPIEXEC} -n 4 ./ex50 -da_refine 4 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 2 -sub_ksp_type gmres -sub_ksp_max_it 2 -sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_type ilu -snes_monitor_short -options_left no > ex50_1.tmp 2>&1; \
+	   if (${DIFF} output/ex50_bjacobi.out ex50_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex50_bjacobi, diffs above \n========================================="; fi; \
+	   ${RM} -f ex50_1.tmp
 
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view  > ex18_1.tmp 2>&1; \
@@ -993,7 +999,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
-                                 ex50.PETSc runex50_6 runex50_fas ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
+                                 ex50.PETSc runex50_6 runex50_fas runex50_bjacobi ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm

@@ -210,7 +210,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      if (jac->ksp) {
+      if (jac->ksp && !jac->psubcomm) {
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         if (!rank){
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
