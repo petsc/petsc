@@ -338,7 +338,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       break;
     case 4: /* Conjugate Descent */
       ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      ierr = VecDot(dX, dX, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / lXdotFold);CHKERRQ(ierr);
       break;
     }
