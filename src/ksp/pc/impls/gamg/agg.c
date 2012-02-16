@@ -426,7 +426,7 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
       for (j=0; j<n; j++) {
         PetscInt flid, lidj = idx[j], sgid;
         NState statej = lid_state[lidj];
-        if( statej==DELETED && (sgid=deleted_parent_gid[lidj]) != (PetscScalar)(lid+my0) ){ /* steal local */
+        if (statej==DELETED && (sgid=(PetscInt)PetscRealPart(deleted_parent_gid[lidj])) != lid+my0) { /* steal local */
           deleted_parent_gid[lidj] = (PetscScalar)(lid+my0); /* send this with _2 */
           if( sgid >= my0 && sgid < my0+nloc ){       /* I'm stealing this local from a local */
             PetscInt hav=0, flid2=sgid-my0, lastid;
@@ -454,7 +454,7 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
       }
     }
     else if( state == DELETED && lid_cprowID_1 ) {
-      PetscInt sgidold = (PetscInt)deleted_parent_gid[lid]; 
+      PetscInt sgidold = (PetscInt)PetscRealPart(deleted_parent_gid[lid]);
       /* see if I have a selected ghost neighbor that will steal me */
       if( (ix=lid_cprowID_1[lid]) != -1 ){ 
         ii = matB_1->compressedrow.i; n = ii[ix+1] - ii[ix];
@@ -520,7 +520,7 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
         /* look for deleted ghosts and see if they moved */
         for( lastid=lid, flid=id_llist_2[lid] ; flid!=-1 ; flid=id_llist_2[flid] ) {
           if( flid>=nloc ) {
-            PetscInt cpid = flid-nloc, sgid_new = cpcol_2_sel_gid[cpid];
+            PetscInt cpid = flid-nloc, sgid_new = (PetscInt)PetscRealPart(cpcol_2_sel_gid[cpid]);
             if( sgid_new != old_sgid && sgid_new != -1 ) {
               id_llist_2[lastid] = id_llist_2[flid];                    /* remove 'flid' from list */
               id_llist_2[flid] = -1; 
@@ -535,7 +535,7 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
 
     /* look at ghosts, see if they changed, and moved here */
     for(cpid=0;cpid<nnodes_2-nloc;cpid++){
-      PetscInt sgid_new = cpcol_2_sel_gid[cpid];
+      PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_sel_gid[cpid]);
       if( sgid_new>=my0 && sgid_new<(my0+nloc) ) { /* this is mine */
         PetscInt lastid,flid,slid_new=sgid_new-my0,flidj=nloc+cpid,hav=0;
         for( lastid=slid_new, flid=id_llist_2[slid_new] ; flid != -1 ; flid=id_llist_2[flid] ) {
