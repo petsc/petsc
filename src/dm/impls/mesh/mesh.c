@@ -1696,19 +1696,14 @@ PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *v, DMMeshInterpolati
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshInterpolationEvaluate"
-PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
+#define __FUNCT__ "DMMeshInterpolate_Simplex_Private"
+PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscInt       p, n;
+  PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(x, SECTIONREAL_CLASSID, 2);
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  if (n != ctx->n*ctx->dof) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid input vector size %d should be %d", n, ctx->n*ctx->dof);}
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
@@ -1742,6 +1737,124 @@ PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshIn
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolate_Quad_Private"
+PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+  PetscReal   *v0, *J, *invJ, detJ;
+  PetscScalar *a, *coords;
+
+  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for(p = 0; p < ctx->n; ++p) {
+    PetscInt  e = ctx->cells[p];
+    PetscReal xi[2];
+    PetscInt  d, f, comp;
+
+    if ((ctx->dim+1)*ctx->dof != m->sizeWithBC(s, e)) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), (ctx->dim+1)*ctx->dof);}
+    m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
+    for(d = 0; d < ctx->dim; ++d) {
+      xi[d] = 0.0;
+      for(f = 0; f < ctx->dim; ++f) {
+        xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
+      }
+    }
+    for(comp = 0; comp < ctx->dof; ++comp) {
+      a[p*ctx->dof+comp] = c[0*ctx->dof+comp]*xi[0]*xi[1] + c[1*ctx->dof+comp]*(1 - xi[0])*xi[1] + c[2*ctx->dof+comp]*xi[0]*(1 - xi[1]) + c[3*ctx->dof+comp]*(1 - xi[0])*(1 - xi[1]);
+    }
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolate_Hex_Private"
+PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+  PetscReal   *v0, *J, *invJ, detJ;
+  PetscScalar *a, *coords;
+
+  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for(p = 0; p < ctx->n; ++p) {
+    PetscInt  e = ctx->cells[p];
+    PetscReal xi[3];
+    PetscInt  d, f, comp;
+
+    if ((ctx->dim+1)*ctx->dof != m->sizeWithBC(s, e)) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), (ctx->dim+1)*ctx->dof);}
+    m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
+    for(d = 0; d < ctx->dim; ++d) {
+      xi[d] = 0.0;
+      for(f = 0; f < ctx->dim; ++f) {
+        xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
+      }
+    }
+    for(comp = 0; comp < ctx->dof; ++comp) {
+      a[p*ctx->dof+comp] =
+        c[0*ctx->dof+comp]*xi[0]*xi[1]*xi[2]     + c[1*ctx->dof+comp]*(1-xi[0])*xi[1]*xi[2]     + c[2*ctx->dof+comp]*xi[0]*(1-xi[1])*xi[2]     + c[3*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*xi[2] +
+        c[4*ctx->dof+comp]*xi[0]*xi[1]*(1-xi[2]) + c[5*ctx->dof+comp]*(1-xi[0])*xi[1]*(1-xi[2]) + c[6*ctx->dof+comp]*xi[0]*(1-xi[1])*(1-xi[2]) + c[7*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*(1-xi[2]);
+    }
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationEvaluate"
+PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
+  PetscInt       dim, maxConeSize, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(x, SECTIONREAL_CLASSID, 2);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  if (n != ctx->n*ctx->dof) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid input vector size %d should be %d", n, ctx->n*ctx->dof);}
+  ierr = DMMeshGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMMeshGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  if (dim == 2) {
+    if (maxConeSize == 3) {
+      ierr = DMMeshInterpolate_Simplex_Private(dm, x, v, ctx);CHKERRQ(ierr);
+    } else {
+      ierr = DMMeshInterpolate_Quad_Private(dm, x, v, ctx);CHKERRQ(ierr);
+    }
+  } else if (dim == 3) {
+    if (maxConeSize == 4) {
+      ierr = DMMeshInterpolate_Simplex_Private(dm, x, v, ctx);CHKERRQ(ierr);
+    } else {
+      ierr = DMMeshInterpolate_Hex_Private(dm, x, v, ctx);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %d for point interpolation", dim);
+  }
   PetscFunctionReturn(0);
 }
 
