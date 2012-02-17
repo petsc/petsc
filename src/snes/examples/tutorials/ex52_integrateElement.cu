@@ -243,7 +243,20 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   PetscFunctionBegin;
   assert(Nbl == N_bl);
   assert(Nbc*N_comp == N_t);
-  if (!Ne) PetscFunctionReturn(0);
+  if (!Ne) {
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog = PETSC_NULL;
+    int               stage;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+    ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+    /* Log performance info */
+    eventLog->eventInfo[event].count++;
+    eventLog->eventInfo[event].time  += 0.0;
+    eventLog->eventInfo[event].flops += 0;
+    PetscFunctionReturn(0);
+  }
   // Marshalling
   ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(float));CHKERRQ(ierr);
   ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(float));CHKERRQ(ierr);
