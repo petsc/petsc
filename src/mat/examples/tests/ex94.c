@@ -239,6 +239,11 @@ int main(int argc,char **args)
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
+    /* Test MatDuplicate() */
+    Mat Cdup;
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
+    ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
+
     if (size>1) Test_MatRARt = PETSC_FALSE;
     /* Test MatRARt() */
     if (Test_MatRARt){
