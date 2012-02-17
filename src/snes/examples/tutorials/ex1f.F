@@ -114,6 +114,7 @@
       call MatCreate(PETSC_COMM_SELF,J,ierr)
       call MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,i2,i2,ierr)
       call MatSetFromOptions(J,ierr)
+      call MatSetUp(J,ierr)
 
 !  Set function evaluation routine and vector
 

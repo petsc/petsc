@@ -22,6 +22,7 @@
       call MatCreate(PETSC_COMM_SELF,m,ierr)
       call MatSetSizes(m,twelve,twelve,twelve,twelve,ierr)
       call MatSetFromOptions(m,ierr)
+      call MatSetUp(m,ierr)
 
       value = 3.0
       i     = 4

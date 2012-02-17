@@ -72,7 +72,7 @@
 
       call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
      &     N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr)
-
+      call MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE,ierr)
       call MatGetType(J,matrixname,ierr)
 
 ! Store right-hand-side of PDE and exact solution
