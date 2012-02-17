@@ -202,6 +202,7 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElementBatchGPU"
 /*
@@ -295,3 +296,4 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
