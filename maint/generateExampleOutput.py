@@ -6,7 +6,7 @@ import TaoExamples
 
 if __name__=="__main__":
     
-    examples = TaoExamples.TaoExamples()
+    examples = TaoExamples.TaoTests()
     examples.setWithTags(sys.argv[1:])
     if examples is None:
         sys.stderr.write('No examples match arguments:\n%s\n' % str(sys.argv[1:]))
