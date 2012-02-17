@@ -108,7 +108,10 @@ def processSummary(moduleName, defaultStage, eventNames, times, events):
     if name in stage.event:
       if not name in events:
         events[name] = []
-      events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
+      try:
+        events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
+      except ZeroDivisionError:
+        events[name].append((stage.event[name].Time[0], 0))
   return
 
 def plotSummaryLine(library, num, eventNames, sizes, times, events):
@@ -133,14 +136,19 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
   # Common event time
   #   We could make a stacked plot like Rio uses here
   if showEventTime:
+    bs    = events[arches[0]].keys()[0]
     data  = []
     names = []
-    for event, color in zip(eventName, ['b', 'g', 'r', 'y']):
+    for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
       for arch, style in zip(arches, ['-', ':']):
-        names.append(arch+' '+event)
-        data.append(sizes[arch])
-        data.append(np.array(events[arch][event])[:,0])
-        data.append(color+style)
+        if event in events[arch][bs]:
+          names.append(arch+'-'+str(bs)+' '+event)
+          data.append(sizes[arch][bs])
+          data.append(np.array(events[arch][bs][event])[:,0])
+          data.append(color+style)
+        else:
+          print 'Could not find %s in %s-%d events' % (event, arch, bs)
+    print data
     plot(*data)
     title('Performance on '+library+' Example '+str(num))
     xlabel('Number of Dof')
@@ -150,14 +158,18 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
   # Common event flops
   #   We could make a stacked plot like Rio uses here
   if showEventFlops:
+    bs    = events[arches[0]].keys()[0]
     data  = []
     names = []
-    for event, color in zip(eventName, ['b', 'g', 'r', 'y']):
+    for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
       for arch, style in zip(arches, ['-', ':']):
-        names.append(arch+' '+event)
-        data.append(sizes[arch])
-        data.append(np.array(events[arch][event])[:,1])
-        data.append(color+style)
+        if event in events[arch][bs]:
+          names.append(arch+'-'+str(bs)+' '+event)
+          data.append(sizes[arch][bs])
+          data.append(np.array(events[arch][bs][event])[:,1])
+          data.append(color+style)
+        else:
+          print 'Could not find %s in %s-%d events' % (event, arch, bs)
     plot(*data)
     title('Performance on '+library+' Example '+str(num))
     xlabel('Number of Dof')
@@ -198,7 +210,7 @@ def plotSummaryBar(library, num, eventNames, sizes, times, events):
   plt.show()
   return
 
-def getDMMeshSize(dim, out):
+def getDMComplexSize(dim, out):
   '''Retrieves the number of cells from '''
   size = 0
   for line in out.split('\n'):
@@ -214,7 +226,7 @@ def run_DMDA(ex, name, opts, args, sizes, times, events):
     processSummary('summary', args.stage, args.events, times[name], events[name])
   return
 
-def run_DMMesh(ex, name, opts, args, sizes, times, events):
+def run_DMComplex(ex, name, opts, args, sizes, times, events):
   # This should eventually be replaced by a direct FFC/Ignition interface
   if args.operator == 'laplacian':
     numComp  = 1
@@ -236,7 +248,7 @@ def run_DMMesh(ex, name, opts, args, sizes, times, events):
     events[name][numBlock] = {}
     for r in map(float, args.refine):
       out = ex.run(refinement_limit=r, **opts)
-      sizes[name][numBlock].append(getDMMeshSize(args.dim, out))
+      sizes[name][numBlock].append(getDMComplexSize(args.dim, out))
       processSummary('summary', args.stage, args.events, times[name][numBlock], events[name][numBlock])
   return
 
@@ -259,7 +271,7 @@ if __name__ == '__main__':
   parser_dmda.add_argument('--comp', type = int, default='1',    help='Number of field components')
   parser_dmda.add_argument('runs',   nargs='*',                  help='Run descriptions: <name>=<args>')
 
-  parser_dmmesh = subparsers.add_parser('DMMesh', help='Use a DMMesh for the problem geometry')
+  parser_dmmesh = subparsers.add_parser('DMComplex', help='Use a DMComplex for the problem geometry')
   parser_dmmesh.add_argument('--dim',      type = int, default='2',        help='Spatial dimension')
   parser_dmmesh.add_argument('--refine',   nargs='+',  default=['0.0'],    help='List of refinement limits')
   parser_dmmesh.add_argument('--order',    type = int, default='1',        help='Order of the finite element')
@@ -272,7 +284,7 @@ if __name__ == '__main__':
   if hasattr(args, 'comp'):
     args.dmType = 'DMDA'
   else:
-    args.dmType = 'DMMesh'
+    args.dmType = 'DMComplex'
 
   ex     = PETScExample(args.library, args.num, log_summary='summary.dat', log_summary_python = None if args.batch else args.module+'.py', preload='off')
   source = ex.petsc.source(args.library, args.num)
@@ -288,11 +300,11 @@ if __name__ == '__main__':
       times[name]  = []
       events[name] = {}
       run_DMDA(ex, name, opts, args, sizes, times, events)
-    elif args.dmType == 'DMMesh':
+    elif args.dmType == 'DMComplex':
       sizes[name]  = {}
       times[name]  = {}
       events[name] = {}
-      run_DMMesh(ex, name, opts, args, sizes, times, events)
+      run_DMComplex(ex, name, opts, args, sizes, times, events)
   print('sizes',sizes)
   print('times',times)
   print('events',events)
@@ -300,4 +312,4 @@ if __name__ == '__main__':
 # Benchmark for ex50
 # ./src/benchmarks/benchmarkExample.py --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --num 50 DMDA --size 10 20 50 100 --comp 4 CPU='pc_type=none mat_no_inode dm_vec_type=seq dm_mat_type=seqaij' GPU='pc_type=none mat_no_inode dm_vec_type=seqcusp dm_mat_type=seqaijcusp cusp_synchronize'
 # Benchmark for ex52
-# ./src/benchmarks/benchmarkExample.py --events IntegBatchCPU IntegBatchGPU IntegGPUOnly --num 52 DMMesh --refine 0.0625 0.00625 0.000625 0.0000625 --blockExp 4 --order 1 CPU='dm_view show_residual=0 compute_function batch' GPU='dm_view show_residual=0 compute_function batch gpu gpu_batches=8'
+# ./src/benchmarks/benchmarkExample.py --events IntegBatchCPU IntegBatchGPU IntegGPUOnly --num 52 DMComplex --refine 0.0625 0.00625 0.000625 0.0000625 --blockExp 4 --order 1 CPU='dm_view show_residual=0 compute_function batch' GPU='dm_view show_residual=0 compute_function batch gpu gpu_batches=8'
