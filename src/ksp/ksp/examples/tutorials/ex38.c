@@ -44,7 +44,7 @@ int main(int Argc,char **Args)
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, n, 1, 1, 0, &da);CHKERRQ(ierr);
   ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
-  ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
+  ierr = PCSetDM(pcmg, (DM) da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
@@ -72,8 +72,8 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,1, PETSC_NULL, 2, PETSC_NULL, mat);CHKERRQ(ierr);
-  
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, PETSC_NULL, PETSC_DECIDE, PETSC_NULL, mat);CHKERRQ(ierr);
+
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {
     if(i>0)   { j=i-1; ierr = MatSetValues(*mat,1,&i,1,&j,&mone,INSERT_VALUES);CHKERRQ(ierr); }

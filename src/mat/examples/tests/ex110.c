@@ -23,7 +23,9 @@ int main(int argc,char **argv) {
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create a mpiaij matrix for checking */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,5,5,PETSC_DECIDE,PETSC_DECIDE,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr); 
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,5,5,PETSC_DECIDE,PETSC_DECIDE,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
  
@@ -56,7 +58,7 @@ int main(int argc,char **argv) {
   }
 
   ierr = MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,di,dj,da,oi,oj,oa,&B);CHKERRQ(ierr);
-
+  ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
 
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");

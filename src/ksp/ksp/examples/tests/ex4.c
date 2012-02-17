@@ -43,6 +43,7 @@ int main(int argc,char **args)
 
   /* create stiffness matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);

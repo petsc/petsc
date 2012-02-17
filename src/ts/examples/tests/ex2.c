@@ -64,6 +64,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);
 

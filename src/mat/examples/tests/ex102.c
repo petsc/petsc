@@ -32,6 +32,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) { 
     a = -1.0; i = Ii/n; j = Ii - i*n;  
@@ -50,6 +51,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
   ierr = MatSetSizes(U,PETSC_DECIDE,PETSC_DECIDE,m*n,3);CHKERRQ(ierr);
   ierr = MatSetType(U,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(U);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(U,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(U,&u);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -65,6 +67,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&V);CHKERRQ(ierr);
   ierr = MatSetSizes(V,PETSC_DECIDE,PETSC_DECIDE,m*n,3);CHKERRQ(ierr);
   ierr = MatSetType(V,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(V);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(U,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(V,&u);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -79,6 +82,7 @@ int main(int argc,char **args)
          Create low rank created matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreateLRC(A,U,V,&LR);CHKERRQ(ierr);
+  ierr = MatSetUp(LR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Create test vectors

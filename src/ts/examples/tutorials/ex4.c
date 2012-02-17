@@ -182,6 +182,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-time_dependent_rhs",&flg,PETSC_NULL);CHKERRQ(ierr);

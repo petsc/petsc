@@ -198,6 +198,7 @@ int main(int argc,char **argv)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx);CHKERRQ(ierr);  
   }

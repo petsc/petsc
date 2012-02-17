@@ -96,6 +96,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
@@ -116,6 +117,7 @@ int main(int argc,char **args)
   user->B = A;
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
+  ierr = MatSetUp(S);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
@@ -124,6 +126,7 @@ int main(int argc,char **args)
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
   }
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,D,&N);CHKERRQ(ierr);
+  ierr = MatSetUp(N);CHKERRQ(ierr);
 
   ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);
   ierr = TestMatrix(A,X,Y,Z);CHKERRQ(ierr);

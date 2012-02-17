@@ -56,6 +56,7 @@ int main(int argc,char *argv[])
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(J,top_bs,PETSC_DECIDE,0);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(J,top_bs,PETSC_DECIDE,0,PETSC_DECIDE,0);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
   ierr = MatSetBlockSize(J,top_bs);CHKERRQ(ierr);
   ierr = MatGetSize(J,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);

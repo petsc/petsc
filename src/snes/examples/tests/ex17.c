@@ -94,6 +94,7 @@ static PetscErrorCode assembled_system(void)
   ierr = MatCreate(PETSC_COMM_SELF,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -400,19 +401,22 @@ static int block_system(void)
   ierr = MatCreate( PETSC_COMM_WORLD, &j11 );CHKERRQ(ierr);
   ierr = MatSetSizes( j11, 1, 1, 1, 1 );CHKERRQ(ierr);
   ierr = MatSetType( j11, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatSetUp(j11);CHKERRQ(ierr);
 
   ierr = MatCreate( PETSC_COMM_WORLD, &j12 );CHKERRQ(ierr);
   ierr = MatSetSizes( j12, 1, 1, 1, 1 );CHKERRQ(ierr);
   ierr = MatSetType( j12, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatSetUp(j12);CHKERRQ(ierr);
 
   ierr = MatCreate( PETSC_COMM_WORLD, &j21 );CHKERRQ(ierr);
   ierr = MatSetSizes( j21, 1, 1, 1, 1 );CHKERRQ(ierr);
   ierr = MatSetType( j21, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatSetUp(j21);CHKERRQ(ierr);
 
   ierr = MatCreate( PETSC_COMM_WORLD, &j22 );CHKERRQ(ierr);
   ierr = MatSetSizes( j22, PETSC_DECIDE, PETSC_DECIDE, 1, 1 );CHKERRQ(ierr);
   ierr = MatSetType( j22, MATSEQAIJ );CHKERRQ(ierr);
-
+  ierr = MatSetUp(j22);CHKERRQ(ierr);
   /*
   Create block Jacobian matrix data structure
   */
@@ -421,6 +425,7 @@ static int block_system(void)
   bA[1][0] = j21;
   bA[1][1] = j22;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&bA[0][0],&J);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
   ierr = MatNestSetVecType(J,VECNEST);CHKERRQ(ierr);
   ierr = MatDestroy(&j11);CHKERRQ(ierr);
   ierr = MatDestroy(&j12);CHKERRQ(ierr);

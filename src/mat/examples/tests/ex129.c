@@ -194,7 +194,8 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
   ierr = MatCreate(PETSC_COMM_WORLD,&RHS);CHKERRQ(ierr);
   ierr = MatSetSizes(RHS,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(RHS,MATSEQDENSE);CHKERRQ(ierr);
-    
+  ierr = MatSetUp(RHS);CHKERRQ(ierr);
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetArray(RHS,&array);CHKERRQ(ierr);
