@@ -109,6 +109,11 @@ def check(args):
         print(param['setup'])
         os.system('python '+param['setup'])
         rebuildTest = True
+      if 'source' in param:
+        if not isinstance(ex, list):
+          ex = [ex]+param['source']
+        else:
+          ex = ex+param['source']
       if rebuildTest:
         objects = maker.buildFile(ex, objDir)
         if not len(objects):
