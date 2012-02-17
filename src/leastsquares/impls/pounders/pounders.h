@@ -78,8 +78,8 @@ typedef struct {
   PetscReal *omega; /* npmax - np - 1 */
 
   TaoSolver subtao;
-
-    
+  Vec       subxl,subxu,subx,subpdel,subndel,subb;
+  Mat       subH;
        
 } TAO_POUNDERS;
 
