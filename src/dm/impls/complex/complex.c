@@ -3587,6 +3587,7 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(dim+1,PetscInt,&numDofTot,numFields+1,PetscInt,&maxConstraints);CHKERRQ(ierr);
+  for(f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
   for(d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
     for(f = 0; f < numFields; ++f) {
@@ -3616,7 +3617,6 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
     }
   }
   if (numBC) {
-    for(f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
     for(bc = 0; bc < numBC; ++bc) {
       PetscInt        field = 0;
       const PetscInt *idx;
