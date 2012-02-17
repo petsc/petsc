@@ -15,12 +15,6 @@ PETSC_CUDA_EXTERN_C_END
 #include <cusp/print.h>
 #include <cusp/coo_matrix.h>
 
-#if THRUST_VERSION >= 100500
-#include <thrust/detail/backend/cuda/reduce_by_key.h>
-#else
-#include <cusp/detail/device/reduce_by_key.h>
-#endif
-
 #include <cusp/io/matrix_market.h>
 
 #include <thrust/iterator/counting_iterator.h>
@@ -265,12 +259,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //     the Cusp one is 2x faster, but still not optimal
   // This could possibly be done in-place
   ierr = PetscInfo(J, "Compressing matrix\n");CHKERRQ(ierr);
-#if THRUST_VERSION >= 100500
-  thrust::detail::backend::cuda::reduce_by_key
-#else
-  cusp::detail::device::reduce_by_key
-#endif
-    (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
+  thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
      thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
      COO.values.begin(),
      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),

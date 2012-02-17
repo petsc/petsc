@@ -16,12 +16,6 @@ PETSC_CUDA_EXTERN_C_END
 #include <cusp/print.h>
 #include <cusp/coo_matrix.h>
 
-#if THRUST_VERSION >= 100500
-#include <thrust/detail/backend/cuda/reduce_by_key.h>
-#else
-#include <cusp/detail/device/reduce_by_key.h>
-#endif
-
 #include <cusp/io/matrix_market.h>
 
 #include <thrust/iterator/counting_iterator.h>
@@ -435,12 +429,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //     the Cusp one is 2x faster, but still not optimal
   // This could possibly be done in-place
   ierr = PetscInfo(J, "Compressing matrices\n");CHKERRQ(ierr);
-#if THRUST_VERSION >= 100500
-  thrust::detail::backend::cuda::reduce_by_key
-#else
-  cusp::detail::device::reduce_by_key
-#endif
-    (thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset,
+  thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.end(),   diagCOO.column_indices.end())),
      diagCOO.values.begin() + diagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
@@ -448,12 +437,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
      thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
      thrust::plus<ValueType>());
 
-#if THRUST_VERSION >= 100500
-  thrust::detail::backend::cuda::reduce_by_key
-#else
-  cusp::detail::device::reduce_by_key
-#endif
-    (thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
+  thrustreduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())),
      offdiagCOO.values.begin() + offdiagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin())),
