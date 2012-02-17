@@ -495,7 +495,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
       {
         PetscInt t1, t2;
         t1 = nloc - nDone; assert(t1>=0);
-        ierr = MPI_Allreduce( &t1, &t2, 1, MPIU_INT, MPIU_SUM, wcomm ); /* synchronous version */
+        ierr = MPI_Allreduce( &t1, &t2, 1, MPIU_INT, MPI_SUM, wcomm ); /* synchronous version */
         if( t2 == 0 ) break;
       }
     }
