@@ -265,7 +265,8 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
 {
   PetscScalar rLocal[4] = {0.0, 0.0, 0.0};
   PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy, x, y;
+  /* PetscReal   xI = i*hx, yI = j*hy, x, y; */
+  PetscReal   hxhy = hx*hy;
   PetscScalar res;
   PetscInt    q, k;
 
@@ -275,8 +276,10 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
     phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
     phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
-    x      = xI + quadPoints[q*2]*hx;
-    y      = yI + quadPoints[q*2+1]*hy;
+    /*
+     x      = xI + quadPoints[q*2]*hx;
+     y      = yI + quadPoints[q*2+1]*hy;
+     */
     res    = quadWeights[q]*(2.0);
     for(k = 0; k < 4; k++) {
       rLocal[k] += phi[k]*res;
