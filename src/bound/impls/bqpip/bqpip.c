@@ -11,7 +11,6 @@ static PetscErrorCode TaoSetUp_BQPIP(TaoSolver tao)
 
   /* Set pointers to Data */
   ierr = VecGetSize(tao->solution,&qp->n); CHKERRQ(ierr);
-  ierr = KSPSetTolerances(tao->ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, qp->n); CHKERRQ(ierr);
 
   /* Allocate some arrays */
   if (!tao->gradient) {
@@ -586,7 +585,8 @@ PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
-  ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, qp->n); CHKERRQ(ierr);
+  ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n)); CHKERRQ(ierr);
+  
 
 
   PetscFunctionReturn(0);
