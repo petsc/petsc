@@ -442,9 +442,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
 
     if (nreduced == nfull) {
 
-      if (*vreduced == PETSC_NULL) {
-	ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
-      }
+      ierr = VecDestroy(vreduced); CHKERRQ(ierr);
       ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
       ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
 
