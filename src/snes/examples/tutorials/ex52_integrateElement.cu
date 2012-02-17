@@ -130,6 +130,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
     }
 
     /* ==== TRANSPOSE THREADS ==== */
+    __syncthreads();
 
     /* Map values at quadrature points to coefficients */
     for(int c = 0; c < N_sbc; ++c) {
