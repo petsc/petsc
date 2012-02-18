@@ -252,9 +252,16 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscReal *coords )
 }
 EXTERN_C_END
 
+typedef PetscInt NState;
+static const NState NOT_DONE=-2;
+static const NState DELETED=-1;
+static const NState REMOVED=-3;
+#define IS_SELECTED(s) (s!=DELETED && s!=NOT_DONE && s!=REMOVED)
+
 /* -------------------------------------------------------------------------- */
 /*
-   smoothAggs - greedy grab of with G1 (unsquared graph) -- AIJ specific!!!
+   smoothAggs - greedy grab of with G1 (unsquared graph) -- AIJ specific
+     - AGG-MG specific: clears singletons out of 'selected_2'
 
    Input Parameter:
    . Gmat_2 - glabal matrix of graph (data not defined)
@@ -276,7 +283,7 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
   Mat_SeqAIJ    *matA_1, *matB_1=0, *matA_2, *matB_2=0;
   MPI_Comm       wcomm = ((PetscObject)Gmat_2)->comm;
   PetscMPIInt    mype;
-  PetscInt       lid,*ii,*idx,ix,Iend,my0,nSelected,nnodes_2,kk,n,j;
+  PetscInt       lid,*ii,*idx,ix,Iend,my0,nnodes_2,kk,n,j;
   Mat_MPIAIJ    *mpimat_2 = 0, *mpimat_1=0;
   const PetscInt nloc = Gmat_2->rmap->n;
   PetscScalar   *cpcol_1_state,*cpcol_2_state,*deleted_parent_gid;
@@ -349,15 +356,10 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
   for( lid = 0 ; lid < nloc ; lid++ ) {
     deleted_parent_gid[lid] = -1.0;
     lid_state[lid] = DELETED;
-    ii = matA_2->i; n = ii[lid+1] - ii[lid]; 
-    if( n < 2 ) {
-      if(!lid_cprowID_2 || (ix=lid_cprowID_2[lid])==-1 || (matB_2->compressedrow.i[ix+1]-matB_2->compressedrow.i[ix])==0){
-        lid_state[lid] = REMOVED; 
-      }
-    }
   }
   /* set index into compressed row 'lid_cprowID', not -1 means its a boundary node */
   {
+    PetscInt nSelected;
     const PetscInt *selected_idx;
     /* set local selected */
     ierr = ISGetSize( selected_2, &nSelected );        CHKERRQ(ierr);
@@ -366,6 +368,13 @@ PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
       PetscInt lid = selected_idx[kk];
       if(lid<nloc) lid_state[lid] = (NState)(lid+my0); /* selected flag */
       else break;
+      /* remove singletons */
+      ii = matA_2->i; n = ii[lid+1] - ii[lid];
+      if( n < 2 ) {
+        if(!lid_cprowID_2 || (ix=lid_cprowID_2[lid])==-1 || (matB_2->compressedrow.i[ix+1]-matB_2->compressedrow.i[ix])==0){
+          lid_state[lid] = REMOVED;
+        }
+      }
     }
     ierr = ISRestoreIndices( selected_2, &selected_idx );     CHKERRQ(ierr);
   }
@@ -616,7 +625,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
                           )
 {
   PetscErrorCode ierr;
-  PetscInt  Istart,Iend,nFineLoc,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone,nSelected,minsz;
+  PetscInt  Istart,Iend,nFineLoc,clid,flid,aggID,kk,jj,ii,mm,nLocalSelected,ndone,nSelected,minsz;
   MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
@@ -630,9 +639,10 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   
   ierr = ISGetSize( selected, &nSelected );        CHKERRQ(ierr);
   ierr = ISGetIndices( selected, &selected_idx );       CHKERRQ(ierr);
+  ierr = ISGetIndices( locals_llist, &llist_idx );      CHKERRQ(ierr);
   for(kk=0,nLocalSelected=0;kk<nSelected;kk++){
     PetscInt lid = selected_idx[kk];
-    if(lid<nFineLoc) nLocalSelected++;
+    if( lid<nFineLoc && llist_idx[lid] != -1 ) nLocalSelected++;
   }
 
   /* aloc space for coarse point data (output) */
@@ -644,13 +654,15 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   /* find points and set prolongation */
   minsz = 100;
   ndone = 0;
-  ierr = ISGetIndices( locals_llist, &llist_idx );      CHKERRQ(ierr);
-  for( clid = 0 ; clid < nLocalSelected ; clid++ ){
+  for( mm = clid = 0 ; mm < nSelected ; mm++ ){
+    PetscInt lid = selected_idx[mm];
     PetscInt cgid = my0crs + clid, cids[100];
+
+    if( lid>=nFineLoc || llist_idx[lid]==-1 ) continue; /* skip ghost or singleton */
 
     /* count agg */
     aggID = 0;
-    flid = selected_idx[clid]; assert(flid != -1);
+    flid = selected_idx[mm]; assert(flid != -1);
     do{
       aggID++;
     } while( (flid=llist_idx[flid]) != -1 );
@@ -669,7 +681,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
       ierr = PetscMalloc( LWORK*sizeof(PetscScalar), &WORK ); CHKERRQ(ierr); 
       ierr = PetscMalloc( M*sizeof(PetscInt), &fids ); CHKERRQ(ierr); 
 
-      flid = selected_idx[clid];
+      flid = selected_idx[mm];
       aggID = 0;
       do{
         /* copy in B_i matrix - column oriented */
@@ -731,6 +743,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
       ierr = PetscFree( WORK );  CHKERRQ(ierr);
       ierr = PetscFree( fids );  CHKERRQ(ierr);
     } /* scoping */
+    clid++;
   } /* for all coarse nodes */
 
 /* ierr = MPI_Allreduce( &ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); */
@@ -794,7 +807,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGcoarsen_AGG
+   PCGAMGCoarsen_AGG
 
   Input Parameter:
    . pc - this
@@ -804,8 +817,8 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
    . a_llist_parent - data of coarse grid points (num local columns in 'a_P_out')
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGcoarsen_AGG"
-PetscErrorCode PCGAMGcoarsen_AGG( PC pc,
+#define __FUNCT__ "PCGAMGCoarsen_AGG"
+PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
                                   const Mat Gmat2,
                                   IS *a_selected,
                                   IS *a_llist_parent
@@ -820,7 +833,8 @@ PetscErrorCode PCGAMGcoarsen_AGG( PC pc,
   PetscInt        Ii,nloc,bs,n,m;
   PetscInt *permute; 
   PetscBool *bIndexSet;
-  /* MPI_Comm        wcomm = ((PetscObject)Gmat2)->comm; */
+  MatCoarsen crs;
+  MPI_Comm        wcomm = ((PetscObject)Gmat2)->comm;
   /* PetscMPIInt     mype,npe; */
 
   PetscFunctionBegin;
@@ -855,11 +869,27 @@ PetscErrorCode PCGAMGcoarsen_AGG( PC pc,
   
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);
   CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
+#endif
 
-  ierr = maxIndSetAgg( perm, Gmat2, PETSC_TRUE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);
-  ierr = ISDestroy( &perm );                    CHKERRQ(ierr);
+  //ierr = maxIndSetAgg( perm, Gmat2, PETSC_TRUE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);
+
+  ierr = MatCoarsenCreate( wcomm, &crs ); CHKERRQ(ierr);
+  ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr);
+  ierr = MatCoarsenSetGreedyOrdering( crs, perm ); CHKERRQ(ierr);
+  ierr = MatCoarsenSetAdjacency( crs, Gmat2 ); CHKERRQ(ierr);
+  ierr = MatCoarsenSetVerbose( crs, pc_gamg->verbose ); CHKERRQ(ierr);
+  ierr = MatCoarsenSetStrictAggs( crs, PETSC_TRUE ); CHKERRQ(ierr);
+  ierr = MatCoarsenApply( crs ); CHKERRQ(ierr);
+  ierr = MatCoarsenGetMISAggLists( crs, &selected, &llist_parent ); CHKERRQ(ierr);
+  ierr = MatCoarsenDestroy( &crs ); CHKERRQ(ierr);
+
+  ierr = ISDestroy( &perm );                    CHKERRQ(ierr); 
   ierr = PetscFree( permute );  CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
+#endif
   /* smooth aggs */
   ierr = smoothAggs( Gmat2, Gmat1, selected, llist_parent ); CHKERRQ(ierr);
 
@@ -903,7 +933,7 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
   Mat            Prol;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
-  const PetscInt *selected_idx,col_bs=data_cols;
+  const PetscInt *selected_idx,*llist_idx,col_bs=data_cols;
   PetscReal      *data_w_ghost;
   PetscInt       myCrs0, nbnodes=0, *flid_fgid;
 
@@ -917,18 +947,21 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
   /* get 'nLocalSelected' */
   ierr = ISGetSize( selected, &kk );        CHKERRQ(ierr);
   ierr = ISGetIndices( selected, &selected_idx );     CHKERRQ(ierr);
+  ierr = ISGetIndices( llist_parent, &llist_idx );     CHKERRQ(ierr);
   for(ii=0,nLocalSelected=0;ii<kk;ii++){
     PetscInt lid = selected_idx[ii];
-    if(lid<nloc) nLocalSelected++;
+    /* filter out singletons */
+    if( lid<nloc && llist_idx[lid] != -1) nLocalSelected++;
   }
   ierr = ISRestoreIndices( selected, &selected_idx );     CHKERRQ(ierr);
-  
+  ierr = ISRestoreIndices( llist_parent, &llist_idx );     CHKERRQ(ierr);
+
   /* create prolongator, create P matrix */
-  ierr = MatCreateMPIAIJ(wcomm, 
-                         nloc*bs, nLocalSelected*col_bs,
-                         PETSC_DETERMINE, PETSC_DETERMINE,
-                         data_cols, PETSC_NULL, data_cols, PETSC_NULL,
-                         &Prol );
+  ierr = MatCreateMPIAIJ( wcomm, 
+                          nloc*bs, nLocalSelected*col_bs,
+                          PETSC_DETERMINE, PETSC_DETERMINE,
+                          data_cols, PETSC_NULL, data_cols, PETSC_NULL,
+                          &Prol );
   CHKERRQ(ierr);
   
   /* can get all points "removed" */
@@ -988,7 +1021,7 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
     
     ierr = PetscMalloc( nloc*sizeof(PetscReal), &fid_glid_loc ); CHKERRQ(ierr);
     for(kk=0;kk<nloc;kk++) fid_glid_loc[kk] = (PetscReal)(my0+kk);
-    ierr = getDataWithGhosts(Gmat, 1, fid_glid_loc, &nnodes, &fiddata);
+    ierr = getDataWithGhosts( Gmat, 1, fid_glid_loc, &nnodes, &fiddata );
     CHKERRQ(ierr);
     ierr = PetscMalloc( nnodes*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
     for(kk=0;kk<nnodes;kk++) flid_fgid[kk] = (PetscInt)fiddata[kk];
@@ -1168,7 +1201,7 @@ PetscErrorCode  PCCreateGAMG_AGG( PC pc )
 
   /* set internal function pointers */
   pc_gamg->graph = PCGAMGgraph_AGG;
-  pc_gamg->coarsen = PCGAMGcoarsen_AGG;
+  pc_gamg->coarsen = PCGAMGCoarsen_AGG;
   pc_gamg->prolongator = PCGAMGprolongator_AGG;
   pc_gamg->optprol = PCGAMGoptprol_AGG;
  

@@ -135,6 +135,7 @@ extern PetscClassId  MAT_CLASSID;
 extern PetscClassId  MAT_FDCOLORING_CLASSID;
 extern PetscClassId  MAT_TRANSPOSECOLORING_CLASSID;
 extern PetscClassId  MAT_PARTITIONING_CLASSID;
+extern PetscClassId  MAT_COARSEN_CLASSID;
 extern PetscClassId  MAT_NULLSPACE_CLASSID;
 extern PetscClassId  MATMFFD_CLASSID;
 
@@ -227,6 +228,7 @@ extern PetscBool  MatRegisterAllCalled;
 extern PetscFList MatList;
 extern PetscFList MatColoringList;
 extern PetscFList MatPartitioningList;
+extern PetscFList MatCoarsenList;
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure
@@ -1470,6 +1472,98 @@ extern PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscR
 extern PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning,PetscReal*);
 extern PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning,MPPTScotchStrategyType);
 extern PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning,MPPTScotchStrategyType*);
+
+/* 
+    These routines are for coarsening matrices: 
+*/
+
+/*S
+     MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
+
+   Level: beginner
+
+  Concepts: coarsen
+
+.seealso:  MatCoarsenCreate), MatCoarsenType
+S*/
+typedef struct _p_MatCoarsen* MatCoarsen;
+
+/*J
+    MatCoarsenType - String with the name of a PETSc matrix coarsen or the creation function
+       with an optional dynamic library name, for example 
+       http://www.mcs.anl.gov/petsc/lib.a:coarsencreate()
+
+   Level: beginner
+dm
+.seealso: MatCoarsenCreate(), MatCoarsen
+J*/
+#define MatCoarsenType char*
+#define MATCOARSENMIS  "mis"
+
+extern PetscErrorCode  MatCoarsenCreate(MPI_Comm,MatCoarsen*);
+extern PetscErrorCode  MatCoarsenSetType(MatCoarsen,const MatCoarsenType);
+extern PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen,Mat);
+extern PetscErrorCode  MatCoarsenSetGreedyOrdering(MatCoarsen,IS);
+extern PetscErrorCode  MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
+extern PetscErrorCode  MatCoarsenSetVerbose(MatCoarsen,PetscInt);
+extern PetscErrorCode  MatCoarsenGetMISAggLists( MatCoarsen, IS*, IS* );
+extern PetscErrorCode  MatCoarsenApply(MatCoarsen);
+extern PetscErrorCode  MatCoarsenDestroy(MatCoarsen*);
+
+extern PetscErrorCode  MatCoarsenRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatCoarsen));
+
+/*MC
+   MatCoarsenRegisterDynamic - Adds a new sparse matrix coarsen to the 
+   matrix package. 
+
+   Synopsis:
+   PetscErrorCode MatCoarsenRegisterDynamic(const char *name_coarsen,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatCoarsen))
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of coarsen (for example MATCOARSENMIS) 
+.  path - location of library where creation routine is 
+.  name - name of function that creates the coarsen type, a string
+-  function - function pointer that creates the coarsen type
+
+   Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatCoarsenRegisterDynamic("my_agg",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyAggCreate",MyAggCreate);
+.ve
+
+   Then, your aggregator can be chosen with the procedural interface via
+$     MatCoarsenSetType(agg,"my_agg")
+   or at runtime via the option
+$     -mat_coarsen_type my_agg
+
+   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, coarsen, register
+
+.seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatCoarsenRegisterDynamic(a,b,c,d) MatCoarsenRegister(a,b,c,0)
+#else
+#define MatCoarsenRegisterDynamic(a,b,c,d) MatCoarsenRegister(a,b,c,d)
+#endif
+
+extern PetscBool  MatCoarsenRegisterAllCalled;
+
+extern PetscErrorCode  MatCoarsenRegisterAll(const char[]);
+extern PetscErrorCode  MatCoarsenRegisterDestroy(void);
+
+extern PetscErrorCode  MatCoarsenView(MatCoarsen,PetscViewer);
+extern PetscErrorCode  MatCoarsenSetFromOptions(MatCoarsen);
+extern PetscErrorCode  MatCoarsenGetType(MatCoarsen,const MatCoarsenType*);
+
 
 extern PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 extern PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);

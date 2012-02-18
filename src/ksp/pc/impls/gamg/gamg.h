@@ -58,16 +58,6 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, co
                                   PetscInt *a_stride, PetscReal **a_data_out );
 PetscErrorCode maxIndSetAgg( const IS, const Mat, const PetscBool, const PetscInt, IS *a_selected, IS *a_locals_llist );
 
-
-/* typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState; */
-/* use int instead of enum to facilitate passing them via Scatters */
-typedef int NState;
-static const NState NOT_DONE=-2;
-static const NState DELETED=-1;
-static const NState REMOVED=-3;
-
-#define IS_SELECTED(s) (s!=DELETED && s!=NOT_DONE && s!=REMOVED)
-
 #if defined PETSC_USE_LOG
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
 extern PetscLogEvent gamg_setup_events[NUM_SET];

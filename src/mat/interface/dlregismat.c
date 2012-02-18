@@ -56,6 +56,8 @@ PetscErrorCode  MatFinalizePackage(void)
   MatColoringRegisterAllCalled     = PETSC_FALSE;
   MatPartitioningList              = PETSC_NULL;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
+  MatCoarsenList              = PETSC_NULL;
+  MatCoarsenRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -91,12 +93,14 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Matrix FD Coloring",&MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix MatTranspose Coloring",&MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Partitioning",&MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix Coarsen",&MAT_COARSEN_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Null Space",&MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
   ierr = MatOrderingRegisterAll(path);CHKERRQ(ierr);
   ierr = MatColoringRegisterAll(path);CHKERRQ(ierr);
   ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatCoarsenRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_CLASSID,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_CLASSID,&MAT_Mults);CHKERRQ(ierr);
@@ -136,6 +140,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCoarsen",  MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatZeroEntries",   MAT_CLASSID,&MAT_ZeroEntries);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLoad",          MAT_CLASSID,&MAT_Load);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatView",          MAT_CLASSID,&MAT_View);CHKERRQ(ierr);
