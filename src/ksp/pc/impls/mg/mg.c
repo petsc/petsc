@@ -1026,17 +1026,22 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
 .  -pc_mg_monitor - print information on the multigrid convergence
-.  -pc_mg_galerkin - use Galerkin process to compute coarser operators
--  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
+.  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
+.  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
+.  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
                         to the Socket viewer for reading from MATLAB.
+-  -pc_mg_dump_binary - dumps the matrices for each level and the restriction/interpolation matrices
+                        to the binary output file called binaryoutput
 
    Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+
+       When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 
    Level: intermediate
 
    Concepts: multigrid/multilevel
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC, PCGAMG, PCML, PCHYPRE
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
