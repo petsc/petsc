@@ -414,7 +414,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
 */
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscReal      hx,hy,dhx,dhy,sc,source;
+  PetscReal      hx,hy,sc,source;
   PetscInt       i,j;
 
   PetscFunctionBegin;
@@ -422,8 +422,6 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
   source = hx*hy*user->source;
-  dhx    = 1/hx;
-  dhy    = 1/hy;
   /*
      Compute function over the locally owned part of the grid
   */

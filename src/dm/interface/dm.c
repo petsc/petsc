@@ -1982,9 +1982,9 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
   for(f = 0; f < len; ++f) {
-    PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", x[f]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "  | %G |\n", PetscRealPart(x[f]));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1996,13 +1996,13 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
   for(f = 0; f < rows; ++f) {
-    PetscPrintf(PETSC_COMM_SELF, "  |");
+    ierr = PetscPrintf(PETSC_COMM_SELF, "  |");CHKERRQ(ierr);
     for(g = 0; g < cols; ++g) {
-      PetscPrintf(PETSC_COMM_SELF, " % 9.5g", A[f*cols+g]);
+      ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5G", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
     }
-    PetscPrintf(PETSC_COMM_SELF, " |\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -57,6 +57,7 @@
       call MatCreate(PETSC_COMM_SELF,A,ierr)
       call MatSetSizes(A,m,n,m,n,ierr)
       call MatSetType(A,MATSEQDENSE,ierr)
+      call MatSetUp(A,ierr)
 
 !  Access array storage
       call MatGetArray(A,aa,ia,ierr)

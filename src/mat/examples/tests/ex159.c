@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,3,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
     for (i=0; i<9; i++) {
       ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&B[i]);CHKERRQ(ierr);
+      ierr = MatSetUp(B[i]);CHKERRQ(ierr);
       ierr = MatSetLocalToGlobalMapping(B[i],l2g,l2g);CHKERRQ(ierr);
     }
     {
@@ -45,12 +46,16 @@ int main(int argc, char *argv[])
       const Mat Bx00[] = {B[0],B[1],B[3],B[4]},Bx01[] = {B[2],B[5]},Bx10[] = {B[6],B[7]};
       Mat B00,B01,B10;
       ierr = MatCreateNest(PETSC_COMM_WORLD,2,isx,2,isx,Bx00,&B00);CHKERRQ(ierr);
+      ierr = MatSetUp(B00);CHKERRQ(ierr);
       ierr = MatCreateNest(PETSC_COMM_WORLD,2,isx,1,PETSC_NULL,Bx01,&B01);CHKERRQ(ierr);
+      ierr = MatSetUp(B01);CHKERRQ(ierr);
       ierr = MatCreateNest(PETSC_COMM_WORLD,1,PETSC_NULL,2,isx,Bx10,&B10);CHKERRQ(ierr);
+      ierr = MatSetUp(B10);CHKERRQ(ierr);
       {
         Mat By[] = {B00,B01,B10,B[8]};
         IS isy[] = {is0,is1};
         ierr = MatCreateNest(PETSC_COMM_WORLD,2,isy,2,isy,By,&A);CHKERRQ(ierr);
+        ierr = MatSetUp(A);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&B00);CHKERRQ(ierr);
       ierr = MatDestroy(&B01);CHKERRQ(ierr);

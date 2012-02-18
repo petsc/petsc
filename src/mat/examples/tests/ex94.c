@@ -126,7 +126,7 @@ int main(int argc,char **args)
   /*------------------------------------------------------*/
   if (Test_MatMatTr){
     /* Create P */
-    PetscInt PN;
+    PetscInt PN,rstart,rend;
     PN   = M/2;
     nzp  = 5; /* num of nonzeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
@@ -134,10 +134,11 @@ int main(int argc,char **args)
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
     for (i=0; i<nzp; i++){
       ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }
-    for (i=0; i<M; i++){
+    for (i=rstart; i<rend; i++){
       for (j=0; j<nzp; j++){
         ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
@@ -237,6 +238,11 @@ int main(int argc,char **args)
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+
+    /* Test MatDuplicate() */
+    Mat Cdup;
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
+    ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 
     if (size>1) Test_MatRARt = PETSC_FALSE;
     /* Test MatRARt() */

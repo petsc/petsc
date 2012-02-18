@@ -164,6 +164,8 @@
       call MatCreate(comm,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
+
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg) then
          call SetCRoutineFromFortran(ts,A,A,ierr)

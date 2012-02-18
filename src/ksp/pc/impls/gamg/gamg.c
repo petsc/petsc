@@ -120,7 +120,7 @@ PetscErrorCode createLevel( const PC pc,
       /* create sub communicator  */
       Mat             adj;
 
-      if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s repartition: npe (active): %d --> %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
+      if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s repartition: npe (active): %d --> %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
 
       /* MatPartitioningApply call MatConvert, which is collective */
       if( cbs == 1 ) { 
@@ -189,7 +189,7 @@ PetscErrorCode createLevel( const PC pc,
 	
 	ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
 	ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
-	ierr = PCGetOptionsPrefix(pc,&pcpre);CHKERRQ(ierr);
+	ierr = PCGetOptionsPrefix( pc, &pcpre );CHKERRQ(ierr);
 	ierr = PetscSNPrintf(prefix,sizeof prefix,"%spc_gamg_",pcpre?pcpre:"");CHKERRQ(ierr);
 	ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
 	ierr = MatPartitioningSetFromOptions( mpart );    CHKERRQ(ierr);
@@ -245,14 +245,14 @@ PetscErrorCode createLevel( const PC pc,
 	*a_Amat_crs = Cmat; /* output - no repartitioning or reduction */
 	ierr = PetscFree( counts );  CHKERRQ(ierr);
 	*a_nactive_proc = new_npe; /* output */
-	if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s aggregate processors noop: new_npe=%d, neq=%d\n",mype,__FUNCT__,new_npe,neq);
+	if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s aggregate processors noop: new_npe=%d, neq=%d\n",mype,__FUNCT__,new_npe,neq);
 	PetscFunctionReturn(0);
       }
 
       /* reduce - isnewproc */
       targetPE = mype/rfactor;
 
-      if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s aggregate processors: npe: %d --> %d, neq=%d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
+      if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s aggregate processors: npe: %d --> %d, neq=%d\n",mype,__FUNCT__,*a_nactive_proc,new_npe,neq);
       is_sz = ncrs0*cbs;
       ierr = ISCreateStride( wcomm, is_sz, targetPE, 0, &isnewproc );
       CHKERRQ(ierr);
@@ -492,7 +492,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   if (pc_gamg->verbose) {
-    PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+    PetscPrintf(wcomm,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
                 mype,__FUNCT__,0,N,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,
                 (int)(info.nz_used/(PetscReal)N),npe);
   }
@@ -508,11 +508,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 #endif
     { /* construct prolongator */
       Mat Gmat;   assert(pc_gamg->graph);
-      ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
-
       IS selected, llist;   assert(pc_gamg->coarsen);
-      ierr = pc_gamg->coarsen( pc, Gmat, &selected, &llist ); CHKERRQ(ierr);
 
+      ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
+      ierr = pc_gamg->coarsen( pc, Gmat, &selected, &llist ); CHKERRQ(ierr);
       ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, selected, llist, &Parr[level1] );
       CHKERRQ(ierr);
       
@@ -522,7 +521,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           PetscBool flag;
           ierr = PetscObjectComposedDataGetInt( (PetscObject)Parr[level1], pc_gamg->col_bs_id, bs, flag );
           CHKERRQ( ierr ); assert(flag);
-         }
+        }
       }
 
       if( pc_gamg->optprol && Parr[level1] ){
@@ -547,7 +546,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     else emaxs[level] = -1.;
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
     if( !Parr[level1] ) {
-      if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
+      if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
       break;
     }
     else {
@@ -564,7 +563,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
       ierr = MatGetInfo( Aarr[level1], MAT_GLOBAL_SUM, &info ); CHKERRQ(ierr);
       if (pc_gamg->verbose){
-        PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
+        PetscPrintf(wcomm,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
                     mype,__FUNCT__,(int)level1,N,pc_gamg->data_cell_cols,
                     (int)(info.nz_used/(PetscReal)N),nactivepe);
       } 
@@ -604,7 +603,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     pc_gamg->data = 0;
   }
   
-  if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
+  if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->Nlevels = level + 1;
   fine_level = level;
   ierr = PCMGSetLevels(pc,pc_gamg->Nlevels,PETSC_NULL);CHKERRQ(ierr);
@@ -678,7 +677,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 
         if (pc_gamg->verbose) {
-          PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s PC setup max eigen=%e min=%e\n",
+          PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e\n",
                       __FUNCT__,emax,emin);
         }
       }
@@ -738,7 +737,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   }
   else {
     KSP smoother;
-    if (pc_gamg->verbose) PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s one level solver used (system is seen as DD). Using default solver.\n",mype,__FUNCT__);
+    if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s one level solver used (system is seen as DD). Using default solver.\n",mype,__FUNCT__);
     ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
     ierr = KSPSetOperators( smoother, Aarr[0], Aarr[0], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
     ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
@@ -1056,6 +1055,7 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscBool        flag;
+  MPI_Comm         wcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("GAMG options"); CHKERRQ(ierr);
@@ -1101,6 +1101,7 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
                             &pc_gamg->threshold, 
                             &flag ); 
     CHKERRQ(ierr);
+    if(flag && pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s threshold set %e\n",0,__FUNCT__,pc_gamg->threshold);
 
     ierr = PetscOptionsInt("-pc_mg_levels",
                            "Set number of MG levels",

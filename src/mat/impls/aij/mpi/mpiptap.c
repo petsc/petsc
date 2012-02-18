@@ -60,17 +60,14 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M) 
 {
   PetscErrorCode       ierr;
-  Mat_Merge_SeqsToMPI  *merge; 
-  PetscContainer       container;
+  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data;
+  Mat_PtAPMPI          *ptap = a->ptap;
+  Mat_Merge_SeqsToMPI  *merge = ptap->merge; 
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr = (*merge->duplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = merge->destroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
-  (*M)->ops->duplicate = merge->duplicate; /* =MatDuplicate_ MPIAIJ */
+  (*M)->ops->destroy   = merge->destroy;   
+  (*M)->ops->duplicate = merge->duplicate; 
   PetscFunctionReturn(0);
 }
 

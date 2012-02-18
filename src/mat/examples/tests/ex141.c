@@ -38,8 +38,9 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr); 
     ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetType(C,MATSBAIJ);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+    ierr = MatSetUp(C);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(C,bs,d_nz,PETSC_NULL);CHKERRQ(ierr);
   
     for (block=0; block<mbs; block++){

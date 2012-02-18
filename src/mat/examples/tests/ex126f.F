@@ -36,7 +36,7 @@
       call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m, ierr)
       call MatSetType(A, MATAIJ, ierr)
       call MatSetFromOptions(A, ierr)
-      call MatSeqAIJSetPreallocation(A, 1, PETSC_NULL_INTEGER, ierr)
+      call MatSeqAIJSetPreallocation(A,5, PETSC_NULL_INTEGER, ierr)
       call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,                          &
      &     PETSC_NULL_INTEGER,ierr)
 

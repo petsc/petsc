@@ -130,6 +130,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
     }
 
     /* ==== TRANSPOSE THREADS ==== */
+    __syncthreads();
 
     /* Map values at quadrature points to coefficients */
     for(int c = 0; c < N_sbc; ++c) {
@@ -201,6 +202,7 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElementBatchGPU"
 /*
@@ -241,7 +243,20 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   PetscFunctionBegin;
   assert(Nbl == N_bl);
   assert(Nbc*N_comp == N_t);
-  if (!Ne) PetscFunctionReturn(0);
+  if (!Ne) {
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog = PETSC_NULL;
+    int               stage;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+    ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+    /* Log performance info */
+    eventLog->eventInfo[event].count++;
+    eventLog->eventInfo[event].time  += 0.0;
+    eventLog->eventInfo[event].flops += 0;
+    PetscFunctionReturn(0);
+  }
   // Marshalling
   ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(float));CHKERRQ(ierr);
   ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(float));CHKERRQ(ierr);
@@ -294,3 +309,4 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

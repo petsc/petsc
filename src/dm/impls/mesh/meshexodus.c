@@ -315,6 +315,7 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
 @*/
 PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmBody, DM *dmFS)
 {
+#if defined(PETSC_HAVE_EXODUSII)
   PetscBool               debug = PETSC_FALSE;
   PetscMPIInt             numproc,rank;
   PetscErrorCode          ierr;
@@ -357,6 +358,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
   ALE::Obj<FlexMesh>                      mBody,mFS;
   ALE::Obj<PETSC_MESH_TYPE::sieve_type>   sieveBody,sieveFS;
   std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumberingBody,renumberingFS;
+#endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_EXODUSII)
@@ -680,7 +682,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
     ierr = ex_close(exoid);CHKERRQ(ierr);
   }
 #else
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
 #endif
   PetscFunctionReturn(0);
 }

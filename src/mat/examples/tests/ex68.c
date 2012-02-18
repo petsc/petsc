@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,4,4);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
+  ierr = MatSetUp(mat);CHKERRQ(ierr);
 
   /* set anti-diagonal of matrix */
   v = 1.0;

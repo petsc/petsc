@@ -91,9 +91,9 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
       for(d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", coords[off+d]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%G", PetscRealPart(coords[off+d]));CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%d_%d) [draw,shape=circle,color=%s] {%d} --\n", v, rank, colors[rank%numColors], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", v, rank, colors[rank%numColors], v);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -111,11 +111,11 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
 
         if ((point < vStart) || (point >= vEnd)) continue;
         if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%d_%d)", point, rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%D_%D)", point, rank);CHKERRQ(ierr);
         if (firstPoint < 0) firstPoint = point;
       }
       /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%d_%d);\n", firstPoint, rank);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%D);\n", firstPoint, rank);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n\\end{center}\n");CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
       } else if (p > 0) {
         ierr = PetscViewerASCIIPrintf(viewer, ", ", colors[p%numColors], p);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "{\\textcolor{%s}%d}", colors[p%numColors], p);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "{\\textcolor{%s}%D}", colors[p%numColors], p);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, ".\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{changemargin}\n\
@@ -3587,6 +3587,7 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(dim+1,PetscInt,&numDofTot,numFields+1,PetscInt,&maxConstraints);CHKERRQ(ierr);
+  for(f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
   for(d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
     for(f = 0; f < numFields; ++f) {
@@ -3616,7 +3617,6 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
     }
   }
   if (numBC) {
-    for(f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
     for(bc = 0; bc < numBC; ++bc) {
       PetscInt        field = 0;
       const PetscInt *idx;
@@ -4396,9 +4396,9 @@ PetscErrorCode DMComplexPrintMatSetValues(Mat A, PetscInt point, PetscInt numInd
     ierr = PetscPrintf(PETSC_COMM_SELF, "[%D]", rank);CHKERRQ(ierr);
     for(j = 0; j < numIndices; j++) {
 #ifdef PETSC_USE_COMPLEX
-      ierr = PetscPrintf(PETSC_COMM_SELF, " (%g,%g)", PetscRealPart(values[i*numIndices+j]), PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, " (%G,%G)", PetscRealPart(values[i*numIndices+j]), PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
 #else
-      ierr = PetscPrintf(PETSC_COMM_SELF, " %g", values[i*numIndices+j]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, " %G", values[i*numIndices+j]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
