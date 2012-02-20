@@ -10,7 +10,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
                 ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F ex54f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
@@ -266,6 +266,10 @@ ex53: ex53.o chkopts
 ex54: ex54.o chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
 	${RM} ex54.o
+
+ex54f: ex54f.o  chkopts
+	-${FLINKER} -o ex54f ex54f.o  ${PETSC_KSP_LIB}
+	${RM} ex54f.o
 
 ex55: ex55.o chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
@@ -1046,6 +1050,11 @@ runex54_SA:
 	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex54_sa.tmp 2>&1; \
          ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
         ${RM} -f ex54_sa.tmp
+
+runex54f:
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -ksp_monitor_short -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 -out_matlab > ex54f.tmp 2>&1; \
+         ${DIFF} output/ex54f.out ex54f.tmp || echo ${PWD} "\nPossible problem with with ex54f, diffs above \n======================================"; \
+        ${RM} -f ex54f.tmp
 
 runex55:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -use_coordinates -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex55.tmp 2>&1;	  \
