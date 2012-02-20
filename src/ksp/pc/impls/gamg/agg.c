@@ -630,7 +630,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
   PetscReal      *out_data;
-#define OUT_AGGS
+/* #define OUT_AGGS */
 #ifdef OUT_AGGS
   static PetscInt llev = 0; char fname[32]; FILE *file;
   sprintf(fname,"aggs_%d.m",llev++);
