@@ -204,7 +204,6 @@ c     Compute tangent
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
       if( out_matlab ) then
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',
      $        FILE_MODE_WRITE,viewer,ierr)
@@ -218,20 +217,22 @@ c     Compute tangent
      $        FILE_MODE_WRITE,viewer,ierr)
          call VecView(xvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
-         open(1,file="ex54f.m", FORM="formatted")
-         write (1,*) "A = PetscBinaryRead('Amat');"
-         write (1,*) "[m n] = size(A);"
-         write (1,*) "mm = sqrt(m);"
-         write (1,*) "b = PetscBinaryRead('Bvec');"
-         write (1,*) "x = PetscBinaryRead('Xvec');"
-         write (1,*) "bb = reshape(b,mm,mm);"
-         write (1,*) "xx = reshape(x,mm,mm);"
-         write (1,*) "imagesc(bb')"
-         write (1,*) "title('RHS'),"
-         write (1,*) "figure,"
-         write (1,*) "imagesc(xx')"
-         write (1,2002) eps,theta*57.2957795
-         close(1)
+         if( mype == 0 ) then
+            open(1,file="ex54f.m", FORM="formatted")
+            write (1,*) "A = PetscBinaryRead('Amat');"
+            write (1,*) "[m n] = size(A);"
+            write (1,*) "mm = sqrt(m);"
+            write (1,*) "b = PetscBinaryRead('Bvec');"
+            write (1,*) "x = PetscBinaryRead('Xvec');"
+            write (1,*) "bb = reshape(b,mm,mm);"
+            write (1,*) "xx = reshape(x,mm,mm);"
+            write (1,*) "imagesc(bb')"
+            write (1,*) "title('RHS'),"
+            write (1,*) "figure,"
+            write (1,*) "imagesc(xx')"
+            write (1,2002) eps,theta*57.2957795
+            close(1)
+         endif
       endif
  2002 format("title('Solution: esp=",d9.3,", theta=",g8.3,"'),")
 !  Free work space.  All PETSc objects should be destroyed when they
