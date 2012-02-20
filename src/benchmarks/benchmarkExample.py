@@ -114,6 +114,81 @@ def processSummary(moduleName, defaultStage, eventNames, times, events):
         events[name].append((stage.event[name].Time[0], 0))
   return
 
+def plotTime(library, num, eventNames, sizes, times, events):
+  from pylab import legend, plot, show, title, xlabel, ylabel
+  import numpy as np
+
+  arches = sizes.keys()
+  data   = []
+  for arch in arches:
+    data.append(sizes[arch])
+    data.append(times[arch])
+  plot(*data)
+  title('Performance on '+library+' Example '+str(num))
+  xlabel('Number of Dof')
+  ylabel('Time (s)')
+  legend(arches, 'upper left', shadow = True)
+  show()
+  return
+
+def plotEventTime(library, num, eventNames, sizes, times, events, filename = None):
+  from pylab import close, legend, plot, savefig, show, title, xlabel, ylabel
+  import numpy as np
+
+  close()
+  arches = sizes.keys()
+  bs     = events[arches[0]].keys()[0]
+  data   = []
+  names  = []
+  for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
+    for arch, style in zip(arches, ['-', ':']):
+      if event in events[arch][bs]:
+        names.append(arch+'-'+str(bs)+' '+event)
+        data.append(sizes[arch][bs])
+        data.append(np.array(events[arch][bs][event])[:,0])
+        data.append(color+style)
+      else:
+        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+  print data
+  plot(*data)
+  title('Performance on '+library+' Example '+str(num))
+  xlabel('Number of Dof')
+  ylabel('Time (s)')
+  legend(names, 'upper left', shadow = True)
+  if filename is None:
+    show()
+  else:
+    savefig(filename)
+  return
+
+def plotEventFlop(library, num, eventNames, sizes, times, events, filename = None):
+  from pylab import legend, plot, savefig, semilogy, show, title, xlabel, ylabel
+  import numpy as np
+
+  arches = sizes.keys()
+  bs     = events[arches[0]].keys()[0]
+  data   = []
+  names  = []
+  for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
+    for arch, style in zip(arches, ['-', ':']):
+      if event in events[arch][bs]:
+        names.append(arch+'-'+str(bs)+' '+event)
+        data.append(sizes[arch][bs])
+        data.append(1e-3*np.array(events[arch][bs][event])[:,1])
+        data.append(color+style)
+      else:
+        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+  semilogy(*data)
+  title('Performance on '+library+' Example '+str(num))
+  xlabel('Number of Dof')
+  ylabel('Computation Rate (GF/s)')
+  legend(names, 'upper left', shadow = True)
+  if filename is None:
+    show()
+  else:
+    savefig(filename)
+  return
+
 def plotSummaryLine(library, num, eventNames, sizes, times, events):
   from pylab import legend, plot, show, title, xlabel, ylabel
   import numpy as np
