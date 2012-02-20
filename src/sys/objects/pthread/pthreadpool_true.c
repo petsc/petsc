@@ -67,8 +67,8 @@ static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void*           (*MainWait)(void*);
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*           (*PetscThreadsWait)(void*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void DoCoreAffinity(void);
@@ -168,7 +168,7 @@ PetscErrorCode PetscThreadFinalize_True() {
 
   PetscFunctionBegin;
 
-  MainJob(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);
@@ -182,8 +182,8 @@ PetscErrorCode PetscThreadFinalize_True() {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainWait_True"
-void* MainWait_True(void* arg) {
+#define __FUNCT__ "PetscThreadsWait_True"
+void* PetscThreadsWait_True(void* arg) {
   int ierr;
   ierr = pthread_mutex_lock(&job_true.mutex);
   while(job_true.iNumReadyThreads<PetscMaxThreads||job_true.startJob==PETSC_TRUE) {
@@ -194,12 +194,12 @@ void* MainWait_True(void* arg) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_True"
-PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+#define __FUNCT__ "PetscThreadsRunKernel_True"
+PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   int i,j,issetaffinity,ierr;
   PetscErrorCode ijoberr = 0;
 
-  MainWait(NULL);
+  PetscThreadsWait(NULL);
   for(i=0; i<PetscMaxThreads; i++) {
     if(pFunc == FuncFinish) {
       job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
@@ -231,7 +231,7 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
       job_true.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_true.funcArr[0](job_true.pdata[0]);
     }
-    MainWait(NULL); /* why wait after? guarantees that job gets done */
+    PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done */
   }
 
   if(ithreaderr_true) {

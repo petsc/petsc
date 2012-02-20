@@ -66,8 +66,8 @@ static char* arrready;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void*          (*MainWait)(void*);
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          (*PetscThreadsWait)(void*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void DoCoreAffinity(void);
@@ -193,7 +193,7 @@ PetscErrorCode PetscThreadFinalize_Main() {
 
   PetscFunctionBegin;
 
-  MainJob(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
@@ -212,8 +212,8 @@ PetscErrorCode PetscThreadFinalize_Main() {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainWait_Main"
-void* MainWait_Main(void* arg) {
+#define __FUNCT__ "PetscThreadsWait_Main"
+void* PetscThreadsWait_Main(void* arg) {
   int i,ierr;
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_mutex_lock(job_main.mutexarray[i]);
@@ -226,14 +226,14 @@ void* MainWait_Main(void* arg) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_Main"
-PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+#define __FUNCT__ "PetscThreadsRunKernel_Main"
+PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   int i,j,ierr,issetaffinity;
   PetscErrorCode ijoberr = 0;
 
-  MainWait(NULL); /* you know everyone is waiting to be signalled! */
+  PetscThreadsWait(NULL); /* you know everyone is waiting to be signalled! */
   for(i=0; i<PetscMaxThreads; i++) {
-    *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
+    *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into PetscThreadsWait first */
   }
   /* tell the threads to go to work */
   for(i=0; i<PetscMaxThreads; i++) {
@@ -263,7 +263,7 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
       job_main.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_main.funcArr[0](job_main.pdata[0]);
     }
-    MainWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
+    PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
   if(ithreaderr) {

@@ -72,8 +72,8 @@ static char* arrready;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void           (*MainWait)(void*);
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void           (*PetscThreadsWait)(void*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void DoCoreAffinity(void);
@@ -269,7 +269,7 @@ PetscErrorCode PetscThreadFinalize_Tree() {
 
   PetscFunctionBegin;
 
-  MainJob(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);
@@ -289,8 +289,8 @@ PetscErrorCode PetscThreadFinalize_Tree() {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainWait_Tree"
-void* MainWait_Tree(void* arg) {
+#define __FUNCT__ "PetscThreadsWait_Tree"
+void* PetscThreadsWait_Tree(void* arg) {
   int ierr;
   ierr = pthread_mutex_lock(job_tree.mutexarray[0]);
   while(job_tree.eJobStat<JobCompleted||job_tree.startJob==PETSC_TRUE) {
@@ -301,12 +301,12 @@ void* MainWait_Tree(void* arg) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_Tree"
-PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+#define __FUNCT__ "PetscThreadsRunKernel_Tree"
+PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   int i,j,issetaffinity,ierr;
   PetscErrorCode ijoberr = 0;
 
-  MainWait(NULL);
+  PetscThreadsWait(NULL);
   job_tree.startJob = PETSC_TRUE;
   for(i=0; i<PetscMaxThreads; i++) {
     if(pFunc == FuncFinish) {
@@ -336,7 +336,7 @@ PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
       job_tree.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_tree.funcArr[0](job_tree.pdata[0]);
     }
-    MainWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
+    PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
   if(ithreaderr_tree) {

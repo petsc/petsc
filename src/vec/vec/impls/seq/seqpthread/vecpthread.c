@@ -24,7 +24,7 @@ Kernel_Data *kerneldatap;
 Kernel_Data **pdata;
 
 /* Global function pointer */
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
@@ -83,7 +83,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr = MainJob(VecDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   /* gather result */
   *z = kerneldatap[0].result;
@@ -147,7 +147,7 @@ PetscErrorCode VecTDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr = MainJob(VecTDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecTDot_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   /* gather result */
   *z = kerneldatap[0].result;
@@ -206,7 +206,7 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
       kerneldatap[i].n     = nx[i];  
       pdata[i]             = &kerneldatap[i];
     }
-    ierr = MainJob(VecScale_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecScale_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
@@ -255,7 +255,7 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       kerneldatap[i].alpha = alpha;
       pdata[i] = &kerneldatap[i];
     }
-    ierr = MainJob(VecAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       kerneldatap[i].alpha = alpha;
       pdata[i]             = &kerneldatap[i];
     }
-    ierr = MainJob(VecAYPX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecAYPX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     if(alpha==-1.0) {
@@ -403,7 +403,7 @@ PetscErrorCode VecAXPBY_SeqPThread(Vec yin,PetscScalar alpha,PetscScalar beta,Ve
       pdata[i] = &kerneldatap[i];
     }
     
-    ierr = MainJob(VecAX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);CHKERRQ(ierr);
+    ierr = PetscThreadsRunKernel(VecAX_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
     
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ PetscErrorCode VecAXPBY_SeqPThread(Vec yin,PetscScalar alpha,PetscScalar beta,Ve
       pdata[i] = &kerneldatap[i];
     }
     
-    ierr = MainJob(VecAXPBY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecAXPBY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
     
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
@@ -495,7 +495,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
     kerneldatap[i].n = nw[i];
     pdata[i] = &kerneldatap[i];
   }
-  ierr = MainJob(VecWAXPY_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecWAXPY_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   if (alpha == 1.0 || alpha == -1.0) {
     ierr = PetscLogFlops(1.0*win->map->n);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
       kerneldatap[i].n = nx[i];
       pdata[i] = &kerneldatap[i];
     }
-    ierr = MainJob(VecNorm_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecNorm_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results */
     *z = (PetscReal)kerneldatap[0].result;
     if(type == NORM_1) {
@@ -741,7 +741,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
       kerneldatap[i].n      = nx[i];
       pdata[i]              = &kerneldatap[i];
     }
-    ierr = MainJob(VecMDot_Kernel3,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMDot_Kernel3,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
@@ -773,7 +773,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
       kerneldatap[i].n      = nx[i];
       pdata[i]              = &kerneldatap[i];
     }
-    ierr = MainJob(VecMDot_Kernel2,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMDot_Kernel2,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
@@ -797,7 +797,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
       kerneldatap[i].n    = nx[i];
       pdata[i]            = &kerneldatap[i];
     }
-    ierr = MainJob(VecMDot_Kernel1,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMDot_Kernel1,(void**)pdata,x->nthreads,x->cpu_affinity);
     
     ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
 
@@ -823,7 +823,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
       kerneldatap[i].n      = nx[i];
       pdata[i]              = &kerneldatap[i];
     }
-    ierr = MainJob(VecMDot_Kernel4,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMDot_Kernel4,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(yy[0],&y0);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy[1],&y1);CHKERRQ(ierr);
@@ -923,7 +923,7 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
       kerneldatap[i].n    = nx[i];
       pdata[i]            = &kerneldatap[i];
     }
-    ierr = MainJob(VecMax_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMax_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results, determine global max, global index */
     max = kerneldatap[0].localmax;
     j   = kerneldatap[0].localind;
@@ -992,7 +992,7 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
       pdata[i]            = &kerneldatap[i];
     }
 
-    ierr = MainJob(VecMin_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecMin_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     /* collect results, determine global max, global index */
     min = kerneldatap[0].localmin;
     j   = kerneldatap[0].localind;
@@ -1056,7 +1056,7 @@ PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr  = MainJob(VecPointwiseMult_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
+  ierr  = PetscThreadsRunKernel(VecPointwiseMult_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -1103,7 +1103,7 @@ PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
     pdata[i]         = &kerneldatap[i];
   }
 
-  ierr  = MainJob(VecPointwiseDivide_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
+  ierr  = PetscThreadsRunKernel(VecPointwiseDivide_Kernel,(void**)pdata,w->nthreads,w->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -1148,7 +1148,7 @@ PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
       pdata[i]         = &kerneldatap[i];
     }
 
-    ierr = MainJob(VecSwap_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecSwap_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -1191,7 +1191,7 @@ PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
     pdata[i]            = &kerneldatap[i];
    }
 
-  ierr = MainJob(VecSetRandom_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecSetRandom_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1233,7 +1233,7 @@ PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
       kerneldatap[i].n   = nx[i];
       pdata[i]           = &kerneldatap[i];
     }
-    ierr = MainJob(VecCopy_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+    ierr = PetscThreadsRunKernel(VecCopy_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -1338,7 +1338,7 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
     kerneldatap[i].istart = ix[i];
     pdata[i]              = &kerneldatap[i];
   }
-  ierr = MainJob(VecMAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecMAXPY_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
 
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = PetscLogFlops(nv*2.0*xin->map->n);CHKERRQ(ierr);
@@ -1382,7 +1382,7 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
     kerneldatap[i].n       = nx[i];
     pdata[i]               = &kerneldatap[i];
   }
-  ierr = MainJob(VecSet_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
+  ierr = PetscThreadsRunKernel(VecSet_Kernel,(void**)pdata,x->nthreads,x->cpu_affinity);
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

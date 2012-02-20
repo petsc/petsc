@@ -71,8 +71,8 @@ static char* arrready;
 extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void*           (*MainWait)(void*);
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*           (*PetscThreadsWait)(void*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 void PetscPthreadSetAffinity(PetscInt);
@@ -258,10 +258,10 @@ PetscErrorCode PetscThreadFinalize_Chain() {
 
   PetscFunctionBegin;
 
-  MainJob(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
     /* should check error */
   }
   free(PetscThreadPoint);
@@ -278,24 +278,24 @@ PetscErrorCode PetscThreadFinalize_Chain() {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainWait_Chain"
-void* MainWait_Chain(void* arg) {
+#define __FUNCT__ "PetscThreadsWait_Chain"
+void* PetscThreadsWait_Chain(void* arg) {
   int ierr;
   ierr = pthread_mutex_lock(job_chain.mutexarray[0]);
   while(job_chain.eJobStat<JobCompleted||job_chain.startJob==PETSC_TRUE) {
-    ierr = pthread_cond_wait(&main_cond_chain,job_chain.mutexarray[0]);
+    ierr = pthread_cond_wait(&main_cond_chain,job_chain.mutexarray[0]); 
   }
   ierr = pthread_mutex_unlock(job_chain.mutexarray[0]);
   return(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_Chain"
-PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+#define __FUNCT__ "PetscThreadsRunKernel_Chain"
+PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   int i,j,issetaffinity,ierr;
   PetscErrorCode ijoberr = 0;
 
-  MainWait(NULL);
+  PetscThreadsWait(NULL);
   job_chain.startJob = PETSC_TRUE;
   for(i=0; i<PetscMaxThreads; i++) {
     if(pFunc == FuncFinish) {
@@ -325,7 +325,7 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n,PetscI
       job_chain.pdata[0] = data[0];
       ijoberr = (PetscErrorCode)(long int)job_chain.funcArr[0](job_chain.pdata[0]);
     }
-    MainWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
+    PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
   if(ithreaderr_chain) {

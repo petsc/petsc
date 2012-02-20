@@ -33,7 +33,7 @@ extern pthread_t* PetscThreadPoint;
 extern int*       ThreadCoreAffinity;
 
 extern void*   (*PetscThreadFunc)(void*);
-extern void*   (*MainWait)(void*);
+extern void*   (*PetscThreadsWait)(void*);
 
 typedef void* (*pfunc)(void*);
 typedef struct {
@@ -66,7 +66,7 @@ void* PetscThreadFunc_None(void* arg)
   return(0);
 }
 
-void* MainWait_None(void* arg)
+void* PetscThreadsWait_None(void* arg)
 {
   sjob_none      *job=(sjob_none*)arg;
   int            nthreads = job->nthreads;
@@ -81,8 +81,8 @@ void* MainWait_None(void* arg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MainJob_None"
-PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+#define __FUNCT__ "PetscThreadsRunKernel_None"
+PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   PetscErrorCode ijoberr = 0,i;
 
   PetscFunctionBegin;
@@ -94,7 +94,7 @@ PetscErrorCode MainJob_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscIn
   job_none.ThreadId = apThread;
   for(i=0;i<n;i++) ThreadCoreAffinity[i] = cpu_affinity[i];
   PetscThreadFunc(&job_none);
-  MainWait(&job_none); /* ensures that all threads are finished with the job */
+  PetscThreadsWait(&job_none); /* ensures that all threads are finished with the job */
   free(apThread);
 
   PetscFunctionReturn(0);

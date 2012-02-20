@@ -12,7 +12,7 @@ extern PetscInt*   ThreadCoreAffinity;
 extern PetscInt    MainThreadCoreAffinity;
 
 static PetscInt    mats_created=0;
-extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 typedef struct {
   PetscInt   *rstart;       /* List of starting row number for each thread */
@@ -93,7 +93,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
     mat_kerneldatap[i].y     = y + ap->rstart[i];
     mat_pdata[i]             = &mat_kerneldatap[i];
   }
-  ierr = MainJob(MatMult_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
+  ierr = PetscThreadsRunKernel(MatMult_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
 
   for(i=0;i< ap->nthreads;i++) nonzerorow += mat_kerneldatap[i].nonzerorow;
 
@@ -163,7 +163,7 @@ PetscErrorCode MatMultAdd_SeqAIJPThread(Mat A,Vec xx,Vec yy,Vec zz)
     mat_kerneldatap[i].z     = z + ap->rstart[i];
     mat_pdata[i]             = &mat_kerneldatap[i];
   }
-  ierr = MainJob(MatMultAdd_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
+  ierr = PetscThreadsRunKernel(MatMultAdd_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
 
   for(i=0;i< ap->nthreads;i++) nonzerorow += mat_kerneldatap[i].nonzerorow;
 
@@ -374,7 +374,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPThread(Mat A, MatAssemblyType mode)
     mat_kerneldatap[i].aa1   = aa1 + ai[ap->rstart[i]];
     mat_pdata[i]             = &mat_kerneldatap[i];
   }
-  ierr = MainJob(MatAssembly_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
+  ierr = PetscThreadsRunKernel(MatAssembly_Kernel,(void**)mat_pdata,ap->nthreads,ap->cpu_affinity);
 
   ai1[A->rmap->n] = ai[A->rmap->n];
 

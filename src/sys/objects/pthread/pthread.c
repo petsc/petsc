@@ -51,48 +51,48 @@ static ThreadAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
-void*          (*MainWait)(void*) = NULL;
-PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*) = NULL;
+void*          (*PetscThreadsWait)(void*) = NULL;
+PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*) = NULL;
 
 /* Tree Thread Pool Functions */
 extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadInitialize_Tree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Tree(void);
-extern void*          MainWait_Tree(void*);
-extern PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_Tree(void*);
+extern PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Main Thread Pool Functions */
 extern void*          PetscThreadFunc_Main(void*);
 extern PetscErrorCode PetscThreadInitialize_Main(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Main(void);
-extern void*          MainWait_Main(void*);
-extern PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_Main(void*);
+extern PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Chain Thread Pool Functions */
 extern void*          PetscThreadFunc_Chain(void*);
 extern PetscErrorCode PetscThreadInitialize_Chain(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_Chain(void);
-extern void*          MainWait_Chain(void*);
-extern PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_Chain(void*);
+extern PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* True Thread Pool Functions */
 extern void*          PetscThreadFunc_True(void*);
 extern PetscErrorCode PetscThreadInitialize_True(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_True(void);
-extern void*          MainWait_True(void*);
-extern PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_True(void*);
+extern PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* NO Thread Pool Functions */
 extern void*          PetscThreadFunc_None(void*);
-extern void*          MainWait_None(void*);
-extern PetscErrorCode MainJob_None(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_None(void*);
+extern PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadFinalize_LockFree(void);
-extern void*          MainWait_LockFree(void*);
-extern PetscErrorCode MainJob_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern void*          PetscThreadsWait_LockFree(void*);
+extern PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
@@ -280,24 +280,24 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscThreadFunc       = &PetscThreadFunc_Tree;
     PetscThreadInitialize = &PetscThreadInitialize_Tree;
     PetscThreadFinalize   = &PetscThreadFinalize_Tree;
-    MainWait              = &MainWait_Tree;
-    MainJob               = &MainJob_Tree;
+    PetscThreadsWait      = &PetscThreadsWait_Tree;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_Tree;
     PetscInfo1(PETSC_NULL,"Using tree thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_MAINPOOL:
     PetscThreadFunc       = &PetscThreadFunc_Main;
     PetscThreadInitialize = &PetscThreadInitialize_Main;
     PetscThreadFinalize   = &PetscThreadFinalize_Main;
-    MainWait              = &MainWait_Main;
-    MainJob               = &MainJob_Main;
+    PetscThreadsWait      = &PetscThreadsWait_Main;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_Main;
     PetscInfo1(PETSC_NULL,"Using main thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_CHAINPOOL:
     PetscThreadFunc       = &PetscThreadFunc_Chain;
     PetscThreadInitialize = &PetscThreadInitialize_Chain;
     PetscThreadFinalize   = &PetscThreadFinalize_Chain;
-    MainWait              = &MainWait_Chain;
-    MainJob               = &MainJob_Chain;
+    PetscThreadsWait      = &PetscThreadsWait_Chain;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_Chain;
     PetscInfo1(PETSC_NULL,"Using chain thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_TRUEPOOL:
@@ -305,15 +305,15 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscThreadFunc       = &PetscThreadFunc_True;
     PetscThreadInitialize = &PetscThreadInitialize_True;
     PetscThreadFinalize   = &PetscThreadFinalize_True;
-    MainWait              = &MainWait_True;
-    MainJob               = &MainJob_True;
+    PetscThreadsWait      = &PetscThreadsWait_True;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_True;
     PetscInfo1(PETSC_NULL,"Using true thread pool with %d threads\n",PetscMaxThreads);
 #else
     PetscThreadFunc       = &PetscThreadFunc_Main;
     PetscThreadInitialize = &PetscThreadInitialize_Main;
     PetscThreadFinalize   = &PetscThreadFinalize_Main;
-    MainWait              = &MainWait_Main;
-    MainJob               = &MainJob_Main;
+    PetscThreadsWait      = &PetscThreadsWait_Main;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_Main;
     PetscInfo1(PETSC_NULL,"Cannot use true thread pool since pthread_barrier_t is not defined, creating main thread pool instead with %d threads\n",PetscMaxThreads);
 #endif
     break;
@@ -321,16 +321,16 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscThreadInitialize = PETSC_NULL;
     PetscThreadFinalize   = PETSC_NULL;
     PetscThreadFunc       = &PetscThreadFunc_None;
-    MainWait              = &MainWait_None;
-    MainJob               = &MainJob_None;
+    PetscThreadsWait      = &PetscThreadsWait_None;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_None;
     PetscInfo1(PETSC_NULL,"Using No thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_LOCKFREE:
     PetscThreadFunc       = &PetscThreadFunc_LockFree;
     PetscThreadInitialize = &PetscThreadInitialize_LockFree;
     PetscThreadFinalize   = &PetscThreadFinalize_LockFree;
-    MainWait              = &MainWait_LockFree;
-    MainJob               = &MainJob_LockFree;
+    PetscThreadsWait      = &PetscThreadsWait_LockFree;
+    PetscThreadsRunKernel = &PetscThreadsRunKernel_LockFree;
     PetscInfo1(PETSC_NULL,"Using lock-free algorithm with %d threads\n",PetscMaxThreads);
     break;
   }
