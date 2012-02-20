@@ -209,7 +209,7 @@ EXTERN_C_BEGIN
   IntegrateElementBatchGPU - Produces element vectors from input element solution and geometric information via quadrature
 
   Input Parameters:
-+ Ne - The total number of cells, Ncb * Nbc
++ Ne - The total number of cells, Nchunk * Ncb * Nbc
 . Ncb - The number of serial cell batches
 . Nbc - The number of cells per batch
 . Nbl - The number of concurrent cells blocks per thread block
