@@ -181,7 +181,7 @@ M*/
 M*/
 
 /*MC
-     TSROSWLASSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+     TSROSWLASSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, four stages
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -196,7 +196,7 @@ M*/
 M*/
 
 /*MC
-     TSROSWLLSSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, three stages
+     TSROSWLLSSP3P4S2C - L-stable Rosenbrock-W method with SSP explicit part, third order, four stages
 
      By default, the Jacobian is only recomputed once per step.
 
