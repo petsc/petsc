@@ -1499,6 +1499,7 @@ dm
 J*/
 #define MatCoarsenType char*
 #define MATCOARSENMIS  "mis"
+#define MATCOARSENHEM  "hem"
 
 extern PetscErrorCode  MatCoarsenCreate(MPI_Comm,MatCoarsen*);
 extern PetscErrorCode  MatCoarsenSetType(MatCoarsen,const MatCoarsenType);

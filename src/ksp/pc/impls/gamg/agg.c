@@ -630,6 +630,13 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
   PetscReal      *out_data;
+#define OUT_AGGS
+#ifdef OUT_AGGS
+  static PetscInt llev = 0; char fname[32]; FILE *file;
+  sprintf(fname,"aggs_%d.m",llev++);
+  file = fopen(fname,"w");
+  fprintf(file,"figure,\n");
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -691,7 +698,13 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
             qqc[jj*Mdata + aggID*bs + ii] = data[jj*data_stride + ii];
           }
         }
-
+#ifdef OUT_AGGS
+        {
+          char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
+          str[12] = col[clid%6]; str[13] = sim[(clid/6)%11]; 
+          fprintf(file,str,data[2*data_stride+1],-data[2*data_stride]);
+        }
+#endif        
         /* set fine IDs */
         for(kk=0;kk<bs;kk++) fids[aggID*bs + kk] = flid_fgid[flid]*bs + kk;
         
@@ -751,6 +764,9 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
 /* ierr = MPI_Allreduce( &minsz, &jj, 1, MPIU_INT, MPIU_MIN, wcomm ); */
 /* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, N=%d (%d local done), min agg. size = %d\n",mype,__FUNCT__,ii,kk/bs,ndone,jj); */
 
+#ifdef OUT_AGGS
+  fclose(file);
+#endif
   ierr = ISRestoreIndices( selected, &selected_idx );     CHKERRQ(ierr);
   ierr = ISRestoreIndices( locals_llist, &llist_idx );     CHKERRQ(ierr);
   ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -872,11 +888,9 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
-
-  //ierr = maxIndSetAgg( perm, Gmat2, PETSC_TRUE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);
-
   ierr = MatCoarsenCreate( wcomm, &crs ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr);
+  /* ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr); */
+  ierr = MatCoarsenSetFromOptions( crs ); CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering( crs, perm ); CHKERRQ(ierr);
   ierr = MatCoarsenSetAdjacency( crs, Gmat2 ); CHKERRQ(ierr);
   ierr = MatCoarsenSetVerbose( crs, pc_gamg->verbose ); CHKERRQ(ierr);

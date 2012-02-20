@@ -133,7 +133,7 @@ PetscErrorCode createLevel( const PC pc,
 	const PetscScalar *vals; 
 	const PetscInt *idx;
 	PetscInt *d_nnz, *o_nnz;
-	static int llev = 0;
+	static PetscInt llev = 0;
 	
 	ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
 	ierr = PetscMalloc( ncrs0*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);

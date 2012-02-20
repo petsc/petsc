@@ -1,7 +1,7 @@
 #
 ALL: lib
 
-DIRS   = mis 
+DIRS   = mis hem
 LOCDIR = src/mat/coarsen/impls/
 
 include ${PETSC_DIR}/conf/variables

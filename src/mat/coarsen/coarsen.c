@@ -274,10 +274,10 @@ PetscErrorCode  MatCoarsenCreate( MPI_Comm comm, MatCoarsen *newcrs )
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(agg,_p_MatCoarsen,struct _MatCoarsenOps,MAT_COARSEN_CLASSID,-1,"MatCoarsen","Matrix/graph coarsen",
-                           "MatCoarsen",comm,MatCoarsenDestroy,MatCoarsenView);
+  ierr = PetscHeaderCreate( agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,-1,"MatCoarsen","Matrix/graph coarsen",
+                           "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView );
   CHKERRQ(ierr);
-  
+
   *newcrs = agg;
   PetscFunctionReturn(0);
 }
@@ -347,7 +347,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
    Collective on MatCoarsen
 
    Input Parameter:
-.  agg - the coarsen context.
+.  coarser - the coarsen context.
 .  type - a known method
 
    Options Database Command:
@@ -362,35 +362,35 @@ $      (for instance, mis)
 .seealso: MatCoarsenCreate(), MatCoarsenApply(), MatCoarsenType
 
 @*/
-PetscErrorCode  MatCoarsenSetType( MatCoarsen agg, const MatCoarsenType type )
+PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, const MatCoarsenType type )
 {
   PetscErrorCode ierr,(*r)(MatCoarsen);
   PetscBool  match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(agg,MAT_COARSEN_CLASSID,1);
+  PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscTypeCompare((PetscObject)agg,type,&match);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)coarser,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (agg->setupcalled) {
-    ierr =  (*agg->ops->destroy)(agg);CHKERRQ(ierr);
-    agg->ops->destroy = PETSC_NULL;
-    agg->data        = 0;
-    agg->setupcalled = 0;
+  if (coarser->setupcalled) {
+    ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
+    coarser->ops->destroy = PETSC_NULL;
+    coarser->data        = 0;
+    coarser->setupcalled = 0;
   }
 
-  ierr =  PetscFListFind(MatCoarsenList,((PetscObject)agg)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatCoarsenList,((PetscObject)coarser)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(((PetscObject)agg)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
+  if (!r) SETERRQ1(((PetscObject)coarser)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 
-  agg->ops->destroy      = (PetscErrorCode (*)(MatCoarsen)) 0;
-  agg->ops->view         = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
-  ierr = (*r)(agg);CHKERRQ(ierr);
+  coarser->ops->destroy      = (PetscErrorCode (*)(MatCoarsen)) 0;
+  coarser->ops->view         = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
+  ierr = (*r)(coarser);CHKERRQ(ierr);
 
-  ierr = PetscFree(((PetscObject)agg)->type_name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type,&((PetscObject)agg)->type_name);CHKERRQ(ierr);
+  ierr = PetscFree(((PetscObject)coarser)->type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&((PetscObject)coarser)->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -402,7 +402,7 @@ PetscErrorCode  MatCoarsenSetType( MatCoarsen agg, const MatCoarsenType type )
    Logically Collective on Coarsen
 
    Input Parameters:
-+  part - the coarsen context
++  coarser - the coarsen context
 -  perm - vertex ordering of (greedy) algorithm 
 
    Level: beginner
@@ -414,11 +414,11 @@ PetscErrorCode  MatCoarsenSetType( MatCoarsen agg, const MatCoarsenType type )
 
 .seealso: MatCoarsenCreate(), MatCoarsenSetType()
 @*/
-PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen part, const IS perm )
+PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen coarser, const IS perm )
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_COARSEN_CLASSID,1);
-  part->perm = perm;
+  PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
+  coarser->perm = perm;
   PetscFunctionReturn(0);
 }
 
@@ -430,7 +430,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen part, const IS perm )
    Logically Collective on Coarsen
 
    Input Parameters:
-+  part - the coarsen context
++  coarser - the coarsen context
 -  mis - pointer into 'llist'
 -  llist - linked list of aggregates
 
@@ -442,14 +442,22 @@ PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen part, const IS perm )
 
 .seealso: MatCoarsenCreate(), MatCoarsenSetType()
 @*/
-PetscErrorCode MatCoarsenGetMISAggLists( MatCoarsen part, IS *mis, IS *llist )
+PetscErrorCode MatCoarsenGetMISAggLists( MatCoarsen coarser, IS *mis, IS *llist )
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_COARSEN_CLASSID,1);
-  *mis =  part->mis;
-  part->mis = 0;  /* giving up ownership !!! */
-  *llist = part->agg_llist;
-  part->agg_llist = 0; /* giving up ownership !!! */
+  PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
+  if( !coarser->mis ) {
+    SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No MIS, call ApplyCoarsen");
+  }
+  *mis =  coarser->mis;
+  coarser->mis = 0;  /* giving up ownership !!! */
+
+  if( !coarser->agg_llist ) {
+    SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
+  }
+  *llist = coarser->agg_llist;
+  coarser->agg_llist = 0; /* giving up ownership !!! */
+  
   PetscFunctionReturn(0);
 }
 
@@ -462,7 +470,7 @@ PetscErrorCode MatCoarsenGetMISAggLists( MatCoarsen part, IS *mis, IS *llist )
    Collective on MatCoarsen
 
    Input Parameter:
-.  agg - the coarsen context.
+.  coarser - the coarsen context.
 
    Options Database Command:
 $  -mat_coarsen_type  <type>
@@ -473,7 +481,7 @@ $      (for instance, mis)
 
 .keywords: coarsen, set, method, type
 @*/
-PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen agg)
+PetscErrorCode MatCoarsenSetFromOptions( MatCoarsen coarser )
 {
   PetscErrorCode ierr;
   PetscBool  flag;
@@ -481,27 +489,29 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen agg)
   const char *def;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)agg);CHKERRQ(ierr);
-    if (!((PetscObject)agg)->type_name) {
-      def = MATCOARSENMIS;
-    } else {
-      def = ((PetscObject)agg)->type_name;
-    }
-    ierr = PetscOptionsList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);
-    CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatCoarsenSetType(agg,type);CHKERRQ(ierr);
-    }
-    /*
-      Set the type if it was never set.
-    */
-    if (!((PetscObject)agg)->type_name) {
-      ierr = MatCoarsenSetType(agg,def);CHKERRQ(ierr);
-    }
+  ierr = PetscObjectOptionsBegin((PetscObject)coarser);CHKERRQ(ierr);
+  if (!((PetscObject)coarser)->type_name) {
+    def = MATCOARSENMIS;
+  } else {
+    def = ((PetscObject)coarser)->type_name;
+  }
 
-    if (agg->ops->setfromoptions) {
-      ierr = (*agg->ops->setfromoptions)(agg);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);
+  CHKERRQ(ierr);
+
+  if (flag) {
+    ierr = MatCoarsenSetType(coarser,type);CHKERRQ(ierr);
+  }
+  /*
+   Set the type if it was never set.
+   */
+  if (!((PetscObject)coarser)->type_name) {
+    ierr = MatCoarsenSetType(coarser,def);CHKERRQ(ierr);
+  }
+  
+  if (coarser->ops->setfromoptions) {
+    ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
