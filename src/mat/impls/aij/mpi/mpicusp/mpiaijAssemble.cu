@@ -437,7 +437,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
      thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
      thrust::plus<ValueType>());
 
-  thrustreduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
+  thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())),
      offdiagCOO.values.begin() + offdiagonalOffset,
      thrust::make_zip_iterator(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin())),
