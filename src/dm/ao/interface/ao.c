@@ -207,7 +207,7 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  PetscValidIntPointer(ia,3);
+  if (n) {PetscValidIntPointer(ia,3);}
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,7 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  PetscValidIntPointer(ia,3);
+  if (n) {PetscValidIntPointer(ia,3);}
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
