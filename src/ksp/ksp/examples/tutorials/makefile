@@ -9,7 +9,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c
+                ex54.c ex55.c ex56.c ex58.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F ex54f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -282,6 +282,10 @@ ex56: ex56.o chkopts
 ex57f: ex57f.o  chkopts
 	-${FLINKER} -o ex57f ex57f.o  ${PETSC_KSP_LIB}
 	${RM} ex57f.o
+
+ex58: ex58.o chkopts
+	-${CLINKER} -o ex58 ex58.o ${PETSC_KSP_LIB}
+	${RM} ex58.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -1076,6 +1080,19 @@ runex56:
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
 
+runex58:
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij -options_left no > ex58.tmp 2>&1;         \
+        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58, diffs above \n========================================="; \
+        ${RM} -f ex58.tmp
+runex58_baij:
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type baij -options_left no > ex58.tmp 2>&1;         \
+        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_baij, diffs above \n========================================="; \
+        ${RM} -f ex58.tmp
+runex58_sbaij:
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type sbaij -options_left no > ex58.tmp 2>&1;         \
+        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_sbaij, diffs above \n========================================="; \
+        ${RM} -f ex58.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
                                  ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
@@ -1087,7 +1104,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 runex43_3 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
-                                 ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm
+                                 ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm\
+                                 ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm\
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
