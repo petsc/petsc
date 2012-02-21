@@ -104,9 +104,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidScalarPointer(r,2);
-  PetscValidScalarPointer(c,3);
-  PetscValidIntPointer(neig,4);
+  PetscValidScalarPointer(r,3);
+  PetscValidScalarPointer(c,4);
+  PetscValidIntPointer(neig,5);
   if (!ksp->calc_sings) SETERRQ(((PetscObject)ksp)->comm,4,"Eigenvalues not requested before KSPSetUp()");
 
   if (ksp->ops->computeeigenvalues) {
