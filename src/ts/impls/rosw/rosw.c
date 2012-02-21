@@ -377,7 +377,15 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {(-3.0-s3)/24.0,(-3.0-s3)/8.0,g}},
         b[3] = {1./6.,1./6.,2./3.},
           b2[3] = {1./4.,1./4.,1./2.};
-    ierr = TSRosWRegister(TSROSWASSP3P3S1C,3,3,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+
+        PetscReal  binterpt[3][2];
+        binterpt[0][0]=0.089316397477040902157517886164709;
+        binterpt[1][0]=-0.91068360252295909784248211383529;
+        binterpt[2][0]=1.8213672050459181956849642276706;
+        binterpt[0][1]=0.077350269189625764509148780501957;
+        binterpt[1][1]=1.077350269189625764509148780502;
+        binterpt[2][1]=-1.1547005383792515290182975610039;
+    ierr = TSRosWRegister(TSROSWASSP3P3S1C,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
   {
@@ -392,7 +400,20 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {1./2.,5./36.,-2./9,0}},
         b[4] = {1./6.,1./6.,1./6.,1./2.},
         b2[4] = {1./8.,3./4.,1./8.,0};
-     ierr = TSRosWRegister(TSROSWLASSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+        PetscReal  binterpt[4][3];
+        binterpt[0][0]=6.25;
+        binterpt[1][0]=-30.25;
+        binterpt[2][0]=1.75;
+        binterpt[3][0]=23.25;
+        binterpt[0][1]=-9.75;
+        binterpt[1][1]=58.75;
+        binterpt[2][1]=-3.25;
+        binterpt[3][1]=-45.75;
+        binterpt[0][2]=3.6666666666666666666666666666667;
+        binterpt[1][2]=-28.333333333333333333333333333333;
+        binterpt[2][2]=1.6666666666666666666666666666667;
+        binterpt[3][2]=23.;
+        ierr = TSRosWRegister(TSROSWLASSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
   {
@@ -407,7 +428,21 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {1./18.,65./108.,-2./27,0}},
         b[4] = {1./6.,1./6.,1./6.,1./2.},
         b2[4] = {3./16.,10./16.,3./16.,0};
-     ierr = TSRosWRegister(TSROSWLLSSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+
+        PetscReal  binterpt[4][3];
+        binterpt[0][0]=1.6911764705882352941176470588235;
+        binterpt[1][0]=3.6813725490196078431372549019608;
+        binterpt[2][0]=0.23039215686274509803921568627451;
+        binterpt[3][0]=-4.6029411764705882352941176470588;
+        binterpt[0][1]=-0.95588235294117647058823529411765;
+        binterpt[1][1]=-6.2401960784313725490196078431373;
+        binterpt[2][1]=-0.31862745098039215686274509803922;
+        binterpt[3][1]=7.5147058823529411764705882352941;
+        binterpt[0][2]=-0.56862745098039215686274509803922;
+        binterpt[1][2]=2.7254901960784313725490196078431;
+        binterpt[2][2]=0.25490196078431372549019607843137;
+        binterpt[3][2]=-2.4117647058823529411764705882353;
+        ierr = TSRosWRegister(TSROSWLLSSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
  {
