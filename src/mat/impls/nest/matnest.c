@@ -213,7 +213,18 @@ static PetscErrorCode MatAssemblyBegin_Nest(Mat A,MatAssemblyType type)
   PetscFunctionBegin;
   for (i=0; i<vs->nr; i++) {
     for (j=0; j<vs->nc; j++) {
-      if (vs->m[i][j]) { ierr = MatAssemblyBegin(vs->m[i][j],type);CHKERRQ(ierr); }
+      if (vs->m[i][j]) {
+        ierr = MatAssemblyBegin(vs->m[i][j],type);CHKERRQ(ierr);
+        if (!vs->splitassembly) {
+          /* Note: split assembly will fail if the same block appears more than once (even indirectly through a nested
+           * sub-block). This could be fixed by adding a flag to Mat so that there was a way to check if a Mat was
+           * already performing an assembly, but the result would by more complicated and appears to offer less
+           * potential for diagnostics and correctness checking. Split assembly should be fixed once there is an
+           * interface for libraries to make asynchronous progress in "user-defined non-blocking collectives".
+           */
+          ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr);
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -230,7 +241,11 @@ static PetscErrorCode MatAssemblyEnd_Nest(Mat A, MatAssemblyType type)
   PetscFunctionBegin;
   for (i=0; i<vs->nr; i++) {
     for (j=0; j<vs->nc; j++) {
-      if (vs->m[i][j]) { ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr); }
+      if (vs->m[i][j]) {
+        if (vs->splitassembly) {
+          ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr);
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -1383,9 +1398,12 @@ PetscErrorCode MatCreate_Nest(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(A,Mat_Nest,&s);CHKERRQ(ierr);
-  A->data         = (void*)s;
-  s->nr = s->nc   = -1;
-  s->m            = PETSC_NULL;
+  A->data = (void*)s;
+
+  s->nr            = -1;
+  s->nc            = -1;
+  s->m             = PETSC_NULL;
+  s->splitassembly = PETSC_FALSE;
 
   ierr = PetscMemzero(A->ops,sizeof(*A->ops));CHKERRQ(ierr);
   A->ops->mult                  = MatMult_Nest;
