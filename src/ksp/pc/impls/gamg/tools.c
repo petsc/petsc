@@ -14,7 +14,7 @@
  Output Parameter:
  . a_Gmaat - eoutput scalar graph (symmetric?)
  */
-#undef __FUNCT__2
+#undef __FUNCT__
 #define __FUNCT__ "createSimpleGraph"
 PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
 {
