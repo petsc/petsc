@@ -26,13 +26,13 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscviewer.h>
 #include <finclude/petscviewer.h90>
-      Vec              xvec,bvec
+      Vec              xvec,bvec,uvec
       Mat              Amat 
       KSP              ksp
       PC               pc
       PetscErrorCode   ierr
       PetscViewer viewer
-      PetscInt pj,pi,ne,M,Istart,Iend,geq,ix
+      PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
@@ -104,6 +104,7 @@
       call MatGetVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr ) 
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
+      call VecDuplicate( xvec, uvec, ierr )
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array "col").
@@ -113,9 +114,9 @@
       call int2d(2,lint,sg)
       ix = 0
       do geq=Istart,Iend-1,1
-         pj = geq/(ne+1); pi = mod(geq,(ne+1))
-         x = h*pi - 1.d0; y = h*pj - 1.d0 ! lower left corner (-1,-1)
-         if( pi < ne .and. pj < ne ) then
+         qj = geq/(ne+1); qi = mod(geq,(ne+1))
+         x = h*qi - 1.d0; y = h*qj - 1.d0 ! lower left corner (-1,-1)
+         if( qi < ne .and. qj < ne ) then
             coord(1,1) = x;   coord(2,1) = y 
             coord(1,2) = x+h; coord(2,2) = y 
             coord(1,3) = x+h; coord(2,3) = y+h 
@@ -144,7 +145,7 @@ c     Compute tangent
 
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
-            if( pj > 0 ) then
+            if( qj > 0 ) then
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
             else                !     a BC 
                do ki=1,4,1
@@ -161,7 +162,7 @@ c     Compute tangent
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
-         if( pj > 0 ) then      ! set rhs
+         if( qj > 0 ) then      ! set rhs
 
             val = h*h*exp(-1.d2*((x+h/2)-blb(1))**2)*
      $           exp(-1.d2*((y+h/2)-blb(2))**2)
@@ -209,14 +210,25 @@ c     Compute tangent
      $        FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
+
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',
      $        FILE_MODE_WRITE,viewer,ierr)
          call VecView(bvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
+
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',
      $        FILE_MODE_WRITE,viewer,ierr)
          call VecView(xvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
+
+         call MatMult(Amat,xvec,uvec,ierr)
+         val = -1.d0
+         call VecAXPY(uvec,val,bvec,ierr)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',
+     $        FILE_MODE_WRITE,viewer,ierr)
+         call VecView(uvec,viewer,ierr)
+         call PetscViewerDestroy(viewer,ierr)
+
          if( mype == 0 ) then
             open(1,file="ex54f.m", FORM="formatted")
             write (1,*) "A = PetscBinaryRead('Amat');"
@@ -224,13 +236,18 @@ c     Compute tangent
             write (1,*) "mm = sqrt(m);"
             write (1,*) "b = PetscBinaryRead('Bvec');"
             write (1,*) "x = PetscBinaryRead('Xvec');"
+            write (1,*) "r = PetscBinaryRead('Rvec');"
             write (1,*) "bb = reshape(b,mm,mm);"
             write (1,*) "xx = reshape(x,mm,mm);"
-            write (1,*) "imagesc(bb')"
-            write (1,*) "title('RHS'),"
+            write (1,*) "rr = reshape(r,mm,mm);"
+c            write (1,*) "imagesc(bb')"
+c            write (1,*) "title('RHS'),"
             write (1,*) "figure,"
             write (1,*) "imagesc(xx')"
             write (1,2002) eps,theta*57.2957795
+            write (1,*) "figure,"
+            write (1,*) "imagesc(rr')"
+            write (1,*) "title('Residual'),"
             close(1)
          endif
       endif
@@ -240,6 +257,7 @@ c     Compute tangent
 
       call VecDestroy(xvec,ierr)
       call VecDestroy(bvec,ierr)
+      call VecDestroy(uvec,ierr)
       call MatDestroy(Amat,ierr)
       call KSPDestroy(ksp,ierr)
       call PetscFinalize(ierr)

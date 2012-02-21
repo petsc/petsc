@@ -427,16 +427,16 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   PC_MG_Levels   **mglevels = mg->levels;
   Mat              Amat = pc->mat, Pmat = pc->pmat;
-  PetscInt         fine_level, level, level1, M, N, bs, nloc, lidx, Istart, Iend;
+  PetscInt         fine_level,level,level1,M,N,bs,nloc,lidx,Istart,Iend;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
   PetscMPIInt      mype,npe,nactivepe;
   Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];
   PetscReal        emaxs[GAMG_MAXLEVELS];
+  PetscLogDouble   nnz0,nnztot;
   MatInfo          info;
-
+ 
   PetscFunctionBegin;
   pc_gamg->setup_count++;
-
   if( pc->setupcalled > 0 ) {
     /* just do Galerkin grids */
     Mat B,dA,dB;
@@ -490,11 +490,15 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   }
   
   /* Get A_i and R_i */
-  ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   if (pc_gamg->verbose) {
+    if(pc_gamg->verbose==1) ierr =  MatGetInfo(Amat,MAT_LOCAL,&info); 
+    else ierr =  MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); 
+    CHKERRQ(ierr);
+    nnz0 = info.nz_used;
+    nnztot = info.nz_used;
     PetscPrintf(wcomm,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
                 mype,__FUNCT__,0,N,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,
-                (int)(info.nz_used/(PetscReal)N),npe);
+                (int)(nnz0/(PetscReal)N),npe);
   }
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
@@ -549,53 +553,57 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
       break;
     }
-    else {
 #if defined PETSC_USE_LOG
-      ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
-      ierr = createLevel( pc, Aarr[level], bs,
-                          (PetscBool)(level==pc_gamg->Nlevels-2),
-                          &Parr[level1], &nactivepe, &Aarr[level1] );
-      CHKERRQ(ierr);
+    ierr = createLevel( pc, Aarr[level], bs,
+                        (PetscBool)(level==pc_gamg->Nlevels-2),
+                        &Parr[level1], &nactivepe, &Aarr[level1] );
+    CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
-      ierr = PetscLogEventEnd(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
-      ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
-      ierr = MatGetInfo( Aarr[level1], MAT_GLOBAL_SUM, &info ); CHKERRQ(ierr);
-      if (pc_gamg->verbose){
-        PetscPrintf(wcomm,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-                    mype,__FUNCT__,(int)level1,N,pc_gamg->data_cell_cols,
-                    (int)(info.nz_used/(PetscReal)N),nactivepe);
-      } 
-      /* stop if one node */
-      if( M/pc_gamg->data_cell_cols < 2 ) {
-        level++;
-        break;
-      }
-      /* Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id; */
-      /* v = 1.e-10; /\* LU factor has hard wired numbers for small diags so this needs to match (yuk) *\/ */
-      /* ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr); */
-      /* nloceq = Iend-Istart; */
-      /* ierr = MatGetVecs( Aarr[level1], &diag, 0 );    CHKERRQ(ierr); */
-      /* ierr = MatGetDiagonal( Aarr[level1], diag );    CHKERRQ(ierr); */
-      /* ierr = VecGetArray( diag, &data_arr );   CHKERRQ(ierr); */
-      /* for(kk=0;kk<nloceq;kk++){ */
-      /*   if(data_arr[kk]==0.0) { */
-      /*     id = kk + Istart;  */
-      /*     ierr = MatSetValues(Aarr[level1],1,&id,1,&id,&v,INSERT_VALUES); */
-      /*     CHKERRQ(ierr); */
-      /*     PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s warning: added zero to diag (%d) on level %d \n",mype,__FUNCT__,id,level1); */
-      /*   } */
-      /* } */
-      /* ierr = VecRestoreArray( diag, &data_arr ); CHKERRQ(ierr); */
-      /* ierr = VecDestroy( &diag );                CHKERRQ(ierr); */
-      /* ierr = MatAssemblyBegin(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
-      /* ierr = MatAssemblyEnd(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
+    ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
+    ierr = MatGetInfo( Aarr[level1], MAT_GLOBAL_SUM, &info ); CHKERRQ(ierr);
+    if (pc_gamg->verbose){
+      PetscPrintf(wcomm,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
+                  mype,__FUNCT__,(int)level1,N,pc_gamg->data_cell_cols,
+                  (int)(info.nz_used/(PetscReal)N),nactivepe);
+    } 
+    /* stop if one node */
+    if( M/pc_gamg->data_cell_cols < 2 ) {
+      level++;
+      break;
     }
-
+    /* Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id; */
+    /* v = 1.e-10; /\* LU factor has hard wired numbers for small diags so this needs to match (yuk) *\/ */
+    /* ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr); */
+    /* nloceq = Iend-Istart; */
+    /* ierr = MatGetVecs( Aarr[level1], &diag, 0 );    CHKERRQ(ierr); */
+    /* ierr = MatGetDiagonal( Aarr[level1], diag );    CHKERRQ(ierr); */
+    /* ierr = VecGetArray( diag, &data_arr );   CHKERRQ(ierr); */
+    /* for(kk=0;kk<nloceq;kk++){ */
+    /*   if(data_arr[kk]==0.0) { */
+    /*     id = kk + Istart; */
+    /*     ierr = MatSetValues(Aarr[level1],1,&id,1,&id,&v,INSERT_VALUES); */
+    /*     CHKERRQ(ierr); */
+    /*     PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s warning: added zero to diag (%d) on level %d \n",mype,__FUNCT__,id,level1); */
+    /*   } */
+    /* } */
+    /* ierr = VecRestoreArray( diag, &data_arr ); CHKERRQ(ierr); */
+    /* ierr = VecDestroy( &diag );                CHKERRQ(ierr); */
+    ierr = MatAssemblyBegin(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePop(); CHKERRQ( ierr );
 #endif
+    if(pc_gamg->verbose){
+      if(pc_gamg->verbose==1) ierr =  MatGetInfo(Aarr[level1],MAT_LOCAL,&info); 
+      else ierr =  MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); 
+      CHKERRQ(ierr);
+      nnztot += info.nz_used;
+    }
   } /* levels */
   
   if( pc_gamg->data ) {
@@ -603,7 +611,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     pc_gamg->data = 0;
   }
   
-  if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
+  if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels, grid compexity = %g\n",0,__FUNCT__,level+1,nnztot/nnz0);
   pc_gamg->Nlevels = level + 1;
   fine_level = level;
   ierr = PCMGSetLevels(pc,pc_gamg->Nlevels,PETSC_NULL);CHKERRQ(ierr);
@@ -635,10 +643,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
       else{ /* eigen estimate 'emax' */
         KSP eksp; Mat Lmat = Aarr[level];
-        Vec bb, xx; PC pc;
-        const PCType type;
+        Vec bb, xx; 
 
-        ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
         ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
         ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
         {
@@ -658,10 +664,14 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
         ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
         ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
-        ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
-        ierr = PCSetType( pc, type ); CHKERRQ(ierr); /* should be same as eigen estimates op. */
-        
         ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+        
+        { /* set PC type to be same as smoother - does not get all parameters!!! */
+          const PCType type;    PC pc;   
+          ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
+          ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
+          ierr = PCSetType( pc, type ); CHKERRQ(ierr); 
+        }
 
 	/* solve - keep stuff out of logging */
 	ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
@@ -677,8 +687,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 
         if (pc_gamg->verbose) {
-          PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e\n",
-                      __FUNCT__,emax,emin);
+          PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e\n",__FUNCT__,emax,emin);
         }
       }
       { 

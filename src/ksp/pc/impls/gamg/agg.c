@@ -630,12 +630,14 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
   PetscReal      *out_data;
-/* #define OUT_AGGS */
+#define OUT_AGGS
 #ifdef OUT_AGGS
   static PetscInt llev = 0; char fname[32]; FILE *file;
   sprintf(fname,"aggs_%d.m",llev++);
-  file = fopen(fname,"w");
-  fprintf(file,"figure,\n");
+  if(llev==1) {
+    file = fopen(fname,"w");
+    fprintf(file,"figure,\n");
+  }
 #endif
 
   PetscFunctionBegin;
@@ -699,12 +701,16 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
           }
         }
 #ifdef OUT_AGGS
-        {
+        if(llev==1) {
           char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
+          PetscInt M,pi,pj,gid=Istart+flid;
           str[12] = col[clid%6]; str[13] = sim[(clid/6)%11]; 
-          fprintf(file,str,data[2*data_stride+1],-data[2*data_stride]);
+          M = (PetscInt)(PetscSqrtScalar((PetscScalar)nFineLoc*npe));
+          pj = gid/M; pi = gid%M;
+          fprintf(file,str,(double)pi,(double)pj);
+          /* fprintf(file,str,data[2*data_stride+1],-data[2*data_stride]); */
         }
-#endif        
+#endif
         /* set fine IDs */
         for(kk=0;kk<bs;kk++) fids[aggID*bs + kk] = flid_fgid[flid]*bs + kk;
         
@@ -765,7 +771,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
 /* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, N=%d (%d local done), min agg. size = %d\n",mype,__FUNCT__,ii,kk/bs,ndone,jj); */
 
 #ifdef OUT_AGGS
-  fclose(file);
+  if(llev==1) fclose(file);
 #endif
   ierr = ISRestoreIndices( selected, &selected_idx );     CHKERRQ(ierr);
   ierr = ISRestoreIndices( locals_llist, &llist_idx );     CHKERRQ(ierr);
