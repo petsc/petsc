@@ -378,6 +378,16 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscReal *fn
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIDMComputeVariableBounds"
+PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
+{
+  PetscErrorCode     ierr;
+  PetscFunctionBegin;
+  ierr = DMComputeVariableBounds(snes->dm, xl, xu); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -406,6 +416,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
+  if(!snes->ops->computevariablebounds && snes->dm) {
+    snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+  }
   if (snes->ops->computevariablebounds) {
     if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
     if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}

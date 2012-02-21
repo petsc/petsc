@@ -147,13 +147,16 @@ extern PetscErrorCode   DMGetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 extern PetscErrorCode   DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
 extern PetscErrorCode   DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
+extern PetscErrorCode   DMSetVariableBounds(DM,PetscErrorCode (*)(DM,Vec,Vec));
 extern PetscErrorCode   DMHasInitialGuess(DM,PetscBool *);
 extern PetscErrorCode   DMHasFunction(DM,PetscBool *);
 extern PetscErrorCode   DMHasJacobian(DM,PetscBool *);
+extern PetscErrorCode   DMHasVariableBounds(DM,PetscBool *);
 extern PetscErrorCode   DMComputeInitialGuess(DM,Vec);
 extern PetscErrorCode   DMComputeFunction(DM,Vec,Vec);
 extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
+extern PetscErrorCode   DMComputeVariableBounds(DM,Vec,Vec);
 
 extern PetscErrorCode   DMGetRefineLevel(DM,PetscInt*);
 extern PetscErrorCode   DMGetCoarsenLevel(DM,PetscInt*);

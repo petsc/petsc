@@ -31,16 +31,19 @@ struct _DMOps {
   PetscErrorCode (*formfunction)(DM,PetscErrorCode (*)(void),Vec,Vec);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
-  PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec); 
-  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec); 
-  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
 
-  PetscErrorCode (*initialguess)(DM,Vec); 
-  PetscErrorCode (*function)(DM,Vec,Vec);			
-  PetscErrorCode (*functionj)(DM,Vec,Vec);			
-  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);	
+  PetscErrorCode (*initialguess)(DM,Vec);
+  PetscErrorCode (*function)(DM,Vec,Vec);
+  PetscErrorCode (*functionj)(DM,Vec,Vec);
+  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);
 
   PetscErrorCode (*destroy)(DM);
+
+  PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
+
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;

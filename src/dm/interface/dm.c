@@ -1,4 +1,4 @@
- 
+#include <petscsnes.h> 
 #include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
@@ -1359,6 +1359,92 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMSetVariableBounds"
+/*@C
+    DMSetVariableBounds - sets a function to compute the the lower and upper bound vectors for SNESVI.
+
+    Logically Collective on DM
+
+    Input Parameter:
++   dm - the DM object 
+-   f - the function that computes variable bounds used by SNESVI (use PETSC_NULL to cancel a previous function that was set)
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+         DMSetJacobian()
+
+@*/
+PetscErrorCode  DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
+{
+  PetscFunctionBegin;
+  dm->ops->computevariablebounds = f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMHasVariableBounds"
+/*@
+    DMHasVariableBounds - does the DM object have a variable bounds function?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the variable bounds function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+
+@*/
+PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->computevariablebounds) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMComputeVariableBounds"
+/*@C
+    DMComputeVariableBounds - compute variable bounds used by SNESVI.
+
+    Logically Collective on DM
+
+    Input Parameters:
++   dm - the DM object to destroy
+-   x  - current solution at which the bounds are computed
+
+    Output parameters:
++   xl - lower bound
+-   xu - upper bound
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+         DMSetFunction(), DMSetVariableBounds()
+
+@*/
+PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(xl,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(xu,VEC_CLASSID,2); 
+  if(dm->ops->computevariablebounds) {
+    ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
+  }
+  else {
+    ierr = VecSet(xl,SNES_VI_NINF); CHKERRQ(ierr);
+    ierr = VecSet(xu,SNES_VI_INF);  CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeInitialGuess"
 /*@
     DMComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
@@ -1462,6 +1548,40 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+#undef  __FUNCT__
+#define __FUNCT__ "DMSetVec"
+/*@
+    DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object 
+-   x - location to compute residual, Jacobian and VI bounds at; will be PETSC_NULL for linear problems.
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+         DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
+
+@*/
+PetscErrorCode  DMSetVec(DM dm,Vec x) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (x) {
+    if (!dm->x) {
+      ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
+  }
+  else if(dm->x) {
+    ierr = VecDestroy(&dm->x);  CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMComputeFunction"
 /*@
@@ -1493,7 +1613,8 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 }
 
 
-#undef __FUNCT__  
+
+#undef __FUNCT__ 
 #define __FUNCT__ "DMComputeJacobian"
 /*@
     DMComputeJacobian - compute the matrix entries for the solver

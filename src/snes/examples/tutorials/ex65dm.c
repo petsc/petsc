@@ -26,11 +26,11 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(daf,&x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
 
-  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1);CHKERRQ(ierr);
+  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1); CHKERRQ(ierr);
   ierr = DMCoarsen(dac1,PETSC_COMM_WORLD,&dac2);CHKERRQ(ierr);
   ierr = DMCoarsen(dac2,PETSC_COMM_WORLD,&dac3);CHKERRQ(ierr);
   ierr = DMCoarsen(dac3,PETSC_COMM_WORLD,&dac4);CHKERRQ(ierr);
-  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);CHKERRQ(ierr);
+  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);  CHKERRQ(ierr);
   ierr = DMRefine(daf1,PETSC_COMM_WORLD,&daf2);CHKERRQ(ierr);
   ierr = DMRefine(daf2,PETSC_COMM_WORLD,&daf3);CHKERRQ(ierr);
   ierr = DMRefine(daf3,PETSC_COMM_WORLD,&daf4);CHKERRQ(ierr);
