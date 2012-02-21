@@ -1371,7 +1371,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
 @*/
@@ -1397,7 +1397,7 @@ PetscErrorCode  DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
@@ -1424,7 +1424,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction(), DMSetVariableBounds()
 
 @*/
@@ -1557,11 +1557,11 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 
     Input Parameter:
 +   dm - the DM object 
--   x - location to compute residual, Jacobian and VI bounds at; will be PETSC_NULL for linear problems.
+-   x - location to compute residual and Jacobian, if PETSC_NULL is passed to those routines; will be PETSC_NULL for linear problems.
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
 
 @*/
