@@ -48,7 +48,7 @@ class Configure(config.package.Package):
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.6.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
-    self.liblist   = [['libhdf5.a']]
+    self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
     self.needsMath = 1
     self.extraLib  = ['libz.a']
     self.complex   = 1
@@ -112,7 +112,7 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     if hasattr(self.compilers, 'FC'):
-      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a']]
+      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5hl_fortran.la', 'libhdf5_hl.la']]
     config.package.Package.configureLibrary(self)
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
