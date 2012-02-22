@@ -1550,7 +1550,7 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMSetVec"
-/*@
+/*@C
     DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
 
     Collective on DM
