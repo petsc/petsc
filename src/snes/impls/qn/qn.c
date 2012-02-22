@@ -330,7 +330,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 
   PetscErrorCode ierr;
   SNES_QN    *qn;
-  const char *compositions[] = {"composed", "sequential"};
+  const char *compositions[] = {"sequential", "composed"};
   PetscInt   indx = 0;
   PetscBool  flg;
   PetscBool  monflg = PETSC_FALSE;
@@ -339,18 +339,20 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   qn = (SNES_QN*)snes->data;
 
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_qn_m",                "Number of past states saved for L-BFGS methods", "SNES", qn->m, &qn->m, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_powell_gamma",    "Powell angle tolerance",          "SNES", qn->powell_gamma, &qn->powell_gamma, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_powell_downhill", "Powell descent tolerance",        "SNES", qn->powell_downhill, &qn->powell_downhill, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNES", monflg, &monflg, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-snes_qn_composition",    "Composition type",                "SNES",compositions,2,"sequential",(PetscInt *)&qn->compositiontype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_qn_m",                "Number of past states saved for L-BFGS methods", "SNESQN", qn->m, &qn->m, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_qn_powell_gamma",    "Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_qn_powell_downhill", "Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", monflg, &monflg, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_qn_composition",    "Composition type",                "SNESQN",compositions,2,"sequential",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
-    case 0: qn->compositiontype = SNES_QN_COMPOSED;
-    case 1: qn->compositiontype = SNES_QN_SEQUENTIAL;
+    case 0: qn->compositiontype = SNES_QN_SEQUENTIAL;
+      break;
+    case 1: qn->compositiontype = SNES_QN_COMPOSED;
+      break;
     }
   }
-    ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (monflg) {
     qn->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
