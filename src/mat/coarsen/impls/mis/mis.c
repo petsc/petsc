@@ -265,10 +265,9 @@ PetscErrorCode maxIndSetAgg( const IS perm,
       PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices.\n",mype,__FUNCT__,nremoved,nloc);
     }
     else {
-      MPI_Allreduce( &nremoved, &n, 1, MPIU_INT, MPI_SUM, wcomm );
-      kk = nremoved;
+      ierr = MPI_Allreduce( &nremoved, &n, 1, MPIU_INT, MPI_SUM, wcomm );CHKERRQ(ierr);
       ierr = MatGetSize( Gmat, &kk, &j ); CHKERRQ(ierr);
-      PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices.\n",mype,__FUNCT__,n,kk);
+      PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices. (%d local)\n",mype,__FUNCT__,n,kk,nremoved);
     }
   }
 

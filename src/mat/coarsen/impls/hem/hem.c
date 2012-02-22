@@ -207,7 +207,6 @@ PetscErrorCode heavyEdgeMatchAgg( const Mat Gmat,
             PetscInt cpid = idx[j]; /* compressed row ID in B mat */
             NState statej = (NState)PetscRealPart(cpcol_state[cpid]);
             if( IS_SELECTED(statej) ) { /* lid is now deleted, do it */
-              PetscInt lidj = nloc + cpid;
               PetscInt gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);  
               nDone++;
               lid_state[lid] = (PetscScalar)(PetscReal)DELETED; /* delete this */              
@@ -235,7 +234,7 @@ PetscErrorCode heavyEdgeMatchAgg( const Mat Gmat,
       PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices.\n",mype,__FUNCT__,nremoved,nloc);
     }
     else {
-      MPI_Allreduce( &nremoved, &n, 1, MPIU_INT, MPI_SUM, wcomm );
+      ierr = MPI_Allreduce( &nremoved, &n, 1, MPIU_INT, MPI_SUM, wcomm );
       kk = nremoved;
       ierr = MatGetSize( Gmat, &kk, &j ); CHKERRQ(ierr);
       PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices.\n",mype,__FUNCT__,n,kk);

@@ -175,7 +175,7 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
     }
     else {
       PetscInt nnz[2] = {nnz0,nnz1},out[2];
-      MPI_Allreduce( nnz, out, 2, MPIU_INT, MPI_SUM, wcomm );
+      ierr = MPI_Allreduce( nnz, out, 2, MPIU_INT, MPI_SUM, wcomm );  CHKERRQ(ierr);
       PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave.\n",mype,__FUNCT__,
                   100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM);
     }

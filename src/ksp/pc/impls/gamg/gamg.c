@@ -426,7 +426,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   PC_MG_Levels   **mglevels = mg->levels;
-  Mat              Amat = pc->mat, Pmat = pc->pmat;
+  Mat              Pmat = pc->pmat;
   PetscInt         fine_level,level,level1,M,N,bs,nloc,lidx,Istart,Iend;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
   PetscMPIInt      mype,npe,nactivepe;
@@ -477,9 +477,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   /* GAMG requires input of fine-grid matrix. It determines nlevels. */
-  ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
-  ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( Amat, &Istart, &Iend ); CHKERRQ(ierr);
+  ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
+  ierr = MatGetSize( Pmat, &M, &N );CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( Pmat, &Istart, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; assert((Iend-Istart)%bs == 0);
   
   if( pc_gamg->data == 0 && nloc > 0 ) {
@@ -491,8 +491,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   
   /* Get A_i and R_i */
   if (pc_gamg->verbose) {
-    if(pc_gamg->verbose==1) ierr =  MatGetInfo(Amat,MAT_LOCAL,&info); 
-    else ierr =  MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); 
+    if(pc_gamg->verbose==1) ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info); 
+    else ierr =  MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info); 
     CHKERRQ(ierr);
     nnz0 = info.nz_used;
     nnztot = info.nz_used;
@@ -548,7 +548,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       if( !flag ) emaxs[level] = -1.;
     }
     else emaxs[level] = -1.;
-    if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
+    if(level==0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if( !Parr[level1] ) {
       if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
       break;
