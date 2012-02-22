@@ -377,8 +377,8 @@ PetscErrorCode  SNESLineSearchSetType_QN(SNES snes, SNESLineSearchType type)
   case SNES_LS_QUADRATIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
-  case SNES_LS_SECANT:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
+  case SNES_LS_CRITICAL:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCriticalSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
@@ -400,7 +400,7 @@ EXTERN_C_END
 .     -snes_qn_powell_angle - Angle condition for restart.
 .     -snes_qn_powell_descent - Descent condition for restart.
 .     -snes_qn_composition <sequential, composed>- Type of composition.
-.     -snes_ls <basic, basicnonorms, quadratic, secant> - Type of line search.
+.     -snes_ls <basic, basicnonorms, quadratic, critical> - Type of line search.
 -     -snes_qn_monitor - Monitors the quasi-newton jacobian.
 
       Notes: This implements the L-BFGS algorithm for the solution of F(x) = b using previous change in F(x) and x to
@@ -458,7 +458,7 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   qn->compositiontype = SNES_QN_SEQUENTIAL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_QN",SNESLineSearchSetType_QN);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_CRITICAL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

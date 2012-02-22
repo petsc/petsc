@@ -140,8 +140,8 @@ PetscErrorCode  SNESLineSearchSetType_NGMRES(SNES snes, SNESLineSearchType type)
   case SNES_LS_QUADRATIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
-  case SNES_LS_SECANT:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchSecant,PETSC_NULL);CHKERRQ(ierr);
+  case SNES_LS_CRITICAL:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCriticalSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type.");
@@ -513,7 +513,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 .  -snes_ngmres_epsilonB   - Difference tolerance between subsequent solutions triggering restart.
 .  -snes_ngmres_deltaB     - Difference tolerance between residuals triggering restart.
 .  -snes_ngmres_monitor    - Prints relevant information about the ngmres iteration.
--  -snes_ls <basic,basicnonorms,quadratic,secant> - Line search type.
+-  -snes_ls <basic,basicnonorms,quadratic,critical> - Line search type.
 
    Notes:
 
