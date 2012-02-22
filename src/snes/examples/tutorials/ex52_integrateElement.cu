@@ -22,8 +22,10 @@ __device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
 
 // dim     Number of spatial dimensions:          2
 // N_b     Number of basis functions:             generated
+// N_{bt}  Number of total basis functions:       N_b * N_{comp}
 // N_q     Number of quadrature points:           generated
 // N_{bs}  Number of block cells                  LCM(N_b, N_q)
+// N_{bst} Number of block cell components        LCM(N_{bt}, N_q)
 // N_{bl}  Number of concurrent blocks            generated
 // N_t     Number of threads:                     N_{bl} * N_{bs}
 // N_{cbc} Number of concurrent basis      cells: N_{bl} * N_q
@@ -31,7 +33,7 @@ __device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
 // N_{sbc} Number of serial     basis      cells: N_{bs} / N_q
 // N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b
 // N_{cb}  Number of serial cell batches:         input
-// N_c     Number of total cells:                 N_{cb}*N_{t}/N_comp
+// N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}
 
 __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
   #include "ex52_inline.h"
@@ -40,15 +42,15 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
   const int        N_comp  = numBasisComponents_0;  // The number of basis function components
   const int        N_bt    = N_b*N_comp;            // The total number of scalar basis functions
   const int        N_q     = numQuadraturePoints_0; // The number of quadrature points
-  const int        N_bs    = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously
-  const int        N_t     = N_bs*N_bl;             // The number of threads, N_bs * N_bl
+  const int        N_bst   = N_bt*N_q;              // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously
+  const int        N_t     = N_bst*N_bl;            // The number of threads, N_bst * N_bl
   const int        N_bc    = N_t/N_comp;            // The number of cells per batch (N_b*N_q*N_bl)
   const int        N_c     = N_cb * N_bc;
-  const int        N_sbc   = N_bs / (N_q * N_comp);
-  const int        N_sqc   = N_bs / N_bt;
+  const int        N_sbc   = N_bst / (N_q * N_comp);
+  const int        N_sqc   = N_bst / N_bt;
   /* Calculated indices */
   const int        tidx    = threadIdx.x + blockDim.x*threadIdx.y;
-  const int        blidx   = tidx / N_bs;            // Block number for this thread
+  const int        blidx   = tidx / N_bst;           // Block number for this thread
   const int        bidx    = tidx % N_bt;            // Basis function mapped to this thread
   const int        cidx    = tidx % N_comp;          // Basis component mapped to this thread
   const int        qidx    = tidx % N_q;             // Quadrature point mapped to this thread
@@ -231,8 +233,8 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   const int N_comp = numBasisComponents_0;  // The number of basis function components
   const int N_bt   = N_b*N_comp;            // The total number of scalar basis functions
   const int N_q    = numQuadraturePoints_0; // The number of quadrature points
-  const int N_bs   = N_bt*N_q;              // The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously
-  const int N_t    = N_bs*N_bl;             // The number of threads, N_bs * N_bl
+  const int N_bst  = N_bt*N_q;              // The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously
+  const int N_t    = N_bst*N_bl;            // The number of threads, N_bst * N_bl
 
   float *d_coefficients;
   float *d_jacobianInverses;
