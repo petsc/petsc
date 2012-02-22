@@ -350,13 +350,13 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
     ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
     isFullCol = PETSC_TRUE;
-    for (i=0,an=0; i<vs->nc; i++) {
+    for (i=0,an=A->cmap->rstart; i<vs->nc; i++) {
       ierr = ISStrideGetInfo(is->col[i],&afirst,&astep);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is->col[i],&am);CHKERRQ(ierr);
       if (afirst != an || astep != step) isFullCol = PETSC_FALSE;
       an += am;
     }
-    if (an != n) isFullCol = PETSC_FALSE;
+    if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
   }
 
   if (isFullCol) {
