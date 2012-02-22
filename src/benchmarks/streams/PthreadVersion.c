@@ -49,6 +49,7 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
 # include <sys/time.h>
 # include <petscconf.h>
 # include <petscsys.h>
+# include <../src/sys/objects/pthread/pthreadimpl.h>
 /* INSTRUCTIONS:
  *
  *      1) Stream requires a good bit of memory to run.  Adjust the
@@ -133,12 +134,6 @@ void tuned_STREAM_Scale(double);
 void tuned_STREAM_Add();
 void tuned_STREAM_Triad(double);
 void tuned_STREAM_2A();
-
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-extern PetscMPIInt    PetscMaxThreads;
-extern PetscInt       PetscMainThreadShareWork;
-extern PetscInt       MainThreadCoreAffinity;
-extern PetscInt*      ThreadCoreAffinity;
 
 extern void DoCoreAffinity();
 

@@ -1,39 +1,5 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-#if defined(PETSC_HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
-
-extern pthread_t* PetscThreadPoint;
-extern int*       ThreadCoreAffinity;
-
-extern void*   (*PetscThreadFunc)(void*);
-extern void*   (*PetscThreadsWait)(void*);
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
 typedef void* (*pfunc)(void*);
 typedef struct {
@@ -52,7 +18,6 @@ sjob_none job_none;
 */
 void* PetscThreadFunc_None(void* arg) 
 {
-  PetscErrorCode    iterr=0;
   sjob_none         *job = (sjob_none*)arg;
   PetscInt          i;
   PetscInt          nthreads= (int)job->nthreads;
@@ -61,7 +26,7 @@ void* PetscThreadFunc_None(void* arg)
   pfunc             funcp = (pfunc)job->kernelfunc;
 
   for(i=0; i<nthreads; i++) {
-    iterr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
+    pthread_create(&ThreadId[i],NULL,funcp,data[i]);
   }
   return(0);
 }
@@ -71,19 +36,19 @@ void* PetscThreadsWait_None(void* arg)
   sjob_none      *job=(sjob_none*)arg;
   int            nthreads = job->nthreads;
   pthread_t*     ThreadId = (pthread_t*)job->ThreadId;
-  int            ierr;
   PetscInt       i;
   void*          joinstatus;
   for (i=0; i<nthreads; i++) {
-    ierr = pthread_join(ThreadId[i], &joinstatus);
+    pthread_join(ThreadId[i], &joinstatus);
   }
   return(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_None"
-PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  PetscErrorCode ijoberr = 0,i;
+PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
+{
+  PetscInt i;
 
   PetscFunctionBegin;
   pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));

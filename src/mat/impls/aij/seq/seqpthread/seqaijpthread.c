@@ -1,18 +1,8 @@
+
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
-
-#if defined(PETSC_HAVE_CPU_SET_T)
-extern void DoCoreAffinity(void);
-#else
-#define DoCoreAffinity();
-#endif
-
-extern PetscMPIInt PetscMaxThreads;
-extern PetscInt    PetscMainThreadShareWork;
-extern PetscInt*   ThreadCoreAffinity;
-extern PetscInt    MainThreadCoreAffinity;
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
 static PetscInt    mats_created=0;
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 typedef struct {
   PetscInt   *rstart;       /* List of starting row number for each thread */
