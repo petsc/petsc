@@ -422,8 +422,9 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   Level: beginner
 
   Options Database:
-+   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
--   -snes_ls <basic,basicnormnorms,quadratic>
++   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter.
+.   -snes_ls <basic,basicnormnorms,quadratic,secant,test> - Line search type.
+-   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
 Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
 gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
@@ -457,7 +458,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->monitor = PETSC_NULL;
-  neP->betatype = 4;
+  neP->betatype = 1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NCG",SNESLineSearchSetType_NCG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -302,8 +302,7 @@ EXTERN_C_END
   Level: beginner
 
   Options Database:
-+   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
--   -snes_ls <basic,basicnormnorms,quadratic>
+.   -snes_ls <basic,basicnormnorms,quadratic,secant> Line search type.
 
   Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
@@ -313,7 +312,7 @@ EXTERN_C_END
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESNQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

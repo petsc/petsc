@@ -675,7 +675,7 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC pc,
   ierr = PetscFree( permute );  CHKERRQ(ierr);
   
   /* get MIS aggs */
-  //ierr = maxIndSetAgg( perm, Gmat, PETSC_FALSE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);
+  /*ierr = maxIndSetAgg( perm, Gmat, PETSC_FALSE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);*/
   
   ierr = MatCoarsenCreate( wcomm, &crs ); CHKERRQ(ierr);
   ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr);
