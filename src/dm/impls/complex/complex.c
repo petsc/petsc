@@ -3895,14 +3895,14 @@ PetscErrorCode DMComplexGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   PetscValidLogicalCollectiveBool(boundary, interpolate, 2);
   ierr = DMComplexGetDimension(boundary, &dim);CHKERRQ(ierr);
   switch(dim) {
-  case 2:
+  case 1:
 #ifdef PETSC_HAVE_TRIANGLE
     ierr = DMComplexGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
     SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation needs external package support.\nPlease reconfigure with --download-triangle.");
 #endif
     break;
-  case 3:
+  case 2:
 #ifdef PETSC_HAVE_TETGEN
     ierr = DMComplexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
@@ -3910,7 +3910,7 @@ PetscErrorCode DMComplexGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 #endif
     break;
   default:
-    SETERRQ1(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation in dimension %d is not supported.", dim);
+    SETERRQ1(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation for a dimension %d boundary is not supported.", dim);
   }
   PetscFunctionReturn(0);
 }
