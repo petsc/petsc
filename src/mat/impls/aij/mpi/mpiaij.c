@@ -470,7 +470,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   MatScalar      *ba = b->a;
 
   PetscInt       *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
-  PetscInt       nonew = a->nonew; 
+  PetscInt       nonew; 
   MatScalar      *ap1,*ap2;
 
   PetscFunctionBegin;
@@ -502,6 +502,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
+          nonew = a->nonew;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -535,6 +536,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               ba = b->a;
             }
           } else col = in[j];
+          nonew = b->nonew;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
         }
       }
