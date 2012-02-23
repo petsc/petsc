@@ -97,6 +97,7 @@ class TestTSPython(unittest.TestCase):
         J = PETSc.Mat().create(ts.comm)
         J.setSizes(3);
         J.setFromOptions()
+        J.setUp()
         u, f = J.createVecs()
 
         ts.setAppCtx(ode)

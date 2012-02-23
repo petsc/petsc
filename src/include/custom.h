@@ -591,32 +591,6 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetIterationNumber"
-static PetscErrorCode
-SNESSetIterationNumber(SNES snes, PetscInt its)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                       "iteration number must be nonnegative");
-  snes->iter = its;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionNorm"
-static PetscErrorCode
-SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (fnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                         "function norm must be nonnegative");
-  snes->norm = fnorm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESLogResidualHistoryCall"
 static PetscErrorCode
 SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)

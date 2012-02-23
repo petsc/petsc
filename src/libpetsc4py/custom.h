@@ -24,6 +24,12 @@ extern PetscErrorCode (*PetscShellPythonLoadVTable_C)(PetscShell,const char*,con
 extern PetscErrorCode (*PetscShellPythonClearVTable_C)(PetscShell,void**);
 EXTERN_C_END
 
+#if PETSC_VERSION_(3,2,0)
+#define _MatOps_setup setuppreallocation
+#else
+#define _MatOps_setup setup
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogHistory"
 PETSC_STATIC_INLINE

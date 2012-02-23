@@ -107,6 +107,7 @@ class BaseTestKSP(object):
         A = PETSc.Mat().create(PETSc.COMM_SELF)
         A.setSizes([3,3])
         A.setType(PETSc.Mat.Type.SEQAIJ)
+        A.setPreallocationNNZ(1)
         for i in range(3):
             A.setValue(i, i, 0.9/(i+1))
         A.assemble()

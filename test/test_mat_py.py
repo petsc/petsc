@@ -27,6 +27,7 @@ class Diagonal(Matrix):
 
     def create(self, mat):
         super(Diagonal,self).create(mat)
+        mat.setUp()
         self.D = mat.createVecLeft()
 
     def destroy(self, mat):
@@ -93,6 +94,7 @@ class TestMatrix(unittest.TestCase):
         else: # python way
             context = globals()[self.PYCLS]()
             self.A.createPython([N,N], context, comm=self.COMM)
+            self.A.setUp()
             self.assertTrue(self._getCtx() is context)
             self.assertEqual(getrefcount(context), 3)
             del context

@@ -426,7 +426,7 @@ cdef extern from * nogil:
         PetscErrorCode (*setoption)(PetscMat,MatOption,PetscBool) except IERR
         PetscErrorCode (*setsizes)(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt) except IERR
         PetscErrorCode (*setblocksize)(PetscMat,PetscInt) except IERR
-        PetscErrorCode (*setup"setuppreallocation")(PetscMat) except IERR
+        PetscErrorCode (*setup"_MatOps_setup")(PetscMat) except IERR
         PetscErrorCode (*assemblybegin)(PetscMat,MatAssemblyType) except IERR
         PetscErrorCode (*assemblyend)(PetscMat,MatAssemblyType) except IERR
         PetscErrorCode (*zeroentries)(PetscMat) except IERR

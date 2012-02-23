@@ -7,6 +7,7 @@ def mkmat(n, mtype, opts):
     A = PETSc.Mat().create(PETSc.COMM_SELF)
     A.setSizes([n,n])
     A.setType(mtype)
+    A.setUp()
     for o in opts:
         A.setOption(o, True)
     return A
