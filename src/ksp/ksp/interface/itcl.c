@@ -7,7 +7,6 @@
 
 extern PetscBool  KSPRegisterAllCalled;
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetOptionsPrefix"
 /*@C
@@ -467,6 +466,20 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsBool("-ksp_monitor_range_draw","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+
+    /*
+      Publishes convergence information using AMS
+    */
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      char amscommname[256];
+      void *ctx;
+      ierr = PetscSNPrintf(amscommname,sizeof amscommname,"%sksp_monitor_ams",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+      ierr = KSPMonitorAMSCreate(ksp,amscommname,&ctx);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
+      ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /* -----------------------------------------------------------------------*/

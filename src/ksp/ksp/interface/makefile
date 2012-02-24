@@ -4,11 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c eige.c dlregisksp.c
+           xmon.c eige.c dlregisksp.c kspams.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
-           xmon.o eige.o dlregisksp.o
+OBJSC    = $(SOURCEC:.c=.o)
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

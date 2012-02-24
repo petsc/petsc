@@ -214,7 +214,15 @@
 
             <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
             <dd><code>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</code></dd>
+
+            <dt><tt>taskset</tt>, part of the <tt>util-linux</tt> package</dt>
+            <dd><tt>Usage: taskset [options] [mask | cpu-list] [pid|cmd [args...]]</tt>, type <tt>man taskset</tt> for details.
+              Make sure to set affinity for your program, not for the <tt>mpiexec</tt> program.</dd>
           </dl>
+
+          It is also important to set memory affinity.
+          Many MPI implementations set this automatically if you set task affinity, but it is important to manage it manually when working with threads.
+          
         </li>
 
         <li>
