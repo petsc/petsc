@@ -157,11 +157,14 @@
 #  define LAPACKungqr_ zungqr_
 #  define LAPACKgetrf_ zgetrf_
 #ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
-PETSC_STATIC_INLINE PetscScalar BLASdot_(PetscBLASInt *n,PetscScalar *x,PetscBLASInt *sx,PetscScalar *y,PetscBLASInt *sy) {
+EXTERN_C_BEGIN
+extern void zdotc_(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_STATIC_INLINE PetscReal BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) {
   PetscScalar tmpz;
   zdotc_(&tmpz,n,x,sx,y,sy);
-  return tmpz;
+  return PetscRealPart(tmpz);
 }
+EXTERN_C_END
 #else
 #  define BLASdot_     zdotc_
 #endif
