@@ -156,7 +156,15 @@
 #  define LAPACKgeqrf_ zgeqrf_
 #  define LAPACKungqr_ zungqr_
 #  define LAPACKgetrf_ zgetrf_
+#ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
+PETSC_STATIC_INLINE PetscScalar BLASdot_(PetscBLASInt *n,PetscScalar *x,PetscBLASInt *sx,PetscScalar *y,PetscBLASInt *sy) {
+  PetscScalar tmpz;
+  zdotc_(&tmpz,n,x,sx,y,sy);
+  return tmpz;
+}
+#else
 #  define BLASdot_     zdotc_
+#endif
 #  define BLASnrm2_    dznrm2_
 #  define BLASscal_    zscal_
 #  define BLAScopy_    zcopy_

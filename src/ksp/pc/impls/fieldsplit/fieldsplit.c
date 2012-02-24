@@ -187,7 +187,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
     nfields = jac->bs;
     ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg);CHKERRQ(ierr);
     if (!flg) break;
-    if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+    if (!nfields) SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_USER,"Cannot list zero fields");
     ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields);CHKERRQ(ierr);
   }
   if (i > 0) {
@@ -214,8 +214,9 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   if (!ilink) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
     if (pc->dm && !stokes) {
-      PetscBool dmcomposite;
+      PetscBool dmcomposite, dmcomplex;
       ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPLEX,&dmcomplex);CHKERRQ(ierr);
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
@@ -254,6 +255,9 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
         }
         ierr = PetscFree(dms);CHKERRQ(ierr);
+      } else if (dmcomplex) {
+        /* Define fields */
+        SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "IMPLEMENT THIS");
       }
     } else {
       if (jac->bs <= 0) {
@@ -303,7 +307,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+    } else SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   } else if (jac->reset) {
     /* PCReset() has been called on this PC, ilink exists but all IS and Vec data structures in it must be rebuilt 
        This is basically the !ilink portion of code above copied from above and the allocation of the ilinks removed
@@ -347,7 +351,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
     }
   }
 
-  if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
+  if (jac->nsplits < 2) SETERRQ1(((PetscObject) pc)->comm,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
   PetscFunctionReturn(0);
 }
 
