@@ -5011,7 +5011,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
       ierr = PetscOptionsGetReal(((PetscObject)mat)->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);
