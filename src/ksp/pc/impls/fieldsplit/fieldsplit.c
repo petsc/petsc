@@ -1,6 +1,7 @@
 
 #include <private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
+#include <petscdmcomplex.h>
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactorizationTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactorizationType","PC_FIELDSPLIT_SCHUR_FACTORIZATION_",0};
@@ -257,7 +258,63 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = PetscFree(dms);CHKERRQ(ierr);
       } else if (dmcomplex) {
         /* Define fields */
-        SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "IMPLEMENT THIS");
+        PetscSection section, sectionGlobal;
+        PetscInt    *fieldSizes, **fieldIndices;
+        PetscInt     nF, f, pStart, pEnd, p;
+
+        ierr = DMComplexGetDefaultSection(pc->dm, &section);CHKERRQ(ierr);
+        ierr = DMComplexGetDefaultGlobalSection(pc->dm, &sectionGlobal);CHKERRQ(ierr);
+        ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
+        ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
+        ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+        for(f = 0; f < nF; ++f) {
+          fieldSizes[f] = 0;
+        }
+        for(p = pStart; p < pEnd; ++p) {
+          PetscInt gdof;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {
+            for(f = 0; f < nF; ++f) {
+              PetscInt fcdof;
+
+              ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+              fieldSizes[f] += fcdof;
+            }
+          }
+        }
+        for(f = 0; f < nF; ++f) {
+          ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
+          fieldSizes[f] = 0;
+        }
+        for(p = pStart; p < pEnd; ++p) {
+          PetscInt gdof, goff;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {
+            ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+            for(f = 0; f < nF; ++f) {
+              PetscInt fcdof, fc;
+
+              ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+              for(fc = 0; fc < fcdof; ++fc, ++fieldSizes[f]) {
+                fieldIndices[f][fieldSizes[f]] = goff++;
+              }
+            }
+          }
+        }
+        for(f = 0; f < nF; ++f) {
+          IS          field;
+          const char *fieldname;
+
+          ierr = PetscSectionGetFieldName(section, f, &fieldname);CHKERRQ(ierr);
+          ierr = ISCreateGeneral(((PetscObject) pc)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &field);CHKERRQ(ierr);
+          ierr = PetscPrintf(((PetscObject) pc)->comm, "Field %s\n", fieldname);CHKERRQ(ierr);
+          ierr = ISView(field, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc, fieldname, field);CHKERRQ(ierr);
+          ierr = ISDestroy(&field);CHKERRQ(ierr);
+        }
+        ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
       }
     } else {
       if (jac->bs <= 0) {
