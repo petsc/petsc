@@ -140,6 +140,9 @@ PetscErrorCode  SNESLineSearchSetType_NGMRES(SNES snes, SNESLineSearchType type)
   case SNES_LS_QUADRATIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
+  case SNES_LS_CRITICAL:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCriticalSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type.");
     break;
@@ -496,9 +499,28 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 }
 
 /*MC
-  SNESNGMRES - The Nonlinear Generalized Minimum Residual (NGMRES) method of Oosterlee and Washio.
+  SNESNGMRES - The Nonlinear Generalized Minimum Residual method.
 
    Level: beginner
+
+   Options Database:
++  -snes_ngmres_additive   - Use a variant that line-searches between the candidate solution and the combined solution.
+.  -snes_ngmres_anderson   - Use Anderson mixing NGMRES variant which combines candidate solutions instead of actual solutions.
+.  -snes_ngmres_m          - Number of stored previous solutions and residuals.
+.  -snes_ngmres_restart_it - Number of iterations the restart conditions hold before restart.
+.  -snes_ngmres_gammaA     - Residual tolerance for solution selection between the candidate and combination.
+.  -snes_ngmres_gammaC     - Residual tolerance for restart.
+.  -snes_ngmres_epsilonB   - Difference tolerance between subsequent solutions triggering restart.
+.  -snes_ngmres_deltaB     - Difference tolerance between residuals triggering restart.
+.  -snes_ngmres_monitor    - Prints relevant information about the ngmres iteration.
+-  -snes_ls <basic,basicnonorms,quadratic,critical> - Line search type.
+
+   Notes:
+
+   The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
+   optimization problem at each iteration.
+
+   References:
 
    "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
    SIAM Journal on Scientific Computing, 21(5), 2000.
@@ -544,7 +566,7 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->deltaB     = 0.9;
   ngmres->epsilonB   = 0.1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NGMRES",SNESLineSearchSetType_NGMRES);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_BASIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

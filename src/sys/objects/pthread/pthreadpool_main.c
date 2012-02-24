@@ -1,47 +1,10 @@
-/* The code is active only when the flag PETSC_USE_PTHREAD is set */
-
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-#if defined(PETSC_HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
-
-extern PetscBool    PetscThreadGo;
-extern PetscMPIInt  PetscMaxThreads;
-extern pthread_t*   PetscThreadPoint;
-extern PetscInt     PetscMainThreadShareWork;
-
-static PetscErrorCode ithreaderr = 0;
 static int*         pVal_main;
 
 #define CACHE_LINE_SIZE 64  /* used by 'chain', 'main','tree' thread pools */
-extern int* ThreadCoreAffinity;
 
 typedef void* (*pfunc)(void*);
 
@@ -62,27 +25,13 @@ static char* arrcond2;
 static char* arrstart;
 static char* arrready;
 
-/* external Functions */
-extern void*          (*PetscThreadFunc)(void*);
-extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
-extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void*          (*PetscThreadsWait)(void*);
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void DoCoreAffinity(void);
-#endif
-
-extern void* FuncFinish(void*);
-
 /* 
    ----------------------------
    'Main' Thread Pool Functions
    ---------------------------- 
 */
 void* PetscThreadFunc_Main(void* arg) {
-  PetscErrorCode iterr;
-  int ierr;
+
   int* pId = (int*)arg;
   int ThreadId = *pId;
 
@@ -90,11 +39,11 @@ void* PetscThreadFunc_Main(void* arg) {
   DoCoreAffinity();
 #endif
 
-  ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
+  pthread_mutex_lock(job_main.mutexarray[ThreadId]);
   /* update your ready status */
   *(job_main.arrThreadReady[ThreadId]) = PETSC_TRUE;
   /* tell the BOSS that you're ready to work before you go to sleep */
-  ierr = pthread_cond_signal(job_main.cond1array[ThreadId]);
+  pthread_cond_signal(job_main.cond1array[ThreadId]);
 
   /* the while loop needs to have an exit
      the 'main' thread can terminate all the threads by performing a broadcast
@@ -106,25 +55,22 @@ void* PetscThreadFunc_Main(void* arg) {
     while(*(job_main.arrThreadReady[ThreadId])==PETSC_TRUE) {
       /* upon entry, atomically releases the lock and blocks
        upon return, has the lock */
-        ierr = pthread_cond_wait(job_main.cond2array[ThreadId],job_main.mutexarray[ThreadId]);
+        pthread_cond_wait(job_main.cond2array[ThreadId],job_main.mutexarray[ThreadId]);
 	/* (job_main.arrThreadReady[ThreadId])   = PETSC_FALSE; */
     }
-    ierr = pthread_mutex_unlock(job_main.mutexarray[ThreadId]);
+    pthread_mutex_unlock(job_main.mutexarray[ThreadId]);
     if(job_main.funcArr[ThreadId+PetscMainThreadShareWork]) {
-      iterr = (PetscErrorCode)(long int)job_main.funcArr[ThreadId+PetscMainThreadShareWork](job_main.pdata[ThreadId+PetscMainThreadShareWork]);
-    }
-    if(iterr!=0) {
-      ithreaderr = 1;
+      job_main.funcArr[ThreadId+PetscMainThreadShareWork](job_main.pdata[ThreadId+PetscMainThreadShareWork]);
     }
     if(PetscThreadGo) {
       /* reset job, get ready for more */
-      ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
+      pthread_mutex_lock(job_main.mutexarray[ThreadId]);
       *(job_main.arrThreadReady[ThreadId]) = PETSC_TRUE;
       /* tell the BOSS that you're ready to work before you go to sleep */
-      ierr = pthread_cond_signal(job_main.cond1array[ThreadId]);
+      pthread_cond_signal(job_main.cond1array[ThreadId]);
     }
   }
-  return NULL;
+  return 0;
 }
 
 #undef __FUNCT__
@@ -132,7 +78,7 @@ void* PetscThreadFunc_Main(void* arg) {
 PetscErrorCode PetscThreadInitialize_Main(PetscInt N) 
 {
   PetscErrorCode ierr;
-  PetscInt i,status;
+  PetscInt       i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MEMALIGN)
@@ -164,9 +110,9 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
     job_main.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
   }
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_mutex_init(job_main.mutexarray[i],NULL);
-    ierr = pthread_cond_init(job_main.cond1array[i],NULL);
-    ierr = pthread_cond_init(job_main.cond2array[i],NULL);
+    ierr = pthread_mutex_init(job_main.mutexarray[i],NULL);CHKERRQ(ierr);
+    ierr = pthread_cond_init(job_main.cond1array[i],NULL);CHKERRQ(ierr);
+    ierr = pthread_cond_init(job_main.cond2array[i],NULL);CHKERRQ(ierr);
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
   job_main.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
@@ -179,8 +125,7 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
     pVal_main[i] = i;
     job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_main.pdata[i+PetscMainThreadShareWork] = NULL;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);
-    /* error check */
+    ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -188,15 +133,16 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadFinalize_Main"
 PetscErrorCode PetscThreadFinalize_Main() {
-  int i,ierr;
-  void* jstatus;
+  int            i;
+  void*          jstatus;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   free(PetscThreadPoint);
   free(arrmutex);
@@ -214,23 +160,25 @@ PetscErrorCode PetscThreadFinalize_Main() {
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsWait_Main"
 void* PetscThreadsWait_Main(void* arg) {
-  int i,ierr;
+
+  PetscInt i;
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_mutex_lock(job_main.mutexarray[i]);
+    pthread_mutex_lock(job_main.mutexarray[i]);
     while(*(job_main.arrThreadReady[i])==PETSC_FALSE) {
-      ierr = pthread_cond_wait(job_main.cond1array[i],job_main.mutexarray[i]);
+      pthread_cond_wait(job_main.cond1array[i],job_main.mutexarray[i]);
     }
-    ierr = pthread_mutex_unlock(job_main.mutexarray[i]);
+    pthread_mutex_unlock(job_main.mutexarray[i]);
   }
-  return(0);
+  return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Main"
 PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  int i,j,ierr,issetaffinity;
-  PetscErrorCode ijoberr = 0;
+  int i,j,issetaffinity;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   PetscThreadsWait(NULL); /* you know everyone is waiting to be signalled! */
   for(i=0; i<PetscMaxThreads; i++) {
     *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into PetscThreadsWait first */
@@ -255,19 +203,16 @@ PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,Pets
       }
     }
 
-    ierr = pthread_cond_signal(job_main.cond2array[i]);
+    ierr = pthread_cond_signal(job_main.cond2array[i]);CHKERRQ(ierr);
   }
   if(pFunc!=FuncFinish) {
     if(PetscMainThreadShareWork) {
       job_main.funcArr[0] = pFunc;
       job_main.pdata[0] = data[0];
-      ijoberr = (PetscErrorCode)(long int)job_main.funcArr[0](job_main.pdata[0]);
+      job_main.funcArr[0](job_main.pdata[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
-  if(ithreaderr) {
-    ijoberr = ithreaderr;
-  }
-  return ijoberr;
+  PetscFunctionReturn(0);
 }

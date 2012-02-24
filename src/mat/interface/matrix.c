@@ -5011,7 +5011,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
       ierr = PetscOptionsGetReal(((PetscObject)mat)->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -6777,9 +6777,7 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
   if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
   if (mat->ops->setblocksize) {
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
   PetscFunctionReturn(0);
 }
 

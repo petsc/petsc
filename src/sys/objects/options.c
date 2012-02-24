@@ -1602,7 +1602,7 @@ PetscErrorCode  PetscOptionsGetReal(const char pre[],const char name[],PetscReal
 
    Usage:
    A complex number 2+3i can be specified as 2,3 at the command line.
-   or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,3.3e-20
+   or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,-3.3e-20
 
    Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
 

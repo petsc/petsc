@@ -1,40 +1,21 @@
 /*
    Implements the sequential pthread based vectors.
 */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
 #include <sched.h>
 #include <petscconf.h>
 #include <../src/vec/vec/impls/dvecimpl.h>                          /*I  "petscvec.h" I*/
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <petscblaslapack.h>
 #include <private/petscaxpy.h>
-#include <pthread.h>
 #include <unistd.h>
-
-/* Global variables */
-extern PetscMPIInt  PetscMaxThreads;
-extern PetscInt     PetscMainThreadShareWork;
-extern PetscInt*    ThreadCoreAffinity;
-extern PetscInt     MainThreadCoreAffinity;
-
 PetscInt vecs_created=0;
 Kernel_Data *kerneldatap;
 Kernel_Data **pdata;
 
-/* Global function pointer */
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
 #define CHKERRQP(ierr) if (ierr) return (void*)(long int)ierr
-
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void DoCoreAffinity(void);
-#else
-#define DoCoreAffinity()
-#endif
 
 void* VecDot_Kernel(void *arg)
 {

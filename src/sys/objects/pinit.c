@@ -33,10 +33,7 @@ extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-extern int* ThreadCoreAffinity;
-extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
-extern PetscMPIInt PetscMaxThreads;
+# include <../src/sys/objects/pthread/pthreadimpl.h>
 #endif
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */

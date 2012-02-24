@@ -1,47 +1,10 @@
-/* The code is active only when the flag PETSC_USE_PTHREAD is set */
-
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-#if defined(PETSC_HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
-
-extern PetscBool    PetscThreadGo;
-extern PetscMPIInt  PetscMaxThreads;
-extern pthread_t*   PetscThreadPoint;
-extern PetscInt     PetscMainThreadShareWork;
-
-static PetscErrorCode ithreaderr_tree = 0;
 static int*         pVal_tree;
 
 #define CACHE_LINE_SIZE 64
-extern int* ThreadCoreAffinity;
 
 typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_tree;
 
@@ -68,25 +31,11 @@ static char* arrcond2;
 static char* arrstart;
 static char* arrready;
 
-/* external Functions */
-extern void*          (*PetscThreadFunc)(void*);
-extern PetscErrorCode (*PetscThreadInitialize)(PetscInt);
-extern PetscErrorCode (*PetscThreadFinalize)(void);
-extern void           (*PetscThreadsWait)(void*);
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void DoCoreAffinity(void);
-#endif
-
-extern void* FuncFinish(void*);
-
 /*
   'Tree' Thread Pool Functions 
 */
-void* PetscThreadFunc_Tree(void* arg) {
-  PetscErrorCode iterr;
-  int ierr;
+void* PetscThreadFunc_Tree(void* arg) 
+{
   int* pId = (int*)arg;
   int ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
@@ -105,28 +54,28 @@ void* PetscThreadFunc_Tree(void* arg) {
     for(i=1;i<=Mary;i++) {
       SubWorker = Mary*ThreadId+i;
       if(SubWorker<PetscMaxThreads) {
-        ierr = pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
+        pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
         while(*(job_tree.arrThreadReady[SubWorker])==PETSC_FALSE) {
           /* upon entry, automically releases the lock and blocks
            upon return, has the lock */
-          ierr = pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
+          pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
         }
-        ierr = pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
+        pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
       }
     }
     /* your subordinates are now ready */
   }
-  ierr = pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
+  pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
   /* update your ready status */
   *(job_tree.arrThreadReady[ThreadId]) = PETSC_TRUE;
   if(ThreadId==0) {
     job_tree.eJobStat = JobCompleted;
-    /* ignal main */
-    ierr = pthread_cond_signal(&main_cond_tree);
+    /* signal main */
+    pthread_cond_signal(&main_cond_tree);
   }
   else {
     /* tell your boss that you're ready to work */
-    ierr = pthread_cond_signal(job_tree.cond1array[ThreadId]);
+    pthread_cond_signal(job_tree.cond1array[ThreadId]);
   }
   /* the while loop needs to have an exit
   the 'main' thread can terminate all the threads by performing a broadcast
@@ -138,7 +87,7 @@ void* PetscThreadFunc_Tree(void* arg) {
     while(*(job_tree.arrThreadReady[ThreadId])==PETSC_TRUE) {
       /* upon entry, automically releases the lock and blocks
        upon return, has the lock */
-        ierr = pthread_cond_wait(job_tree.cond2array[ThreadId],job_tree.mutexarray[ThreadId]);
+        pthread_cond_wait(job_tree.cond2array[ThreadId],job_tree.mutexarray[ThreadId]);
 	*(job_tree.arrThreadStarted[ThreadId]) = PETSC_TRUE;
 	*(job_tree.arrThreadReady[ThreadId])   = PETSC_FALSE;
     }
@@ -146,23 +95,21 @@ void* PetscThreadFunc_Tree(void* arg) {
       job_tree.startJob = PETSC_FALSE;
       job_tree.eJobStat = ThreadsWorking;
     }
-    ierr = pthread_mutex_unlock(job_tree.mutexarray[ThreadId]);
+    pthread_mutex_unlock(job_tree.mutexarray[ThreadId]);
     if(PeeOn==PETSC_FALSE) {
       /* tell your subordinates it's time to get to work */
       for(i=1; i<=Mary; i++) {
 	SubWorker = Mary*ThreadId+i;
         if(SubWorker<PetscMaxThreads) {
-          ierr = pthread_cond_signal(job_tree.cond2array[SubWorker]);
+          pthread_cond_signal(job_tree.cond2array[SubWorker]);
         }
       }
     }
     /* do your job */
     if(job_tree.funcArr[ThreadId+PetscMainThreadShareWork]) {
-      iterr = (PetscErrorCode)(long int)job_tree.funcArr[ThreadId+PetscMainThreadShareWork](job_tree.pdata[ThreadId+PetscMainThreadShareWork]);
+      job_tree.funcArr[ThreadId+PetscMainThreadShareWork](job_tree.pdata[ThreadId+PetscMainThreadShareWork]);
     }
-    if(iterr!=0) {
-      ithreaderr_tree = 1;
-    }
+
     if(PetscThreadGo) {
       /* reset job, get ready for more */
       if(PeeOn==PETSC_FALSE) {
@@ -171,31 +118,31 @@ void* PetscThreadFunc_Tree(void* arg) {
 	for(i=1;i<=Mary;i++) {
 	  SubWorker = Mary*ThreadId+i;
           if(SubWorker<PetscMaxThreads) {
-            ierr = pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
+            pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
             while(*(job_tree.arrThreadReady[SubWorker])==PETSC_FALSE||*(job_tree.arrThreadStarted[SubWorker])==PETSC_FALSE) {
               /* upon entry, automically releases the lock and blocks
                upon return, has the lock */
-              ierr = pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
+              pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
             }
-            ierr = pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
+            pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
           }
 	}
         /* your subordinates are now ready */
       }
-      ierr = pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
+      pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
       *(job_tree.arrThreadReady[ThreadId]) = PETSC_TRUE;
       if(ThreadId==0) {
 	job_tree.eJobStat = JobCompleted; /* oot thread: last thread to complete, guaranteed! */
         /* root thread signals 'main' */
-        ierr = pthread_cond_signal(&main_cond_tree);
+        pthread_cond_signal(&main_cond_tree);
       }
       else {
         /* signal your boss before you go to sleep */
-        ierr = pthread_cond_signal(job_tree.cond1array[ThreadId]);
+        pthread_cond_signal(job_tree.cond1array[ThreadId]);
       }
     }
   }
-  return NULL;
+  return 0;
 }
 
 #undef __FUNCT__
@@ -204,7 +151,6 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscInt       status;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MEMALIGN)
@@ -237,9 +183,9 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
     job_tree.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
   }
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_mutex_init(job_tree.mutexarray[i],NULL);
-    ierr = pthread_cond_init(job_tree.cond1array[i],NULL);
-    ierr = pthread_cond_init(job_tree.cond2array[i],NULL);
+    ierr = pthread_mutex_init(job_tree.mutexarray[i],NULL);CHKERRQ(ierr);
+    ierr = pthread_cond_init(job_tree.cond1array[i],NULL);CHKERRQ(ierr);
+    ierr = pthread_cond_init(job_tree.cond2array[i],NULL);CHKERRQ(ierr);
     *(job_tree.arrThreadStarted[i])  = PETSC_FALSE;
     *(job_tree.arrThreadReady[i])    = PETSC_FALSE;
   }
@@ -255,8 +201,7 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
     pVal_tree[i] = i;
     job_tree.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_tree.pdata[i+PetscMainThreadShareWork] = NULL;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_tree[i]);
-    /* should check status */
+    ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_tree[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -264,16 +209,16 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadFinalize_Tree"
 PetscErrorCode PetscThreadFinalize_Tree() {
-  int i,ierr;
-  void* jstatus;
+  PetscInt       i;
+  void*          jstatus;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-    /* do error checking*/
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
   free(PetscThreadPoint);
   free(arrmutex);
@@ -291,21 +236,23 @@ PetscErrorCode PetscThreadFinalize_Tree() {
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsWait_Tree"
 void* PetscThreadsWait_Tree(void* arg) {
-  int ierr;
-  ierr = pthread_mutex_lock(job_tree.mutexarray[0]);
+
+  pthread_mutex_lock(job_tree.mutexarray[0]);
   while(job_tree.eJobStat<JobCompleted||job_tree.startJob==PETSC_TRUE) {
-    ierr = pthread_cond_wait(&main_cond_tree,job_tree.mutexarray[0]);
+    pthread_cond_wait(&main_cond_tree,job_tree.mutexarray[0]);
   }
-  ierr = pthread_mutex_unlock(job_tree.mutexarray[0]);
-  return(0);
+  pthread_mutex_unlock(job_tree.mutexarray[0]);
+  return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Tree"
-PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  int i,j,issetaffinity,ierr;
-  PetscErrorCode ijoberr = 0;
+PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
+{
+  int i,j,issetaffinity;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   PetscThreadsWait(NULL);
   job_tree.startJob = PETSC_TRUE;
   for(i=0; i<PetscMaxThreads; i++) {
@@ -329,18 +276,15 @@ PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,Pets
     *(job_tree.arrThreadStarted[i]) = PETSC_FALSE;
   }
   job_tree.eJobStat = JobInitiated;
-  ierr = pthread_cond_signal(job_tree.cond2array[0]);
+  ierr = pthread_cond_signal(job_tree.cond2array[0]);CHKERRQ(ierr);
   if(pFunc!=FuncFinish) {
     if(PetscMainThreadShareWork) {
       job_tree.funcArr[0] = pFunc;
       job_tree.pdata[0] = data[0];
-      ijoberr = (PetscErrorCode)(long int)job_tree.funcArr[0](job_tree.pdata[0]);
+      job_tree.funcArr[0](job_tree.pdata[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
 
-  if(ithreaderr_tree) {
-    ijoberr = ithreaderr_tree;
-  }
-  return ijoberr;
+  PetscFunctionReturn(0);
 }

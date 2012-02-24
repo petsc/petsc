@@ -1,9 +1,8 @@
 
+
 #include <../src/vec/vec/impls/mpi/mpipthread/mpivecpthreadimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscblaslapack.h>
-
-extern PetscMPIInt  PetscMaxThreads;
-extern PetscInt     PetscMainThreadShareWork;
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
 extern PetscInt     vecs_created;
 extern Kernel_Data  *kerneldatap;

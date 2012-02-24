@@ -282,10 +282,10 @@ PetscErrorCode  SNESLineSearchSetType_NRichardson(SNES snes, SNESLineSearchType 
     ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NRichardson,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_SECANT:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_CRITICAL:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCriticalSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
@@ -302,8 +302,7 @@ EXTERN_C_END
   Level: beginner
 
   Options Database:
-+   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
--   -snes_ls <basic,basicnormnorms,quadratic>
+.   -snes_ls <basic,basicnormnorms,quadratic,critical> Line search type.
 
   Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
@@ -313,7 +312,7 @@ EXTERN_C_END
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESNQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -336,7 +335,7 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   snes->max_its   = 10000;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

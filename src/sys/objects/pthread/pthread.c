@@ -1,98 +1,27 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <../src/sys/objects/pthread/pthreadimpl.h>
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-#if defined(PETSC_HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
-#if defined(PETSC_HAVE_SYS_SYSCTL_H)
-#include <sys/sysctl.h>
-#endif
+/* Initialize global variables and function pointers */
+PetscBool   PetscThreadGo = PETSC_TRUE;
+PetscMPIInt PetscMaxThreads = 1;
+pthread_t*  PetscThreadPoint=NULL;
+int*        ThreadCoreAffinity=NULL;
+PetscInt    PetscMainThreadShareWork = 1;
+PetscInt    MainThreadCoreAffinity = 0;
 
-PetscBool    PetscThreadGo         = PETSC_TRUE;
-PetscMPIInt  PetscMaxThreads = -1; /* Later set when PetscSetMaxPThreads is called */
-pthread_t*   PetscThreadPoint;
-int*         ThreadCoreAffinity;
-PetscInt     PetscMainThreadShareWork = 1; /* Flag to indicate whether the main thread shares work along with the worker threads, 1 by default, can be switched off using option -mainthread_no_share_work */
-PetscInt     MainThreadCoreAffinity=0;
-PetscInt     N_CORES;
-
-typedef enum {THREADSYNC_NOPOOL,THREADSYNC_MAINPOOL,THREADSYNC_TRUEPOOL,THREADSYNC_CHAINPOOL,THREADSYNC_TREEPOOL,THREADSYNC_LOCKFREE} ThreadSynchronizationType;
-static const char *ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
-
-typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE} ThreadAffinityPolicyType;
-static const char *ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
-
-static ThreadAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
-
-/* Function Pointers */
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
 void*          (*PetscThreadsWait)(void*) = NULL;
-PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*) = NULL;
+PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
 
-/* Tree Thread Pool Functions */
-extern void*          PetscThreadFunc_Tree(void*);
-extern PetscErrorCode PetscThreadInitialize_Tree(PetscInt);
-extern PetscErrorCode PetscThreadFinalize_Tree(void);
-extern void*          PetscThreadsWait_Tree(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
-/* Main Thread Pool Functions */
-extern void*          PetscThreadFunc_Main(void*);
-extern PetscErrorCode PetscThreadInitialize_Main(PetscInt);
-extern PetscErrorCode PetscThreadFinalize_Main(void);
-extern void*          PetscThreadsWait_Main(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+const char *const ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
+const char *const ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
 
-/* Chain Thread Pool Functions */
-extern void*          PetscThreadFunc_Chain(void*);
-extern PetscErrorCode PetscThreadInitialize_Chain(PetscInt);
-extern PetscErrorCode PetscThreadFinalize_Chain(void);
-extern void*          PetscThreadsWait_Chain(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+static ThreadAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
 
-/* True Thread Pool Functions */
-extern void*          PetscThreadFunc_True(void*);
-extern PetscErrorCode PetscThreadInitialize_True(PetscInt);
-extern PetscErrorCode PetscThreadFinalize_True(void);
-extern void*          PetscThreadsWait_True(void*);
-extern PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-
-/* NO Thread Pool Functions */
-extern void*          PetscThreadFunc_None(void*);
-extern void*          PetscThreadsWait_None(void*);
-extern PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
-
-/* Lock free Functions */
-extern void*          PetscThreadFunc_LockFree(void*);
-extern PetscErrorCode PetscThreadInitialize_LockFree(PetscInt);
-extern PetscErrorCode PetscThreadFinalize_LockFree(void);
-extern void*          PetscThreadsWait_LockFree(void*);
-extern PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+static PetscInt     N_CORES;
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
@@ -108,11 +37,6 @@ void PetscSetMainThreadAffinity(PetscInt icorr)
   CPU_ZERO(&mset);
   CPU_SET(icorr%N_CORES,&mset);
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-}
-
-/* Set CPU affinity for individual threads */
-void PetscPthreadSetAffinity(PetscInt icorr)
-{
 }
 
 void DoCoreAffinity(void)

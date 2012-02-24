@@ -18,10 +18,10 @@
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
    We only turn these in PETSc source files that require them by setting PETSC_DESIRE_FEATURE_TEST_MACROS
 */
-#if defined(PETSC__POSIX_C_SOURCE_200112L)
+#if defined(PETSC__POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200112L
 #endif
-#if defined(PETSC__BSD_SOURCE)
+#if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
 #define _BSD_SOURCE
 #endif
 #endif

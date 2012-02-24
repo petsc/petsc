@@ -1,6 +1,6 @@
 #include <private/snesimpl.h>      /*I "petscsnes.h"  I*/
 
-const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "SECANT", "USERDEFINED", "SNESLineSearchType","SNES_LS_",0};
+const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "CRITICAL", "USERDEFINED", "SNESLineSearchType","SNES_LS_",0};
 
 const char *SNESLineSearchTypeName(SNESLineSearchType type)
 {
@@ -674,9 +674,13 @@ PetscErrorCode  SNESLineSearchCubic(SNES snes,void *lsctx,Vec x,Vec f,Vec y,Pets
   PetscFunctionReturn(0);
 }
 
-/*@ SNESLineSearchSecant - This routine calculates a search length based upon secant descent assuming that F(X +
- lambdaY) is minimized in some problem-specific fashion when F(X + lambdaY) dot Y = 0.  This minimization is performed
- using secant descent on lambda; that is,
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchCriticalSecant"
+
+/*@ SNESLineSearchCriticalSecant - Finds the critical point of an artificial function with the residual as gradient.
+ This routine calculates a search length based upon secant descent assuming that F(X + lambdaY) is minimized in some
+ problem-specific fashion when F(X + lambdaY) dot Y = 0.  This minimization is performed using secant descent on lambda;
+ that is,
 
 lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot Y)
 
@@ -697,7 +701,7 @@ lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot
 -  flag - set to PETSC_TRUE indicating a successful line search
 
    Options Database Keys:
-.  -snes_ls secant - Activates SNESLineSearchSecant() on selected solvers.
+.  -snes_ls critical - Activates SNESLineSearchCriticalSecant() on selected solvers.
 .  -snes_ls_it 1        - Sets the number of steps of the secant iteration occur.
 .  -snes_ls_damping 1.0 - Sets a "safe" initial secant step.
 
@@ -708,13 +712,11 @@ lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot
 
 .keywords: SNES, nonlinear, line search, secant
 
-.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
+.seealso: SNESLineSearchQuadraticSecant(),
           SNESLineSearchSet(), SNESLineSearchNo()
 @*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSecant"
-PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
+PetscErrorCode  SNESLineSearchCriticalSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
   PetscErrorCode ierr;
   PetscReal      lambda = snes->damping;
   PetscReal      lambda_old = 0.0;
@@ -794,7 +796,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
 
 
    Options Database Keys:
-.  -snes_ls    secant   - Activates SNESLineSearchSecant() on selected solvers.
+.  -snes_ls quadratic   - Activates SNESLineSearchQuadraticSecant() on selected solvers.
 .  -snes_ls_it 1        - Sets the number of steps of the secant iteration occur.
 .  -snes_ls_damping 1.0 - Sets a "safe" initial secant step.
 

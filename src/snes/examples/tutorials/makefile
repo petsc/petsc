@@ -376,7 +376,7 @@ runex5_5_ngmres_ngs:
 	   ${RM} -f ex5_5_ngmres_ngs.tmp
 
 runex5_5_qn:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls secant -snes_qn_m ${N_RESTART} \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_ls critical -snes_qn_m ${N_RESTART} \
         > ex5_5_qn.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_qn.out ex5_5_qn.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_qn, diffs above \n========================================="; fi; \
