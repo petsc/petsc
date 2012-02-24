@@ -59,7 +59,7 @@ $     VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
 $     VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
 $     VecGhostGetLocalForm(x,&xlocal);
 $     VecGetArray(xlocal,&xvalues);
-$        access the non-ghost values in locations xvalues[0:n-1] and ghost values in locations xvalues[n:n+nghost];
+$        // access the non-ghost values in locations xvalues[0:n-1] and ghost values in locations xvalues[n:n+nghost];
 $     VecRestoreArray(xlocal,&xvalues);
 $     VecGhostRestoreLocalForm(x,&xlocal);
 
