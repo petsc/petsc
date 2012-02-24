@@ -76,6 +76,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->bcIndices          = PETSC_NULL;
   (*s)->setup              = PETSC_FALSE;
   (*s)->numFields          = 0;
+  (*s)->fieldNames         = PETSC_NULL;
   (*s)->field              = PETSC_NULL;
   PetscFunctionReturn(0);
 }
@@ -103,11 +104,45 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   }
   s->numFields = numFields;
   ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
+  ierr = PetscMalloc(s->numFields * sizeof(char *), &s->fieldNames);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(PetscSection), &s->field);CHKERRQ(ierr);
   for(f = 0; f < s->numFields; ++f) {
+    char name[64];
+
     s->numFieldComponents[f] = 1;
     ierr = PetscSectionCreate(s->atlasLayout.comm, &s->field[f]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(name, 64, "Field_%D", f);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name, (char **) &s->fieldNames[f]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldName"
+PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const char *fieldName[])
+{
+  PetscFunctionBegin;
+  PetscValidPointer(fieldName,2);
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  *fieldName = s->fieldNames[field];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetFieldName"
+PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const char fieldName[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(fieldName,2);
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscFree(s->fieldNames[field]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(fieldName, (char **) &s->fieldNames[field]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -676,7 +711,9 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
     ierr = PetscFree((*s)->numFieldComponents);CHKERRQ(ierr);
     for(f = 0; f < (*s)->numFields; ++f) {
       ierr = PetscSectionDestroy(&(*s)->field[f]);CHKERRQ(ierr);
+      ierr = PetscFree((*s)->fieldNames[f]);CHKERRQ(ierr);
     }
+    ierr = PetscFree((*s)->fieldNames);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(*s)->bc);CHKERRQ(ierr);
     ierr = PetscFree((*s)->bcIndices);CHKERRQ(ierr);
     ierr = PetscFree2((*s)->atlasDof, (*s)->atlasOff);CHKERRQ(ierr);

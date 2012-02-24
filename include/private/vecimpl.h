@@ -120,6 +120,7 @@ struct _n_PetscSection {
   PetscBool                     setup;
 
   PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
+  const char                  **fieldNames;   /* The field names */
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
@@ -127,6 +128,8 @@ struct _n_PetscSection {
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
+extern PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
 extern PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
 extern PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
