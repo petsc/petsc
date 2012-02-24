@@ -52,6 +52,17 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
     values and their current values. The returned vector and the original
     vector passed in share the same array that contains the actual vector data.
 
+    To update the ghost values from the locations on the other processes one must call 
+    VecGhostUpdateBegin() and VecGhostUpdateEnd() before accessing the ghost values. Thus normal
+    usage is 
+$     VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
+$     VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
+$     VecGhostGetLocalForm(x,&xlocal);
+$     VecGetArray(xlocal,&xvalues);
+$        /* access the non-ghost values in locations xvalues[0:n-1] and ghost values in locations xvalues[n:n+nghost]; */
+$     VecRestoreArray(xlocal,&xvalues);
+$     VecGhostRestoreLocalForm(x,&xlocal);
+
     One should call VecGhostRestoreLocalForm() or VecDestroy() once one is
     finished using the object.
 
