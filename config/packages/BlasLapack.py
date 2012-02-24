@@ -536,7 +536,52 @@ class Configure(config.package.Package):
     if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
       self.addDefine('MISSING_LAPACK_'+routine, 1)
 
+  def checkComplexDot(self):
+    '''Some BLAS libraries have the results returned by zdot() and others have it passed as the last argument'''
+    routine = 'zdotc';
+    if self.f2c:
+      if self.mangling == 'underscore':
+        routine = routine + '_'
+    else:
+      routine = self.compilers.mangleFortranFunction(routine)
+    if 'known-complex-dot-arg' in self.framework.argDB:
+      self.complexDotArg = self.framework.argDB['known-complex-dot-arg']
+    elif not self.framework.argDB['with-batch']:
+      code = '''
+    typedef struct{double re; double im;} mycomplex;
+    extern mycomplex %s(mycomplex *, int *, mycomplex *, int *, mycomplex *, int*);
 
+    mycomplex x   = {2.0, 2.0};
+    mycomplex z   = {0.0, 0.0};
+    int       one = 1;
+
+    %s(&z,&one,&x,&one,&x,&one);
+    if (fabs(z.re*z.re + z.im*z.im - 64.0) > 1.0e-8) return 1;
+''' % (routine, routine)
+      self.pushLanguage('C')
+      oldLibs = self.compilers.LIBS
+      self.compilers.LIBS = self.libraries.toString(self.blasLibrary)+' '+self.compilers.LIBS
+      self.complexDotArg = self.checkRun('#include <math.h>\n', code)
+      self.compilers.LIBS = oldLibs
+      self.popLanguage()
+    else:
+      self.framework.addBatchLib(self.blasLibrary)
+      self.framework.addBatchBody(['{',
+                                   'typedef struct{double re; double im;} mycomplex;',
+                                   'extern mycomplex %s(mycomplex *, int *, mycomplex *, int *, mycomplex *, int*);',
+                                   'mycomplex x = {2.0, 2.0};',
+                                   'mycomplex z = {0.0, 0.0};',
+                                   'int one = 1;',
+                                   '%s(&z, &one,&x,&one,&x,&one);' % (routine, routine),
+                                   'fprintf(output, " \'--known-complex-dot-arg=%d\',\\n", (fabs(z.re*z.re + z.im*z.im - 16.0) < 1.0e-8));',
+                                   '}'])
+      self.complexDotArg = 1 # Dummy value
+    if not self.complexDotArg:
+      self.logPrint('Complex dot product returns its result')
+    else:
+      self.logPrint('Complex dot product stores result in the first argument')
+      self.addDefine('COMPLEX_DOT_RESULT_ARGUMENT', 1)
+    return
 
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
@@ -549,14 +594,13 @@ class Configure(config.package.Package):
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
-
-
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
+    self.executeTest(self.checkComplexDot)
     return
 
 if __name__ == '__main__':
