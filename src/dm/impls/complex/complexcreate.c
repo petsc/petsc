@@ -247,6 +247,7 @@ extern PetscErrorCode DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, 
 extern PetscErrorCode DMCreateGlobalVector_Complex(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
+extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, const char ***names, IS **fields);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -305,6 +306,7 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->ops->createlocalvector  = DMCreateLocalVector_Complex;
   dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Complex;
   dm->ops->createlocaltoglobalmappingblock = 0;
+  dm->ops->createfieldis      = DMCreateFieldIS_Complex;
   dm->ops->getcoloring        = 0;
   dm->ops->creatematrix       = DMCreateMatrix_Complex;
   dm->ops->createinterpolation= 0;

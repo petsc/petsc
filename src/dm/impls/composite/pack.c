@@ -687,6 +687,51 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateFieldIS_Composite"
+PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields, const char ***fieldNames, IS **fields)
+{
+  PetscInt       nDM;
+  DM            *dms;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetNumberDM(dm, &nDM);CHKERRQ(ierr);
+  if (numFields) {*numFields = nDM;}
+  ierr = DMCompositeGetGlobalISs(dm, fields);CHKERRQ(ierr);
+  if (fieldNames) {
+    ierr = PetscMalloc(nDM*sizeof(DM), &dms);CHKERRQ(ierr);
+    ierr = PetscMalloc(nDM*sizeof(const char *), fieldNames);CHKERRQ(ierr);
+    ierr = DMCompositeGetEntriesArray(dm, dms);CHKERRQ(ierr);
+    for (i=0; i<nDM; i++) {
+      char buf[256];
+      const char *splitname;
+
+      /* Split naming precedence: object name, prefix, number */
+      splitname = ((PetscObject) dm)->name;
+      if (!splitname) {
+        ierr = PetscObjectGetOptionsPrefix((PetscObject)dms[i],&splitname);CHKERRQ(ierr);
+        if (splitname) {
+          size_t len;
+          ierr = PetscStrncpy(buf,splitname,sizeof buf);CHKERRQ(ierr);
+          buf[sizeof buf - 1] = 0;
+          ierr = PetscStrlen(buf,&len);CHKERRQ(ierr);
+          if (buf[len-1] == '_') buf[len-1] = 0; /* Remove trailing underscore if it was used */
+          splitname = buf;
+        }
+      }
+      if (!splitname) {
+        ierr = PetscSNPrintf(buf,sizeof buf,"%D",i);CHKERRQ(ierr);
+        splitname = buf;
+      }
+      (*fieldNames)[i] = splitname;
+    }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetLocalVectors"
@@ -1102,6 +1147,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocalvector               = DMCreateLocalVector_Composite;
   p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
   p->ops->createlocaltoglobalmappingblock = 0;
+  p->ops->createfieldis                   = DMCreateFieldIS_Composite;
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
   p->ops->createinterpolation                = DMCreateInterpolation_Composite;

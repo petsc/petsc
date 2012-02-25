@@ -875,6 +875,79 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateFieldIS_Complex"
+PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, const char ***fieldNames, IS **fields)
+{
+  PetscSection   section, sectionGlobal;
+  PetscInt      *fieldSizes, **fieldIndices;
+  PetscInt       nF, f, pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMComplexGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+  for(f = 0; f < nF; ++f) {
+    fieldSizes[f] = 0;
+  }
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt gdof;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {
+      for(f = 0; f < nF; ++f) {
+        PetscInt fdof, fcdof;
+
+        ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+        fieldSizes[f] += fdof-fcdof;
+      }
+    }
+  }
+  for(f = 0; f < nF; ++f) {
+    ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
+    fieldSizes[f] = 0;
+  }
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, goff;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {
+      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+      for(f = 0; f < nF; ++f) {
+        PetscInt fdof, fcdof, fc;
+
+        ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+        for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
+          fieldIndices[f][fieldSizes[f]] = goff++;
+        }
+      }
+    }
+  }
+  if (numFields) {*numFields = nF;}
+  if (fieldNames) {
+    ierr = PetscMalloc(nF * sizeof(char *), fieldNames);CHKERRQ(ierr);
+    for(f = 0; f < nF; ++f) {
+      const char *fieldName;
+
+      ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(fieldName, (char **) &(*fieldNames)[f]);CHKERRQ(ierr);
+    }
+  }
+  if (fields) {
+    ierr = PetscMalloc(nF * sizeof(IS), fields);CHKERRQ(ierr);
+    for(f = 0; f < nF; ++f) {
+      ierr = ISCreateGeneral(((PetscObject) dm)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetDimension"
 /*@
   DMComplexGetDimension - Return the topological mesh dimension

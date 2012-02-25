@@ -708,6 +708,38 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateFieldIS"
+/*@
+  DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
+
+  Not collective
+
+  Input Parameter:
+. dm - the DM object
+
+  Output Parameters:
++ numFields - The number of fields
+. names     - The name for each field
+- fields    - The global indices for each field
+
+  Level: intermediate
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
+@*/
+PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, const char ***names, IS **fields)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (numFields) {PetscValidPointer(numFields,2);}
+  if (names) {PetscValidPointer(names,3);}
+  if (fields) {PetscValidPointer(fields,4);}
+  ierr = (*dm->ops->createfieldis)(dm, numFields, names, fields);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"

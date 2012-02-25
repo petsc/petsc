@@ -215,106 +215,34 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   if (!ilink) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
     if (pc->dm && !stokes) {
-      PetscBool dmcomposite, dmcomplex;
-      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPLEX,&dmcomplex);CHKERRQ(ierr);
+      PetscInt     numFields, f;
+      const char **fieldNames;
+      IS          *fields;
+      PetscBool    dmcomposite;
+
+      ierr = DMCreateFieldIS(pc->dm, &numFields, &fieldNames, &fields);CHKERRQ(ierr);
+      for(f = 0; f < numFields; ++f) {
+        ierr = PCFieldSplitSetIS(pc, fieldNames[f], fields[f]);CHKERRQ(ierr);
+        ierr = PetscFree(fieldNames[f]);CHKERRQ(ierr);
+        ierr = ISDestroy(&fields[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(fieldNames);CHKERRQ(ierr);
+      ierr = PetscFree(fields);CHKERRQ(ierr);
+
+      ierr = PetscTypeCompare((PetscObject) pc->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
       if (dmcomposite) {
+        DM      *dms;
         PetscInt nDM;
-        IS       *fields;
-        DM       *dms;
+
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
-        ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
-        ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
-        ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
-        ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
-        for (i=0; i<nDM; i++) {
-          char buf[256];
-          const char *splitname;
-          /* Split naming precedence: object name, prefix, number */
-          splitname = ((PetscObject)pc->dm)->name;
-          if (!splitname) {
-            ierr = PetscObjectGetOptionsPrefix((PetscObject)dms[i],&splitname);CHKERRQ(ierr);
-            if (splitname) {
-              size_t len;
-              ierr = PetscStrncpy(buf,splitname,sizeof buf);CHKERRQ(ierr);
-              buf[sizeof buf - 1] = 0;
-              ierr = PetscStrlen(buf,&len);CHKERRQ(ierr);
-              if (buf[len-1] == '_') buf[len-1] = 0; /* Remove trailing underscore if it was used */
-              splitname = buf;
-            }
-          }
-          if (!splitname) {
-            ierr = PetscSNPrintf(buf,sizeof buf,"%D",i);CHKERRQ(ierr);
-            splitname = buf;
-          }
-          ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
-          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
-        }
-        ierr = PetscFree(fields);CHKERRQ(ierr);
+        ierr = DMCompositeGetNumberDM(pc->dm, &nDM);CHKERRQ(ierr);
+        ierr = PetscMalloc(nDM*sizeof(DM), &dms);CHKERRQ(ierr);
+        ierr = DMCompositeGetEntriesArray(pc->dm, dms);CHKERRQ(ierr);
         for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
-          ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
-          ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
+          ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
         }
         ierr = PetscFree(dms);CHKERRQ(ierr);
-      } else if (dmcomplex) {
-        /* Define fields */
-        PetscSection section, sectionGlobal;
-        PetscInt    *fieldSizes, **fieldIndices;
-        PetscInt     nF, f, pStart, pEnd, p;
-
-        ierr = DMComplexGetDefaultSection(pc->dm, &section);CHKERRQ(ierr);
-        ierr = DMComplexGetDefaultGlobalSection(pc->dm, &sectionGlobal);CHKERRQ(ierr);
-        ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-        ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
-        ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-        for(f = 0; f < nF; ++f) {
-          fieldSizes[f] = 0;
-        }
-        for(p = pStart; p < pEnd; ++p) {
-          PetscInt gdof;
-
-          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-          if (gdof > 0) {
-            for(f = 0; f < nF; ++f) {
-              PetscInt fdof, fcdof;
-
-              ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-              ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-              fieldSizes[f] += fdof-fcdof;
-            }
-          }
-        }
-        for(f = 0; f < nF; ++f) {
-          ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
-          fieldSizes[f] = 0;
-        }
-        for(p = pStart; p < pEnd; ++p) {
-          PetscInt gdof, goff;
-
-          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-          if (gdof > 0) {
-            ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-            for(f = 0; f < nF; ++f) {
-              PetscInt fdof, fcdof, fc;
-
-              ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-              ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-              for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
-                fieldIndices[f][fieldSizes[f]] = goff++;
-              }
-            }
-          }
-        }
-        for(f = 0; f < nF; ++f) {
-          IS          field;
-          const char *fieldname;
-
-          ierr = PetscSectionGetFieldName(section, f, &fieldname);CHKERRQ(ierr);
-          ierr = ISCreateGeneral(((PetscObject) pc)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &field);CHKERRQ(ierr);
-          ierr = PCFieldSplitSetIS(pc, fieldname, field);CHKERRQ(ierr);
-          ierr = ISDestroy(&field);CHKERRQ(ierr);
-        }
-        ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
       }
     } else {
       if (jac->bs <= 0) {
