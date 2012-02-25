@@ -137,7 +137,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(fieldName,2);
+  PetscValidCharPointer(fieldName,3);
   if ((field < 0) || (field >= s->numFields)) {
     SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   }

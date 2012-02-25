@@ -60,7 +60,7 @@ SNES Object: 1 MPI processes
         using I-node routines: found 33 nodes, limit used is 5
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 Number of SNES iterations = 1
-L_2 Error: 9.29231e-10
+L_2 Error: 9.29e-10
 Solution
 Vector Object: 1 MPI processes
   type: seq

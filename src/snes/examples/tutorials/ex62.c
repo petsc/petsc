@@ -446,6 +446,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
   ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMComplexSetDefaultSection(dm, section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
@@ -1287,7 +1289,7 @@ int main(int argc, char **argv)
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
     if (user.showSolution) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
       ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);

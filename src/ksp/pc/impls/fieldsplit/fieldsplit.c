@@ -276,10 +276,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
           if (gdof > 0) {
             for(f = 0; f < nF; ++f) {
-              PetscInt fcdof;
+              PetscInt fdof, fcdof;
 
+              ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
               ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-              fieldSizes[f] += fcdof;
+              fieldSizes[f] += fdof-fcdof;
             }
           }
         }
@@ -294,10 +295,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           if (gdof > 0) {
             ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
             for(f = 0; f < nF; ++f) {
-              PetscInt fcdof, fc;
+              PetscInt fdof, fcdof, fc;
 
+              ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
               ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-              for(fc = 0; fc < fcdof; ++fc, ++fieldSizes[f]) {
+              for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
                 fieldIndices[f][fieldSizes[f]] = goff++;
               }
             }
@@ -309,8 +311,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 
           ierr = PetscSectionGetFieldName(section, f, &fieldname);CHKERRQ(ierr);
           ierr = ISCreateGeneral(((PetscObject) pc)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &field);CHKERRQ(ierr);
-          ierr = PetscPrintf(((PetscObject) pc)->comm, "Field %s\n", fieldname);CHKERRQ(ierr);
-          ierr = ISView(field, PETSC_NULL);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc, fieldname, field);CHKERRQ(ierr);
           ierr = ISDestroy(&field);CHKERRQ(ierr);
         }
@@ -1499,18 +1499,29 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
       if this is not called the block size defaults to the blocksize of the second matrix passed
       to KSPSetOperators()/PCSetOperators().
 
-     For the Schur complement preconditioner if J = ( A00 A01 )
-                                                    ( A10 A11 )
-     the preconditioner is 
-              (I   -B ksp(A00)) ( inv(A00)   0  (I         0  )
-              (0    I       ) (   0    ksp(S) ) (-A10 ksp(A00) I  )
-     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_. The action of 
-     ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given in providing the SECOND split or 1 if not give). 
-     For PCFieldSplitGetKSP() when field number is
-     0 it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
+$     For the Schur complement preconditioner if J = ( A00 A01 )
+$                                                    ( A10 A11 )
+$     the preconditioner using full factorization is
+$              ( I   -A10 ksp(A00) ) ( inv(A00)     0  ) (     I          0  )
+$              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
+     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_. The action of
+     ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
+     in providing the SECOND split or 1 if not give). For PCFieldSplitGetKSP() when field number is 0,
+     it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
-     option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc
-     
+     option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc. The
+     factorization type is set using -pc_fieldsplit_schur_factorization_type <diag, lower, upper, full>. The full is shown above,
+     but diag gives
+$              ( inv(A00)     0   )
+$              (   0      -ksp(S) )
+     so that the preconditioner is positive definite. The lower factorization is the inverse of
+$              (  A00   0 )
+$              (  A10   S )
+     where the inverses of A00 and S are applied using KSPs. The upper factorization is the inverse of
+$              ( A00 A01 )
+$              (  0   S  )
+     where again the inverses of A00 and S are applied using KSPs.
+
      If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
      is used automatically for a second block.
 

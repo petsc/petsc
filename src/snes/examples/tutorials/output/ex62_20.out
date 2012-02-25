@@ -27,7 +27,7 @@ SNES Object: 3 MPI processes
         using I-node (on process 0) routines: found 1 nodes, limit used is 5
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 Number of SNES iterations = 1
-L_2 Error: 0.539526
+L_2 Error: 0.54
 Solution
 Vector Object: 3 MPI processes
   type: mpi
