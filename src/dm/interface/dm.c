@@ -710,7 +710,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateFieldIS"
-/*@
+/*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
 
   Not collective
