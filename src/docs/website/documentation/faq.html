@@ -214,15 +214,27 @@
 
             <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
             <dd><code>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</code></dd>
-
-            <dt><tt>taskset</tt>, part of the <tt>util-linux</tt> package</dt>
-            <dd><tt>Usage: taskset [options] [mask | cpu-list] [pid|cmd [args...]]</tt>, type <tt>man taskset</tt> for details.
-              Make sure to set affinity for your program, not for the <tt>mpiexec</tt> program.</dd>
           </dl>
 
-          It is also important to set memory affinity.
-          Many MPI implementations set this automatically if you set task affinity, but it is important to manage it manually when working with threads.
-          
+          Other tools to manage affinity include
+          <dl>
+            <dt><tt>taskset</tt>, part of the <tt>util-linux</tt> package</dt>
+            <dd>
+              <tt>Usage: taskset [options] [mask | cpu-list] [pid|cmd [args...]]</tt>, type <tt>man taskset</tt> for details.
+              Make sure to set affinity for your program, not for the <tt>mpiexec</tt> program.
+            </dd>
+
+            <dt><tt>numactl</tt></dt>
+            <dd>In addition to task affinity, this tool also allows changing the default memory affinity policy.
+              On Linux, the default policy is to attempt to find memory on the same memory bus that serves the core that a thread is running on at whatever time the memory is faulted (<em>not</em> when <tt>malloc()</tt> is called).
+              If local memory is not available, it is found elsewhere, possibly leading to serious memory imbalances.
+              The option <tt>--localalloc</tt> allocates memory on the local NUMA node, similar to the <tt>numa_alloc_local()</tt> function in the <tt>libnuma</tt> library.
+              The option <tt>--cpunodebind=nodes</tt> binds the process to a given NUMA node (note that this can be larger or smaller than a CPU (socket); a NUMA node usually has multiple cores).
+              The option <tt>--physcpubind=cpus</tt> binds the process to a given processor core (numbered according to <tt>/proc/cpuinfo</tt>, therefore including logical cores if Hyper-threading is enabled).
+              With Open MPI, you can use knowledge of the NUMA hierarchy and core numbering on your machine to calculate the correct NUMA node or processor number given the environment variable <tt>OMPI_COMM_WORLD_LOCAL_RANK</tt>.
+              In most cases, it is easier to make <tt>mpiexec</tt> or a resource manager set affinities.
+            </dd>
+          </dl>
         </li>
 
         <li>
