@@ -29,21 +29,32 @@ class Configure(PETSc.package.NewPackage):
     import os
 
     if not self.cmake.found:
-      raise RuntimeError('CMake > 2.8.5 is needed to build METIS')
+      raise RuntimeError('CMake > 2.5 is needed to build METIS')
+
+    args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
+    args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    args.append('-DGKLIB_PATH=../headers') # assumes that the 'build' folder is only one directory down
 
     self.framework.pushLanguage('C')
-    args = ['prefix='+self.installDir]
-    args.append('cc="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
 
     if self.setCompilers.isDarwin() or self.setCompilers.isPGI(self.framework.getCompiler()):
-      args.append('cflags=-D__thread=\"\"')
+      args.append('-DCMAKE_C_FLAGS:STRING="-D__thread=\"\""')
     self.framework.popLanguage()
 
     if self.sharedLibraries.useShared:
-      args.append('shared=1')
+      args.append('-DSHARED=1')
 
     if self.compilerFlags.debugging:
-      args.append('debug=1')
+      args.append('-DDEBUG=1')
+
+    if self.libraryOptions.integerSize == 64:
+      args.append('-DMETIS_USE_LONGINDEX=1')
+
+    if self.scalartypes.precision == 'double':
+      args.append('-DMETIS_USE_DOUBLEPRECISION=1')
+    elif self.scalartypes.precision == 'quad':
+      raise RuntimeError('ParMETIS cannot be built with quad precision')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'parmetis'), 'w')
@@ -51,14 +62,22 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
 
     if self.installNeeded('parmetis'):    # Now compile & install
+
+      # effectively, this is 'make clean'
+      folder = os.path.join(self.packageDir, self.arch)
+      if os.path.isdir(folder):
+        import shutil
+        shutil.rmtree(folder)
+        os.mkdir(folder)
+
       try:
         self.logPrintBox('Configuring ParMETIS; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make distclean && make config '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && cmake .. '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ParMETIS: '+str(e))
       try:
         self.logPrintBox('Compiling ParMETIS; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMETIS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'parmetis')
