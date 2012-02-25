@@ -49,14 +49,12 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
   indices  = to->indices;
   sstartsSends  = to->starts;
   sstartsRecvs  = from->starts;
-  //printf("%d\t%d\t%d\n",x->map->n,to->local.n,x->valid_GPU_array);
-  //if (!x->map->n || (x->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))
   if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED && (nsends>0 || nrecvs>0))
   {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
-      // Here we create indices for both the senders and receivers.
+      /* Here we create indices for both the senders and receivers. */
       ierr = PetscMalloc(ns*sizeof(PetscInt),&tindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc(nr*sizeof(PetscInt),&tindicesRecvs);CHKERRQ(ierr);
 
@@ -69,7 +67,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscMalloc(to->bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc(from->bs*nr*sizeof(PetscInt),&sindicesRecvs);CHKERRQ(ierr);
 
-      // sender indices
+      /* sender indices */
       for (i=0; i<ns; i++) {
         for (k=0; k<to->bs; k++) {
           sindicesSends[i*to->bs+k] = tindicesSends[i]+k;
@@ -77,7 +75,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       }
       ierr = PetscFree(tindicesSends);CHKERRQ(ierr);
 
-      // receiver indices
+      /* receiver indices */
       for (i=0; i<nr; i++) {
         for (k=0; k<from->bs; k++) {
           sindicesRecvs[i*from->bs+k] = tindicesRecvs[i]+k;
@@ -85,15 +83,19 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       }
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
-      // create GPU indices, work vectors, ...
+      /* create GPU indices, work vectors, ... */
       ierr = PetscCUSPIndicesCreate(ns*to->bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }
-    // This should be called here.
-    // ... basically, we launch the copy kernel that takes the scattered data and puts it in a 
-    //     a contiguous buffer. Then, this buffer is messaged after the MatMult is called.
-    //ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
+    /*
+     This should be called here.
+     ... basically, we launch the copy kernel that takes the scattered data and puts it in a 
+         a contiguous buffer. Then, this buffer is messaged after the MatMult is called.
+     */
+#if 0 /* Paul, why did you leave this line commented after writing the note above explaining why it should be called? */
+    ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
+#endif
     } else {
     ierr = VecGetArrayRead(x,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }

@@ -42,15 +42,17 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 #if defined(PETSC_HAVE_TXPETSCGPU)
 
 #if 0
-  // This branch messages the entire vector
+  /* This branch messages the entire vector */
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #else
-  // This branch messages only the parts that are necessary.
-  // ... this seems to perform about the same due to the necessity of calling
-  //     a separate kernel before the SpMV for gathering data into
-  //     a contiguous buffer. We leaves both branches in for the time being.
-  //     I expect that ultimately this branch will be the right choice, however
-  //     the just is still out.
+  /*
+   This branch messages only the parts that are necessary.
+   ... this seems to perform about the same due to the necessity of calling
+       a separate kernel before the SpMV for gathering data into
+       a contiguous buffer. We leaves both branches in for the time being.
+       I expect that ultimately this branch will be the right choice, however
+       the just is still out.
+   */
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
     if (xin->spptr && ctx->spptr) 
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);

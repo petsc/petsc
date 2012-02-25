@@ -9,16 +9,16 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
 
-// need the thrust version 
+/* need the thrust version */
 #include <thrust/version.h>
 
-// Old way
+/* Old way */
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
-// New Way
+/* New Way */
 #ifdef PETSC_HAVE_TXPETSCGPU
 #include "tx_spmv_interface.h"
-#endif // PETSC_HAVE_TXPETSCGPU
+#endif /* PETSC_HAVE_TXPETSCGPU */
 
 struct Mat_SeqAIJCUSP {
   CUSPMATRIX*       mat; /* pointer to the matrix on the GPU */

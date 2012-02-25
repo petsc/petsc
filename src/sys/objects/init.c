@@ -583,7 +583,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
     else {
       int device;
-      // the code below works for serial GPU simulations
+      /* the code below works for serial GPU simulations */
       ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
       if (flg1) {
         ierr = cudaSetDevice(device);CHKERRQ(ierr);

@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <vector>
 #include <string>
-//#include <thrust/sort.h>
 
 #include <cublas.h>
 #include <cusp/blas.h>
@@ -43,7 +42,7 @@ extern PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec *);
 extern PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecCUSPCopyToGPU(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck(Vec);
-//extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
+extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
 EXTERN_C_BEGIN
 extern PetscErrorCode  VecCreate_SeqCUSP(Vec);
 EXTERN_C_END
@@ -54,9 +53,6 @@ extern PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 
 extern PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
-
-//extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec, PetscCUSPIndices);
-//extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec, PetscCUSPIndices);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 #include "tx_vector_interface.h"
@@ -147,7 +143,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY** a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
