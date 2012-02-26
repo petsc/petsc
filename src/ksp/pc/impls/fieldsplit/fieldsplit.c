@@ -260,12 +260,12 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         }
         if (flg || !jac->splitdefined) {
           ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
+          jac->defaultsplit = PETSC_TRUE;
           for (i=0; i<jac->bs; i++) {
             char splitname[8];
             ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
             ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
           }
-          jac->defaultsplit = PETSC_TRUE;
         }
       }
     }
@@ -337,12 +337,15 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   ilink  = jac->head;
 
   /* get the matrices for each split */
+  /*
   if (!jac->issetup) {
     PetscInt rstart,rend,nslots,bs;
 
     jac->issetup = PETSC_TRUE;
 
-    /* This is done here instead of in PCFieldSplitSetFields() because may not have matrix at that point */
+    // This is done here instead of in PCFieldSplitSetFields() because may not have matrix at that point 
+    // Really...? pc->mat must have been set in the KSPSetOperators call 
+    
     bs     = jac->bs;
     ierr   = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
     ierr   = MatGetLocalSize(pc->pmat,PETSC_NULL,&ccsize);CHKERRQ(ierr);
@@ -369,7 +372,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
-  
+  */
+
   ilink  = jac->head;
   if (!jac->pmat) {
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
@@ -877,7 +881,8 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink,next = jac->head;
   char              prefix[128];
-  PetscInt          i;
+  PetscInt          i,rstart,rend,nslots,bs,nsplit;
+  PetscBool         sorted;
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
@@ -888,6 +893,11 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
   }
+  bs     = jac->bs;
+  nsplit = jac->nsplits;
+  ierr   = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
+  nslots = (rend - rstart)/bs;
+
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
@@ -899,6 +909,19 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
   ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
+  if (jac->defaultsplit) {
+    ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&ilink->is);CHKERRQ(ierr);
+  } else {
+    PetscInt   *ii,j,k;
+    ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    for (j=0; j<nslots; j++) {
+      for (k=0; k<ilink->nfields; k++) {
+        ii[ilink->nfields*j + k] = rstart + bs*j + fields[k];
+      }
+    }
+    ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*n,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);         } 
+  ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
