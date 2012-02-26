@@ -121,7 +121,18 @@
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
+#ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
+EXTERN_C_BEGIN
+extern void ZDOTC(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_STATIC_INLINE PetscReal BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) {
+  PetscScalar tmpz;
+  ZDOTC(&tmpz,n,x,sx,y,sy);
+  return PetscRealPart(tmpz);
+}
+EXTERN_C_END
+#else
 #  define BLASdot_     ZDOTC
+#endif
 #  define BLASnrm2_    DZNRM2
 #  define BLASscal_    ZSCAL
 #  define BLAScopy_    ZCOPY
