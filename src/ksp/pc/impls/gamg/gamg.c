@@ -437,6 +437,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
  
   PetscFunctionBegin;
   pc_gamg->setup_count++;
+
   if( pc->setupcalled > 0 ) {
     /* just do Galerkin grids */
     Mat B,dA,dB;
@@ -450,7 +451,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       /* (re)set to get dirty flag */
       ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetUp( mglevels[pc_gamg->Nlevels-1]->smoothd ); CHKERRQ(ierr);
-      
+
       for (level=pc_gamg->Nlevels-2; level>-1; level--) {
         ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
         /* the first time through the matrix structure has changed from repartitioning */
@@ -468,9 +469,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
       }
     }
-
+    
     pc->setupcalled = 2;
-
+    
     PetscFunctionReturn(0);
   }
 
@@ -513,14 +514,14 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     { /* construct prolongator */
       Mat Gmat;   assert(pc_gamg->graph);
       IS selected, llist;   assert(pc_gamg->coarsen);
-
+      
       ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
       ierr = pc_gamg->coarsen( pc, Gmat, &selected, &llist ); CHKERRQ(ierr);
       ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, selected, llist, &Parr[level1] );
       CHKERRQ(ierr);
       
       if( Parr[level1] ){
-          /* get new block size of coarse matrices */    
+        /* get new block size of coarse matrices */    
         if( pc_gamg->col_bs_id != -1 ){
           PetscBool flag;
           ierr = PetscObjectComposedDataGetInt( (PetscObject)Parr[level1], pc_gamg->col_bs_id, bs, flag );
@@ -617,132 +618,132 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   ierr = PCMGSetLevels(pc,pc_gamg->Nlevels,PETSC_NULL);CHKERRQ(ierr);
   
   if( pc_gamg->Nlevels > 1 ) { /* don't setup MG if  */
-  /* set default smoothers */
-  for ( lidx = 1, level = pc_gamg->Nlevels-2;
-        lidx <= fine_level;
-        lidx++, level--) {
-    PetscReal emax, emin;
-    KSP smoother; PC subpc; 
-    PetscBool isCheb;
-    /* set defaults */
-    ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
-    ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
-    ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
-    /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
-    ierr = PCSetType( subpc, PCJACOBI ); CHKERRQ(ierr);
-    ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-    /* overide defaults with input parameters */
-    ierr = KSPSetFromOptions( smoother ); CHKERRQ(ierr);
-
-    ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
-    /* do my own cheby */
-    ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &isCheb ); CHKERRQ(ierr);
-
-    if( isCheb ) {
-      ierr = PetscTypeCompare( (PetscObject)subpc, PCJACOBI, &isCheb ); CHKERRQ(ierr);
-      if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
-      else{ /* eigen estimate 'emax' */
-        KSP eksp; Mat Lmat = Aarr[level];
-        Vec bb, xx; 
-
-        ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
-        ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
-        {
-          PetscRandom    rctx;
-          ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
-          ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-          ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
-          ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
+    /* set default smoothers */
+    for ( lidx = 1, level = pc_gamg->Nlevels-2;
+          lidx <= fine_level;
+          lidx++, level--) {
+      PetscReal emax, emin;
+      KSP smoother; PC subpc; 
+      PetscBool isCheb;
+      /* set defaults */
+      ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
+      ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
+      ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+      /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
+      ierr = PCSetType( subpc, PCJACOBI ); CHKERRQ(ierr);
+      ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+      /* overide defaults with input parameters */
+      ierr = KSPSetFromOptions( smoother ); CHKERRQ(ierr);
+      
+      ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
+      /* do my own cheby */
+      ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &isCheb ); CHKERRQ(ierr);
+      
+      if( isCheb ) {
+        ierr = PetscTypeCompare( (PetscObject)subpc, PCJACOBI, &isCheb ); CHKERRQ(ierr);
+        if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
+        else{ /* eigen estimate 'emax' */
+          KSP eksp; Mat Lmat = Aarr[level];
+          Vec bb, xx; 
+          
+          ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
+          ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
+          {
+            PetscRandom    rctx;
+            ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
+            ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+            ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
+            ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
+          }
+          ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+          ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
+          CHKERRQ(ierr);
+          ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+          
+          ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
+          ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
+          
+          ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
+          ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
+          ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+          
+          { /* set PC type to be same as smoother - does not get all parameters!!! */
+            const PCType type;    PC pc;   
+            ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
+            ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
+            ierr = PCSetType( pc, type ); CHKERRQ(ierr); 
+          }
+          
+          /* solve - keep stuff out of logging */
+          ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
+          ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
+          ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
+          ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
+          ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
+          
+          ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+          
+          ierr = VecDestroy( &xx );       CHKERRQ(ierr);
+          ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
+          ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
+          
+          if (pc_gamg->verbose) {
+            PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e\n",__FUNCT__,emax,emin);
+          }
         }
-        ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
-        ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
-        CHKERRQ(ierr);
-        ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
-
-        ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
-        ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
-
-        ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
-        ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
-        ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
-        
-        { /* set PC type to be same as smoother - does not get all parameters!!! */
-          const PCType type;    PC pc;   
-          ierr = PCGetType( subpc, &type );   CHKERRQ(ierr); 
-          ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
-          ierr = PCSetType( pc, type ); CHKERRQ(ierr); 
+        { 
+          PetscInt N1, N0, tt;
+          ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
+          ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
+          /* heuristic - is this crap? */
+          emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
+          emax *= 1.05;
         }
-
-	/* solve - keep stuff out of logging */
-	ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
-	ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
-        ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
-	ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
-	ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
-
-        ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-
-        ierr = VecDestroy( &xx );       CHKERRQ(ierr);
-        ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
-        ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
-
-        if (pc_gamg->verbose) {
-          PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e\n",__FUNCT__,emax,emin);
-        }
+        ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
       }
-      { 
-        PetscInt N1, N0, tt;
-        ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
-        ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
-        /* heuristic - is this crap? */
-        emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
-        emax *= 1.05;
-      }
-      ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
     }
-  }
-  {
-    /* coarse grid */
-    KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
-    Mat Lmat = Aarr[pc_gamg->Nlevels-1];
-    ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
-    ierr = KSPSetOperators( smoother, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-    ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-    ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
-    ierr = PCSetType( subpc, PCBJACOBI ); CHKERRQ(ierr);
-    ierr = PCSetUp( subpc ); CHKERRQ(ierr);
-    ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
-    assert(ii==1); 
-    ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr); 
-    ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
-  }
-  
-  /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
-  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (mg->galerkin != 2) SETERRQ(wcomm,PETSC_ERR_USER,"GAMG does Galerkin manually so the -pc_mg_galerkin option must not be used.");
-
-  /* set interpolation between the levels, clean up */  
-  for (lidx=0,level=pc_gamg->Nlevels-1;
-       lidx<fine_level;
-       lidx++, level--){
-    ierr = PCMGSetInterpolation( pc, lidx+1, Parr[level] );CHKERRQ(ierr);
-    ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
-    ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
-  }
-
-  /* setupcalled is set to 0 so that MG is setup from scratch */
-  pc->setupcalled = 0;
-  ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
-  pc->setupcalled = 1; /* use 1 as signal that this has not been re-setup */
-  
-  {
-    KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
-    ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
-    ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
-    ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
-  }
+    {
+      /* coarse grid */
+      KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
+      Mat Lmat = Aarr[pc_gamg->Nlevels-1];
+      ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
+      ierr = KSPSetOperators( smoother, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+      ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+      ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+      ierr = PCSetType( subpc, PCBJACOBI ); CHKERRQ(ierr);
+      ierr = PCSetUp( subpc ); CHKERRQ(ierr);
+      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
+      assert(ii==1); 
+      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr); 
+      ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
+    }
+    
+    /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
+    ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
+    ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (mg->galerkin != 2) SETERRQ(wcomm,PETSC_ERR_USER,"GAMG does Galerkin manually so the -pc_mg_galerkin option must not be used.");
+    
+    /* set interpolation between the levels, clean up */  
+    for (lidx=0,level=pc_gamg->Nlevels-1;
+         lidx<fine_level;
+         lidx++, level--){
+      ierr = PCMGSetInterpolation( pc, lidx+1, Parr[level] );CHKERRQ(ierr);
+      ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
+      ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
+    }
+    
+    /* setupcalled is set to 0 so that MG is setup from scratch (needed?) */
+    pc->setupcalled = 0;
+    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
+    pc->setupcalled = 1; /* use 1 as signal that this has not been re-setup */
+    
+    {
+      KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
+      ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
+      ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
+      ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
+    }
   }
   else {
     KSP smoother;
@@ -760,7 +761,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
 /* ------------------------------------------------------------------------- */
 /*
-   PCDestroy_GAMG - Destroys the private context for the GAMG preconditioner
+ PCDestroy_GAMG - Destroys the private context for the GAMG preconditioner
    that was created with PCCreate_GAMG().
 
    Input Parameter:

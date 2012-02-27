@@ -1038,14 +1038,11 @@ PetscErrorCode  MatDestroy(Mat *A)
   if (!*A) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
   if (--((PetscObject)(*A))->refct > 0) {*A = PETSC_NULL; PetscFunctionReturn(0);}
-
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*A);CHKERRQ(ierr);
-
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
-
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
@@ -6775,6 +6772,7 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidLogicalCollectiveInt(mat,bs,2);
   MatCheckPreallocated(mat,1);
   if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
+  if(mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for n=%d",bs,mat->rmap->n);
   if (mat->ops->setblocksize) {
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
@@ -8370,7 +8368,7 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = (*A->ops->ptapsymbolic)(A,P,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
 
-  ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr);
+  /* ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr); NO! this is not always true -ma */
 
   PetscFunctionReturn(0);
 }

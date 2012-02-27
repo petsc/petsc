@@ -147,10 +147,6 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   
-  if( pc_gamg->verbose > 1 ) {
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done\n",0,__FUNCT__);
-  }
-
   PetscFunctionReturn(0);
 }
 
