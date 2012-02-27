@@ -236,7 +236,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    *z = BLASdot_(&bn,xx,&one,xx,&one);
+    *z = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
     *z = PetscSqrtReal(*z);
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);

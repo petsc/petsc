@@ -57,7 +57,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    work  = BLASdot_(&bn,xx,&one,xx,&one);
+    work = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = PetscSqrtReal(sum);

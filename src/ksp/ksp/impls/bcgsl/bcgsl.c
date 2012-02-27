@@ -190,17 +190,17 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
       BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione);
 
-      kappa0 = BLASdot_(&ldMZ, AY0c, &ione, AYtc, &ione);
+      kappa0 = PetscRealPart(BLASdot_(&ldMZ, AY0c, &ione, AYtc, &ione));
 
       /* round-off can cause negative kappa's */
       if (kappa0<0) kappa0 = -kappa0;
       kappa0 = PetscSqrtReal(kappa0);
 
-      kappaA = BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
+      kappaA = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 
       BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione);
 
-      kappa1 = BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
+      kappa1 = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 
       if (kappa1<0) kappa1 = -kappa1;
       kappa1 = PetscSqrtReal(kappa1);

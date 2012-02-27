@@ -13,28 +13,13 @@
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscErrorCode    ierr;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt      one = 1,bn = PetscBLASIntCast(xin->map->n);
-#endif
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  /* cannot use BLAS dot for complex because compiler/linker is 
-     not happy about returning a double complex */
-  {
-    PetscInt    i;
-    PetscScalar sum = 0.0;
-    for (i=0; i<xin->map->n; i++) {
-      sum += xa[i]*PetscConj(ya[i]);
-    }
-    *z = sum;
-  }
-#else
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-#endif
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
@@ -48,28 +33,13 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscErrorCode    ierr;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt      one = 1, bn = PetscBLASIntCast(xin->map->n);
-#endif
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  /* cannot use BLAS dot for complex because compiler/linker is 
-     not happy about returning a double complex */
- {
-   PetscInt    i;
-   PetscScalar sum = 0.0;
-   for (i=0; i<xin->map->n; i++) {
-     sum += xa[i]*ya[i];
-   }
-   *z = sum;
- }
-#else
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-#endif
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {

@@ -536,9 +536,7 @@ PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscScalar    *x,*b,*v = mat->v,zero = 0.0,xt;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n,i;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt   o = 1,bm = PetscBLASIntCast(m);
-#endif
 
   PetscFunctionBegin;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -552,35 +550,13 @@ PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       for (i=0; i<m; i++) {
-#if defined(PETSC_USE_COMPLEX)
-        /* cannot use BLAS dot for complex because compiler/linker is 
-           not happy about returning a double complex */
-        PetscInt    _i;
-        PetscScalar sum = b[i];
-        for (_i=0; _i<m; _i++) {
-          sum -= PetscConj(v[i+_i*m])*x[_i];
-        }
-        xt = sum;
-#else
         xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
-#endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
       for (i=m-1; i>=0; i--) {
-#if defined(PETSC_USE_COMPLEX)
-        /* cannot use BLAS dot for complex because compiler/linker is 
-           not happy about returning a double complex */
-        PetscInt    _i;
-        PetscScalar sum = b[i];
-        for (_i=0; _i<m; _i++) {
-          sum -= PetscConj(v[i+_i*m])*x[_i];
-        }
-        xt = sum;
-#else
         xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
-#endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
