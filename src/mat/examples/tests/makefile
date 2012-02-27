@@ -1262,6 +1262,12 @@ runex85f:
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex85f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex85f_1.tmp
+
+runex86:
+	-@${MPIEXEC} -n 3  ./ex86 -options_left no > ex86_1.tmp 2>&1;   \
+	   ${DIFF} output/ex86_1.out ex86_1.tmp || echo ${PWD} "\nPossible problem with with ex86_1, diffs above \n========================================="; \
+	   ${RM} -f ex86_1.tmp
+
 runex88:
 	-@${MPIEXEC} -n 1  ./ex88 > ex88_1.tmp 2>&1;   \
 	   ${DIFF} output/ex88_1.out ex88_1.tmp || echo ${PWD} "\nPossible problem with with ex88_1, diffs above \n========================================="; \
@@ -1749,6 +1755,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
+                                 ex86.PETSc runex86 ex86.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
@@ -1771,8 +1778,8 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
                                  ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_4 runex56_5 \
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
-                                 runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm ex78.PETSc \
-                                 ex78.rm ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 
+                                 runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
+                                 ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
                                  ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm

@@ -4273,7 +4273,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 PetscErrorCode  MatMergeSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
 {
   PetscErrorCode ierr;
-  PetscInt       m,N,i,rstart,nnz,*dnz,*onz;
+  PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum;
   PetscInt       *indx;
 
   PetscFunctionBegin;
@@ -4282,6 +4282,10 @@ PetscErrorCode  MatMergeSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
   if (n == PETSC_DECIDE){ 
     ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   } 
+  /* Check sum(n) = N */
+  ierr = MPI_Allreduce(&n,&sum,1,MPIU_INT,MPIU_SUM,comm);CHKERRQ(ierr);
+  if (sum != N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",N);
+    
   ierr = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   rstart -= m;
 
@@ -4315,10 +4319,9 @@ PetscErrorCode  MatMergeNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
   for (i=0;i<m;i++) {
     ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
     Ii    = i + rstart;
-    ierr = MatSetValues(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues_MPIAIJ(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&inmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
