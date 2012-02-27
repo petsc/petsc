@@ -558,10 +558,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable_32(Mat A,Mat B,PetscRea
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] C_seq Numeric is done...\n",rank);
 #endif
  
-  /* create mpi matrix C by concatinating C_seq */
+  /* create mpi matrix C by concatenating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
   ierr = MatMergeSymbolic(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,&AB);CHKERRQ(ierr);
   ierr = MatMergeNumeric(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,AB);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->C_seq);CHKERRQ(ierr);
 #if defined(DEBUG_MATMATMULT)
   if (!rank) ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Merge is done...\n",rank);
 #endif

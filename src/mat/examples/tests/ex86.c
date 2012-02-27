@@ -1,34 +1,41 @@
-/*
-    Reads in individual PETSc matrix files for each processor and concatinates them
-  together into a single file containing the entire matrix
+static char help[] = "Testing MatCreateMPIAIJConcatenateSeqAIJ().\n\n";
 
-    Do NOT use this, use ../ex5.c instead, it is MUCH more memory efficient
-*/
 #include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscViewer    in,out;
-  Mat            inmat,outmat;
-  const char     *infile = "split", *outfile = "together";
+  Mat            seqaijmat,mpiaijmat;
+  PetscMPIInt    rank;
+  PetscScalar    value[3];
+  PetscInt       i,col[3],n=10;
 
-  PetscInitialize(&argc,&argv,(char*) 0,0);
+  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,infile,FILE_MODE_READ,&in);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&inmat);CHKERRQ(ierr);
-  ierr = MatSetType(inmat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(inmat,in);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&in);CHKERRQ(ierr);
+  /* Create seqaij matrices of size n by (n+rank) */
+  ierr = MatCreate(PETSC_COMM_SELF,&seqaijmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(seqaijmat,n+rank,PETSC_DECIDE,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(seqaijmat);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(seqaijmat,3,PETSC_NULL);CHKERRQ(ierr);
+  value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
+  for (i=1; i<n-1; i++) {
+    col[0] = i-1; col[1] = i; col[2] = i+1;
+    ierr = MatSetValues(seqaijmat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  i = n - 1; col[0] = n - 2; col[1] = n - 1;
+  ierr = MatSetValues(seqaijmat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+  ierr = MatSetValues(seqaijmat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(seqaijmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(seqaijmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   
+  /* Concatenate seqaij matrices into a single mpiaij matrix */
+  ierr = MatMerge(PETSC_COMM_WORLD,seqaijmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpiaijmat);CHKERRQ(ierr);
 
-  ierr = MatMerge(PETSC_COMM_WORLD,inmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&outmat);CHKERRQ(ierr);
-
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfile,FILE_MODE_WRITE,&out);CHKERRQ(ierr);
-  ierr = MatView(outmat,out);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&out);CHKERRQ(ierr);
-  ierr = MatDestroy(&outmat);CHKERRQ(ierr);
-
+  ierr = MatDestroy(&seqaijmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mpiaijmat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
