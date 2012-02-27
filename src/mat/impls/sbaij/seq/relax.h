@@ -52,7 +52,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
       z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
     }
     z[i] += sum;
-    v    += nz;
+    v    +=    nz;
     ib   += nz;
   }
 
@@ -105,13 +105,15 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
       sum  = v[0]*x1;                /* diagonal term */
       jmin++;
     }
+      jmin++;
+    }
     PetscPrefetchBlock(ib+nz,nz,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+nz,nz,0,PETSC_PREFETCH_HINT_NTA);  /* Entries for the next row */
     for (j=jmin; j<nz; j++) {
-      ibt = ib[j];
-      vj  = v[j];
+      ibt     = ib[j];
+      vj      = v[j];
       z[ibt] += vj * x1;       /* (strict lower triangular part of A)*x  */
-      sum    += vj * x[ibt]; /* (strict upper triangular part of A)*x  */
+      sum    += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
     }
     z[i] += sum;
     v    += nz;
