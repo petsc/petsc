@@ -50,8 +50,8 @@ void* PetscThreadFunc_LockFree(void* arg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadInitialize_LockFree"
-PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
+#define __FUNCT__ "PetscThreadsSynchronizationInitialize_LockFree"
+PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
 {
   PetscInt i;
   PetscErrorCode ierr;
@@ -76,8 +76,8 @@ PetscErrorCode PetscThreadInitialize_LockFree(PetscInt N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadFinalize_LockFree"
-PetscErrorCode PetscThreadFinalize_LockFree() 
+#define __FUNCT__ "PetscThreadsSynchronizationFinalize_LockFree"
+PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree() 
 {
   int i;
   void* jstatus;

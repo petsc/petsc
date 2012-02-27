@@ -3,18 +3,18 @@
 
 /* Initialize global variables and function pointers */
 PetscBool   PetscThreadGo = PETSC_TRUE;
-PetscMPIInt PetscMaxThreads = 1;
+PetscMPIInt PetscMaxThreads = -1;
 pthread_t*  PetscThreadPoint=NULL;
-int*        ThreadCoreAffinity=NULL;
+PetscInt*   ThreadCoreAffinity=NULL;
 PetscInt    PetscMainThreadShareWork = 1;
 PetscInt    MainThreadCoreAffinity = 0;
+PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
-PetscErrorCode (*PetscThreadInitialize)(PetscInt) = NULL;
-PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
+PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
+PetscErrorCode (*PetscThreadsSynchronizationFinalize)(void) = NULL;
 void*          (*PetscThreadsWait)(void*) = NULL;
 PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
-
 
 const char *const ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
 const char *const ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
@@ -66,6 +66,54 @@ void DoCoreAffinity(void)
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadsInitialize"
+/*
+  PetscThreadsInitialize - Initializes the thread synchronization scheme with given
+  of threads.
+
+  Input Parameters:
+. nthreads - Number of threads to create
+
+  Level: beginner
+
+.seealso: PetscThreadsFinalize()
+*/
+PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
+
+  if(PetscThreadsSynchronizationInitialize) {
+    ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
+  }
+  PetscThreadsInitializeCalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadsFinalize"
+/*
+  PetscThreadsFinalize - Terminates the thread synchronization scheme initiated
+  by PetscThreadsInitialize()
+
+  Level: beginner
+
+.seealso: PetscThreadsInitialize()
+*/
+PetscErrorCode PetscThreadsFinalize(void)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if(PetscThreadsSynchronizationFinalize) {
+    ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+  
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMaxPThreads"
 /*
@@ -174,7 +222,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   }
  
   /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
-  ThreadCoreAffinity = (int*)malloc(PetscMaxThreads*sizeof(int));
+  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&ThreadCoreAffinity);CHKERRQ(ierr);
   char tstr[9];
   char tbuf[2];
   PetscInt i;
@@ -202,24 +250,24 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   switch(thread_sync_type) {
   case THREADSYNC_TREEPOOL:
     PetscThreadFunc       = &PetscThreadFunc_Tree;
-    PetscThreadInitialize = &PetscThreadInitialize_Tree;
-    PetscThreadFinalize   = &PetscThreadFinalize_Tree;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_Tree;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_Tree;
     PetscThreadsWait      = &PetscThreadsWait_Tree;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_Tree;
     PetscInfo1(PETSC_NULL,"Using tree thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_MAINPOOL:
     PetscThreadFunc       = &PetscThreadFunc_Main;
-    PetscThreadInitialize = &PetscThreadInitialize_Main;
-    PetscThreadFinalize   = &PetscThreadFinalize_Main;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_Main;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_Main;
     PetscThreadsWait      = &PetscThreadsWait_Main;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_Main;
     PetscInfo1(PETSC_NULL,"Using main thread pool with %d threads\n",PetscMaxThreads);
     break;
   case THREADSYNC_CHAINPOOL:
     PetscThreadFunc       = &PetscThreadFunc_Chain;
-    PetscThreadInitialize = &PetscThreadInitialize_Chain;
-    PetscThreadFinalize   = &PetscThreadFinalize_Chain;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_Chain;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_Chain;
     PetscThreadsWait      = &PetscThreadsWait_Chain;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_Chain;
     PetscInfo1(PETSC_NULL,"Using chain thread pool with %d threads\n",PetscMaxThreads);
@@ -227,23 +275,23 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
   case THREADSYNC_TRUEPOOL:
 #if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
     PetscThreadFunc       = &PetscThreadFunc_True;
-    PetscThreadInitialize = &PetscThreadInitialize_True;
-    PetscThreadFinalize   = &PetscThreadFinalize_True;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_True;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_True;
     PetscThreadsWait      = &PetscThreadsWait_True;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_True;
     PetscInfo1(PETSC_NULL,"Using true thread pool with %d threads\n",PetscMaxThreads);
 #else
     PetscThreadFunc       = &PetscThreadFunc_Main;
-    PetscThreadInitialize = &PetscThreadInitialize_Main;
-    PetscThreadFinalize   = &PetscThreadFinalize_Main;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_Main;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_Main;
     PetscThreadsWait      = &PetscThreadsWait_Main;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_Main;
     PetscInfo1(PETSC_NULL,"Cannot use true thread pool since pthread_barrier_t is not defined, creating main thread pool instead with %d threads\n",PetscMaxThreads);
 #endif
     break;
   case THREADSYNC_NOPOOL:
-    PetscThreadInitialize = PETSC_NULL;
-    PetscThreadFinalize   = PETSC_NULL;
+    PetscThreadsSynchronizationInitialize = PETSC_NULL;
+    PetscThreadsSynchronizationFinalize   = PETSC_NULL;
     PetscThreadFunc       = &PetscThreadFunc_None;
     PetscThreadsWait      = &PetscThreadsWait_None;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_None;
@@ -251,8 +299,8 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     break;
   case THREADSYNC_LOCKFREE:
     PetscThreadFunc       = &PetscThreadFunc_LockFree;
-    PetscThreadInitialize = &PetscThreadInitialize_LockFree;
-    PetscThreadFinalize   = &PetscThreadFinalize_LockFree;
+    PetscThreadsSynchronizationInitialize = &PetscThreadsSynchronizationInitialize_LockFree;
+    PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_LockFree;
     PetscThreadsWait      = &PetscThreadsWait_LockFree;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_LockFree;
     PetscInfo1(PETSC_NULL,"Using lock-free algorithm with %d threads\n",PetscMaxThreads);

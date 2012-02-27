@@ -74,8 +74,8 @@ void* PetscThreadFunc_Main(void* arg) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadInitialize_Main"
-PetscErrorCode PetscThreadInitialize_Main(PetscInt N) 
+#define __FUNCT__ "PetscThreadsSynchronizationInitialize_Main"
+PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N) 
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -131,8 +131,8 @@ PetscErrorCode PetscThreadInitialize_Main(PetscInt N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadFinalize_Main"
-PetscErrorCode PetscThreadFinalize_Main() {
+#define __FUNCT__ "PetscThreadsSynchronizationFinalize_Main"
+PetscErrorCode PetscThreadsSynchronizationFinalize_Main() {
   int            i;
   void*          jstatus;
   PetscErrorCode ierr;

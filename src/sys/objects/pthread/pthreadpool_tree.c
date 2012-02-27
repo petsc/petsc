@@ -146,8 +146,8 @@ void* PetscThreadFunc_Tree(void* arg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadInitialize_Tree"
-PetscErrorCode PetscThreadInitialize_Tree(PetscInt N) 
+#define __FUNCT__ "PetscThreadsSynchronizationInitialize_Tree"
+PetscErrorCode PetscThreadsSynchronizationInitialize_Tree(PetscInt N) 
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -207,8 +207,8 @@ PetscErrorCode PetscThreadInitialize_Tree(PetscInt N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadFinalize_Tree"
-PetscErrorCode PetscThreadFinalize_Tree() {
+#define __FUNCT__ "PetscThreadsSynchronizationFinalize_Tree"
+PetscErrorCode PetscThreadsSynchronizationFinalize_Tree() {
   PetscInt       i;
   void*          jstatus;
   PetscErrorCode ierr;

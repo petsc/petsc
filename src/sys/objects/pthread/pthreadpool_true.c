@@ -84,8 +84,8 @@ void* PetscThreadFunc_True(void* arg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadInitialize_True"
-PetscErrorCode PetscThreadInitialize_True(PetscInt N)
+#define __FUNCT__ "PetscThreadsSynchronizationInitialize_True"
+PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -108,8 +108,8 @@ PetscErrorCode PetscThreadInitialize_True(PetscInt N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadFinalize_True"
-PetscErrorCode PetscThreadFinalize_True() {
+#define __FUNCT__ "PetscThreadsSynchronizationFinalize_True"
+PetscErrorCode PetscThreadsSynchronizationFinalize_True() {
   int            i;
   void*          jstatus;
   PetscErrorCode ierr;

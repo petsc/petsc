@@ -133,8 +133,8 @@ void* PetscThreadFunc_Chain(void* arg) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadInitialize_Chain"
-PetscErrorCode PetscThreadInitialize_Chain(PetscInt N) 
+#define __FUNCT__ "PetscThreadsSynchronizationInitialize_Chain"
+PetscErrorCode PetscThreadsSynchronizationInitialize_Chain(PetscInt N) 
 {
   PetscErrorCode ierr;
   PetscInt i;
@@ -195,8 +195,8 @@ PetscErrorCode PetscThreadInitialize_Chain(PetscInt N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadFinalize_Chain"
-PetscErrorCode PetscThreadFinalize_Chain() {
+#define __FUNCT__ "PetscThreadsSynchronizationFinalize_Chain"
+PetscErrorCode PetscThreadsSynchronizationFinalize_Chain() {
   PetscInt       i;
   PetscErrorCode ierr;
   void*          jstatus;

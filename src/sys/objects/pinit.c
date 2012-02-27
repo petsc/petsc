@@ -832,8 +832,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-  if(PetscThreadInitialize)
-    ierr = (*PetscThreadInitialize)(PetscMaxThreads);CHKERRQ(ierr);
+  ierr = PetscThreadsInitialize(PetscMaxThreads);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_AMS)
@@ -928,12 +927,9 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-  if (PetscThreadFinalize) {
-    /* thread pool case */
-    ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
-  }
-  free(ThreadCoreAffinity);
+  ierr = PetscThreadsFinalize();CHKERRQ(ierr);
 #endif
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
