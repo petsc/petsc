@@ -1696,6 +1696,7 @@ PetscErrorCode VecCreate_SeqPThread(Vec V)
   PetscMPIInt     size;
 
   PetscFunctionBegin;
+  ierr = PetscThreadsInitialize(PetscMaxThreads);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQPTHREAD on more than one process");
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);

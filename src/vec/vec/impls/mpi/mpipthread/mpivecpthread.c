@@ -358,6 +358,7 @@ PetscErrorCode  VecCreate_MPIPThread(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscThreadsInitialize(PetscMaxThreads);CHKERRQ(ierr);
   ierr = VecCreate_MPIPThread_Private(vv,PETSC_TRUE,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

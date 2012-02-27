@@ -831,10 +831,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   cublasInit();
 #endif
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = PetscThreadsInitialize(PetscMaxThreads);CHKERRQ(ierr);
-#endif
-
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
   if (flg) {

@@ -111,6 +111,7 @@ PetscErrorCode PetscThreadsFinalize(void)
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
   ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
+  PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
   
@@ -200,7 +201,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 {
   PetscErrorCode                 ierr;
   PetscBool                      flg1=PETSC_FALSE;
-  ThreadSynchronizationType      thread_sync_type=THREADSYNC_NOPOOL;
+  ThreadSynchronizationType      thread_sync_type=THREADSYNC_LOCKFREE;
 
   PetscFunctionBegin;
 
@@ -303,7 +304,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_LockFree;
     PetscThreadsWait      = &PetscThreadsWait_LockFree;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_LockFree;
-    PetscInfo1(PETSC_NULL,"Using lock-free algorithm with %d threads\n",PetscMaxThreads);
+    PetscInfo1(PETSC_NULL,"Using lock-free thread synchronization with %d threads\n",PetscMaxThreads);
     break;
   }
   PetscFunctionReturn(0);

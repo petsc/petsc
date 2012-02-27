@@ -386,6 +386,7 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   Mat_SeqAIJ         *b;
 
   PetscFunctionBegin;
+  ierr = PetscThreadsInitialize(PetscMaxThreads);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ(B);
   ierr = PetscNewLog(B,Mat_SeqAIJPThread,&s);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)B->data;
