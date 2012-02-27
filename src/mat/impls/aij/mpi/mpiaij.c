@@ -4270,7 +4270,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge"
 /*@
-      MatMerge - Creates a single large PETSc matrix by concatinating sequential
+      MatMerge - Creates a single large PETSc matrix by concatenating sequential
                  matrices from each processor
 
     Collective on MPI_Comm
@@ -4419,29 +4419,6 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPINumeric"
-/*@C
-      MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
-                 matrices from each processor
-
-    Collective on MPI_Comm
-
-   Input Parameters:
-+    comm - the communicators the parallel matrix will live on
-.    seqmat - the input sequential matrices
-.    m - number of local rows (or PETSC_DECIDE)
-.    n - number of local columns (or PETSC_DECIDE)
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-
-   Output Parameter:
-.    mpimat - the parallel matrix generated
-
-    Level: advanced
-
-   Notes:
-     The dimensions of the sequential matrix in each processor MUST be the same.
-     The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
-     destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
-@*/
 PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 {
   PetscErrorCode       ierr;
@@ -4813,6 +4790,29 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPI"
+/*@C
+      MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    seqmat - the input sequential matrices
+.    m - number of local rows (or PETSC_DECIDE)
+.    n - number of local columns (or PETSC_DECIDE)
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    mpimat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes:
+     The dimensions of the sequential matrix in each processor MUST be the same.
+     The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
+     destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
+@*/
 PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;
