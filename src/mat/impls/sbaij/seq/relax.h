@@ -105,8 +105,6 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
       sum  = v[0]*x1;                /* diagonal term */
       jmin++;
     }
-      jmin++;
-    }
     PetscPrefetchBlock(ib+nz,nz,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+nz,nz,0,PETSC_PREFETCH_HINT_NTA);  /* Entries for the next row */
     for (j=jmin; j<nz; j++) {
