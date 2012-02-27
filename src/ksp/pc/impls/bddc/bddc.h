@@ -62,21 +62,25 @@ typedef struct {
   Vec           vec4_D;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
+  IS            *ISForFaces;
+  IS            *ISForEdges;
+  IS            ISForVertices;
+  PetscInt      n_ISForFaces;
+  PetscInt      n_ISForEdges;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
-  PetscInt      *vertices;
-  PetscInt      *sizes_of_constraint;
-  PetscInt      **indices_to_constraint;
-  PetscScalar   **quadrature_constraint;
+  Mat           ConstraintMatrix;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     vertices_flag;
   PetscBool     constraints_flag;
   PetscBool     faces_flag;
   PetscBool     edges_flag;
   /* Some customization is possible */
+  PetscBool                  use_nnsp_true;
   PetscInt                   n_ISForDofs;
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;
+  IS                         DirichletBoundaries;
   PetscBool                  prec_type;
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
@@ -88,7 +92,7 @@ typedef struct {
 } PC_BDDC;
 
 /* In case of multilevel BDDC, this is the minimum number of procs for which it will be allowed */
-#define MIN_PROCS_FOR_BDDC 5
+#define MIN_PROCS_FOR_BDDC 5 
 
 /* prototypes for functions contained in bddc.c */
 static PetscErrorCode PCBDDCCoarseSetUp(PC);
@@ -99,5 +103,6 @@ static PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,Vec);
 static PetscErrorCode PCBDDCSolveSaddlePoint(PC);
 static PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 static PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
+static PetscErrorCode PCBDDCCreateConstraintMatrix(PC);
 
 #endif /* __pcbddc_h */
