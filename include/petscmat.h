@@ -1504,7 +1504,7 @@ J*/
 extern PetscErrorCode  MatCoarsenCreate(MPI_Comm,MatCoarsen*);
 extern PetscErrorCode  MatCoarsenSetType(MatCoarsen,const MatCoarsenType);
 extern PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen,Mat);
-extern PetscErrorCode  MatCoarsenSetGreedyOrdering(MatCoarsen,IS);
+extern PetscErrorCode  MatCoarsenSetGreedyOrdering(MatCoarsen,const IS);
 extern PetscErrorCode  MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
 extern PetscErrorCode  MatCoarsenSetVerbose(MatCoarsen,PetscInt);
 extern PetscErrorCode  MatCoarsenGetMISAggLists( MatCoarsen, IS*, IS* );
