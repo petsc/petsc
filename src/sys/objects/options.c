@@ -1117,19 +1117,29 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
   /* append prefix to name, if prefix="foo_" and option='--bar", prefixed option is --foo_bar */
   if (pre) {
     char *ptr = tmp;
+    const char *namep = name;
     if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix should not begin with a -");
     if (name[1] == '-') {
       *ptr++ = '-';
-      name++;
+      namep++;
     }
     ierr = PetscStrncpy(ptr,pre,tmp+sizeof tmp-ptr);CHKERRQ(ierr);
     tmp[sizeof tmp-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,name+1,sizeof tmp-len-1);CHKERRQ(ierr);
+    ierr = PetscStrncat(tmp,namep+1,sizeof tmp-len-1);CHKERRQ(ierr);
   } else {
     ierr = PetscStrncpy(tmp,name+1,sizeof tmp);CHKERRQ(ierr);
     tmp[sizeof tmp-1] = 0;
   }
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscBool valid;
+    char key[sizeof tmp+1] = "-";
+    ierr = PetscMemcpy(key+1,tmp,sizeof tmp);CHKERRQ(ierr);
+    ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
+    if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
+  }
+#endif
 
   /* slow search */
   *flg = PETSC_FALSE;
