@@ -1939,11 +1939,15 @@ namespace ALE {
           return *c_iter;
         }
       }
+#if 0
       {
         ostringstream msg;
         msg << "Could not locate point: (" << point[0] <<","<< point[1] <<","<< point[2] << ")" << std::endl;
         throw ALE::Exception(msg.str().c_str());
       }
+#else
+      return -1;
+#endif
     };
     point_type locatePoint_General_3D(const typename real_section_type::value_type p[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
@@ -1981,16 +1985,24 @@ namespace ALE {
       if (guess != -1) {
         return guess;
       } else if (this->_dim == 2) {
-        if (this->getSieve()->getMaxConeSize() == 3) {
+        const int e = *this->heightStratum(0)->begin();
+        switch(this->getSieve()->getConeSize(e)) {
+        case 3:
           return locatePoint_Simplex_2D(point);
-        } else {
+        case 4:
           return locatePoint_General_2D(point);
+        default:
+          throw ALE::Exception("No point location for cone size");
         }
       } else if (this->_dim == 3) {
-        if (this->getSieve()->getMaxConeSize() == 4) {
+        const int e = *this->heightStratum(0)->begin();
+        switch(this->getSieve()->getConeSize(e)) {
+        case 4:
           return locatePoint_Simplex_3D(point);
-        } else {
+        case 8:
           return locatePoint_General_3D(point);
+        default:
+          throw ALE::Exception("No point location for cone size");
         }
       } else {
         throw ALE::Exception("No point location for mesh dimension");
@@ -2143,17 +2155,23 @@ namespace ALE {
       detJ *= 8.0;
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const int coneSize = this->getSieve()->getConeSize(e);
+
       if (this->_dim == 2) {
-        if (this->getSieve()->getMaxConeSize() == 3) {
+        if (coneSize == 3) {
           computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
-        } else {
+        } else if (coneSize == 4) {
           computeRectangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          throw ALE::Exception("Unsupported coneSize for element geometry computation");
         }
       } else if (this->_dim == 3) {
-        if (this->getSieve()->getMaxConeSize() == 4) {
+        if (coneSize == 4) {
           computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
-        } else {
+        } else if (coneSize == 8) {
           computeHexahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          throw ALE::Exception("Unsupported coneSize for element geometry computation");
         }
       } else {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
