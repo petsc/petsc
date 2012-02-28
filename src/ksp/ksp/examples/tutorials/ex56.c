@@ -260,31 +260,30 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
 #endif
 
-
-#if !defined(foo)
   /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[2]);                    CHKERRQ(ierr);
-#endif
-
-  /* PC setup basically */
-  ierr = MatScale( Amat, 100000.0 ); CHKERRQ(ierr);
-  ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-  ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
-
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStagePop();      CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[3]);                    CHKERRQ(ierr);
 #endif
 
   /* 2nd solve */
-  {
-/* #define TwoSolve */
+  /* #define TwoSolve */
 #if defined(TwoSolve)
+  {
     PetscReal emax, emin;
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+    ierr = PetscLogStagePush(stage[2]);                    CHKERRQ(ierr);
+#endif
+    /* PC setup basically */
+    ierr = MatScale( Amat, 100000.0 ); CHKERRQ(ierr);
+    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+    ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+    ierr = PetscLogStagePop();      CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[3]);                    CHKERRQ(ierr);
+#endif
     ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
     ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin ); CHKERRQ(ierr);
     
@@ -338,9 +337,7 @@ int main(int argc,char **args)
     /* CHKERRQ(ierr); */
     /* ierr = VecView( xx, viewer ); CHKERRQ(ierr); */
     /* ierr = PetscViewerDestroy( &viewer ); CHKERRQ(ierr); */
-#endif
   }
-  
 #endif
 
   /* Free work space */
