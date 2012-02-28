@@ -512,8 +512,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0); CHKERRQ(ierr);
 #endif
     { /* construct prolongator */
-      Mat Gmat;   assert(pc_gamg->graph);
-      IS selected, llist;   assert(pc_gamg->coarsen);
+      Mat Gmat;
+      IS selected, llist;
+      assert(pc_gamg->graph);
+      assert(pc_gamg->coarsen);
       
       ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
       ierr = pc_gamg->coarsen( pc, Gmat, &selected, &llist ); CHKERRQ(ierr);

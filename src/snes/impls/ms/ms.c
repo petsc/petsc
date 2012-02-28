@@ -417,7 +417,7 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 #define __FUNCT__ "SNESSetFromOptions_MS"
 static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
 {
-  SNES_MS        *ms = (SNES_MS*)snes->data;;
+  SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

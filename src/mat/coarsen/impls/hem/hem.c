@@ -319,6 +319,7 @@ PetscErrorCode heavyEdgeMatchAgg( const Mat Gmat,
 }
 
 typedef struct {
+  int dummy;
 } MatCoarsen_HEM;
 /*
    HEM coarsen, simple greedy. 

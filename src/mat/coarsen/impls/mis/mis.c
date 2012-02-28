@@ -349,6 +349,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
 }
 
 typedef struct {
+  int dummy;
 } MatCoarsen_MIS;
 /*
    MIS coarsen, simple greedy. 
