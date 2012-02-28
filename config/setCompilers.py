@@ -1166,8 +1166,10 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
       yield (self.CXX, ['-shared'], 'so')
+      yield (self.CXX, ['-dynamic'], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
+    yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-qmkshrobj'], 'so')
     # Solaris default
     if Configure.isSolaris():
