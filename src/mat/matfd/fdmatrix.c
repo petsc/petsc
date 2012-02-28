@@ -497,7 +497,7 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info
 
     Level: intermediate
-
+2
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
 
 .keywords: coloring, Jacobian, finite differences
@@ -661,8 +661,20 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
-    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;
+    if (ctype == IS_COLORING_GLOBAL) {w3_array = w3_array + start;
+      /*    w3_array[0]=1.0;
+    w3_array[1]=0.0;
+    w3_array[2]=0.0;
+    w3_array[3]=0.0;
+       w3_array[4]=0.0;*/
+    }
+    /*
+    for (k=1; k<coloring->ncolors; k++){
+      w3_array[col] = 0.0;
+    }
+     */
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+
 
     /*
       Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)

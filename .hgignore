@@ -41,12 +41,18 @@ src/python/*
 .nagged
 ex[0-9]
 ex[0-9]f
+ex[0-9]dm
+ex[0-9]D*
 ex[0-9]f90
 ex[0-9][0-9]
 ex[0-9][0-9]f
+ex[0-9][0-9]dm
+ex[0-9][0-9]D*
 ex[0-9][0-9]f90
 ex[0-9][0-9][0-9]
 ex[0-9][0-9][0-9]f
+ex[0-9][0-9][0-9]dm
+ex[0-9][0-9][0-9]D*
 ex[0-9][0-9][0-9]f90
 *.m.html
 index.html
@@ -101,3 +107,4 @@ src/snes/examples/tutorials/ex52\.h
 src/snes/examples/tutorials/ex52_inline\.h
 src/snes/examples/tutorials/ex56_inline\.h
 src/snes/examples/tutorials/ex56\.h
+phi[0-9]

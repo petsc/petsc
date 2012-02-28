@@ -585,13 +585,13 @@ runex19_6:
 	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view  -preload off > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_6, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
+	#   ${RM} -f ex19_6.tmp
 
 runex19_fieldsplit_2:
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
+	 #  ${RM} -f ex19_6.tmp
 
 runex19_fieldsplit_3:
 	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
@@ -615,13 +615,13 @@ runex19_fieldsplit_hypre:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_hypre, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
+	  # ${RM} -f ex19_6.tmp
 
 runex19_fieldsplit_redundant:
 	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type redundant -fieldsplit_1_pc_redundant_number 2 -fieldsplit_1_redundant_ksp_type preonly -fieldsplit_1_redundant_pc_factor_mat_solver_package mumps -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fieldsplit_redundant.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_redundant, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
+	#   ${RM} -f ex19_6.tmp
 
 runex19_composite_fieldsplit: #similar to runex19_fieldsplit_2
 	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,none -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
