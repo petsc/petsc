@@ -441,17 +441,15 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     PC_MG_Levels   **mglevels = mg->levels;
     /* just do Galerkin grids */
     Mat B,dA,dB;
-    
-    /* PCSetUp_MG seems to insists on setting this to GMRES */
-    ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
-    
+    assert(pc->setupcalled);
+
     if( pc_gamg->Nlevels > 1 ) {
       /* currently only handle case where mat and pmat are the same on coarser levels */
       ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
       /* (re)set to get dirty flag */
       ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetUp( mglevels[pc_gamg->Nlevels-1]->smoothd ); CHKERRQ(ierr);
-
+      
       for (level=pc_gamg->Nlevels-2; level>-1; level--) {
         ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
         /* the first time through the matrix structure has changed from repartitioning */
@@ -469,6 +467,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
       }
     }
+
+    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
+
+    /* PCSetUp_MG seems to insists on setting this to GMRES */
+    ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
+
     PetscFunctionReturn(0);
   }
   assert(pc->setupcalled == 0);
@@ -632,28 +636,59 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     ierr = PCSetUp_MG( pc );  CHKERRQ( ierr );
   }
   else if( pc_gamg->Nlevels > 1 ) { /* don't setup MG if one level */
-    /* set default smoothers */
+    /* set default smoothers & set operators */
     for ( lidx = 1, level = pc_gamg->Nlevels-2;
           lidx <= fine_level;
           lidx++, level--) {
-      PetscReal emax, emin;
       KSP smoother; PC subpc; 
-      PetscBool isCheb;
       /* set defaults */
       ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
       ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
       ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
-      /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
       ierr = PCSetType( subpc, PCJACOBI ); CHKERRQ(ierr);
       ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-      /* overide defaults with input parameters */
-      ierr = KSPSetFromOptions( smoother ); CHKERRQ(ierr);
-      
+      /* set ops */
       ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
+      ierr = PCMGSetInterpolation( pc, lidx, Parr[level+1] );CHKERRQ(ierr);
+    }
+    {
+      /* coarse grid */
+      KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
+      Mat Lmat = Aarr[(level=pc_gamg->Nlevels-1)]; lidx = 0;
+      ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
+      ierr = KSPSetOperators( smoother, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+      ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+      ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+      ierr = PCSetType( subpc, PCBJACOBI ); CHKERRQ(ierr);
+      ierr = PCSetUp( subpc ); CHKERRQ(ierr);
+      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);      assert(ii==1);
+      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
+      ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
+      /* set ops */
+      ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
+    }
+
+    /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
+    ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
+    ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (mg->galerkin != 2) SETERRQ(wcomm,PETSC_ERR_USER,"GAMG does Galerkin manually so the -pc_mg_galerkin option must not be used.");
+
+    /* create cheby smoothers */
+    for ( lidx = 1, level = pc_gamg->Nlevels-2;
+          lidx <= fine_level;
+          lidx++, level--) {
+      KSP smoother; 
+      PetscBool isCheb;
+
+      ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
       /* do my own cheby */
       ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &isCheb ); CHKERRQ(ierr);
-      
       if( isCheb ) {
+        PetscReal emax, emin;
+        PC subpc; 
+
+        ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
         ierr = PetscTypeCompare( (PetscObject)subpc, PCJACOBI, &isCheb ); CHKERRQ(ierr);
         if( isCheb && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
         else{ /* eigen estimate 'emax' */
@@ -716,44 +751,20 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
       }
     }
-    {
-      /* coarse grid */
-      KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
-      Mat Lmat = Aarr[pc_gamg->Nlevels-1];
-      ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
-      ierr = KSPSetOperators( smoother, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-      ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-      ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
-      ierr = PCSetType( subpc, PCBJACOBI ); CHKERRQ(ierr);
-      ierr = PCSetUp( subpc ); CHKERRQ(ierr);
-      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
-      assert(ii==1);
-      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
-      ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
-    }
     
-    /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
-    ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
-    ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (mg->galerkin != 2) SETERRQ(wcomm,PETSC_ERR_USER,"GAMG does Galerkin manually so the -pc_mg_galerkin option must not be used.");
-    
-    /* set interpolation between the levels, clean up */  
-    for (lidx=0,level=pc_gamg->Nlevels-1;
-         lidx<fine_level;
-         lidx++, level--){
-      ierr = PCMGSetInterpolation( pc, lidx+1, Parr[level] );CHKERRQ(ierr);
+    /* clean up */
+    for(level=1;level<pc_gamg->Nlevels;level++){
       ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
       ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
     }
 
     ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
-
+    
     {
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
       ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
-      ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
+      //ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
     }
   }
   else {
