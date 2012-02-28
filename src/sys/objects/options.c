@@ -235,7 +235,7 @@ PetscErrorCode  PetscSetProgramName(const char name[])
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsValidKey"
 /*@
-    PetscOptionsValidKey - PETSc Options database keys must begin with a - followed by a letter.
+    PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
 
    Input Parameter:
 .    in_str - string to check if valid
@@ -252,7 +252,8 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   *key = PETSC_FALSE;
   if (!in_str) PetscFunctionReturn(0);
   if (in_str[0] != '-') PetscFunctionReturn(0);
-  if (!(isalpha(in_str[1]))) PetscFunctionReturn(0);
+  if (in_str[1] == '-') in_str++;
+  if (!isalpha(in_str[1])) PetscFunctionReturn(0);
   if ((!strncmp(in_str+1,"inf",3) || !strncmp(in_str+1,"INF",3)) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1113,14 +1114,21 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
 
   if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
 
-  /* append prefix to name */
+  /* append prefix to name, if prefix="foo_" and option='--bar", prefixed option is --foo_bar */
   if (pre) {
+    char *ptr = tmp;
     if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix should not begin with a -");
-    ierr = PetscStrncpy(tmp,pre,256);CHKERRQ(ierr);
+    if (name[1] == '-') {
+      *ptr++ = '-';
+      name++;
+    }
+    ierr = PetscStrncpy(ptr,pre,tmp+sizeof tmp-ptr);CHKERRQ(ierr);
+    tmp[sizeof tmp-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,name+1,256-len-1);CHKERRQ(ierr);
+    ierr = PetscStrncat(tmp,name+1,sizeof tmp-len-1);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrncpy(tmp,name+1,256);CHKERRQ(ierr);
+    ierr = PetscStrncpy(tmp,name+1,sizeof tmp);CHKERRQ(ierr);
+    tmp[sizeof tmp-1] = 0;
   }
 
   /* slow search */
