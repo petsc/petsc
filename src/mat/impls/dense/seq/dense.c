@@ -6,6 +6,45 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
 
+#include <../src/mat/impls/aij/seq/aij.h>
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
+PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+{
+  Mat            B;
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data; 
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscInt       *rows;
+  MatScalar      *aa = a->v;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,A->cmap->n,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  for (i=0; i<A->rmap->n; i++) rows[i] = i;
+
+  for (i=0; i<A->cmap->n; i++) {
+    ierr  = MatSetValues(B,A->rmap->n,rows,1,&i,aa,INSERT_VALUES);CHKERRQ(ierr);
+    aa   += a->lda;
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"
 PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
@@ -211,7 +250,7 @@ PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(X,&x);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(x,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
@@ -497,9 +536,7 @@ PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscScalar    *x,*b,*v = mat->v,zero = 0.0,xt;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n,i;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt   o = 1,bm = PetscBLASIntCast(m);
-#endif
 
   PetscFunctionBegin;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -513,35 +550,13 @@ PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       for (i=0; i<m; i++) {
-#if defined(PETSC_USE_COMPLEX)
-        /* cannot use BLAS dot for complex because compiler/linker is 
-           not happy about returning a double complex */
-        PetscInt    _i;
-        PetscScalar sum = b[i];
-        for (_i=0; _i<m; _i++) {
-          sum -= PetscConj(v[i+_i*m])*x[_i];
-        }
-        xt = sum;
-#else
         xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
-#endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
       for (i=m-1; i>=0; i--) {
-#if defined(PETSC_USE_COMPLEX)
-        /* cannot use BLAS dot for complex because compiler/linker is 
-           not happy about returning a double complex */
-        PetscInt    _i;
-        PetscScalar sum = b[i];
-        for (_i=0; _i<m; _i++) {
-          sum -= PetscConj(v[i+_i*m])*x[_i];
-        }
-        xt = sum;
-#else
         xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
-#endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
@@ -918,7 +933,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
         if (allreal) {
           ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",PetscRealPart(*v));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16e i ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
         }
 #else
         ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",*v);CHKERRQ(ierr);
@@ -1568,8 +1583,8 @@ PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_SeqDense"
-PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
+#define __FUNCT__ "MatSetUp_SeqDense"
+PetscErrorCode MatSetUp_SeqDense(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1663,7 +1678,8 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,M
   ierr = MatSetSizes(Cmat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
-  Cmat->assembled = PETSC_TRUE;
+  Cmat->assembled    = PETSC_TRUE;
+  Cmat->ops->matmult = MatMatMult_SeqDense_SeqDense;
   *C = Cmat;
   PetscFunctionReturn(0);
 }
@@ -1911,7 +1927,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,       
        0,
        0,
-/*29*/ MatSetUpPreallocation_SeqDense,
+/*29*/ MatSetUp_SeqDense,
        0,
        0,
        MatGetArray_SeqDense,
@@ -2196,6 +2212,7 @@ PetscErrorCode  MatCreate_SeqDense(Mat B)
   b->changelda    = PETSC_FALSE;
 
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_seqaij_C","MatConvert_SeqDense_SeqAIJ",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqdense_petsc",
                                       MatGetFactor_seqdense_petsc);CHKERRQ(ierr);

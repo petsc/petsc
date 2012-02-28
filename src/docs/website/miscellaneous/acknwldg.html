@@ -1,106 +1,88 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <title>PETSc: Misc: Acknowledgements</title>
-</head>
-<body bgcolor="#d5eaff">
-<table border="0" width="100%">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
-      <ul>
-        <li><a href="../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Misc: Acknowledgements</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
       <h1>Acknowledgements</h1>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-        <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-        <li><a href="index.html"><strong>Miscellaneous</strong></a>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li>
+          <a href="../miscellaneous/index.html">Miscellaneous</a>
           <ul>
-            <li><a href="index.html"><strong>PETSc Team</strong></a></li>
-            <li><a href="mailing-lists.html"><strong>Mailing Lists</strong></a></li>
-            <li><font color="#ff0000"><strong>Acknowledgements</strong></font></li>
-            <li><a href="funding.html"><strong>Funding</strong></a></li>
-            <li><a href="petscthreads.html"><strong>Threads and PETSc</strong></a></li>
+            <li><a href="index.html">PETSc Team</a></li>
+            <li><a href="mailing-lists.html">Mailing Lists</a></li>
+            <li><span class="current">Acknowledgements</span></li>
+            <li><a href="funding.html">Funding</a></li>
+            <li><a href="petscthreads.html">Threads and PETSc</a></li>
           </ul>
         </li>
-        <li><a href="external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
       </ul>
-      </td>
-      <td valign="top" width="75%">
-      <p align="left">We thank all PETSc users for their many
-suggestions, bug reports, and encouragement. We especially thank David
-Keyes for his valuable comments on the source code, functionality, and
-documentation for PETSc. We thank Paul Hovland and Boyanna Norris for
-all of their assistance in developing the ADIC and ADIFOR automatic
-differentiation interfaces.</p>
-      <p align="left">Some of the source code and utilities in PETSc
-have been written by </p>
+    </div>
+
+    <div id="main">
+
+      <p>
+        We thank all PETSc users for their many suggestions, bug reports, and
+        encouragement. We especially thank David Keyes for his valuable
+        comments on the source code, functionality, and documentation for
+        PETSc. We thank Paul Hovland and Boyanna Norris for all of their
+        assistance in developing the ADIC and ADIFOR automatic differentiation
+        interfaces.
+      </p>
+
+      <p>
+        Some of the source code and utilities in PETSc have been written by:
+      </p>
+
       <ul>
-        <li>Asbjorn Hoiland Aarrestad,&nbsp; (the explicit Runge-Kutta
-implementations) </li>
-        <li>Mark Adams,&nbsp; (scalability features of MPIBAIJ matrices
-and the PC interface to his Prometheus package) </li>
-        <li>G. Anciaux and J. Roman,&nbsp; (the interfaces to the
-partitioning packages PTScotch, Chaco, and Party)</li>
-        <li>Allison Baker,&nbsp; (the flexible GMRES and the LGMRES
-code) </li>
-        <li>Arvid Bessen, (the adaptive smoothed aggregation algorithm
-(PCASA) and the ADDA object)</li>
-        <li>Chad Carroll, (the Win32 graphics), </li>
-        <li>Ethan Coon, (the PetscBag and many bug fixes), </li>
-        <li>Cameron Cooper,&nbsp; (portions of the VecScatter routines)
-        </li>
-        <li>Paulo Goldfeld,&nbsp; (the balancing Neumann-Neumann
-preconditioner). </li>
-        <li>Matt Hille,&nbsp; </li>
-        <li>Joel Malard,&nbsp; (the BICGStab(l) implementation)</li>
-        <li>Paul Mullowney, (improvement enhancements to portions of
-the Nvidia GPU interface)<br>
-        </li>
-        <li>Dave May, (Generalized Conjugate Residuals (GCR)
-implementation)<br>
-        </li>
-        <li>Peter Mell,&nbsp; (portions of the DA routines) </li>
-        <li>Richard Mills,&nbsp; (the AIJPERM matrix format for the
-Cray X1 and universal F90 array interface) </li>
-        <li>Victor Minden, (the Nvidia GPU interface)<br>
-        </li>
-        <li>Todd Munson, (the LUSOL interface as well as the
-specialized KSPNASH, KSPSTCG, and KSPGLTR Krylov solvers) </li>
-        <li><a href="http://lyre.mit.edu/%7Epowell/petsc.html">Adam
-Powell</a> (the <a href="../download/index.html">PETSc Debian</a>
-package)&nbsp; </li>
-        <li>Robert Scheichl,&nbsp; (the MINRES implementation) </li>
-  <li> Kerry Stevens, (the pthread based Vec and Mat classes plus the various thread pools)!</li>
-        <li>Karen Toonen, (designed and implemented much of the PETSc
-web pages) </li>
-        <li> Desire Nuentsa Wakam, (the deflated GMRES implementation)</li>
-        <li>Liyang Xu, (the interface to PVODE, now Sundials/CVODE) </li>
+        <li>Asbjorn Hoiland Aarrestad, (the explicit Runge-Kutta implementations)</li>
+        <li>Mark Adams, (scalability features of MPIBAIJ matrices and the PC interface to his Prometheus package)</li>
+        <li>G. Anciaux and J. Roman, (the interfaces to the partitioning packages PTScotch, Chaco, and Party)</li>
+        <li>Allison Baker, (the flexible GMRES and the LGMRES code)</li>
+        <li>Arvid Bessen, (the adaptive smoothed aggregation algorithm (PCASA) and the ADDA object)</li>
+        <li>Chad Carroll, (the Win32 graphics),</li>
+        <li>Ethan Coon, (the PetscBag and many bug fixes),</li>
+        <li>Cameron Cooper, (portions of the VecScatter routines)</li>
+        <li>Paulo Goldfeld, (the balancing Neumann-Neumann preconditioner).</li>
+        <li>Matt Hille,</li>
+        <li>Joel Malard, (the BICGStab(l) implementation)</li>
+        <li>Paul Mullowney, (improvement enhancements to portions of the Nvidia GPU interface)</li>
+        <li>Dave May, (Generalized Conjugate Residuals (GCR) implementation)</li>
+        <li>Peter Mell, (portions of the DA routines)</li>
+        <li>Richard Mills, (the AIJPERM matrix format for the Cray X1 and universal F90 array interface)</li>
+        <li>Victor Minden, (the Nvidia GPU interface)</li>
+        <li>Todd Munson, (the LUSOL interface as well as the specialized KSPNASH, KSPSTCG, and KSPGLTR Krylov solvers)</li>
+        <li><a href="http://lyre.mit.edu/%7Epowell/petsc.html">Adam Powell</a> (the <a href="../download/index.html">PETSc Debian</a> package)</li>
+        <li>Robert Scheichl, (the MINRES implementation)</li>
+        <li>Kerry Stevens, (the pthread based Vec and Mat classes plus the various thread pools)!</li>
+        <li>Karen Toonen, (designed and implemented much of the PETSc web pages)</li>
+        <li>Desire Nuentsa Wakam, (the deflated GMRES implementation)</li>
+        <li>Liyang Xu, (the interface to PVODE, now Sundials/CVODE)</li>
       </ul>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+    </div>
+
+    <hr>
+
+  </body>
 </html>

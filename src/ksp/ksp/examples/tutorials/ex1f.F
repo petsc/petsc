@@ -103,6 +103,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers

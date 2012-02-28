@@ -8,8 +8,10 @@
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define TS PetscFortranAddr
+#define TSAdapt PetscFortranAddr
 #endif
 #define TSType character*(80)
+#define TSAdaptType character*(80)
 #define TSConvergedReason PetscEnum
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 
@@ -65,5 +67,8 @@
 #define TSROSWASSP3P3S1C  'assp3p3s1c'
 #define TSROSWLASSP3P4S2C 'lassp3p4s2c'
 #define TSROSWLLSSP3P3S2C 'llssp3p3s2c'
+#define TSROSWARK3        'ark3'
+#define TSROSWTHETA1      'theta1'
+#define TSROSWTHETA2      'theta2'
 
 #endif

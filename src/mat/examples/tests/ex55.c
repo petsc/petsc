@@ -53,11 +53,10 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
     if (size == 1){
       ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
-      ierr = MatLoad(C,fd);CHKERRQ(ierr);
     } else {
       ierr = MatSetType(C,MATMPIBAIJ);CHKERRQ(ierr);
-      ierr = MatLoad(C,fd);CHKERRQ(ierr);
     }
+    ierr = MatLoad(C,fd);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a baij mat with bs>1  */
     bs = 2; mbs=8;

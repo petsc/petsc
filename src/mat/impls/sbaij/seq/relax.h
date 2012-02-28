@@ -26,7 +26,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
   const PetscInt       *ib=a->j;
   PetscInt             ibt;
 #endif
-  PetscInt             nonzerorow = 0;
+  PetscInt             nonzerorow = 0,jmin;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -39,15 +39,20 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
     if (!nz) continue; /* Move to the next row if the current row is empty */
     nonzerorow++;
     x1   = x[i];
-    sum  = v[0]*x1;          /* diagonal term */
-    for (j=1; j<nz; j++) {
+    sum = 0.0;
+    jmin = 0;
+    if(ib[0] == i) {
+      sum  = v[0]*x1;          /* diagonal term */
+      jmin++;
+    }
+    for (j=jmin; j<nz; j++) {
       ibt  = ib[j];
       vj   = v[j];
       sum += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
       z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
     }
     z[i] += sum;
-    v    += nz;
+    v    +=    nz;
     ib   += nz;
   }
 
@@ -81,7 +86,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   const PetscInt       *ib=a->j;
   PetscInt             ibt;
 #endif
-  PetscInt             nonzerorow=0;
+  PetscInt             nonzerorow=0,jmin;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -93,15 +98,20 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     nz   = ai[i+1] - ai[i];        /* length of i_th row of A */
     if (!nz) continue; /* Move to the next row if the current row is empty */
     nonzerorow++;
+    sum = 0.0;
+    jmin = 0;
     x1   = x[i];
-    sum  = v[0]*x1;                /* diagonal term */
+    if(ib[0] == i) {
+      sum  = v[0]*x1;                /* diagonal term */
+      jmin++;
+    }
     PetscPrefetchBlock(ib+nz,nz,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+nz,nz,0,PETSC_PREFETCH_HINT_NTA);  /* Entries for the next row */
-    for (j=1; j<nz; j++) {
-      ibt = ib[j];
-      vj  = v[j];
+    for (j=jmin; j<nz; j++) {
+      ibt     = ib[j];
+      vj      = v[j];
       z[ibt] += vj * x1;       /* (strict lower triangular part of A)*x  */
-      sum    += vj * x[ibt]; /* (strict upper triangular part of A)*x  */
+      sum    += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
     }
     z[i] += sum;
     v    += nz;

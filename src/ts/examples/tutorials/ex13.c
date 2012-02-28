@@ -77,14 +77,14 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,r,RHSFunction,&user);CHKERRQ(ierr);
 
   /* Set Jacobian */
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,PETSC_NULL);CHKERRQ(ierr);
 
   /* Use coloring to compute Jacobian efficiently */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (coloring){
     SNES snes;
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);

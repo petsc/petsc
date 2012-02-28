@@ -1,6 +1,6 @@
 Mesh in 2 dimensions:
-  9 0-cells
-  8 2-cells
+  0-cells: 9
+  2-cells: 8
 GPU layout grid(1,1,1) block(3,1,1) with 2 batches
  N_t: 3, N_cb: 2
 Residual:

@@ -1,219 +1,217 @@
-<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-
-    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-    <meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-    <title>PETSc and Threads</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Misc: Threads and PETSc</title>
   </head>
-  <body bgcolor="#D5EAFF">
-    <table border="0" width="100%">
-      <tbody>
-        <tr>
-          <td valign="top" width="25%">
-            <h1><font color="#FF0000" size="7">PETSc</font></h1>
-            <ul>
-              <li><a href="../index.html"><strong>Home</strong></a></li>
-            </ul>
-          </td>
-          <td width="75%">
-            <h1>PETSc and Threads</h1>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#FF5B5B" size="4"> </td>
-        </tr>
-        <tr>
-          <td valign="top" width="25%">
-            <ul>
-              <li><a href="../download/index.html"><strong>Download</strong></a></li>
-              <li><a href="../features/index.html"><strong>Features</strong></a></li>
-              <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-              <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-              <li><strong><a href="./index.html">Miscellaneous</a></strong>
-                <ul>
-                  <li><a href="index.html"><strong>PETSc Team</strong></a></li>
-                  <li><a href="mailing-lists.html" <strong="">Mailing
-                      Lists</a></li>
-                  <li><a href="acknwldg.html"><strong>Acknowledgements</strong></a></li>
-                  <li><a href="funding.html"><strong>Funding</strong></a></li>
-                  <li><font color="#FF0000"><strong>Threads and PETSc</strong></font></li>
-                </ul>
-              </li>
-              <li><a href="../miscellaneous/external.html"><strong>External
-                    Software</strong></a></li>
-              <li><a href="../developers/index.html"><strong>Developers
-                    Site</strong></a></li>
-            </ul>
-          </td>
-          <td valign="top" width="75%">.<br>
-            With the advent of multi-core machines as standard practise
-            on laptops to supercomputers the issue of a hybrid
-            MPI-thread (MPI-OpenMP) "version" of PETSc is of interest.
-            In this model there is one MPI process per CPU (node) and
-            several threads on that CPU (node) working together inside
-            that MPI process. Many people throw around the term "hybrid
-            MPI-OpenMP as if it is a trivial change in the programming
-            model; it is not, it has major ramifications that must be
-            understood if it is to be used successfully. It can be done
-            in many ways that affect its usability and performance. <br>
-            <br>
-            <span style="font-weight: bold; text-decoration: underline;">The
-              simplest model of PETSc with threads</span> is to contain
-            all the thread operations <span style="font-weight: bold;
-              text-decoration: underline;">inside</span> the Mat and Vec
-            classes leaving the users programming model identical to
-            what it is today. This can be done in two ways by having a
-            Vec and Mat class implementation that use<br>
-            <ol>
-              <li>OpenMP compiler directives to parallelize some of the
-                methods</li>
-              <li>POSIX threads (pthread) calls to parallelize some of
-                the methods. </li>
-            </ol>
-            In petsc-3.2 we have implemented 2. the classes are
-            VECSEQPTHREAD and MATSEQAIJPTHREAD they are very preliminary
-            but can be played with. We hope to obtain from some elses
-            implementations of 1. The user is free to also use threads
-            for OpenMP in their code so long as that code does not make
-            PETSc calls. See <a
-                href="../features/threads.html">threads</a>
-              for how to use the thread-based Vec and Mat.</p> <br>
-            <br>
-            <span style="font-weight: bold; text-decoration: underline;">A
-              more complicated model of PETSc with threads</span> would
-            allow users to write threaded code that made PETSc calls,
-            this is not supported because PETSc
-            <p align="left">is not currently thread-safe; because the
-              issues involved with toolkits and thread safety is
-              complex, this short answer is almost meaningless. Thus,
-              this page attempts to explain how threads and thread
-              safety relate to PETSc. Note that we are only discussing
-              here "software threads" as opposed to "hardware threads" </p>
-            <p align="left">Threads are used in 2 main ways</p>
-            <ol>
-              <li>
-                <p align="left"><small><font face="7x13"><font
-                        color="#FF0000">loop level compiler control. </font>The
-                      C/C++/FORTRAN compiler manages the dispatching of
-                      threads at the beginning of a loop, where each
-                      thread is assigned non-overlap selections from the
-                      loop. OpenMP, for example, defines standards
-                      (compiler directives) for indicating to compilers
-                      how they should "thread parallelize" loops</font></small></p>
-              </li>
-              <li>
-                <p align="left"><font face="7x13"><small><font
-                        color="#FF0000">user control.</font> The
-                      programmer manages the dispatching of threads
-                      directly by assigning threads to tasks (eg. a
-                      subroutine call). For example POSIX threads
-                      (pthreads) or the user thread management in
-                      OpenMP.</small></font></p>
-              </li>
-            </ol>
-            <p>Threads are merely streams of control and do not have any
-              global data associated with them. Any global variables
-              (e.g., common blocks in FORTRAN) are "shared" by all the
-              threads, that is, any thread can access and change that
-              data. In addition, any space allocated (e.g., in C with
-              malloc or C++ with new) that a thread has a reference to
-              can be read/changed by that thread. The only private data
-              a thread has are the local variables in the subroutines
-              that it has called (i.e., the stack for that thread) or
-              local variables that you explicitly indicate are to be not
-              shared in compiler directives. </p>
-            <p>In its simplest form, thread safety means that any memory
-              (global or allocated) that more than one thread has access
-              to, has some mechanism to insure that it remains
-              consistent when the various threads act upon it. This can
-              be managed by simply associating a lock with each "memory"
-              and making sure that each thread locks the memory before
-              accessing it and unlocks when it has completed accessing
-              the memory. In an object oriented library, rather than
-              associating locks with individual data items, one can
-              think about associating locks with objects; so that only a
-              single thread can operate on an object at a time.</p>
-            <p>PETSc is not thread-safe for three reasons: </p>
-            <ol>
-              <li>a few miscellaneous global variables - these may be
-                fixed in later PETSc releases and are not a big deal</li>
-              <li>a variety of global data structures that are used for
-                profiling and error handling. These are not easily
-                removed or modified to make thread-safe. The reason is
-                that simply putting locks around all of these data
-                accesses would have a major impact on performance since
-                the profiling data structures are being constantly
-                updated by the running code. In some cases, for example
-                updating the flop counters, locks could be avoid and
-                something like atomic fetch and add operations could be
-                used. It is possible to build such operations on all
-                major systems, often using special two-step memory
-                operations (e.g., load-link and store-conditional on
-                MIPS; load-reservation on PowerXX). But you can't do
-                this in a portable, high-performance way, since it isn't
-                part of C and there is no standardization on issuing asm
-                code from within C source.</li>
-              <li>all the PETSc objects created during a simulation do
-                not have locks associated with them. Again, the reason
-                is performance, having to always lock an object before
-                using it, and then unlocking it at the end would have a
-                large impact on performance. Even with very inexpensive
-                locks, there will still likely be a few "hot-spots" that
-                kill performance, for example if four threads share a
-                matrix and are each calling MatSetValues(), this will be
-                a bottleneck with those threads constantly fighting over
-                the data structure inside the matrix object. </li>
-            </ol>
-            <p>PETSc can be used in a limited way that is thread safe,
-              so long as only one of the threads calls methods on
-              objects, or calls profiled PETSc routines, PETSc will run
-              fine. For example, one could use loop level parallelism to
-              evaluate a finite difference stencil on a grid, this is
-              supported through the PETSc routines VecCreateShared(),
-              see src/snes/examples/tutorials/ex5s.c. However, this is
-              limited power. </p>
-            <p><font color="#FF0000">Some concerns about a thread model
-                for parallelism</font>. A thread model for parallelism
-              of numerical methods appears to be powerful for problems
-              that can store their data in very simple (well controlled)
-              data structures. For example, if field data is stored in a
-              two dimensional array, then each thread can be assigned a
-              nonoverlapping slice of data to operate on. OpenMP makes
-              managing much of this sort of thing reasonably
-              straightforward.</p>
-            <p>When data must be stored in a more complicated opaque
-              data structure (for example an unstructured grid or sparse
-              matrix), it is more difficult to partition the data among
-              the threads to prevent conflict and still get good
-              performance. More difficult, but certainly not impossible.
-              For these situations, perhaps it is more natural for each
-              thread to maintain its own private data structure that is
-              later merged into a common data structure; but to do this
-              one has to introduce a great deal of private state
-              associated with the thread,&nbsp; i.e., it becomes more
-              like a&nbsp; "light-weight process". </p>
-            <p>In conclusion, at least for the PETSc package, the
-              concept of being thread-safe is not simple. It has major
-              ramifications about its performance and how it would be
-              used; it is not a simple matter of throwing a few locks
-              around and then every thing is honky-dory.</p>
-            <p>If you have any comments/brickbats on this summary,
-              please direct them to <a
-                href="../documentation/bugreporting.html">petsc-maint@mcs.anl.gov</a>;
-              we are interested in alternative viewpoints.</p>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" width="100%">
-            <hr color="#FF5B5B" size="4">
-            <p>&nbsp;</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p align="center">&nbsp;</p>
-    <p>&nbsp;</p>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1>Threads and PETSc</h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li>
+          <a href="../miscellaneous/index.html">Miscellaneous</a>
+          <ul>
+            <li><a href="index.html">PETSc Team</a></li>
+            <li><a href="mailing-lists.html">Mailing Lists</a></li>
+            <li><a href="acknwldg.html">Acknowledgements</a></li>
+            <li><a href="funding.html">Funding</a></li>
+            <li><span class="current">Threads and PETSc</span></li>
+          </ul>
+        </li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <div id="main">
+
+      <p>
+        With the advent of multicore machines as standard practice from laptops
+        to supercomputers, the issue of a hybrid MPI-thread (MPI-OpenMP)
+        "version" of PETSc is of interest.  In this model, one MPI process per
+        CPU (node) and several threads on that CPU (node) work together inside
+        that MPI process. Many people throw around the term "hybrid MPI-OpenMP"
+        as if it is a trivial change in the programming model. It is not --
+        major ramifications must be understood if such a hybrid approach is to
+        be used successfully.  Hybrid approaches can be developed in many ways
+        that affect usability and performance.
+      </p>
+
+      <p>
+        <b><u>The simplest model of PETSc with threads</u></b> is to contain all
+        the thread operations <b><u>inside</u></b> the Mat and Vec classes,
+        leaving the user's programming model identical to what it is today. This
+        model can be done in two ways by having Vec and Mat class implementations
+        that use
+      </p>
+
+      <ol>
+        <li>OpenMP compiler directives to parallelize some of the methods</li>
+        <li>POSIX threads (pthread) calls to parallelize some of the methods. </li>
+      </ol>
+
+      <p>
+        In petsc-3.2 we have implemented approach 2 (pthreads). The
+        corresponding classes are VECSEQPTHREAD and MATSEQAIJPTHREAD; these are
+        very preliminary but can be explored. We hope to obtain implementations
+        of approach 1 from others in the community. User are free also to use
+        threads for OpenMP in their code so long as that code does not make
+        PETSc calls. See <a href="../features/threads.html">threads</a> for how
+        to use the thread-based Vec and Mat.
+      </p>
+
+      <p>
+        <b><u>A more complicated model of PETSc with threads</u></b>, which would
+        allow users to write threaded code that made PETSc calls, is not
+        supported because PETSc is not currently thread-safe. Because the issues
+        involved with toolkits and thread safety are complex, this short answer
+        is almost meaningless. Thus, this page attempts to explain how threads
+        and thread safety relate to PETSc. Note that we are discussing here only
+        "software threads" as opposed to "hardware threads."
+      </p>
+
+      <p>Threads are used in 2 main ways:</p>
+
+      <ol>
+        <li>
+          <span class="warning">Loop-level compiler control.</span> The
+          C/C++/FORTRAN compiler manages the dispatching of threads at the
+          beginning of a loop, where each thread is assigned non-overlapping
+          selections from the loop. OpenMP, for example, defines standards
+          (compiler directives) for indicating to compilers how they should
+          "thread parallelize" loops.
+        </li>
+        <li>
+          <span class="warning">User control.</span> The programmer manages the
+          dispatching of threads directly by assigning threads to tasks (e.g.,
+          a subroutine call). For example, consider POSIX threads (pthreads) or
+          the user thread management in OpenMP.
+        </li>
+      </ol>
+
+      <p>
+        Threads are merely streams of control and do not have any global data
+        associated with them. Any global variables (e.g., common blocks in
+        FORTRAN) are "shared" by all the threads; that is, any thread can
+        access and change that data. In addition, any space allocated (e.g., in
+        C with malloc or C++ with new) to which a thread has a reference can be
+        read/changed by that thread. The only private data a thread has are the
+        local variables in the subroutines that it has called (i.e., the stack
+        for that thread) or local variables that one explicitly indicates are
+        to be not shared in compiler directives. 
+      </p>
+
+      <p>
+        In its simplest form, thread safety means that any memory (global or
+        allocated) to which more than one thread has access, has some mechanism
+        to ensure that the memory remains consistent when the various threads
+        act upon it. This can be managed by simply associating a lock with each
+        "memory" and making sure that each thread locks the memory before
+        accessing it and unlocks when it has completed accessing the memory. In
+        an object oriented library, rather than associating locks with
+        individual data items, one can think about associating locks with
+        objects; so that only a single thread can operate on an object at
+        a time.
+      </p>
+
+      <p>PETSc is not thread-safe for three reasons: </p>
+
+      <ol>
+        <li>
+          A few miscellaneous global variables - these may be fixed in later
+          PETSc releases and are not a big deal.
+        </li>
+
+        <li>
+          A variety of global data structures that are used for profiling and
+          error handling. These are not easily removed or modified to make
+          thread-safe. The reason is that simply putting locks around all of
+          these data accesses would have a major impact on performance, as the
+          profiling data structures are being constantly updated by the running
+          code. In some cases, for example updating the flop counters, locks
+          could be avoided and something like atomic fetch and add operations
+          could be used. It is possible to build such operations on all major
+          systems, often using special two-step memory operations (e.g.,
+          load-link and store-conditional on MIPS and load-reservation on
+          PowerXX). But this cannot be done in a portable, high-performance
+          way, as such operations are not part of C, and there is no
+          standardization on issuing asm code from within C source.
+        </li>
+
+        <li>
+          All the PETSc objects created during a simulation do not have locks
+          associated with them. Again, the reason is performance; having always
+          to lock an object before using it, and then unlocking it at the end
+          would have a large impact on performance. Even with very inexpensive
+          locks, there will still likely be a few "hot-spots" that kill
+          performance.  For example, if four threads share a matrix and are
+          each calling MatSetValues(), this will be a bottleneck with those
+          threads constantly fighting over the data structure inside the matrix
+          object. 
+        </li>
+      </ol>
+
+      <p>
+        PETSc can be used in a limited way that is thread safe.  So long as
+        only one of the threads calls methods on objects, or calls profiled
+        PETSc routines, PETSc will run fine. For example, one could use
+        loop-level parallelism to evaluate a finite difference stencil on
+        a grid. This is supported through the PETSc routines VecCreateShared();
+        see src/snes/examples/tutorials/ex5s.c. However, this is limited power.
+      </p>
+
+      <p>
+        <span class="warning">Some concerns about a thread model for parallelism</span>.
+        A thread model for parallelism of numerical methods appears to be powerful
+        for problems that can store their data in very simple (well controlled) data
+        structures. For example, if field data is stored in a two-dimensional array,
+        then each thread can be assigned a nonoverlapping slice of data to operate on.
+        OpenMP makes managing much of this sort of thing reasonably straightforward.
+      </p>
+
+      <p>
+        When data must be stored in a more complicated opaque data structure
+        (for example an unstructured grid or sparse matrix), it is more
+        difficult to partition the data among the threads to prevent conflict
+        and still achieve good performance. More difficult, but certainly not
+        impossible.  For these situations, perhaps it is more natural for each
+        thread to maintain its own private data structure that is later merged
+        into a common data structure. But to do this, one has to introduce
+        a great deal of private state associated with the thread, i.e., it
+        becomes more like a "light-weight process". 
+      </p>
+
+      <p>
+        In conclusion, at least for the PETSc package, the concept of being
+        thread-safe is not simple. It has major ramifications about its
+        performance and how it would be used; it is not a simple matter of
+        throwing a few locks around and then everything is honky-dory.
+      </p>
+
+      <p>
+        If you have any comments/brickbats on this summary, please direct them
+        to <a href="../documentation/bugreporting.html">petsc-maint@mcs.anl.gov</a>;
+        we are interested in alternative viewpoints.
+      </p>
+
+    </div>
+
+    <hr>
   </body>
 </html>

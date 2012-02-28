@@ -21,6 +21,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);

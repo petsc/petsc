@@ -53,46 +53,6 @@ PetscLogEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
 PetscLogEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscBool  asa_events_registered = PETSC_FALSE;
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCASASetDM"
-/*@C
-    PCASASetDM - Sets the coarse grid information for the grids
-
-    Collective on PC
-
-    Input Parameter:
-+   pc - the context
--   dm - the DM object
-
-    Level: advanced
-
-@*/
-PetscErrorCode  PCASASetDM(PC pc,DM dm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCASASetDM_C",(PC,DM),(pc,dm));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCASASetDM_ASA"
-PetscErrorCode  PCASASetDM_ASA(PC pc, DM dm)
-{
-  PetscErrorCode ierr;
-  PC_ASA         *asa = (PC_ASA *) pc->data;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  asa->dm = dm;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetTolerances"
 /*@C
@@ -355,7 +315,6 @@ PetscErrorCode PCSetSORomega_ASA(PC pc, PetscReal sor_omega)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCSORSetSymmetric(pc, SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);
   if (sor_omega != PETSC_DECIDE) {
     ierr = PCSORSetOmega(pc, sor_omega);CHKERRQ(ierr);
   }
@@ -500,7 +459,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
   if (asa_lev->dm) {
     /* coarsen DM and get the restriction matrix */
     ierr = DMCoarsen(asa_lev->dm, PETSC_NULL, &(asa_lev->next->dm));CHKERRQ(ierr);
-    ierr = DMGetAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
+    ierr = DMCreateAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
     ierr = MatGetSize(asa_lev->agg, &m, &n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(asa_lev->agg, &m_loc, &n_loc);CHKERRQ(ierr);
     if (n!=asa_lev->size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"DM interpolation matrix has incorrect size!\n");
@@ -1043,10 +1002,11 @@ PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializationStage_ASA"
-PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
+PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       l;
+  PC_ASA         *asa = (PC_ASA*)pc->data;
   PC_ASA_level   *asa_lev, *asa_next_lev;
   PetscRandom    rctx;     /* random number generator context */
 
@@ -1084,8 +1044,8 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->mu_initial);CHKERRQ(ierr);
 
   /* Set DM */
-  asa_lev->dm = asa->dm;
-  ierr = PetscObjectReference((PetscObject)asa->dm);CHKERRQ(ierr);
+  asa_lev->dm = pc->dm;
+  ierr = PetscObjectReference((PetscObject)pc->dm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(asa_lev->comm, "Initialization stage\n");CHKERRQ(ierr);
 
@@ -1127,7 +1087,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %D relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
-  if (norm/prevnorm <= pow(asa->epsilon, asa->mu_initial)) {
+  if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu_initial)) {
     /* converges by relaxation alone */ 
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
 	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
@@ -1221,7 +1181,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
 	/* (i) Check if it already converges by itself */
-	if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) {
+	if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) {
 	  /* relaxation reduces error sufficiently */
 	  skip_steps_f_i = PETSC_TRUE;
 	}
@@ -1546,7 +1506,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       norm = PetscAbsScalar(tmp);
       ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 
-      if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) skip_steps_d_j = PETSC_TRUE;
+      if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) skip_steps_d_j = PETSC_TRUE;
    
       /* (j) update candidate B_{l+1} */
       ierr = PCAddCandidateToB_ASA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A);CHKERRQ(ierr);
@@ -1649,7 +1609,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     asa->A = pc->pmat;
   }
   /* Initialization stage */
-  ierr = PCInitializationStage_ASA(asa, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCInitializationStage_ASA(pc, PETSC_NULL);CHKERRQ(ierr);
   
   /* get first level */
   asa_lev = asa->levellist;
@@ -1902,8 +1862,6 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
   ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
   ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
 
-  if (asa->dm) {ierr = DMDestroy(&asa->dm);CHKERRQ(ierr);}
-
   /* Destroy each of the levels */
   while(asa_lev) {
     asa_next_level = asa_lev->next;
@@ -2054,7 +2012,6 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   /* Set the data to pointer to 0 */
   pc->data                = (void*)0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetDM_C","PCASASetDM_ASA",PCASASetDM_ASA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
 
   /* register events */
@@ -2109,8 +2066,6 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   asa->x           = 0;
   asa->r           = 0;
 
-  asa->dm = 0;
-  
   asa->levels    = 0;
   asa->levellist = 0;
 

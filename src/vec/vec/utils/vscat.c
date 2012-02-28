@@ -786,7 +786,9 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
 .  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
 .  -vecscatter_window       - Use MPI 2 window operations to move data
--  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
+.  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
+-  -vecscatter_reproduce    - insure that the order of the communications are done the same for each scatter, this under certain circumstances
+                              will make the results of scatters deterministic when otherwise they are not (it may be slower also).
 
 $
 $                                                                                    --When packing is used--
@@ -1539,7 +1541,6 @@ PetscErrorCode  VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,Sca
 #if defined(PETSC_USE_DEBUG)
   PetscInt      to_n,from_n;
 #endif
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);

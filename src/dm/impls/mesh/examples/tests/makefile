@@ -13,6 +13,10 @@ EXTRA_ARGS      =
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
+ex3: ex3.o chkopts
+	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
+	${RM} -f ex3.o
+
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}
 	${RM} -f ex00.o

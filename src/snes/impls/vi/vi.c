@@ -18,14 +18,26 @@
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode   ierr,(*f)(SNES,PetscErrorCode(*)(SNES,Vec,Vec));
 
   PetscFunctionBegin;
-  ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
+  if (!f) {ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);}
+  ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode(*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESVISetComputeVariableBounds_VI"
+PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes,SNESVIComputeVariableBoundsFunction compute)
+{
+  PetscFunctionBegin;
   snes->ops->computevariablebounds = compute;
   PetscFunctionReturn(0);
 }
-  
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeInactiveSetIS"
@@ -366,6 +378,16 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscReal *fn
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIDMComputeVariableBounds"
+PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
+{
+  PetscErrorCode     ierr;
+  PetscFunctionBegin;
+  ierr = DMComputeVariableBounds(snes->dm, xl, xu); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -394,6 +416,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
+  if(!snes->ops->computevariablebounds && snes->dm) {
+    snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+  }
   if (snes->ops->computevariablebounds) {
     if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
     if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
@@ -938,15 +963,30 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
-  PetscErrorCode    ierr;
-  const PetscScalar *xxl,*xxu;
-  PetscInt          i,n, cnt = 0;
+  PetscErrorCode   ierr,(*f)(SNES,Vec,Vec);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
-  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
+  if (!f) {ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);}
+  ierr = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESVISetVariableBounds_VI"
+PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *xxl,*xxu;
+  PetscInt          i,n, cnt = 0;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes,&snes->vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
   if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
   ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);
@@ -967,7 +1007,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   ierr = VecRestoreArrayRead(xu,&xxu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

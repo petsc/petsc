@@ -1,11 +1,11 @@
 
-#requirespackage 'PETSC_HAVE_X11'
+#requirespackage 'PETSC_HAVE_X'
 
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = ${X11_INCLUDE} 
+CPPFLAGS  = ${X_INCLUDE} 
 SOURCEC   = xinit.c  frame.c wmap.c xcolor.c xops.c text.c tone.c drawopenx.c
 SOURCEF   =
 SOURCEH   = ximpl.h

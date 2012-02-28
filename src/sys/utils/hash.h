@@ -101,6 +101,7 @@ int main() {
 #include <string.h>
 #include <limits.h>
 
+#include <petscsys.h>
 
 /* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu
@@ -115,10 +116,6 @@ typedef unsigned long khint64_t;
 typedef unsigned _int64 khint64_t;
 #else
 typedef unsigned long long khint64_t;
-#endif
-
-#ifdef _MSC_VER
-#define inline __inline
 #endif
 
 typedef khint32_t khint_t;
@@ -155,10 +152,10 @@ static const double __ac_HASH_UPPER = 0.77;
 		khkey_t *keys;													\
 		khval_t *vals;													\
 	} kh_##name##_t;													\
-	static inline kh_##name##_t *kh_init_##name() {						\
+	PETSC_STATIC_INLINE kh_##name##_t *kh_init_##name() {						\
 		return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t));		\
 	}																	\
-	static inline void kh_destroy_##name(kh_##name##_t *h)				\
+	PETSC_STATIC_INLINE void kh_destroy_##name(kh_##name##_t *h)				\
 	{																	\
 		if (h) {														\
 			free(h->keys); free(h->flags);								\
@@ -166,14 +163,14 @@ static const double __ac_HASH_UPPER = 0.77;
 			free(h);													\
 		}																\
 	}																	\
-	static inline void kh_clear_##name(kh_##name##_t *h)				\
+	PETSC_STATIC_INLINE void kh_clear_##name(kh_##name##_t *h)				\
 	{																	\
 		if (h && h->flags) {											\
 			memset(h->flags, 0xaa, ((h->n_buckets>>4) + 1) * sizeof(khint32_t)); \
 			h->size = h->n_occupied = 0;								\
 		}																\
 	}																	\
-	static inline khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) \
+	PETSC_STATIC_INLINE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) \
 	{																	\
 		if (h->n_buckets) {												\
 			khint_t inc, k, i, last;									\
@@ -187,7 +184,7 @@ static const double __ac_HASH_UPPER = 0.77;
 			return __ac_iseither(h->flags, i)? h->n_buckets : i;		\
 		} else return 0;												\
 	}																	\
-	static inline void kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets) \
+	PETSC_STATIC_INLINE void kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets) \
 	{																	\
 		khint32_t *new_flags = 0;										\
 		khint_t j = 1;													\
@@ -247,7 +244,7 @@ static const double __ac_HASH_UPPER = 0.77;
 			h->upper_bound = (khint_t)(h->n_buckets * __ac_HASH_UPPER + 0.5); \
 		}																\
 	}																	\
-	static inline khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, khint_t *ret) \
+	PETSC_STATIC_INLINE khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, khint_t *ret) \
 	{																	\
 		khint_t x;														\
 		if (h->n_occupied >= h->upper_bound) {							\
@@ -285,7 +282,7 @@ static const double __ac_HASH_UPPER = 0.77;
 		} else *ret = 0;												\
 		return x;														\
 	}																	\
-	static inline void kh_del_##name(kh_##name##_t *h, khint_t x)		\
+	PETSC_STATIC_INLINE void kh_del_##name(kh_##name##_t *h, khint_t x)		\
 	{																	\
 		if (x != h->n_buckets && !__ac_iseither(h->flags, x)) {			\
 			__ac_set_isdel_true(h->flags, x);							\
@@ -320,7 +317,7 @@ static const double __ac_HASH_UPPER = 0.77;
   @param  s     Pointer to a null terminated string
   @return       The hash value
  */
-static inline khint_t __ac_X31_hash_string(const char *s)
+PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
 {
 	khint_t h = *s;
 	if (h) for (++s ; *s; ++s) h = (h << 5) - h + *s;

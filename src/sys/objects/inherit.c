@@ -87,6 +87,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   PetscInt       i;
 
   PetscFunctionBegin;
+  PetscValidHeader(h,1);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectUnPublish((PetscObject)h);CHKERRQ(ierr);
@@ -286,6 +287,7 @@ char* PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
 PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   if (obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER) SETERRQ(obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
   obj->optionhandler[obj->noptionhandler]   = handle;
   obj->optiondestroy[obj->noptionhandler]   = destroy;
@@ -315,6 +317,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
     ierr = (*obj->optionhandler[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
   }
@@ -343,6 +346,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
     ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
   }
@@ -445,6 +449,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
 PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 {
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   *comm = obj->comm;
   PetscFunctionReturn(0);
 }
@@ -456,6 +461,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   ierr = PetscOListRemoveReference(&obj->olist,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -484,6 +490,7 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   ierr = PetscOListFind(obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -495,6 +502,7 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   ierr = PetscFListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -506,6 +514,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   ierr = PetscFListFind(obj->qlist,obj->comm,name,PETSC_FALSE,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

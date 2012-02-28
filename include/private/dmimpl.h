@@ -15,10 +15,11 @@ struct _DMOps {
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*createlocaltoglobalmapping)(DM);
   PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
+  PetscErrorCode (*createfieldis)(DM,PetscInt*,const char***,IS**);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
-  PetscErrorCode (*getmatrix)(DM, const MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);
+  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
 
@@ -31,16 +32,27 @@ struct _DMOps {
   PetscErrorCode (*formfunction)(DM,PetscErrorCode (*)(void),Vec,Vec);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
-  PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec); 
-  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec); 
-  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
 
-  PetscErrorCode (*initialguess)(DM,Vec); 
-  PetscErrorCode (*function)(DM,Vec,Vec);			
-  PetscErrorCode (*functionj)(DM,Vec,Vec);			
-  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);	
+  PetscErrorCode (*initialguess)(DM,Vec);
+  PetscErrorCode (*function)(DM,Vec,Vec);
+  PetscErrorCode (*functionj)(DM,Vec,Vec);
+  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);
 
   PetscErrorCode (*destroy)(DM);
+
+  PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
+
+};
+
+typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
+struct _DMCoarsenHookLink {
+  PetscErrorCode (*coarsenhook)(DM,DM,void*);
+  PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*);
+  void *ctx;
+  DMCoarsenHookLink next;
 };
 
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
@@ -54,15 +66,17 @@ struct _p_DM {
   void                   *ctx;    /* a user context */
   PetscErrorCode         (*ctxdestroy)(void**);
   Vec                    x;       /* location at which the functions/Jacobian are computed */
+  ISColoringType         coloringtype; 
   MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */
   VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  MatType                mattype;  /* type of matrix created with DMGetMatrix() */
+  MatType                mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt               bs;
   ISLocalToGlobalMapping ltogmap,ltogmapb;
-  PetscBool              prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */
+  PetscBool              prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                   *data;
+  DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
 };
 
 extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

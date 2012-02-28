@@ -1,101 +1,106 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <title>PETSc: Documentation:&nbsp; Zope</title>
-</head>
-<body bgcolor="#d5eaff">
-<table style="width: 1274px; height: 502px;" border="0">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: AMS</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: AMS - ALICE Memory Snooper<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%"><!--##begin-->
-      <h1>Documentation:&nbsp; AMS - ALICE Memory Snooper<br>
-      </h1>
-<!--##end--> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
-      <ul>
-        <li><a href="../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="index.html"><strong>Documentation</strong></a>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li>
+          <a href="../documentation/index.html">Documentation</a>
           <ul>
-            <li><a href="index.html#Manual"><strong>Manual pages and
-Users Manual</strong></a></li>
-            <li><a href="referencing.html"><strong>Referencing&nbsp;
-PETSc</strong></a></li>
-            <a href="referencing.html"> </a>
-            <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
-            <li><strong><a href="installation.html">Installation</a> </strong></li>
-            <li style="color: rgb(255, 0, 0);"><strong>AMS</strong></li>
-            <li><strong></strong><strong><a href="changes/index.html">Changes</a></strong></li>
-            <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="copyright.html">License</a> </strong></li>
+            <li><a href="index.html">Manual pages and Users Manual</a></li>
+            <li><a href="referencing.html">Referencing PETSc</a></li>
+            <li><a href="tutorials/index.html">Tutorials</a></li>
+            <li><a href="installation.html">Installation</a> </li>
+            <li><span class="current">AMS</span></li>
+            <li><a href="changes/index.html">Changes</a></li>
+            <li><a href="bugreporting.html">Bug Reporting</a></li>
+            <li><a href="codemanagement.html">Code Management</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="copyright.html">License</a></li>
+            <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
-        <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External
-Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
       </ul>
-      </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="left"> AMS is a software library that uses threads,
-sockets and locks to allow a running program (called the accessor) to
-read (and change when desired) variables in another running code
-(called the publisher application).<br>
+    </div>
+
+    <!--begin-->
+
+    <div id="main">
+
+      <p>
+        AMS is a software library that uses threads, sockets, and locks to
+        allow a running program (called the accessor) to read (and change when
+        desired) variables in another running code (called the publisher
+        application).
       </p>
-      <h3> Requirements and installation of the AMS (if not using the --download-ams PETSc ./configure option)<br>
-      </h3>
+
+      <h3>Requirements and installation of the AMS (if not using the --download-ams PETSc ./configure option)</h3>
+
       <ul>
-        <li style="color: rgb(255, 0, 0);">This is currently only
-support with petsc-dev</li>
-        <li>A current version of AMS available from
-http://petsc.cs.iit.edu/petsc/ams-dev or
-ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</li>
-        <li>Edit the file makeinc and set the compiler, linker etc. <br>
+        <li class="version">This is currently only supported with petsc-dev</li>
+
+        <li>
+          A current version of AMS available from
+          <code>http://petsc.cs.iit.edu/petsc/ams-dev</code> or
+          <code>ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</code>
         </li>
+
+        <li>Edit the file makeinc and set the compiler, linker etc.</li>
         <li>Run make</li>
       </ul>
-      <h3>Usage from PETSc<br>
-      </h3>
+
+      <h3>Usage from PETSc</h3>
+
       <ul>
-        <li>./configure PETSc with the option
---with-ams-dir=/directorywhereamsisinstalled (or --download-ams) --with-java
-[--java=/usr/bin/java -d32 --javac=/usr/bin/javac]<br>
+        <li>
+          <code>./configure PETSc with the option
+            --with-ams-dir=/directorywhereamsisinstalled (or --download-ams)
+            --with-java [--java=/usr/bin/java -d32
+            --javac=/usr/bin/javac]</code>
         </li>
-        <li>To change variables in the options database run PETSc applications with the additional options
--options_gui and -ams_java and you will see something like depicted <a
- href="ftp://ftp.mcs.anl.gov/pub/petsc/AMSOptions.mov">in this movie</a><br>
+
+        <li>
+          To change variables in the options database run PETSc applications
+          with the additional options -options_gui and -ams_java and you will
+          see something like depicted
+          <a href="ftp://ftp.mcs.anl.gov/pub/petsc/AMSOptions.mov">in this movie</a>
         </li>
-        <li>To examine options in a browser run PETSc applications with -server <port> -ams_publish_objects and point your brower to http://localhost:8080 (see PetscWebServe()).
+
+        <li>
+          To examine options in a browser, run PETSc applications with
+          <code>-server &lt;port&gt; -ams_publish_objects</code> and point your
+          brower to <code>http://localhost:8080</code> (see
+          <code>PetscWebServe()</code>).
         </li>
       </ul>
-      <p></p>
-      <p align="left"><!--##end--> </p>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"><br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-</body>
-</html>
 
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
+</html>

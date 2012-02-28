@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
 
   ierr = VecSet(v_c,one);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(da_c,da_f,&I,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da_c,da_f,&I,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatInterpolate(I,v_c,v_f);CHKERRQ(ierr);
   ierr = VecView(v_f,PETSC_VIEWER_STDOUT_(comm_f));CHKERRQ(ierr);
   ierr = MatRestrict(I,v_f,v_c);CHKERRQ(ierr);

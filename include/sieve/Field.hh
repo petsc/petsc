@@ -1382,6 +1382,7 @@ namespace ALE {
     // Fibration structures
     //   _spaces is a set of atlases which describe the layout of each in the storage of this section
     //   _bcs is the same as _bc, but for each field
+    std::vector<int >             _comps;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
@@ -2228,12 +2229,14 @@ namespace ALE {
     int getNumSpaces() const {return this->_spaces.size();};
     const std::vector<Obj<atlas_type> >& getSpaces() {return this->_spaces;};
     const std::vector<Obj<bc_type> >& getBCs() {return this->_bcs;};
-    void addSpace() {
+    void addSpace(int comp = 1) {
       Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
       Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
+      this->_comps.push_back(comp);
       this->_spaces.push_back(space);
       this->_bcs.push_back(bc);
     };
+    int getSpaceComponents(const int space) {return this->_comps[space];};
     int getFiberDimension(const point_type& p, const int space) const {
       return this->_spaces[space]->restrictPoint(p)->prefix;
     };

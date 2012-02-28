@@ -71,9 +71,9 @@ int main(int argc, char **argv)
   }
 
   /* Get mass,stiffness, and jacobian matrix structure from the da */
-  ierr = DMGetMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
-  ierr = DMGetMatrix(user.da,MATAIJ,&user.S);CHKERRQ(ierr);
-  ierr = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,MATAIJ,&user.S);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
   /* Form the mass,stiffness matrices and matrix M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
 

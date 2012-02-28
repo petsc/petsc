@@ -185,7 +185,18 @@ extern void PETSC_STDCALL                          CHSEQR(const char*,int,const 
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
+#ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
+EXTERN_C_BEGIN
+extern void PETSC_STDCALL ZDOTC(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) {
+  PetscScalar tmpz;
+  ZDOTC(&tmpz,n,x,sx,y,sy);
+  return tmpz;
+}
+EXTERN_C_END
+#else
 #  define BLASdot_     ZDOTC
+#endif
 #  define BLASnrm2_    DZNRM2
 #  define BLASscal_    ZSCAL
 #  define BLAScopy_    ZCOPY
@@ -253,7 +264,7 @@ extern void      PETSC_STDCALL LAPACKtgsen_(PetscBLASInt*,PetscBLASInt*,PetscBLA
 #endif
 
 
-extern PetscReal PETSC_STDCALL BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+extern PetscScalar PETSC_STDCALL BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 extern PetscReal PETSC_STDCALL BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 extern void      PETSC_STDCALL BLASscal_(const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 extern void      PETSC_STDCALL BLAScopy_(const PetscBLASInt*,const PetscScalar*,PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);

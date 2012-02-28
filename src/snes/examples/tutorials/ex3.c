@@ -42,9 +42,10 @@ T*/
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
-PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
-PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscBool  *);
-PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool  *,PetscBool  *);
+PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
+PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscBool*);
+PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool*,PetscBool*);
+PetscErrorCode PostSetSubKSP(SNES,Vec,Vec,Vec,void*,PetscBool*,PetscBool*);
 
 /* 
    User-defined application context
@@ -74,6 +75,10 @@ typedef struct {
   ApplicationCtx *user;
 } StepCheckCtx;
 
+typedef struct {
+  PetscInt its0; /* num of prevous outer KSP iterations */
+} SetSubKSPCtx;
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -84,7 +89,8 @@ int main(int argc,char **argv)
   Vec            x,r,U,F;              /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
-  PetscBool      pre_check,post_check; /* flag indicating whether we're checking
+  SetSubKSPCtx   checkP1;
+  PetscBool      pre_check,post_check,post_setsubksp; /* flag indicating whether we're checking
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   PetscErrorCode ierr;
@@ -138,6 +144,8 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -183,6 +191,12 @@ int main(int argc,char **argv)
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-post_setsubksp",&post_setsubksp);CHKERRQ(ierr);
+  if (post_setsubksp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post setsubksp\n");CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPostCheck(snes,PostSetSubKSP,&checkP1);CHKERRQ(ierr); 
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
@@ -584,6 +598,62 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PostSetSubKSP"
+/*
+   PostSetSubKSP - Optional user-defined routine that reset SubKSP options when hierarchical bjacobi PC is used
+   e.g, 
+     mpiexec -n 8 ./ex3 -nox -n 10000 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 4 -sub_ksp_type gmres -sub_ksp_max_it 3 -post_setsubksp -sub_ksp_rtol 1.e-16
+   Set by SNESLineSearchSetPostCheck().
+
+   Input Parameters:
+   snes - the SNES context
+   ctx  - optional user-defined context for private data for the 
+          monitor routine, as set by SNESLineSearchSetPostCheck()
+   xcurrent - current solution
+   y - search direction and length
+   x    - the new candidate iterate
+
+   Output Parameters:
+   y    - proposed step (search direction and length) (possibly changed)
+   x    - current iterate (possibly modified)
+   
+ */
+PetscErrorCode PostSetSubKSP(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool  *changed_y,PetscBool  *changed_x)
+{
+  PetscErrorCode ierr;
+  SetSubKSPCtx   *check = (SetSubKSPCtx*)ctx;
+  PetscInt       iter,its,sub_its,maxit;
+  KSP            ksp,sub_ksp,*sub_ksps;
+  PC             pc;
+  PetscReal      ksp_ratio;
+  
+  PetscFunctionBegin;
+  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCBJacobiGetSubKSP(pc,PETSC_NULL,PETSC_NULL,&sub_ksps);CHKERRQ(ierr);
+  sub_ksp = sub_ksps[0];
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);         /* outer KSP iteration number */
+  ierr = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */
+
+  if (iter){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %d %d, subksp_it %d\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
+    ksp_ratio = ((PetscReal)(its))/check->its0;
+    maxit = (PetscInt)(ksp_ratio*sub_its + 0.5);
+    if (maxit < 2) maxit = 2;
+    ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %d\n\n",ksp_ratio,maxit);CHKERRQ(ierr);
+  }
+  check->its0 = its; /* save current outer KSP iteration number */
+  PetscFunctionReturn(0);
+}
+
+
+
 
 
 

@@ -230,7 +230,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscBool au
   EdgeKeep edge_keep_g = get(edge_keep_t(),g);
 
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(((PetscObject) mat)->comm, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   ierr = PetscMalloc3(n,PetscScalar,&diag,n,PetscInt,&dnz,n,PetscInt,&onz);CHKERRQ(ierr);
   ierr = PetscMemzero(dnz, n * sizeof(PetscInt));CHKERRQ(ierr);
@@ -436,7 +436,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   EdgeLength edge_length_g = get(edge_length_t(),g);
@@ -809,7 +809,7 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   currComponent = new Component();
   currComponent->vertices.push_back(root);
@@ -955,7 +955,7 @@ PetscErrorCode AddBridges(Graph& g,
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   realMaxCong = 0;
 

@@ -1,45 +1,46 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <title>PETSc: Docs:&nbsp; Changes: 2.3.0</title>
-</head>
-<body bgcolor="#d5eaff">
-<table width="100%">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 2.3.0</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 2.3.0<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%"><!--##begin-->
-      <h1> Docs:&nbsp;Changes: 2.3.0</h1>
-<!--##end--> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
-      <ul>
-        <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../index.html"><strong>Documentation</strong></a>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
           <ul>
-            <li><a href="../index.html#Manual"><strong>Manual pages and
-Users Manual</strong></a></li>
-            <li><a href="../referencing.html"><strong>Referencing&nbsp;
-PETSc</strong></a></li>
-            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-            <li><strong><a href="../installation.html">Installation</a>
-              </strong></li>
-            <li><strong><a href="../zope.html">Zope</a></strong></li>
-	    <li><strong><a href="index.html">Changes</a></strong>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
               <ul>
-                <li><font color="#ff0000">2.3.0</font></li>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><span class="current">2.3.0</span></li>
                 <li><a href="221.html">2.2.1</a></li>
                 <li><a href="220.html">2.2.0</a></li>
                 <li><a href="216.html">2.1.6</a></li>
@@ -52,80 +53,64 @@ PETSc</strong></a></li>
                 <li><a href="2028.html">2.0.28</a></li>
                 <li><a href="2024.html">2.0.24</a></li>
                 <li><a href="2022.html">2.0.22</a></li>
-                <li><a href="2918-21.html">2.0.21</a></li>
-                <li><a href="2918-21.html">2.0.18-20</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
                 <li><a href="2017.html">2.0.17</a></li>
                 <li><a href="2016.html">2.0.16</a></li>
                 <li><a href="2015.html">2.0.15</a></li>
               </ul>
             </li>
-            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="../copyright.html">Copyright</a></strong>
-            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
-        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-      </ul>
-      </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
-in PETSc 2.3.0 </font></p>
-      <p><u><b>General:</b></u></p>
-      <ul>
-        <li>BOPT cocept is removed. Currently the functionality is
-replaced with configure options. i.e:<br>
-&nbsp;&nbsp;&nbsp; c++ &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
--&gt;&nbsp;&nbsp;&nbsp;
---with-clanguage=cxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[default: c]<br>
-&nbsp;&nbsp;&nbsp; complex -&gt;&nbsp;&nbsp;&nbsp;
---with-scalar-type=complex&nbsp;&nbsp; [default: real]<br>
-&nbsp;&nbsp;&nbsp;
-O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;&nbsp;&nbsp;&nbsp;
---with-debugging=0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[default: 1]<br>
-The equivalent of building&nbsp; BOPT=g, BOPT=O versions for
-PETSC_ARCH=linux-gnu is now:<br>
-&nbsp;&nbsp;&nbsp; config/configure.py [options] -PETSC_ARCH=linux-gnu<br>
-&nbsp;&nbsp;&nbsp; config/configure.py [options] --with-debugging=0
--PETSC_ARCH=linux-gnu-opt<br>
-          <br>
+
+        <li>
+          The equivalent of building BOPT=g, BOPT=O versions for
+          PETSC_ARCH=linux-gnu is now: config/configure.py [options]
+          -PETSC_ARCH=linux-gnu config/configure.py [options]
+          --with-debugging=0 -PETSC_ARCH=linux-gnu-opt
         </li>
-        <li>Python bindings added to PETSc. <br>
-&nbsp; To use, configure with: --with-python=1 ---with-shared=1<br>
-&nbsp; To build, use: 'make python' after building PETSc libraries.<br>
-&nbsp; Example in src/snes/examples/tutorials/ex1.py<br>
+
+        <li>
+          Python bindings added to PETSc.  To use, configure with:
+          --with-python=1 ---with-shared=1 To build, use: 'make python' after
+          building PETSc libraries.  Example in
+          src/snes/examples/tutorials/ex1.py
         </li>
-        <li>Options database keys -trmalloc[_xxx] are changed to
--malloc[_xxx] </li>
-        <li>-get_resident_set_size and -trinfo are changed to
--memory_info </li>
-        <li>PetscTrValid() -&gt; PetscMallocValidate(), PetscTrDebug()
--&gt; PetscMallocDebug() </li>
-        <li>-trdebug -&gt; -malloc_debug </li>
-        <li>PetscGetResidentSetSize() -&gt;
-PetscMemoryGetCurrentUsage(), added PetscMemoryGetMaximumUsage() and
-PetscMemorySetGetMaximumUsage() </li>
-        <li>PetscTrSpace() -&gt; PetscMallocGetCurrentUsage() and
-PetscMallocGetMaximumUsage() </li>
-        <li>added PetscOptionsEnum() and PetscOptionsGetEnum() </li>
-        <li>added PetscBag object for managing user created structs
-including initializing them and serializing them. </li>
-        <li>removed PetscSetCommWorld(). Now you can directly assign to PETSC_COMM_WORLD before PetscInitialize().</li>
+
+        <li>Options database keys -trmalloc[_xxx] are changed to -malloc[_xxx]</li>
+        <li>-get_resident_set_size and -trinfo are changed to -memory_info</li>
+        <li>PetscTrValid() -&gt; PetscMallocValidate(), PetscTrDebug() -&gt; PetscMallocDebug()</li>
+        <li>-trdebug -&gt; -malloc_debug</li>
+
+        <li>
+          PetscGetResidentSetSize() -&gt; PetscMemoryGetCurrentUsage(), added
+          PetscMemoryGetMaximumUsage() and PetscMemorySetGetMaximumUsage()
+        </li>
+
+        <li>PetscTrSpace() -&gt; PetscMallocGetCurrentUsage() and PetscMallocGetMaximumUsage()</li>
+        <li>added PetscOptionsEnum() and PetscOptionsGetEnum()</li>
+
+        <li>
+          added PetscBag object for managing user created structs including
+          initializing them and serializing them.
+        </li>
+
+        <li>
+          removed PetscSetCommWorld(). Now you can directly assign to
+          PETSC_COMM_WORLD before PetscInitialize().
+        </li>
       </ul>
-      <p></p>
-      <p><u><b>Vec:</b></u></p>
+
+      <h4>Vec:</h4>
+
       <ul>
-        <li>Faster generation of VecScatter for many processes when
-indices are mostly sorted</li>
-        <li>Changed BLAS-type interfaces to PETSc-style:
+        <li>Faster generation of VecScatter for many processes when indices are mostly sorted</li>
+        <li>
+          Changed BLAS-type interfaces to PETSc-style:
           <ul>
             <li>VecShift</li>
             <li>VecScale</li>
@@ -138,7 +123,9 @@ indices are mostly sorted</li>
             <li>VecWAXPY</li>
           </ul>
         </li>
-        <li>Changed order of arguments in pointwise routines:
+
+        <li>
+          Changed order of arguments in pointwise routines:
           <ul>
             <li>VecPointwiseMult</li>
             <li>VecPointwiseMax</li>
@@ -148,19 +135,19 @@ indices are mostly sorted</li>
           </ul>
         </li>
       </ul>
-      <p></p>
-      <p><u><b>Mat:</b></u></p>
+
+      <h4>Mat:</h4>
+
       <ul>
-        <li>Changed MatConvert to require a reuse parameter to denote
-inplace converstion</li>
+        <li>Changed MatConvert to require a reuse parameter to denote inplace converstion</li>
         <li>Added Cholesky and ICC support to SeqBAIJ</li>
-        <li>Added the argument MatFactorInfo to MatLUFactorNumeric()
-and MatCholeskyFactorNumeric()</li>
+        <li>Added the argument MatFactorInfo to MatLUFactorNumeric() and MatCholeskyFactorNumeric()</li>
         <li>Faster MatSetValues()</li>
         <li>Faster parallel-matrix vector products</li>
         <li>Changed MatCreate() to take only a communicator</li>
         <li>Added MatSetSize() to specify matrix sizes</li>
-        <li>Changed BLAS-type interfaces to PETSc-style:
+        <li>
+          Changed BLAS-type interfaces to PETSc-style:
           <ul>
             <li>MatAXPY</li>
             <li>MatAYPX</li>
@@ -168,118 +155,141 @@ and MatCholeskyFactorNumeric()</li>
             <li>MatShift</li>
           </ul>
         </li>
-        <li>Change MatZeroRows() and MatZeroRowsLocal() to use arrays,
-and added IS versions</li>
+        <li>Change MatZeroRows() and MatZeroRowsLocal() to use arrays, and added IS versions</li>
       </ul>
-      <p></p>
-      <p><u><b>PC:</b></u> </p>
+
+      <h4>PC:</h4>
+
       <ul>
-        <li>Added PCILUReorderForNonzeroDiagonal() and
-PCLUReorderForNonzeroDiagonal()</li>
-        <li>Replace PCLUSetDamping(), PCILUSetDamping(),
-PCCholeskySetDamping() and PCICCSetDamping() by
-PCFactorSetShiftNonzero(). Change the option database keys
--pc_lu_damping, -pc_ilu_damping, -pc_cholesky_damping and
--pc_icc_damping to -pc_factor_shift_nonzero</li>
-        <li>Replace PCLUSetShift(), PCILUSetShift(),
-PCCholeskySetShift() and PCICCSetShift() by PCFactorSetShiftPd().
-Change the option database keys -pc_lu_shift, -pc_ilu_shift,
--pc_cholesky_shift and -pc_icc_shift to
--pc_factor_shfit_positive_definite</li>
-        <li>PCMG: will automatically using the outer pmat operator to
-define the finest level operator if not user supplied</li>
-        <li>PCMG: added MGUseGalerkin(), -pc_mg_galerkin option to have
-coarser grid matrices computed from the finest grid matrix</li>
-        <li>PCMG: now does referencing counting on set vectors and
-restriction/interpolation matrices so user need not keep reference to
-free later</li>
-        <li>PCMG: if user does not provide restriction the
-interpolation is used and vis versa</li>
-        <li>PCMG: if user does not provide Vecs for each level, will
-automatically provide them</li>
+        <li>Added PCILUReorderForNonzeroDiagonal() and PCLUReorderForNonzeroDiagonal()</li>
+
+        <li>
+          Replace PCLUSetDamping(), PCILUSetDamping(), PCCholeskySetDamping()
+          and PCICCSetDamping() by PCFactorSetShiftNonzero(). Change the option
+          database keys -pc_lu_damping, -pc_ilu_damping, -pc_cholesky_damping
+          and -pc_icc_damping to -pc_factor_shift_nonzero
+        </li>
+
+        <li>
+          Replace PCLUSetShift(), PCILUSetShift(), PCCholeskySetShift() and
+          PCICCSetShift() by PCFactorSetShiftPd().  Change the option database
+          keys -pc_lu_shift, -pc_ilu_shift, -pc_cholesky_shift and
+          -pc_icc_shift to -pc_factor_shfit_positive_definite
+        </li>
+
+        <li>
+          PCMG: will automatically using the outer pmat operator to define the
+          finest level operator if not user supplied
+        </li>
+
+        <li>
+          PCMG: added MGUseGalerkin(), -pc_mg_galerkin option to have coarser
+          grid matrices computed from the finest grid matrix
+        </li>
+
+        <li>
+          PCMG: now does referencing counting on set vectors and
+          restriction/interpolation matrices so user need not keep reference to
+          free later
+        </li>
+
+        <li>
+          PCMG: if user does not provide restriction the interpolation is used
+          and vis versa
+        </li>
+
+        <li>
+          PCMG: if user does not provide Vecs for each level, will
+          automatically provide them
+        </li>
+
         <li> All routines that began with MG now begin with PCMG</li>
-        <li>Added PCShellSet/GetContext() and removed the context
-passed into PCSetApply() and PCSetApplyRichardson()</li>
-      </ul>
-      <p></p>
-      <p><u><b>KSP:</b></u></p>
-      <ul>
-        <li>-ksp_cg_Hermitian and -ksp_cg_symmetric have been changed
-to -ksp_cg_type Hermitian or symmetric</li>
-        <li>Changed options for -ksp_gmres_cgs_refinement_type from
-never or ifneeded or always to REFINE_NEVER or REFINE_IFNEEDED or
-REFINE_ALWAYS </li>
-        <li><br>
+        <li>
+          Added PCShellSet/GetContext() and removed the context passed into
+          PCSetApply() and PCSetApplyRichardson()
         </li>
       </ul>
-      <p></p>
-      <p><u><b>config/configure.py:</b></u></p>
+
+      <h4>KSP:</h4>
+
       <ul>
+        <li>
+          -ksp_cg_Hermitian and -ksp_cg_symmetric have been changed to
+          -ksp_cg_type Hermitian or symmetric
+        </li>
+
+        <li>
+          Changed options for -ksp_gmres_cgs_refinement_type from never or
+          ifneeded or always to REFINE_NEVER or REFINE_IFNEEDED or
+          REFINE_ALWAYS
+        </li>
       </ul>
-      <p></p>
-      <p><u><b>SNES:</b></u></p>
+
+      <h4>config/configure.py:</h4>
+      <h4>SNES:</h4>
+
       <ul>
-        <li>Changed the name and calling sequence for
-SNESSetLineSearchCheck() to SNESLineSearchSetPostCheck() and added a
-SNESLineSearchSetPreCheck()</li>
-        <li>Changed the names of all SNESxxxxLineSearchyyyy() to
-SNESLineSearchxxxxyyyy() per PETSc naming standard. </li>
+        <li>
+          Changed the name and calling sequence for SNESSetLineSearchCheck() to
+          SNESLineSearchSetPostCheck() and added
+          a SNESLineSearchSetPreCheck()
+        </li>
+
+        <li>
+          Changed the names of all SNESxxxxLineSearchyyyy() to
+          SNESLineSearchxxxxyyyy() per PETSc naming standard.
+        </li>
+
         <li>Now allow a constant vector to be specified in SNESSolve()</li>
         <li>Removed the Vec argument from SNESSetUp()</li>
-        <li>Corrected the order of function and context arguments in:
+        <li>
+          Corrected the order of function and context arguments in:
           <ul>
             <li>SNESGetFunction()</li>
             <li>SNESGetJacobian()</li>
           </ul>
         </li>
       </ul>
-      <p></p>
-      <p> <u><b>TS:<br>
-      </b></u> </p>
+
+      <h4>TS:</h4>
+
+      <h4>DA:</h4>
+
       <ul>
+        <li>
+          Added DAVecGet/RestoreArrayDOF() allowing indexing in the dimension
+          of degrees of freedom at each point on the lattice.
+        </li>
+        <li>Faster DAGlobalToLocal() etc for dof &gt; 1.</li>
       </ul>
-      <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">DA:</span><br>
-      </p>
+
+      <h4>DMMG:</h4>
+
       <ul>
-        <li>Added DAVecGet/RestoreArrayDOF() allowing indexing in the
-dimension of degrees of freedom at each point on the lattice. </li>
-        <li>Faster DAGlobalToLocal() etc for dof &gt; 1. </li>
+        <li>Consolidated DMMG functionality into the new header file "petscdmmg.h".</li>
       </ul>
-      <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">DMMG:</span><br>
-      </p>
+
+      <h4>SYS:</h4>
+
       <ul>
-        <li>Consolidated DMMG functionality into the new header file
-"petscdmmg.h".</li>
-      </ul>
-      <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">SYS:<br>
-      </span></p>
-      <ul>
-        <li>PetscSetCommWorld() removed. [one can directly do
-PETSC_COMM_WORLD = comm - before PetscInitialize()]<br>
+        <li>
+          PetscSetCommWorld() removed. [one can directly do PETSC_COMM_WORLD
+          = comm - before PetscInitialize()]
         </li>
       </ul>
+
+      <h4>Fortran:</h4>
+      <h4>ExternalPackages:</h4>
+
       <ul>
+        <li>ML support added.</li>
       </ul>
-      <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">Fortran:</span><br>
-      </p>
-      <ul>
-      </ul>
-      <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">ExternalPackages:</span><br>
-      </p>
-      <li>ML support added.</li>
-      <p></p>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

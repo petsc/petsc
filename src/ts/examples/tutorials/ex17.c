@@ -36,7 +36,6 @@ typedef struct {
 } MonitorCtx;
 
 typedef struct {
-  DM             da;
   PetscReal      c;
   PetscInt       boundary;       /* Type of boundary condition */
   PetscBool      viewJacobian;
@@ -44,7 +43,7 @@ typedef struct {
 
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-static PetscErrorCode FormInitialSolution(Vec,void*);
+static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 static PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
@@ -76,7 +75,6 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  user.da            = da;
   user.c             = -30.0;
   user.boundary      = 0; /* 0: Dirichlet BC; 1: Neumann BC */
   user.viewJacobian  = PETSC_FALSE;
@@ -95,9 +93,11 @@ int main(int argc,char **argv)
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Make the Theta method behave like backward Euler */
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
 
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   jacType = JACOBIAN_ANALYTIC; /* use user-provide Jacobian */
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+
+  ierr = TSSetDM(ts,da);CHKERRQ(ierr); /* Use TSGetDM() to access. Setting here allows easy use of geometric multigrid. */
 
   ftime = 1.0;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormInitialSolution(u,&user);CHKERRQ(ierr);
+  ierr = FormInitialSolution(ts,u,&user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   dt   = .01;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   if (jacType == JACOBIAN_FD_COLORING) {
     SNES       snes;
     ISColoring iscoloring;
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
@@ -136,8 +136,6 @@ int main(int argc,char **argv)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user);CHKERRQ(ierr);
   }
-
-  //ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -163,7 +161,7 @@ int main(int argc,char **argv)
 static PetscErrorCode FormIFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
-  DM             da = (DM)user->da;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       i,Mx,xs,xm;
   PetscReal      hx,sx;
@@ -171,6 +169,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,v
   Vec            localU;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
@@ -233,12 +232,13 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
   PetscInt       i,rstart,rend,Mx;
   PetscReal      hx,sx;
   AppCtx         *user = (AppCtx*)ctx;
-  DM             da = (DM)user->da;
+  DM             da;
   MatStencil     col[3],row;
   PetscInt       nc;
   PetscScalar    vals[3];
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*Jpre,&rstart,&rend);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
@@ -278,17 +278,18 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(Vec U,void* ptr)
+PetscErrorCode FormInitialSolution(TS ts,Vec U,void* ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
-  DM             da=user->da;
   PetscReal      c=user->c;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       i,xs,xm,Mx;
   PetscScalar    *u;
   PetscReal      hx,x,r;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 

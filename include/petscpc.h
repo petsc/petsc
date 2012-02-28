@@ -81,6 +81,7 @@ J*/
 #define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
+#define PCBDDC            "bddc"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;
@@ -441,10 +442,25 @@ extern PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 extern PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
 extern PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
-extern PetscErrorCode PCGAMGAvoidRepartitioning(PC,PetscBool);
+extern PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 extern PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 extern PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
+extern PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
+extern PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
+#define PCGAMGType char*
+extern PetscErrorCode PCGAMGSetType( PC,const PCGAMGType );
+extern PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
+extern PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
 
+#if defined(PETSC_HAVE_PCBDDC)
+/* Enum defining how to treat the coarse problem */
+typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+extern PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
+extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
+extern PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
+extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
+extern PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
+#endif
 
 PETSC_EXTERN_CXX_END
 

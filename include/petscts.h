@@ -381,6 +381,7 @@ extern PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 extern PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
 extern PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscInt**,const PetscInt**,const PetscReal**,const PetscReal**);
 extern PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
+extern PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 extern PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 extern PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 extern PetscErrorCode TSAdaptDestroy(TSAdapt*);
@@ -601,7 +602,18 @@ extern PetscErrorCode  TSGLSetType(TS,const TSGLType);
 extern PetscErrorCode  TSGLGetAdapt(TS,TSGLAdapt*);
 extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 
+/*J
+    TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
+
+   Level: beginner
+
+.seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
+J*/
 #define TSARKIMEXType char*
+#define TSARKIMEXA2     "a2"
+#define TSARKIMEXL2     "l2"
+#define TSARKIMEXARS122 "ars122"
+#define TSARKIMEX2C     "2c"
 #define TSARKIMEX2D     "2d"
 #define TSARKIMEX2E     "2e"
 #define TSARKIMEXPRSSP2 "prssp2"
@@ -619,6 +631,13 @@ extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
 extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
+/*J
+    TSRosWType - String with the name of a Rosenbrock-W method.
+
+   Level: beginner
+
+.seealso: TSRosWSetType(), TS, TSROSW, TSRosWRegister()
+J*/
 #define TSRosWType char*
 #define TSROSW2M          "2m"
 #define TSROSW2P          "2p"
@@ -630,11 +649,14 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 #define TSROSWLASSP3P4S2C "lassp3p4s2c"
 #define TSROSWLLSSP3P4S2C "llssp3p4s2c"
 #define TSROSWARK3        "ark3"
+#define TSROSWTHETA1      "theta1"
+#define TSROSWTHETA2      "theta2"
+
 
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 extern PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
-extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 extern PetscErrorCode TSRosWFinalizePackage(void);
 extern PetscErrorCode TSRosWInitializePackage(const char path[]);
 extern PetscErrorCode TSRosWRegisterDestroy(void);

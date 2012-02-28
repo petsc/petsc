@@ -136,9 +136,8 @@ static PetscErrorCode SNESSetUp_SORQN(SNES snes)
 #define __FUNCT__ "SNESReset_SORQN"
 static PetscErrorCode SNESReset_SORQN(SNES snes)
 {
-  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

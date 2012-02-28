@@ -59,7 +59,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
 #if defined (PETSC_USE_CTABLE)
       ierr = PetscTableFind(gid1_lid1,ival+1,&tt);CHKERRQ(ierr);
       if (!tt) {
-	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1);CHKERRQ(ierr);
+	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1,INSERT_VALUES);CHKERRQ(ierr);
         isz++;
       }
 #else

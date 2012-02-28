@@ -485,6 +485,30 @@ extern PetscErrorCode  VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
 extern PetscErrorCode  VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 
 
+#if defined(PETSC_USE_DEBUG)
+#define VecValidValues(vec,argnum,input) do {                           \
+    PetscErrorCode     _ierr;                                           \
+    PetscInt          _n,_i;                                            \
+    const PetscScalar *_x;                                              \
+                                                                        \
+    if (vec->petscnative || vec->ops->getarray) {                       \
+      _ierr = VecGetLocalSize(vec,&_n);CHKERRQ(_ierr);                  \
+      _ierr = VecGetArrayRead(vec,&_x);CHKERRQ(_ierr);                  \
+      for (_i=0; _i<_n; _i++) {                                         \
+        if (input) {                                                    \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %d",_i,argnum); \
+        } else {                                                        \
+          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %d",_i,argnum); \
+        }                                                               \
+      }                                                                 \
+      _ierr = VecRestoreArrayRead(vec,&_x);CHKERRQ(_ierr);              \
+    }                                                                   \
+  } while (0)
+#else
+#define VecValidValues(vec,argnum,input)
+#endif
+
+
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;
 extern PetscErrorCode  VecSetOption(Vec,VecOption,PetscBool );
 
@@ -551,18 +575,29 @@ typedef struct _n_Vecs* Vecs;
 
 #if defined(PETSC_HAVE_CUSP)
 typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
-extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPIndices*);
+extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
 extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
+
+#if defined(PETSC_HAVE_TXPETSCGPU)
+extern PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices);
+extern PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
+extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
+extern PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
+extern PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
+#endif
 
 extern PetscErrorCode  VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 extern PetscErrorCode  VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-extern PetscErrorCode VecSeqPThreadSetNThreads(Vec,PetscInt);
-extern PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,Vec*);
+extern PetscErrorCode VecPThreadSetNThreads(Vec,PetscInt);
+extern PetscErrorCode VecPThreadGetNThreads(Vec,PetscInt*);
+extern PetscErrorCode VecPThreadSetThreadAffinities(Vec,const PetscInt[]);
+extern PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,PetscInt[],Vec*);
+extern PetscErrorCode VecCreateMPIPThread(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],Vec*);
 #endif
 
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);

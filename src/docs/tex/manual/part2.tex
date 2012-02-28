@@ -934,7 +934,7 @@ To perform a conventional gather operation, the user simply makes
  the destination index set, 
 \trl{iy}, be a stride index set with a stride of one.  Similarly, a 
 conventional scatter can be done with an initial (sending) index set 
-consisting of a stride.  The scatter rotines are collective operations
+consisting of a stride.  The scatter routines are collective operations
 (i.e. all processes that own 
 a parallel vector {\em must} call the scatter routines). When scattering from a 
 parallel vector to sequential vectors, each process has its own sequential 
@@ -1797,7 +1797,7 @@ previously existed, space will be allocated for the new entries.
 To prevent the allocation of additional memory and simply discard those 
 new entries, one can use the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
 \end{tabbing}
 Once the matrix has been assembled, one can factor it numerically
 without repeating the ordering or the symbolic factorization. 
@@ -1840,7 +1840,7 @@ same positions and the matrix retains the same nonzero structure, the user
 can call MatZeroRows() in the first iteration. Then, before generating 
 the matrix in the second iteration the user should call
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
 \end{tabbing}
 From that point,
 no new values will be inserted into those (boundary) rows of 
@@ -3174,7 +3174,7 @@ A_{{10}_{10}}   & A_{{11}_{10}} & A_{{10}_{11}} & A_{{11}_{11}} & ...\\
 \end{array} \right).
 \]
 Note that for interlaced storage the number of rows/columns of each
-block must be the same size. Matrices obtained with DMGetMatrix()
+block must be the same size. Matrices obtained with DMCreateMatrix()
 where the DM is a a DMDA are always stored interlaced.
 Block matrices can also be stored using the MATNEST format which holds separate assembled blocks.
 Each of these nested matrices is itself distributed in parallel.
@@ -4265,10 +4265,10 @@ These parameters may be set from the options database with
 Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
 Extensions may be forthcoming.
 However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
-An example of this for 2D distributed arrays is given below that uses the utility routine DMGetColoring().
+An example of this for 2D distributed arrays is given below that uses the utility routine DMCreateColoring().
 
 \begin{tabbing}
-   DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
+   DMCreateColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
    ISColoringDestroy(\&iscoloring);

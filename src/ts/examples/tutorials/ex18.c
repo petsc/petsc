@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
   ierr = DMIGASetFieldName(user.iga, 1, "velocity-u");CHKERRQ(ierr);
   ierr = DMIGASetFieldName(user.iga, 2, "velocity-v");CHKERRQ(ierr);
 
-  ierr = DMGetMatrix(user.iga, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.iga, MATAIJ, &J);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSALPHA);CHKERRQ(ierr);

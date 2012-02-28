@@ -1257,8 +1257,8 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
   ierr = DMDACreate3d(((PetscObject)dac)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
-  daf->ops->getmatrix        = dac->ops->getmatrix;
-  daf->ops->getinterpolation = dac->ops->getinterpolation;
+  daf->ops->creatematrix        = dac->ops->creatematrix;
+  daf->ops->createinterpolation = dac->ops->createinterpolation;
   daf->ops->getcoloring      = dac->ops->getcoloring;
   ddf = (DM_DA*)daf->data;
   ddc = (DM_DA*)dac->data;
@@ -1271,8 +1271,8 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetInterpolation_DA_THI"
-static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
+#define __FUNCT__ "DMCreateInterpolation_DA_THI"
+static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
   PetscInt       dim;  
@@ -1285,7 +1285,7 @@ static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
   ierr = DMDAGetInfo(daf,&dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   if (dim  == 2) {
     /* We are in the 2D problem and use normal DMDA interpolation */
-    ierr = DMGetInterpolation(dac,daf,A,scale);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dac,daf,A,scale);CHKERRQ(ierr);
   } else {
     PetscInt i,j,k,xs,ys,zs,xm,ym,zm,mx,my,mz,rstart,cstart;
     Mat B;
@@ -1319,8 +1319,8 @@ static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_THI_Tridiagonal"
-static PetscErrorCode DMGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
+static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   Mat A;
@@ -1337,13 +1337,7 @@ static PetscErrorCode DMGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat 
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,6,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,6,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,dof,3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,dof,3,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,dof,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,dof,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,dof);CHKERRQ(ierr);
+  ierr = MatXAIJSetPreallocation(A,2,3,PETSC_NULL,0,PETSC_NULL,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
@@ -1490,7 +1484,7 @@ int main(int argc,char *argv[])
     if (thi->coarse2d) {
       ierr = DMDACreate2d(comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,N,M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
       da->ops->refinehierarchy  = DMRefineHierarchy_THI;
-      da->ops->getinterpolation = DMGetInterpolation_DA_THI;
+      da->ops->createinterpolation = DMCreateInterpolation_DA_THI;
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);
     } else {
       ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
@@ -1501,7 +1495,7 @@ int main(int argc,char *argv[])
     ierr = DMDestroy(&da);CHKERRQ(ierr);
   }
   if (thi->tridiagonal) {
-    (DMMGGetDM(dmmg))->ops->getmatrix = DMGetMatrix_THI_Tridiagonal;
+    (DMMGGetDM(dmmg))->ops->creatematrix = DMCreateMatrix_THI_Tridiagonal;
   }
   {
     /* Use the user-defined matrix type on all but the coarse level */

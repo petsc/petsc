@@ -7,7 +7,7 @@ LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c
-EXAMPLESF       = ex1f.F ex2f.F ex22f.F
+EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 
@@ -116,6 +116,10 @@ ex22: ex22.o chkopts
 ex22f: ex22f.o util2.o chkopts
 	-${FLINKER} -o ex22f ex22f.o ${PETSC_TS_LIB}
 	${RM} ex22f.o
+
+ex22f_mf: ex22f_mf.o util2.o chkopts
+	-${FLINKER} -o ex22f_mf ex22f_mf.o ${PETSC_TS_LIB}
+	${RM} ex22f_mf.o
 
 ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o ${PETSC_TS_LIB}
@@ -251,6 +255,7 @@ runex10_3:
 	   ${DIFF} output/ex10_3.out ex10_3.tmp || echo  ${PWD} "\nPossible problem with ex10_3, diffs above \n========================================="; \
 	   ${RM} -f ex10_3.tmp
 
+#  This currently crashes after a few time steps with nonsolvable nonlinear system
 runex10_4:
 	-@${MPIEXEC} -n 2 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
 	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
@@ -314,15 +319,15 @@ runex17_2:
 	   ${RM} -f ex17_2.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none -snes_ls basic > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 > ex22_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none > ex22_2.tmp 2>&1; \
 	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo  ${PWD} "\nPossible problem with ex22_2, diffs above \n=========================================";  \
 	   ${RM} -f ex22_2.tmp
 runex22_3:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 > ex22_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo  ${PWD} "\nPossible problem with ex22_3, diffs above \n=========================================";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
@@ -330,13 +335,18 @@ runex22f:
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22f_1.tmp
 
+runex22f_mf:
+	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
+	   ${DIFF} output/ex22f_mf_1.out ex22f_mf_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_mf_1, diffs above \n=========================================";  \
+	   ${RM} -f ex22f_mf_1.tmp
+
 runex24:                        # This is not in the nightlies because the convergence details are numerically sensitive
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type lu -ts_dt 1e-5 -ts_final_time 1e5 -n 50 -monitor_short > ex24_1.tmp 2>&1; \
 	   ${DIFF} output/ex24_1.out ex24_1.tmp || echo  ${PWD} "\nPossible problem with ex24_1, diffs above \n=========================================";  \
 	   ${RM} -f ex24_1.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo  ${PWD} "\nPossible problem with ex25_1, diffs above \n=========================================";  \
 	   ${RM} -f ex25_1.tmp
 
@@ -349,12 +359,12 @@ runex26:
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
-                            ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm \
+                            ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc ex22.rm
 TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm

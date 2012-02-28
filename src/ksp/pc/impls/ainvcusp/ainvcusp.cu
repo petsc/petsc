@@ -69,7 +69,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
     }
   }
   try {
-    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRCUSP(ierr);
+    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
     if (ainv->scaled) {
       ainv->AINVCUSP =  new cuspainvprecondscaled(*(CUSPMATRIX*)gpustruct->mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);

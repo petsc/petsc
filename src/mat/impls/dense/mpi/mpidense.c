@@ -146,6 +146,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
       }
     } else {
       if (!A->donotstash) {
+        mat->assembled = PETSC_FALSE;
         if (roworiented) {
           ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
@@ -1023,8 +1024,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
 extern PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPIDense"
-PetscErrorCode MatSetUpPreallocation_MPIDense(Mat A)
+#define __FUNCT__ "MatSetUp_MPIDense"
+PetscErrorCode MatSetUp_MPIDense(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1121,9 +1122,11 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
-PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
+PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->cmap->n;
@@ -1137,14 +1140,14 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
   ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  Cmat->ops->matmult = MatMatMult_MPIDense_MPIDense;
   *C = Cmat;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIDense_MPIDense"
-PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -1553,7 +1556,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPIDense,
+/*29*/ MatSetUp_MPIDense,
        0,
        0,
        MatGetArray_MPIDense,
@@ -1816,7 +1819,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIDense"
 /*@C
-   MatCreateMPIDense - Creates a sparse parallel matrix in dense format.
+   MatCreateMPIDense - Creates a parallel matrix in dense format.
 
    Collective on MPI_Comm
 

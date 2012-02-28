@@ -1,0 +1,88 @@
+  0 SNES Function norm 6.44167 
+    0 KSP Residual norm 1.32384 
+    1 KSP Residual norm 0.512627 
+    2 KSP Residual norm 0.295352 
+    3 KSP Residual norm 0.173288 
+    4 KSP Residual norm 0.0971097 
+    5 KSP Residual norm 0.0768562 
+    6 KSP Residual norm 0.055629 
+    7 KSP Residual norm 0.0268914 
+    8 KSP Residual norm 0.017148 
+    9 KSP Residual norm 0.00933219 
+   10 KSP Residual norm 0.00788866 
+   11 KSP Residual norm 0.00775081 
+   12 KSP Residual norm 0.00707922 
+   13 KSP Residual norm 0.00317781 
+   14 KSP Residual norm 0.00304866 
+   15 KSP Residual norm 0.00282379 
+   16 KSP Residual norm 0.00280093 
+   17 KSP Residual norm 0.00185485 
+   18 KSP Residual norm 0.00178558 
+   19 KSP Residual norm 0.000973513 
+   20 KSP Residual norm 0.000144653 
+   21 KSP Residual norm 7.95903e-05 
+   22 KSP Residual norm 1.16225e-06 
+   23 KSP Residual norm 1.14978e-06 
+   24 KSP Residual norm 1.10997e-06 
+   25 KSP Residual norm < 1.e-11
+  1 SNES Function norm < 1.e-11
+SNES Object: 1 MPI processes
+  type: ls
+    line search variant: CUBIC
+    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+    damping factor=1.000000000000e+00
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=25
+  total number of function evaluations=2
+  KSP Object:   1 MPI processes
+    type: gmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    left preconditioning
+    has attached null space
+    using PRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes
+    type: jacobi
+    linear system matrix = precond matrix:
+    Matrix Object:     1 MPI processes
+      type: seqaij
+      rows=27, cols=27
+      total: nonzeros=377, allocated nonzeros=377
+      total number of mallocs used during MatSetValues calls =0
+        using I-node routines: found 17 nodes, limit used is 5
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+Number of SNES iterations = 1
+L_2 Error: 4.06928e-10
+Solution
+Vector Object: 1 MPI processes
+  type: seq
+-1
+-0.5
+4.07516e-10
+-0.5
+0.5
+6.93719e-13
+4.05997e-10
+0.5
+4.10253e-10
+0.5
+1
+0.125
+1.90759e-12
+0.3125
+-0.125
+0.625
+-0.25
+0.3125
+0.25
+0.8125
+0.375
+0.625
+0.75
+1.125
+-8.18155e-13
+0.8125
+-0.25

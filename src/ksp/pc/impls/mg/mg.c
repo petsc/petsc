@@ -505,7 +505,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
-  if (pc->dm && !pc->setupcalled) {
+  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. */
+  if (pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
@@ -518,7 +519,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
-	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
+	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
 	if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
         ierr = VecDestroy(&rscale);CHKERRQ(ierr);
@@ -530,8 +531,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
+  }
 
-    /* finest smoother also gets DM but it is not active */
+  if (pc->dm && !pc->setupcalled) {
+    /* finest smoother also gets DM but it is not active, independent of whether galerkin==2 */
     ierr = KSPSetDM(mglevels[n-1]->smoothd,pc->dm);CHKERRQ(ierr);
     ierr = KSPSetDMActive(mglevels[n-1]->smoothd,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -556,17 +559,21 @@ PetscErrorCode PCSetUp_MG(PC pc)
         dB   = B;
       }
     }
-  } else if (pc->dm && pc->dm->x) {
+  } else if (!mg->galerkin && pc->dm && pc->dm->x) {
     /* need to restrict Jacobian location to coarser meshes for evaluation */
     for (i=n-2;i>-1; i--) {
+      Mat R;
+      Vec rscale;
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
         ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,PETSC_NULL);CHKERRQ(ierr);
         mglevels[i]->smoothd->dm->x = vecs[0];
         ierr = PetscFree(vecs);CHKERRQ(ierr);
       }
-      ierr = MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,mglevels[i+1]->rscale);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i+1,&R);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
+      ierr = MatRestrict(R,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,rscale);CHKERRQ(ierr);
     }
   }
 
@@ -580,17 +587,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
     for (i=1; i<n; i++) {
-      if (mglevels[i]->restrct && !mglevels[i]->interpolate) {
-        ierr = PCMGSetInterpolation(pc,i,mglevels[i]->restrct);CHKERRQ(ierr);
-      }
-      if (!mglevels[i]->restrct && mglevels[i]->interpolate) {
-        ierr = PCMGSetRestriction(pc,i,mglevels[i]->interpolate);CHKERRQ(ierr);
-      }
-#if defined(PETSC_USE_DEBUG)
-      if (!mglevels[i]->restrct || !mglevels[i]->interpolate) {
-        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to set restriction or interpolation on level %d",(int)i);
-      }
-#endif
+      ierr = PCMGGetInterpolation(pc,i,&mglevels[i]->interpolate);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i,&mglevels[i]->restrct);CHKERRQ(ierr);
     }
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {
@@ -1028,17 +1026,22 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
 .  -pc_mg_monitor - print information on the multigrid convergence
-.  -pc_mg_galerkin - use Galerkin process to compute coarser operators
--  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
+.  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
+.  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
+.  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
                         to the Socket viewer for reading from MATLAB.
+-  -pc_mg_dump_binary - dumps the matrices for each level and the restriction/interpolation matrices
+                        to the binary output file called binaryoutput
 
    Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+
+       When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 
    Level: intermediate
 
    Concepts: multigrid/multilevel
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC, PCGAMG, PCML, PCHYPRE
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),

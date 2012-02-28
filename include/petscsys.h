@@ -18,10 +18,10 @@
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
    We only turn these in PETSc source files that require them by setting PETSC_DESIRE_FEATURE_TEST_MACROS
 */
-#if defined(PETSC__POSIX_C_SOURCE_200112L)
+#if defined(PETSC__POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200112L
 #endif
-#if defined(PETSC__BSD_SOURCE)
+#if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
 #define _BSD_SOURCE
 #endif
 #endif
@@ -42,9 +42,11 @@
 #endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+#define PETSC_EXTERN extern "C"
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
 #define PETSC_EXTERN_CXX_END  }
 #else
+#define PETSC_EXTERN extern
 #define PETSC_EXTERN_CXX_BEGIN
 #define PETSC_EXTERN_CXX_END
 #endif
@@ -1133,6 +1135,7 @@ extern PetscErrorCode    PetscMallocGetMaximumUsage(PetscLogDouble *);
 extern PetscErrorCode    PetscMallocDebug(PetscBool);
 extern PetscErrorCode    PetscMallocValidate(int,const char[],const char[],const char[]);
 extern PetscErrorCode    PetscMallocSetDumpLog(void);
+extern PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 
 /*E
@@ -1538,10 +1541,10 @@ extern PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary);
 extern PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*
-  PetscFwk support.  Needs to be documented.  
+  PetscShell support.  Needs to be better documented.  
   Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
 */
-#include "petscfwk.h"
+#include "petscshell.h"
 
 /*
      Useful utility routines
@@ -1996,9 +1999,11 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
+#define PETSC_EXTERN_C extern "C"
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
+#define PETSC_EXTERN_C
 #define EXTERN_C_BEGIN 
 #define EXTERN_C_END 
 #endif

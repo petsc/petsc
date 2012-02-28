@@ -92,7 +92,7 @@ class Configure(config.base.Configure):
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','fenv','sched','pthread'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
-                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'nanosleep', 'usleep', 'sleep', '_sleep', 'socket', 
+                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
                  '_intel_fast_memcpy','_intel_fast_memset']
@@ -231,7 +231,8 @@ class Configure(config.base.Configure):
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
-        includes.extend(i.include)
+        if not i.PACKAGE.lower() == 'valgrind':
+          includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     if self.framework.argDB['with-single-library']:
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)

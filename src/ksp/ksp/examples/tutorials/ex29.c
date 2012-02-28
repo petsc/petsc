@@ -29,10 +29,9 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 
-extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -47,25 +46,21 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
+  KSP            ksp;
   DM             da;
   UserContext    user;
-  PetscReal      norm;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
-  PetscInt       l,bc;
+  PetscInt       bc;
+  Vec            b,x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-    ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
-  }
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
     user.rho    = 1.0;
     ierr        = PetscOptionsScalar("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
     user.nu     = 0.1;
@@ -75,23 +70,19 @@ int main(int argc,char **argv)
     user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-  if (user.bcType == NEUMANN) {
-    ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
+  ierr = VecView_VTK(b, "rhs.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
+  ierr = VecView_VTK(x, "solution.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
 
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-
-  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
-  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); */
-  ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
-  ierr = VecView_VTK(DMMGGetRHS(dmmg), "rhs.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
-  ierr = VecView_VTK(DMMGGetx(dmmg), "solution.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
-
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -99,16 +90,16 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec x, Vec b)
 {
-  DM             da = dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext    *user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
   PetscScalar    Hx,Hy;
   PetscScalar    **array;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
@@ -128,8 +119,9 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -150,17 +142,18 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DM da, Vec x,Mat J,Mat jac,MatStructure *str)
 {
-  DM             da =  dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
-  PetscScalar    centerRho = user->rho;
+  UserContext    *user;
+  PetscScalar    centerRho;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num;
   PetscScalar    v[5],Hx,Hy,HydHx,HxdHy,rho;
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  centerRho = user->rho;
   ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx-1);
   Hy    = 1.0 / (PetscReal)(my-1);
@@ -209,6 +202,14 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 

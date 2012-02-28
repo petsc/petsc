@@ -1,16 +1,4 @@
-  0 SNES Function norm 1.08789 
-    0 KSP Residual norm 11.9402 
-    1 KSP Residual norm 1.29757 
-    2 KSP Residual norm 0.00809682 
-    3 KSP Residual norm 0.000104756 
-  1 SNES Function norm 0.00065051 
-    0 KSP Residual norm 0.774848 
-    1 KSP Residual norm 0.00612469 
-    2 KSP Residual norm 0.000145869 
-    3 KSP Residual norm 1.4804e-06 
-  2 SNES Function norm 4.96927e-06 
-    0 KSP Residual norm 0.00624565 
-    1 KSP Residual norm 4.33636e-05 
-    2 KSP Residual norm 6.76654e-07 
-    3 KSP Residual norm 3.47968e-09 
-  3 SNES Function norm 8.264e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE

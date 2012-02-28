@@ -49,7 +49,7 @@ extern PetscErrorCode  PetscBagSetName(PetscBag, const char *, const char *);
 extern PetscErrorCode  PetscBagSetOptionsPrefix(PetscBag, const char *);
 
 extern PetscErrorCode  PetscBagView(PetscBag,PetscViewer);
-extern PetscErrorCode  PetscBagLoad(PetscViewer,PetscBag*);
+extern PetscErrorCode  PetscBagLoad(PetscViewer,PetscBag);
 
 extern PetscErrorCode  PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
 extern PetscErrorCode  PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));

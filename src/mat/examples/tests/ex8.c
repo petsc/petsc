@@ -21,6 +21,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;

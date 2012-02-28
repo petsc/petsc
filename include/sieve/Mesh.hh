@@ -1517,8 +1517,13 @@ namespace ALE {
 
       this->_sieve->leaves(l);
       this->_sieve->roots(r);
-      this->setHeight(1);
-      this->setDepth(1);
+      if (this->_sieve->numRoots()) {
+        this->setHeight(1);
+        this->setDepth(1);
+      } else {
+        this->setHeight(0);
+        this->setDepth(0);
+      }
     };
     void computeHeights() {
       const Obj<label_type>& label = this->createLabel(std::string("height"));
@@ -1865,10 +1870,128 @@ namespace ALE {
         coordinates->setChart(typename real_section_type::chart_type(0, 0));
       }
     };
+    // Find the cell in which this point lies (stupid algorithm)
+    point_type locatePoint_Simplex_2D(const typename real_section_type::value_type point[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const int                     embedDim    = 2;
+      typename real_section_type::value_type v0[2], J[4], invJ[4], detJ;
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        std::cout << "Checking cell " << *c_iter << std::endl;
+        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+        double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
+        double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
+
+        if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) {
+          return *c_iter;
+        }
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << point[0] <<","<< point[1] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+    point_type locatePoint_General_2D(const typename real_section_type::value_type p[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const PetscInt                faces[8]    = {0, 1, 1, 2, 2, 3, 3, 0};
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
+        PetscInt         crossings = 0;
+
+        std::cout << "Checking cell " << *c_iter << std::endl;
+        for(PetscInt f = 0; f < 4; f++) {
+          PetscReal x_i   = coords[faces[2*f+0]*2+0];
+          PetscReal y_i   = coords[faces[2*f+0]*2+1];
+          PetscReal x_j   = coords[faces[2*f+1]*2+0];
+          PetscReal y_j   = coords[faces[2*f+1]*2+1];
+          PetscReal slope = (y_j - y_i) / (x_j - x_i);
+          bool      cond1 = (x_i <= p[0]) && (p[0] < x_j);
+          bool      cond2 = (x_j <= p[0]) && (p[0] < x_i);
+          bool      above = (p[1] < slope * (p[0] - x_i) + y_i);
+          if ((cond1 || cond2)  && above) ++crossings;
+        }
+        if (crossings % 2) {return *c_iter;}
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << p[0] <<","<< p[1] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+    //   Assume a simplex and 3D
+    point_type locatePoint_Simplex_3D(const typename real_section_type::value_type point[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const int                     embedDim    = 3;
+      typename real_section_type::value_type v0[3], J[9], invJ[9], detJ;
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+        double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
+        double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
+        double zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
+
+        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) {
+          return *c_iter;
+        }
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << point[0] <<","<< point[1] <<","<< point[2] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+    point_type locatePoint_General_3D(const typename real_section_type::value_type p[]) {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const PetscInt                faces[24]   = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
+                                                   3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
+        PetscInt         crossings = 0;
+
+        std::cout << "Checking cell " << *c_iter << std::endl;
+        for(PetscInt f = 0; f < 6; f++) {
+          /* Check the point is under plane */
+          /*   Get face normal */
+          PetscReal v_i[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal v_j[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
+          PetscReal dot       = normal[0]*p[0] + normal[1]*p[1] + normal[2]*p[2];
+          /* Check that projected point is in face (2D location problem) */
+          if (dot > 0.0) {
+            ++crossings;
+          }
+        }
+        if (crossings % 2) {return *c_iter;}
+      }
+      {
+        ostringstream msg;
+        msg << "Could not locate point: (" << p[0] <<","<< p[1] <<","<< p[2] << ")" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
     point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
       if (guess != -1) {
         return guess;
+      } else if (this->_dim == 2) {
+        if (this->getSieve()->getMaxConeSize() == 3) {
+          return locatePoint_Simplex_2D(point);
+        } else {
+          return locatePoint_General_2D(point);
+        }
+      } else if (this->_dim == 3) {
+        if (this->getSieve()->getMaxConeSize() == 4) {
+          return locatePoint_Simplex_3D(point);
+        } else {
+          return locatePoint_General_3D(point);
+        }
       } else {
         throw ALE::Exception("No point location for mesh dimension");
       }
@@ -1918,6 +2041,35 @@ namespace ALE {
         PetscLogFlopsNoError(5.0);
       }
     };
+    void computeRectangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 2;
+      typename real_section_type::value_type invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0]*J[3] - J[1]*J[2];
+        PetscLogFlopsNoError(8.0 + 3.0);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+        PetscLogFlopsNoError(5.0);
+      }
+      detJ *= 2.0;
+    };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       const PetscReal *coords = this->restrictClosure(coordinates, e);
       const int        dim    = 3;
@@ -1954,11 +2106,55 @@ namespace ALE {
         PetscLogFlopsNoError(37.0);
       }
     };
+    void computeHexahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 3;
+      typename real_section_type::value_type invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          J[d*dim+0] = 0.5*(coords[(0+1)*dim+d] - coords[0*dim+d]);
+          J[d*dim+1] = 0.5*(coords[(1+1)*dim+d] - coords[0*dim+d]);
+          J[d*dim+2] = 0.5*(coords[(3+1)*dim+d] - coords[0*dim+d]);
+        }
+        detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+        PetscLogFlopsNoError(18.0 + 12.0);
+      }
+      if (invJ) {
+        invDet  = -1.0/detJ;
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+        invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+        PetscLogFlopsNoError(37.0);
+      }
+      detJ *= 8.0;
+    };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       if (this->_dim == 2) {
-        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        if (this->getSieve()->getMaxConeSize() == 3) {
+          computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          computeRectangleGeometry(coordinates, e, v0, J, invJ, detJ);
+        }
       } else if (this->_dim == 3) {
-        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        if (this->getSieve()->getMaxConeSize() == 4) {
+          computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        } else {
+          computeHexahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+        }
       } else {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
       }

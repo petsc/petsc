@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['https://gforge.inria.fr/frs/download.php/28044/scotch_5.1.11_esmumps.tar.gz']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/28978/scotch_5.1.12b_esmumps.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_5.1.12b_esmumps.tar.gz']
     self.downloadfilename = 'scotch'
     self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
@@ -89,7 +90,7 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
-      #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
+      #Scotch has a file identical to one in ParMETIS, remove it so ParMETIS will not use it by mistake
       try: # PTScotch installs parmetis.h by default, we need to remove it so it does not conflict with the ParMETIS native copy
         os.unlink(os.path.join(self.packageDir,'include','parmetis.h'))
       except: pass

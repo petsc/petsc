@@ -1776,7 +1776,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
 
   for (k=1; k<nlevels; k++){
-    ierr = DMGetInterpolation(da_list[k-1],da_list[k],&R,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,PETSC_NULL);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pc,k,R);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);
   }
@@ -1996,8 +1996,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DMGetMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */

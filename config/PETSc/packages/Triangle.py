@@ -17,7 +17,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.make            = framework.require('config.programs', self)
-    self.x11             = framework.require('PETSc.packages.X11', self)
+    self.x               = framework.require('PETSc.packages.X', self)
     self.deps = []
     return
 

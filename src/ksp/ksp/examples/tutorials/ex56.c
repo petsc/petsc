@@ -51,10 +51,16 @@ int main(int argc,char **args)
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
   M = 3*nn*nn*nn; /* global number of equations */
-  m = nn*nn*nn/npe;
-  if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
+  if(npe==2) {
+    if(mype==1) m=0;
+    else m = nn*nn*nn;
+    npe = 1;
+  }
+  else {
+    m = nn*nn*nn/npe;
+    if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
+  }
   m *= 3; /* number of equations local*/
-
   /* Setup solver, get PC type and pc */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
   ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
@@ -71,11 +77,11 @@ int main(int argc,char **args)
     if(nn!=NP*(nn/NP))SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
     const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
-    const PetscInt Ni1 = Ni0 + (nn/NP), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
+    const PetscInt Ni1 = Ni0 + (m>0 ? (nn/NP) : 0), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
     const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
     PetscInt *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar vv[24], v2[24];
-  
+    
     /* count nnz */
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
@@ -142,7 +148,7 @@ int main(int argc,char **args)
       for(i=0;i<24;i++)
 	for(j=0;j<24;j++)
 	  if(i<12 || j < 12)
-	    if(i==j) DD2[i][j] = .1*DD1[i][j];
+	    if(i==j) DD2[i][j] = 0.*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */
@@ -156,7 +162,6 @@ int main(int argc,char **args)
         else if(i%3==1 && i>=12) v2[i] = 2.0*h*h;
         else v2[i] = .0;
       }
-      
     }
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
@@ -255,6 +260,8 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
 #endif
 
+
+#if !defined(foo)
   /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
 
@@ -275,6 +282,7 @@ int main(int argc,char **args)
 
   /* 2nd solve */
   {
+/* #define TwoSolve */
 #if defined(TwoSolve)
     PetscReal emax, emin;
     ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
@@ -333,8 +341,12 @@ int main(int argc,char **args)
 #endif
   }
   
+#endif
+
   /* Free work space */
+#if !defined(foo)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+#endif
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);

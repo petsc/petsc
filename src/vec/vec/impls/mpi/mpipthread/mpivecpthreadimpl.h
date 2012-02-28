@@ -8,9 +8,11 @@
 
 typedef struct {
   VECHEADER
-  PetscInt    nthreads;
-  PetscInt    *arrindex;
-  PetscInt    *nelem;
+  PetscInt nthreads;      /* Number of threads */
+  PetscInt *arrindex;     /* Starting array indices for each thread */
+  PetscInt *nelem;        /* Number of array elements assigned to each thread */
+  PetscInt *cpu_affinity; /* CPU affinities */
+
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   PetscInt    nsends,nrecvs;
   PetscScalar *svalues,*rvalues;

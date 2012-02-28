@@ -62,7 +62,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
     } 
   }
   try {
-    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRCUSP(ierr);
+    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
     sa->SACUSPPoly = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {

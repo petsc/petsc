@@ -7,6 +7,7 @@
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
+  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
@@ -28,6 +29,8 @@ struct _SNESOps {
   PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
   PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *);  /* step-checking routine */
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
+  PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 };
 
 /*
@@ -54,8 +57,10 @@ struct _p_SNES {
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *jacP;                    /* user-defined Jacobian context */
   void *initialguessP;           /* user-defined initial guess context */
+  void *gsP;                     /* user-defined Gauss-Seidel context */
   KSP  ksp;                      /* linear solver context */
   PetscBool usesksp;
+  MatStructure matstruct;        /* Used by Picard solver */
 
   Vec  vec_sol_update;           /* pointer to solution update */
 
@@ -101,8 +106,10 @@ struct _p_SNES {
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
+  PetscInt    gssweeps;           /* number of GS sweeps */
 
-  /* line search parameters */
+  /* ------------------------ Line Search Parameters ---------------------- */
+
   SNESLineSearchType ls_type;     /* the present line search type */
   PetscReal   damping;            /* line search damping */
   PetscReal   maxstep;            /* line search maximum step size */
@@ -180,8 +187,11 @@ extern PetscErrorCode SNESDestroy_VI(SNES);
 extern PetscErrorCode SNESView_VI(SNES,PetscViewer);
 extern PetscErrorCode SNESSetFromOptions_VI(SNES);
 extern PetscErrorCode SNESSetUp_VI(SNES);
+typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 EXTERN_C_BEGIN
 extern PetscErrorCode SNESLineSearchSetType_VI(SNES,SNESLineSearchType);
+extern PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
+extern PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 EXTERN_C_END
 extern PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
@@ -191,6 +201,6 @@ PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,P
 extern PetscBool  SNESRegisterAllCalled;
 extern PetscFList SNESList;
 
-extern PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+extern PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #endif

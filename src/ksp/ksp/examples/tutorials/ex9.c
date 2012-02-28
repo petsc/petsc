@@ -87,6 +87,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
   ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
+  ierr = MatSetUp(C1);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
   ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
@@ -116,6 +117,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C2);CHKERRQ(ierr);
   ierr = MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
+  ierr = MatSetUp(C2);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b2);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x2);CHKERRQ(ierr);

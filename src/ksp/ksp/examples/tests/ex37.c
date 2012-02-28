@@ -89,7 +89,7 @@ int main(int argc,char **args)
   }
 
   /* Create subA */
-  ierr = MatGetMultiProcBlock(A,subcomm,&subA);CHKERRQ(ierr);
+  ierr = MatGetMultiProcBlock(A,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 
   /* Create sub vectors without arrays. Place b's and x's local arrays into subb and subx */
   ierr = MatGetLocalSize(subA,&m,&n);CHKERRQ(ierr);

@@ -212,7 +212,9 @@ for src, dst in copies:
 
   def copyLib(self, src, dst):
     '''Run ranlib on the destination library if it is an archive. Also run install_name_tool on dylib on Mac'''
-    shutil.copy2(src, dst)
+    # Do not install object files
+    if not os.path.splitext(src)[1] == '.o':
+      shutil.copy2(src, dst)
     if os.path.splitext(dst)[1] == '.'+self.libSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):

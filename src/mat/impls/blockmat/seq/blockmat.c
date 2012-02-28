@@ -5,7 +5,6 @@
 
 #include <private/matimpl.h>              /*I "petscmat.h" I*/
 #include <../src/mat/impls/baij/seq/baij.h>    /* use the common AIJ data-structure */
-#include <petscksp.h>
 
 typedef struct {
   SEQAIJHEADER(Mat);
@@ -988,7 +987,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   bmat->nz                = 0;
   bmat->maxnz             = nz;
   A->info.nz_unneeded  = (double)bmat->maxnz;
-
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

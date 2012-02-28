@@ -1,5 +1,5 @@
 
-static char help[] ="Tests sequential and parallel DMGetMatrix(), MatMatMult() and MatPtAP()\n\
+static char help[] ="Tests sequential and parallel DMCreateMatrix(), MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
   -Mz <zg>, where <zg> = number of coarse grid points in the z-direction\n\
@@ -85,10 +85,10 @@ int main(int argc,char **argv)
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
-  /* Test DMGetMatrix()                                         */
+  /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
-  ierr = DMGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMGetMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
   
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   }
 
   /* Create interpolation between the levels */
-  ierr = DMGetInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);

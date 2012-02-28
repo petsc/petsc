@@ -1,6 +1,6 @@
 #include <private/snesimpl.h>      /*I "petscsnes.h"  I*/
 
-const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "SECANT", "USERDEFINED", "SNESLineSearchType","SNES_LS_",0};
+const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","EXACT", "TEST", "CRITICAL", "USERDEFINED", "SNESLineSearchType","SNES_LS_",0};
 
 const char *SNESLineSearchTypeName(SNESLineSearchType type)
 {
@@ -189,6 +189,110 @@ PetscErrorCode  SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *ma
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchApply"
+/*@
+   SNESLineSearchApply - Applies the line search routine.
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+.  F       - The current residual
+.  Y       - The search direction
+.  fnorm   - The norm of F
+-  xnorm   - The norm of X (Optional for most line searches)
+
+   Output Parameters:
++  W       - The solution after line search
+.  G       - The residual after line search
+.  ynorm   - The norm of Y
+.  gnorm   - The norm of G
+-  flg     - Line search success or failure
+
+   Level: developer
+
+.keywords: SNES, nonlinear, line search, apply
+
+.seealso: SNESLineSearchPreCheckApply() SNESLineSearchPostCheckApply()
+@*/
+PetscErrorCode  SNESLineSearchApply(SNES snes, Vec X, Vec F, Vec Y, PetscReal fnorm, PetscReal xnorm, Vec W, Vec G, PetscReal *ynorm, PetscReal *gnorm, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (snes->ops->linesearch) {
+    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,ynorm,gnorm,flg);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Line search is unavailable for this SNES");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchPreCheckApply"
+/*@
+   SNESLineSearchPreCheckApply - Applies the optional precheck step for the line search
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+.  Y       - The search direction
+
+   Output Parameters:
+.  changed - set if Y has been changed
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, line search, precheck, apply
+
+.seealso: SNESLineSearchSet()
+@*/
+PetscErrorCode SNESLineSearchPreCheckApply(SNES snes, Vec X, Vec Y, PetscBool *changed)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (changed)
+    *changed = PETSC_FALSE;
+  if (snes->ops->precheckstep) {
+    ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,changed);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchPostCheckApply"
+/*@
+   SNESLineSearchPostCheckApply - Applies the optional postcheck step for the line search
+
+   Input Parameter:
++  snes    - The nonlinear context obtained from SNESCreate()
+.  X       - The current solution
+-  Y       - The search direction
+
+   Output Parameters:
++  changed_y - set if Y has been changed
+-  changed_w - set if W has been changed
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, line search, precheck, apply
+
+.seealso: SNESLineSearchSet()
+@*/
+PetscErrorCode SNESLineSearchPostCheckApply(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (changed_y)
+    *changed_y = PETSC_FALSE;
+  if (changed_w)
+    *changed_w = PETSC_FALSE;
+  if (snes->ops->postcheckstep) {
+    ierr = (*snes->ops->postcheckstep)(snes,X,Y,W,snes->precheck,changed_y, changed_w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetPreCheck"
@@ -570,9 +674,13 @@ PetscErrorCode  SNESLineSearchCubic(SNES snes,void *lsctx,Vec x,Vec f,Vec y,Pets
   PetscFunctionReturn(0);
 }
 
-/*@ SNESLineSearchSecant - This routine calculates a search length based upon secant descent assuming that F(X +
- lambdaY) is minimized in some problem-specific fashion when F(X + lambdaY) dot Y = 0.  This minimization is performed
- using secant descent on lambda; that is,
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchCriticalSecant"
+
+/*@ SNESLineSearchCriticalSecant - Finds the critical point of an artificial function with the residual as gradient.
+ This routine calculates a search length based upon secant descent assuming that F(X + lambdaY) is minimized in some
+ problem-specific fashion when F(X + lambdaY) dot Y = 0.  This minimization is performed using secant descent on lambda;
+ that is,
 
 lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot Y)
 
@@ -593,7 +701,7 @@ lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot
 -  flag - set to PETSC_TRUE indicating a successful line search
 
    Options Database Keys:
-.  -snes_ls secant - Activates SNESLineSearchSecant() on selected solvers.
+.  -snes_ls critical - Activates SNESLineSearchCriticalSecant() on selected solvers.
 .  -snes_ls_it 1        - Sets the number of steps of the secant iteration occur.
 .  -snes_ls_damping 1.0 - Sets a "safe" initial secant step.
 
@@ -604,13 +712,11 @@ lambda_i+1 = lambda_i + (F dot Y)*(lambda_i - lambda_i-1) / (F dot Y - F_old dot
 
 .keywords: SNES, nonlinear, line search, secant
 
-.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
+.seealso: SNESLineSearchQuadraticSecant(),
           SNESLineSearchSet(), SNESLineSearchNo()
 @*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSecant"
-PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
+PetscErrorCode  SNESLineSearchCriticalSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal xnorm,Vec G,Vec W,PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag) {
   PetscErrorCode ierr;
   PetscReal      lambda = snes->damping;
   PetscReal      lambda_old = 0.0;
@@ -629,7 +735,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
     if (fabs((lambda - lambda_old) / lambda) < snes->steptol) break;
 
     ierr = VecCopy(X, W);CHKERRQ(ierr);
-    ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
+    ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, &fnrm);CHKERRQ(ierr);
     ierr = VecDot(G, Y, &fty);CHKERRQ(ierr);
@@ -653,7 +759,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
     fty_old = fty;
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, lambda, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (snes->ls_monitor) {
@@ -690,7 +796,7 @@ PetscErrorCode  SNESLineSearchSecant(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,Pet
 
 
    Options Database Keys:
-.  -snes_ls    secant   - Activates SNESLineSearchSecant() on selected solvers.
+.  -snes_ls quadratic   - Activates SNESLineSearchQuadraticSecant() on selected solvers.
 .  -snes_ls_it 1        - Sets the number of steps of the secant iteration occur.
 .  -snes_ls_damping 1.0 - Sets a "safe" initial secant step.
 
@@ -721,13 +827,13 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
 
   /* compute the norm at the midpoint */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha_mid, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha_mid, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecDot(G, G, &fnrm_mid);CHKERRQ(ierr);
 
   /* compute the norm at alpha */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecDot(G, G, &fnrm);CHKERRQ(ierr);
 
@@ -763,7 +869,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
       alpha_old = alpha_mid;
       alpha_mid = 0.5*(alpha_old + alpha);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, alpha_mid, Y);CHKERRQ(ierr);
+      ierr = VecAXPY(W, -alpha_mid, Y);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
       ierr = VecDot(G, G, &fnrm_mid);CHKERRQ(ierr);
       delAlpha    = alpha - alpha_old;
@@ -793,7 +899,7 @@ PetscErrorCode  SNESLineSearchQuadraticSecant(SNES snes,void *lsctx,Vec X,Vec F,
     alpha_mid = 0.5*(alpha + alpha_old);
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
   ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
   if (snes->ls_monitor) {

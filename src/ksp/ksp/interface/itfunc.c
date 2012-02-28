@@ -104,9 +104,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidScalarPointer(r,2);
-  PetscValidScalarPointer(c,3);
-  PetscValidIntPointer(neig,4);
+  PetscValidScalarPointer(r,3);
+  PetscValidScalarPointer(c,4);
+  PetscValidIntPointer(neig,5);
   if (!ksp->calc_sings) SETERRQ(((PetscObject)ksp)->comm,4,"Eigenvalues not requested before KSPSetUp()");
 
   if (ksp->ops->computeeigenvalues) {
@@ -196,7 +196,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
     if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-    ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
     ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr); 
   }
@@ -204,11 +204,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (ksp->dmActive) {
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
+      /* only computes initial guess the first time through */
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (ir) {
       ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 
@@ -334,7 +335,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  if (!b && !ksp->vec_rhs) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Must set right hand side");
 
   if (x && x == b) {
     if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");

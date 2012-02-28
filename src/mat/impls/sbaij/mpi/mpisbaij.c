@@ -232,6 +232,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
     } else {  /* off processor entry */
       if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
+        mat->assembled = PETSC_FALSE;
         n_loc = 0;
         for (j=0; j<n; j++){
           if (im[i]/bs > in[j]/bs) continue; /* ignore lower triangular blocks */
@@ -667,6 +668,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     }
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
     ierr = MatMPISBAIJSetPreallocation(A,mat->rmap->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* copy over the A part */
@@ -1361,8 +1363,8 @@ PetscErrorCode MatCopy_MPISBAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPISBAIJ"
-PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_MPISBAIJ"
+PetscErrorCode MatSetUp_MPISBAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -1467,7 +1469,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPISBAIJ,
+/*29*/ MatSetUp_MPISBAIJ,
        0,
        0,
        0,
@@ -1715,7 +1717,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1904,8 +1906,8 @@ M*/
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
            in the upper triangular and diagonal part of the in diagonal portion of the local
-           (possibly different for each block row) or PETSC_NULL.  You must leave room 
-           for the diagonal entry even if it is zero.
+           (possibly different for each block row) or PETSC_NULL.  If you plan to factor the matrix you must leave room 
+           for the diagonal entry and set a value even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -2013,7 +2015,8 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
            in the upper triangular portion of the in diagonal portion of the local 
            (possibly different for each block block row) or PETSC_NULL.  
-           You must leave room for the diagonal entry even if it is zero.
+           If you plan to factor the matrix you must leave room for the diagonal entry and 
+           set its value even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the

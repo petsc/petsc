@@ -52,7 +52,8 @@ PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); /* LEFT is arbitrary */
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); /* LEFT/RIGHT is arbitrary, so "support" both */
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_PREONLY;
   ksp->ops->solve                = KSPSolve_PREONLY;

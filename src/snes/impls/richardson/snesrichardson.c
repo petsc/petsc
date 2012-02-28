@@ -5,10 +5,8 @@
 #define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +107,7 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
   PetscFunctionBegin;
   norms[0]  = fnorm;
   for(i=1; i < 3; ++i) {
-    ierr = VecWAXPY(W, alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
+    ierr = VecWAXPY(W, -alphas[i], Y, X);CHKERRQ(ierr);     /* W =  X^n - \alpha Y */
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, &norms[i]);CHKERRQ(ierr);
   }
@@ -145,7 +143,7 @@ PetscErrorCode SNESLineSearchQuadratic_NRichardson(SNES snes,void *lsctx,Vec X,V
     ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, alpha, Y);CHKERRQ(ierr);
+  ierr = VecAXPY(W, -alpha, Y);CHKERRQ(ierr);
   if (alpha != 1.0) {
     ierr = SNESComputeFunction(snes, W, G);CHKERRQ(ierr);
     ierr = VecNorm(G, NORM_2, gnorm);CHKERRQ(ierr);
@@ -219,10 +217,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (!snes->pc) {
-      ierr = VecCopy(F,Y);CHKERRQ(ierr);
-      ierr = VecScale(Y,-1.0);CHKERRQ(ierr);
-    } else {
+    else if (snes->pc) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
@@ -230,10 +225,12 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
+      ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-
-      ierr = (*snes->ops->linesearch)(snes, snes->lsP, X, F, Y, fnorm, 0.0, G, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = SNESLineSearchPreCheckApply(snes, X, Y, PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes, X, F, Y, fnorm, 0.0, W, G, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -285,10 +282,10 @@ PetscErrorCode  SNESLineSearchSetType_NRichardson(SNES snes, SNESLineSearchType 
     ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
     break;
   case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_NRichardson,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_SECANT:
     ierr = SNESLineSearchSet(snes,SNESLineSearchQuadraticSecant,PETSC_NULL);CHKERRQ(ierr);
+    break;
+  case SNES_LS_CRITICAL:
+    ierr = SNESLineSearchSet(snes,SNESLineSearchCriticalSecant,PETSC_NULL);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
@@ -305,8 +302,7 @@ EXTERN_C_END
   Level: beginner
 
   Options Database:
-+   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
--   -snes_ls <basic,basicnormnorms,quadratic>
+.   -snes_ls <basic,basicnormnorms,quadratic,critical> Line search type.
 
   Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
@@ -316,7 +312,7 @@ EXTERN_C_END
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESNQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -335,8 +331,11 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   snes->usesksp              = PETSC_FALSE;
   snes->usespc               = PETSC_TRUE;
 
+  snes->max_funcs = 30000;
+  snes->max_its   = 10000;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_NRichardson",SNESLineSearchSetType_NRichardson);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_SECANT);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(snes, SNES_LS_QUADRATIC);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

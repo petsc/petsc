@@ -736,10 +736,8 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
 #define __FUNCT__ "SNESReset_LS"
 PetscErrorCode SNESReset_LS(SNES snes)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -761,7 +759,6 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESReset_LS(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

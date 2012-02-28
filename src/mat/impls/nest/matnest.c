@@ -195,6 +195,8 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetISs_C",      "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetLocalISs_C", "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",   "",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -211,7 +213,18 @@ static PetscErrorCode MatAssemblyBegin_Nest(Mat A,MatAssemblyType type)
   PetscFunctionBegin;
   for (i=0; i<vs->nr; i++) {
     for (j=0; j<vs->nc; j++) {
-      if (vs->m[i][j]) { ierr = MatAssemblyBegin(vs->m[i][j],type);CHKERRQ(ierr); }
+      if (vs->m[i][j]) {
+        ierr = MatAssemblyBegin(vs->m[i][j],type);CHKERRQ(ierr);
+        if (!vs->splitassembly) {
+          /* Note: split assembly will fail if the same block appears more than once (even indirectly through a nested
+           * sub-block). This could be fixed by adding a flag to Mat so that there was a way to check if a Mat was
+           * already performing an assembly, but the result would by more complicated and appears to offer less
+           * potential for diagnostics and correctness checking. Split assembly should be fixed once there is an
+           * interface for libraries to make asynchronous progress in "user-defined non-blocking collectives".
+           */
+          ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr);
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -228,7 +241,11 @@ static PetscErrorCode MatAssemblyEnd_Nest(Mat A, MatAssemblyType type)
   PetscFunctionBegin;
   for (i=0; i<vs->nr; i++) {
     for (j=0; j<vs->nc; j++) {
-      if (vs->m[i][j]) { ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr); }
+      if (vs->m[i][j]) {
+        if (vs->splitassembly) {
+          ierr = MatAssemblyEnd(vs->m[i][j],type);CHKERRQ(ierr);
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -246,7 +263,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatRow(Mat A,PetscInt row,Mat *B)
   PetscFunctionBegin;
   sub = (row < vs->nc) ? vs->m[row][row] : PETSC_NULL; /* Prefer to find on the diagonal */
   for (j=0; !sub && j<vs->nc; j++) sub = vs->m[row][j];
-  if (sub) {ierr = MatPreallocated(sub);CHKERRQ(ierr);} /* Ensure that the sizes are available */
+  if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
   PetscFunctionReturn(0);
 }
@@ -263,7 +280,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatCol(Mat A,PetscInt col,Mat *B)
   PetscFunctionBegin;
   sub = (col < vs->nr) ? vs->m[col][col] : PETSC_NULL; /* Prefer to find on the diagonal */
   for (i=0; !sub && i<vs->nr; i++) sub = vs->m[i][col];
-  if (sub) {ierr = MatPreallocated(sub);CHKERRQ(ierr);} /* Ensure that the sizes are available */
+  if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
   PetscFunctionReturn(0);
 }
@@ -333,14 +350,15 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
     ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
     isFullCol = PETSC_TRUE;
-    for (i=0,an=0; i<vs->nc; i++) {
+    for (i=0,an=A->cmap->rstart; i<vs->nc; i++) {
       ierr = ISStrideGetInfo(is->col[i],&afirst,&astep);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is->col[i],&am);CHKERRQ(ierr);
       if (afirst != an || astep != step) isFullCol = PETSC_FALSE;
       an += am;
     }
-    if (an != n) isFullCol = PETSC_FALSE;
+    if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
   }
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&isFullCol,1,MPI_INT,MPI_LAND,((PetscObject)iscol)->comm);CHKERRQ(ierr);
 
   if (isFullCol) {
     PetscInt row;
@@ -847,6 +865,94 @@ PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatNestGetISs_Nest"
+PETSC_EXTERN_C PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
+{
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (rows) for (i=0; i<vs->nr; i++) rows[i] = vs->isglobal.row[i];
+  if (cols) for (i=0; i<vs->nc; i++) cols[i] = vs->isglobal.col[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestGetISs"
+/*@C
+ MatNestGetISs - Returns the index sets partitioning the row and column spaces
+
+ Not collective
+
+ Input Parameters:
+.   A  - nest matrix
+
+ Output Parameter:
++   rows - array of row index sets
+-   cols - array of column index sets
+
+ Level: advanced
+
+ Notes: 
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetLocalISs()
+@*/
+PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscUseMethod(A,"MatNestGetISs_C",(Mat,IS[],IS[]),(A,rows,cols));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatNestGetLocalISs_Nest"
+PETSC_EXTERN_C PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
+{
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (rows) for (i=0; i<vs->nr; i++) rows[i] = vs->islocal.row[i];
+  if (cols) for (i=0; i<vs->nc; i++) cols[i] = vs->islocal.col[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestGetLocalISs"
+/*@C
+ MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces
+
+ Not collective
+
+ Input Parameters:
+.   A  - nest matrix
+
+ Output Parameter:
++   rows - array of row index sets (or PETSC_NULL to ignore)
+-   cols - array of column index sets (or PETSC_NULL to ignore)
+
+ Level: advanced
+
+ Notes:
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetISs()
+@*/
+PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscUseMethod(A,"MatNestGetLocalISs_C",(Mat,IS[],IS[]),(A,rows,cols));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatNestSetVecType_Nest"
@@ -1254,7 +1360,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
    Level: advanced
 
-.seealso: MatCreate(), VecCreateNest(), DMGetMatrix(), MATNEST
+.seealso: MatCreate(), VecCreateNest(), DMCreateMatrix(), MATNEST
 @*/
 PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
@@ -1265,6 +1371,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   *B = 0;
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATNEST);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatNestSetSubMats(A,nr,is_row,nc,is_col,a);CHKERRQ(ierr);
   *B = A;
   PetscFunctionReturn(0);
@@ -1278,7 +1385,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   Notes:
   This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
   It allows the use of symmetric and block formats for parts of multi-physics simulations.
-  It is usually used with DMComposite and DMGetMatrix()
+  It is usually used with DMComposite and DMCreateMatrix()
 
 .seealso: MatCreate(), MatType, MatCreateNest()
 M*/
@@ -1292,9 +1399,12 @@ PetscErrorCode MatCreate_Nest(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(A,Mat_Nest,&s);CHKERRQ(ierr);
-  A->data         = (void*)s;
-  s->nr = s->nc   = -1;
-  s->m            = PETSC_NULL;
+  A->data = (void*)s;
+
+  s->nr            = -1;
+  s->nc            = -1;
+  s->m             = PETSC_NULL;
+  s->splitassembly = PETSC_FALSE;
 
   ierr = PetscMemzero(A->ops,sizeof(*A->ops));CHKERRQ(ierr);
   A->ops->mult                  = MatMult_Nest;
@@ -1325,6 +1435,8 @@ PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "MatNestSetSubMat_Nest",   MatNestSetSubMat_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "MatNestGetSubMats_Nest",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "MatNestGetSize_Nest",     MatNestGetSize_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetISs_C",      "MatNestGetISs_Nest",      MatNestGetISs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetLocalISs_C", "MatNestGetLocalISs_Nest", MatNestGetLocalISs_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "MatNestSetVecType_Nest",  MatNestSetVecType_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",  "MatNestSetSubMats_Nest",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
 

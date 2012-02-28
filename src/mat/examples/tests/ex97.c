@@ -14,6 +14,7 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm,Mat *A)
   ierr = MatCreate(comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,5,6,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(B,&ms,&me);CHKERRQ(ierr);
   for (i=ms; i<me; i++) {
     ierr = MatSetValue(B,i,i,1.0*i,INSERT_VALUES);CHKERRQ(ierr);

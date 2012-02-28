@@ -1,45 +1,44 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <title>PETSc: Docs:&nbsp; Changes: Development</title>
-</head>
-<body style="background-color: rgb(213, 234, 255);">
-<table width="100%">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 2.3.2</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 2.3.2<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%"><!--##begin-->
-      <h1> Docs:&nbsp;Changes: Development</h1>
-<!--##end--> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
-      <ul>
-        <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../index.html"><strong>Documentation</strong></a>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
           <ul>
-            <li><a href="../index.html#Manual"><strong>Manual pages and
-Users Manual</strong></a></li>
-            <li><a href="../referencing.html"><strong>Referencing&nbsp;
-PETSc</strong></a></li>
-            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-            <li><strong><a href="../installation.html">Installation</a>
-              </strong></li>
-	    <li><strong><a href="../zope.html">Zope</a></strong></li>
-            <li><strong><a href="index.html">Changes</a></strong>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a> </li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
               <ul>
-                <li><font color="#ff0000">2.3.2</font></li>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><span class="current">2.3.2</span></li>
                 <li><a href="231.html">2.3.1</a></li>
                 <li><a href="230.html">2.3.0</a></li>
                 <li><a href="221.html">2.2.1</a></li>
@@ -54,151 +53,163 @@ PETSc</strong></a></li>
                 <li><a href="2028.html">2.0.28</a></li>
                 <li><a href="2024.html">2.0.24</a></li>
                 <li><a href="2022.html">2.0.22</a></li>
-                <li><a href="2918-21.html">2.0.21</a></li>
-                <li><a href="2918-21.html">2.0.18-20</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
                 <li><a href="2017.html">2.0.17</a></li>
                 <li><a href="2016.html">2.0.16</a></li>
                 <li><a href="2015.html">2.0.15</a></li>
               </ul>
             </li>
-            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="../copyright.html">Copyright</a></strong>
-            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
-        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External
-Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
       </ul>
-      </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
-in the PETSc 2.3.2</font></p>
-      <p><u><b>General:</b></u><br>
-      </p>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2><a name="CHANGES">CHANGES in PETSc 2.3.2</a></h2>
+      </div>
+
+      <h4>General:</h4>
+
       <ul>
-        <li>We have a new Semi-Lagrangian advection solver using the
-method of characteristics to the <tt>src/contrib/semiLagrange</tt>,
-contributed by <a href="mailto:katz@ldeo.columbia.edu">Richard Katz</a>
-and <a href="mailto:mspieg@ldeo.columbia.edu">Marc Spiegelman</a> of
-Columbia University. Examples are included.</li>
-        <li>Added C99 complex support. [check configure changes below]<br>
+        <li>
+          We have a new Semi-Lagrangian advection solver using the method of
+          characteristics to the <tt>src/contrib/semiLagrange</tt>, contributed
+          by <a href="mailto:katz@ldeo.columbia.edu">Richard Katz</a> and <a
+            href="mailto:mspieg@ldeo.columbia.edu">Marc Spiegelman</a> of
+          Columbia University. Examples are included.
+        </li>
+
+        <li>Added C99 complex support. [check configure changes below]</li>
+      </ul>
+
+      <h4>Vec:</h4>
+      <h4>Mat:</h4>
+
+      <ul>
+        <li>Added MatCreateScatter() and MATSCATTER to easily construct efficient "restriction operators"</li>
+        <li>Removed MatConvertRegister() and friends, added (*convertfrom) to Mat function table to replace it</li>
+      </ul>
+
+      <h4>PC:</h4>
+
+      <ul>
+        <li>
+          Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to
+          allow easy creating of Galerkin-like preconditioners. 
+        </li>
+
+        <li> Added PCGetOperatorsSet()</li>
+        <li>
+          Added support for the KSP/PC to auto-create the Mat(s) for you.
+          (Which you usally set with KSP/PCSetOperators()). See manual page for
+          KSP/PCGetOperators(). Note this is slightly speculative code
+          currently. 
+        </li>
+
+        <li>
+          PCSetOperators()/KSPSetOperators() now do reference counting on the
+          operators you pass in. Current usage will work, however this means
+          you NO LONGER need to keep a reference to the operators around until
+          the KSP/PC object is destroyed. 
         </li>
       </ul>
-      <p><u><b>Vec:</b></u><br>
-      </p>
+
+      <h4>KSP:</h4>
+
       <ul>
+
+        <li>
+          Added KSPDefaultConvergedSetUIRNorm() and
+          -ksp_default_converged_initial_residual_norm to go back to the pre
+          PETSc 2.3.1 of determing relative tolerance for convergence. 
+        </li>
+
+        <li>Added KSPGetOperatorsSet()</li>
       </ul>
-      <p><u><b>Mat:</b></u></p>
+
+      <h4>config/configure.py:</h4>
+
       <ul>
-        <li>Added MatCreateScatter() and MATSCATTER to easily construct
-efficient "restriction operators"</li>
-        <li>Removed MatConvertRegister() and friends, added
-(*convertfrom) to Mat function table to replace it </li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>PC:</b></u></p>
-      <ul>
-        <li>Added PCGALERKIN and
-PCGalerkinSetRestriction/Interpolation() to allow easy creating of
-Galerkin-like preconditioners. </li>
-        <li> Added PCGetOperatorsSet() </li>
-        <li> Added support for the KSP/PC to auto-create the Mat(s) for
-you. (Which you usally set with KSP/PCSetOperators()). See manual page
-for KSP/PCGetOperators(). Note this is slightly speculative code
-currently. </li>
-        <li> PCSetOperators()/KSPSetOperators() now do reference
-counting on the operators you pass in. Current usage will work, however
-this means you NO LONGER need to keep a reference to the operators
-around until the KSP/PC object is destroyed. </li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>KSP:</b></u><br>
-      </p>
-      <ul>
-        <li>Added KSPDefaultConvergedSetUIRNorm() and
--ksp_default_converged_initial_residual_norm to go back to the pre
-PETSc 2.3.1 of determing relative tolerance for convergence. </li>
-        <li> Added KSPGetOperatorsSet() </li>
-      </ul>
-      <p><u><b>config/configure.py:<br>
-      </b></u></p>
-      <ul>
-        <li>&nbsp;Now c++ complex version requires the options'
-'--with-scalar-type=complex --with-clanguage=cxx'. Specyfing only
-'--with-scalar-type=complex'
-will default to '--with-clanguage=c'&nbsp; i.e uses C99 complex support.<br>
+        <li>
+          Now c++ complex version requires the options'
+          '--with-scalar-type=complex --with-clanguage=cxx'. Specyfing only
+          '--with-scalar-type=complex' will default to '--with-clanguage=c' i.e
+          uses C99 complex support.
         </li>
       </ul>
-      <p> </p>
+
+      <h4>SNES:</h4>
+
       <ul>
-      </ul>
-      <p><u><b>SNES:</b></u></p>
-      <ul>
-        <li>The convergence test functions for SNES now pass the
-current iteration in as the second argument. Also the convergence test
-routine is called after the initial function evaluation in SNES but
-before the first Newton step is computed. </li>
-        <li>Added SNESSetKSP(). </li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>TS:</b></u><br>
-      </p>
-      <ul>
-      </ul>
-      <p><u><b>DA:</b></u><br>
-      </p>
-      <ul>
-      </ul>
-      <p><u><b>DMMG:</b></u><br>
-      </p>
-      <ul>
-      </ul>
-      <p><u><b>SYS:</b></u><br>
-      </p>
-      <ul>
-        <li>Removed PetscRandomType from the prototype of
-PetscRandomCreate(). <br>
+        <li>
+          The convergence test functions for SNES now pass the current
+          iteration in as the second argument. Also the convergence test
+          routine is called after the initial function evaluation in SNES but
+          before the first Newton step is computed.
         </li>
-        <li>Added PetscRandomSetType(), PetscRandomGetValueReal() and
-PetscRandomGetValueImaginary(). <br>
-        </li>
-        <li>Replaced RANDOM_DEFAULT,
-RANDOM_DEFAULT_REAL and RANDOM_DEFAULT_IMAGINARY, the type of random
-numbers, with PETSCRAND48, PETSCRAND etc.<br>
+
+        <li>Added SNESSetKSP().</li>
+      </ul>
+
+      <h4>TS:</h4>
+      <h4>DA:</h4>
+      <h4>DMMG:</h4>
+      <h4>SYS:</h4>
+
+      <ul>
+        <li>Removed PetscRandomType from the prototype of PetscRandomCreate().</li>
+        <li>Added PetscRandomSetType(), PetscRandomGetValueReal() and PetscRandomGetValueImaginary().</li>
+
+        <li>
+          Replaced RANDOM_DEFAULT, RANDOM_DEFAULT_REAL and
+          RANDOM_DEFAULT_IMAGINARY, the type of random numbers, with
+          PETSCRAND48, PETSCRAND etc.
         </li>
       </ul>
-      <p><u><b>AO:</b></u></p>
+
+      <h4>AO:</h4>
+
       <ul>
-        <li>AODATA object and associated routines are now depricated
-and scheduled for future removal</li>
+        <li>AODATA object and associated routines are now depricated and scheduled for future removal</li>
       </ul>
-      <p><u><b>Fortran:</b></u><br>
-      </p>
+
+      <h4>Fortran:</h4>
+
+      <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
+
       <ul>
+        <li>SPRNG support added.</li>
       </ul>
-      <p><u><b><a
- href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u><br>
-      </p>
-      <ul>
-SPRNG support added.
-      </ul>
-      <br>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

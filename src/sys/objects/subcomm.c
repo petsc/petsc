@@ -144,9 +144,7 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - MPI communicator
-.  nsubcomm - the number of subcommunicators to be created
--  subcommtype - subcommunicator type
+.  comm - MPI communicator
 
    Output Parameter:
 .  psubcomm - location to store the PetscSubcomm context

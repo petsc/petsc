@@ -287,6 +287,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -451,6 +452,59 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptCheckStage"
+/*@
+   TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails)
+
+   Collective
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  ts - time stepper
+
+   Output Arguments:
+.  accept - PETSC_TRUE to accept the stage, PETSC_FALSE to reject
+
+   Level: developer
+
+.seealso:
+@*/
+PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
+{
+  PetscErrorCode      ierr;
+  SNES                snes;
+  SNESConvergedReason snesreason;
+
+  PetscFunctionBegin;
+  *accept = PETSC_TRUE;
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes,&snesreason);CHKERRQ(ierr);
+  if (snesreason < 0) {
+    PetscReal dt,new_dt;
+    *accept = PETSC_FALSE;
+    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+    if (ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+      ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+      ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+      if (adapt->monitor) {
+        ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D stage rejected t=%-11g+%10.3e, %D failures exceeds current TS allowed\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,dt,ts->num_snes_failures);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+      }
+    } else {
+      new_dt = dt*adapt->scale_solve_failed;
+      ierr = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
+      if (adapt->monitor) {
+        ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D stage rejected t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate"
 /*@
   TSAdaptCreate - create an adaptive controller context for time stepping
@@ -480,8 +534,9 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   *inadapt = 0;
   ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,0,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
-  adapt->dt_min = 1e-20;
-  adapt->dt_max = 1e50;
+  adapt->dt_min             = 1e-20;
+  adapt->dt_max             = 1e50;
+  adapt->scale_solve_failed = 0.25;
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

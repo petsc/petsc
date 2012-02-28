@@ -115,7 +115,7 @@ int main(int argc,char **argv)
 
   ierr = DMDASetLocalFunction(user.da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
 
-  ierr = SNESSetFunction(snes,user.r,SNESDAFormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,user.r,SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
     ierr      = MatMPIAIJSetPreallocation(user.J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
     user.A    = user.J;
   } else {
-    ierr      = DMGetMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
+    ierr      = DMCreateMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
     user.A    = user.J;
   }
 
@@ -163,10 +163,10 @@ int main(int argc,char **argv)
 #endif
 
   if (fd_jacobian) {
-    ierr = DMGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(user.J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,user.A,user.J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else {
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Explicitly check norm of the residual of the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESDAFormFunction(snes,user.psi,user.r,(void*)&user);CHKERRQ(ierr);
+  ierr = SNESDMDAComputeFunction(snes,user.psi,user.r,(void*)&user);CHKERRQ(ierr);
   ierr = VecNorm(user.r,NORM_MAX,&fnorm);CHKERRQ(ierr); 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D fnorm %G\n",its,fnorm);CHKERRQ(ierr);
 
@@ -301,7 +301,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
       ierr = VecLoad(Y,view_in);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&view_in);CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
-      ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);
+      ierr = SNESDMDAComputeFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);
       ierr = VecNorm(user->r,NORM_2,&fnorm);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"In initial guess: psi_bdy = %f, fnorm = %G.\n",user->psi_bdy,fnorm);CHKERRQ(ierr);
       ierr = VecCopy(Y,X);CHKERRQ(ierr);

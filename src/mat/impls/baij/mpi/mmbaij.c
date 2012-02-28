@@ -36,7 +36,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
-        ierr = PetscTableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
   } 
@@ -51,7 +51,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
   ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<ec; i++) {
-    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
+    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for (i=0; i<B->mbs; i++) {
@@ -181,6 +181,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz);CHKERRQ(ierr);
+  ((Mat_SeqBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
   ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {

@@ -117,14 +117,21 @@ struct _n_PetscSection {
   PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
   PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
   PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  PetscBool                     setup;
 
   PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
+  const char                  **fieldNames;   /* The field names */
+  PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+extern PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
+extern PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
+extern PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
+extern PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
@@ -143,9 +150,19 @@ extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscI
 extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
 extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
+extern PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
+extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
+extern PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
+
+/* Sieve support */
+extern PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
+extern PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
+extern PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
 
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
 extern PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
@@ -255,7 +272,15 @@ typedef struct {
 } VecStash;
 
 #if defined(PETSC_HAVE_CUSP)
-/* Defines the flag structure that the CUSP arch uses. */
+/*E
+    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
+   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
+   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+ 
+E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
 
@@ -348,9 +373,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUSP_CPU;
-    }
+    x->valid_GPU_array = PETSC_CUSP_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);

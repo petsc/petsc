@@ -1,4 +1,4 @@
-/*   DMMG/KSP solving a system of linear equations.
+/*   DM/KSP solving a system of linear equations.
      Poisson equation in 2D: 
 
      div(grad p) = f,  0 < x,y < 1
@@ -23,13 +23,12 @@ static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 #include <petscsys.h>
 #include <petscvec.h>
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
-extern PetscErrorCode ComputeTrueSolution(DMMG *, Vec);
+extern PetscErrorCode ComputeJacobian(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeTrueSolution(DM, Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -42,91 +41,47 @@ typedef struct {
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
-{
-  DMMG           *dmmg;
+{ 
+  KSP            ksp;
   DM             da;
   UserContext    user;
-  PetscInt       l, bc, mglevels, M, N, stages[3];
-  PetscReal      norm;
+  PetscInt       bc;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,nproc;
-  PetscBool      flg;
       
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("DMMG Setup",&stages[0]);  CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("DMMG Solve",&stages[1]);  CHKERRQ(ierr);
-      
-  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);   /* Start DMMG Setup */
-  
-  /* SET VARIABLES: */
-  mglevels = 1;  
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mglevels",&mglevels,PETSC_NULL);  CHKERRQ(ierr);
-  M = 11;        /* number of grid points in x dir. on coarse grid */
-  N = 11;        /* number of grid points in y dir. on coarse grid */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);  CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);  CHKERRQ(ierr);
-  
-  ierr = DMMGCreate(PETSC_COMM_WORLD,mglevels,PETSC_NULL,&dmmg); CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);
-  ierr = DMDestroy(&da); CHKERRQ(ierr);
-  
-  /* Set user contex */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);  
+  ierr = KSPSetDM(ksp,(DM)da);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+
   user.uu = 1.0;
   user.tt = 1.0;
   bc   = (PetscInt)NEUMANN; // Use Neumann Boundary Conditions
   user.bcType = (BCType)bc;
-  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-    ierr = DMMGSetUser(dmmg,l,&user); CHKERRQ(ierr);
-  }  
-  
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);  CHKERRQ(ierr);
-  if (user.bcType == NEUMANN){
-     ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);  CHKERRQ(ierr);
-  }
-  ierr = PetscLogStagePop();  CHKERRQ(ierr); /* Finish DMMG Setup */
 
-  /* DMMG SOLVE: */
-  ierr = PetscLogStagePush(stages[1]);  CHKERRQ(ierr); /* Start DMMG Solve */
-  ierr = DMMGSolve(dmmg);  CHKERRQ(ierr);
-  ierr = PetscLogStagePop();  CHKERRQ(ierr); /* Finish DMMG Solve */
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeJacobian);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  /* Compare solution with the true solution p */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-cmp_solu", &flg);CHKERRQ(ierr);
-  if (flg){
-    Vec   x,p;
-    if (mglevels != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"mglevels must equls 1 for comparison");
-    if (nproc > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"num of proc must equls 1 for comparison");
-    x = DMMGGetx(dmmg);
-    ierr = VecDuplicate(x,&p);CHKERRQ(ierr);
-    ierr = ComputeTrueSolution(dmmg,p);CHKERRQ(ierr);
-
-    ierr = VecAXPY(p,-1.0,x);CHKERRQ(ierr);  /* p <- (p-x) */
-    ierr = VecNorm(p, NORM_2, &norm);CHKERRQ(ierr);
-    if (!rank){printf("| solu_compt - solu_true | = %g\n",norm);}
-    ierr = VecDestroy(&p);CHKERRQ(ierr);
-  }
-   
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMDestroy(&da); CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 
-// COMPUTE RHS:--------------------------------------------------------------
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS" 
-PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
+PetscErrorCode ComputeRHS(DM da, Vec x,Vec b)
 {
-  DM             da = dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext    *user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
   PetscScalar    Hx, Hy, pi, uu, tt;
   PetscScalar    **array;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
   pi = 4*atan(1.0); 
@@ -149,25 +104,26 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
-    ierr = KSPGetNullSpace(dmmg->ksp,&nullspace); CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL); CHKERRQ(ierr);
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-// COMPUTE JACOBIAN:--------------------------------------------------------------
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian" 
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
+PetscErrorCode ComputeJacobian(DM da, Vec x,Mat J, Mat jac,MatStructure*str)
 {
-  DM             da =  dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext    *user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm, ym, xs, ys, num, numi, numj;
   PetscScalar    v[5], Hx, Hy, HydHx, HxdHy;
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
@@ -215,130 +171,13 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
-
-// COMPUTE TrueSolution:--------------------------------------------------------------
-#undef __FUNCT__
-#define __FUNCT__ "ComputeTrueSolution" 
-PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
-{
-  DM             da = (*dmmg)->dm;
-  UserContext    *user = (UserContext *) (*dmmg)->user;
-  PetscErrorCode ierr;
-  PetscInt       i, j, M, N, xm ,ym ,xs, ys;
-  PetscScalar    Hx, Hy, pi, uu, tt, cc;
-  PetscScalar    *array;
-
-  PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr); /* level_0 ! */
-  //printf("ComputeTrueSolution - M N: %d %d;\n",M,N);
-
-  uu = user->uu; tt = user->tt;
-  pi = 4*atan(1.0); 
-  cc = -1.0/( (uu*pi)*(uu*pi) + (tt*pi)*(tt*pi) );
-  Hx   = 1.0/(PetscReal)(M);
-  Hy   = 1.0/(PetscReal)(N);
-
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = VecGetArray(b, &array); CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
-      array[j*xm+i] = cos(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*cc;
-    }
-  }
-  ierr = VecRestoreArray(b, &array); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-// VECVIEW_VTK:--------------------------------------------------------------
-#undef __FUNCT__
-#define __FUNCT__ "VecView_VTK" 
-PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
-{
-  MPI_Comm           comm;
-  DM                 da;
-  Vec                coords;
-  PetscViewer        viewer;
-  PetscScalar        *array, *values;
-  PetscInt           nn, NN, maxn, M, N;
-  PetscInt           i, p, dof = 1;
-  MPI_Status         status;
-  PetscMPIInt        rank, size, tag;
-  PetscErrorCode     ierr;
-  PetscBool          flg;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) x, &comm); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(comm, filename, &viewer); CHKERRQ(ierr);
-
-  ierr = VecGetSize(x, &NN); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x, &nn); CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) x, "DM", (PetscObject *) &da); CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
-  ierr = PetscTypeCompare((PetscObject)da,DMDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
-
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,&dof,0,0,0,0,0); CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n"); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Inhomogeneous Poisson Equation with %s boundary conditions\n", bcName); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "ASCII\n"); CHKERRQ(ierr);
-  // get coordinates of nodes 
-  ierr = DMDAGetCoordinates(da, &coords); CHKERRQ(ierr);
-  if (!coords) {
-    ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0); CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da, &coords); CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "DATASET RECTILINEAR_GRID\n"); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "DIMENSIONS %d %d %d\n", M, N, 1); CHKERRQ(ierr);
-  ierr = VecGetArray(coords, &array);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "X_COORDINATES %d double\n", M); CHKERRQ(ierr);
-  for(i = 0; i < M; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%G ", PetscRealPart(array[i*2])); CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Y_COORDINATES %d double\n", N); CHKERRQ(ierr);
-  for(i = 0; i < N; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%G ", PetscRealPart(array[i*M*2+1])); CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Z_COORDINATES %d double\n", 1); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%G\n", 0.0); CHKERRQ(ierr);
-  ierr = VecRestoreArray(coords, &array); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", 1); CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"); CHKERRQ(ierr);
-  ierr = VecGetArray(x, &array); CHKERRQ(ierr);
-
-  // Determine maximum message to arrive:
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size) ;CHKERRQ(ierr);
-  ierr = MPI_Reduce(&nn, &maxn, 1, MPIU_INT, MPI_MAX, 0, comm); CHKERRQ(ierr);
-  tag  = ((PetscObject) viewer)->tag;
-  if (!rank) {
-    ierr = PetscMalloc((maxn+1) * sizeof(PetscScalar), &values); CHKERRQ(ierr);
-    for(i = 0; i < nn; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%G\n", PetscRealPart(array[i])); CHKERRQ(ierr);
-    }
-    for(p = 1; p < size; p++) {
-      ierr = MPI_Recv(values, (PetscMPIInt) nn, MPIU_SCALAR, p, tag, comm, &status); CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status, MPIU_SCALAR, &nn); CHKERRQ(ierr);        
-      for(i = 0; i < nn; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "%G\n", PetscRealPart(array[i])); CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscFree(values); CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Send(array, nn, MPIU_SCALAR, 0, tag, comm); CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(x, &array); CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
-      
-  PetscFunctionReturn(0);
-  }
-
-
-
 

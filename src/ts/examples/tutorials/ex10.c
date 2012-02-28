@@ -1042,7 +1042,7 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
-  ierr = DMGetMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -1071,7 +1071,7 @@ int main(int argc, char *argv[])
     break;
   case JACOBIAN_FD_COLORING: {
     ISColoring     iscoloring;
-    ierr = DMGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);

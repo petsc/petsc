@@ -1004,7 +1004,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         icol_i = icol[i];
         cmap_i = cmap[i];
         for (j=0; j<jmax; j++) { 
-          ierr = PetscTableAdd(cmap_i,icol_i[j]+1,j+1);CHKERRQ(ierr);
+          ierr = PetscTableAdd(cmap_i,icol_i[j]+1,j+1,INSERT_VALUES);CHKERRQ(ierr);
         }
       } else {
         cmap[i] = PETSC_NULL;
@@ -1103,9 +1103,9 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
     rmap_i = rmap[i];
     for (j=0; j<jmax; j++) { 
       if (allrows[i]){
-        ierr = PetscTableAdd(rmap_i,j+1,j+1);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(rmap_i,j+1,j+1,INSERT_VALUES);CHKERRQ(ierr); 
       } else {
-        ierr = PetscTableAdd(rmap_i,irow_i[j]+1,j+1);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(rmap_i,irow_i[j]+1,j+1,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
 #else

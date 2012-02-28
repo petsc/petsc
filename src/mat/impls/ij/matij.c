@@ -1965,6 +1965,7 @@ PetscErrorCode MatMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal fill, Ma
   ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &At);                CHKERRQ(ierr);
   ierr = MatTransposeMatMult(At, B, MAT_INITIAL_MATRIX, 1.0, &C); CHKERRQ(ierr);
   ierr = MatDestroy(&At);                                         CHKERRQ(ierr);
+  C->ops->matmult = MatMatMult_IJ_IJ;
   *CC = C;
   PetscFunctionReturn(0);
 }

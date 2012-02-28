@@ -93,7 +93,7 @@ PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat mat)
 #if defined (PETSC_USE_CTABLE)
   ierr = PetscTableCreate(baij->nbs,baij->Nbs+1,&baij->colmap);CHKERRQ(ierr); 
   for (i=0; i<nbs; i++){
-    ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
+    ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1,INSERT_VALUES);CHKERRQ(ierr);
   }
 #else
   ierr = PetscMalloc((baij->Nbs+1)*sizeof(PetscInt),&baij->colmap);CHKERRQ(ierr);
@@ -258,6 +258,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
     } else {
       if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
+        mat->assembled = PETSC_FALSE;
         if (roworiented) {
           ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
@@ -1014,6 +1015,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
     }
     ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(A,mat->rmap->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* copy over the A part */
@@ -1647,7 +1649,8 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    /* Do not know preallocation information, but must set block size */
+    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL);CHKERRQ(ierr);
   } else {
     B = *matout;
   }
@@ -1952,8 +1955,8 @@ PetscErrorCode MatCopy_MPIBAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_MPIBAIJ"
-PetscErrorCode MatSetUpPreallocation_MPIBAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_MPIBAIJ"
+PetscErrorCode MatSetUp_MPIBAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -2792,7 +2795,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_MPIBAIJ,
+/*29*/ MatSetUp_MPIBAIJ,
        0,
        0,
        0,
@@ -2968,7 +2971,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -3014,8 +3017,11 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       i, newbs = PetscAbs(bs);
+  PetscBool      d_realalloc = PETSC_FALSE,o_realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (d_nz >= 0 || d_nnz) d_realalloc = PETSC_TRUE;
+  if (o_nz >= 0 || o_nnz) o_realalloc = PETSC_TRUE;
   if (bs < 0) {
     ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for MPIBAIJ matrix","Mat");CHKERRQ(ierr);
       ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatMPIBAIJSetPreallocation",newbs,&newbs,PETSC_NULL);CHKERRQ(ierr);
@@ -3077,6 +3083,9 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
 
   ierr = MatSeqBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
+  /* Do not error if the user did not give real preallocation information. Ugly because this would overwrite a previous user call to MatSetOption(). */
+  if (!d_realalloc) {ierr = MatSetOption(b->A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
+  if (!o_realalloc) {ierr = MatSetOption(b->B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -3342,7 +3351,8 @@ M*/
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
+           row) or PETSC_NULL.  If you plan to factor the matrix you must leave room for the diagonal entry and 
+           set it even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -3444,7 +3454,8 @@ PetscErrorCode  MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of nonzero blocks in the various block rows 
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
+           row) or PETSC_NULL.  If you plan to factor the matrix you must leave room for the diagonal entry 
+           and set it even if it is zero.
 .  o_nz  - number of nonzero blocks per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzero blocks in the various block rows of the

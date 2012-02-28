@@ -12,9 +12,9 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.x11      = framework.require('PETSc.packages.X11',self)
-    self.parmetis = framework.require('PETSc.packages.ParMetis',self)
-    self.deps = [self.x11, self.mpi, self.parmetis]
+    self.x        = framework.require('PETSc.packages.X',self)
+    self.parmetis = framework.require('PETSc.packages.parmetis',self)
+    self.deps = [self.x, self.mpi, self.parmetis]
     return
           
   def Install(self):
@@ -31,8 +31,8 @@ class Configure(PETSc.package.NewPackage):
       self.framework.popLanguage()
     args.append('AR="'+self.compilers.AR+' '+self.compilers.AR_FLAGS+'"')
     args.append('RANLIB="'+self.compilers.RANLIB+'"')
-    if self.x11.found:
-      args.append('X_LIBS="'+str(self.x11.lib)+'"')
+    if self.x.found:
+      args.append('X_LIBS="'+str(self.x.lib)+'"')
     if self.mpi.found:
       if self.mpi.include:
         args.append('MPI_INCPATH="'+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])+'"')

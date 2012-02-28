@@ -170,7 +170,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShellGetContext"
-/*@C
+/*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
     Not Collective
@@ -597,9 +597,9 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
-  
   ierr = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetContext(*A,ctx);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -662,7 +662,7 @@ $      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
     <OPERATION> is the name (in all capital letters) of the
     user interface routine (e.g., MatMult() -> MATOP_MULT).
 
-    All user-provided functions should have the same calling
+    All user-provided functions (execept for MATOP_DESTROY) should have the same calling
     sequence as the usual matrix interface routines, since they
     are intended to be accessed via the usual matrix interface
     routines, e.g., 

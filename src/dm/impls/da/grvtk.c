@@ -201,11 +201,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         if (!rank) {
           if (r) {
             PetscMPIInt nn;
-            ierr = MPI_Recv(array,nnodes*3,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
+            ierr = MPI_Recv(array,nnodes*dim,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
             ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-            if (nn != nnodes*3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+            if (nn != nnodes*dim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
           } else {
-            ierr = PetscMemcpy(array,coords,nnodes*3*sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscMemcpy(array,coords,nnodes*dim*sizeof(PetscScalar));CHKERRQ(ierr);
           }
           /* Transpose coordinates to VTK (C-style) ordering */
           for (k=0; k<zm; k++) {
@@ -219,7 +219,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
             }
           }
         } else if (r == rank) {
-          ierr = MPI_Send((void*)coords,nnodes*3,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+          ierr = MPI_Send((void*)coords,nnodes*dim,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
         }
         ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
       } else {       /* Fabricate some coordinates using grid index */

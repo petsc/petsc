@@ -21,6 +21,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   for (i=0; i<m; i++) {

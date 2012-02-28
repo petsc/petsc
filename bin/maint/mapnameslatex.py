@@ -245,7 +245,7 @@ if __name__ == "__main__":
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
-		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
+		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}' and bracket:

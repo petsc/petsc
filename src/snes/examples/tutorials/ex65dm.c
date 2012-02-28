@@ -26,11 +26,11 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(daf,&x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
 
-  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1);CHKERRQ(ierr);
+  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1); CHKERRQ(ierr);
   ierr = DMCoarsen(dac1,PETSC_COMM_WORLD,&dac2);CHKERRQ(ierr);
   ierr = DMCoarsen(dac2,PETSC_COMM_WORLD,&dac3);CHKERRQ(ierr);
   ierr = DMCoarsen(dac3,PETSC_COMM_WORLD,&dac4);CHKERRQ(ierr);
-  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);CHKERRQ(ierr);
+  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);  CHKERRQ(ierr);
   ierr = DMRefine(daf1,PETSC_COMM_WORLD,&daf2);CHKERRQ(ierr);
   ierr = DMRefine(daf2,PETSC_COMM_WORLD,&daf3);CHKERRQ(ierr);
   ierr = DMRefine(daf3,PETSC_COMM_WORLD,&daf4);CHKERRQ(ierr);
@@ -44,14 +44,14 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(daf3,&ym3);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daf4,&ym4);CHKERRQ(ierr);
 
-  ierr = DMGetInterpolation(dac1,daf,&interp_p1,&scaling_p1);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac2,dac1,&interp_p2,&scaling_p2);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac3,dac2,&interp_p3,&scaling_p3);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac4,dac3,&interp_p4,&scaling_p4);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(daf,daf1,&interp_m1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(daf1,daf2,&interp_m2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(daf2,daf3,&interp_m3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(daf3,daf4,&interp_m4,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac1,daf,&interp_p1,&scaling_p1);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac2,dac1,&interp_p2,&scaling_p2);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac3,dac2,&interp_p3,&scaling_p3);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac4,dac3,&interp_p4,&scaling_p4);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf,daf1,&interp_m1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf1,daf2,&interp_m2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf2,daf3,&interp_m3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf3,daf4,&interp_m4,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer_in);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer_in,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);

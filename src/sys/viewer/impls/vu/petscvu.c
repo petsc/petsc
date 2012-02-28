@@ -19,9 +19,9 @@ typedef struct {
   int           queueLength;
 } PetscViewer_VU;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_VU" 
-PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileClose_VU"
+static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   PetscErrorCode ierr;
@@ -32,7 +32,20 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   }
   ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
   ierr = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
+  vu->fd = PETSC_NULL;
   ierr = PetscFree(vu->filename);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_VU" 
+PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerFileClose_VU(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -80,6 +93,7 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
+  ierr = PetscViewerFileClose_VU(viewer);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
   if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);

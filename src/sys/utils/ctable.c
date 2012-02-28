@@ -114,7 +114,7 @@ PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
     PetscTableAddExpand - called PetscTableAdd() if more space needed
 
 */
-PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data)
+PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0;
@@ -133,13 +133,13 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data)
   ta->count     = 0;
   ta->head      = 0; 
     
-  ierr = PetscTableAdd(ta,key,data);CHKERRQ(ierr); 
+  ierr = PetscTableAdd(ta,key,data,INSERT_VALUES);CHKERRQ(ierr); 
   /* rehash */
   for (ii = 0; ii < tsize; ii++) {
     newk = oldkt[ii];
     if (newk) {
       ndata = oldtab[ii];
-      ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
+      ierr  = PetscTableAdd(ta,newk,ndata,imode);CHKERRQ(ierr); 
     }
   }
   if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
@@ -265,7 +265,7 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
     newk = oldkt[ii];
     if (newk) {
       ndata = oldtab[ii];
-      ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
+      ierr  = PetscTableAdd(ta,newk,ndata,INSERT_VALUES);CHKERRQ(ierr); 
     }
   }
   ierr = PetscTableAddCount(ta,key);CHKERRQ(ierr); 

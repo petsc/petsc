@@ -1579,7 +1579,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
     ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->cmap->n,A->rmap->N,A->cmap->n,A->rmap->N);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,PETSC_NULL,col);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,0,col);CHKERRQ(ierr);
     ierr = PetscFree(col);CHKERRQ(ierr);
   } else {
     C = *B;
@@ -2583,8 +2583,8 @@ PetscErrorCode MatCopy_SeqBAIJ(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetUpPreallocation_SeqBAIJ"
-PetscErrorCode MatSetUpPreallocation_SeqBAIJ(Mat A)
+#define __FUNCT__ "MatSetUp_SeqBAIJ"
+PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -2967,7 +2967,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        0,
        0,
-/*29*/ MatSetUpPreallocation_SeqBAIJ,
+/*29*/ MatSetUp_SeqBAIJ,
        0,
        0,
        MatGetArray_SeqBAIJ,
@@ -3123,10 +3123,10 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       i,mbs,nbs,bs2,newbs = PetscAbs(bs);
-  PetscBool      flg,skipallocation = PETSC_FALSE;
+  PetscBool      flg,skipallocation = PETSC_FALSE,realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
-
+  if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
     nz             = 0;
@@ -3262,6 +3262,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
   b->nz               = 0;
   b->maxnz            = nz;
   B->info.nz_unneeded = (PetscReal)b->maxnz*bs2;
+  if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -3308,7 +3309,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerVTKAddField"
-/*@
+/*@C
    PetscViewerVTKAddField - Add a field to the viewer
 
    Collective
@@ -75,6 +75,8 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   size_t          len;
 
   PetscFunctionBegin;
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
   if (isvts) {

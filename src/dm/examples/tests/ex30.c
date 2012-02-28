@@ -64,7 +64,7 @@ int main(int argc,char *argv[])
   ierr = DMSlicedSetPreallocation(slice,0,d_nnz,0,o_nnz);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
 
   if (!useblock) {ierr = DMSlicedSetBlockFills(slice,dfill,ofill);CHKERRQ(ierr);} /* Irrelevant for baij formats */
-  ierr = DMGetMatrix(slice,mat_type,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(slice,mat_type,&A);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 

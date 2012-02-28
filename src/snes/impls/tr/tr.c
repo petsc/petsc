@@ -244,10 +244,8 @@ static PetscErrorCode SNESSetUp_TR(SNES snes)
 #define __FUNCT__ "SNESReset_TR"
 PetscErrorCode SNESReset_TR(SNES snes)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

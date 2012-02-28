@@ -40,6 +40,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(RHS,PETSC_DECIDE,PETSC_DECIDE,n,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(RHS,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(RHS);CHKERRQ(ierr); 
+  ierr = MatSeqDenseSetPreallocation(RHS,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -71,7 +72,7 @@ int main(int argc,char **argv)
   /* Cholesky factorization - perm and factinfo are ignored by LAPACK */
   /* in-place Cholesky */
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+  ierr = MatDuplicate(mat,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
   ierr = MatCholeskyFactor(F,0,0);CHKERRQ(ierr);
   ierr = MatSolve(F,b,y);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
@@ -99,8 +100,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
-
+  ierr = MatDuplicate(mat,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
+  
   /* in-place LU */
   ierr = MatLUFactor(F,0,0,0);CHKERRQ(ierr);
   ierr = MatSolve(F,b,y);CHKERRQ(ierr);
@@ -110,11 +111,11 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
   ierr = MatMatSolve(F,RHS,SOLU);CHKERRQ(ierr);
+  ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
+  ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
   for (j=0; j<nrhs; j++){
-    ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
-    ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
-    ierr = VecPlaceArray(y,solu_array);CHKERRQ(ierr);
-    ierr = VecPlaceArray(b,rhs_array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(y,solu_array+j*m);CHKERRQ(ierr);
+    ierr = VecPlaceArray(b,rhs_array+j*m);CHKERRQ(ierr);
 
     ierr = MatMult(mat,y,ytmp);CHKERRQ(ierr); 
     ierr = VecAXPY(ytmp,-1.0,b);CHKERRQ(ierr); /* ytmp = mat*SOLU[:,j] - RHS[:,j] */
@@ -125,11 +126,12 @@ int main(int argc,char **argv)
     
     ierr = VecResetArray(b);CHKERRQ(ierr);
     ierr = VecResetArray(y);CHKERRQ(ierr);
-    ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
-    ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
   }
+  ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
+  ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
 
   ierr = MatDestroy(&F);CHKERRQ(ierr);
+
   /* out-place LU */
   ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,mat,0,0,0);CHKERRQ(ierr);

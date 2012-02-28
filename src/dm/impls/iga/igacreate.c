@@ -4,37 +4,26 @@
 #define __FUNCT__ "DMSetFromOptions_IGA"
 PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 {
-  /* DM_IGa       *iga = (DM_IGA *) dm->data; */
-  char           typeName[256];
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMIGA Options", "DMIGA");CHKERRQ(ierr);
-    /* Handle associated vectors */
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(dm, typeName);CHKERRQ(ierr);
-    }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMIGA Options");CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* External function declarations here */
 extern PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec);
-extern PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_IGA(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec l, InsertMode mode, Vec g);
 #if 0
 extern PetscErrorCode DMCreateLocalToGlobalMapping_IGA(DM dm);
-extern PetscErrorCode DMGetInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
+extern PetscErrorCode DMCreateInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 #endif
 extern PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMDestroy_IGA(DM dm);
@@ -66,8 +55,8 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = DMGetMatrix_IGA;
-  dm->ops->getinterpolation   = 0 /* DMGetInterpolation_IGA */;
+  dm->ops->creatematrix          = DMCreateMatrix_IGA;
+  dm->ops->createinterpolation   = 0 /* DMCreateInterpolation_IGA */;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

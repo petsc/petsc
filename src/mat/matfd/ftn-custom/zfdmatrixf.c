@@ -1,6 +1,9 @@
 #include <private/fortranimpl.h>
 #include <private/matimpl.h>
-#include <petscts.h>
+
+/* Declare these pointer types instead of void* for clarity, but do not include petscts.h so that this code does have an actual reverse dependency. */
+typedef struct _p_TS *TS;
+typedef struct _p_SNES *SNES;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS

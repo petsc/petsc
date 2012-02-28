@@ -9,7 +9,7 @@ SOURCEH  = ../../include/private/matimpl.h ../../include/petscmat.h blockinvert.
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = interface impls examples utils matfd partition order color f90-mod ftn-kernels
+DIRS     = interface impls examples utils matfd partition coarsen order color f90-mod ftn-kernels
 LOCDIR   = src/mat/
 MANSEC   = Mat
 

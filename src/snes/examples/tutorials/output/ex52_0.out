@@ -1,6 +1,6 @@
 Mesh in 2 dimensions:
-  9 0-cells
-  8 2-cells
+  0-cells: 9
+  2-cells: 8
 Residual:
 Vector Object: 1 MPI processes
   type: seq

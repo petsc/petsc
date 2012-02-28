@@ -47,6 +47,8 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   PetscFunctionBegin;
   if (SNESPackageInitialized) PetscFunctionReturn(0);
   SNESPackageInitialized = PETSC_TRUE;
+  /* Initialize subpackages */
+  ierr = SNESMSInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
@@ -55,6 +57,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = PetscLogEventRegister("SNESSolve",        SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",   SNES_CLASSID,&SNES_LineSearch);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESFunctionEval", SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESGSEval",       SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESJacobianEval", SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);

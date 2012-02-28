@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = ${GAMG_INCLUDE}
 FFLAGS   =
-SOURCEC  = gamg.c createProlongation.c
+SOURCEC  = gamg.c agg.c geo.c tools.c
 SOURCEF  =
 SOURCEH  = ../../../../../include/petscpcmg.h gamg.h 
-OBJSC    = gamg.o createProlongation.o
+OBJSC    = gamg.o agg.o geo.o tools.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC

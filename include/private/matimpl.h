@@ -51,7 +51,7 @@ struct _MatOps {
   PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,const MatFactorInfo*);
   /*29*/
-  PetscErrorCode (*setuppreallocation)(Mat);
+  PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getarray)(Mat,PetscScalar**);
@@ -163,7 +163,7 @@ struct _MatOps {
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
   PetscErrorCode (*multhermitiantranspose)(Mat,Vec,Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,Mat*);
+  PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,MatReuse,Mat*);
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
@@ -212,6 +212,15 @@ extern PetscErrorCode MatHeaderReplace(Mat,Mat);
 extern PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 extern PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
+
+#if defined(PETSC_USE_DEBUG)
+#  define MatCheckPreallocated(A,arg) do {                              \
+    if (PetscUnlikely(!(A)->preallocated))                              \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXSetPreallocation() or MatSetUp() on argument %D \"%s\" before %s()",(arg),#A,PETSC_FUNCTION_NAME); \
+  } while (0)
+#else
+#  define MatCheckPreallocated(A,arg) do {} while (0)
+#endif
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -316,7 +325,6 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   };
 
-#define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
 extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 extern PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
 /*
@@ -339,6 +347,30 @@ struct _p_MatPartitioning {
   PetscInt    n;                                 /* number of partitions */
   void        *data;
   PetscInt    setupcalled;
+};
+
+/*
+    Object for coarsen graphs
+*/
+typedef struct _MatCoarsenOps *MatCoarsenOps;
+struct _MatCoarsenOps {
+  PetscErrorCode (*apply)(MatCoarsen);
+  PetscErrorCode (*setfromoptions)(MatCoarsen);
+  PetscErrorCode (*destroy)(MatCoarsen);
+  PetscErrorCode (*view)(MatCoarsen,PetscViewer);
+};
+
+struct _p_MatCoarsen {
+  PETSCHEADER(struct _MatCoarsenOps);
+  Mat         graph;
+  PetscInt    verbose;
+  PetscInt    setupcalled;
+  void        *data;
+  /* optional data - could be in MIS data */
+  IS perm;
+  IS mis;
+  IS agg_llist;
+  PetscBool strict_aggs;
 };
 
 /*
@@ -560,9 +592,13 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   Output Parameters:
     lnk       - list initialized
     bt        - PetscBT (bitarray) with all bits set to false
+    lnk_empty - flg indicating the list is empty
 */
 #define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
   (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
+
+#define PetscLLCreate_new(idx_start,lnk_max,nlnk,lnk,bt,lnk_empty)\
+  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk_empty = PETSC_TRUE,0) ||(lnk[idx_start] = lnk_max,0))
 
 /*
   Add an index set into a sorted linked list
@@ -640,7 +676,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 }
 
 /*
-  Add a SORTED index set into a sorted linked list
+  Add a SORTED ascending index set into a sorted linked list - same as PetscLLAdd() bus skip 'if (_k && _entry < _lnkdata) _lnkdata  = idx_start;'
   Input Parameters:
     nidx      - number of input indices
     indices   - sorted interger array 
@@ -672,6 +708,53 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
       _lnkdata = _entry; /* next search starts from here */\
     }\
   }\
+}
+
+#define PetscLLAddSorted_new(nidx,indices,idx_start,lnk_empty,nlnk,lnk,bt) 0; \
+{\
+  PetscInt _k,_entry,_location,_lnkdata;\
+  if (lnk_empty){\
+    _lnkdata  = idx_start;                      \
+    for (_k=0; _k<nidx; _k++){                  \
+      _entry = indices[_k];                             \
+      PetscBTSet(bt,_entry);  /* mark the new entry */          \
+          _location = _lnkdata;                                 \
+          _lnkdata  = lnk[_location];                           \
+        /* insertion location is found, add entry into lnk */   \
+        lnk[_location] = _entry;                                \
+        lnk[_entry]    = _lnkdata;                              \
+        _lnkdata = _entry; /* next search starts from here */   \
+    }                                                           \
+    /*\
+    lnk[indices[nidx-1]] = lnk[idx_start];\
+    lnk[idx_start]       = indices[0];\
+    PetscBTSet(bt,indices[0]);  \
+    for (_k=1; _k<nidx; _k++){                  \
+      PetscBTSet(bt,indices[_k]);                                          \
+      lnk[indices[_k-1]] = indices[_k];                                  \
+    }                                                           \
+     */\
+    nlnk      = nidx;\
+    lnk_empty = PETSC_FALSE;\
+  } else {\
+    nlnk      = 0;                              \
+    _lnkdata  = idx_start;                      \
+    for (_k=0; _k<nidx; _k++){                  \
+      _entry = indices[_k];                             \
+      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */       \
+        /* search for insertion location */                     \
+        do {                                                    \
+          _location = _lnkdata;                                 \
+          _lnkdata  = lnk[_location];                           \
+        } while (_entry > _lnkdata);                            \
+        /* insertion location is found, add entry into lnk */   \
+        lnk[_location] = _entry;                                \
+        lnk[_entry]    = _lnkdata;                              \
+        nlnk++;                                                 \
+        _lnkdata = _entry; /* next search starts from here */   \
+      }                                                         \
+    }                                                           \
+  }                                                             \
 }
 
 /*
@@ -736,7 +819,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   PetscInt _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
-    *(indices+_j) = _idx;\
+    indices[_j] = _idx;\
     ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
   }\
   lnk[idx_start] = lnk_max;\
@@ -1017,17 +1100,367 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* -------------------------------------------------------------------------------------------------------*/
+#include <petscbt.h>
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedCreate"
+/* 
+  Create and initialize a condensed linked list - 
+    same as PetscLLCreate(), but uses a scalable array 'lnk' with size of max number of entries, not O(N).
+    Barry suggested this approach (Dec. 6, 2011):
+      I've thought of an alternative way of representing a linked list that is efficient but doesn't have the O(N) scaling issue 
+      (it may be faster than the O(N) even sequentially due to less crazy memory access).
+
+      Instead of having some like  a  2  -> 4 -> 11 ->  22  list that uses slot 2  4 11 and 22 in a big array use a small array with two slots 
+      for each entry for example  [ 2 1 | 4 3 | 22 -1 | 11 2]   so the first number (of the pair) is the value while the second tells you where 
+      in the list the next entry is. Inserting a new link means just append another pair at the end. For example say we want to insert 13 into the 
+      list it would then become [2 1 | 4 3 | 22 -1 | 11 4 | 13 2 ] you just add a pair at the end and fix the point for the one that points to it. 
+      That is 11 use to point to the 2 slot, after the change 11 points to the 4th slot which has the value 13. Note that values are always next 
+      to each other so memory access is much better than using the big array.
+
+  Example:
+     nlnk_max=5, lnk_max=36:
+     Initial list: [0, 0 | 36, 2 | 0, 0 | 0, 0 | 0, 0 | 0, 0 | 0, 0]
+     here, head_node has index 2 with value lnk[2]=lnk_max=36,
+           0-th entry is used to store the number of entries in the list,
+     The initial lnk represents head -> tail(marked by 36) with number of entries = lnk[0]=0.
+    
+     Now adding a sorted set {2,4}, the list becomes
+     [2, 0 | 36, 4 |2, 6 | 4, 2 | 0, 0 | 0, 0 | 0, 0 ]
+     represents head -> 2 -> 4 -> tail with number of entries = lnk[0]=2.
+
+     Then adding a sorted set {0,3,35}, the list
+     [5, 0 | 36, 8 | 2, 10 | 4, 12 | 0, 4 | 3, 6 | 35, 2 ]
+     represents head -> 0 -> 2 -> 3 -> 4 -> 35 -> tail with number of entries = lnk[0]=5.
+ 
+  Input Parameters:
+    nlnk_max  - max length of the list
+    lnk_max   - max value of the entries
+  Output Parameters:
+    lnk       - list created and initialized
+    bt        - PetscBT (bitarray) with all bits set to false. Note: bt has size lnk_max, not nln_max!
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt) 
+{
+  PetscErrorCode ierr;
+  PetscInt       *llnk;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscBTCreate(lnk_max,*bt);CHKERRQ(ierr);                
+  ierr = PetscBTMemzero(lnk_max,*bt);CHKERRQ(ierr); 
+  llnk = *lnk;
+  llnk[0] = 0;         /* number of entries on the list */   
+  llnk[2] = lnk_max;   /* value in the head node */
+  llnk[3] = 2;         /* next for the head node */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedAddSorted"
+/*
+  Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted interger array   
+    lnk       - condensed linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    lnk       - the sorted(increasing order) linked list containing previous and newly added non-redundate indices
+    bt        - updated PetscBT (bitarray) 
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const PetscInt indices[],PetscInt lnk[],PetscBT bt)
+{
+  PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   
+
+  PetscFunctionBegin;
+  _nlnk     = lnk[0]; /* num of entries on the input lnk */
+  _location = 2; /* head */ 
+    for (_k=0; _k<nidx; _k++){
+      _entry = indices[_k];
+      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */  
+        /* search for insertion location */
+        do {
+          _next     = _location + 1; /* link from previous node to next node */
+          _location = lnk[_next];    /* idx of next node */
+          _lnkdata  = lnk[_location];/* value of next node */      
+        } while (_entry > _lnkdata);
+        /* insertion location is found, add entry into lnk */
+        _newnode        = 2*(_nlnk+2);   /* index for this new node */
+        lnk[_next]      = _newnode;      /* connect previous node to the new node */ 
+        lnk[_newnode]   = _entry;        /* set value of the new node */       
+        lnk[_newnode+1] = _location;     /* connect new node to next node */ 
+        _location       = _newnode;      /* next search starts from the new node */
+        _nlnk++;
+      }   \
+    }\
+  lnk[0]   = _nlnk;   /* number of entries in the list */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedClean"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt) 
+{
+  PetscErrorCode ierr;
+  PetscInt       _k,_next,_nlnk;
+
+  PetscFunctionBegin;
+  _next = lnk[3];       /* head node */
+  _nlnk = lnk[0];       /* num of entries on the list */
+  for (_k=0; _k<_nlnk; _k++){
+    indices[_k] = lnk[_next];
+    _next       = lnk[_next + 1];
+    ierr = PetscBTClear(bt,indices[_k]);CHKERRQ(ierr);      
+  }
+  lnk[0] = 0;          /* num of entries on the list */
+  lnk[2] = lnk_max;    /* initialize head node */
+  lnk[3] = 2;          /* head node */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedView"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       k;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
+  for (k=2; k< lnk[0]+2; k++){
+    ierr = PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedDestroy"
+/*
+  Free memories used by the list
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(lnk);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(bt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedCreate_Scalable"
+/* 
+ Same as PetscLLCondensedCreate(), but does not use O(lnk_max) bitarray 
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt lnk_max,PetscInt **lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       *llnk;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(2*(lnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  llnk = *lnk;
+  llnk[0] = 0;               /* number of entries on the list */
+  llnk[2] = PETSC_MAX_INT;   /* value in the head node */ 
+  llnk[3] = 2;               /* next for the head node */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedAddSorted_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
+{
+  PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;   
+  _nlnk     = lnk[0]; /* num of entries on the input lnk */
+  _location = 2; /* head */ \
+    for (_k=0; _k<nidx; _k++){
+      _entry = indices[_k];
+      /* search for insertion location */
+      do {
+        _next     = _location + 1; /* link from previous node to next node */
+        _location = lnk[_next];    /* idx of next node */
+        _lnkdata  = lnk[_location];/* value of next node */      
+      } while (_entry > _lnkdata);
+      if (_entry < _lnkdata) { 
+        /* insertion location is found, add entry into lnk */                   
+        _newnode        = 2*(_nlnk+2);   /* index for this new node */ 
+        lnk[_next]      = _newnode;      /* connect previous node to the new node */ 
+        lnk[_newnode]   = _entry;        /* set value of the new node */       
+        lnk[_newnode+1] = _location;     /* connect new node to next node */ 
+        _location       = _newnode;      /* next search starts from the new node */
+        _nlnk++;
+      }
+    }
+  lnk[0]   = _nlnk;   /* number of entries in the list */
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedClean_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
+{
+  PetscInt _k,_next,_nlnk;
+  _next = lnk[3];       /* head node */
+  _nlnk = lnk[0]; 
+  for (_k=0; _k<_nlnk; _k++){
+    indices[_k] = lnk[_next];
+    _next       = lnk[_next + 1];
+  }
+  lnk[0] = 0;          /* num of entries on the list */
+  lnk[3] = 2;          /* head node */
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedDestroy_Scalable"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
+{
+  return PetscFree(lnk);
+}
+
+/* -------------------------------------------------------------------------------------------------------*/
+/*
+      lnk[0]   number of links
+      lnk[1]   number of entries 
+      lnk[3n]  value
+      lnk[3n+1] len 
+      lnk[3n+2] link to next value
+
+      The next three are always the first link
+
+      lnk[3]    PETSC_MIN_INT+1 
+      lnk[4]    1
+      lnk[5]    link to first real entry
+
+      The next three are always the last link
+
+      lnk[6]    PETSC_MAX_INT - 1
+      lnk[7]    1
+      lnk[8]    next valid link (this is the same as lnk[0] but without the decreases)
+*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLLCondensedCreate_fast"
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt lnk_max,PetscInt **lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       *llnk;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(3*(lnk_max+3)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  llnk = *lnk;
+  llnk[0] = 0;   /* nlnk: number of entries on the list */
+  llnk[1] = 0;          /* number of integer entries represented in list */
+  llnk[3] = PETSC_MIN_INT+1;   /* value in the first node */ 
+  llnk[4] = 1;           /* count for the first node */
+  llnk[5] = 6;         /* next for the first node */
+  llnk[6] = PETSC_MAX_INT-1;   /* value in the last node */ 
+  llnk[7] = 1;           /* count for the last node */
+  llnk[8] = 0;         /* next valid node to be used */
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
+{
+  PetscInt k,entry,prev,next;
+  prev      = 3;      /* first value */ 
+  next      = lnk[prev+2];
+  for (k=0; k<nidx; k++){
+    entry = indices[k];
+    /* search for insertion location */
+    while (entry >= lnk[next]) {
+      prev = next;
+      next = lnk[next+2];
+    }
+    /* entry is in range of previous list */
+    if (entry < lnk[prev]+lnk[prev+1]) continue;
+    lnk[1]++;
+    /* entry is right after previous list */
+    if (entry == lnk[prev]+lnk[prev+1]) {
+      lnk[prev+1]++;
+      if (lnk[next] == entry+1) { /* combine two contiquous strings */
+        lnk[prev+1] += lnk[next+1];
+        lnk[prev+2]  = lnk[next+2];
+        next         = lnk[next+2];
+        lnk[0]--;
+      }
+      continue;
+    }
+    /* entry is right before next list */
+    if (entry == lnk[next]-1) {
+      lnk[next]--;
+      lnk[next+1]++;
+      prev = next;
+      next = lnk[prev+2];
+      continue;
+    }
+    /*  add entry into lnk */
+    lnk[prev+2]    = 3*((lnk[8]++)+3);      /* connect previous node to the new node */
+    prev           = lnk[prev+2];
+    lnk[prev]      = entry;        /* set value of the new node */
+    lnk[prev+1]    = 1;             /* number of values in contiquous string is one to start */
+    lnk[prev+2]    = next;          /* connect new node to next node */
+    lnk[0]++;
+  }
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
+{
+  PetscInt _k,_next,_nlnk,cnt,j;
+  _next = lnk[5];       /* first node */
+  _nlnk = lnk[0]; 
+  cnt   = 0;
+  for (_k=0; _k<_nlnk; _k++){
+    for (j=0; j<lnk[_next+1]; j++) {
+      indices[cnt++] = lnk[_next] + j;
+    }
+    _next       = lnk[_next + 2];
+  }
+  lnk[0] = 0;   /* nlnk: number of links */
+  lnk[1] = 0;          /* number of integer entries represented in list */
+  lnk[3] = PETSC_MIN_INT+1;   /* value in the first node */ 
+  lnk[4] = 1;           /* count for the first node */
+  lnk[5] = 6;         /* next for the first node */
+  lnk[6] = PETSC_MAX_INT-1;   /* value in the last node */ 
+  lnk[7] = 1;           /* count for the last node */
+  lnk[8] = 0;         /* next valid location to make link */
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
+{
+  PetscInt k,next,nlnk;
+  next = lnk[5];       /* first node */
+  nlnk = lnk[0]; 
+  for (k=0; k<nlnk; k++){
+#if 0                           /* Debugging code */
+    printf("%d value %d len %d next %d\n",next,lnk[next],lnk[next+1],lnk[next+2]);
+#endif
+    next = lnk[next + 2];
+  }
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
+{
+  return PetscFree(lnk);
+}
+
 extern PetscLogEvent  MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 extern PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 extern PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 extern PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
-extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
+extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
 extern PetscLogEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
-
+extern PetscLogEvent  MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
 extern PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 extern PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;

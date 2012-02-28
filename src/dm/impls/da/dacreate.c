@@ -6,8 +6,6 @@
 PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
-  char           typeName[256];
   DM_DA          *dd = (DM_DA*)da->data;
   PetscInt       refine = 0;
   PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE;
@@ -31,7 +29,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     negativeMNP = PETSC_TRUE;
   }
 
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA Options","DMDA");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("DMDA Options");CHKERRQ(ierr);
     if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,PETSC_NULL);CHKERRQ(ierr);}
     if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,PETSC_NULL);CHKERRQ(ierr);}
     if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,PETSC_NULL);CHKERRQ(ierr);}
@@ -44,16 +42,8 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
 
-    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DMSetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(da,typeName);CHKERRQ(ierr);
-    }
     if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,PETSC_NULL);CHKERRQ(ierr);}
-
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
     if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
@@ -82,15 +72,15 @@ extern PetscErrorCode  DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode  DMGetInterpolation_DA(DM,DM,Mat*,Vec*);
-extern PetscErrorCode  DMGetColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
-extern PetscErrorCode  DMGetMatrix_DA(DM,const MatType,Mat*);
+extern PetscErrorCode  DMCreateInterpolation_DA(DM,DM,Mat*,Vec*);
+extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
+extern PetscErrorCode  DMCreateMatrix_DA(DM,const MatType,Mat*);
 extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
-extern PetscErrorCode  DMGetInjection_DA(DM,DM,VecScatter*);
-extern PetscErrorCode  DMGetAggregates_DA(DM,DM,Mat*);
+extern PetscErrorCode  DMCreateInjection_DA(DM,DM,VecScatter*);
+extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
@@ -199,15 +189,15 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
   da->ops->createglobalvector = DMCreateGlobalVector_DA;
   da->ops->createlocalvector  = DMCreateLocalVector_DA;
-  da->ops->getinterpolation   = DMGetInterpolation_DA;
-  da->ops->getcoloring        = DMGetColoring_DA;
-  da->ops->getmatrix          = DMGetMatrix_DA;
+  da->ops->createinterpolation   = DMCreateInterpolation_DA;
+  da->ops->getcoloring        = DMCreateColoring_DA;
+  da->ops->creatematrix          = DMCreateMatrix_DA;
   da->ops->refine             = DMRefine_DA;
   da->ops->coarsen            = DMCoarsen_DA;
   da->ops->refinehierarchy    = DMRefineHierarchy_DA;
   da->ops->coarsenhierarchy   = DMCoarsenHierarchy_DA;
-  da->ops->getinjection       = DMGetInjection_DA;
-  da->ops->getaggregates      = DMGetAggregates_DA;
+  da->ops->getinjection       = DMCreateInjection_DA;
+  da->ops->getaggregates      = DMCreateAggregates_DA;
   da->ops->destroy            = DMDestroy_DA;
   da->ops->view               = 0;
   da->ops->setfromoptions     = DMSetFromOptions_DA;

@@ -10,6 +10,7 @@
 #define SNES PetscFortranAddr
 #endif
 #define SNESType character*(80)
+#define SNESMSType character*(80)
 #define SNESConvergedReason PetscEnum
 #define SNESLineSearchType  PetscEnum
 #define MatMFFD PetscFortranAddr
@@ -17,10 +18,34 @@
 !
 !  SNESType
 !
-#define SNESLS 'ls'
-#define SNESTR 'tr'
-#define SNESTEST 'test'
-#define SNESPYTHON 'python'
+#define SNESLS          'ls'
+#define SNESTR          'tr'
+#define SNESPYTHON      'python'
+#define SNESTEST        'test'
+#define SNESNRICHARDSON 'nrichardson'
+#define SNESKSPONLY     'ksponly'
+#define SNESVIRS        'virs'
+#define SNESVISS        'viss'
+#define SNESNGMRES      'ngmres'
+#define SNESQN          'qn'
+#define SNESSHELL       'shell'
+#define SNESNCG         'ncg'
+#define SNESSORQN       'sorqn'
+#define SNESFAS         'fas'
+#define SNESMS          'ms'
+
+!
+!  SNESMSType
+!
+#define SNESMSEULER     'euler'
+#define SNESMSM62       'm62'
+#define SNESMSJAMESON83 'jameson83'
+#define SNESMSVLTP21    'vltp21'
+#define SNESMSVLTP31    'vltp31'
+#define SNESMSVLTP41    'vltp41'
+#define SNESMSVLTP51    'vltp51'
+#define SNESMSVLTP61    'vltp61'
+
 !
 ! MatSNESMF
 ! 

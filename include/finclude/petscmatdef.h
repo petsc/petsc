@@ -13,6 +13,7 @@
 #define MatFDColoring PetscFortranAddr
 #endif
 #define MatPartitioning PetscFortranAddr
+#define MatCoarsen PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
 #define MatSolverPackage character*(80)
@@ -36,6 +37,7 @@
 #define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
+#define MatCoarsenType character*(80)
 #define MatCompositeType PetscEnum
 #define MatStencil PetscInt
 #define MatStencil_k 1
@@ -45,6 +47,8 @@
 
 #define MATPARTITIONING_CURRENT 'current'
 #define MATPARTITIONING_PARMETIS 'parmetis'
+
+#define MATCOARSEN_MIS 'mis'
 
 #define MATCOLORINGNATURAL 'natural'
 #define MATCOLORINGSL 'sl'

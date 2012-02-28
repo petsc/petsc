@@ -330,6 +330,11 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
   } else {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      /* this may be a collective operation so make sure everyone calls it */
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+    }
     /* send values */
     ierr = MPI_Send((void*)xarray,xin->map->n,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
   }
@@ -693,11 +698,11 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
 #if defined(PETSC_USE_REAL_SINGLE)
-    scalartype = H5T_NATIVE_FLOAT;
+  scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
 #else
-    scalartype = H5T_NATIVE_DOUBLE;
+  scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
   /* Create the dataset with default properties and close filespace */
@@ -794,6 +799,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
   status = H5Dclose(dset_id);CHKERRQ(status);
+  ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -1017,7 +1023,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   }
 
   ierr = MPI_Allreduce(&xin->stash.insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+  if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
 
   bs = xin->map->bs;

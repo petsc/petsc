@@ -6,12 +6,13 @@ static char help[] = "Test MatTransposeColoring for SeqAIJ matrices.\n\n";
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
-  Mat                   A,R,C,C_dense,C_sparse,Rt_dense;
+  Mat                   A,R,C,C_dense,C_sparse,Rt_dense,P,PtAP;
   PetscInt              row,col,m,n;
   PetscErrorCode        ierr;
   MatScalar             one=1.0,val;
   MatTransposeColoring  matcoloring = 0;
   ISColoring            iscoloring;
+  PetscBool             equal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* Create A */
@@ -87,13 +88,26 @@ int main(int argc,char **argv) {
   ierr = MatTransposeColoringDestroy(&matcoloring);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr); 
 
+  /* Test PtAP = P^T*A*P, P = R^T */
+  ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);
+  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,2.0,&PtAP);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(PtAP,"PtAP_");CHKERRQ(ierr);
+  ierr = MatView(PtAP,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+
   /* Test C = RARt */
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
+  if (!equal) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: PtAP != RARt");CHKERRQ(ierr);
+  }
 
-   /* Free spaces */
+  /* Free spaces */
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
+  ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
+
   PetscFinalize();
   return(0);
 }

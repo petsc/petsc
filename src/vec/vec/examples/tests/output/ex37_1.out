@@ -13,13 +13,13 @@ Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
       (0) : type=seq, rows=3 
-        Vector Object:         1 MPI processes        
+        Vector Object:         1 MPI processes
           type: seq
         1
         1
         1
       (1) : type=seq, rows=3 
-        Vector Object:         1 MPI processes        
+        Vector Object:         1 MPI processes
           type: seq
         2
         2
@@ -29,13 +29,13 @@ Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
       (0) : type=seq, rows=3 
-        Vector Object:         1 MPI processes        
+        Vector Object:         1 MPI processes
           type: seq
         3
         3
         3
       (1) : type=seq, rows=3 
-        Vector Object:         1 MPI processes        
+        Vector Object:         1 MPI processes
           type: seq
         7.20032
         0.61794
@@ -60,6 +60,7 @@ Vector Object: 1 MPI processes
 24
 27
 X.Y = 1610.000000 + 0.000000i 
+X.Y = 1610.000000 + 0.000000i     norm2(Y) = 2775.000000 + 0.000000i
 (2) y1 = 
 Vector Object: 1 MPI processes
   type: seq
@@ -76,5 +77,6 @@ Vector Object: 1 MPI processes
 40
 45
 X.Y = 2644.000000 + 0.000000i 
+X.Y = 2644.000000 + 0.000000i     norm2(Y) = 7029.000000 + 0.000000i
 (max-X) = 18.000000 : index = 8 
 (min-X) = 0.000000 : index = 0 

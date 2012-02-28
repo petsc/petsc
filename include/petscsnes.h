@@ -38,9 +38,11 @@ J*/
 #define SNESNGMRES       "ngmres"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
+#define SNESGS           "gs"
 #define SNESNCG          "ncg"
 #define SNESSORQN        "sorqn"
 #define SNESFAS          "fas"
+#define SNESMS           "ms"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
@@ -153,7 +155,9 @@ extern PetscErrorCode  SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,Pets
 extern PetscErrorCode  SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 extern PetscErrorCode  SNESSetTrustRegionTolerance(SNES,PetscReal);
 extern PetscErrorCode  SNESGetFunctionNorm(SNES,PetscReal*);
+extern PetscErrorCode  SNESSetFunctionNorm(SNES,PetscReal);
 extern PetscErrorCode  SNESGetIterationNumber(SNES,PetscInt*);
+extern PetscErrorCode  SNESSetIterationNumber(SNES,PetscInt);
 
 extern PetscErrorCode  SNESGetNonlinearStepFailures(SNES,PetscInt*);
 extern PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
@@ -347,17 +351,20 @@ extern PetscErrorCode  SNESDefaultConverged(SNES,PetscInt,PetscReal,PetscReal,Pe
 extern PetscErrorCode  SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 extern PetscErrorCode  SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
-extern PetscErrorCode  SNESDAFormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode  SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESDMDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-extern PetscErrorCode  SNESMeshFormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode SNESMeshFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode SNESDMComplexComputeFunction(SNES,Vec,Vec,void *);
+extern PetscErrorCode SNESDMComplexComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
 typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+typedef PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*);
 extern PetscErrorCode  SNESSetFunction(SNES,Vec,SNESFunction,void*);
 extern PetscErrorCode  SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 extern PetscErrorCode  SNESComputeFunction(SNES,Vec,Vec);
@@ -366,6 +373,16 @@ extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
 extern PetscErrorCode  SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
+extern PetscErrorCode  SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJacobian,void*);
+extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,void**);
+
+extern PetscErrorCode  SNESSetGS(SNES,SNESGSFunction,void*);
+extern PetscErrorCode  SNESGetGS(SNES,SNESGSFunction*,void**);
+extern PetscErrorCode  SNESSetUseGS(SNES,PetscBool);
+extern PetscErrorCode  SNESGetUseGS(SNES,PetscBool *);
+extern PetscErrorCode  SNESSetGSSweeps(SNES,PetscInt);
+extern PetscErrorCode  SNESGetGSSweeps(SNES,PetscInt *);
+extern PetscErrorCode  SNESComputeGS(SNES,Vec,Vec);
 
 /* --------- Routines specifically for line search methods --------------- */
 /*E
@@ -375,7 +392,7 @@ extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,V
 
 .seealso: SNESSetFromOptions(), SNESLineSearchSet()
 E*/
-typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_CUBIC, SNES_LS_EXACT, SNES_LS_TEST, SNES_LS_SECANT,SNES_LS_USER_DEFINED} SNESLineSearchType;
+typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_CUBIC, SNES_LS_EXACT, SNES_LS_TEST, SNES_LS_CRITICAL, SNES_LS_USER_DEFINED} SNESLineSearchType;
 extern const char *const SNESLineSearchTypes[];
 extern const char *SNESLineSearchTypeName(SNESLineSearchType); /* Does bounds checking, use this for viewing */
 
@@ -385,8 +402,12 @@ extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,PetscReal,PetscRe
 extern PetscErrorCode  SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchCriticalSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchQuadraticSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+
+extern PetscErrorCode  SNESLineSearchApply(SNES,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchPreCheckApply(SNES,Vec,Vec,PetscBool*);
+extern PetscErrorCode  SNESLineSearchPostCheckApply(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*);
 
 extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
@@ -418,12 +439,38 @@ extern PetscErrorCode SNESSetDM(SNES,DM);
 extern PetscErrorCode SNESGetDM(SNES,DM*);
 extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
+extern PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
+extern PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
 
 /* Routines for Multiblock solver */
-PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
-PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
-PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
-PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
+extern PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
+extern PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
+extern PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+
+/*J
+    SNESMSType - String with the name of a PETSc SNESMS method.
+
+   Level: intermediate
+
+.seealso: SNESMSSetType(), SNES
+J*/
+#define SNESMSType char*
+#define SNESMSM62       "m62"
+#define SNESMSEULER     "euler"
+#define SNESMSJAMESON83 "jameson83"
+#define SNESMSVLTP21    "vltp21"
+#define SNESMSVLTP31    "vltp31"
+#define SNESMSVLTP41    "vltp41"
+#define SNESMSVLTP51    "vltp51"
+#define SNESMSVLTP61    "vltp61"
+
+extern PetscErrorCode SNESMSRegister(const SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode SNESMSSetType(SNES,const SNESMSType);
+extern PetscErrorCode SNESMSFinalizePackage(void);
+extern PetscErrorCode SNESMSInitializePackage(const char path[]);
+extern PetscErrorCode SNESMSRegisterDestroy(void);
+extern PetscErrorCode SNESMSRegisterAll(void);
 
 PETSC_EXTERN_CXX_END
 #endif

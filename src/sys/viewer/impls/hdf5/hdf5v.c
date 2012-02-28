@@ -14,6 +14,21 @@ typedef struct {
   GroupList    *groups;
 } PetscViewer_HDF5;
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileClose_HDF5"
+static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);
+  if (hdf5->file_id) {
+    H5Fclose(hdf5->file_id);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_HDF5" 
 PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
@@ -22,10 +37,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
  PetscErrorCode    ierr;
 
  PetscFunctionBegin;
- ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);
- if (hdf5->file_id) {
-   H5Fclose(hdf5->file_id);
- }
+ ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
  if (hdf5->groups) {
    while(hdf5->groups) {
      GroupList *tmp = hdf5->groups->next;
@@ -77,6 +89,9 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   switch (hdf5->btype) {
     case FILE_MODE_READ:
       hdf5->file_id = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
+      break;
+    case FILE_MODE_APPEND:
+      hdf5->file_id = H5Fopen(name, H5F_ACC_RDWR, plist_id);
       break;
     case FILE_MODE_WRITE:
       hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);

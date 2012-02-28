@@ -1,5 +1,5 @@
 
-static char help[] = "MatLoad test for loading matrices that are created by DMGetMatrix and\n\
+static char help[] = "MatLoad test for loading matrices that are created by DMCreateMatrix and\n\
                       stored in binary via MatView_MPI_DA.MatView_MPI_DA stores the matrix\n\
                       in natural ordering. Hence MatLoad() has to read the matrix first in\n\
                       natural ordering and then permute it back to the application ordering.This\n\
@@ -28,14 +28,14 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                     X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = MatShift(A,X);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,viewer);CHKERRQ(ierr);
 
   /* Free memory */

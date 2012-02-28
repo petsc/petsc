@@ -1,0 +1,275 @@
+Mesh 'Serial Mesh':
+Max sizes cone: 3 support: 6
+orientation is missing
+cap --> base:
+[0]: 8 ----> 0
+[0]: 9 ----> 0
+[0]: 9 ----> 2
+[0]: 9 ----> 4
+[0]: 10 ----> 3
+[0]: 10 ----> 4
+[0]: 11 ----> 0
+[0]: 11 ----> 1
+[0]: 11 ----> 2
+[0]: 12 ----> 1
+[0]: 12 ----> 2
+[0]: 12 ----> 3
+[0]: 12 ----> 4
+[0]: 12 ----> 6
+[0]: 12 ----> 7
+[0]: 13 ----> 3
+[0]: 13 ----> 5
+[0]: 13 ----> 6
+[0]: 14 ----> 1
+[0]: 14 ----> 7
+[0]: 15 ----> 5
+[0]: 15 ----> 6
+[0]: 15 ----> 7
+[0]: 16 ----> 5
+base <-- cap:
+[0]: 0 <---- 8
+[0]: 0 <---- 9
+[0]: 0 <---- 11
+[0]: 1 <---- 12
+[0]: 1 <---- 14
+[0]: 1 <---- 11
+[0]: 2 <---- 11
+[0]: 2 <---- 9
+[0]: 2 <---- 12
+[0]: 3 <---- 12
+[0]: 3 <---- 10
+[0]: 3 <---- 13
+[0]: 4 <---- 10
+[0]: 4 <---- 12
+[0]: 4 <---- 9
+[0]: 5 <---- 15
+[0]: 5 <---- 13
+[0]: 5 <---- 16
+[0]: 6 <---- 13
+[0]: 6 <---- 15
+[0]: 6 <---- 12
+[0]: 7 <---- 12
+[0]: 7 <---- 15
+[0]: 7 <---- 14
+coordinates
+Process 0:
+  (   8) dim  2 offset   0 0 0
+  (   9) dim  2 offset   2 0.5 0
+  (  10) dim  2 offset   4 1 0
+  (  11) dim  2 offset   6 0 0.5
+  (  12) dim  2 offset   8 0.5 0.5
+  (  13) dim  2 offset  10 1 0.5
+  (  14) dim  2 offset  12 0 1
+  (  15) dim  2 offset  14 0.5 1
+  (  16) dim  2 offset  16 1 1
+Cell Partition:
+PetscSection
+Process 0:
+  (   0) dim  8 offset   0
+Number of indices in set 8
+0 0
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+7 7
+Star Forest Object: 1 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=1, leaves=1, remote ranks=1
+  [0] 0 <- (0,0)
+Point Partition:
+PetscSection
+Process 0:
+  (   0) dim 17 offset   0
+Number of indices in set 17
+0 0
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+7 7
+8 8
+9 9
+10 10
+11 11
+12 12
+13 13
+14 14
+15 15
+16 16
+Star Forest Object: 1 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=17, leaves=17, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [0] 4 <- (0,4)
+  [0] 5 <- (0,5)
+  [0] 6 <- (0,6)
+  [0] 7 <- (0,7)
+  [0] 8 <- (0,8)
+  [0] 9 <- (0,9)
+  [0] 10 <- (0,10)
+  [0] 11 <- (0,11)
+  [0] 12 <- (0,12)
+  [0] 13 <- (0,13)
+  [0] 14 <- (0,14)
+  [0] 15 <- (0,15)
+  [0] 16 <- (0,16)
+Point Renumbering after partition:
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[0] 6 6
+[0] 7 7
+[0] 8 8
+[0] 9 9
+[0] 10 10
+[0] 11 11
+[0] 12 12
+[0] 13 13
+[0] 14 14
+[0] 15 15
+[0] 16 16
+Serial Cone Section:
+PetscSection
+Process 0:
+  (   0) dim  3 offset   0
+  (   1) dim  3 offset   3
+  (   2) dim  3 offset   6
+  (   3) dim  3 offset   9
+  (   4) dim  3 offset  12
+  (   5) dim  3 offset  15
+  (   6) dim  3 offset  18
+  (   7) dim  3 offset  21
+  (   8) dim  0 offset  24
+  (   9) dim  0 offset  24
+  (  10) dim  0 offset  24
+  (  11) dim  0 offset  24
+  (  12) dim  0 offset  24
+  (  13) dim  0 offset  24
+  (  14) dim  0 offset  24
+  (  15) dim  0 offset  24
+  (  16) dim  0 offset  24
+Parallel Cone Section:
+PetscSection
+Process 0:
+  (   0) dim  3 offset   0
+  (   1) dim  3 offset   3
+  (   2) dim  3 offset   6
+  (   3) dim  3 offset   9
+  (   4) dim  3 offset  12
+  (   5) dim  3 offset  15
+  (   6) dim  3 offset  18
+  (   7) dim  3 offset  21
+  (   8) dim  0 offset  24
+  (   9) dim  0 offset  24
+  (  10) dim  0 offset  24
+  (  11) dim  0 offset  24
+  (  12) dim  0 offset  24
+  (  13) dim  0 offset  24
+  (  14) dim  0 offset  24
+  (  15) dim  0 offset  24
+  (  16) dim  0 offset  24
+Star Forest Object: 1 MPI processes
+  type not yet set
+  synchronization=FENCE sort=rank-order
+  [0] Number of roots=-1, leaves=24, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [0] 4 <- (0,4)
+  [0] 5 <- (0,5)
+  [0] 6 <- (0,6)
+  [0] 7 <- (0,7)
+  [0] 8 <- (0,8)
+  [0] 9 <- (0,9)
+  [0] 10 <- (0,10)
+  [0] 11 <- (0,11)
+  [0] 12 <- (0,12)
+  [0] 13 <- (0,13)
+  [0] 14 <- (0,14)
+  [0] 15 <- (0,15)
+  [0] 16 <- (0,16)
+  [0] 17 <- (0,17)
+  [0] 18 <- (0,18)
+  [0] 19 <- (0,19)
+  [0] 20 <- (0,20)
+  [0] 21 <- (0,21)
+  [0] 22 <- (0,22)
+  [0] 23 <- (0,23)
+Mesh 'Parallel Mesh':
+Max sizes cone: 0 support: 6
+orientation is missing
+cap --> base:
+[0]: 8 ----> 0
+[0]: 9 ----> 0
+[0]: 9 ----> 2
+[0]: 9 ----> 4
+[0]: 10 ----> 3
+[0]: 10 ----> 4
+[0]: 11 ----> 0
+[0]: 11 ----> 1
+[0]: 11 ----> 2
+[0]: 12 ----> 1
+[0]: 12 ----> 2
+[0]: 12 ----> 3
+[0]: 12 ----> 4
+[0]: 12 ----> 6
+[0]: 12 ----> 7
+[0]: 13 ----> 3
+[0]: 13 ----> 5
+[0]: 13 ----> 6
+[0]: 14 ----> 1
+[0]: 14 ----> 7
+[0]: 15 ----> 5
+[0]: 15 ----> 6
+[0]: 15 ----> 7
+[0]: 16 ----> 5
+base <-- cap:
+[0]: 0 <---- 8
+[0]: 0 <---- 9
+[0]: 0 <---- 11
+[0]: 1 <---- 12
+[0]: 1 <---- 14
+[0]: 1 <---- 11
+[0]: 2 <---- 11
+[0]: 2 <---- 9
+[0]: 2 <---- 12
+[0]: 3 <---- 12
+[0]: 3 <---- 10
+[0]: 3 <---- 13
+[0]: 4 <---- 10
+[0]: 4 <---- 12
+[0]: 4 <---- 9
+[0]: 5 <---- 15
+[0]: 5 <---- 13
+[0]: 5 <---- 16
+[0]: 6 <---- 13
+[0]: 6 <---- 15
+[0]: 6 <---- 12
+[0]: 7 <---- 12
+[0]: 7 <---- 15
+[0]: 7 <---- 14
+coordinates
+Process 0:
+  (   8) dim  2 offset   0 0 0
+  (   9) dim  2 offset   2 0.5 0
+  (  10) dim  2 offset   4 1 0
+  (  11) dim  2 offset   6 0 0.5
+  (  12) dim  2 offset   8 0.5 0.5
+  (  13) dim  2 offset  10 1 0.5
+  (  14) dim  2 offset  12 0 1
+  (  15) dim  2 offset  14 0.5 1
+  (  16) dim  2 offset  16 1 1

@@ -268,7 +268,7 @@
             Matrix Object:             1 MPI processes
               type: seqaij
               rows=16, cols=16
-              total: nonzeros=100, allocated nonzeros=0
+              total: nonzeros=100, allocated nonzeros=100
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
         Down solver (pre-smoother) on level 1 -------------------------------
@@ -539,7 +539,7 @@
           Matrix Object:           1 MPI processes
             type: seqaij
             rows=16, cols=16
-            total: nonzeros=100, allocated nonzeros=0
+            total: nonzeros=100, allocated nonzeros=100
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
       Down solver (pre-smoother) on level 1 -------------------------------
@@ -559,7 +559,7 @@
           Matrix Object:           1 MPI processes
             type: seqaij
             rows=49, cols=49
-            total: nonzeros=361, allocated nonzeros=0
+            total: nonzeros=361, allocated nonzeros=361
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
       Up solver (post-smoother) same as down solver (pre-smoother)
@@ -899,7 +899,7 @@ SNES Object: 1 MPI processes
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=16, cols=16
-          total: nonzeros=100, allocated nonzeros=0
+          total: nonzeros=100, allocated nonzeros=100
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
@@ -919,7 +919,7 @@ SNES Object: 1 MPI processes
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=49, cols=49
-          total: nonzeros=361, allocated nonzeros=0
+          total: nonzeros=361, allocated nonzeros=361
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -940,7 +940,7 @@ SNES Object: 1 MPI processes
         Matrix Object:         1 MPI processes
           type: seqaij
           rows=169, cols=169
-          total: nonzeros=1369, allocated nonzeros=0
+          total: nonzeros=1369, allocated nonzeros=1369
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)

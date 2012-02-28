@@ -1,47 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <title>PETSc: Docs:&nbsp; Changes: 3.0.0</title>
-</head>
-<body style="background-color: rgb(213, 234, 255);">
-<table width="100%">
-  <tbody>
-    <tr>
-      <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 3.0.0</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 3.0.0<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
       <ul>
-        <li><a href="../../index.html"><strong>Home</strong></a></li>
-      </ul>
-      </td>
-      <td width="75%"><!--##begin-->
-      <h1> Docs:&nbsp;Changes: 3.0.0</h1>
-<!--##end--> </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-    <tr>
-      <td valign="top" width="25%">
-      <ul>
-        <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../index.html"><strong>Documentation</strong></a>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
           <ul>
-            <li><a href="../index.html#Manual"><strong>Manual pages and
-Users Manual</strong></a></li>
-            <li><a href="../referencing.html"><strong>Referencing&nbsp;
-PETSc</strong></a></li>
-            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-            <li><strong><a href="../installation.html">Installation</a>
-              </strong></li>
-            <li><strong><a href="index.html">Changes</a></strong>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
               <ul>
-                <li><a href="dev.html">Development</a></li>
-                <li style="color: rgb(255, 0, 0);">3.0.0</li>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><span class="current">3.0.0</span></li>
                 <li><a href="233.html">2.3.3</a></li>
                 <li><a href="232.html">2.3.2</a></li>
                 <li><a href="231.html">2.3.1</a></li>
@@ -58,274 +53,369 @@ PETSc</strong></a></li>
                 <li><a href="2028.html">2.0.28</a></li>
                 <li><a href="2024.html">2.0.24</a></li>
                 <li><a href="2022.html">2.0.22</a></li>
-                <li><a href="2918-21.html">2.0.21</a></li>
-                <li><a href="2918-21.html">2.0.18-20</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
                 <li><a href="2017.html">2.0.17</a></li>
                 <li><a href="2016.html">2.0.16</a></li>
                 <li><a href="2015.html">2.0.15</a></li>
               </ul>
             </li>
-            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="../copyright.html">Copyright</a></strong>
-            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
-        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External
-Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
       </ul>
-      </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
-in the PETSc 3.0.0</font></p>
-      <p><u><b>General:</b></u><br>
-      </p>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2><a name="CHANGES">CHANGES in PETSc 3.0.0</a></h2>
+      </div>
+
+      <h4>General:</h4>
+
       <ul>
-        <li>Changed the Matlab engine portion of the Matlab configure
-code to require a separate flag --with-matlab-engine</li>
-        <li>Changed the Socket viewer to be the same as the binary
-viewer except for its creation </li>
-        <li>Changed the Matlab Socket code to work the same as the
-Matlab binary reader except for its creation</li>
-        <li>You can now replace the PetscVFPrintf() function pointer to
-redirect all stdout/stderr output in Windows for example.</li>
-        <li>Removed MPICCommToFortran() and MPIFortranCommToC() since
-MPI_Comm_c2f() and f2c() are now always available.</li>
-        <li>PetscOptionsInsertFile() now takes a MPI_Comm as the first
-argument and a final flag argument indicating if the file &nbsp;MUST be
-located. It is also changed to be more scalable, only the 0th process
-opens it and broadcasts the input to the other processes.</li>
-        <li>Added PetscObjectIncrementTabLevel() to allow proper
-indenting of monitor output for imbedded solvers for multigrid levels,
-for block Jacobi, for SNES inside TS and KSP inside SNES etc.</li>
-      </ul>
-      <br>
-      <u><b>Logging:</b></u>
-      <ul>
-        <li>The int stage used in the PetscLogStageXXX() routines is
-now a PetscLogStage</li>
-        <li>PetscLogEventRegister() and PetscLogStageRegister() now
-return the result in the final argument instead of the first</li>
-        <li>PetscLogClassRegister() is changed to PetscClassIdRegister()
-and returns the classid in the final argument, not the first</li>
-        <li>PetscEvent is now PetscLogEvent</li>
-      </ul>
-      <p></p>
-      <u><b>config/configure.py: <br>
-      </b></u>
-      <ul>
-        <li>Changed location of base makefiles to conf from bmake/common</li>
-        <li>Changed location of generated base makefiles to
-$PETSC_ARCH/conf instead of bmake/$PETSC_ARCH</li>
-        <li>Changed location of generated include files to
-$PETSC_ARCH/include&nbsp;</li>
-        <li>Changed location of generated libraries (including from
-external packages) to $PETSC_ARCH/lib</li>
-        <li>You will need to change include
-${PETSC_DIR}/bmake/common/base to ${PETSC_DIR}/conf/base </li>
-      </ul>
-      <p><u><b>IS:</b></u></p>
-      <ul>
-        <li>ISPartitioningCount() now takes an additional argument, the
-length of the count array (that is the number of partitions).</li>
-      </ul>
-      <p><u><b>Vec:&nbsp;</b></u></p>
-      <ul>
-        <li>Added logical argument to VecSetOption() to toggle option
-in either way</li>
-        <li>The PetscMap inside the Vec object is now allocated and
-reference counted and shared between vectors and matrices, this will
-decrease memory usage on systems with a large size.</li>
-      </ul>
-      <p><u><b>VecScatter:<br>
-      </b></u></p>
-      <ul>
-      </ul>
-      <p><u><b>Mat:</b></u></p>
-      <ul>
-        <li>MatSetOption() now takes a final PetscTruth flag to toggle
-the option. The redundant options like MAT_NO_SYMMETRIC are removed</li>
-        <li>The MatSetOption() options MAT_ROWS_SORTED,
-MAT_COLUMNS_SORTED are no longer needed and are removed.</li>
-        <li>MatConvert() now uses the matrix prefix when using option
--matconvert_type.</li>
-        <li>The bdiag matrix formats have been removed</li>
-        <li>MatTranspose() now takes a new second argument MatReuse;
-also to do an inplace transpose use MAT_REUSE_MATRIX and pass the
-address of the first argument as the third argument (you can no longer
-pass 0).</li>
-        <li>MATPLAPACK is removed; instead so long as PETSc is
-config/configure.py with --download-plapack the MATMPIDENSE matrix will
-automatically use the parallel plapack solvers</li>
-        <li>The "parallel direct solver" matrix types like<br>
-MATAIJSPOOLES are ALL gone. Now you use -pc_factor_mat_solver_package<br>
-spooles etc or PCFactorSetMatSolverPackage() or if working directly with<br>
-matrices, MatGetFactor(A,MATSPOOLES,...)</li>
-        <li>Removed MatFDColoringSetRecompute(), now use
-MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton step
-but never again.</li>
-        <li>Removed MatFDColoringSet/GetFrequency() and
--mat_fd_coloring_freq since you can now use SNESSetLagJacobian() or
--snes_lag_jacobian</li>
-        <li>The PetscMap inside the Mat object is now allocated and
-reference
-counted and shared between vectors and matrices, this will decrease
-memory usage on systems with a large size.</li>
-        <li>The first argument to MatXXXFactorSymbolic/Numeric() is now
-the factored matrix</li>
-        <li>The fields
-global_rows,global_columns,local_rows,local_columns have been removed
-from the MatGetInfo() data. User MatGetSize(), MatGetLocalSize() to get
-that data</li>
-      </ul>
-      <u><b>PC:</b></u>
-      <ul>
-        <li>PCHasApplyTranspose() was renamed to
-PCApplyTransposeExists().</li>
-        <li>Added much faster matrix converter to use hypre
-preconditioners for PETSc AIJ matrices</li>
-        <li>ILU preconditioner now defaults to use shift to prevent
-zero pivot</li>
-        <li>ICC preconditioner now defaults to use Manteuffel shift to
-force positive definiteness</li>
-        <li>Added -pc_factor_shift_in_blocks and
-PCFactorSetShiftInBlocks() made default for ILU</li>
-        <li>PCApplyRichardson() now returns two additional arguments,
-the number of iterations performed and the reason it finished.</li>
-        <ul>
-        </ul>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>KSP:</b></u><br>
-      </p>
-      <ul>
-      </ul>
-      <ul>
-        <li> KSPSetConvergenceTest() now takes an optional final
-argument, destroy() that will be called to destroy the context passed
-in as the second to last argument</li>
-        <li>KSPDefaultConverged() now has a KSPDefaultConvergedCreate()
-and KSPDefaultConvergedDestroy() that creates the default context to be
-passed&nbsp;KSPSetConvergenceTest() and the destroy to be passed in.</li>
-        <li>Added KSPIBCGS a varient of Bi-CG-stab that has only 1
-synchronization point rather than 3 in the usual.</li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>SNES:</b></u></p>
-      <ul>
-        <li>SNESSetRhs() and SNESSetSolution() were removed. Use
-instead SNESSolve(snes, b, x) to pass right hand side (optional, can be
-PETSC_NULL) and solution (required).</li>
-        <li>SNES now takes ownership of user-provided vector for right
-hand side and solution passed to SNESSolve(), and until the next
-SNESSolve() is called.</li>
-        <li>SNES now takes ownership of user-provided vector for
-function evalutation passed to SNESSetFunction(), thus this vector can
-be safely destroyed after this call.</li>
-        <li>SNESConverged_LS() and SNESConverged_LS() were removed. Use
-SNESDefaultConverged() or SNESSkipConverged() as convergence test.</li>
-        <li>Option -snes_convergence_test was added, accepting values
-default|short, for setting SNESDefaultConverged() or
-SNESSkipConverged() as convergence test.</li>
-        <li>Option -snes_no_convergence_test was removed. Use instead
-"-snes_convergence_test skip".</li>
-        <li>Do not use the error PETSC_ERR_ARG_DOMAIN within your
-FormFunction() rather call SNESSetFunctionDomainError.</li>
-        <li>The line search functions now take an additional argument
-xnorm.</li>
-        <li>SNESSetConvergenceTest() takes another optional argument
-PetscErrorCode (*destroy)(void*) that will be called with SNESDestroy()
-to destroy the context.</li>
-        <li>Added SNESSetLagPreconditioner(), -snes_lag_preconditioner,
-SNESGetLagPreconditioner()</li>
-        <li>Added SNESSetLagJacobian(), -snes_lag_jacobian,
-SNESGetLagJacobian()</li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>TS:</b></u></p>
-      <p><u><b>DA:</b></u></p>
-      <ul>
-        <li>Added DAGetNeighbors() </li>
-        <li>Added DAGetOwnershipRanges() </li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>DMMG:</b></u></p>
-      <ul>
-        <li>Added DMMGSetFromOptions(), this can only be used in
-conjunction with DMMGSetSNES(). You should call this sometime after
-DMMGSetSNES() is called, otherwise the SNES/KSPSetFromOptions() does
-not get called.</li>
-        <li>Removed -dmmg_snes_monitor since now -snes_monitor and
--snes_monitor_short
-will now do the proper indenting so this is no longer needed</li>
-        <li>Removed -dmmg_ksp_monitor since now -ksp_monitor[_short)
-and -mg_levels_ksp_monitor[_short) etc will handle the proper indenting.</li>
-        <li>Removed -dmmg_jacobian_period since you can use
--snes_lag_jacobian</li>
-      </ul>
-      <u><b>PetscViewer: &nbsp;<br>
-      </b></u>
-      <ul>
-        <li>added PETSC_VIEWER_STDOUT_(comm) for Fortran</li>
-        <li>binary viewer now supports MPI IO for Vec loading and
-storing, use -viewer_binary_mpiio or PetscViewerBinarySetMPIIO() to
-enable it.</li>
-        <li>Reworked the Matlab objects sreader and freader to be
-called PetscOpenSocket and PetscOpenFile, now PetscBinaryWrite and
-PetscBinaryRead can be used on the same socket connection to send
-matrix/vectors in both directions. &nbsp;See
-src/ksp/ksp/examples/tutorials/ex41.c and ex41.m</li>
-      </ul>
-      <ul>
-      </ul>
-      <p><u><b>SYS:</b></u></p>
-      <ul>
-        <li>PetscLogFlopsNoCheck() no longer exists; you can simply
-call PetscLogFlops() it no longer has a return in it.<br>
+        <li>
+          Changed the Matlab engine portion of the Matlab configure code to
+          require a separate flag --with-matlab-engine
+        </li>
+
+        <li>
+          Changed the Socket viewer to be the same as the binary viewer except
+          for its creation
+        </li>
+
+        <li>
+          Changed the Matlab Socket code to work the same as the Matlab binary
+          reader except for its creation
+        </li>
+
+        <li>
+          You can now replace the PetscVFPrintf() function pointer to redirect
+          all stdout/stderr output in Windows for example.
+        </li>
+
+        <li>
+          Removed MPICCommToFortran() and MPIFortranCommToC() since
+          MPI_Comm_c2f() and f2c() are now always available.
+        </li>
+
+        <li>
+          PetscOptionsInsertFile() now takes a MPI_Comm as the first argument
+          and a final flag argument indicating if the file &nbsp;MUST be
+          located. It is also changed to be more scalable, only the 0th process
+          opens it and broadcasts the input to the other processes.
+        </li>
+
+        <li>
+          Added PetscObjectIncrementTabLevel() to allow proper indenting of
+          monitor output for imbedded solvers for multigrid levels, for block
+          Jacobi, for SNES inside TS and KSP inside SNES etc.
         </li>
       </ul>
-      <p><u><b>AO:<br>
-      </b></u></p>
-      <p><u><b>Sieve:</b></u></p>
-      <p><u><b>Fortran:</b></u><br>
-      </p>
-      <li> If you previously used text like the following [perhaps in
-data section of f90 modules]
-        <pre>#define PETSC_AVOID_DECLARATIONS<br>#include "finclude/petsc.h"<br>#include "finclude/petscvec.h"<br>#endif<br></pre>
-you should replace it with
-        <pre>#include "finclude/petscdef.h"<br>#include "finclude/petscvecdef.h"<br></pre>
-      </li>
-      <li>PetscTruth is now logical*4 or logical(kind=4) an unsigned
-int of 4 bytes. To get back PetscTruth as an integer*4 put a #define
-PETSC_FORTRAN_PETSCTRUTH_INT 1 into $PETSC_ARCH/conf/petscconf.h </li>
-      <li>You can now use PETSc as Fortran 90 modules, see the manual
-page for UsingFortran</li>
-      <li>You can now have PETSc build interface definitions for most
-PETSc functions by config/configure.py with the additional option
---with-fortran_interfaces see the manual page for UsingFortran</li>
-      <p></p>
+
+      <h4>Logging:</h4>
+
       <ul>
+        <li>The int stage used in the PetscLogStageXXX() routines is now a PetscLogStage</li>
+
+        <li>
+          PetscLogEventRegister() and PetscLogStageRegister() now return the
+          result in the final argument instead of the first
+        </li>
+
+        <li>
+          PetscLogClassRegister() is changed to PetscClassIdRegister() and
+          returns the classid in the final argument, not the first
+        </li>
+
+        <li>PetscEvent is now PetscLogEvent</li>
       </ul>
-      <p><u><b><a
- href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
-    </tr>
-  </tbody>
-</table>
-</body>
+
+      <h4>config/configure.py:</h4>
+
+      <ul>
+        <li>Changed location of base makefiles to conf from bmake/common</li>
+        <li>
+          Changed location of generated base makefiles to $PETSC_ARCH/conf
+          instead of bmake/$PETSC_ARCH
+        </li>
+        <li>Changed location of generated include files to $PETSC_ARCH/include</li>
+        <li>Changed location of generated libraries (including from external packages) to $PETSC_ARCH/lib</li>
+        <li>You will need to change include ${PETSC_DIR}/bmake/common/base to ${PETSC_DIR}/conf/base</li>
+      </ul>
+
+      <h4>IS:</h4>
+
+      <ul>
+        <li>
+          ISPartitioningCount() now takes an additional argument, the length of
+          the count array (that is the number of partitions).
+        </li>
+      </ul>
+
+      <h4>Vec:</h4>
+
+      <ul>
+        <li>Added logical argument to VecSetOption() to toggle option in either way</li>
+
+        <li>
+          The PetscMap inside the Vec object is now allocated and reference
+          counted and shared between vectors and matrices, this will decrease
+          memory usage on systems with a large size.
+        </li>
+      </ul>
+
+      <h4>VecScatter:</h4>
+      <h4>Mat:</h4>
+
+      <ul>
+        <li>
+          MatSetOption() now takes a final PetscTruth flag to toggle the
+          option. The redundant options like MAT_NO_SYMMETRIC are removed
+        </li>
+
+        <li>
+          The MatSetOption() options MAT_ROWS_SORTED, MAT_COLUMNS_SORTED are no
+          longer needed and are removed.
+        </li>
+
+        <li>MatConvert() now uses the matrix prefix when using option -matconvert_type.</li>
+        <li>The bdiag matrix formats have been removed</li>
+
+        <li>
+          MatTranspose() now takes a new second argument MatReuse; also to do
+          an inplace transpose use MAT_REUSE_MATRIX and pass the address of the
+          first argument as the third argument (you can no longer pass 0).
+        </li>
+
+        <li>
+          MATPLAPACK is removed; instead so long as PETSc is
+          config/configure.py with --download-plapack the MATMPIDENSE matrix
+          will automatically use the parallel plapack solvers
+        </li>
+
+        <li>
+          The "parallel direct solver" matrix types like<br> MATAIJSPOOLES are
+          ALL gone. Now you use -pc_factor_mat_solver_package<br> spooles etc
+          or PCFactorSetMatSolverPackage() or if working directly with<br>
+          matrices, MatGetFactor(A,MATSPOOLES,...)
+        </li>
+
+        <li>
+          Removed MatFDColoringSetRecompute(), now use
+          MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton
+          step but never again.
+        </li>
+
+        <li>
+          Removed MatFDColoringSet/GetFrequency() and -mat_fd_coloring_freq
+          since you can now use SNESSetLagJacobian() or -snes_lag_jacobian
+        </li>
+
+        <li>
+          The PetscMap inside the Mat object is now allocated and reference
+          counted and shared between vectors and matrices, this will decrease
+          memory usage on systems with a large size.
+        </li>
+
+        <li>
+          The first argument to MatXXXFactorSymbolic/Numeric() is now the
+          factored matrix
+        </li>
+
+        <li>
+          The fields global_rows,global_columns,local_rows,local_columns have
+          been removed from the MatGetInfo() data. User MatGetSize(),
+          MatGetLocalSize() to get that data
+        </li>
+      </ul>
+
+      <h4>PC:</h4>
+
+      <ul>
+        <li>PCHasApplyTranspose() was renamed to PCApplyTransposeExists().</li>
+        <li>Added much faster matrix converter to use hypre preconditioners for PETSc AIJ matrices</li>
+        <li>ILU preconditioner now defaults to use shift to prevent zero pivot</li>
+        <li>ICC preconditioner now defaults to use Manteuffel shift to force positive definiteness</li>
+        <li>Added -pc_factor_shift_in_blocks and PCFactorSetShiftInBlocks() made default for ILU</li>
+
+        <li>
+          PCApplyRichardson() now returns two additional arguments, the number
+          of iterations performed and the reason it finished.
+        </li>
+      </ul>
+
+      <h4>KSP:</h4>
+
+      <ul>
+        <li>
+          KSPSetConvergenceTest() now takes an optional final argument,
+          destroy() that will be called to destroy the context passed in as the
+          second to last argument
+        </li>
+
+        <li>
+          KSPDefaultConverged() now has a KSPDefaultConvergedCreate() and
+          KSPDefaultConvergedDestroy() that creates the default context to be
+          passed KSPSetConvergenceTest() and the destroy to be passed in.
+        </li>
+        <li>
+          Added KSPIBCGS a varient of Bi-CG-stab that has only
+          1 synchronization point rather than 3 in the usual.
+        </li>
+      </ul>
+
+      <h4>SNES:</h4>
+
+      <ul>
+        <li>
+          SNESSetRhs() and SNESSetSolution() were removed. Use instead
+          SNESSolve(snes, b, x) to pass right hand side (optional, can be
+          PETSC_NULL) and solution (required).
+        </li>
+
+        <li>
+          SNES now takes ownership of user-provided vector for right hand side
+          and solution passed to SNESSolve(), and until the next SNESSolve() is
+          called.
+        </li>
+
+        <li>
+          SNES now takes ownership of user-provided vector for function
+          evalutation passed to SNESSetFunction(), thus this vector can be
+          safely destroyed after this call.
+        </li>
+
+        <li>
+          SNESConverged_LS() and SNESConverged_LS() were removed. Use
+          SNESDefaultConverged() or SNESSkipConverged() as convergence
+          test.
+        </li>
+
+        <li>
+          Option -snes_convergence_test was added, accepting values
+          default|short, for setting SNESDefaultConverged() or
+          SNESSkipConverged() as convergence test.
+        </li>
+
+        <li>
+          Option -snes_no_convergence_test was removed. Use instead
+          "-snes_convergence_test skip".
+        </li>
+
+        <li>
+          Do not use the error PETSC_ERR_ARG_DOMAIN within your FormFunction()
+          rather call SNESSetFunctionDomainError.
+        </li>
+
+        <li>The line search functions now take an additional argument xnorm.</li>
+
+        <li>
+          SNESSetConvergenceTest() takes another optional argument
+          PetscErrorCode (*destroy)(void*) that will be called with
+          SNESDestroy() to destroy the context.
+        </li>
+
+        <li>
+          Added SNESSetLagPreconditioner(), -snes_lag_preconditioner, SNESGetLagPreconditioner()
+        </li>
+
+        <li>Added SNESSetLagJacobian(), -snes_lag_jacobian, SNESGetLagJacobian()</li>
+      </ul>
+
+      <h4>TS:</h4>
+      <h4>DA:</h4>
+
+      <ul>
+        <li>Added DAGetNeighbors()</li>
+        <li>Added DAGetOwnershipRanges()</li>
+      </ul>
+
+      <h4>DMMG:</h4>
+
+      <ul>
+        <li>
+          Added DMMGSetFromOptions(), this can only be used in conjunction with
+          DMMGSetSNES(). You should call this sometime after DMMGSetSNES() is
+          called, otherwise the SNES/KSPSetFromOptions() does not get
+          called.
+        </li>
+
+        <li>
+          Removed -dmmg_snes_monitor since now -snes_monitor and
+          -snes_monitor_short will now do the proper indenting so this is no
+          longer needed
+        </li>
+
+        <li>
+          Removed -dmmg_ksp_monitor since now -ksp_monitor[_short) and
+          -mg_levels_ksp_monitor[_short) etc will handle the proper
+          indenting.
+        </li>
+
+        <li>
+          Removed -dmmg_jacobian_period since you can use
+          -snes_lag_jacobian
+        </li>
+      </ul>
+
+      <h4>PetscViewer:</h4>
+
+      <ul>
+        <li>added PETSC_VIEWER_STDOUT_(comm) for Fortran</li>
+
+        <li>
+          binary viewer now supports MPI IO for Vec loading and storing, use
+          -viewer_binary_mpiio or PetscViewerBinarySetMPIIO() to enable
+          it.
+        </li>
+
+        <li>
+          Reworked the Matlab objects sreader and freader to be called
+          PetscOpenSocket and PetscOpenFile, now PetscBinaryWrite and
+          PetscBinaryRead can be used on the same socket connection to send
+          matrix/vectors in both directions. See
+          src/ksp/ksp/examples/tutorials/ex41.c and ex41.m
+        </li>
+      </ul>
+
+      <h4>SYS:</h4>
+
+      <ul>
+        <li>
+          PetscLogFlopsNoCheck() no longer exists; you can simply call
+          PetscLogFlops() it no longer has a return in it.<br>
+        </li>
+      </ul>
+
+      <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

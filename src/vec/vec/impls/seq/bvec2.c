@@ -236,7 +236,8 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    *z = BLASnrm2_(&bn,xx,&one);
+    *z = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
+    *z = PetscSqrtReal(*z);
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
@@ -443,7 +444,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",(double) xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xv[i]);CHKERRQ(ierr);
 #endif
     }
   }
@@ -772,7 +773,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree(vs);CHKERRQ(ierr);
+  ierr = PetscFree(v->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

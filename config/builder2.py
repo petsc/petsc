@@ -21,7 +21,7 @@ def build(args):
     if not maker.sourceDatabase.hasNode(filename):
       maker.logPrint('Adding %s to the source database' % filename)
       maker.sourceDatabase.setNode(filename, [])
-  if maker.buildLibraries('libpetsc', maker.rootDir, args.parallel):
+  if maker.buildLibraries('libpetsc', maker.rootDir, args.parallel) and args.rebuildDep:
     # This is overkill, but right now it is cheap
     maker.rebuildDependencies('libpetsc', maker.rootDir)
   maker.cleanup()
@@ -109,6 +109,11 @@ def check(args):
         print(param['setup'])
         os.system('python '+param['setup'])
         rebuildTest = True
+      if 'source' in param:
+        if not isinstance(ex, list):
+          ex = [ex]+param['source']
+        else:
+          ex = ex+param['source']
       if rebuildTest:
         objects = maker.buildFile(ex, objDir)
         if not len(objects):
@@ -156,36 +161,38 @@ def stubs(args):
   maker.cleanup()
   return 0
 
-# Argumnt parsing
-import argparse
+if __name__ == '__main__':
+  # Argumnt parsing
+  import argparse
 
-parser = argparse.ArgumentParser(description     = 'PETSc BuildSystem',
-                                 epilog          = 'For more information, visit http://www.mcs.anl.gov/petsc',
-                                 formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--version', action='version', version='PETSc BuildSystem 0.1')
-subparsers = parser.add_subparsers(help='build actions')
+  parser = argparse.ArgumentParser(description     = 'PETSc BuildSystem',
+                                   epilog          = 'For more information, visit http://www.mcs.anl.gov/petsc',
+                                   formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--version', action='version', version='PETSc BuildSystem 0.1')
+  subparsers = parser.add_subparsers(help='build actions')
 
-parser_build = subparsers.add_parser('build', help='Compile all out of date source and generate a new shared library')
-parser_build.add_argument('files', nargs='*', help='Extra files to incorporate into the build')
-parser_build.add_argument('--parallel', action='store_true', default=False, help='Execute the build in parallel')
-parser_build.set_defaults(func=build)
-parser_check = subparsers.add_parser('buildExample', help='Compile and link an example')
-parser_check.add_argument('files', nargs='+', help='The example files')
-parser_check.set_defaults(func=buildExample)
-parser_check = subparsers.add_parser('check', help='Check that build is functional')
-parser_check.add_argument('files', nargs='*', help='Extra examples to test')
-parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
-parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
-parser_check.set_defaults(func=check)
-parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
-parser_clean.set_defaults(func=clean)
-parser_purge = subparsers.add_parser('purge', help='Remove a set of files from the source database')
-parser_purge.add_argument('files', nargs='+', help='Files to remove from the source database')
-parser_purge.set_defaults(func=purge)
-parser_stubs = subparsers.add_parser('stubs', help='Build stubs for certain languages')
-parser_stubs.add_argument('languages', nargs='+', help='Stub languages')
-parser_stubs.set_defaults(func=stubs)
+  parser_build = subparsers.add_parser('build', help='Compile all out of date source and generate a new shared library')
+  parser_build.add_argument('files', nargs='*', help='Extra files to incorporate into the build')
+  parser_build.add_argument('--parallel',   action='store_true',  default=False, help='Execute the build in parallel')
+  parser_build.add_argument('--rebuildDep', action='store_false', default=True,  help='Rebuild dependencies')
+  parser_build.set_defaults(func=build)
+  parser_check = subparsers.add_parser('buildExample', help='Compile and link an example')
+  parser_check.add_argument('files', nargs='+', help='The example files')
+  parser_check.set_defaults(func=buildExample)
+  parser_check = subparsers.add_parser('check', help='Check that build is functional')
+  parser_check.add_argument('files', nargs='*', help='Extra examples to test')
+  parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
+  parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
+  parser_check.set_defaults(func=check)
+  parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
+  parser_clean.set_defaults(func=clean)
+  parser_purge = subparsers.add_parser('purge', help='Remove a set of files from the source database')
+  parser_purge.add_argument('files', nargs='+', help='Files to remove from the source database')
+  parser_purge.set_defaults(func=purge)
+  parser_stubs = subparsers.add_parser('stubs', help='Build stubs for certain languages')
+  parser_stubs.add_argument('languages', nargs='+', help='Stub languages')
+  parser_stubs.set_defaults(func=stubs)
 
-args = parser.parse_args()
-print(args)
-args.func(args)
+  args = parser.parse_args()
+  print(args)
+  args.func(args)

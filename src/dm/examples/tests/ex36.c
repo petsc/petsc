@@ -370,13 +370,13 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
     
-    ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
-  ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
   ierr = VecSet(ac,66.99);CHKERRQ(ierr);
@@ -470,14 +470,14 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
     
-    ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
   
-  ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
   ierr = DADefineXLinearField2D(dac,ac);CHKERRQ(ierr);
@@ -573,13 +573,13 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
     
-    ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
-  ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
   ierr = VecZeroEntries(ac);CHKERRQ(ierr);

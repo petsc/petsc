@@ -31,7 +31,10 @@
 #include <malloc.h>
 #endif
 #if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
+#  include <valgrind/valgrind.h>
+#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
+#else
+#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
 #endif
 
 /* ------------------------Nasty global variables -------------------------------*/
@@ -280,14 +283,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
-#if defined(PETSC_HAVE_VALGRIND)
-    if (flg2 || !(RUNNING_ON_VALGRIND)) {
+    if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
       /* turn off default -malloc if valgrind is being used */
-#endif
       ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
-#if defined(PETSC_HAVE_VALGRIND)
     }
-#endif
   }
 #else
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -303,6 +302,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg1,PETSC_NULL);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+  if (flg1 && !PETSC_RUNNING_ON_VALGRIND) {
+    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
+    ierr = PetscMallocSetDumpLog();CHKERRQ(ierr);
+    ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
+  }
+#endif
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -361,7 +369,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);}
+  if (flg1) {
+    ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
+  }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_mpiabort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr);}
@@ -561,11 +572,22 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
   {
-    int device;
-
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
-    if (flg1) {
-      ierr = cudaSetDevice(device);CHKERRQ(ierr);
+    int size;
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    if (size>1) {
+      int devCount, device, rank;
+      ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+      device = rank % devCount;
+      ierr = cudaSetDevice(device);CHKERRQ(ierr);        
+    }
+    else {
+      int device;
+      /* the code below works for serial GPU simulations */
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
+      if (flg1) {
+        ierr = cudaSetDevice(device);CHKERRQ(ierr);
+      }
     }
   }
 #endif
@@ -636,7 +658,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_CUSP)

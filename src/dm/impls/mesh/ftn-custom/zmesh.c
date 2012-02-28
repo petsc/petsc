@@ -4,6 +4,7 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmeshcreatepcice_          DMMESHCREATEPCICE
 #define dmmeshcreateexodus_         DMMESHCREATEEXODUS
+#define dmmeshcreateexodusng_       DMMESHCREATEEXODUSNG
 #define dmmeshdistribute_           DMMESHDISTRIBUTE
 #define dmmeshgetvertexsectionreal_ DMMESHGETVERTEXSECTIONREAL
 #define dmmeshgetcellsectionreal_   DMMESHGETCELLSECTIONREAL
@@ -13,19 +14,22 @@
 #define vertexsectionintcreate_     VERTEXSECTIONINTCREATE
 #define cellsectionrealcreate_      CELLSECTIONREALCREATE
 #define dmmeshgetlabelsize_         DMMESHGETLABELSIZE
+#define dmmeshgetlabelidis_         DMMESHGETLABELIDIS
 #define dmmeshgetstratumsize_       DMMESHGETSTRATUMSIZE
+#define dmmeshgetstratumis_         DMMESHGETSTRATUMIS
 #define dmmeshgetsectionreal_       DMMESHGETSECTIONREAL
 #define dmmeshgetsectionint_        DMMESHGETSECTIONINT
 #define dmmeshsetsectionreal_       DMMESHSETSECTIONREAL
-#define dmmeshcreatematrix_         DMMESHCREATEMATRIX
 #define dmmeshcreatesection_        DMMESHCREATESECTION
 #define dmmeshsetsection_           DMMESHSETSECTION
+#define dmmeshcreatematrix_         DMMESHCREATEMATRIX
 #define alestagepush_               ALESTAGEPUSH
 #define alestagepop_                ALESTAGEPOP
 #define alestageprintmemory_        ALESTAGEPRINTMEMORY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmmeshcreatepcice_           dmmeshcreatepcice
 #define dmmeshcreateexodus_          dmmeshcreateexodus
+#define dmmeshcreateexodusng_        dmmeshcreateexodusng
 #define dmmeshdistribute_            dmmeshdistribute
 #define dmmeshgetvertexsectionreal_  dmmeshgetvertexsectionreal
 #define dmmeshgetcellsectionreal_    dmmeshgetcellsectionreal
@@ -35,13 +39,15 @@
 #define vertexsectionintcreate_      vertexsectionintcreate
 #define cellsectionrealcreate_       cellsectionrealcreate
 #define dmmeshgetlabelsize_          dmmeshgetlabelsize
+#define dmmeshgetlabelidis_          dmmeshgetlabelidis
 #define dmmeshgetstratumsize_        dmmeshgetstratumsize
+#define dmmeshgetstratumis_          dmmeshgetstratumis
 #define dmmeshgetsectionreal_        dmmeshgetsectionreal
 #define dmmeshgetsectionint_         dmmeshgetsectionint
 #define dmmeshsetsectionreal_        dmmeshsetsectionreal
-#define dmmeshcreatematrix_          dmmeshcreatematrix
 #define dmmeshcreatesection_         dmmeshcreatesection
 #define dmmeshsetsection_            dmmeshsetsection
+#define dmmeshcreatematrix_          dmmeshcreatematrix
 #define alestagepush_                alestagepush
 #define alestagepop_                 alestagepop
 #define alestageprintmemory_         alestageprintmemory
@@ -66,6 +72,13 @@ void PETSC_STDCALL  dmmeshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIX
   char *cF;
   FIXCHAR(filename,len,cF);
   *ierr = DMMeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,dm);
+  FREECHAR(filename,cF);
+}
+void PETSC_STDCALL  dmmeshcreateexodusng_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), DM *dm, DM *dmFS, PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *cF;
+  FIXCHAR(filename,len,cF);
+  *ierr = DMMeshCreateExodusNG(MPI_Comm_f2c( *(comm) ),cF,dm,dmFS);
   FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  dmmeshdistribute_(DM *serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
@@ -132,10 +145,23 @@ void PETSC_STDCALL  dmmeshgetlabelsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN
   *ierr = DMMeshGetLabelSize(*mesh,pN, size);
   FREECHAR(name,pN);
 }
+void PETSC_STDCALL dmmeshgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshGetLabelIdIS(*dm,pN,ids);
+  FREECHAR(name,pN);
+}
 void PETSC_STDCALL  dmmeshgetstratumsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetStratumSize(*mesh,pN, *value, size);
+  FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  dmmeshgetstratumis_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshGetStratumIS(*mesh,pN, *value, is);
   FREECHAR(name,pN);
 }
 
@@ -160,15 +186,8 @@ void PETSC_STDCALL  dmmeshsetsectionreal_(DM *mesh, CHAR name PETSC_MIXED_LEN(le
   FREECHAR(name,pN);
 }
 
-void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
-  char *pN;
-  FIXCHAR(mattype,lenN,pN);
-  *ierr = DMMeshCreateMatrix(*mesh, *section, pN, J);
-  FREECHAR(mattype,pN);
-}
-
-void PETSC_STDCALL  dmmeshcreatesection_(DM *mesh, PetscInt *dim, PetscInt *numFields, PetscInt numDof[], PetscInt *numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section, int *ierr){
-  *ierr = DMMeshCreateSection(*mesh, *dim, *numFields, numDof, *numBC, bcField, bcPoints, section);
+void PETSC_STDCALL  dmmeshcreatesection_(DM *mesh, PetscInt *dim, PetscInt *numFields, PetscInt numComp[], PetscInt numDof[], PetscInt *numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section, int *ierr){
+  *ierr = DMMeshCreateSection(*mesh, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
 }
 
 void PETSC_STDCALL  dmmeshsetsection_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscSection *section, int *ierr PETSC_END_LEN(lenN)){
@@ -176,6 +195,13 @@ void PETSC_STDCALL  dmmeshsetsection_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN),
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshSetSection(*mesh, pN, *section);
   FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(mattype,lenN,pN);
+  *ierr = DMMeshCreateMatrix(*mesh, *section, pN, J);
+  FREECHAR(mattype,pN);
 }
 
 void PETSC_STDCALL  alestagepush_(CHAR name PETSC_MIXED_LEN(lenN), PetscInt *debug, int *ierr PETSC_END_LEN(lenN)){

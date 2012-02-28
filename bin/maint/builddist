@@ -139,6 +139,10 @@ chmod -R u+w petsc$version
 chmod -R a+r petsc$version
 find petsc$version -type d -name "*" -exec chmod a+x {} \;
 
+# fixup canonical redirection of webpages to the proper location
+cd petsc$version
+find * -name \*.html -type f -exec perl -pi -e 's^(<head>)^$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \;
+
 # Now create the tar files
 cd $tmpdir
 /bin/tar -czf ~/petsc$version.tar.gz petsc$version

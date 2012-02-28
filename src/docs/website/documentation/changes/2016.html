@@ -1,152 +1,262 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 2.0.16</title>
+  </head>
+  <body>
 
-<head>
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<title>PETSc: Docs:&nbsp; Changes: 2.0.16</title>
-</head>
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
 
-<body  bgcolor="#D5EAFF">
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 2.0.16<!--end--></h1>
+    </div>
 
-<table width="100%">
-  <tr>
-    <td width="25%" valign="top">
-    <!--##begin-->
-    <h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <!--##end-->
-    <ul>
-      <li><a href="../../index.html"><strong>Home</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%"><h1>Docs:&nbsp; Changes: 2.0.16</h1>
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-  <tr>
-    <td width="25%" valign="top"><ul>
-      <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-      <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
-          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
-          <li><a href="../referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
-          <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-          <li><strong><a href="../installation.html">Installation</a> </strong></li>
-	  <li><strong><a href="../zope.html">Zope</a> </strong></li>
-          <li><strong><a href="index.html">Changes</a></strong><ul>
-              <li><a href="2028.html">2.0.28</a></li>
-              <li><a href="2024.html">2.0.24</a></li>
-              <li><a href="2022.html">2.0.22</a></li>
-              <li><a href="2918-21.html">2.0.21</a></li>
-              <li><a href="2918-21.html">2.0.18-20</a></li>
-              <li><a href="2017.html">2.0.17</a></li>
-              <li><font color="#FF0000">2.0.16</font></li>
-              <li><a href="2015.html">2.0.15</a></li>
-            </ul>
-          </li>
-          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-          <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
-        </ul>
-      </li>
-      <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-      <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%" valign="top">
-    <!--##begin-->
-    <p align="center"><font color="#FF0000" size="5">NEW FEATURES
-    and CHANGES in PETSc 2.0.16</font> </p>
-    <p><font size="4"><strong><u>General:</u></strong></font> <ul>
-      <li>Added the option -compare option for incremental debugging; see the users manual for
-        more details. </li>
-      <li>Added tags file so that vi users can easily browse PETSc source files (just as emacs
-        users already can by using etags). See the users manual subsection &quot;VI users&quot;
-        for details. </li>
-      <li>We have stopped distributing the UNIX-style manpages with PETSc. Instead, we now only
-        distribute the HTML version. You can still access the man pages with the command
-        $PETSC_DIR/bin/petscman. Alternatively, you can directly view
-        $PETSC_DIR/docs/www/www.html. </li>
-    </ul>
-    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font></p>
-    <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
-      <li>You can now attach several SNES monitoring routines with SNESMonitorSet() instead of
-        only one as previously allowed. Similarly, multiple monitors can be used from the options
-        database (e.g., -snes_monitor and -snes_xmonitor). </li>
-    </ul>
-    <p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> <ul>
-      <li>See PC and KSP </li>
-    </ul>
-    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font> <ul>
-      <li>You can now attach several KSP monitoring routines with KSPSetMonitor() instead of only
-        one as previously allowed. Similarly, multiple monitors can be used from the options
-        database (e.g., -ksp_monitor and -ksp_xmonitor). </li>
-    </ul>
-    <p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font></p>
-    <p><font size="4"><strong><u>MAT (Matrices): </u></strong></font><ul>
-      <li>Added the routines MatSetValuesLocal(), MatZeroRowsLocal() and
-        MatSetLocalToGlobalMapping() to enable the user to set values in a matrix using a local
-        numbering of the nodes rather than a global numbering. </li>
-      <li>Added the option MAT_IGNORE_OFF_PROC_ENTRIES for MatSetOptions(), which causes all
-        entries on any processor destined to be stored on a different processor to be dropped
-        instead. This is useful if you know that the &quot;owning&quot; processor is also always
-        generating the correct entries, so PETSc need not ship over the duplicate entry generated
-        on another processor. -</li>
-      <li>Added options MAT_COLUMNS_UNSORTED and MAT_ROWS_UNSORTED for MatSetOptions() to enable
-        switching betwen sorted and unsorted input. </li>
-    </ul>
-    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font></p>
-    <p><font size="4"><strong><u>VEC (Vectors):</u></strong></font> <ul>
-      <li>Changed the SCATTER_ALL argument in VecScatterXXX() routines to SCATTER_FORWARD. </li>
-      <li>Added the routines VecSetValuesLocal() and VecSetLocalToGlobalMapping() to allow the
-        user to set values into a vector using a local numbering of the nodes rather than a global
-        numbering. </li>
-      <li>Added the routine VecSetOption(Vec,VEC_IGNORE_OFF_PROCESSOR_ENTRIES,PETSC_TRUE), which causes all
-        entries on any processor destined to be stored on a different processor to be dropped
-        instead. This is useful if you know that the &quot;owning&quot; processor is also always
-        generating the correct entries, so PETSc need not transfer the duplicate entries generated
-        on another processor. </li>
-    </ul>
-    <p><font size="4"><strong><u>IS (Index Sets): </u></strong></font></p>
-    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font> <ul>
-      <li>The numbers on the axis plots are much improved. </li>
-      <li>You can now pass PETSC_DECIDE as the x and y arguments in DrawOpenX() and
-        ViewerDrawOpenX() to let PETSc place non-overlapping windows on the display. </li>
-    </ul>
-    <p><font size="4"><strong><u>Viewers: </u></strong></font></p>
-    <p><font size="4"><strong><u>System Routines:</u></strong></font> <ul>
-      <li>Added routines PetscSynchronizedPrintf(MPI_Comm,format,args) and
-        PetscSynchronizedFlush(MPI_Comm), which allow groups of processes to print to stdout as
-        one would expect. I.e., the output from processor 0 is followed by the output from
-        processor 1, etc. Very useful during code development. This can often be a substitute for
-        attempting to sequentialize printf() statements via PetscSequentialPhaseBegin() and
-        PetscSequentialPhaseEnd(). -</li>
-      <li>Added the command line option -options_file &lt;file&gt; that causes all options in the
-        specified file to be treated as if they were typed on the command line.</li>
-      <li>Added the option -log_trace [filename] (and the corresponding routine PLogTraceBegin())
-        that allows tracing of all PETSc calls; useful to see where a program is hanging without
-        running in the debugger. Can be used in conjunction with the -log_info option. </li>
-      <li>Added PetscRandomSetInterval() to enable the user to set an interval over which random
-        numbers will be uniformly distributed. </li>
-    </ul>
-    <p><font size="4"><strong><u>Event Logging:</u></strong></font></p>
-    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> <ul>
-      <li>Added the Fortran interface for VecDuplicateVecs(), VecDestroyVecs(), VecMAXPY(),
-        VecMDot(), and VecMTDot(). </li>
-    </ul>
-    <!--##end-->
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-</table>
-</body>
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><a href="2022.html">2.0.22</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><span class="current">2.0.16</span></li>
+                <li><a href="2015.html">2.0.15</a></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2>NEW FEATURES and <a name="CHANGES">CHANGES</a> in PETSc 2.0.16</h2>
+      </div>
+
+      <h4>General:</h4>
+
+      <ul>
+        <li>
+          Added the option -compare option for incremental debugging; see the
+          users manual for more details.
+        </li>
+
+        <li>
+          Added tags file so that vi users can easily browse PETSc source files
+          (just as emacs users already can by using etags). See the users
+          manual subsection &quot;VI users&quot; for details.
+        </li>
+
+        <li>
+          We have stopped distributing the UNIX-style manpages with PETSc.
+          Instead, we now only distribute the HTML version. You can still
+          access the man pages with the command $PETSC_DIR/bin/petscman.
+          Alternatively, you can directly view $PETSC_DIR/docs/www/www.html.
+        </li>
+      </ul>
+
+      <h4>TS (Timestepping Solvers):</h4>
+      <h4>SNES (Nonlinear Solvers):</h4>
+
+      <ul>
+        <li>
+          You can now attach several SNES monitoring routines with
+          SNESMonitorSet() instead of only one as previously allowed.
+          Similarly, multiple monitors can be used from the options database
+          (e.g., -snes_monitor and -snes_xmonitor).
+        </li>
+      </ul>
+
+      <h4>SLES (Linear Solvers):</h4>
+
+      <ul>
+        <li>See PC and KSP</li>
+      </ul>
+
+      <h4>KSP (Krylov Subspace Methods):</h4>
+
+      <ul>
+        <li>
+          You can now attach several KSP monitoring routines with
+          KSPSetMonitor() instead of only one as previously allowed. Similarly,
+          multiple monitors can be used from the options database (e.g.,
+          -ksp_monitor and -ksp_xmonitor).
+        </li>
+      </ul>
+
+      <h4>PC (Preconditioners):</h4>
+      <h4>MAT (Matrices):</h4>
+
+      <ul>
+        <li>
+          Added the routines MatSetValuesLocal(), MatZeroRowsLocal() and
+          MatSetLocalToGlobalMapping() to enable the user to set values in
+          a matrix using a local numbering of the nodes rather than a global
+          numbering.
+        </li>
+
+        <li>
+          Added the option MAT_IGNORE_OFF_PROC_ENTRIES for MatSetOptions(),
+          which causes all entries on any processor destined to be stored on
+          a different processor to be dropped instead. This is useful if you
+          know that the &quot;owning&quot; processor is also always generating
+          the correct entries, so PETSc need not ship over the duplicate entry
+          generated on another processor. -
+        </li>
+
+        <li>
+          Added options MAT_COLUMNS_UNSORTED and MAT_ROWS_UNSORTED for
+          MatSetOptions() to enable switching betwen sorted and unsorted input.
+        </li>
+      </ul>
+
+      <h4>DA (Distributed Arrays):</h4>
+      <h4>VEC (Vectors):</h4>
+
+      <ul>
+        <li>
+          Changed the SCATTER_ALL argument in VecScatterXXX() routines to
+          SCATTER_FORWARD.
+        </li>
+
+        <li>
+          Added the routines VecSetValuesLocal() and
+          VecSetLocalToGlobalMapping() to allow the user to set values into
+          a vector using a local numbering of the nodes rather than a global
+          numbering.
+        </li>
+
+        <li>
+          Added the routine
+          VecSetOption(Vec,VEC_IGNORE_OFF_PROCESSOR_ENTRIES,PETSC_TRUE), which
+          causes all entries on any processor destined to be stored on
+          a different processor to be dropped instead. This is useful if you
+          know that the &quot;owning&quot; processor is also always generating
+          the correct entries, so PETSc need not transfer the duplicate entries
+          generated on another processor.
+        </li>
+      </ul>
+
+      <h4>IS (Index Sets):</h4>
+      <h4>Draw (Graphics):</h4>
+
+      <ul>
+        <li>The numbers on the axis plots are much improved.</li>
+
+        <li>
+          You can now pass PETSC_DECIDE as the x and y arguments in DrawOpenX()
+          and ViewerDrawOpenX() to let PETSc place non-overlapping windows on
+          the display.
+        </li>
+      </ul>
+
+      <h4>Viewers:</h4>
+      <h4>System Routines:</h4>
+
+      <ul>
+        <li>
+          Added routines PetscSynchronizedPrintf(MPI_Comm,format,args) and
+          PetscSynchronizedFlush(MPI_Comm), which allow groups of processes to
+          print to stdout as one would expect. I.e., the output from processor
+          0 is followed by the output from processor 1, etc. Very useful during
+          code development. This can often be a substitute for attempting to
+          sequentialize printf() statements via PetscSequentialPhaseBegin()
+          and PetscSequentialPhaseEnd(). -
+        </li>
+
+        <li>
+          Added the command line option -options_file &lt;file&gt; that causes
+          all options in the specified file to be treated as if they were typed
+          on the command line.
+        </li>
+
+        <li>
+          Added the option -log_trace [filename] (and the corresponding routine
+          PLogTraceBegin()) that allows tracing of all PETSc calls; useful to
+          see where a program is hanging without running in the debugger. Can
+          be used in conjunction with the -log_info option.
+        </li>
+
+        <li>
+          Added PetscRandomSetInterval() to enable the user to set an interval
+          over which random numbers will be uniformly distributed.
+        </li>
+      </ul>
+
+      <h4>Event Logging:</h4>
+      <h4>Fortran Interface:</h4>
+
+      <ul>
+        <li>
+          Added the Fortran interface for VecDuplicateVecs(), VecDestroyVecs(),
+          VecMAXPY(), VecMDot(), and VecMTDot().
+        </li>
+      </ul>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

@@ -19,24 +19,24 @@ The flow can be driven with the lid or with bouyancy or both:\n\
    Concepts: multicomponent
    Processors: n
 T*/
-/* ------------------------------------------------------------------------
+/*F-----------------------------------------------------------------------
 
-    We thank David E. Keyes for contributing the driven cavity discretization
-    within this example code.
+    We thank David E. Keyes for contributing the driven cavity discretization within this example code.
 
     This problem is modeled by the partial differential equation system
-  
-	- Lap(U) - Grad_y(Omega) = 0
-	- Lap(V) + Grad_x(Omega) = 0
-	- Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
-	- Lap(T) + PR*Div([U*T,V*T]) = 0
 
-    in the unit square, which is uniformly discretized in each of x and
-    y in this simple encoding.
+\begin{eqnarray}  
+	- \triangle U - \nabla_y \Omega & = & 0  \\
+	- \triangle V + \nabla_x\Omega & = & 0  \\
+	- \triangle \Omega + \nabla \cdot ([U*\Omega,V*\Omega]) - GR* \nabla_x T & = & 0  \\
+	- \triangle T + PR* \nabla \cdot ([U*T,V*T]) & = & 0  
+\end{eqnarray}
 
-    No-slip, rigid-wall Dirichlet conditions are used for [U,V].
+    in the unit square, which is uniformly discretized in each of x and y in this simple encoding.
+
+    No-slip, rigid-wall Dirichlet conditions are used for $ [U,V]$.
     Dirichlet conditions are used for Omega, based on the definition of
-    vorticity: Omega = - Grad_y(U) + Grad_x(V), where along each
+    vorticity: $ \Omega = - \nabla_y U + \nabla_x V$, where along each
     constant coordinate boundary, the tangential derivative is zero.
     Dirichlet conditions are used for T on the left and right walls,
     and insulation homogeneous Neumann conditions are used for T on
@@ -53,7 +53,7 @@ T*/
         (for larger grid problems this variant may not converge 
         without a preconditioner due to ill-conditioning).
 
-  ------------------------------------------------------------------------- */
+  ------------------------------------------------------------------------F*/
 
 /* 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).

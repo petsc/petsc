@@ -1,211 +1,386 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 2.0.15</title>
+  </head>
+  <body>
 
-<head>
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<title>PETSc: Docs:&nbsp; Changes: 2.0.15</title>
-</head>
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
 
-<body  bgcolor="#D5EAFF">
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 2.0.15<!--end--></h1>
+    </div>
 
-<table width="100%">
-  <tr>
-    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <ul>
-      <li><a href="../../index.html"><strong>Home</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%">
-    <!--##begin-->
-    <h1>Docs:&nbsp; Changes: 2.0.15</h1>
-    <!--##end-->
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-  <tr>
-    <td width="25%" valign="top"><ul>
-      <li><a href="../../download/index.html"><strong>Download</strong></a></li>
-      <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
-          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
-          <li><a href="../referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
-          <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
-          <li><strong><a href="../installation.html">Installation</a> </strong></li>
-	  <li><strong><a href="../zope.html">Zope</a> </strong></li>
-          <li><strong><a href="index.html">Changes</a></strong><ul>
-              <li><a href="2028.html">2.0.28</a></li>
-              <li><a href="2024.html">2.0.24</a></li>
-              <li><a href="2022.html">2.0.22</a></li>
-              <li><a href="2918-21.html">2.0.21</a></li>
-              <li><a href="2918-21.html">2.0.18-20</a></li>
-              <li><a href="2017.html">2.0.17</a></li>
-              <li><a href="2016.html">2.0.16</a></li>
-              <li><font color="#FF0000">2.0.15</font></li>
-            </ul>
-          </li>
-          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-          <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
-        </ul>
-      </li>
-      <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-      <li><a href="../../misc/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%" valign="top">
-    <!--##begin-->
-    <p align="center"><font color="#FF0000" size="5">NEW FEATURES
-    and CHANGES in PETSc 2.0.15</font> </p>
-    <p>Highlights of new features in version 2.0.15, added since the last public release of
-    PETSc (2.0.Beta.13). See details in the sections below. <ul>
-      <li>- Added support for shared version of PETSc libraries for several machines to enable
-        faster linking and smaller executables </li>
-      <li>- Added new parallel block row matrix format, improved efficiency for block diagonal
-        formats -</li>
-      <li>Added a suite of routines to help manage the mappings between an application-defined
-        ordering of variables and the ordering used by PETSc for matrices and vectors </li>
-      <li>- Expanded users manual information for performance tuning and profiling </li>
-      <li>- The option -log_summary now summarize of message-passing activity as well as flop
-        rates. -</li>
-      <li>Running the test suite now requires much less disk space. </li>
-      <li>- Example programs are in the process of being reorganized into tutorials and tests
-        (see, e.g., petsc/src/sles/examples/tutorials for tutorial-style examples for the linear
-        solvers). -</li>
-      <li>The HTML version of the PETSc man pages now provides indices (organized by both concepts
-        and routine names) to tutorial examples. </li>
-    </ul>
-    <p><font size="5"><strong><u>General</u></strong></font> <ul>
-      <li>Added support for shared libraries for the machines PETSC_ARCH =
-        [sun4,solaris,alpha,IRIX,IRIX64,linux] to enable faster linking and smaller executables.
-        To compile the shared libraries, install PETSc as usual and then execute the command make
-        BOPT=g shared from the PETSc home directory (or use whatever BOPT you like). You can
-        remove the shared libraries with the command make BOPT=g deleteshared Note: Shared
-        libraries can also be used with PETSC_ARCH=freebsd and PETSC_ARCH=hpux if some minor
-        modifications are made. For detailed instructions, see the files
-        ${PETSC_DIR}/bmake/${PETSC_ARCH}/base. Please write to us at petsc-maint@mcs.anl.gov if
-        you encounter any problems when using the shared libraries.</li>
-      <li>- Users must now ALWAYS set the environmental variable PETSC_DIR to indicate the PETSc
-        home directory. Previously, PETSC_DIR was set within the various makefiles within the
-        PETSc installation. However, since this causes problems for shared libraries on some
-        machines, the environmental variable PETSC_DIR is now used instead. </li>
-      <li>- Added global variables for use in debuggers: PetscGlobalRank - processor's rank in
-        MPI_COMM_WORLD PetscGlobalSize - number of processors in MPI_COMM_WORLD </li>
-      <li>- For complex numbers versions (e.g., BOPT=g_complex): Added a global variable defining
-        the imaginary number &quot;i&quot;: PETSC_i </li>
-    </ul>
-    <p><font size="4"><strong><u>TS (Time Stepping Module)</u></strong></font> <ul>
-      <li>- Changed TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP -&gt; TS_PSEUDO_POSIND -</li>
-      <li>Changed TSPseudoSetPositionIndependentTimeStep() -&gt; TSPseudoSetPosIndTimeStep(). Even
-        Barry couldn't stand names that long :-) </li>
-    </ul>
-    <p><font size="4"><strong><u>SNES (Nonlinear Solvers)</u></strong></font>: <ul>
-      <li>- The user can now set parameters used in matrix-free approximations of Jacobian-vector
-        products, with the options -snes_mf_err <err> : square root of relative error in computing
-        function -snes_mf_umin <umin>: minimum iterate parameter or by calling the routine
-        SNESSetMatrixFreeParameters().</li>
-      <li>- Added the option -snes_mf_operator, which allows the user to apply the default
-        matrix-free Jacobian but retain the user-provided Jacobian preconditioner matrix.</li>
-      <li>- Added the routine SNESGetTolerances() to extract the various parameters used for
-        convergence testing. </li>
-      <li>- Initialized iteration counter to 0 for successive calls to SNES solvers. </li>
-      <li>- Changed the names for SNES runtime options associated with particular solvers to the
-        forms -snes_eq_ls_<parameter_name>- nonlinear equations, line search method -snes_eq_tr_<parameter_name> - nonlinear
-        equations, trust region method -snes_um_ls_<parameter_name>- unconstrained minimization, line search
-        method -snes_um_tr_<parameter_name> - unconstrained minimization, trust region method Run program with
-        -help for a detailed list of options. </li>
-    </ul>
-    <p><font size="4"><strong><u>SLES (Linear Solvers): See PC and KSP</u></strong></font> <ul>
-      <li>- Changed the default linear solvers from GMRES(30) with Jacobi preconditioning to
-        uniprocessor: GMRES(30) with ILU(0) preconditioning multiprocessor: GMRES(30) with block
-        Jacobi preconditioning, where there is 1 block per processor, and each block is solved
-        with ILU(0) See the users manual for additional options for the block Jacobi method. You
-        can still employ the old default at runtime with the option -pc_type jacobi </li>
-    </ul>
-    <p><font size="4"><strong><u>KSP (Krylov subspace methods):</u></strong></font> <ul>
-      <li>- Added routines KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly() and runtime
-        options -ksp_compute_eigenvalues, -ksp_plot_eigenvalues,
-        -ksp_compute_eigenvalues_explictly and -ksp_plot_eigenvalues_explicitly for users
-        interested in examining the eigenvalues of the preconditioned operator to better
-        understand the convergence of a chosen iterative method. </li>
-      <li>- Changed KSPSetCalculateExtremeSingularValues() -&gt;
-        KSPSetComputeExtremeSingularValues() - Changed KSPSetCalculateResidual() -&gt;
-        KSPSetComputeResidual() </li>
-    </ul>
-    <p><font size="4"><strong><u>PC (Preconditioners):</u></strong></font> <ul>
-      <li>- Added the routine PCSetModifySubMatrices(), which allows the user to set an optional
-        routine for modifying the entries of the submatrices that arise in certain subdomain-based
-        preconditioners (ASM, block Jacobi, block Gauss-Seidel). </li>
-    </ul>
-    <p><font size="4"><strong><u>MAT (Matrices):</u></strong></font> <ul>
-      <li>Eliminated routine MatGetSubmatrix(); now use MatGetSubMatrices() even when extracting
-        just 1 submatrix. -</li>
-      <li>Added routine MatDestroyMatrices(). -</li>
-      <li>Fixed bug in MatGetSubMatrices() for successive calls for matrices having different
-        nonzero structure. </li>
-      <li>- Added routine MatGetBlockSize(). - Changed routine MatGetInfo() so that it returns
-        more information. See man page for details. </li>
-      <li>- Changed usage of MatGetReordering() and MatRegisterOrdering(); see man pages. </li>
-      <li>- Changed the prefix used for matrix operation names within MatShellSetOperation() and
-        MatHasOperation(): MAT_<operation>-&gt; MATOP_<operation> For example, MAT_MULT -&gt; MATOP_MULT. </li>
-    </ul>
-    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font></p>
-    <p><font size="4"><strong><u>VEC (Vectors): </u></strong></font></p>
-    <p><font size="4"><strong><u>IS (Index Sets):</u></strong></font> <ul>
-      <li>- Changed ISCreateSeq() to ISCreateGeneral() -</li>
-      <li>Changed ISCreateStrideSeq() to ISCreateStride() - </li>
-      <li>Added routine ISCreateBlock() to create a blocked index set. See the man page for
-        details and related routines. </li>
-    </ul>
-    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font> <ul>
-      <li>Added -draw_x_private_colormap option that causes PETSc to allocate a separate colormap
-        for PETSc graphics windows. This prevents bad contour plots due to Netscape altering the
-        default color map. </li>
-      <li>- You can now zoom in and out of contour plots using the option -draw_pause -1 and left
-        and center mouse buttons. </li>
-      <li>- The option -draw_contour_grid will display the underlying grid on a contour plot.</li>
-    </ul>
-    <p><font size="4"><strong><u>VIEWERS:</u></strong></font> <ul>
-      <li>- Added routine ViewerGetFormat().</li>
-      <li>- Added options -viewer_matlab_machine and -viewer_matlab_port </li>
-      <li>- Changed ASCII_FORMAT_xxx to VIEWER_FORMAT_ASCII_xxx and ASCII_FORMAT_INFO_DETAILED to
-        VIEWER_FORMAT_ASCII_INFO_LONG </li>
-      <li>- Changed BINARY_FORMAT_xxx to VIEWER_FORMAT_BINARY_xxx </li>
-      <li>- PETSc now provides basic support for VRML viewers. Currently, one can draw surface
-        contours of vector fields with the routine DFVecDrawTensorSurfaceContour(). Note that the
-        VRML utilities will be expanded and the interface will change in the near future. </li>
-    </ul>
-    <p><font size="4"><strong><u>SYSTEM: </u></strong></font></p>
-    <p><font size="4"><strong><u>EVENT LOGGING: </u></strong></font></p>
-    <p><font size="4"><strong><u>FORTRAN INTERFACE: </u></strong></font><ul>
-      <li>- Changed PETSC_NULL_CHAR to PETSC_NULL_CHARACTER - Replaced PETSC_DEFAULT with </li>
-      <li>- You no longer need MPE to build PETSc. </li>
-      <li>- Included petsc/include/options.h within petsc/include/petsc.h -</li>
-      <li>Changed distributed array name from RA to DA. Also changed DAGlobalToLocal() to
-        DAGlobalToLocalBegin() followed by DAGlobalToLocalEnd(). </li>
-      <li>- Changed usage of KSPBuildSolution() slightly to avoid copying when not needed. </li>
-      <li>- Remove first argument (rflag) from ALL options database commands, i.e.,
-        OptionsGetInt(0,0,&quot;-m&quot;,&amp;m) =&gt; OptionsGetInt(0,&quot;-m&quot;,&amp;m),
-        etc. </li>
-      <li>- Changed the way memory tracing is done. When compiling with BOPT=g it is the default,
-        but you may turn it off with -notrmalloc. When compiling with BOPT=O it is by default off,
-        but one may turn it on with -trmalloc or -trdump. </li>
-    </ul>
-   
-   <!--##end-->
-  
-  </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-</table>
-</body>
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><a href="2022.html">2.0.22</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><a href="2016.html">2.0.16</a></li>
+                <li><span class="current">2.0.15</span></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2>NEW FEATURES and <a name="CHANGES">CHANGES</a> in PETSc 2.0.15</h2>
+      </div>
+
+      Highlights of new features in version 2.0.15, added since the last public release of
+      PETSc (2.0.Beta.13). See details in the sections below.
+
+      <ul>
+        <li>
+          Added support for shared version of PETSc libraries for several
+          machines to enable faster linking and smaller executables
+        </li>
+
+        <li>
+          Added new parallel block row matrix format, improved efficiency for
+          block diagonal formats
+        </li>
+
+        <li>
+          Added a suite of routines to help manage the mappings between an
+          application-defined ordering of variables and the ordering used by
+          PETSc for matrices and vectors
+        </li>
+
+        <li>Expanded users manual information for performance tuning and profiling</li>
+
+        <li>The option -log_summary now summarize of message-passing activity as well as flop rates.</li>
+        <li>Running the test suite now requires much less disk space.</li>
+
+        <li>
+          Example programs are in the process of being reorganized into
+          tutorials and tests (see, e.g., petsc/src/sles/examples/tutorials for
+          tutorial-style examples for the linear solvers).
+        </li>
+
+        <li>
+          The HTML version of the PETSc man pages now provides indices (organized
+          by both concepts and routine names) to tutorial examples.
+        </li>
+      </ul>
+
+      <h4>General</h4>
+
+      <ul>
+        <li>
+          Added support for shared libraries for the machines PETSC_ARCH
+          = [sun4,solaris,alpha,IRIX,IRIX64,linux] to enable faster linking and
+          smaller executables.  To compile the shared libraries, install PETSc as
+          usual and then execute the command make BOPT=g shared from the PETSc
+          home directory (or use whatever BOPT you like). You can remove the
+          shared libraries with the command make BOPT=g deleteshared Note: Shared
+          libraries can also be used with PETSC_ARCH=freebsd and PETSC_ARCH=hpux
+          if some minor modifications are made. For detailed instructions, see
+          the files ${PETSC_DIR}/bmake/${PETSC_ARCH}/base. Please write to us at
+          petsc-maint@mcs.anl.gov if you encounter any problems when using the
+          shared libraries.
+        </li>
+
+        <li>
+          Users must now ALWAYS set the environmental variable PETSC_DIR to
+          indicate the PETSc home directory. Previously, PETSC_DIR was set within
+          the various makefiles within the PETSc installation. However, since
+          this causes problems for shared libraries on some machines, the
+          environmental variable PETSC_DIR is now used instead.
+        </li>
+
+        <li>
+          Added global variables for use in debuggers:
+          <ul>
+            <li>PetscGlobalRank - processor's rank in MPI_COMM_WORLD</li>
+            <li>PetscGlobalSize - number of processors in MPI_COMM_WORLD</li>
+          </ul>
+        </li>
+
+        <li>
+          For complex numbers versions (e.g., BOPT=g_complex): Added a global
+          variable defining the imaginary number &quot;i&quot;: PETSC_i
+        </li>
+      </ul>
+
+      <h4>TS (Time Stepping Module)</h4>
+
+      <ul>
+        <li>Changed TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP -&gt; TS_PSEUDO_POSIND -</li>
+
+        <li>
+          Changed TSPseudoSetPositionIndependentTimeStep() -&gt;
+          TSPseudoSetPosIndTimeStep(). Even Barry couldn't stand names that long
+          :-)
+        </li>
+      </ul>
+
+      <h4>SNES (Nonlinear Solvers):</h4>
+
+      <ul>
+        <li>
+          The user can now set parameters used in matrix-free approximations of
+          Jacobian-vector products, with the options -snes_mf_err &lt;err&gt; : square
+          root of relative error in computing function -snes_mf_umin &lt;umin&gt;:
+          minimum iterate parameter or by calling the routine
+          SNESSetMatrixFreeParameters().
+        </li>
+
+        <li>
+          Added the option -snes_mf_operator, which allows the user to apply
+          the default matrix-free Jacobian but retain the user-provided Jacobian
+          preconditioner matrix.
+        </li>
+
+        <li>
+          Added the routine SNESGetTolerances() to extract the various
+          parameters used for convergence testing.
+        </li>
+
+        <li>Initialized iteration counter to 0 for successive calls to SNES solvers.</li>
+
+        <li>
+          Changed the names for SNES runtime options associated with particular
+          solvers to the forms -snes_eq_ls_&lt;parameter_name&gt; - nonlinear
+          equations, line search method -snes_eq_tr_&lt;parameter_name&gt;
+          - nonlinear equations, trust region method
+          -snes_um_ls_&lt;parameter_name&gt;- unconstrained minimization, line
+          search method -snes_um_tr_&lt;parameter_name&gt; - unconstrained
+          minimization, trust region method Run program with -help for a detailed
+          list of options.
+        </li>
+      </ul>
+
+      <h4>SLES (Linear Solvers): See PC and KSP</h4>
+
+      <ul>
+        <li>
+          Changed the default linear solvers from GMRES(30) with Jacobi
+          preconditioning to uniprocessor: GMRES(30) with ILU(0)
+          preconditioning multiprocessor: GMRES(30) with block Jacobi
+          preconditioning, where there is 1 block per processor, and each block
+          is solved with ILU(0) See the users manual for additional options for
+          the block Jacobi method. You can still employ the old default at
+          runtime with the option -pc_type jacobi
+        </li>
+      </ul>
+
+      <h4>KSP (Krylov subspace methods):</h4>
+
+      <ul>
+        <li>
+          Added routines KSPComputeEigenvalues(),
+          KSPComputeEigenvaluesExplicitly() and runtime options
+          -ksp_compute_eigenvalues, -ksp_plot_eigenvalues,
+          -ksp_compute_eigenvalues_explictly and
+          -ksp_plot_eigenvalues_explicitly for users interested in examining
+          the eigenvalues of the preconditioned operator to better understand
+          the convergence of a chosen iterative method.
+        </li>
+
+        <li>
+          Changed KSPSetCalculateExtremeSingularValues() -&gt;
+          KSPSetComputeExtremeSingularValues() - Changed
+          KSPSetCalculateResidual() -&gt; KSPSetComputeResidual()
+        </li>
+      </ul>
+
+      <h4>PC (Preconditioners):</h4>
+
+      <ul>
+        <li>
+          Added the routine PCSetModifySubMatrices(), which allows the user
+          to set an optional routine for modifying the entries of the
+          submatrices that arise in certain subdomain-based preconditioners
+          (ASM, block Jacobi, block Gauss-Seidel).
+        </li>
+      </ul>
+
+      <h4>MAT (Matrices):</h4>
+
+      <ul>
+        <li>
+          Eliminated routine MatGetSubmatrix(); now use MatGetSubMatrices()
+          even when extracting just 1 submatrix.
+        </li>
+
+        <li>Added routine MatDestroyMatrices()</li>
+
+        <li>
+          Fixed bug in MatGetSubMatrices() for successive calls for matrices
+          having different nonzero structure.
+        </li>
+
+        <li>
+          Added routine MatGetBlockSize(). - Changed routine MatGetInfo() so
+          that it returns more information. See man page for details.
+        </li>
+
+        <li>Changed usage of MatGetReordering() and MatRegisterOrdering(); see man pages.</li>
+
+        <li>
+          Changed the prefix used for matrix operation names within
+          MatShellSetOperation() and MatHasOperation(): MAT_&lt;operation&gt; -&gt;
+          MATOP_&lt;operation&gt; For example, MAT_MULT -&gt; MATOP_MULT.
+        </li>
+      </ul>
+
+      <h4>DA (Distributed Arrays):</h4>
+      <h4>VEC (Vectors):</h4>
+      <h4>IS (Index Sets):</h4>
+
+      <ul>
+        <li>Changed ISCreateSeq() to ISCreateGeneral()</li>
+        <li>Changed ISCreateStrideSeq() to ISCreateStride()</li>
+
+        <li>
+          Added routine ISCreateBlock() to create a blocked index set. See the
+          man page for details and related routines.
+        </li>
+      </ul>
+
+      <h4>Draw (Graphics):</h4>
+
+      <ul>
+        <li>
+          Added -draw_x_private_colormap option that causes PETSc to allocate
+          a separate colormap for PETSc graphics windows. This prevents bad
+          contour plots due to Netscape altering the default color map.
+        </li>
+
+        <li>
+          You can now zoom in and out of contour plots using the option
+          -draw_pause -1 and left and center mouse buttons.
+        </li>
+
+        <li>
+          The option -draw_contour_grid will display the underlying grid on
+          a contour plot.
+        </li>
+      </ul>
+
+      <h4>VIEWERS:</h4>
+
+      <ul>
+        <li>Added routine ViewerGetFormat().</li>
+        <li>Added options -viewer_matlab_machine and -viewer_matlab_port</li>
+
+        <li>
+          - Changed ASCII_FORMAT_xxx to VIEWER_FORMAT_ASCII_xxx and
+          ASCII_FORMAT_INFO_DETAILED to VIEWER_FORMAT_ASCII_INFO_LONG
+        </li>
+
+        <li>Changed BINARY_FORMAT_xxx to VIEWER_FORMAT_BINARY_xxx</li>
+
+        <li>
+          PETSc now provides basic support for VRML viewers. Currently, one
+          can draw surface contours of vector fields with the routine
+          DFVecDrawTensorSurfaceContour(). Note that the VRML utilities will be
+          expanded and the interface will change in the near future.
+        </li>
+      </ul>
+
+      <h4>SYSTEM:</h4>
+      <h4>EVENT LOGGING:</h4>
+      <h4>FORTRAN INTERFACE:</h4>
+
+      <ul>
+        <li>Changed PETSC_NULL_CHAR to PETSC_NULL_CHARACTER - Replaced PETSC_DEFAULT with</li>
+        <li>You no longer need MPE to build PETSc.</li>
+        <li>Included petsc/include/options.h within petsc/include/petsc.h -</li>
+
+        <li>
+          Changed distributed array name from RA to DA. Also changed
+          DAGlobalToLocal() to DAGlobalToLocalBegin() followed by
+          DAGlobalToLocalEnd().
+        </li>
+
+        <li>Changed usage of KSPBuildSolution() slightly to avoid copying when not needed.</li>
+
+        <li>
+          Remove first argument (rflag) from ALL options database commands,
+          i.e., OptionsGetInt(0,0,&quot;-m&quot;,&amp;m) =&gt;
+          OptionsGetInt(0,&quot;-m&quot;,&amp;m), etc.
+        </li>
+
+        <li>
+          Changed the way memory tracing is done. When compiling with BOPT=g it
+          is the default, but you may turn it off with -notrmalloc. When
+          compiling with BOPT=O it is by default off, but one may turn it on with
+          -trmalloc or -trdump.
+        </li>
+      </ul>
+
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
 </html>

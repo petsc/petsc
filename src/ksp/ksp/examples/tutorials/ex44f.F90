@@ -12,7 +12,7 @@
      &  PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,f,ierr)
-      call DMGetMatrix(da,MATAIJ,J,ierr)
+      call DMCreateMatrix(da,MATAIJ,J,ierr)
 
       call ComputeRHS(da,f,ierr)
       call ComputeMatrix(da,J,ierr)

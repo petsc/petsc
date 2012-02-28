@@ -79,7 +79,7 @@ int main( int argc, char **argv )
   info = VecDuplicate(x,&r);CHKERRQ(info);
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
-  info = DMGetMatrix(user.da,MATAIJ,&user.A);CHKERRQ(info);
+  info = DMCreateMatrix(user.da,MATAIJ,&user.A);CHKERRQ(info);
   
   /* User defined function -- compute linear term of quadratic */
   info = ComputeB(&user); CHKERRQ(info);

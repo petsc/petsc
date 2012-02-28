@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-da_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);
     if (tmp) useCUSP = PETSC_TRUE;
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);

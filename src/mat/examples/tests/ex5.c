@@ -30,6 +30,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,m);CHKERRQ(ierr);

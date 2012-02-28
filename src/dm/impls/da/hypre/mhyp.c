@@ -63,7 +63,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   rstart = A->rmap->rstart;
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
@@ -265,7 +265,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscValidPointer(ij,2);
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   rstart = A->rmap->rstart;
@@ -298,9 +298,9 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DMDA.
 
-          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
 
-.seealso: MatCreate(), PCPFMG, MatSetDM(), DMGetMatrix()
+.seealso: MatCreate(), PCPFMG, MatSetDM(), DMCreateMatrix()
 M*/
 
 
@@ -606,7 +606,7 @@ EXTERN_C_END
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
           be defined by a DMDA.
   
-          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
   
 M*/
 

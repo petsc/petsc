@@ -1,4 +1,4 @@
-#requirespackage "PETSC_HAVE_PTHREADCLASSES"
+#requirespackage 'PETSC_HAVE_PTHREADCLASSES'
 ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}

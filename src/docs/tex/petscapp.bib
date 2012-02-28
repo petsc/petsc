@@ -426,7 +426,7 @@ year = 2003,
    url     = {http://mip.ups-tlse.fr/\~{ }saut/data/sisc04.pdf}
 }
 % LiteralHTML:
-% LiteralHTML:  <a name="biology"><H3><center>Biology/Medical</center></H3>
+% LiteralHTML:  <a name="biology"><H3><center>Biology -- Medical</center></H3>
 % LiteralHTML:
 @article{Ataseven,
   author  = {Y. Ataseven and Z. Akaliota n-Acar and C.~E. Acar and N. G. Gen\c{c}er},
@@ -1120,7 +1120,7 @@ year = 2003,
 @article {brown2010ens,
   author = {Brown, Jed},
   affiliation = {Versuchsanstalt für Wasserbau, Hydrologie und Glaziologie (VAW), ETH Zürich, Zürich, Switzerland},
-  title = {Efficient Nonlinear Solvers for Nodal High-Order Finite Elements in 3D},
+  title = {Efficient Nonlinear Solvers for Nodal High-Order Finite Elements in {3D}},
   journal = {Journal of Scientific Computing},
   publisher = {Springer Netherlands},
   issn = {0885-7474},
@@ -1129,8 +1129,13 @@ year = 2003,
   volume = {45},
   issue = {1},
   url = {http://dx.doi.org/10.1007/s10915-010-9396-8},
-  note = {10.1007/s10915-010-9396-8},
   year = {2010}
+}
+@phdthesis{brown2011,
+  title = {Computational methods for ice flow simulation},
+  author = {Jed Brown},
+  school = {ETH Z{\"u}rich},
+  year = 2011
 }
 @misc{spiegelman-siampp10,
    title = "Block Preconditioners and Advanced Software for Multiphysics Problems in Solid Earth Geodynamics",
@@ -1151,8 +1156,8 @@ year = 2003,
 @Article{bsa2010,
  author =     {J. Brown and B. Smith and A. Ahmadia},
  title =      {Achieving textbook multigrid efficiency for hydrostatic ice sheet flow},
- journal =    {J Geophysical Research},
- year =       {2011},
+ journal =    {SIAM Journal on Scientific Computing},
+ year =       {2012},
  notes = "submitted"
 }
 
@@ -1272,7 +1277,7 @@ volume = "34",
 pages = "1958--1963",
 year = "2008",
 }
-@article{May200833,
+@article{MayMoresi2008,
 title = "Preconditioned iterative methods for Stokes flow problems arising in computational geodynamics",
 journal = "Physics of the Earth and Planetary Interiors",
 volume = "171",
@@ -1282,7 +1287,7 @@ year = "2008",
 note = "Recent Advances in Computational Geodynamics: Theory, Numerics and Applications",
 issn = "0031-9201",
 doi = "DOI: 10.1016/j.pepi.2008.07.036",
-url = "http://www.sciencedirect.com/science/article/B6V6S-4T5JHY6-2/2/2d30f943c948d97fb5797a1f89b73698",
+url = "http://dx.doi.org/10.1016/j.pepi.2008.07.036",
 author = "Dave A. May and Louis Moresi",
 keywords = "Stokes flow",
 keywords = "Krylov",
@@ -1446,7 +1451,7 @@ keywords = "BFBt"
 }
 @InProceedings{earthquake2003,
   author = "Volkan Akcelik and Jacobo Bielak and George Biros and Ioannis Epanomeritakis and Antonio Fernandez
-            Omar Ghattas and Eui Joong Kim and David O'Hallaron and Tiankai Tu",
+            and Omar Ghattas and Eui Joong Kim and David O'Hallaron and Tiankai Tu",
   year   = "2003",
   title  = "High Resolution Forward and Inverse Earthquake Modeling on Terascale Computers",
   booktitle = "Proceedings of SC2003",
@@ -1554,7 +1559,7 @@ observational data while reconstructing the model with reasonable
 resolution and capturing sharp interfaces.}
 }
 % LiteralHTML:
-% LiteralHTML:  <a name="environmental"><H3><center>Environmental/Subsurface Flow</center></H3>
+% LiteralHTML:  <a name="environmental"><H3><center>Environmental -- Subsurface Flow</center></H3>
 % LiteralHTML:
 % LiteralHTML: <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
 % LiteralHTML:<font color="#FF0000">
@@ -1847,6 +1852,16 @@ year    = 2005
 % LiteralHTML:
 % LiteralHTML:  <a name="cfd"><H3><center>CFD</center></H3>
 % LiteralHTML:
+@article{bpr:cfl,
+   author    ="H.~M. B{\"u}cker and B. Pollul and A. Rasch",
+   title     ="{On {CFL} Evolution Strategies for  Implicit Upwind Methods in Linearized {E}uler Equations}",
+   journal   ="International Journal for Numerical Methods in Fluids",
+   year      = 2009,
+   volume     = 59,
+   number     = 1,
+   pages      = "1--18",
+   doi       = "10.1002/fld.1798",
+}
 @inbook{Bonfiglioli_Campobasso_Carpentieri_2010,
   author   = {Bonfiglioli, A and Campobasso, M S and Carpentieri, B},
   title    = {Parallel unstructured three-dimensional turbulent flow analyses using efficiently preconditioned newton-krylov solver},
@@ -2814,6 +2829,18 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
   author =       "Pablo A. Klera and Lisandro D. Dalcin and Fabio A. Guarnieria and Mario A. Stortia",
   url =          "http://www.cimec.org.ar/ojs/index.php/cmm/article/view/1383"
 }
+@article {springerlink:10.1007/s10915-011-9551-x,
+   author = {Schauer, Marco and Roman, Jose and Quintana-Ortí, Enrique and Langer, Sabine},
+   affiliation = {Institut für Angewandte Mechanik, Technische Universität Carolo-Wilhelmina zu Braunschweig, Spielmannstraße 11, 38106 Braunschweig, Germany},
+   title = {Parallel Computation of 3-D Soil-Structure Interaction in Time Domain with a Coupled FEM/SBFEM Approach},
+   journal = {Journal of Scientific Computing},
+   publisher = {Springer Netherlands},
+   issn = {0885-7474},
+   keyword = {Mathematics and Statistics},
+   pages = {1-22},
+   url = {http://dx.doi.org/10.1007/s10915-011-9551-x},
+   note = {10.1007/s10915-011-9551-x}
+}
 @techreport{jj2007,
    author = "Boris Jeremic and Guanzhou Jie",
    title = "Parallel Finite Element Computations for Soil-Foundation-Structure Interaction Problems Report",
@@ -3171,6 +3198,14 @@ pages   = "157--166"
   school = {Illinois Institute of Technology},
   year = 2011
 }
+@InProceedings{aszf,
+  author = {Shrirang Abhyankar and Barry Smith and Hong Zhang and A. Flueck},
+  title =  {Using {PETSc} to Develop Scalable Applications for Next-Generation Power Grid},
+  year = 2011,
+  booktitle = {Proceedings of the 1st International Workshop on High Performance Computing, Networking and Analytics for the Power Grid},
+  publisher = {ACM}
+}
+
 % LiteralHTML: <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
 % LiteralHTML:<font color="#FF0000">
 % LiteralHTML: Material failure, for example, cracking of steel beams resulting
@@ -3645,17 +3680,70 @@ pages   = "157--166"
   note          = {[Online]},
   URL  = {http://libmesh.sourceforge.net}
 }
+@article{gaston2009moose,
+  title={MOOSE: {A} parallel computational framework for coupled systems of nonlinear equations},
+  author={Gaston, D. and Newman, C. and Hansen, G. and Lebrun-Grandi{\'e}, D.},
+  journal={Nuclear Engineering and Design},
+  volume={239},
+  number={10},
+  pages={1768--1778},
+  year={2009},
+  publisher={Elsevier}
+}
+@article{tonks2012object,
+  title={An object-oriented finite element framework for multiphysics phase field simulations},
+  author={Tonks, M.R. and Gaston, D. and Millett, P.C. and Andrs, D. and Talbot, P.},
+  journal={Computational Materials Science},
+  volume={51},
+  number={1},
+  pages={20--29},
+  year={2012},
+  publisher={Elsevier}
+}
 @Misc{PyLithManual,
   author = {Brad Aagaard and Sue Kientz and Matthew G. Knepley and Surendra Somala and Leif Strand and Charles Williams},
-  title  = {PyLith User Manual Version 1.6.0},
-  note   = {Available via \url{http://geodynamics.org/cig/software/pylith/pylith_manual-1.6.0.pdf}},
-  url    = {http://geodynamics.org/cig/software/pylith/pylith_manual-1.6.0.pdf}
+  title  = {PyLith User Manual Version 1.6.1},
+  year   = {2011},
+  url    = {http://geodynamics.org/cig/software/pylith/pylith_manual-1.6.2.pdf}
+}
+@Misc{GaleManual,
+  author = {Walter Landry and Luke Hodkinson and Susan Kientz},
+  title = {Gale User Manual Version 2.0.0},
+  year = {2011},
+  url = {http://geodynamics.org/cig/software/gale/gale.pdf}
 }
 @Unpublished{underworld,
   author = "Louis Moresi",
   title = 	"UnderWorld: A Geodynamics Modelling Code",
   Institution = "Monash University",
   url = 	"http://www.mcc.monash.edu/twiki/view/Codes"
+}
+@article{moresi2007computational,
+  title={Computational approaches to studying non-linear dynamics of the crust and mantle},
+  author={Moresi, L. and Quenette, S. and Lemiale, V. and Meriaux, C. and Appelbe, B. and M{\"u}hlhaus, H.B.},
+  journal={Physics of the Earth and Planetary Interiors},
+  volume={163},
+  number={1-4},
+  pages={69--82},
+  year={2007},
+  publisher={Elsevier}
+}
+@article{pitt2009chaste,
+  title={Chaste: a test-driven approach to software development for biological modelling},
+  author={Pitt-Francis, J. and Pathmanathan, P. and Bernabeu, M.O. and Bordas, R. and Cooper, J. and Fletcher, A.G. and Mirams, G.R. and Murray, P. and Osborne, J.M. and Walter, A. and others},
+  journal={Computer Physics Communications},
+  volume={180},
+  number={12},
+  pages={2452--2471},
+  year={2009},
+  publisher={Elsevier}
+}
+@misc{fenicsproject,
+  title={{The FEniCS project}},
+  author={Logg, A. and {\O}lgaard, K. and Rognes, M.E. and Wells, G.N. and Jansson, J. and Kirby, R.C. and Knepley, M.G. and Lindbo, D. and Skavhaug, O.},
+  note={A continually updated technical report. \url{http://fenicsproject.org}},
+  url={http://fenicsproject.org},
+  year={2011}
 }
 @Unpublished{Snark,
   title = 	"Snark:  A suite of software for geoscientific applications and a philosophy of scientific software development",
@@ -3790,8 +3878,17 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   key = 	"FIDAP 8.5"
 }
 @Unpublished{slepc,
-  author =       " Vicente Hern\'andez and Jos\'e E. Rom\'an and Vicent Vidal",
+  author =       "Carmen Campos and Jos\'e E. Rom\'an and Eloy Romero and
+                  Andr\'es Tom\'as and Vicente Hern\'andez and Vicent Vidal",
   title = 	"{SLEPc} Homepage",
+  url = 	"http://www.grycap.upv.es/slepc/",
+  note = 	"Scalable Library for Eigenvalue Problem Computations"
+}
+@techreport{slepc-users-manual,
+  author = "Carmen Campos and Jos\'e E. Rom\'an and Eloy Romero and
+           Andr\'es Tom\'as and Vicente Hern\'andez and Vicent Vidal",
+  title = 	"{SLEPc} Users Manual",
+  number    = "DISC-II/24/02",
   url = 	"http://www.grycap.upv.es/slepc/",
   note = 	"Scalable Library for Eigenvalue Problem Computations"
 }
@@ -3801,6 +3898,17 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   url          = {http://www.dealii.org},
   note = 	"deal.II is a C++ library targeting adaptive finite elements and error estimation. It allows PETSc linear algebra and solvers to be used underneath.",
   key = 	"deal.II 5.0"
+}
+@article{bangerth2007deal,
+  title={{deal.II---A general-purpose object-oriented finite element library}},
+  author={Bangerth, W. and Hartmann, R. and Kanschat, G.},
+  journal={ACM Transactions on Mathematical Software (TOMS)},
+  volume={33},
+  number={4},
+  pages={24--es},
+  issn={0098-3500},
+  year={2007},
+  publisher={ACM}
 }
 @misc{globalarrays,
    author = "Jarek {Nieplocha et al.}",
@@ -3814,6 +3922,14 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 % LiteralHTML:
 % LiteralHTML:  <a name="software"><H3><center>Software Engineering</center></H3>
 % LiteralHTML:
+@TechReport{ass2012,
+  author = {Shrirang Abhyankar and Barry Smith and  Kerry Stevens},
+  title  = {Preliminary implementation of Hybrid MPI/pthread programming model in PETSc},
+  institution = {Argonne National Laboratory},
+  type = "Preprint",
+  year   = 2012,
+  number = "ANL/MCS-P2011-0112"
+}
 @INPROCEEDINGS{mhwpmhs2009,
         AUTHOR = "R. T. Mills and  F. M. Hoffman and P. H. Worley and K. S. Pwerumalla and A. Mirin and G. E. Hammond and  B. Smith",
         TITLE     = "Coping at the User-Level with Resource Limitations in the {Cray} Message Passing Toolkit {MPI} at Scale",
@@ -3894,6 +4010,16 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   note = "Submited to VecPar 2002",
   year = 2002
 }
+@article{knyazev2007block,
+  title={Block Locally Optimal Preconditioned Eigenvalue Xolvers {(BLOPEX)} in {Hypre} and {PETSc}},
+  author={Knyazev, A. V. and Argentati, M. E. and Lashuk, I. and Ovtchinnikov, E. E.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={29},
+  pages={2224-2239},
+  url={http://dx.doi.org/10.1137/060661624},
+  year={2007}
+}
+
 @mastersthesis{aarrestad-master,
   author = "Asbjorn Hoiland Aarrestad",
   title =  "Time Dependent Solution of the Schrodinger Equation for Parallel Computers",
@@ -4010,8 +4136,16 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
             Lois Curfman McInnes and Barry~F. Smith and Hong Zhang},
   title  = {{PETS}c Users Manual},
   institution = {Argonne National Laboratory},
-  year   = 2010,
-  number = {ANL-95/11 - Revision 3.1},
+  year   = 2011,
+  number = {ANL-95/11 - Revision 3.2},
+  url    = {http://www.mcs.anl.gov/petsc}
+}
+@TechReport{petsc-developers,
+  author = {Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and
+            Lois Curfman McInnes and Barry~F. Smith and Hong Zhang},
+  title  = {{PETS}c Developers Manual},
+  institution = {Argonne National Laboratory},
+  year   = 2011,
   url    = {http://www.mcs.anl.gov/petsc}
 }
 @TechReport{petsc-user-ref-polish,
@@ -4157,6 +4291,15 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 % LiteralHTML:  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 % LiteralHTML:
 
+@techreport{pbmkbsxt2012,
+  title = "Composing Scalable Nonlinear Solvers",
+  author = "Peter Brune and Mathew Knepley and Barry Smith and  Xuemin Tu",
+  year = 2012,
+  type = "Preprint",
+  number = "ANL/MCS-P2010-0112",
+  institution = "Argonne National Laboratory"
+  }
+
 @article{BourdinBucurOudet2009,
   author  = {Blaise Bourdin and D. Bucur and E. Oudet},
   title   = {Optimal Partitions for Eigenvalues},
@@ -4274,15 +4417,29 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   number = 3,
   pages = {753--777}
 }
-@techreport{04-04,
-   author    ="F. D. Bramkamp and H. M. B{\"u}cker and A. Rasch",
-   title     ="{Using Exact {J}acobians in an Implicit {N}ewton-{K}rylov Method}",
-   institution ="RWTH Aachen University",
-   year    = 2004,
-   type    ="Preprint of the Institute for Scientific Computing",
-   number  ="RWTH--CS--SC--04--04",
-   address = "Aachen",
+
+
+@ARTICLE{Bramkamp2006UEJ,
+       author = "F. D. Bramkamp and H. M. B{\"u}cker and A. Rasch",
+       title = "Using Exact {J}acobians in an Implicit {N}ewton-{K}rylov Method",
+       journal = "Computers \& Fluids",
+       volume = "35",
+       number = "10",
+       pages = "1063--1073",
+       doi = "10.1016/j.compfluid.2005.10.003 <http://dx.doi.org/10.1016/j.compfluid.2005.10.003>",
+       abstract = "In an implicit Newton-Krylov method for inviscid, compressible fluid flow, the
+         derivation of the analytic flux Jacobian can become quite complicated depending on the complexity of
+         the numerical flux calculation. Practically, the derivation of the exact Jacobian by hand is an
+         unrealistic option because of the enormous man-hour investment needed. In this work, automatic
+         differentiation is used to evaluate the exact Jacobian of upwind schemes implemented in the flow
+         solver QUADFLOW. We compare the use of exact Jacobians and Jacobians numerically approximated by
+         first-order forward differences. For a two-dimensional airfoil under three different flight
+         conditions (quasi-incompressible flow, compressible subsonic flow, and transonic flow), we show that
+         the robustness and performance of the present finite volume scheme is significantly improved by
+         using exact Jacobians.",
+       year = "2006",
 }
+
 @Article{shahbazi1,
   author = {Khosro Shahbazi},
   title = {An explicit expression for the penalty parameter of the interior penalty method},
@@ -4815,16 +4972,21 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   url =          "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P????.pdf",
   month =        "January"
 }
-@article{biezuner2011computing,
-  title = {Computing the first eigenpair of the $p$-Laplacian via inverse iteration of sublinear supersolutions},
-  author = {Rodney Josu\'e Biezuner and Jed Brown and Grey Ercole and Eder Marinho Martins},
-  year = 2011,
-  volume = {\emph{to appear}},
-  journal = {Journal of Scientific Computing}
+@article {biezuner2011computing,
+   author = {Biezuner, Rodney and Brown, Jed and Ercole, Grey and Martins, Eder},
+   affiliation = {Departamento de Matem\'atica—ICEx, Universidade Federal de Minas Gerais, Av. Ant\^onio Carlos 6627, Caixa Postal 702, 30161-970 Belo Horizonte, MG, Brazil},
+   title = {Computing the First Eigenpair of the $p$-Laplacian via Inverse Iteration of Sublinear Supersolutions},
+   journal = {Journal of Scientific Computing},
+   publisher = {Springer Netherlands},
+   issn = {0885-7474},
+   keyword = {Mathematics and Statistics},
+   pages = {1-22},
+   url = {http://dx.doi.org/10.1007/s10915-011-9540-0},
+   note = {10.1007/s10915-011-9540-0},
 }
 
 % LiteralHTML:
-% LiteralHTML:  <a name="other"><H3><center>Books</center></H3>
+% LiteralHTML:  <a name="books"><H3><center>Books</center></H3>
 % LiteralHTML:
 @article{verleyeuser,
   title={{User friendly permeability predicting software for technical textiles}},
@@ -4846,7 +5008,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
              Partial Differential Equations",
       YEAR="1996",
       PUBLISHER="Cambridge University Press",
-      url="http://www.mcs.anl.gov/\~{ }bsmith/ddbook.html"
+      url="http://www.mcs.anl.gov/~bsmith/ddbook.html"
 }
 
 
@@ -4874,6 +5036,12 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
    howpublished = "\url{http://trac.mcs.anl.gov/projects/sisiphus/wiki}"
 }
 
+@misc{pflotran:homepage,
+   title = "{PFLOTRAN} project", 
+   author = "P. {Lichtner et al.}",
+   howpublished = "\url{http://ees.lanl.gov/pflotran/}"
+}
+
 @misc{pism:homepage,
    title = "{PISM}: A Parallel Ice Sheet Model",
    author = "E. {Bueler et al.}",
@@ -4885,17 +5053,15 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
    howpublished = "\url{http://dohp.org}"
 }
 
-@misc{mccourt:siamcse11,
-   title = "Improving Scalability for Edge Plasma Transport with Neutral Gas Species",
-   author = "M. McCourt and T. Rognlien and L. C. McInnes and H. Zhang",
-   note = "poster presentation at the 2011 SIAM Conference on Computational Science and Engineering, March 1, 2011",
-} 
-
-@misc{mccourt:dpp10,
-   title = "Progress in Parallel Implicit Methods for Tokamak Edge Plasma Modeling",
-   author = "M. McCourt and L. C. McInnes and H. Zhang and B. Dudson and S. Farley and T. Rognlien and M. Umansky",
-   note = "presentation, Mini-Conference on Integrated, Multiphysics, High-performance Computations for Magnetic Fusion Research, part of the 52nd Annual Meeting of the APS Division of Plasma Physics, Chicago, IL, Nov 8, 2010",
-} 
+@TechReport{McCourtRognlienEtAl12,
+ title = "Improving parallel scalability for edge plasma transport simulations with neutral gas species",
+ author = "M. McCourt and T. D. Rognlien and L. C. McInnes and H. Zhang",
+ type = "Preprint",
+ note = "submitted to the Proceedings of the Twenty Second International Conference on Numerical Simulations of Plasmas, Sept. 7-9, 2011, Long Branch, NJ",
+ institution = "Argonne National Laboratory",
+ number = "ANL/MCS-P2018-0112",
+ year = 2012
+}
 
 @misc{petclaw-github,
   title={Pet{C}law Software},
@@ -4958,4 +5124,14 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   pages={L14502},
   year={2010},
   publisher={American Geophysical Union}
+}
+
+@techreport{bkmms2012,
+ author      = "J. Brown and M. G. Knepley and D. A. May and L. C. McInnes and B. F. Smith",
+ title       = "Composable Linear Solvers for Multiphysics",
+ year        = 2012,
+ number      = "ANL/MCS-P2017-0112",
+ type        = "Preprint",
+ note        = "Submitted to the 11th International Symposium on Parallel and Distributed Computing (ISPDC 2012)",
+ institution = "Argonne National Laboratory"
 }

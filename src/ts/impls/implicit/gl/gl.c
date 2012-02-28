@@ -1137,13 +1137,13 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
       }
     }
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
+    {
+      TSGLAdapt adapt;
+      ierr = TSGLGetAdapt(ts,&adapt);CHKERRQ(ierr);
+      ierr = TSGLAdaptSetFromOptions(adapt);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  {
-    TSGLAdapt adapt;
-    ierr = TSGLGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSGLAdaptSetFromOptions(adapt);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

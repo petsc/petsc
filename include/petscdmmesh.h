@@ -4,6 +4,7 @@
 #if !defined(__PETSCDMMESH_H)
 #define __PETSCDMMESH_H
 
+#include <petscsf.h>
 #include <petscdm.h>
 
 #if defined(PETSC_HAVE_SIEVE) && defined(__cplusplus)
@@ -13,27 +14,73 @@
 #include <sieve/Distribution.hh>
 #include <sieve/Generator.hh>
 
+/*S
+  DMMESH - DM object that encapsulates an unstructured mesh. This uses the Sieve package to represent the mesh.
+
+  Level: intermediate
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMMeshCreate()
+S*/
+/*S
+  DMCARTESIAN - DM object that encapsulates a structured, Cartesian mesh in any dimension. This is currently a
+  replacement for DMDA in dimensions greater than 3.
+
+  Level: intermediate
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMCartesianCreate(), DMDA
+S*/
 extern PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
 
 extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
+extern PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt [], PetscInt, PetscInt, const PetscReal [], PetscBool, DM*);
 extern PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
 extern PetscErrorCode DMMeshFinalize();
 
+/* New Sieve Mesh interface */
+extern PetscErrorCode DMMeshGetDimension(DM, PetscInt *);
+extern PetscErrorCode DMMeshSetDimension(DM, PetscInt);
+extern PetscErrorCode DMMeshGetChart(DM, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshSetChart(DM, PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetConeSize(DM, PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshSetConeSize(DM, PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetCone(DM, PetscInt, const PetscInt *[]);
+extern PetscErrorCode DMMeshSetCone(DM, PetscInt, const PetscInt[]);
+extern PetscErrorCode DMMeshGetSupportSize(DM, PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshGetSupport(DM, PetscInt, const PetscInt *[]);
+extern PetscErrorCode DMMeshGetConeSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshGetCones(DM, PetscInt *[]);
+extern PetscErrorCode DMMeshGetMaxSizes(DM, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshSetUp(DM);
+extern PetscErrorCode DMMeshSymmetrize(DM);
+extern PetscErrorCode DMMeshStratify(DM);
+
+extern PetscErrorCode DMMeshGetLabelValue(DM, const char[], PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshSetLabelValue(DM, const char[], PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
+extern PetscErrorCode DMMeshGetLabelIdIS(DM, const char[], IS *);
+extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
+extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
+
+extern PetscErrorCode DMMeshJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *);
+extern PetscErrorCode DMMeshMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+extern PetscErrorCode DMMeshGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, const PetscInt *[]);
+
+extern PetscErrorCode DMMeshCreatePartition(DM, PetscSection *, IS *, PetscInt);
+extern PetscErrorCode DMMeshCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
+
+/* Old Sieve Mesh interface */
 extern PetscErrorCode DMMeshDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], DM*);
 extern PetscErrorCode DMMeshGenerate(DM, PetscBool , DM *);
 extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , DM*);
 extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
-extern PetscErrorCode DMMeshGetDimension(DM, PetscInt *);
 extern PetscErrorCode DMMeshGetMaximumDegree(DM, PetscInt *);
-
-extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
-extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
-extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
-extern PetscErrorCode DMMeshGetStratum(DM, const char [], PetscInt, PetscInt *);
-extern PetscErrorCode DMMeshGetStratumIS(DM, const char [], PetscInt, IS *);
 
 extern PetscErrorCode DMCartesianCreate(MPI_Comm, DM *);
 extern PetscErrorCode DMMeshCartesianGetMesh(DM, ALE::Obj<ALE::CartesianMesh>&);
@@ -41,16 +88,19 @@ extern PetscErrorCode DMMeshCartesianSetMesh(DM, const ALE::Obj<ALE::CartesianMe
 
 extern PetscErrorCode DMMeshGetCoordinates(DM, PetscBool , PetscInt *, PetscInt *, PetscReal *[]);
 extern PetscErrorCode DMMeshGetElements(DM, PetscBool , PetscInt *, PetscInt *, PetscInt *[]);
-extern PetscErrorCode DMMeshGetCone(DM, PetscInt, PetscInt *, PetscInt *[]);
 
 extern PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 extern PetscErrorCode DMMeshMarkBoundaryCells(DM, const char [], PetscInt, PetscInt);
 extern PetscErrorCode DMMeshGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
-extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
+extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
+extern PetscErrorCode DMMeshGetSection(DM, const char [], PetscSection *);
 extern PetscErrorCode DMMeshSetSection(DM, const char [], PetscSection);
 extern PetscErrorCode DMMeshGetDefaultSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshSetDefaultSection(DM, PetscSection);
 extern PetscErrorCode DMMeshGetCoordinateSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshSetCoordinateSection(DM, PetscSection);
+extern PetscErrorCode DMMeshCreateConeSection(DM, PetscSection *);
 extern PetscErrorCode DMMeshGetCoordinateVec(DM, Vec *);
 extern PetscErrorCode DMMeshComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 extern PetscErrorCode DMMeshVecSetClosure(DM, Vec, PetscInt, const PetscScalar [], InsertMode);
@@ -115,8 +165,8 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 extern PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
-extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
 extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
+extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode DMMeshAssembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 extern PetscErrorCode DMMeshAssembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
@@ -184,12 +234,10 @@ extern PetscErrorCode DMMeshSetMaxDof(DM, PetscInt);
 extern PetscErrorCode SectionGetArray(DM, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 
 /* Helper functions for simple distributions */
-extern PetscErrorCode DMMeshGetVertexMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetVertexSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetVertexSectionInt(DM, const char[], PetscInt, SectionInt *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionInt,(DM dm, PetscInt fiberDim, SectionInt *section),(dm,"default",fiberDim,section))
-extern PetscErrorCode DMMeshGetCellMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetCellSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
@@ -197,6 +245,7 @@ PetscPolymorphicSubroutine(DMMeshGetCellSectionInt,(DM dm, PetscInt fiberDim, Se
 
 /* Support for various mesh formats */
 extern PetscErrorCode DMMeshCreateExodus(MPI_Comm, const char [], DM *);
+extern PetscErrorCode DMMeshCreateExodusNG(MPI_Comm, const char [], DM *, DM *);
 extern PetscErrorCode DMMeshExodusGetInfo(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 extern PetscErrorCode DMMeshCreatePCICE(MPI_Comm, const int, const char [], const char [], PetscBool , const char [], DM *);
@@ -210,20 +259,6 @@ extern PetscErrorCode DMWritePyLithVertices(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithElements(DM, SectionReal, PetscViewer);
 extern PetscErrorCode DMWritePyLithVerticesLocal(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithElementsLocal(DM, SectionReal, PetscViewer);
-
-/* FEM support */
-extern PetscErrorCode DMMeshPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
-extern PetscErrorCode DMMeshPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
-
-typedef struct {
-  PetscInt         numQuadPoints; /* The number of quadrature points on an element */
-  const PetscReal *quadPoints;    /* The quadrature point coordinates */
-  const PetscReal *quadWeights;   /* The quadrature weights */
-  PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
-  PetscInt         numComponents; /* The number of components for each basis function */
-  const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
-  const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
-} PetscQuadrature;
 
 struct _DMMeshInterpolationInfo {
   PetscInt   dim;    // The spatial dimension of points

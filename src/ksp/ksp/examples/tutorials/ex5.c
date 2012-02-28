@@ -74,6 +74,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

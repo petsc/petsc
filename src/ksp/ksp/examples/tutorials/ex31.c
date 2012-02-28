@@ -1,6 +1,5 @@
 /*T
    Concepts: KSP^solving a system of linear equations
-   Concepts: KSP^Laplacian, 2d
    Concepts: KSP^semi-implicit
    Processors: n
 T*/
@@ -32,20 +31,11 @@ triangles.
 This uses multigrid to solve the linear system
 */
 
-static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
+static char help[] = "Solves 2D compressible Euler using multigrid.\n\n";
 
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
-
-extern PetscErrorCode CreateStructures(DMMG);
-extern PetscErrorCode DestroyStructures(DMMG);
-extern PetscErrorCode ComputeInitialGuess(DMMG);
-extern PetscErrorCode ComputePredictor(DMMG);
-extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
-extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
 
 typedef struct {
   Vec rho;     /* The mass solution \rho */
@@ -68,55 +58,62 @@ typedef struct {
   PetscScalar     dt;      /* The timestep \Delta t */
 } UserContext;
 
+extern PetscErrorCode CreateStructures(DM,UserContext*);
+extern PetscErrorCode DestroyStructures(DM,UserContext*);
+extern PetscErrorCode ComputePredictor(DM,UserContext*);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeCorrector(DM,Vec,Vec);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
+  KSP            ksp;
   DM             da;
+  Vec            x, xNew;
   UserContext    user;
   PetscErrorCode ierr;
-  PetscInt       l;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-    ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
-  }
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
     user.phi = 0.5;
     ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
     user.dt  = 0.1;
     ierr = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = CreateStructures(DMMGGetFine(dmmg));
-  ierr = ComputeInitialGuess(DMMGGetFine(dmmg));
-  ierr = ComputePredictor(DMMGGetFine(dmmg));
+  ierr = CreateStructures(da, &user);CHKERRQ(ierr);
+  ierr = ComputePredictor(da, &user);CHKERRQ(ierr);
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-  ierr = DMMGSetInitialGuess(dmmg, DMMGInitialGuessCurrent);CHKERRQ(ierr);
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = ComputeCorrector(DMMGGetFine(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
+  ierr = KSPGetSolution(ksp, &x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x, &xNew);CHKERRQ(ierr);
+  ierr = ComputeCorrector(da, x, xNew);CHKERRQ(ierr);
+  ierr = VecDestroy(&xNew);CHKERRQ(ierr);
 
-  ierr = DestroyStructures(DMMGGetFine(dmmg));
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DestroyStructures(da, &user);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateStructures"
-PetscErrorCode CreateStructures(DMMG dmmg)
+PetscErrorCode CreateStructures(DM da, UserContext *user)
 {
-  DM              da   = dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
   const PetscInt *necon;
   PetscInt        ne,nc;
   PetscErrorCode  ierr;
@@ -131,12 +128,14 @@ PetscErrorCode CreateStructures(DMMG dmmg)
   ierr = DMCreateGlobalVector(da, &user->sol_n.p);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_n.u);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_n.v);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD, &user->sol_phi.rho_u);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->sol_phi.rho_u, ne, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(user->sol_phi.rho_u,VECMPI);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.rho_v);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.u);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.v);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da, &user->sol_n.t);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD, &user->sol_phi.rho);CHKERRQ(ierr);
+  ierr = VecSetSizes(user->sol_phi.rho, ne, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(user->sol_phi.rho,VECMPI);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->sol_phi.rho, &user->sol_phi.rho_u);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->sol_phi.rho, &user->sol_phi.rho_v);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->sol_phi.rho, &user->sol_phi.u);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->sol_phi.rho, &user->sol_phi.v);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_np1.rho);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_np1.rho_u);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_np1.rho_v);CHKERRQ(ierr);
@@ -151,9 +150,8 @@ PetscErrorCode CreateStructures(DMMG dmmg)
 
 #undef __FUNCT__
 #define __FUNCT__ "DestroyStructures"
-PetscErrorCode DestroyStructures(DMMG dmmg)
+PetscErrorCode DestroyStructures(DM da, UserContext   *user)
 {
-  UserContext   *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -164,6 +162,8 @@ PetscErrorCode DestroyStructures(DMMG dmmg)
   ierr = VecDestroy(&user->sol_n.p);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_n.u);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_n.v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.t);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_phi.rho);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_phi.rho_u);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_phi.rho_v);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_phi.u);CHKERRQ(ierr);
@@ -177,14 +177,6 @@ PetscErrorCode DestroyStructures(DMMG dmmg)
   ierr = VecDestroy(&user->sol_np1.v);CHKERRQ(ierr);
   ierr = VecDestroy(&user->mu);CHKERRQ(ierr);
   ierr = VecDestroy(&user->kappa);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ComputeInitialGuess"
-PetscErrorCode ComputeInitialGuess(DMMG dmmg)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -358,7 +350,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -487,7 +479,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -605,15 +597,13 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputePredictor"
-PetscErrorCode ComputePredictor(DMMG dmmg)
+PetscErrorCode ComputePredictor(DM da, UserContext *user)
 {
-  DM             da   = dmmg->dm;
-  UserContext   *user = (UserContext *) dmmg->user;
   Vec            uOldLocal, uLocal,uOld;
   PetscScalar   *pOld;
   PetscScalar   *p;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = DMGetGlobalVector(da, &uOld);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
@@ -624,10 +614,10 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
   ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
 
   /* Source terms are all zero right now */
-  ierr = CalculateElementVelocity(da, user);
-  ierr = TaylorGalerkinStepI(da, user);
-  ierr = TaylorGalerkinStepIIMomentum(da, user);
-  ierr = TaylorGalerkinStepIIMassEnergy(da, user);
+  ierr = CalculateElementVelocity(da, user);CHKERRQ(ierr);
+  ierr = TaylorGalerkinStepI(da, user);CHKERRQ(ierr);
+  ierr = TaylorGalerkinStepIIMomentum(da, user);CHKERRQ(ierr);
+  ierr = TaylorGalerkinStepIIMassEnergy(da, user);CHKERRQ(ierr);
   /* Solve equation (9) for \delta(\rho\vu) and (\rho\vu)^* */
   /* Solve equation (13) for \delta\rho and \rho^* */
   /* Solve equation (15) for \delta(\rho e_t) and (\rho e_t)^* */
@@ -661,10 +651,9 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
       |       \   |
   (i,   j)----(i+1, j)
 */
-PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
+PetscErrorCode ComputeRHS(DM da, Vec x, Vec b)
 {
-  DM             da   = dmmg->dm;
-  UserContext   *user = (UserContext *) dmmg->user;
+  UserContext   *user;
   PetscScalar    phi  = user->phi;
   PetscScalar   *array;
   PetscInt       ne,nc,i;
@@ -673,6 +662,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   Vec            blocal;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da, &user);CHKERRQ(ierr);
   /* access a local vector with room for the ghost points */
   ierr = DMGetLocalVector(da,&blocal);CHKERRQ(ierr);
   ierr = VecGetArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
@@ -725,10 +715,9 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DM da, Vec x, Mat J, Mat jac, MatStructure *flag)
 {
-  DM             da   =  dmmg->dm;
-  UserContext   *user = (UserContext *) dmmg->user;
+  UserContext   *user;
   /* not being used!
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
                                 0.08333333333, 0.16666666667, 0.08333333333,
@@ -743,6 +732,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   hx   = 1.0 / (mx-1);
@@ -772,9 +762,8 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeCorrector"
-PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
+PetscErrorCode ComputeCorrector(DM da, Vec uOld, Vec u)
 {
-  DM             da   = dmmg->dm;
   Vec            uOldLocal, uLocal;
   PetscScalar    *cOld;
   PetscScalar    *c;

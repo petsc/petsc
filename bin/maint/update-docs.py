@@ -25,20 +25,34 @@ def modifyfile(filename):
     buf    = fd.read()
     fd.close()
 
-    header = string.split(string.split(buf, '<!--##end-->')[0],'<!--##begin-->')[1]
-    body = string.split(string.split(buf, '<!--##end-->')[1],'<!--##begin-->')[1]
+    header = string.split(string.split(buf, '<!--end-->')[0],'<!--begin-->')[1]
+    body = string.split(string.split(buf, '<!--end-->')[1],'<!--begin-->')[1]
 
-    outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
+    outbuf = '''
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+ <html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>''' + header + '''</title>
+  </head>
+  <body bgcolor="#ffffff">
 
-    #fix http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/')
+    <h1>''' + header + '''</h1>
+
+    ''' + body + '''
+  </body>
+</html>
+'''
+
+    #fix http://www.mcs.anl.gov/petsc/petsc-current/docs/
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-current/docs/')
     outbuf = w.sub('',outbuf)
 
-    #fix  http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/include/ (for petscversion.h)
-    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/include/')
+    #fix  http://www.mcs.anl.gov/petsc/petsc-current/include/ (for petscversion.h)
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-current/include/')
     outbuf = w.sub('',outbuf)
 
-    # Now overwrite the original file 
+    # Now overwrite the original file
     outfilename = filename
     try:
         fd = open( outfilename,'w')
@@ -68,14 +82,14 @@ def main():
         print 'Error Insufficient arguments.'
         print 'Usage:', argv[0], 'PETSC_DIR LOC'
     PETSC_DIR = argv[1]
-    LOC = argv[2]    
+    LOC = argv[2]
 
     cleanfiles = 0
     if arg_len == 4:
         if argv[3] == 'clean' :
           cleanfiles = 1
-    
-    baseurl = 'http://www.mcs.anl.gov/petsc/petsc-as/documentation'
+
+    baseurl = 'http://www.mcs.anl.gov/petsc/documentation'
     baseurl = PETSC_DIR + '/src/docs/website/documentation/'
     htmlfiles = [
         'bugreporting.html',
@@ -87,18 +101,18 @@ def main():
         'changes/2015.html',
         'changes/2016.html',
         'changes/2017.html',
+        'changes/2018-21.html',
         'changes/2022.html',
         'changes/2024.html',
         'changes/2028.html',
         'changes/2029.html',
-        'changes/2918-21.html',
         'changes/21.html',
         'changes/211.html',
         'changes/212.html',
         'changes/213.html',
         'changes/215.html',
         'changes/216.html',
-        'changes/220.html',        
+        'changes/220.html',
         'changes/221.html',
         'changes/230.html',
         'changes/231.html',
@@ -129,9 +143,9 @@ def main():
         shutil.copyfile(urlname,filename)
 
         modifyfile(filename)
-        
+
 # The classes in this file can also
 # be used in other python-programs by using 'import'
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
       main()
- 
+

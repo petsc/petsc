@@ -831,6 +831,7 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
   ierr = MatCreate(comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATMFFD);CHKERRQ(ierr);
+  ierr = MatSetUp(*J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

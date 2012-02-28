@@ -10,7 +10,7 @@ SOURCEH  = vpscat.h
 OBJSC    = vinv.o vscat.o vpscat.o cmesh.o vecio.o \
            comb.o vecstash.o vecmpitoseq.o
 OBJSF    =
-DIRS     = matlab
+DIRS     = matlab veccusp
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/utils/

@@ -43,6 +43,7 @@
 # include <stdio.h>
 # include <math.h>
 # include <limits.h>
+# include <float.h>
 # include <sys/time.h>
 
 /* INSTRUCTIONS:
@@ -57,7 +58,7 @@
 #   define N    2000000
 #endif
 #ifndef NTIMES
-#   define NTIMES       10
+#   define NTIMES       50
 #endif
 #ifndef OFFSET
 #   define OFFSET       0

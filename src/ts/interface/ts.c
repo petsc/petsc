@@ -540,6 +540,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 {
   PetscErrorCode ierr;
   SNES           snes;
+  Vec            ralloc = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -547,7 +548,12 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   if (f)   ts->userops->rhsfunction = f;
   if (ctx) ts->funP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r = ralloc;
+  }
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -662,6 +668,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
+  Vec            resalloc = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -669,7 +676,12 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   if (f)   ts->userops->ifunction = f;
   if (ctx) ts->funP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!res && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&resalloc);CHKERRQ(ierr);
+    res = resalloc;
+  }
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&resalloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3109,7 +3121,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to 
-   SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
+   SNES_VI_NINF and SNES_VI_INF respectively during SNESSetUp().
 
    Level: advanced
 

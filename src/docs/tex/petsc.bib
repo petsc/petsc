@@ -2,32 +2,18 @@
 %   Papers that we reference, BUT NOT any paper that uses PETSc or is about PETSc
 % those belong in petscapp.bib
 %
-%   do NOT!! use the abbreviations below!!!! Just type the damn words out. Abbreviations are a
-%   huge pain when you share entries and what do they give you? Confusion.
-%
-@string(AJ="Astrophysics J.")
-@string{PC="Parallel Computing"}
-@string(AIAAJ="AIAA J.")
-@string(LAA="Linear Algebra and Applications")
-@string(JCP="J. Computational Physics")
-@string(JPDC="J. Parallel and Distributed Computing")
-@string(ANM="Applied Numerical Mathematics")
-@string{SIAPMA="SIAM J. Applied Mathematics"}
-@string{SICOMP="SIAM J. Computing"}
-@string{SIMAX="SIAM J. Matrix Analysis and Applications"}
-@string{SINUM="SIAM J. Numerical Analysis"}
-@string{SIREV="SIAM Review"}
-@string{SISSC="SIAM J. Scientific and Statistical Computing"}
-@string{SISC="SIAM J. Scientific Computing"}
-@string{SIOPT="SIAM J. Optimization"}
-@string(NumMath="Numerische Mathematik")
-@string(MathComp="Mathematics of Computation")
-@string(IJNMF="International J. for Numerical Methods in Fluids")
-@string(Impact="Impact of Computing in Science and Engineering")
-@string(CPC="Computer Physics Communications")
-@string(jota = "J. Optimization Theory and Applications")
-@string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
+%   DO NOT DEFINE ANY ABREVIATIONS TO USE IN ENTRIES BELOW: Always write out the names of journels etc
 
+
+@article{smith1997domain,
+  title={Domain Decomposition Methods for Partial Differential Equations},
+  author={Smith, B.F.},
+  journal={ICASE LARC Interdisciplinary Series in Science and Engineering},
+  volume={4},
+  pages={225--244},
+  year={1997},
+  publisher={Citeseer}
+}
 @book{KS2000,
 	Author = {D. Kinderlehrer and G. Stampacchia},
 	Publisher = {Society for Industrial Mathematics},
@@ -65,6 +51,7 @@
 	Author = {Ilse C. F. Ipsen},
 	Journal = {SIAM J. Sci. Comput.},
 	Pages = {1050--1051},
+        Volume = 23,
 	Publisher = {SIAM},
 	Title = {A Note on Preconditioning Nonsymmetric Matrices},
 	Year = {2001}}
@@ -165,6 +152,23 @@
 	Journal = {International Journal for Numerical Methods in Fluids},
 	Publisher = {John Wiley \& Sons},
 	Title = {Running unstructured grid based CFD solvers on modern graphics hardware}}
+
+@inproceedings{Volkov08,
+  author    = {Vasily Volkov and James W. Demmel},
+  title     = {Benchmarking GPUs to tune dense linear algebra},
+  booktitle = {Proceedings of the 2008 ACM/IEEE Conference on Supercomputing (SC08)},
+  note      = {\url{http://mc.stanford.edu/cgi-bin/images/6/65/SC08_Volkov_GPU.pdf}},
+  year      = {2008}
+}
+
+@techreport{cray-mvmult,
+	author = "Guy~E. Blelloch and Michael~A. Heroux and Marco Zagha",
+	title = "Segmented Operations for Sparse Matrix Computation
+		 on Vector Multiprocessors",
+	institution = "School of Computer Science, Carnegie Mellon University",
+	number = "CMU-CS-93-173",
+	month = aug,
+	year = 1993}
 
 @conference{bell2009implementing,
 	Author = {Bell, N. and Garland, M.},
@@ -1000,35 +1004,35 @@
 
 @Unpublished{petsc:coloringuse,
   title = 	 "Code for computing sparse {J}acobians",
-  note = 	 "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
+  note = 	 "\url{http://www.mcs.anl.gov/petsc/miscellaneous/external.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:external,
   author =       {B. {Smith et al.}},
   title =        "{External Software Used by PETSc}",
-  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/miscellaneous/external.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:use-by-external-packages,
   author =       {B. {Smith et al.}},
   title =        "{Software Packages that Use or Interface to PETSc}",
-  note =         "\url{http://www-unix.mcs.anl.gov/petsc/petsc-as/publications/petscapps.html#packages}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/publications/petscapps.html#packages}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:prizes,
   author =       {B. {Smith et al.}},
   title =        "{Prizes Won Using PETSc}",
-  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/publications/prizes.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:csgf,
   author =       {B. {Smith et al.}},
   title =        "{DOE Computational Science Graduate Fellowship (CSGF) Users of PETSc}",
-  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/publications/prizes.html}",
   Institution = "Argonne National Laboratory"
 }
 
@@ -1162,7 +1166,7 @@
 @Article{cs99,
   author    = "X.-C. Cai and M. Sarkis",
   title     = "A restricted additive {S}chwarz preconditioner for general sparse linear systems",
-  journal =   SISC,
+  journal =   "SIAM J. Scientific Computing",
   year      = "1999",
   volume    = "21",
   pages     = "792-797"
@@ -1701,6 +1705,22 @@ Alvin P. Leung and Manfred Morari",
     Number = "90-2",
     Key    = "Nachtigal | Krylov" 
     )
+@article{nachtigal1992fnm,
+  title={How Fast are Nonsymmetric Matrix Iterations?},
+  author={Nachtigal, N.M. and Reddy, S.C. and Trefethen, L.N.},
+  journal={SIAM Journal on Matrix Analysis and Applications},
+  volume={13},
+  pages={778},
+  year={1992},
+  publisher={SIAM}
+}
+@techreport{embree1999descriptive,
+  title={How descriptive are {GMRES} convergence bounds},
+  author={Embree, M.},
+  year={1999},
+  number={08},
+  institution={Oxford University Computing Laboratory}
+}
 
 @Article{ vorst92,
   author = 	 "H. van der Vorst",
@@ -2065,6 +2085,13 @@ Producing {F}ortran interfaces to {C} source code",
   year = 	 1994
 }
 
+@Book{using-mpi2,
+  author = 	 "William Gropp and Ewing Lusk  and Rajeev Thakur",
+  title = 	 "Using MPI 2: Advanced Features of the Message Passing Interface",
+  publisher = 	 "MIT Press",
+  year = 	 1999
+}
+
 
 @article{hs:52,
    author="Magnus R. Hestenes and Eduard Steifel",
@@ -2351,7 +2378,7 @@ pages="1--21"
 @Article(torczon,
     Author=      "J.~E.~Dennis and V.~Torczon",
     Title=       "Direct Search Methods on Parallel Machines",
-    Journal=     SIOPT,
+    Journal=     "SIAM J. Optimization",
     Volume=      1,
     Pages=       "448--474",
     Year=        1991,
@@ -2370,7 +2397,7 @@ pages="1--21"
 @article{EW96,
 author="S. C. Eisenstat and  H. F. Walker",
 title="Choosing the forcing terms in an inexact {N}ewton method",
-journal=SISC,
+journal="SIAM J. Scientific Computing",
 volume=17,
 year=1996, 
 pages="16--32"
@@ -3116,7 +3143,7 @@ mesh refinement",
 @Misc{petsc:applications,
   author =	 {B. {Smith et al.}},
   title =	 {{Scientific Applications Using {PETSc}}},
-  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/publications}}
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/publications}}
 }
 
 @Misc{petsc:users,
@@ -3373,7 +3400,7 @@ publisher = {ACM Press}
   author    = "M. Brezina and A. J. Cleary and R. D. Falgout and V. E. Henson and J. E. Jones and T. A. Manteuffel and 
                 S. F. McCormick and J. W. Ruge",
   title     = "Algebraic Multigrid Based on Element Interpolation (AMGe)",
-  journal =   "SISC",
+  journal =   "SIAM J. Scientific Computing",
   volume = "22",
   pages = "1570--1592",
   year      = 2000
@@ -3414,7 +3441,7 @@ publisher = {ACM Press}
 @Article{egks94,
   author    = "A. Ern and V. Giovangigli and D. E. Keyes and M. D. Smooke",
   title     = "Towards polyalgorithmic linear system solvers for nonlinear elliptic problems,",
-  journal =   SISC,
+  journal =   "SIAM J. Scientific Computing",
   year      = "1994",
   volume    = "15",
   number    = "3",
@@ -3443,7 +3470,7 @@ publisher = {ACM Press}
 @Article{kk97,
   author    = "C.T. Kelley and D.E. Keyes",
   title     = "Convergence analysis of pseudo-transient continuation",
-  journal =   SINUM,
+  journal =   "SIAM J. Numerical Analysis",
   year      = "1998",
   volume    = "35",
   pages     = "508--523"
@@ -3704,7 +3731,7 @@ year = 2003}
   author =	 "Peter {Lichtner (PI)}",
   title =	 "{Modeling Multiscale-Multiphase-Multicomponent Subsurface Reactive Flows 
                   Using Advanced Computing}",
-  note = "SciDAC2 project, see \url{http://www.scidac.gov/groundwater/gwflow.html}"
+  url = "http://www.scidac.gov/groundwater/gwflow.html"
 }
 
 @Misc{accel-scidac2-solicitation,
@@ -3906,7 +3933,7 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
 @misc{petsc:driven-cavity-example,
   title =    {{PETSc Driven Cavity Example Code}},
   author =	 {B. {Smith et al.}},
-  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
 }
 
 @misc{unic-ref,
@@ -4470,11 +4497,38 @@ It begins with a general introduction to bundles, including such topics as diffe
 
 @article{Hackbusch99,
   author  = {Wolfgang Hackbusch},
-  title   = {A sparse matrix arithmetic based on {H-matrices}. Part {I}: Introduction to {H-matrices}},
+  title   = {A sparse matrix arithmetic based on {$\mathcal H$}-matrices. Part {I}: Introduction to {$\mathcal H$}-matrices},
   journal = {Computing},
   volume  = {62},
   pages   = {89--108},
   year    = {1999}
+}
+@techreport{kay1999green,
+  title={A {G}reen's function preconditioner for the steady-state {N}avier-{S}tokes equations},
+  author={Kay, D. and Loghin, D.},
+  year={1999},
+  institution={Oxford University Computing Laboratory},
+  number={99/06}
+}
+@article{bebendorf2003existence,
+  title={Existence of {$\mathcal H$}-matrix approximants to the inverse {FE}-matrix of elliptic operators with {$L^\infty$}-coefficients},
+  author={Bebendorf, M. and Hackbusch, W.},
+  journal={Numerische Mathematik},
+  volume={95},
+  number={1},
+  pages={1--28},
+  year={2003},
+  publisher={Springer}
+}
+@article{hackbusch2005direct,
+  title={Direct {S}chur complement method by domain decomposition based on {$\mathcal H$}-matrix approximation},
+  author={Hackbusch, W. and Khoromskij, B.N. and Kriemann, R.},
+  journal={Computing and Visualization in Science},
+  volume={8},
+  number={3},
+  pages={179--188},
+  year={2005},
+  publisher={Springer}
 }
 
 @techreport{DupHof2003,
@@ -5034,7 +5088,7 @@ note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
 @inproceedings{muszala09,
   title = "Two-tiered Component Design and Performance Analysis of {Synergia2} Accelerator Simulations", 
   author = "S. Muszala and J. Amundson and L. C. McInnes and B. Norris", 
-  booktitle = "Proceedings of the 2009 Workshop on Component-Based High Performance Computing (CBHPC 2009)",
+  booktitle = "Proceedings of the 2009 Workshop on Component-Based High Performance Computing {(CBHPC 2009)}",
   year = 2009
 }
 
@@ -5196,8 +5250,17 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
 @misc{mcinnes:icis-workshop:2011,
  author = "David Keyes and Lois Curfman McInnes and Carol Woodward",
  title = "Multiphysics Simulations: Challenges and Opportunities",
- note = "workshop sponsored by the Institute for Computing in Science (ICiS), to be held during summer 2011, see
- \url{http://www.icis.anl.gov/programs/summer2011-3a}"
+ note = "Workshop sponsored by the Institute for Computing in Science (ICiS), July 30 - Aug. 6, 2011, Park City, Utah,
+ \url{https://sites.google.com/site/icismultiphysics2011/}",
+ year = 2011
+} 
+
+@misc{knepley:icerm-workshop:2012,
+ author = "David Keyes and Matthew Knepley and Katherine Yelick",
+ title = "Synchronization-reducing and Communication-reducing Algorithms and Programming Models for Large-scale Simulations",
+ note = "Workshop sponsored by the Institute for Computational and Experimental Research in Mathematics (ICERM),
+         Jan. 9-13, 2012, Providence, RI,  \url{http://icerm.brown.edu/tw12-1-exascale}",
+ year = 2012
 } 
 
 @misc{dvi-materials:siamcse11,
@@ -5217,16 +5280,6 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
    author = "S. Kruger",
    note = "February, 2011"
 } 
-
-@article{MayMoresi2008,
-  title   = {Preconditioned iterative methods for {Stokes} flow problems arising in computational geodynamics},
-  author  = {David A. May and Louis Moresi},
-  journal = {Physics of the Earth and Planetary Interiors},
-  volume  = {171},
-  issue   = {1},
-  year    = {2008},
-  pages   = {33--47}
-}
 
 @article{Elman1996,
   author  = {H.C. Elman},
@@ -5345,7 +5398,7 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
 author    =  {B.D. Dudson and M.V. Umansky and X.Q. Xu and P.B. Snyder and 
               H.R. Wilson},
 title     = {{{BOUT++:}} a framework for parallel plasma fluid simulations},
-journal   = CPC,
+journal   = {Computer Physics Communications},
 volume    = 180,
 pages     = 1467,
 year      = 2009}
@@ -5448,10 +5501,10 @@ issn = {10648275},
 journal = {SIAM Journal on Scientific Computing},
 keywords = {65f10,ams,especially since the popularization,gate gradient,general purpose iterative methods,gmres,krylov subspace methods,mos,non-hermitian systems,of precondition-,preconditioned conju-,subject classi cations,variable preconditioners},
 number = {2},
-pages = {461--461},
+pages = {461--469},
 publisher = {Citeseer},
 title = {{A flexible inner-outer preconditioned GMRES algorithm}},
-url = {http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.7627\&amp;rep=rep1\&amp;type=pdf},
+url = {http://dx.doi.org/10.1137/0914028},
 volume = {14},
 year = {1993}
 }
@@ -5469,6 +5522,14 @@ year = {1993}
   journal = {SIAM Journal on Scientific Computing},
   year    = {2008},
   pages   = {2113--2136}
+}
+@article{elman2009boundary,
+  title={{Boundary conditions in approximate commutator preconditioners for the Navier-Stokes equations}},
+  author={Elman, H.C. and Tuminaro, R.},
+  journal={Electronic Transactions on Numerical Analysis},
+  volume={35},
+  pages={257--280},
+  year={2009}
 }
 @article{elman2008tcp,
   title={{A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations}},
@@ -5710,4 +5771,317 @@ year = {1993}
   volume  = {7},
   pages   = {149–-154},
   year    = {1964}
+}
+
+@InBook{McInnesAllanEtAl06,
+  author =       {Lois Curfman McInnes and Benjamin Allan and Robert Armstrong and Steven Benson and 
+                  David Bernholdt and Tamara Dahlgren and Lori Diachin and Manojkumar Krishnan and 
+                  James Kohl and Jay Larson and Sophia Lefantzi and Jarek Nieplocha and Boyana Norris and
+                  Steven Parker and Jaideep Ray and Shujia Zhou},
+  editor =       {A.~M.~Bruaset and A.~Tveito},                                      
+  title =        {Numerical Solution of Partial Differential Equations on Parallel Computers},               
+  chapter =      {Parallel {PDE}-Based Simulations Using the {Common Component       
+             Architecture}},                                                         
+  publisher =    {Springer},                                                         
+  year =         {2006},                                                             
+  number =       {51},                                                               
+  series =       {Lecture Notes in Computational Science and Engineering},           
+  pages =        {327--381},                                                         
+  URL = {http://dx.doi.org/10.1016/S0167-8191(02)00191-6}
+}
+
+@article{CyrShadidTuminaro12,
+title = "Stabilization and scalable block preconditioning for the Navier–Stokes equations",
+journal = "Journal of Computational Physics",
+volume = "231",
+number = "2",
+pages = "345 - 363",
+year = "2012",
+issn = "0021-9991",
+doi = "10.1016/j.jcp.2011.09.001",
+url = "http://www.sciencedirect.com/science/article/pii/S0021999111005195",
+author = "Eric C. Cyr and John N. Shadid and Raymond S. Tuminaro",
+}
+
+@techreport{KeyesMcInnesWoodwardEtAl11,
+ title = {{Multiphysics Simulations: Challenges and Opportunities}},
+ author = {David E. Keyes and Lois Curfman McInnes and Carol Woodward and
+          William D. Gropp and Eric Myra and Michael Pernice and
+          John Bell and Jed Brown and Alain Clo and Jeffrey Connors and 
+          Emil Constantinescu and Don Estep and Kate Evans and Charbel Farhat and 
+          Ammar Hakim and Glenn Hammond and Glen Hansen and Judith Hill and 
+          Tobin Isaac and Xiangmin Jiao and Kirk Jordan and Dinesh Kaushik and 
+          Efthimios Kaxiras and Alice Koniges and Kihwan Lee and Aaron Lott and 
+          Qiming Lu and John Magerlein and Reed Maxwell and Michael McCourt and 
+          Miriam Mehl and Roger Pawlowski and Amanda Peters and Daniel Reynolds and
+          Beatrice Riviere and Ulrich R\"{u}de and Tim Scheibe and John Shadid and 
+          Brendan Sheehan and Mark Shephard and Andrew Siegel and
+          Barry Smith and Xianzhu Tang and Cian Wilson and Barbara Wohlmuth},
+ number = {ANL/MCS-TM-321},
+ institution = {Argonne National Laboratory},
+ note =  {{Report of workshop sponsored by the Institute for Computing in Science (ICiS), 
+           Park City, Utah, July 30 - August 6, 2011}}, 
+ month = {Dec},
+ year = 2011,
+ url = " http://www.ipd.anl.gov/anlpubs/2012/01/72183.pdf"
+}
+
+@misc{Rosner10,
+  author= "Robert {Rosner (Chair)}", 
+  title = "{The Opportunities and Challenges of Exascale Computing}",
+  year = 2010,
+  howpublished = "Office of Science, U.S. Department of Energy",
+  url = {http://science.energy.gov/~/media/ascr/ascac/pdf/reports/Exascale_subcommittee_report.pdf}
+}
+
+@Misc{DOEGrandChallengeWorkshops,
+  title = "{Scientific Grand Challenges Workshop Series}",
+  howpublished = "Office of Science, U.S. Department of Energy, see
+      \url{http://extremecomputing.labworks.org/workshops.stm}"
+}
+
+@Misc{Lawrence2011,
+  title = "{Ernest Orlando Lawrence Award Winners}",
+  howpublished = "U.S. Department of Energy, see
+    \url{http://energy.gov/articles/secretary-chu-announces-2011-ernest-orlando-lawrence-award-winners}",
+  year = 2011
+}
+@article{murphy2000npi,
+  title={{A note on preconditioning for indefinite linear systems}},
+  author={Murphy, M.F. and Golub, G.H. and Wathen, A.J.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={21},
+  number={6},
+  pages={1969--1972},
+  year={2000},
+  publisher={Philadelphia, PA: SIAM, c1993-}
+}
+@article{elman2011bouyancy,
+  title = "Fast iterative solvers for buoyancy driven flow problems",
+  journal = "Journal of Computational Physics",
+  volume = "230",
+  number = "10",
+  pages = "3900 - 3914",
+  year = "2011",
+  note = "",
+  issn = "0021-9991",
+  doi = "DOI: 10.1016/j.jcp.2011.02.014",
+  url = "http://dx.doi.org/10.1016/j.jcp.2011.02.014",
+  author = "Howard Elman and Milan Mihajlovic and David Silvester",
+  keywords = "Navier-Stokes",
+  keywords = "Boussinesq",
+  keywords = "Finite element approximation",
+  keywords = "Time stepping",
+  keywords = "Adaptivity",
+  keywords = "Preconditioning",
+  keywords = "Algebraic multigrid"
+}
+
+@ARTICLE{DongarraBeckman11,
+   AUTHOR={J. Dongarra and P. Beckman and et al.},
+   TITLE={The International Exascale Software Roadmap},
+   JOURNAL={Int. J. High Perf. Comput. Applics.},
+   VOLUME={25},
+   YEAR={2011},
+   PAGES={3--60} 
+}
+@article{mandel1999energy,
+  title={Energy optimization of algebraic multigrid bases},
+  author={Mandel, J. and Brezina, M. and Van{\v{e}}k, P.},
+  journal={Computing},
+  volume={62},
+  number={3},
+  pages={205--228},
+  year={1999},
+  publisher={Springer}
+}
+@article{vanek1996algebraic,
+  title={Algebraic multigrid by smoothed aggregation for second and fourth order elliptic problems},
+  author={Van{\v{e}}k, P. and Mandel, J. and Brezina, M.},
+  journal={Computing},
+  volume={56},
+  number={3},
+  pages={179--196},
+  year={1996},
+  publisher={Springer}
+}
+@article{vanek2001convergence,
+  title={Convergence of algebraic multigrid based on smoothed aggregation},
+  author={Van{\v{e}}ek, P. and Brezina, M. and Mandel, J.},
+  journal={Numerische Mathematik},
+  volume={88},
+  number={3},
+  pages={559--579},
+  year={2001},
+  publisher={Springer}
+}
+@article{brannick2007algebraic,
+  title={Algebraic multigrid methods based on compatible relaxation and energy minimization},
+  author={Brannick, J. and Zikatanov, L.},
+  journal={Domain decomposition methods in science and engineering XVI},
+  pages={15--26},
+  year={2007},
+  publisher={Springer}
+}
+@article{xu2004energy,
+  title={On an energy minimizing basis for algebraic multigrid methods},
+  author={Xu, J. and Zikatanov, L.},
+  journal={Computing and Visualization in Science},
+  volume={7},
+  number={3},
+  pages={121--127},
+  year={2004},
+  publisher={Springer}
+}
+
+@article{DBLP:journals/toms/BakerHLT09,
+  author    = {C. G. Baker and
+               Ulrich Hetmaniuk and
+               Richard B. Lehoucq and
+               Heidi Thornquist},
+  title     = {Anasazi software for the numerical solution of large-scale
+               eigenvalue problems},
+  journal   = {ACM Trans. Math. Softw.},
+  volume    = {36},
+  number    = {3},
+  year      = {2009},
+  ee        = {http://doi.acm.org/10.1145/1527286.1527287},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+@article{DBLP:journals/siamsc/YangGBLLHN05,
+  author    = {Chao Yang and
+               Weiguo Gao and
+               Zhaojun Bai and
+               Xiaoye S. Li and
+               Lie-Quan Lee and
+               Parry Husbands and
+               Esmond G. Ng},
+  title     = {An Algebraic Substructuring Method for Large-Scale Eigenvalue
+               Calculation},
+  journal   = {SIAM J. Scientific Computing},
+  volume    = {27},
+  number    = {3},
+  year      = {2005},
+  pages     = {873-892},
+  ee        = {http://dx.doi.org/10.1137/040613767},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@TechReport{ml-guide,
+  author      =  {M.W. Gee and C.M. Siefert and J.J. Hu and R.S. Tuminaro and M.G. Sala},
+  title       =  {{ML} 5.0 Smoothed Aggregation User's Guide},
+  institution =  {Sandia National Laboratories},
+  year        =  {2006},
+  number      =  {SAND2006-2649},
+}
+@article{Brannick06, 
+ title={An energy-based AMG coarsening strategy}, 
+ volume={13}, 
+ url={http://doi.wiley.com/10.1002/nla.480}, 
+ number={2-3}, 
+ journal={Numerical Linear Algebra with Applications}, 
+ author={Brannick, J and Brezina, M and MacLachlan, S and Manteuffel, T and McCormick, S and Ruge, J}, 
+ year={2006}, 
+ pages={133--148}
+}
+
+@article{Olson10,
+  author = {Olson, Luke N. and Schroder, Jacob and Tuminaro, Raymond S.},
+  title = {A new perspective on strength measures in algebraic multigrid},
+  journal = {Numerical Linear Algebra with Applications},
+  volume = {17},
+  number = {4},
+  pages = {713--733},
+  year = {2010},
+  publisher = {John Wiley \& Sons, Ltd.},
+  issn = {1099-1506},
+  url = {http://dx.doi.org/10.1002/nla.669},
+  doi = {10.1002/nla.669},
+  pdf = {./files/2010_OlScTu_evosoc.pdf}
+}
+
+@article{Olson11,
+ author = {Olson, Luke N. and Schroder, Jacob B. and Tuminaro, Raymond S.},
+ title = {A General Interpolation Strategy for Algebraic Multigrid Using Energy Minimization},
+ journal = {SIAM J. Sci. Comput.},
+ issue_date = {April 2011},
+ volume = {33},
+ issue = {2},
+ month = apr,
+ year = {2011},
+ issn = {1064-8275},
+ pages = {966--991},
+ numpages = {26},
+ url = {http://dx.doi.org/10.1137/100803031},
+ doi = {http://dx.doi.org/10.1137/100803031},
+ acmid = {2078825},
+ publisher = {Society for Industrial and Applied Mathematics},
+ address = {Philadelphia, PA, USA},
+ keywords = {algebraic multigrid, interpolation, non-Hermitian, nonsymmetric, smoothed aggregation},
+} 
+
+@article{Dorit2011,
+author    = {Dorit Ron and
+             Ilya Safro and
+             Achi Brandt},
+title     = {Relaxation-Based Coarsening and Multiscale Graph Organization},
+journal   = {Multiscale Modeling {\&} Simulation},
+volume    = {9},
+number    = {1},
+year      = {2011},
+pages     = {407-423},
+ee        = {http://dx.doi.org/10.1137/100791142}
+}
+	
+@inproceedings{Adams04,
+	Author = {Adams, M.~F. and Bayraktar, H.~H. and Keaveny, T.~M. and Papadopoulos, P.},
+	Booktitle = {ACM/IEEE Proceedings of SC2004: High Performance Networking and Computing},
+	Title = {Ultrascalable implicit finite element analyses in solid mechanics with over a half a billion degrees of freedom},
+	Note = {Gordon Bell Award},
+	Year = {2004}
+}
+
+@article{Adams03a,
+	Author = {Adams, M.~F.},
+	Journal = {Numerical Linear Algebra with Applications},
+	Number = {2-3},
+	Pages = {141-153},
+	Title = {Algebraic multigrid methods for constrained linear systems with applications to contact problems in solid mechanics},
+	Volume = {11},
+	Year = {2004}
+}
+
+@article{Adams-10a,
+	Author = {M. ~F. Adams and Ravi Samtaney and Achi Brandt},
+	Doi = {DOI: 10.1016/j.jcp.2010.04.024},
+	Issn = {0021-9991},
+	Journal = {Journal of Computational Physics},
+	Keywords = {Implicit magnetohydrodynamics},
+	Number = {18},
+	Pages = {6208 - 6219},
+	Title = {Toward textbook multigrid efficiency for fully implicit resistive magnetohydrodynamics},
+	Url = {http://www.sciencedirect.com/science/article/B6WHY-4YY8N52-2/2/4a06d49560a7f24a4da5bb25d0c75d62},
+	Volume = {229},
+	Year = {2010},
+	Bdsk-Url-1 = {http://www.sciencedirect.com/science/article/B6WHY-4YY8N52-2/2/4a06d49560a7f24a4da5bb25d0c75d62},
+	Bdsk-Url-2 = {http://dx.doi.org/10.1016/j.jcp.2010.04.024}
+}
+
+@inproceedings{Adams98,
+	Address = {Copper Mountain, CO},
+	Author = {Adams, M.~F.},
+	Booktitle = {Proceedings 5th Copper Mountain Conference on Iterative Methods},
+	Title = {A Parallel Maximal Independent Set Algorithm},
+	Year = 1998
+}
+
+@inproceedings{MadayPatera89,
+  author    = {Y. Maday and A. T. Patera},
+  title     = {Spectral element methods for the Navier-Stokes equations},
+  editor    = {A. K. Noor and J. T. Oden},
+  booktitle = {State-of-the-Art Surveys in Computational Mechanics},
+  pages     = {71-–143},
+  publisher = {ASME},
+  address   = {New York, NY},
+  year      = {1989}
 }

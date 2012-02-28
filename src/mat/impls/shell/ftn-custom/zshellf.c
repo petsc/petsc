@@ -4,11 +4,9 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matcreateshell_                  MATCREATESHELL
-#define matshellgetcontext_              MATSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matcreateshell_                  matcreateshell
 #define matshellsetoperation_            matshellsetoperation
-#define matshellgetcontext_              matshellgetcontext
 #endif
 
 EXTERN_C_BEGIN
@@ -18,10 +16,9 @@ EXTERN_C_BEGIN
    This C routine then calls the corresponding Fortran routine that was
    set by the user.
 */
-void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void **ctx,Mat *mat,PetscErrorCode *ierr)
+void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void *ctx,Mat *mat,PetscErrorCode *ierr)
 {
-  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,*M,*N,*ctx,mat);
-
+  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,*M,*N,ctx,mat);
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
@@ -159,11 +156,5 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
     *ierr = 1;
   }
 }
-
-void PETSC_STDCALL matshellgetcontext_(Mat *mat,void **ctx,PetscErrorCode *ierr)
-{
-  *ierr = MatShellGetContext(*mat,ctx);
-}
-
 
 EXTERN_C_END

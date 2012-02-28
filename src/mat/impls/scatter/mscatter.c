@@ -273,7 +273,6 @@ EXTERN_C_END
    corresponding result vector, y. Note that this is information is
    required for use of the matrix interface routines, even though
    the scatter matrix may not actually be physically partitioned.
-   For example,
 
 .keywords: matrix, scatter, create
 
@@ -288,6 +287,7 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
   ierr = MatSetSizes(*A,scatter->to_n,scatter->from_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSCATTER);CHKERRQ(ierr);
   ierr = MatScatterSetVecScatter(*A,scatter);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
