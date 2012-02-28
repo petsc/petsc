@@ -1726,6 +1726,7 @@ extern PetscErrorCode  MatShellSetContext(Mat,void*);
 
 extern PetscErrorCode  MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 extern PetscErrorCode  MatISGetLocalMat(Mat,Mat*);
+extern PetscErrorCode  MatISSetLocalMat(Mat,Mat);
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
