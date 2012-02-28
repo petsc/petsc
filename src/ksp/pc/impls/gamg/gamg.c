@@ -746,7 +746,6 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
       ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
     }
-    ierr = MatDestroy( &Aarr[0] );  CHKERRQ(ierr);
 
     ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
 
