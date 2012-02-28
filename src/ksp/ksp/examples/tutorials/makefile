@@ -1076,7 +1076,7 @@ runex55_NC:
         ${RM} -f ex55_nc.tmp
 
 runex56:
-	-@${MPIEXEC} -n 1 ./ex56 -ne 15 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 15 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
 

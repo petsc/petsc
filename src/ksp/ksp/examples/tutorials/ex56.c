@@ -268,7 +268,7 @@ int main(int argc,char **args)
 #endif
 
   /* 2nd solve */
-  /* #define TwoSolve */
+/* #define TwoSolve */
 #if defined(TwoSolve)
   {
     PetscReal emax, emin;
