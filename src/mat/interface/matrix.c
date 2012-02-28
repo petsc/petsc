@@ -6772,7 +6772,8 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidLogicalCollectiveInt(mat,bs,2);
   MatCheckPreallocated(mat,1);
   if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
-  if(mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for n=%d",bs,mat->rmap->n);
+  if(mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for m=%D",bs,mat->rmap->n);
+  if(mat->cmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for n=%D",bs,mat->cmap->n);
   if (mat->ops->setblocksize) {
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
