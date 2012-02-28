@@ -501,6 +501,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const Ma
 PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
+  fact->preallocated         = PETSC_TRUE;
   fact->assembled            = PETSC_TRUE;
   fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense;
   PetscFunctionReturn(0);
