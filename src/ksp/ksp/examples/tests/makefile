@@ -289,7 +289,7 @@ runex11:
 		-fc_fieldsplit_pressure_lsc_pc_type icc \
                  > ex11_1.tmp 2>&1; \
 	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo ${PWD} "\nPossible problem with with ex11_1, diffs above \n=========================================";\
-	#   ${RM} -f ex11_1.tmp
+	   ${RM} -f ex11_1.tmp
 
 runex11_2:
 	-@${MPIEXEC} -n 4 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
@@ -319,7 +319,7 @@ runex11_2:
                 -fc_fieldsplit_pressure_lsc_sub_pc_type icc \
                  > ex11_2.tmp 2>&1; \
 	   ${DIFF} output/ex11_2.out ex11_2.tmp || echo ${PWD} "\nPossible problem with with ex11_2, diffs above \n=========================================";\
-	 #  ${RM} -f ex11_2.tmp
+	   ${RM} -f ex11_2.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex12f:
