@@ -41,10 +41,33 @@ extern PetscInt     PetscMainThreadShareWork;     /* Is the main thread also a w
 extern PetscInt     MainThreadCoreAffinity;       /* Core affinity of the main thread */
 extern PetscBool    PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
 
+/*
+  ThreadSynchronizationType - Type of thread synchronization for pthreads
 
+$ THREADSYNC_NOPOOL   - threads created and destroyed as and when required.
+  The following synchronization scheme uses a thread pool mechanism and uses 
+  mutex and condition variables for thread synchronization.
+$ THREADSYNC_MAINPOOL  - Individual threads are woken up sequentially by main thread.
+$ THREADSYNC_TRUEPOOL  - Uses a broadcast to wake up all threads
+$ THREADSYNC_CHAINPOOL - Uses a chain scheme for waking up threads.
+$ THREADSYNC_TREEPOOL  - Uses a tree scheme for waking up threads.
+  The following synchronization scheme uses GCC's atomic function __sync_bool_compare_and_swap
+  for thread synchronization
+$ THREADSYNC_LOCKFREE -  A lock-free variant of the MAINPOOL model.
+
+  Level: developer
+*/
 typedef enum {THREADSYNC_NOPOOL,THREADSYNC_MAINPOOL,THREADSYNC_TRUEPOOL,THREADSYNC_CHAINPOOL,THREADSYNC_TREEPOOL,THREADSYNC_LOCKFREE} ThreadSynchronizationType;
 extern const char *const ThreadSynchronizationTypes[];
 
+/*
+  ThreadAffinityPolicyType - Core affinity policy for pthreads
+
+$ THREADAFFINITYPOLICY_ALL - threads can run on any core.
+$ THREADAFFINITYPOLICY_ONECORE - threads can run on only one core
+
+   Level: developer
+*/
 typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE} ThreadAffinityPolicyType;
 extern const char *const ThreadAffinityPolicyTypes[];
 

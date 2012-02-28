@@ -107,7 +107,9 @@ PetscErrorCode PetscThreadsFinalize(void)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (PetscThreadsInitializeCalled && PetscThreadsSynchronizationFinalize) {
+
+  if(!PetscThreadsInitializeCalled) PetscFunctionReturn(0);
+  if (PetscThreadsSynchronizationFinalize) {
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
   ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
