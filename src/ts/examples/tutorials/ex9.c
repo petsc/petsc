@@ -312,6 +312,19 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscSca
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PhysicsCharacteristic_Advect"
+static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
+{
+  AdvectCtx *ctx = (AdvectCtx*)vctx;
+
+  PetscFunctionBegin;
+  X[0] = 1.;
+  Xi[0] = 1.;
+  speeds[0] = ctx->a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PhysicsSample_Advect"
 static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -346,7 +359,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Advect;
   ctx->physics.riemann        = PhysicsRiemann_Advect;
-  ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
+  ctx->physics.characteristic = PhysicsCharacteristic_Advect;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 1;
@@ -1340,19 +1353,23 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
 {
   FVCtx *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt i,j,xs,xm,dof = ctx->physics.dof;
+  PetscInt i,j,dof = ctx->physics.dof;
   PetscScalar *x,*J;
+  PetscReal hx;
   DM da;
+  DMDALocalInfo dainfo;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&dainfo);CHKERRQ(ierr);
+  hx = (ctx->xmax - ctx->xmin)/dainfo.mx;
   ierr = PetscMalloc(dof*dof*sizeof(PetscScalar),&J);CHKERRQ(ierr);
-  for (i=xs; i<xs+xm; i++) {
+  for (i=dainfo.xs; i<dainfo.xs+dainfo.xm; i++) {
     ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
     ierr = SmallMatMultADB(J,dof,ctx->R,ctx->speeds,ctx->Rinv);CHKERRQ(ierr);
+    for (j=0; j<dof*dof; j++) J[j] = J[j]/hx + shift*(j/dof == j%dof);
     ierr = MatSetValuesBlocked(*B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(J);CHKERRQ(ierr);
