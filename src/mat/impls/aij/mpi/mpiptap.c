@@ -552,6 +552,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ptap  = c->ptap;
+  if (!ptap) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP() has not been called to create matrix C yet, cannot use MAT_REUSE_MATRIX");
   merge = ptap->merge;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
