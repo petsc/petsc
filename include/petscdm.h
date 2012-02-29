@@ -40,6 +40,7 @@ J*/
 #define DMADDA      "adda"
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
+#define DMSHELL     "shell"
 #define DMMESH      "mesh"
 #define DMCOMPLEX   "complex"
 #define DMCARTESIAN "cartesian"
