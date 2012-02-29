@@ -448,8 +448,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
       /* (re)set to get dirty flag */
       ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = KSPSetUp( mglevels[pc_gamg->Nlevels-1]->smoothd ); CHKERRQ(ierr);
-      
+       
       for (level=pc_gamg->Nlevels-2; level>-1; level--) {
         /* the first time through the matrix structure has changed from repartitioning */
         if( pc_gamg->setup_count==2 /*&& (pc_gamg->repart || level==0)*/) {
@@ -463,9 +462,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         }
         ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
         dB = B;
-        /* setup KSP/PC */
-        ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
-      }
+        }
     }
 
     ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
@@ -664,8 +661,6 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);      assert(ii==1);
       ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
       ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
-      /* set ops */
-      ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN );   CHKERRQ(ierr);
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
@@ -757,15 +752,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
       ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
     }
-
-    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
-    
     {
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
       ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
-      //ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
     }
+    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
   }
   else {
     KSP smoother;
