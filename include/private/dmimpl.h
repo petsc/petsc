@@ -28,8 +28,6 @@ struct _DMOps {
   PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
 
-  PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
-
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);

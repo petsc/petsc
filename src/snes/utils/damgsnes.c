@@ -1191,53 +1191,6 @@ PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode (*localfunc)(void) = 0;
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGInitialGuess_Local"
-/*
-    Uses the DM object to call the user provided function with the correct calling
-  sequence.
-*/
-PetscErrorCode  DMMGInitialGuess_Local(DMMG dmmg,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = (*dmmg->dm->ops->forminitialguess)(dmmg->dm,localfunc,x,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetInitialGuessLocal"
-/*@C
-    DMMGSetInitialGuessLocal - sets code to compute the initial guess for each level
-
-       This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
-    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
-
- Logically Collective on DMMG
-
-    Input Parameter:
-+   dmmg - the context
--   localguess - the function that computes the initial guess
-
-    Level: intermediate
-
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(), DMMGSetSNESLocal()
-
-@*/
-PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(void))
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  localfunc = localguess;  /* stash into ugly static for now */
-
-  ierr = DMMGSetInitialGuess(dmmg,DMMGInitialGuess_Local);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetISColoringType"
 /*@C

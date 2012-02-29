@@ -91,7 +91,6 @@ extern PetscErrorCode  DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorC
 extern PetscErrorCode  DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 extern PetscErrorCode  DMMGSetFromOptions(DMMG*);
 
-extern PetscErrorCode  DMMGSetInitialGuessLocal(DMMG*,PetscErrorCode (*)(void));
 extern PetscErrorCode  DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
 extern PetscErrorCode  DMMGInitialGuessCurrent(DMMG,Vec);
 extern PetscErrorCode  DMMGView(DMMG*,PetscViewer);
