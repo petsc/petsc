@@ -96,7 +96,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
+.seealso DMDestroy(), DMCreateGlobalVector()
 
 @*/
 PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
@@ -141,7 +141,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices(), MatMPIAIJSetPreallocation(),
+.seealso DMDestroy(), DMCreateGlobalVector(), MatMPIAIJSetPreallocation(),
          MatMPIBAIJSetPreallocation(), DMSlicedGetMatrix(), DMSlicedSetBlockFills()
 
 @*/
@@ -283,7 +283,7 @@ EXTERN_C_END
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
+.seealso DMDestroy(), DMCreateGlobalVector()
 
 @*/
 PetscErrorCode  DMSlicedCreate(MPI_Comm comm,DM *dm)
