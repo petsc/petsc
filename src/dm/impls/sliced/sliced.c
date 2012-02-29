@@ -1,6 +1,6 @@
-#include <petscdmsliced.h>      /*I      "petscdmsliced.h"     I*/
-#include <petscmat.h>           /*I      "petscmat.h"    I*/
-#include <private/dmimpl.h>     /*I      "petscmat.h"    I*/
+#include <petscdmsliced.h>      /*I      "petscdmsliced.h" I*/
+#include <petscmat.h>           /*I      "petscmat.h"      I*/
+#include <private/dmimpl.h>     /*I      "petscdm.h"       I*/
 
 /* CSR storage of the nonzero structure of a bs*bs matrix */
 typedef struct {
@@ -296,34 +296,6 @@ PetscErrorCode  DMSlicedCreate(MPI_Comm comm,DM *dm)
   ierr = DMSetType(*dm,DMSLICED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMSlicedGetGlobalIndices"
-/*@C
-    DMSlicedGetGlobalIndices - Gets the global indices for all the local entries
-
-    Collective on DM
-
-    Input Parameter:
-.    slice - the slice object
-
-    Output Parameters:
-.    idx - the individual indices for each packed vector/array
-
-    Level: advanced
-
-    Notes:
-       The idx parameters should be freed by the calling routine with PetscFree()
-
-.seealso DMSlicedDestroy(), DMCreateGlobalVector(), DMSlicedCreate()
-
-@*/
-PetscErrorCode  DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
-{
-  PetscFunctionReturn(0);
-}
-
 
 /* Explanation of the missing functions for DMDA-style handling of the local vector:
 
