@@ -935,17 +935,15 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
   ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
-  if (jac->defaultsplit) {
-    ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&ilink->is);CHKERRQ(ierr);
-  } else {
-    PetscInt   *ii,j,k;
-    ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-    for (j=0; j<nslots; j++) {
-      for (k=0; k<ilink->nfields; k++) {
-        ii[ilink->nfields*j + k] = rstart + bs*j + fields[k];
-      }
+
+  PetscInt   *ii,j,k;
+  ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+  for (j=0; j<nslots; j++) {
+    for (k=0; k<ilink->nfields; k++) {
+      ii[ilink->nfields*j + k] = rstart + bs*j + fields[k];
     }
-    ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*n,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);         } 
+  }
+  ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*n,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);         
   ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
   if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
