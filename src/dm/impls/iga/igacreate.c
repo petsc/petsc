@@ -65,18 +65,10 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->refinehierarchy    = 0;
   dm->ops->coarsenhierarchy   = 0;
 
-  dm->ops->forminitialguess   = 0;
-  dm->ops->formfunction       = 0;
-
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_IGA;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_IGA;
   dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_IGA;
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_IGA;
-
-  dm->ops->initialguess       = 0;
-  dm->ops->function           = 0;
-  dm->ops->functionj          = 0;
-  dm->ops->jacobian           = 0;
 
   dm->ops->destroy            = DMDestroy_IGA;
   PetscFunctionReturn(0);

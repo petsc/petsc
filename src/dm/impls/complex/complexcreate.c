@@ -316,16 +316,10 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->ops->coarsen            = 0;
   dm->ops->refinehierarchy    = 0;
   dm->ops->coarsenhierarchy   = 0;
-  dm->ops->forminitialguess   = 0;
-  dm->ops->formfunction       = 0;
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Complex;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Complex;
   dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Complex;
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Complex;
-  dm->ops->initialguess       = 0;
-  dm->ops->function           = 0;
-  dm->ops->functionj          = 0;
-  dm->ops->jacobian           = 0;
   dm->ops->destroy            = DMDestroy_Complex;
   PetscFunctionReturn(0);
 }

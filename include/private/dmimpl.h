@@ -29,7 +29,6 @@ struct _DMOps {
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
 
   PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
-  PetscErrorCode (*formfunction)(DM,PetscErrorCode (*)(void),Vec,Vec);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);

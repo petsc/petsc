@@ -691,18 +691,10 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   dm->ops->refinehierarchy    = 0;
   dm->ops->coarsenhierarchy   = DMCoarsenHierarchy_Mesh;
 
-  dm->ops->forminitialguess   = 0;
-  dm->ops->formfunction       = 0;
-
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Mesh;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Mesh;
   dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
-
-  dm->ops->initialguess       = 0;
-  dm->ops->function           = 0;
-  dm->ops->functionj          = 0;
-  dm->ops->jacobian           = 0;
 
   dm->ops->destroy            = DMDestroy_Mesh;
 
