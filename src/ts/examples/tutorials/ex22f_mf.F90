@@ -333,6 +333,14 @@ subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,           &
         end if
      end do
   end do
+
+#ifdef EXPLICIT_INTEGRATOR22
+  do  i = xs,xe
+     f(1,i) = f(1,i) -( k(1)*x(1,i) - k(2)*x(2,i) - s(1))
+     f(2,i) = f(2,i) -(- k(1)*x(1,i) + k(2)*x(2,i) - s(2))
+  end do
+#endif
+
 end subroutine FormRHSFunctionLocal
 
 subroutine FormRHSFunction(ts,t,X,F,user,ierr)

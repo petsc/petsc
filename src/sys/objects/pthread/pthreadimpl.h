@@ -65,10 +65,10 @@ extern const char *const ThreadSynchronizationTypes[];
 
 $ THREADAFFINITYPOLICY_ALL - threads can run on any core.
 $ THREADAFFINITYPOLICY_ONECORE - threads can run on only one core
-
+$ THREADAFFINITYPOLICY_NONE - No affinity policy
    Level: developer
 */
-typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE} ThreadAffinityPolicyType;
+typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE,THREADAFFINITYPOLICY_NONE} ThreadAffinityPolicyType;
 extern const char *const ThreadAffinityPolicyTypes[];
 
 /* Base function pointers */
