@@ -187,6 +187,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
     ierr = PetscSNPrintf(optionname,sizeof optionname,"-pc_fieldsplit_%D_fields",i);CHKERRQ(ierr);
     ierr = PetscSNPrintf(optionname_col,sizeof optionname_col,"-pc_fieldsplit_%D_fields_col",i);CHKERRQ(ierr);
     nfields = jac->bs;
+    nfields_col = jac->bs;
     ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg);CHKERRQ(ierr);
     ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname_col,ifields_col,&nfields_col,&flg_col);CHKERRQ(ierr);
     if (!flg) break;
