@@ -82,9 +82,29 @@ void DoCoreAffinity(void)
 PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
 {
   PetscErrorCode ierr;
+  char           tstr[9];
+  char           tbuf[2];
+  PetscInt       i;
+  PetscBool      flg1;
 
   PetscFunctionBegin;
   if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
+
+  /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
+  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&ThreadCoreAffinity);CHKERRQ(ierr);
+  
+  strcpy(tstr,"-thread");
+  for(i=0;i<PetscMaxThreads;i++) {
+    ThreadCoreAffinity[i] = i+PetscMainThreadShareWork;
+    sprintf(tbuf,"%d",i);
+    strcat(tstr,tbuf);
+    ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
+    if(flg1) {
+      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
+      ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
+    }
+    tstr[7] = '\0';
+  }
 
   if(PetscThreadsSynchronizationInitialize) {
     ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
@@ -224,25 +244,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 #endif
   }
  
-  /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
-  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&ThreadCoreAffinity);CHKERRQ(ierr);
-  char tstr[9];
-  char tbuf[2];
-  PetscInt i;
-  
-  strcpy(tstr,"-thread");
-  for(i=0;i<PetscMaxThreads;i++) {
-    ThreadCoreAffinity[i] = i+PetscMainThreadShareWork;
-    sprintf(tbuf,"%d",i);
-    strcat(tstr,tbuf);
-    ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
-    if(flg1) {
-      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
-      ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
-    }
-    tstr[7] = '\0';
-  }
-
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread Options","Sys");CHKERRQ(ierr);
   /* Get thread affinity policy */
   ierr = PetscOptionsEnum("-thread_aff_policy","Type of thread affinity policy"," ",ThreadAffinityPolicyTypes,(PetscEnum)thread_aff_policy,(PetscEnum*)&thread_aff_policy,&flg1);CHKERRQ(ierr);
