@@ -40,7 +40,7 @@ class Configure(PETSc.package.NewPackage):
 
     cflags = self.setCompilers.getCompilerFlags()
     if self.setCompilers.isDarwin() or self.setCompilers.isPGI(self.framework.getCompiler()):
-      cflags += '-D__thread=\\"\\"'
+      cflags += '-D__thread=\'\''
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 
