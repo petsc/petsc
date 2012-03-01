@@ -17,7 +17,7 @@ void*          (*PetscThreadsWait)(void*) = NULL;
 PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
 
 const char *const ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
-const char *const ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
+const char *const ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","NONE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
 
 static ThreadAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
 
