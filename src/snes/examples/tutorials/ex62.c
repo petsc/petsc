@@ -1138,7 +1138,9 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
 }
 
 typedef struct {
-  Vec u; /* The base vector for the Jacbobian action J(u) x */
+  DM      dm;
+  Vec     u; /* The base vector for the Jacbobian action J(u) x */
+  AppCtx *user;
 } JacActionCtx;
 
 #undef __FUNCT__
@@ -1203,8 +1205,6 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   for(field = 0; field < numFields; ++field) {
     const PetscInt numQuadPoints = user->q[field].numQuadPoints;
     const PetscInt numBasisFuncs = user->q[field].numBasisFuncs;
-    void (*f0)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) = user->f0Funcs[field];
-    void (*f1)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) = user->f1Funcs[field];
     /* Conforming batches */
     PetscInt blockSize  = numBasisFuncs*numQuadPoints;
     PetscInt numBlocks  = 1;
@@ -1234,6 +1234,46 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
     }
   }
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobianAction"
+PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
+{
+  JacActionCtx    *ctx;
+  DM               dm;
+  Vec              localX, localY;
+  PetscInt         N, n;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  ierr = MatShellGetContext(J, &ctx);CHKERRQ(ierr);
+  dm = ctx->dm;
+
+  /* determine whether X = localX */
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localY);CHKERRQ(ierr);
+  ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
+
+  if (n != N){ /* X != localX */
+    ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  } else {
+    ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+    localX = X;
+  }
+  ierr = FormJacobianActionLocal(dm, J, localX, localY, ctx->user);CHKERRQ(ierr);
+  if (n != N){
+    ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  }
+  ierr = DMLocalToGlobalBegin(dm, localY, ADD_VALUES, Y);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localY, ADD_VALUES, Y);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1440,7 +1480,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
 
 .seealso: FormFunctionLocal()
 */
-PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
 {
   const PetscInt debug = user->debug;
   const PetscInt dim   = user->dim;
@@ -1452,7 +1492,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
+  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
@@ -1499,20 +1539,20 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   }
   for(c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
-    ierr = DMComplexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, Jac, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMComplexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemMat);CHKERRQ(ierr);
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
 
   /* Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd(). */
-  ierr = MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (user->showJacobian) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Jacobian:\n");CHKERRQ(ierr);
-    ierr = MatChop(Jac, 1.0e-10);CHKERRQ(ierr);
-    ierr = MatView(Jac, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatChop(JacP, 1.0e-10);CHKERRQ(ierr);
+    ierr = MatView(JacP, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1545,7 +1585,23 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
-  A    = J;
+  {
+    PetscBool flag;
+    ierr = PetscOptionsHasName(PETSC_NULL, "-jacobian_action", &flag);CHKERRQ(ierr);
+    if (flag) {
+      PetscInt M, m, N, n;
+
+      ierr = MatGetSize(J, &M, &N);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(J, &m, &n);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A, m, n, M, N);CHKERRQ(ierr);
+      ierr = MatSetType(A, MATSHELL);CHKERRQ(ierr);
+      ierr = MatSetUp(A);CHKERRQ(ierr);
+      ierr = MatShellSetOperation(A, MATOP_MULT, (void (*)(void)) FormJacobianAction);CHKERRQ(ierr);
+    } else {
+      A = J;
+    }
+  }
   ierr = SNESSetJacobian(snes, A, J, SNESDMComplexComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);

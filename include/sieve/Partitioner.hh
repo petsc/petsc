@@ -547,6 +547,24 @@ namespace ALE {
         return false;
       };
     };
+    template<typename Mesh>
+    class SimpleFaceRecognizer {
+    protected:
+      int dim;
+    public:
+      SimpleFaceRecognizer(Mesh& mesh, const int debug = 0) {
+        if (mesh.depth() != 1) {throw ALE::Exception("Only works for depth 1 meshes");}
+        this->dim = mesh.getDimension();
+      };
+      ~SimpleFaceRecognizer() {};
+    public:
+      bool operator()(point_type cellA, point_type cellB, int meetSize) {
+        if (meetSize >= dim) {
+          return true;
+        }
+        return false;
+      };
+    };
     template<typename Sieve, typename Manager, typename Recognizer>
     class MeetVisitor {
     public:
@@ -911,9 +929,9 @@ namespace ALE {
         }
         offset = aV.getOffset();
       } else if (mesh->depth() == 1) {
-        typedef MeetVisitor<typename Mesh::sieve_type, MeshManager<Mesh>, FaceRecognizer<Mesh> > mv_type;
+        typedef MeetVisitor<typename Mesh::sieve_type, MeshManager<Mesh>, SimpleFaceRecognizer<Mesh> > mv_type;
         typedef typename ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, mv_type>       sv_type;
-        FaceRecognizer<Mesh> faceRecognizer(*mesh);
+        SimpleFaceRecognizer<Mesh> faceRecognizer(*mesh);
 
         mv_type mV(*sieve, manager, faceRecognizer, numCells);
         sv_type sV(*sieve, mV);

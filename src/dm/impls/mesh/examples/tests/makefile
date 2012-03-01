@@ -17,6 +17,10 @@ ex3: ex3.o chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
 	${RM} -f ex3.o
 
+ex4: ex4.o chkopts
+	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
+	${RM} -f ex4.o
+
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}
 	${RM} -f ex00.o

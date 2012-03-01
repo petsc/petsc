@@ -39,7 +39,12 @@ int main(int argc, char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatXAIJSetPreallocation(A,1,3,PETSC_NULL,2,PETSC_NULL,2,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,3,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,1,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,1,3,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A,1,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,1,2,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);

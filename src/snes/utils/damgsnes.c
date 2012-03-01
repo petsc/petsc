@@ -463,7 +463,7 @@ PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
 PetscErrorCode SNESDMComplexComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
 {
   DM               dm = *(DM*) ptr;
-  PetscErrorCode (*lj)(DM, Vec, Mat, void *);
+  PetscErrorCode (*lj)(DM, Vec, Mat, Mat, void *);
   Vec              localX;
   PetscErrorCode   ierr;
 
@@ -472,7 +472,7 @@ PetscErrorCode SNESDMComplexComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, Ma
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMComplexGetLocalJacobian(dm, &lj);CHKERRQ(ierr);
-  ierr = (*lj)(dm, localX, *B, ptr);CHKERRQ(ierr);
+  ierr = (*lj)(dm, localX, *J, *B, ptr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
