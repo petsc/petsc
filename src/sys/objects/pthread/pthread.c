@@ -62,6 +62,8 @@ void DoCoreAffinity(void)
     for(i=0;i<N_CORES;i++) CPU_SET(i,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
+  case THREADAFFINITYPOLICY_NONE:
+    break;
   }
 }
 #endif
