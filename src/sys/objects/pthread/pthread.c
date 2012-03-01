@@ -128,11 +128,12 @@ PetscErrorCode PetscThreadsFinalize(void)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
   if(!PetscThreadsInitializeCalled) PetscFunctionReturn(0);
+
   if (PetscThreadsSynchronizationFinalize) {
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
+  ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
   PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
