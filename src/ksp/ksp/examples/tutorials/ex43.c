@@ -1495,8 +1495,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     const PetscInt ufields[] = {0,1},pfields[1] = {2};
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
     ierr = PCFieldSplitSetBlockSize(pc,3);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetFields(pc,"u",2,ufields);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetFields(pc,"p",1,pfields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"u",2,ufields,ufields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"p",1,pfields,pfields);CHKERRQ(ierr);
   }
 
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
