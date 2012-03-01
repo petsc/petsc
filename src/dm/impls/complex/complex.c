@@ -4629,7 +4629,7 @@ PetscErrorCode DMComplexSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, Vec, Ve
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetLocalJacobian"
-PetscErrorCode DMComplexGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, void *))
+PetscErrorCode DMComplexGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, Mat, void *))
 {
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
@@ -4641,7 +4641,7 @@ PetscErrorCode DMComplexGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, M
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexSetLocalJacobian"
-PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat, void *))
+PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat,  Mat, void *))
 {
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
