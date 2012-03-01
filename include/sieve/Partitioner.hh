@@ -549,6 +549,8 @@ namespace ALE {
     };
     template<typename Mesh>
     class SimpleFaceRecognizer {
+    public:
+      typedef typename Mesh::point_type point_type;
     protected:
       int dim;
     public:
