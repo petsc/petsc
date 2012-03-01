@@ -724,7 +724,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     }
   }
   /* Set matrix pattern */
-  ierr = MatXAIJSetPreallocation(A, bs, 0, dnz, 0, onz, 0, dnzu, 0, onzu);CHKERRQ(ierr);
+  ierr = MatXAIJSetPreallocation(A, bs, dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   /* Fill matrix with zeros */
   if (fillMatrix) {

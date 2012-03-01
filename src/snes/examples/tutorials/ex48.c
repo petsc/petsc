@@ -1337,7 +1337,12 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,M
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatXAIJSetPreallocation(A,2,3,PETSC_NULL,0,PETSC_NULL,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,3*2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,3*2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,2,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,2,3,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A,2,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,2,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
