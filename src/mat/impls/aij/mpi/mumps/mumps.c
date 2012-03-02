@@ -636,13 +636,11 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_MUMPS       *lu =(Mat_MUMPS*)(F)->spptr;
   PetscErrorCode  ierr;
-  MatReuse        reuse;
   Mat             F_diag; 
   PetscBool       isMPIAIJ;
 
   PetscFunctionBegin;
-  reuse = MAT_REUSE_MATRIX;
-  ierr = (*lu->ConvertToTriples)(A, 1, reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*lu->ConvertToTriples)(A, 1, MAT_REUSE_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
 
   /* numerical factorization phase */
   /*-------------------------------*/
@@ -825,7 +823,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 {
   Mat_MUMPS          *lu = (Mat_MUMPS*)F->spptr;
   PetscErrorCode     ierr;
-  MatReuse           reuse;
   Vec                b;
   IS                 is_iden;
   const PetscInt     M = A->rmap->N;
@@ -836,8 +833,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
  
-  reuse = MAT_INITIAL_MATRIX;
-  ierr = (*lu->ConvertToTriples)(A, 1, reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*lu->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/  
@@ -916,7 +912,6 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
 
   Mat_MUMPS       *lu = (Mat_MUMPS*)F->spptr;
   PetscErrorCode  ierr;
-  MatReuse        reuse;
   Vec             b;
   IS              is_iden;
   const PetscInt  M = A->rmap->N;
@@ -927,8 +922,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
-  reuse = MAT_INITIAL_MATRIX;
-  ierr = (*lu->ConvertToTriples)(A, 1, reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*lu->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/  
@@ -994,7 +988,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 {
   Mat_MUMPS          *lu = (Mat_MUMPS*)F->spptr;
   PetscErrorCode     ierr;
-  MatReuse           reuse;
   Vec                b;
   IS                 is_iden;
   const PetscInt     M = A->rmap->N;
@@ -1005,8 +998,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
-  reuse = MAT_INITIAL_MATRIX;
-  ierr = (*lu->ConvertToTriples)(A, 1 , reuse, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*lu->ConvertToTriples)(A, 1 , MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/  
