@@ -140,6 +140,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   Mat_SeqSBAIJ     *aa=(Mat_SeqSBAIJ*)A->data;
 
   PetscFunctionBegin;
+  *v = aa->a;
   if (reuse == MAT_INITIAL_MATRIX){ 
     nz = aa->nz;ai=aa->i; aj=aa->j;*v=aa->a;
     *nnz = nz;
