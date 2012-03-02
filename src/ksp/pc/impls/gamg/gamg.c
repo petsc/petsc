@@ -146,7 +146,7 @@ PetscErrorCode createLevel( const PC pc,
 	  if( o_nnz[jj] > (neq/cbs-ncrs0) ) o_nnz[jj] = neq/cbs-ncrs0;
 	}
 	
-	ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
+	ierr = MatCreateAIJ( wcomm, ncrs0, ncrs0,
 				PETSC_DETERMINE, PETSC_DETERMINE,
 				0, d_nnz, 0, o_nnz,
 				&tMat );

@@ -79,7 +79,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
    Output Parameters:
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
-   Notes: see the manual page for MatCreateMPIAIJ() for more information on the "diagonal part" of the matrix.
+   Notes: see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
 
    Level: advanced
 
@@ -6726,7 +6726,7 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ()
 @*/
 PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 {
@@ -6760,7 +6760,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatGetBlockSize()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
 @*/
 PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
 {

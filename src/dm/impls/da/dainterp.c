@@ -1341,7 +1341,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateMPIAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+  ierr = MatCreateAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
 			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */

@@ -973,7 +973,7 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
   ierr = ISRestoreIndices( llist_parent, &llist_idx );     CHKERRQ(ierr);
 
   /* create prolongator, create P matrix */
-  ierr = MatCreateMPIAIJ( wcomm, 
+  ierr = MatCreateAIJ( wcomm, 
                           nloc*bs, nLocalSelected*col_bs,
                           PETSC_DETERMINE, PETSC_DETERMINE,
                           data_cols, PETSC_NULL, data_cols, PETSC_NULL,

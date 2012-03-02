@@ -104,10 +104,10 @@ int main(int argc,char **args)
     /* create stiffness matrix */
     if( strcmp(type, PCPROMETHEUS) == 0 ){
       /* prometheus needs BAIJ */
-      ierr = MatCreateMPIBAIJ(wcomm,3,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatCreateBAIJ(wcomm,3,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
     }
     else {
-      ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(wcomm,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
       ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
     }
     ierr = PetscFree( d_nnz );  CHKERRQ(ierr);

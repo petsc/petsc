@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
 
   /* create linear solver */

@@ -3283,7 +3283,7 @@ PetscErrorCode  MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,
       onz[dof*i+j] = OAIJ->ilen[i];
     }
   }
-  ierr = MatCreateMPIAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);

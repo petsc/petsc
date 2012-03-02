@@ -64,11 +64,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
     if (bs <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m = mbs*bs;
-    if (size == 1){
-      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,m,d_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
-    } else {
-      ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
-    }
+    ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
     for (block=0; block<mbs; block++){
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;

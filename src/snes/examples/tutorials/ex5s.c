@@ -192,8 +192,7 @@ int main(int argc,char **argv)
      DMDA examples we must use the DMDA numbering where each processor is assigned a
      chunk of data.
   */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,
-                         N,5,0,0,0,&J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,N,5,0,0,0,&J);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     rj = i % user.mx;         /* column in grid */
     ri = i / user.mx;         /* row in grid */

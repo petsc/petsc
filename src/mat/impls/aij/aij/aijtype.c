@@ -18,7 +18,7 @@
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
+.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
 M*/
 
 /*MC

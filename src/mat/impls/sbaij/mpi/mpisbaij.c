@@ -1974,7 +1974,7 @@ M*/
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ()
 @*/
 PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -1989,9 +1989,9 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateMPISBAIJ"
+#define __FUNCT__ "MatCreateSBAIJ"
 /*@C
-   MatCreateMPISBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format
+   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format
    (block compressed row).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters 
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -2090,10 +2090,10 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ()
 @*/
 
-PetscErrorCode  MatCreateMPISBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode  MatCreateSBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2803,7 +2803,7 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithSplitArrays()
+          MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
@@ -2842,7 +2842,7 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/
 PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {

@@ -932,7 +932,7 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
           to eliminate the global reduction in the VecAssemblyXXXX() if you know
           that you have only used VecSetValues() to set local elements
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
-          in ix in calls to VecSetValues or VecGetValues. These rows are simply
+          in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
 
    Level: intermediate

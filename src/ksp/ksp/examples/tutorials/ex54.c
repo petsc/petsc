@@ -39,9 +39,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
   M = (ne+1)*(ne+1); /* global number of nodes */
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
+  ierr = MatCreateAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
                          18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
+  ierr = MatCreateAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
                          18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   m = Iend-Istart;

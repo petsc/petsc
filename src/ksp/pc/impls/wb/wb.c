@@ -246,7 +246,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
@@ -516,7 +516,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }

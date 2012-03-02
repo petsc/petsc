@@ -374,7 +374,7 @@ EXTERN_C_END
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 */
 PetscErrorCode  MatCreateSeqAIJPThread(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nthreads,PetscInt nz,const PetscInt nnz[],Mat *A)

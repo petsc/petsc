@@ -1706,7 +1706,7 @@ EXTERN_C_END
 
    Level: intermediate
 
-.seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE, PCFactorSetSolverPackage(), MatSolverPackage
+.seealso: MatCreateDense(), MATDENSE, MATSEQDENSE, PCFactorSetSolverPackage(), MatSolverPackage
 
 M*/
 
@@ -1817,9 +1817,9 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateMPIDense"
+#define __FUNCT__ "MatCreateDense"
 /*@C
-   MatCreateMPIDense - Creates a parallel matrix in dense format.
+   MatCreateDense - Creates a parallel matrix in dense format.
 
    Collective on MPI_Comm
 
@@ -1852,7 +1852,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-PetscErrorCode  MatCreateMPIDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
+PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

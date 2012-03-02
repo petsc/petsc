@@ -137,7 +137,7 @@ int main( int argc, char **argv )
     ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRA(ierr);
     ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
     ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J);CHKERRA(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J);CHKERRA(ierr);
   }
 
   /* Create nonlinear solver */
@@ -837,7 +837,7 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   ierr = VecGetLocalSize(g_c->x,&m_c_local);CHKERRQ(ierr);
   ierr = VecGetSize(g_f->x,&m_f);CHKERRQ(ierr);
   ierr = VecGetSize(g_c->x,&m_c);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_f_local,m_c_local,m_f,m_c,5,0,3,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,m_f_local,m_c_local,m_f,m_c,5,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( j=j_start; j<j_start+n; j++ ) {

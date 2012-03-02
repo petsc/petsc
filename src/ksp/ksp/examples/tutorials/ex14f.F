@@ -159,7 +159,7 @@
 !     for preallocating matrix memory.
 !  
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateMPIAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
+      call MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
      &     PETSC_NULL_INTEGER,B,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

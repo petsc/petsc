@@ -2051,7 +2051,7 @@ EXTERN_C_END
    If the nnz parameter is given then the nz parameter is ignored
 
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateSBAIJ()
 @*/
 PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[]) 
 {
@@ -2108,7 +2108,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
 
    If the nnz parameter is given then the nz parameter is ignored
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateSBAIJ()
 @*/
 PetscErrorCode  MatCreateSeqSBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
@@ -2421,7 +2421,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
        When block size is greater than 1 the matrix values must be stored using the SBAIJ storage format (see the SBAIJ code to determine this). For block size of 1
        it is the regular CSR format excluding the lower triangular elements.
 
-.seealso: MatCreate(), MatCreateMPISBAIJ(), MatCreateSeqSBAIJ()
+.seealso: MatCreate(), MatCreateSBAIJ(), MatCreateSeqSBAIJ()
 
 @*/
 PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)

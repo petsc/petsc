@@ -137,7 +137,7 @@ c      call flush(6)
       call VecDuplicate(x,U,ierr)
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
-      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
+      call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
      &     N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr)
 
       call MatGetType(J,matrixname,ierr)

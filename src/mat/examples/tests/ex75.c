@@ -105,7 +105,7 @@ int main(int argc,char **args)
   ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   */
   /* Assemble MPIBAIJ matrix A */
-  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRQ(ierr);
 
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */

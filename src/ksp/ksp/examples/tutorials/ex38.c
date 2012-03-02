@@ -72,7 +72,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, PETSC_NULL, PETSC_DECIDE, PETSC_NULL, mat);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, PETSC_NULL, PETSC_DECIDE, PETSC_NULL, mat);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {

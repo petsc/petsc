@@ -1105,7 +1105,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex43.PETSc runex43 runex43_2 runex43_3 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm\
-                                 ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm\
+                                 ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \

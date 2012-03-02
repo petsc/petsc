@@ -2062,7 +2062,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 
 .keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
+.seealso: MatCreate(), MatCreateDense(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
 {
@@ -2096,7 +2096,7 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
 
 .keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreate(), MatCreateMPIDense(), MatSetValues(), MatSeqDenseSetLDA()
+.seealso: MatCreate(), MatCreateDense(), MatSetValues(), MatSeqDenseSetLDA()
 
 @*/
 PetscErrorCode  MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
