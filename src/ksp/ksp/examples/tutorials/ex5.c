@@ -36,6 +36,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
   PetscBool      mat_nonsymmetric = PETSC_FALSE;
+  PetscBool      testnewC = PETSC_FALSE;
 #if defined (PETSC_USE_LOG)
   PetscLogStage  stages[2];
 #endif
@@ -177,12 +178,11 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
-
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* 
@@ -248,6 +248,18 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-test_newMat",&testnewC,PETSC_NULL);CHKERRQ(ierr);
+  if (testnewC) {
+    /* 
+     User may use a new matrix C with same nonzero pattern, e.g.
+      ./ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_package mumps -test_newMat
+    */
+    Mat Ctmp;
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&Ctmp);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr); 
+    ierr = MatDuplicate(Ctmp,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ctmp);CHKERRQ(ierr);
+  }
   /* 
      Compute another right-hand-side vector
   */

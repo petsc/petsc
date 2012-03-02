@@ -286,14 +286,14 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A )
 {
   PetscErrorCode ierr;
-  DM             da,red;
-  PetscInt       m,M,dof;
+  Vec            t;
+  PetscInt       m;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
-  ierr = DMRedundantGetSize(red,PETSC_NULL,&m);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatCreateMFFD(PETSC_COMM_WORLD,m+M*dof,m+M*dof,PETSC_DETERMINE,PETSC_DETERMINE,A);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(packer,&t);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(t,&m);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(packer,&t);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(PETSC_COMM_WORLD,m,m,PETSC_DETERMINE,PETSC_DETERMINE,A);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*, Vec,Vec))DMComputeFunction,packer);CHKERRQ(ierr);
   ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

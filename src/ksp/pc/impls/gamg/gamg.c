@@ -431,7 +431,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscMPIInt      mype,npe,nactivepe;
   Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];
   PetscReal        emaxs[GAMG_MAXLEVELS];
-  PetscLogDouble   nnz0,nnztot;
+  PetscLogDouble   nnz0=0,nnztot=0;
   MatInfo          info;
  
   PetscFunctionBegin;

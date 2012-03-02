@@ -1100,7 +1100,9 @@ PetscErrorCode  MatDestroy(Mat *A)
 PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_USE_DEBUG)
   PetscInt i,j;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
