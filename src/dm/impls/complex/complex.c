@@ -1947,7 +1947,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   SieveLabel     next = mesh->labels;
   PetscInt      *values;
-  PetscInt       size, i = 0;
+  PetscInt       size=-1, i = 0;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -3347,7 +3347,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
     if (interpolate) {
       DM        imesh;
       PetscInt *off;
-      PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
+      PetscInt  firstEdge = numCells+numVertices, numEdges=-1, edge, e;
 
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
