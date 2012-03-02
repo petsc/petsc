@@ -2403,8 +2403,8 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     if (!sizesset) {
     ierr = MatSetSizes(newmat,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(newmat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(newmat,bs,0,dlens,0,odlens);CHKERRQ(ierr);
+  ierr = MatSetOption(newmat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
   
   if (!rank) {
     ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
