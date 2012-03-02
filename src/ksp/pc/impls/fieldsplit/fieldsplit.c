@@ -341,7 +341,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
-  PetscBool         sorted;
+  PetscBool         sorted, sorted_col;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -362,22 +362,28 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
         ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&ilink->is);CHKERRQ(ierr);
+        ierr = ISDuplicate(ilink->is,&ilink->is_col);CHKERRQ(ierr);
       } else if (!ilink->is) {
         if (ilink->nfields > 1) {
-          PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
+          PetscInt   *ii,*jj,j,k,nfields = ilink->nfields,*fields = ilink->fields,*fields_col = ilink->fields_col;
           ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+          ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&jj);CHKERRQ(ierr);
           for (j=0; j<nslots; j++) {
             for (k=0; k<nfields; k++) {
               ii[nfields*j + k] = rstart + bs*j + fields[k];
+              jj[nfields*j + k] = rstart + bs*j + fields_col[k];
             }
           }
           ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);       
+          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,jj,PETSC_OWN_POINTER,&ilink->is_col);CHKERRQ(ierr);
         } else { 
-          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
-        }
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr); 
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields_col[0],bs,&ilink->is_col);CHKERRQ(ierr);
+       }
       } 
       ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
-      if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
+      if (ilink->is_col) { ierr = ISSorted(ilink->is_col,&sorted_col);CHKERRQ(ierr); }
+      if (!sorted || !sorted_col) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
       ilink = ilink->next;
     }
   }
@@ -386,12 +392,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (!jac->pmat) {
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -400,12 +406,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!jac->mat) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -789,6 +795,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
     ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
+    if (ilink->is_col) { ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr); }
     next = ilink->next;
     ilink = next;
   }
@@ -999,6 +1006,7 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
     ierr = PetscSNPrintf(ilink->splitname,2,"%s",jac->nsplits);CHKERRQ(ierr);
   }
   ilink->is      = is;
+  ilink->is_col  = is;
   ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
