@@ -105,6 +105,7 @@ def check(args):
     # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
     rebuildTest = True
     for testnum, param in enumerate(params):
+      if not args.testnum is None and testnum != args.testnum: continue
       if 'setup' in param:
         print(param['setup'])
         os.system('python '+param['setup'])
@@ -183,6 +184,7 @@ if __name__ == '__main__':
   parser_check.add_argument('files', nargs='*', help='Extra examples to test')
   parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
+  parser_check.add_argument('--testnum', type=int, help='The test number to execute')
   parser_check.set_defaults(func=check)
   parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
   parser_clean.set_defaults(func=clean)
