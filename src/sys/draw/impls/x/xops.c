@@ -551,7 +551,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawSave_X(PetscDraw);
+PetscErrorCode PetscDrawSave_X(PetscDraw,PetscViewer);
 PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char*);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
