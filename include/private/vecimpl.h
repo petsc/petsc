@@ -19,9 +19,8 @@ S*/
 typedef struct _n_PetscThreadsLayout* PetscThreadsLayout;
 struct _n_PetscThreadsLayout{
   PetscInt nthreads;        /* Number of threads used for vector/matrix operations */
-  PetscInt *n;              /* local size of each thread */
-  PetscInt N;               /* the global size  */
-  PetscInt *rstart,*rend;   /* local start,end for each thread */
+  PetscInt N;               /* global size =sum(local sizes of all threads)  */
+  PetscInt *trstarts;       /* local start,end for each thread */
   PetscInt *affinity;       /* Core affinity of each thread */
 };
 

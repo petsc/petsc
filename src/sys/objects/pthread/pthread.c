@@ -242,10 +242,8 @@ PetscErrorCode PetscThreadsLayoutCreate(PetscThreadsLayout *tmap)
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_PetscThreadsLayout,tmap);CHKERRQ(ierr);
   (*tmap)->nthreads = -1;
-  (*tmap)->n        =  0;
   (*tmap)->N        = -1;
-  (*tmap)->rstart   =  0;
-  (*tmap)->rend     =  0;
+  (*tmap)->trstarts =  0;
   (*tmap)->affinity =  0;
   PetscFunctionReturn(0);
 }
@@ -272,8 +270,7 @@ PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout *tmap)
   
   PetscFunctionBegin;
   if(!*tmap) PetscFunctionReturn(0);
-  ierr = PetscFree((*tmap)->n);CHKERRQ(ierr);
-  ierr = PetscFree2((*tmap)->rstart,(*tmap)->rend);CHKERRQ(ierr);
+  ierr = PetscFree((*tmap)->trstarts);CHKERRQ(ierr);
   ierr = PetscFree((*tmap)->affinity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -303,24 +300,23 @@ PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout *tmap)
 PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout tmap)
 {
   PetscErrorCode     ierr;
-  PetscInt           t,rstart=0,Q,R;
+  PetscInt           t,rstart=0,n,Q,R;
   PetscBool          S;
   
   PetscFunctionBegin;
   if(!tmap->nthreads) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Number of threads not set yet");
-  if((tmap->n) && (tmap->N >= 0) && (tmap->rstart)) PetscFunctionReturn(0);
-  ierr = PetscMalloc(tmap->nthreads*sizeof(PetscInt),&tmap->n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(tmap->nthreads,PetscInt,&tmap->rstart,tmap->nthreads,PetscInt,&tmap->rend);CHKERRQ(ierr);
+  if((tmap->N >= 0) && (tmap->trstarts)) PetscFunctionReturn(0);
+  ierr = PetscMalloc((tmap->nthreads+1)*sizeof(PetscInt),&tmap->trstarts);CHKERRQ(ierr);
 
   Q = tmap->N/tmap->nthreads;
   R = tmap->N - Q*tmap->nthreads;
   for(t=0;t < tmap->nthreads;t++) {
-    tmap->rstart[t] = rstart;
+    tmap->trstarts[t] = rstart;
     S               = (PetscBool)(t<R);
-    tmap->n[t]      = S?Q+1:Q;
-    tmap->rend[t]   = tmap->rstart[t] + tmap->n[t];
-    rstart += tmap->n[t];
+    n               = S?Q+1:Q;
+    rstart         += n;
   }
+  tmap->trstarts[tmap->nthreads] = rstart;
   PetscFunctionReturn(0);
 }
  
@@ -353,12 +349,9 @@ PetscErrorCode PetscThreadsLayoutDuplicate(PetscThreadsLayout in,PetscThreadsLay
   ierr = PetscThreadsLayoutDestroy(out);CHKERRQ(ierr);
   ierr = PetscThreadsLayoutCreate(out);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscThreadsLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc(in->nthreads*sizeof(PetscInt),&(*out)->n);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*out)->n,in->n,in->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(in->nthreads,PetscInt,&(*out)->rstart,in->nthreads,PetscInt,&(*out)->rend);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*out)->rstart,in->rstart,in->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy((*out)->rend,in->rend,in->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(in->nthreads*sizeof(PetscInt),&(*out)->trstarts);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*out)->trstarts,in->trstarts,in->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
   
   ierr = PetscMalloc(in->nthreads*sizeof(PetscInt),&(*out)->affinity);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->affinity,in->affinity,in->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
@@ -383,9 +376,13 @@ PetscErrorCode PetscThreadsLayoutDuplicate(PetscThreadsLayout in,PetscThreadsLay
 PetscErrorCode PetscThreadsLayoutSetLocalSizes(PetscThreadsLayout tmap,PetscInt n[])
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(tmap->n,n,tmap->nthreads*sizeof(PetscInt));CHKERRQ(ierr);
+  if(!tmap->nthreads) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Number of threads not set yet");
+  ierr = PetscMalloc((tmap->nthreads+1)*sizeof(PetscInt),&tmap->trstarts);CHKERRQ(ierr);
+  tmap->trstarts[0] = 0;
+  for(i=1;i < tmap->nthreads+1;i++) tmap->trstarts[i] += n[i-1];
   PetscFunctionReturn(0);
 }
 
@@ -398,23 +395,25 @@ PetscErrorCode PetscThreadsLayoutSetLocalSizes(PetscThreadsLayout tmap,PetscInt 
 .    map - pointer to the map
 
    Output Parameters:
-.    n - local size
+.    n - array to hold the local sizes (must be allocated)
 
    Level: developer
 
 .seealso: PetscThreadsLayoutCreate(), PetscThreadsLayoutDestroy(), PetscThreadsLayoutSetLocalSizes()
 */
-PetscErrorCode PetscThreadsLayoutGetLocalSizes(PetscThreadsLayout tmap,const PetscInt *n[])
+PetscErrorCode PetscThreadsLayoutGetLocalSizes(PetscThreadsLayout tmap,PetscInt *n[])
 {
+  PetscInt i;
+  PetscInt *tn=*n;
   PetscFunctionBegin;
-  *n = tmap->n;
+  for(i=0;i < tmap->nthreads;i++) tn[i] = tmap->trstarts[i+1] - tmap->trstarts[i];
   PetscFunctionReturn(0);
 }
   
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsLayoutSetSize"
 /*
-     PetscThreadsLayoutSetLocalSizes - Sets the global size for PetscThreadsLayout object
+     PetscThreadsLayoutSetSize - Sets the global size for PetscThreadsLayout object
 
    Input Parameters:
 +    map - pointer to the map
