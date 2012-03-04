@@ -193,11 +193,13 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   }
   ierr = VecCopy(Y, D);CHKERRQ(ierr);
 
+  /* scale the initial update */
   if (qn->scalingtype == SNES_QN_JACOBIANSCALE) {
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
   }
 
   for(i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
+    ierr = LBGFSApplyJinv_Private(snes, i_r, D, Y);CHKERRQ(ierr);
     /* line search for lambda */
     ynorm = 1; gnorm = fnorm;
     ierr = VecCopy(D, Dold);CHKERRQ(ierr);
@@ -281,7 +283,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       if (qn->scalingtype == SNES_QN_JACOBIANSCALE) {
         ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
       }
-      ierr = VecCopy(D, Y);CHKERRQ(ierr);
     } else {
       /* set the differences */
       k = i_r % m;
@@ -301,10 +302,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       if (snes->ops->update) {
         ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
       }
-      /* apply the current iteration of the approximate jacobian in order to get the next search direction*/
-      ierr = LBGFSApplyJinv_Private(snes, i_r+1, D, Y);CHKERRQ(ierr);
     }
-}
+  }
   if (i == snes->max_its) {
     ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", snes->max_its);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
