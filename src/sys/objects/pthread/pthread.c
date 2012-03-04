@@ -339,8 +339,7 @@ PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout tmap)
     Notes: PetscThreadsLayoutSetUp() does not need to be called on the resulting PetscThreadsLayout
 
 .seealso: PetscThreadsLayoutCreate(), PetscThreadsLayoutDestroy(), PetscThreadsLayoutSetUp()
-*/
-
+@*/
 PetscErrorCode PetscThreadsLayoutDuplicate(PetscThreadsLayout in,PetscThreadsLayout *out)
 {
   PetscErrorCode ierr;
