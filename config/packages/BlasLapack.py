@@ -568,11 +568,11 @@ class Configure(config.package.Package):
       self.framework.addBatchLib(self.blasLibrary)
       self.framework.addBatchBody(['{',
                                    'typedef struct{double re; double im;} mycomplex;',
-                                   'extern mycomplex %s(mycomplex *, int *, mycomplex *, int *, mycomplex *, int*);',
+                                   'extern mycomplex %s(mycomplex *, int *, mycomplex *, int *, mycomplex *, int*);' % routine,
                                    'mycomplex x = {2.0, 2.0};',
                                    'mycomplex z = {0.0, 0.0};',
                                    'int one = 1;',
-                                   '%s(&z, &one,&x,&one,&x,&one);' % (routine, routine),
+                                   '%s(&z, &one,&x,&one,&x,&one);' % routine,
                                    'fprintf(output, " \'--known-complex-dot-arg=%d\',\\n", (fabs(z.re*z.re + z.im*z.im - 16.0) < 1.0e-8));',
                                    '}'])
       self.complexDotArg = 1 # Dummy value
