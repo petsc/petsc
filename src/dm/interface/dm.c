@@ -1058,6 +1058,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
   link->coarsenhook = coarsenhook;
   link->restricthook = restricthook;
   link->ctx = ctx;
+  link->next = PETSC_NULL;
   *p = link;
   PetscFunctionReturn(0);
 }

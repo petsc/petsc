@@ -214,11 +214,14 @@ PetscErrorCode SNESFASSetGS(SNES snes, PetscErrorCode (*gsfunc)(SNES,Vec,Vec,voi
     ierr = SNESSetGS(snes, gsfunc, ctx);CHKERRQ(ierr);
     /* push the provided GS up the tree */
     if (fas->next) ierr = SNESFASSetGS(fas->next, gsfunc, ctx, use_gs);CHKERRQ(ierr);
-  } else if (snes->ops->computegs) {
-    /* assume that the user has set the GS solver at this level */
-    if (fas->next) ierr = SNESFASSetGS(fas->next, PETSC_NULL, PETSC_NULL, use_gs);CHKERRQ(ierr);
-  } else if (use_gs) {
-    SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "No user Gauss-Seidel function provided in SNESFASSetGS on level %D", fas->level);
+  } else {
+    ierr = SNESGetGS(snes,&gsfunc,&ctx);CHKERRQ(ierr);
+    if (gsfunc) {
+      /* assume that the user has set the GS solver at this level */
+      if (fas->next) ierr = SNESFASSetGS(fas->next, PETSC_NULL, PETSC_NULL, use_gs);CHKERRQ(ierr);
+    } else if (use_gs) {
+      SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONG, "No user Gauss-Seidel function provided in SNESFASSetGS on level %D", fas->level);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -720,16 +723,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
  if (fas->next) {
     if (fas->galerkin) {
       ierr = SNESSetFunction(fas->next, PETSC_NULL, SNESFASGalerkinDefaultFunction, fas->next);CHKERRQ(ierr);
-    } else {
-      if (snes->ops->computefunction && !fas->next->ops->computefunction) {
-        ierr = SNESSetFunction(fas->next, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
-      }
-      if (snes->ops->computejacobian && !fas->next->ops->computejacobian) {
-        ierr = SNESSetJacobian(fas->next, fas->next->jacobian, fas->next->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
-      }
-      if (snes->ops->computegs && !fas->next->ops->computegs) {
-        ierr = SNESSetGS(fas->next, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
-      }
     }
   }
 
@@ -740,40 +733,15 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
   }
 
-  /* setup the pre and post smoothers and set their function, jacobian, and gs evaluation routines if the user has neglected this */
-  if (fas->upsmooth) {
-    if (snes->ops->computefunction && !fas->upsmooth->ops->computefunction) {
-      ierr = SNESSetFunction(fas->upsmooth, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
-    }
-    if (snes->ops->computejacobian && !fas->upsmooth->ops->computejacobian) {
-      ierr = SNESSetJacobian(fas->upsmooth, fas->upsmooth->jacobian, fas->upsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
-    }
-    if (snes->ops->computegs && !fas->upsmooth->ops->computegs) {
-      ierr = SNESSetGS(fas->upsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
-    }
-    ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);
-  }
-  if (fas->downsmooth) {
-    if (snes->ops->computefunction && !fas->downsmooth->ops->computefunction) {
-      ierr = SNESSetFunction(fas->downsmooth, PETSC_NULL, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
-    }
-    if (snes->ops->computejacobian && !fas->downsmooth->ops->computejacobian) {
-      ierr = SNESSetJacobian(fas->downsmooth, fas->downsmooth->jacobian, fas->downsmooth->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
-    }
-    if (snes->ops->computegs && !fas->downsmooth->ops->computegs) {
-     ierr = SNESSetGS(fas->downsmooth, snes->ops->computegs, snes->gsP);CHKERRQ(ierr);
-    }
-    ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);
-  }
+  /* setup the pre and post smoothers */
+  if (fas->upsmooth) {ierr = SNESSetFromOptions(fas->upsmooth);CHKERRQ(ierr);}
+  if (fas->downsmooth) {ierr = SNESSetFromOptions(fas->downsmooth);CHKERRQ(ierr);}
 
   /* setup FAS work vectors */
   if (fas->galerkin) {
     ierr = VecDuplicate(snes->vec_sol, &fas->Xg);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &fas->Fg);CHKERRQ(ierr);
   }
-
-
-  /* got to set them all up at once */
   PetscFunctionReturn(0);
 }
 

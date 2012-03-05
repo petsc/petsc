@@ -4,6 +4,7 @@
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
 #include "petscksp.h"
+#include "petscdmda.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
@@ -441,6 +442,17 @@ extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
 extern PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 extern PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
+
+extern PetscErrorCode SNESSetUpMatrices(SNES);
+extern PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
+extern PetscErrorCode DMSNESGetFunction(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
+extern PetscErrorCode DMSNESSetGS(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
+extern PetscErrorCode DMSNESGetGS(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
+extern PetscErrorCode DMSNESSetJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
+extern PetscErrorCode DMSNESGetJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
+
+extern PetscErrorCode DMDASNESSetFunctionLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,void*,void*),void*);
+extern PetscErrorCode DMDASNESSetJacobianLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*),void*);
 
 /* Routines for Multiblock solver */
 extern PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
