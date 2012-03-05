@@ -1524,6 +1524,7 @@ PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMesh
     ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0] = coords[p*ctx->dim+0];
     xi[1] = coords[p*ctx->dim+1];
+    xi[2] = coords[p*ctx->dim+2];
     ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
     ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
     ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);

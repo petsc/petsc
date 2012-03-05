@@ -1956,29 +1956,35 @@ namespace ALE {
                                                    3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
-        PetscInt         crossings = 0;
+        const PetscReal *coords = this->restrictClosure(coordinates, *c_iter);
+        PetscBool        found  = PETSC_TRUE;
 
         std::cout << "Checking cell " << *c_iter << std::endl;
         for(PetscInt f = 0; f < 6; f++) {
           /* Check the point is under plane */
           /*   Get face normal */
-          PetscReal v_i[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
-          PetscReal v_j[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal v_i[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
+          PetscReal v_j[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
           PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
-          PetscReal dot       = normal[0]*p[0] + normal[1]*p[1] + normal[2]*p[2];
+          PetscReal pp[3]     = {coords[faces[f*4+0]*3+0] - p[0],coords[faces[f*4+0]*3+1] - p[1],coords[faces[f*4+0]*3+2] - p[2]};
+          PetscReal dot       = normal[0]*pp[0] + normal[1]*pp[1] + normal[2]*pp[2];
           /* Check that projected point is in face (2D location problem) */
-          if (dot > 0.0) {
-            ++crossings;
+          if (dot < 0.0) {
+            found = PETSC_FALSE;
+            break;
           }
         }
-        if (crossings % 2) {return *c_iter;}
+        if (found) {return *c_iter;}
       }
+#if 0
       {
         ostringstream msg;
         msg << "Could not locate point: (" << p[0] <<","<< p[1] <<","<< p[2] << ")" << std::endl;
         throw ALE::Exception(msg.str().c_str());
       }
+#else
+      return -1;
+#endif
     };
     point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
