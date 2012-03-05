@@ -322,7 +322,7 @@ PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout tmap)
  
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsLayoutDuplicate"
-/*@
+/*
 
     PetscThreadsLayoutDuplicate - creates a new PetscThreadsLayout with the same information as a given one. If the PetscThreadsLayout already exists it is destroyed first.
 
@@ -339,7 +339,7 @@ PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout tmap)
     Notes: PetscThreadsLayoutSetUp() does not need to be called on the resulting PetscThreadsLayout
 
 .seealso: PetscThreadsLayoutCreate(), PetscThreadsLayoutDestroy(), PetscThreadsLayoutSetUp()
-@*/
+*/
 PetscErrorCode PetscThreadsLayoutDuplicate(PetscThreadsLayout in,PetscThreadsLayout *out)
 {
   PetscErrorCode ierr;
