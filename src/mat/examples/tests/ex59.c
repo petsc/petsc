@@ -26,11 +26,9 @@ int main(int argc,char **args)
 
   ierr = PetscStrcmp(type,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,PETSC_NULL,&C);CHKERRQ(ierr);
+    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,PETSC_NULL,&C);CHKERRQ(ierr);
   } else {
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&C);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&C);CHKERRQ(ierr);
   }
 
   /*

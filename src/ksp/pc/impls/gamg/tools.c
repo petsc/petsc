@@ -52,7 +52,7 @@ PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
     }
 
     /* get scalar copy (norms) of matrix -- AIJ specific!!! */
-    ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
+    ierr = MatCreateAIJ( wcomm, nloc, nloc,
                             PETSC_DETERMINE, PETSC_DETERMINE,
                             0, d_nnz, 0, o_nnz, &Gmat );
 
@@ -138,7 +138,7 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
     if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
     if( o_nnz[jj] > (MM-nloc) ) o_nnz[jj] = MM - nloc;
   }
-  ierr = MatCreateMPIAIJ( wcomm, nloc, nloc, MM, MM, 0, d_nnz, 0, o_nnz, &tGmat );
+  ierr = MatCreateAIJ( wcomm, nloc, nloc, MM, MM, 0, d_nnz, 0, o_nnz, &tGmat );
   CHKERRQ(ierr);
   ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
   ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 

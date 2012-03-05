@@ -8,7 +8,7 @@
 typedef struct {
   VECHEADER
   PetscInt nthreads;      /* Number of threads */
-  PetscInt *arrindex;     /* Starting array indices for each thread */
+  PetscInt *arrindex;     /* Starting array index for each thread */
   PetscInt *nelem;        /* Number of array elements assigned to each thread */
   PetscInt *cpu_affinity; /* CPU affinities */
 }Vec_SeqPthread;

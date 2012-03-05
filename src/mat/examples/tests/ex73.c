@@ -148,7 +148,7 @@ int main(int argc,char **args)
       nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
       ierr = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);    
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);    
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);
     ierr = PetscFree(nzd);CHKERRQ(ierr);
     ierr = PetscFree(nzo);CHKERRQ(ierr);

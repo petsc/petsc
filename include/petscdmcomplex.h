@@ -73,10 +73,10 @@ extern PetscErrorCode DMComplexGetDefaultGlobalSection(DM, PetscSection *);
 extern PetscErrorCode DMComplexCreateDefaultSF(DM);
 extern PetscErrorCode DMComplexGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Vec, void *));
 extern PetscErrorCode DMComplexSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void *));
-extern PetscErrorCode DMComplexGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, void *));
-extern PetscErrorCode DMComplexSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, void *));
+extern PetscErrorCode DMComplexGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, Mat, void *));
+extern PetscErrorCode DMComplexSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, Mat, void *));
 typedef PetscErrorCode (*DMComplexLocalFunction1)(DM, Vec, Vec, void*);
-typedef PetscErrorCode (*DMComplexLocalJacobian1)(DM, Vec, Mat, void*);
+typedef PetscErrorCode (*DMComplexLocalJacobian1)(DM, Vec, Mat, Mat, void*);
 
 extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 extern PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *[]);

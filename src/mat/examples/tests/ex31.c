@@ -37,6 +37,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) { 
     v = -1.0; i = Ii/n; j = Ii - i*n;  

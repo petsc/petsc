@@ -1,30 +1,9 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
+#include <../src/mat/impls/aij/seq/seqpthread/seqaijpthread.h>
 
 static PetscInt    mats_created=0;
-
-typedef struct {
-  PetscInt   *rstart;       /* List of starting row number for each thread */
-  PetscInt   *nrows;        /* List of nrows for each thread */
-  PetscInt   nthreads;      /* Number of threads to use for matrix operations */
-  PetscInt   *cpu_affinity; /* CPU affinity of threads */
-  PetscInt   *nz;           /* List of number of nonzeros for each thread */
-}Mat_SeqAIJPThread;
-
-typedef struct {
-  MatScalar *aa;
-  PetscInt  *ai;
-  PetscInt  *aj;
-  PetscInt  *adiag;
-  PetscInt  nz;
-  PetscScalar *x,*y,*z;
-  PetscInt   nrows;
-  PetscInt   nonzerorow;
-}Mat_KernelData;
-
-Mat_KernelData *mat_kerneldatap;
-Mat_KernelData **mat_pdata;
 
 void* MatMult_Kernel(void* arg)
 {
@@ -395,7 +374,7 @@ EXTERN_C_END
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 */
 PetscErrorCode  MatCreateSeqAIJPThread(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nthreads,PetscInt nz,const PetscInt nnz[],Mat *A)

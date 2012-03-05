@@ -1,0 +1,142 @@
+  0 SNES Function norm 27.5941 
+    0 KSP Residual norm 27.5941 
+    1 KSP Residual norm 8.01214 
+    2 KSP Residual norm 0.469682 
+    3 KSP Residual norm 0.000187804 
+    4 KSP Residual norm 5.68256e-06 
+    5 KSP Residual norm 1.10197e-09 
+  1 SNES Function norm 1.10197e-09 
+SNES Object: 1 MPI processes
+  type: ls
+    line search variant: CUBIC
+    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+    damping factor=1.000000000000e+00
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=5
+  total number of function evaluations=2
+  KSP Object:   1 MPI processes
+    type: fgmres
+      GMRES: restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    right preconditioning
+    has attached null space
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, blocksize = -1, factorization DIAG
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block 
+        KSP Object:        (fieldsplit_velocity_)         1 MPI processes
+          type: gmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_velocity_)         1 MPI processes
+          type: lu
+            LU: out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5, needed 3.45047
+              Factored matrix follows:
+                Matrix Object:                 1 MPI processes
+                  type: seqaij
+                  rows=962, cols=962
+                  package used to perform factorization: petsc
+                  total: nonzeros=68692, allocated nonzeros=68692
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 456 nodes, limit used is 5
+          linear system matrix = precond matrix:
+          Matrix Object:           1 MPI processes
+            type: seqaij
+            rows=962, cols=962
+            total: nonzeros=19908, allocated nonzeros=19908
+            total number of mallocs used during MatSetValues calls =0
+              using I-node routines: found 481 nodes, limit used is 5
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_pressure_)         1 MPI processes
+          type: gmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_pressure_)         1 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Matrix Object:           1 MPI processes
+            type: schurcomplement
+            rows=145, cols=145
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Matrix Object:                 1 MPI processes
+                  type: seqaij
+                  rows=145, cols=145
+                  total: nonzeros=945, allocated nonzeros=945
+                  total number of mallocs used during MatSetValues calls =0
+                    not using I-node routines
+              A10
+                Matrix Object:                 1 MPI processes
+                  type: submatrix
+                  rows=145, cols=962
+              KSP of A00
+                KSP Object:                (fieldsplit_velocity_)                 1 MPI processes
+                  type: gmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  left preconditioning
+                  using PRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_velocity_)                 1 MPI processes
+                  type: lu
+                    LU: out-of-place factorization
+                    tolerance for zero pivot 2.22045e-14
+                    matrix ordering: nd
+                    factor fill ratio given 5, needed 3.45047
+                      Factored matrix follows:
+                        Matrix Object:                         1 MPI processes
+                          type: seqaij
+                          rows=962, cols=962
+                          package used to perform factorization: petsc
+                          total: nonzeros=68692, allocated nonzeros=68692
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 456 nodes, limit used is 5
+                  linear system matrix = precond matrix:
+                  Matrix Object:                   1 MPI processes
+                    type: seqaij
+                    rows=962, cols=962
+                    total: nonzeros=19908, allocated nonzeros=19908
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 481 nodes, limit used is 5
+              A01
+                Matrix Object:                 1 MPI processes
+                  type: submatrix
+                  rows=962, cols=145
+          Matrix Object:           1 MPI processes
+            type: seqaij
+            rows=145, cols=145
+            total: nonzeros=945, allocated nonzeros=945
+            total number of mallocs used during MatSetValues calls =0
+              not using I-node routines
+    linear system matrix followed by preconditioner matrix:
+    Matrix Object:     1 MPI processes
+      type: shell
+      rows=1107, cols=1107
+    Matrix Object:     1 MPI processes
+      type: seqaij
+      rows=1107, cols=1107
+      total: nonzeros=29785, allocated nonzeros=29785
+      total number of mallocs used during MatSetValues calls =0
+        using I-node routines: found 513 nodes, limit used is 5
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+Number of SNES iterations = 1
+L_2 Error: 3.92e-09

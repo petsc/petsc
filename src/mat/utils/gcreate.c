@@ -17,7 +17,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
    MatCreate - Creates a matrix where the type is determined
    from either a call to MatSetType() or from the options database
    with a call to MatSetFromOptions(). The default matrix type is
-   AIJ, using the routines MatCreateSeqAIJ() or MatCreateMPIAIJ()
+   AIJ, using the routines MatCreateSeqAIJ() or MatCreateAIJ()
    if you do not set a type in the options database. If you never
    call MatSetType() or MatSetFromOptions() it will generate an 
    error when you try to use the matrix.
@@ -32,11 +32,11 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
-.    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
+.    -mat_type mpiaij   - AIJ type, uses MatCreateAIJ()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
-.    -mat_type mpidense - dense type, uses MatCreateMPIDense()
+.    -mat_type mpidense - dense type, uses MatCreateDense()
 .    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
--    -mat_type mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
+-    -mat_type mpibaij  - block AIJ type, uses MatCreateBAIJ()
 
    Even More Options Database Keys:
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
@@ -52,10 +52,10 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ(), MatCreateMPIAIJ(), 
-          MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
-          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
+.seealso: MatCreateSeqAIJ(), MatCreateAIJ(), 
+          MatCreateSeqDense(), MatCreateDense(), 
+          MatCreateSeqBAIJ(), MatCreateBAIJ(),
+          MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
           MatConvert()
 @*/
 PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
@@ -139,7 +139,7 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is
-   AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ() if
+   AIJ, using the routines MatCreateSeqAIJ() and MatCreateAIJ() if
    you do not select a type in the options database.
 
    Collective on Mat
@@ -149,11 +149,11 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
-.    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
+.    -mat_type mpiaij   - AIJ type, uses MatCreateAIJ()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
-.    -mat_type mpidense - dense type, uses MatCreateMPIDense()
+.    -mat_type mpidense - dense type, uses MatCreateDense()
 .    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
--    -mat_type mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
+-    -mat_type mpibaij  - block AIJ type, uses MatCreateBAIJ()
 
    Even More Options Database Keys:
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
@@ -163,10 +163,10 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
-          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
+.seealso: MatCreateSeqAIJ((), MatCreateAIJ(), 
+          MatCreateSeqDense(), MatCreateDense(), 
+          MatCreateSeqBAIJ(), MatCreateBAIJ(),
+          MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
           MatConvert()
 @*/
 PetscErrorCode  MatSetFromOptions(Mat B)

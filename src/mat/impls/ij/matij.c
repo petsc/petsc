@@ -1993,8 +1993,8 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
 {
   Mat_IJ *pg = (Mat_IJ*) A->data;
   PetscBool      isij, isascii;
-  PetscInt indi, indj,i,j;
-  PetscHashIIter it;
+  PetscInt indi, indj,i=-1,j;
+  PetscHashIIter it=-1;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);

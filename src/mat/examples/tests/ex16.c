@@ -19,7 +19,7 @@ int main(int argc,char **args)
   /*
       Create a parallel dense matrix shared by all processors 
   */
-  ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);CHKERRQ(ierr);
 
   /*
      Set values into the matrix 

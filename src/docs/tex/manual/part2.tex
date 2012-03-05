@@ -1417,7 +1417,7 @@ PETSC\_DECIDE.
 If PETSC\_DECIDE is not used for the arguments
 \trl{m} and \trl{n}, then the user must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the matrix-vector product 
-$y = A x$. The \trl{m} that is used in the matrix creation routine MatCreateMPIAIJ()
+$y = A x$. The \trl{m} that is used in the matrix creation routine MatCreateAIJ()
 must match the local size used in the vector creation routine VecCreateMPI() for \trl{y}.
 Likewise, the \trl{n} used must match that used as the local size in 
 VecCreateMPI() for \trl{x}. 
@@ -1433,7 +1433,7 @@ to be its local rows and the corresponding columns (a square submatrix);
 each process's off-diagonal portion encompasses the remainder of the
 local matrix (a rectangular submatrix).  
 The rank in the MPI communicator determines the absolute ordering of the
-blocks.  That is, the process with rank 0 in the communicator given to  MatCreateMPIAIJ() contains the top rows of the matrix; the i$^{th}$ process
+blocks.  That is, the process with rank 0 in the communicator given to  MatCreateAIJ() contains the top rows of the matrix; the i$^{th}$ process
 in that communicator contains the i$^{th}$ block of the matrix.
 
 \subsubsection{Preallocation of Memory for Parallel AIJ Sparse Matrices}
@@ -1562,7 +1562,7 @@ wish to allocate their own storage space).  Most users should merely
 set \trl{data} to PETSC\_NULL for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \trl{A}, the user should call
 \begin{tabbing}
-  MatCreateMPIDense(MPI\_Comm comm,int m,int n,int M,int N,PetscScalar *data,Mat *A)
+  MatCreateDense(MPI\_Comm comm,int m,int n,int M,int N,PetscScalar *data,Mat *A)
 \end{tabbing}
 The arguments \trl{m}, \trl{n}, 
 \trl{M}, and \trl{N}, indicate the number of local rows and columns and
@@ -4137,7 +4137,7 @@ Matrix           & Assemble matrix with user-defined & to access the PC, then us
 
 \medskip
 $ ^* $ Use either the generic MatCreate() or a format-specific variant
-   such as MatCreateMPIAIJ().\\
+   such as MatCreateAIJ().\\
 $ ^\dagger $ Set user-defined matrix formation routine with SNESSetJacobian().
 \medskip
 \caption{Jacobian Options}
@@ -6096,11 +6096,11 @@ at a time can significantly enhance performance.
 Since the process of dynamic memory allocation for sparse matrices is
 inherently very expensive, accurate preallocation of memory is crucial
 for efficient sparse matrix assembly.  One should use the matrix creation
-routines for particular data structures, such as MatCreateSeqAIJ() and MatCreateMPIAIJ() for compressed, sparse
+routines for particular data structures, such as MatCreateSeqAIJ() and MatCreateAIJ() for compressed, sparse
 row formats, instead of the generic MatCreate() routine.  For
 problems with multiple degrees of freedom per node, the block,
 compressed, sparse row formats, created by MatCreateSeqBAIJ()
-and MatCreateMPIBAIJ(), can significantly enhance performance.
+and MatCreateBAIJ(), can significantly enhance performance.
 Section~\ref{sec_matsparse} includes extensive details and
 examples regarding preallocation.
 

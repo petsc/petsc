@@ -2,10 +2,10 @@
 #include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define matcreatempisbaij_               MATCREATEMPISBAIJ
+#define matcreatesbaij_                  MATCREATESBAIJ
 #define matmpisbaijsetpreallocation_     MATMPISBAIJSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matcreatempisbaij_               matcreatempisbaij
+#define matcreatesbaij_                  matcreatesbaij
 #define matmpisbaijsetpreallocation_     matmpisbaijsetpreallocation
 #endif
 
@@ -15,8 +15,7 @@ void PETSC_STDCALL matcreatempisbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,Pe
 {
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
-  *ierr = MatCreateMPISBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),
-                             *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
+  *ierr = MatCreateSBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 
 void PETSC_STDCALL matmpisbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,PetscErrorCode *ierr)

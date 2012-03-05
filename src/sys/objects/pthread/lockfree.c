@@ -1,6 +1,5 @@
 /* The code is active only when the flag PETSC_USE_PTHREAD is set */
 
-
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
@@ -16,8 +15,10 @@ typedef struct {
 } sjob_lockfree;
 sjob_lockfree job_lockfree = {NULL,NULL,0};
 
+#define PetscAtomicCompareandSwap(ptr, oldval, newval) (__sync_bool_compare_and_swap(ptr,oldval,newval))
+
 void* FuncFinish_LockFree(void* arg) {
-  __sync_bool_compare_and_swap(&PetscThreadGo,PETSC_TRUE,PETSC_FALSE);
+  PetscAtomicCompareandSwap(&PetscThreadGo,PETSC_TRUE,PETSC_FALSE);
   return(0);
 }
 
@@ -42,7 +43,7 @@ void* PetscThreadFunc_LockFree(void* arg)
       if(job_lockfree.funcArr[iVal+PetscMainThreadShareWork]) {
 	job_lockfree.funcArr[iVal+PetscMainThreadShareWork](job_lockfree.pdata[iVal+PetscMainThreadShareWork]);
       }
-      __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
+      PetscAtomicCompareandSwap(&job_lockfree.my_job_status[iVal],0,1);
     }
   }
   __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
@@ -144,7 +145,7 @@ PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void** data,
       }
     }
     /* signal thread i to start the job */
-    __sync_bool_compare_and_swap(&(job_lockfree.my_job_status[i]),1,0);
+    PetscAtomicCompareandSwap(&(job_lockfree.my_job_status[i]),1,0);
   }
   
   if(pFunc != FuncFinish_LockFree) {

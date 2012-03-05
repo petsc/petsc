@@ -222,7 +222,7 @@ runex21:
           done;
 
 runex23:
-	-@for d in -1d -2d -3d; do \
+	-@for d in one two three; do \
             for np in 1 2 3 4; do \
               for dof in 1 2 3; do \
                 for stencil_type in 0 1; do \

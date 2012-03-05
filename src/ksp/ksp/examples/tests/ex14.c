@@ -176,7 +176,7 @@ int main(int argc,char **argv)
     ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-    ierr = MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -40,7 +40,7 @@
 !
 !      Create a parallel dense matrix shared by all processors 
 !
-      call MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,                &
+      call MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,                   &
      &                       PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr)
 
 !

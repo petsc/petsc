@@ -466,7 +466,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
     asa_lev->next->size = m;
     asa_lev->aggnum     = m;
     /* create the correlators, right now just identity matrices */
-    ierr = MatCreateMPIAIJ(asa_lev->comm, n_loc, n_loc, n, n, 1, PETSC_NULL, 1, PETSC_NULL,&(asa_lev->agg_corr));CHKERRQ(ierr);
+    ierr = MatCreateAIJ(asa_lev->comm, n_loc, n_loc, n, n, 1, PETSC_NULL, 1, PETSC_NULL,&(asa_lev->agg_corr));CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(asa_lev->agg_corr, &m_loc_s, &m_loc_e);CHKERRQ(ierr);
     for (m=m_loc_s; m<m_loc_e; m++) {
       ierr = MatSetValues(asa_lev->agg_corr, 1, &m, 1, &m, &one, INSERT_VALUES);CHKERRQ(ierr);
@@ -764,17 +764,17 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
   ierr = PetscFree(loc_cols);CHKERRQ(ierr);
 
   /* we now have enough information to create asa_lev->P */
-  ierr = MatCreateMPIAIJ(asa_lev->comm, a_loc_n,  total_loc_cols, asa_lev->size, PETSC_DETERMINE,
+  ierr = MatCreateAIJ(asa_lev->comm, a_loc_n,  total_loc_cols, asa_lev->size, PETSC_DETERMINE,
 			 cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->P));CHKERRQ(ierr);
   /* create asa_lev->Pt */
-  ierr = MatCreateMPIAIJ(asa_lev->comm, total_loc_cols, a_loc_n, PETSC_DETERMINE, asa_lev->size,
+  ierr = MatCreateAIJ(asa_lev->comm, total_loc_cols, a_loc_n, PETSC_DETERMINE, asa_lev->size,
 			 max_cand_vec_length, PETSC_NULL, max_cand_vec_length, PETSC_NULL, &(asa_lev->Pt));CHKERRQ(ierr);
   if (asa_lev->next) {
     /* create correlator for aggregates of next level */
-    ierr = MatCreateMPIAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
+    ierr = MatCreateAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
 			   cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->agg_corr));CHKERRQ(ierr);
     /* create asa_lev->next->bridge_corr matrix */
-    ierr = MatCreateMPIAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
+    ierr = MatCreateAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
 			   cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->bridge_corr));CHKERRQ(ierr);
   }
 
@@ -1109,7 +1109,7 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       vec_loc_size = loc_vec_high - loc_vec_low;
 
       /* create matrix for candidates */
-      ierr = MatCreateMPIDense(asa_lev->comm, vec_loc_size, PETSC_DECIDE, vec_size, asa->max_cand_vecs, PETSC_NULL, &(asa_lev->B));CHKERRQ(ierr);
+      ierr = MatCreateDense(asa_lev->comm, vec_loc_size, PETSC_DECIDE, vec_size, asa->max_cand_vecs, PETSC_NULL, &(asa_lev->B));CHKERRQ(ierr);
       /* set the first column */
       ierr = PCAddCandidateToB_ASA(asa_lev->B, 0, asa_lev->x, asa_lev->A);CHKERRQ(ierr);
       asa_lev->cand_vecs = 1;

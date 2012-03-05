@@ -74,11 +74,11 @@ void PETSC_STDCALL  dmmeshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIX
   *ierr = DMMeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,dm);
   FREECHAR(filename,cF);
 }
-void PETSC_STDCALL  dmmeshcreateexodusng_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), DM *dm, DM *dmFS, PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL  dmmeshcreateexodusng_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), DM *dm, PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *cF;
   FIXCHAR(filename,len,cF);
-  *ierr = DMMeshCreateExodusNG(MPI_Comm_f2c( *(comm) ),cF,dm,dmFS);
+  *ierr = DMMeshCreateExodusNG(MPI_Comm_f2c( *(comm) ),cF,dm);
   FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  dmmeshdistribute_(DM *serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))

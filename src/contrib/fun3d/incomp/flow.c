@@ -2506,7 +2506,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     val_diag[i] = nbrs_diag; 
     val_offd[i] = nbrs_offd; 
    }
-   ierr = MatCreateMPIBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
+   ierr = MatCreateBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
                              bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
                              PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
 #else
@@ -2529,7 +2529,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
       val_offd[row] = nbrs_offd*4; 
     }
    }
-   ierr = MatCreateMPIAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
+   ierr = MatCreateAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
                              bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
                              PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
 #endif
@@ -2555,7 +2555,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    }
    /* ierr = MatCreateSeqAIJ(MPI_COMM_SELF,nnodes*4,nnodes*4,PETSC_NULL,
                           val,&grid->A);*/
-   ierr = MatCreateMPIAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
+   ierr = MatCreateAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
                              bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
                              PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
    ierr = MatSetBlockSize(grid->A,bs);CHKERRQ(ierr);

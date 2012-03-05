@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
+.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
 M*/
 
 /*MC
@@ -3744,7 +3744,7 @@ EXTERN_C_END
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ,
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ,
           MatCreateSeqAIJWithArrays(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
@@ -3886,7 +3886,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIAIJ(), MatMPIAIJSetPreallocationCSR(),
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateAIJ(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatGetInfo()
 @*/
 PetscErrorCode  MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -3954,16 +3954,14 @@ PetscErrorCode  MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithSplitArrays()
+          MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
 
- PetscFunctionBegin;
-  if (i[0]) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
-  }
+  PetscFunctionBegin;
+  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
@@ -3973,9 +3971,9 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateMPIAIJ"
+#define __FUNCT__ "MatCreateAIJ"
 /*@C
-   MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
+   MatCreateAIJ - Creates a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters 
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -4146,7 +4144,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateMPIAIJWithArrays()
 @*/
-PetscErrorCode  MatCreateMPIAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -4788,6 +4786,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  ierr = MatSetOption(B_mpi,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
   B_mpi->assembled     = PETSC_FALSE;
@@ -4841,8 +4840,20 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
 PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1){
+     ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
+     if (scall == MAT_INITIAL_MATRIX){
+       ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
+     } else {
+       ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+     }
+     ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
+     PetscFunctionReturn(0);
+  }
   ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
@@ -5453,7 +5464,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ()
+.seealso: MatCreateAIJ()
 M*/
 
 EXTERN_C_BEGIN
@@ -5592,7 +5603,7 @@ EXTERN_C_END
 
        The i and j indices are 0 based
  
-       See MatCreateMPIAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix
+       See MatCreateAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix
 
        This sets local rows and cannot be used to set off-processor values. 
 
@@ -5601,7 +5612,7 @@ EXTERN_C_END
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithArrays()
+          MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()
 @*/
 PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt i[],PetscInt j[],PetscScalar a[],
 								PetscInt oi[], PetscInt oj[],PetscScalar oa[],Mat *mat)

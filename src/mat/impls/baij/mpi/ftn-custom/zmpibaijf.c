@@ -3,11 +3,11 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matmpibaijgetseqbaij_            MATMPIBAIJGETSEQBAIJ
-#define matcreatempibaij_                MATCREATEMPIBAIJ
+#define matcreatebaij_                   MATCREATEBAIJ
 #define matmpibaijsetpreallocation_      MATMPIBAIJSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
-#define matcreatempibaij_                matcreatempibaij
+#define matcreatebaij_                   matcreatebaij
 #define matmpibaijsetpreallocation_      matmpibaijsetpreallocation
 #endif
 
@@ -20,13 +20,12 @@ void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,siz
   *iic  = PetscIntAddressToFortran(ic,i);
 }
 
-void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
+void PETSC_STDCALL matcreatebaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
          PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
-  *ierr = MatCreateMPIBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),
-                             *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
+  *ierr = MatCreateBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 
 void PETSC_STDCALL matmpibaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,PetscErrorCode *ierr)

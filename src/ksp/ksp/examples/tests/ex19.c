@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
 
   /* Create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

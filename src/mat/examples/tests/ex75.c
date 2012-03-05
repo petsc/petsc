@@ -37,6 +37,8 @@ int main(int argc,char **args)
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   /* printf(" mattype: %s\n",type); */
   ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL,o_nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */
@@ -55,9 +57,7 @@ int main(int argc,char **args)
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 =  (int) PetscSqrtReal((PetscReal)n); 
-      if (n1*n1 != n){
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
-      }
+      if (n1*n1 != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
         
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
@@ -105,7 +105,8 @@ int main(int argc,char **args)
   ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   */
   /* Assemble MPIBAIJ matrix A */
-  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */

@@ -1141,9 +1141,9 @@ when using the block AIJ format.
 \subsection{Parallel Block AIJ Sparse Matrices}
 
 Parallel block AIJ matrices with block size {\t nb} can be created with
-the command \findex{MatCreateMPIBAIJ()}
+the command \findex{MatCreateBAIJ()}
 \begin{tabbing}
-   ierr = MatCreateMPIBAIJ(MPI\_Comm comm,int nb,int m,int n,int M,int N,int d\_nz,\\
+   ierr = MatCreateBAIJ(MPI\_Comm comm,int nb,int m,int n,int M,int N,int d\_nz,\\
                           int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
 \end{tabbing}
 \trl{A} is the newly created matrix, while the arguments \trl{m}, \trl{n}, 
@@ -1158,7 +1158,7 @@ PETSC\_DECIDE.
 If PETSC\_DECIDE is not used for
 \trl{m} and \trl{n} then the user must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the product 
-$y = A x$. The \trl{m} that one uses in MatCreateMPIBAIJ()
+$y = A x$. The \trl{m} that one uses in MatCreateBAIJ()
 must match the local size used in the VecCreateMPI() for \trl{y}.
 The \trl{n} used must match that used as the local size in 
 VecCreateMPI() for \trl{x}. 

@@ -1,7 +1,6 @@
 
 #include <private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
-#include <petscdmcomplex.h>
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactorizationTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactorizationType","PC_FIELDSPLIT_SCHUR_FACTORIZATION_",0};
@@ -19,9 +18,9 @@ struct _PC_FieldSplitLink {
   Vec               x,y;
   char              *splitname;
   PetscInt          nfields;
-  PetscInt          *fields;
+  PetscInt          *fields,*fields_col;
   VecScatter        sctx;
-  IS                is;
+  IS                is,is_col;
   PC_FieldSplitLink next,previous;
 };
 
@@ -176,20 +175,31 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
 {
   PetscErrorCode ierr;
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
-  PetscInt       i,nfields,*ifields;
-  PetscBool      flg;
-  char           optionname[128],splitname[8];
+  PetscInt       i,nfields,*ifields,nfields_col,*ifields_col;
+  PetscBool      flg,flg_col;
+  char           optionname[128],splitname[8],optionname_col[128];
 
   PetscFunctionBegin;
   ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields);CHKERRQ(ierr);
+  ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields_col);CHKERRQ(ierr);
   for (i=0,flg=PETSC_TRUE; ; i++) {
     ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
     ierr = PetscSNPrintf(optionname,sizeof optionname,"-pc_fieldsplit_%D_fields",i);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(optionname_col,sizeof optionname_col,"-pc_fieldsplit_%D_fields_col",i);CHKERRQ(ierr);
     nfields = jac->bs;
+    nfields_col = jac->bs;
     ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg);CHKERRQ(ierr);
+    ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname_col,ifields_col,&nfields_col,&flg_col);CHKERRQ(ierr);
     if (!flg) break;
-    if (!nfields) SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_USER,"Cannot list zero fields");
-    ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields);CHKERRQ(ierr);
+    else if (flg && !flg_col) {
+      if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+      ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields,ifields);CHKERRQ(ierr);
+    }
+    else {
+      if (!nfields || !nfields_col) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+      if (nfields != nfields_col) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Number of row and column fields must match");
+      ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields,ifields_col);CHKERRQ(ierr);
+    }
   }
   if (i > 0) {
     /* Makes command-line setting of splits take precedence over setting them in code.
@@ -198,6 +208,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
     jac->splitdefined = PETSC_TRUE;
   }
   ierr = PetscFree(ifields);CHKERRQ(ierr);
+  ierr = PetscFree(ifields_col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -215,34 +226,21 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   if (!ilink) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
     if (pc->dm && !stokes) {
-      PetscInt     numFields, f;
-      const char **fieldNames;
-      IS          *fields;
-      PetscBool    dmcomposite;
-
-      ierr = DMCreateFieldIS(pc->dm, &numFields, &fieldNames, &fields);CHKERRQ(ierr);
-      for(f = 0; f < numFields; ++f) {
-        ierr = PCFieldSplitSetIS(pc, fieldNames[f], fields[f]);CHKERRQ(ierr);
-        ierr = PetscFree(fieldNames[f]);CHKERRQ(ierr);
-        ierr = ISDestroy(&fields[f]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(fieldNames);CHKERRQ(ierr);
-      ierr = PetscFree(fields);CHKERRQ(ierr);
-
-      ierr = PetscTypeCompare((PetscObject) pc->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
+      PetscBool dmcomposite;
+      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
       if (dmcomposite) {
-        DM      *dms;
         PetscInt nDM;
-
+        IS       *fields;
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
-        ierr = DMCompositeGetNumberDM(pc->dm, &nDM);CHKERRQ(ierr);
-        ierr = PetscMalloc(nDM*sizeof(DM), &dms);CHKERRQ(ierr);
-        ierr = DMCompositeGetEntriesArray(pc->dm, dms);CHKERRQ(ierr);
-        for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
-          ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
-          ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
+        ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        for (i=0; i<nDM; i++) {
+          char splitname[8];
+          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
+          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
         }
-        ierr = PetscFree(dms);CHKERRQ(ierr);
+        ierr = PetscFree(fields);CHKERRQ(ierr);
       }
     } else {
       if (jac->bs <= 0) {
@@ -274,12 +272,12 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         }
         if (flg || !jac->splitdefined) {
           ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
-          jac->defaultsplit = PETSC_TRUE;
           for (i=0; i<jac->bs; i++) {
             char splitname[8];
             ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
-            ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
+            ierr = PCFieldSplitSetFields(pc,splitname,1,&i,&i);CHKERRQ(ierr);
           }
+          jac->defaultsplit = PETSC_TRUE;
         }
       }
     }
@@ -292,7 +290,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   } else if (jac->reset) {
     /* PCReset() has been called on this PC, ilink exists but all IS and Vec data structures in it must be rebuilt 
        This is basically the !ilink portion of code above copied from above and the allocation of the ilinks removed
@@ -304,20 +302,14 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
-        DM       *dms;
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
         ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
-        ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
-        ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
-          ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
-          ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
           ilink->is = fields[i];
           ilink     = ilink->next;
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
-        ierr = PetscFree(dms);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -336,7 +328,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
     }
   }
 
-  if (jac->nsplits < 2) SETERRQ1(((PetscObject) pc)->comm,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
+  if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +341,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
-  PetscBool         sorted;
+  PetscBool         sorted, sorted_col;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -357,15 +349,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   ilink  = jac->head;
 
   /* get the matrices for each split */
-  /*
   if (!jac->issetup) {
     PetscInt rstart,rend,nslots,bs;
 
     jac->issetup = PETSC_TRUE;
 
-    // This is done here instead of in PCFieldSplitSetFields() because may not have matrix at that point 
-    // Really...? pc->mat must have been set in the KSPSetOperators call 
-    
+    /* This is done here instead of in PCFieldSplitSetFields() because may not have matrix at that point */
     bs     = jac->bs;
     ierr   = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
     ierr   = MatGetLocalSize(pc->pmat,PETSC_NULL,&ccsize);CHKERRQ(ierr);
@@ -373,37 +362,42 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
         ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&ilink->is);CHKERRQ(ierr);
+        ierr = ISDuplicate(ilink->is,&ilink->is_col);CHKERRQ(ierr);
       } else if (!ilink->is) {
         if (ilink->nfields > 1) {
-          PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
+          PetscInt   *ii,*jj,j,k,nfields = ilink->nfields,*fields = ilink->fields,*fields_col = ilink->fields_col;
           ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+          ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&jj);CHKERRQ(ierr);
           for (j=0; j<nslots; j++) {
             for (k=0; k<nfields; k++) {
               ii[nfields*j + k] = rstart + bs*j + fields[k];
+              jj[nfields*j + k] = rstart + bs*j + fields_col[k];
             }
           }
           ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);       
+          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,jj,PETSC_OWN_POINTER,&ilink->is_col);CHKERRQ(ierr);
         } else { 
-          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
-        }
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr); 
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields_col[0],bs,&ilink->is_col);CHKERRQ(ierr);
+       }
       } 
       ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
-      if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
+      if (ilink->is_col) { ierr = ISSorted(ilink->is_col,&sorted_col);CHKERRQ(ierr); }
+      if (!sorted || !sorted_col) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
       ilink = ilink->next;
     }
   }
-  */
-
+  
   ilink  = jac->head;
   if (!jac->pmat) {
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -412,12 +406,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!jac->mat) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -453,11 +447,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
@@ -469,11 +463,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
@@ -485,7 +479,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
-      ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
@@ -802,6 +795,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
     ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
+    if (ilink->is_col) { ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr); }
     next = ilink->next;
     ilink = next;
   }
@@ -839,16 +833,12 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     next = ilink->next;
     ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
     ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
+    ierr = PetscFree(ilink->fields_col);CHKERRQ(ierr);
     ierr = PetscFree(ilink);CHKERRQ(ierr);
     ilink = next;
   }
   ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitGetSubKSP_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetFields_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetIS_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetBlockSize_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -901,14 +891,13 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
+PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields,const PetscInt *fields_col)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink,next = jac->head;
   char              prefix[128];
-  PetscInt          i,rstart,rend,nslots,bs,nsplit;
-  PetscBool         sorted;
+  PetscInt          i;
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
@@ -919,11 +908,6 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
   }
-  bs     = jac->bs;
-  nsplit = jac->nsplits;
-  ierr   = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
-  nslots = (rend - rstart)/bs;
-
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
@@ -933,19 +917,10 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
   }
   ierr = PetscMalloc(n*sizeof(PetscInt),&ilink->fields);CHKERRQ(ierr);
   ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&ilink->fields_col);CHKERRQ(ierr);
+  ierr = PetscMemcpy(ilink->fields_col,fields_col,n*sizeof(PetscInt));CHKERRQ(ierr);
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
-
-  PetscInt   *ii,j,k;
-  ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-  for (j=0; j<nslots; j++) {
-    for (k=0; k<ilink->nfields; k++) {
-      ii[ilink->nfields*j + k] = rstart + bs*j + fields[k];
-    }
-  }
-  ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*n,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);         
-  ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1028,9 +1003,10 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc(3*sizeof(char),&ilink->splitname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(ilink->splitname,3,"%D",jac->nsplits);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ilink->splitname,2,"%s",jac->nsplits);CHKERRQ(ierr);
   }
   ilink->is      = is;
+  ilink->is_col  = is;
   ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
@@ -1082,10 +1058,14 @@ EXTERN_C_END
      This function is called once per split (it creates a new split each time).  Solve options
      for this split will be available under the prefix -fieldsplit_SPLITNAME_.
 
+     Developer Note: This routine does not actually create the IS representing the split, that is delayed 
+     until PCSetUp_FieldSplit(), because information about the vector/matrix layouts may not be 
+     available when this routine is called.
+
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
-PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
+PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields,const PetscInt *fields_col)
 {
   PetscErrorCode ierr;
 
@@ -1094,7 +1074,7 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
   PetscValidCharPointer(splitname,2);
   if (n < 1) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Provided number of fields %D in split \"%s\" not positive",n,splitname);
   PetscValidIntPointer(fields,3);
-  ierr = PetscTryMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt *),(pc,splitname,n,fields));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt *,const PetscInt *),(pc,splitname,n,fields,fields_col));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1128,7 +1108,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (splitname) PetscValidCharPointer(splitname,2);
+  PetscValidCharPointer(splitname,2);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1436,8 +1416,9 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 .   -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
 .   -pc_fieldsplit_schur_precondition <true,false> default is true
 .   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
-.   -fieldsplit_NAME_ksp_* - control inner linear solver, NAME is a sequential integer if unspecified, otherwise use name provided in PCFieldSplitSetIS() or the name associated with the field in the DM passed to PCSetDM() (or a higher level function)
--   -fieldsplit_NAME_pc_* - control inner preconditioner, NAME has same semantics as above
+
+-    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
+     for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
 
    Notes:
     Use PCFieldSplitSetFields() to set fields defined by "strided" entries and PCFieldSplitSetIS()

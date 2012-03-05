@@ -22,20 +22,11 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
   
   if (testsbaij){
-    if (size == 1) {
-      ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
-    } else {
-      ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
-                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
-    }
+    ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
-    if (size == 1) {
-      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
-    } else {
-      ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
-                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
-    }
+    ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
   }  
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   eval = 9;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRQ(ierr);

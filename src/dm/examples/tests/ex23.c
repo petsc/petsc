@@ -36,9 +36,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-1d",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-one",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-two",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-three",&flg3);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {

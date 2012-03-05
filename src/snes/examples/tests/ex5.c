@@ -180,7 +180,7 @@ int main(int argc,char **argv)
       ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
     } else {
       ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
     }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
   }
