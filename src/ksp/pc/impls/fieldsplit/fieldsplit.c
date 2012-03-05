@@ -447,11 +447,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
@@ -463,11 +463,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
