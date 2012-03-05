@@ -1,6 +1,6 @@
 
 LOCDIR	 = src/sys/viewer/examples/
-LIBBASE	 = libpetscvec
+LIBBASE	 = libpetscsys
 DIRS	 = tutorials tests
 
 include ${PETSC_DIR}/conf/variables
