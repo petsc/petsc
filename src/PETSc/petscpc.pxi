@@ -130,7 +130,7 @@ cdef extern from * nogil:
 
     int PCFieldSplitSetType(PetscPC,PetscPCCompositeType)
     int PCFieldSplitSetBlockSize(PetscPC,PetscInt)
-    int PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*)
+    int PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*,PetscInt*)
     int PCFieldSplitSetIS(PetscPC,char[],PetscIS)
     int PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
     #int PCFieldSplitSchurPrecondition(PetscPC,PCFieldSplitSchurPreType,PetscMat)
