@@ -65,7 +65,7 @@ void PetscSetMainThreadAffinity(PetscInt icorr)
 
 void DoCoreAffinity(void)
 {
-  int       i,icorr=0; 
+  PetscInt  i,icorr=0; 
   pthread_t pThread = pthread_self();
   cpu_set_t mset;
   PetscInt  myrank;
@@ -191,11 +191,10 @@ PetscErrorCode PetscThreadsFinalize(void)
  
    Notes:
    Use nthreads = PETSC_DECIDE for PETSc to calculate the maximum number of pthreads to create.
-   The number of threads is then set to the number of processing units available
-   for the system. By default, PETSc will set max. threads = # of processing units
-   available - 1 (since the main thread is also a worker thread). If the
-   option -mainthread_no_share_work is used, then max. threads created = # of
-   available processing units.
+   By default, the main execution thread is also considered as a work thread. Hence, PETSc will 
+   create (ncpus - 1) threads where ncpus is the number of processing cores available. 
+   The option -mainthread_no_share_work can be used to have the main thread act as a controller only. 
+   For this case, PETSc will create ncpus threads.
    
 .seealso: PetscGetMaxPThreads()
 */ 

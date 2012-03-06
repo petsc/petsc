@@ -3,7 +3,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-int*           pVal_lockfree;
+PetscInt*           pVal_lockfree;
 
 typedef void* (*pfunc)(void*);
 
@@ -11,7 +11,7 @@ typedef void* (*pfunc)(void*);
 typedef struct {
   pfunc *funcArr;
   void** pdata;
-  int *my_job_status;
+  PetscInt *my_job_status;
 } sjob_lockfree;
 sjob_lockfree job_lockfree = {NULL,NULL,0};
 
@@ -29,9 +29,9 @@ void* FuncFinish_LockFree(void* arg) {
 */
 void* PetscThreadFunc_LockFree(void* arg) 
 {
-  int iVal;
+  PetscInt iVal;
 
-  iVal = *(int*)arg;
+  iVal = *(PetscInt*)arg;
   pthread_setspecific(rankkey,&threadranks[iVal+1]);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -61,12 +61,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pVal_lockfree = (int*)malloc(N*sizeof(int));
+  pVal_lockfree = (PetscInt*)malloc(N*sizeof(PetscInt));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   job_lockfree.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_lockfree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
-  job_lockfree.my_job_status = (int*)malloc(N*sizeof(int));
+  job_lockfree.my_job_status = (PetscInt*)malloc(N*sizeof(PetscInt));
 
   threadranks[0] = 0; /* rank of main thread */
   pthread_setspecific(rankkey,&threadranks[0]);
@@ -86,7 +86,7 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
 #define __FUNCT__ "PetscThreadsSynchronizationFinalize_LockFree"
 PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree() 
 {
-  int i;
+  PetscInt i;
   void* jstatus;
   PetscErrorCode ierr;
 
@@ -113,7 +113,7 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree()
 #define __FUNCT__ "PetscThreadsWait_LockFree"
 void* PetscThreadsWait_LockFree(void* arg) 
 {
-  int job_done,i;
+  PetscInt job_done,i;
 
   job_done = 0;
   /* Loop till all threads signal that they have done their job */
@@ -130,7 +130,7 @@ void* PetscThreadsWait_LockFree(void* arg)
 #define __FUNCT__ "PetscThreadsRunKernel_LockFree"
 PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
-  int i,j,issetaffinity=0;
+  PetscInt i,j,issetaffinity=0;
 
   PetscFunctionBegin;
   for(i=0;i<PetscMaxThreads;i++) {

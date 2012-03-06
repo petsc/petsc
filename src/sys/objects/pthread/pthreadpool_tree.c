@@ -2,7 +2,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-static int*         pVal_tree;
+static PetscInt*         pVal_tree;
 
 #define CACHE_LINE_SIZE 64
 
@@ -36,8 +36,8 @@ static char* arrready;
 */
 void* PetscThreadFunc_Tree(void* arg) 
 {
-  int* pId = (int*)arg;
-  int ThreadId = *pId,Mary = 2,i,SubWorker;
+  PetscInt* pId = (PetscInt*)arg;
+  PetscInt ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
 
   pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
@@ -195,7 +195,7 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Tree(PetscInt N)
   job_tree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_tree.startJob = PETSC_FALSE;
   job_tree.eJobStat = JobInitiated;
-  pVal_tree = (int*)malloc(N*sizeof(int));
+  pVal_tree = (PetscInt*)malloc(N*sizeof(PetscInt));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   threadranks[0] = 0;
@@ -254,7 +254,7 @@ void* PetscThreadsWait_Tree(void* arg) {
 #define __FUNCT__ "PetscThreadsRunKernel_Tree"
 PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
-  int i,j,issetaffinity;
+  PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

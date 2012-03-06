@@ -2,7 +2,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-static int*         pVal_main;
+static PetscInt*         pVal_main;
 
 #define CACHE_LINE_SIZE 64  /* used by 'chain', 'main','tree' thread pools */
 
@@ -31,8 +31,8 @@ static char* arrready;
    ---------------------------- 
 */void* PetscThreadFunc_Main(void* arg) {
 
-  int* pId = (int*)arg;
-  int ThreadId = *pId;
+  PetscInt* pId = (PetscInt*)arg;
+  PetscInt ThreadId = *pId;
 
   pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -117,7 +117,7 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
   }
   job_main.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_main.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
-  pVal_main = (int*)malloc(N*sizeof(int));
+  pVal_main = (PetscInt*)malloc(N*sizeof(PetscInt));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
 
@@ -137,7 +137,7 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsSynchronizationFinalize_Main"
 PetscErrorCode PetscThreadsSynchronizationFinalize_Main() {
-  int            i;
+  PetscInt            i;
   void*          jstatus;
   PetscErrorCode ierr;
 
@@ -179,7 +179,7 @@ void* PetscThreadsWait_Main(void* arg) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Main"
 PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  int i,j,issetaffinity;
+  PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

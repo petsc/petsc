@@ -6,7 +6,7 @@ PetscInt *pVal_none;
 typedef void* (*pfunc)(void*);
 typedef struct {
   pfunc* funcArr;
-  int   nthreads;
+  PetscInt   nthreads;
   void** pdata;
   pthread_t* ThreadId;
 }sjob_none;
@@ -20,9 +20,9 @@ sjob_none job_none;
 */
 void* PetscThreadFunc_None(void* arg)
 {
-  int iVal;
+  PetscInt iVal;
 
-  iVal = *(int*)arg;
+  iVal = *(PetscInt*)arg;
   pthread_setspecific(rankkey,&threadranks[iVal+1]);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -37,7 +37,7 @@ void* PetscThreadFunc_None(void* arg)
   
 void* PetscThreadsWait_None(void* arg)
 {
-  int            nthreads;
+  PetscInt            nthreads;
   PetscInt       i;
   void*          joinstatus;
 
@@ -56,7 +56,7 @@ PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,Pets
   PetscInt Nnew_threads=n-PetscMainThreadShareWork;
 
   PetscFunctionBegin;
-  pVal_none = (int*)malloc((n-PetscMainThreadShareWork)*sizeof(int));
+  pVal_none = (PetscInt*)malloc((n-PetscMainThreadShareWork)*sizeof(PetscInt));
   PetscThreadPoint = (pthread_t*)malloc((n-PetscMainThreadShareWork)*sizeof(pthread_t));
   job_none.funcArr = (pfunc*)malloc(n*sizeof(pfunc));
   job_none.pdata   = (void**)malloc(n*sizeof(void*));
