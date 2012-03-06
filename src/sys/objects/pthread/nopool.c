@@ -53,7 +53,6 @@ void* PetscThreadsWait_None(void* arg)
 PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
   PetscInt i;
-  pthread_t pthread_main=pthread_self();
   PetscInt Nnew_threads=n-PetscMainThreadShareWork;
 
   PetscFunctionBegin;
