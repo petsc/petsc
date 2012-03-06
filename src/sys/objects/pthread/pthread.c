@@ -1,6 +1,6 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
-#include <private/vecimpl.h>
+#include <private/vecimpl.h>   /*I   "petscvec.h"  I*/
 
 /* Initialize global variables and function pointers */
 PetscBool   PetscThreadGo = PETSC_TRUE;
@@ -10,6 +10,8 @@ PetscInt*   ThreadCoreAffinity=NULL;
 PetscInt    PetscMainThreadShareWork = 1;
 PetscInt    MainThreadCoreAffinity = 0;
 PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
+pthread_key_t rankkey;
+PetscInt*   threadranks=NULL;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
@@ -29,6 +31,27 @@ void* FuncFinish(void* arg) {
   return(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGetThreadRank"
+/*
+  PetscGetThreadRank - Gets the rank of the calling thread.
+
+  Level: developer
+
+  Notes: The ranks of all the threads spawned via PetscThreadsInitialize() start from 1 and the
+         main control thread assigned rank 0.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscGetThreadRank(PetscInt* rankp)
+{
+  PetscInt trank;
+
+  PetscFunctionBegin;
+  trank = *(PetscInt*)pthread_getspecific(rankkey);
+  *rankp = trank;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 /* Set CPU affinity for the main thread */
 void PetscSetMainThreadAffinity(PetscInt icorr)
@@ -45,7 +68,10 @@ void DoCoreAffinity(void)
   int       i,icorr=0; 
   pthread_t pThread = pthread_self();
   cpu_set_t mset;
+  PetscInt  myrank;
   
+  PetscGetThreadRank(&myrank);
+
   switch(thread_aff_policy) {
   case THREADAFFINITYPOLICY_ONECORE:
     for (i=0; i<PetscMaxThreads; i++) {
@@ -109,6 +135,10 @@ PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
     tstr[7] = '\0';
   }
 
+  /* Create key to store the thread rank */
+  ierr = pthread_key_create(&rankkey,NULL);CHKERRQ(ierr);
+  /* Create array to store thread ranks */
+  ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&threadranks);CHKERRQ(ierr);
   if(PetscThreadsSynchronizationInitialize) {
     ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
   }
@@ -136,11 +166,14 @@ PetscErrorCode PetscThreadsFinalize(void)
   if (PetscThreadsSynchronizationFinalize) {
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
+
+  ierr = pthread_key_delete(rankkey);CHKERRQ(ierr);
   ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
+  ierr = PetscFree(threadranks);CHKERRQ(ierr);
   PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMaxPThreads"
 /*
@@ -160,7 +193,7 @@ PetscErrorCode PetscThreadsFinalize(void)
    Use nthreads = PETSC_DECIDE for PETSc to calculate the maximum number of pthreads to create.
    The number of threads is then set to the number of processing units available
    for the system. By default, PETSc will set max. threads = # of processing units
-   available - 1 (since we consider the main thread as also a worker thread). If the
+   available - 1 (since the main thread is also a worker thread). If the
    option -mainthread_no_share_work is used, then max. threads created = # of
    available processing units.
    

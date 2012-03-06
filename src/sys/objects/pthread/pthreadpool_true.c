@@ -34,10 +34,11 @@ static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER;
 */
 void* PetscThreadFunc_True(void* arg) 
 {
-
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   int* pId      = (int*)arg;
   int  ThreadId = *pId; 
+
+  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   DoCoreAffinity();
 #endif
   pthread_mutex_lock(&job_true.mutex);
@@ -98,8 +99,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
   ierr = pthread_barrier_init(&pbarr,NULL,PetscMaxThreads);CHKERRQ(ierr);
   job_true.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_true.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
+
+  threadranks[0] = 0;
+  pthread_setspecific(rankkey,&threadranks[0]);
   for(i=0; i<N; i++) {
     pVal_true[i] = i;
+    threadranks[i+1] = i+1;
     job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);CHKERRQ(ierr);

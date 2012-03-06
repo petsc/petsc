@@ -42,6 +42,7 @@ void* PetscThreadFunc_Chain(void* arg) {
   int SubWorker = ThreadId + 1;
   PetscBool PeeOn;
 
+  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   DoCoreAffinity();
 #endif
@@ -184,9 +185,13 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Chain(PetscInt N)
   pVal_chain = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+
+  threadranks[0] = 0;
+  pthread_setspecific(rankkey,&threadranks[0]);
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_chain[i] = i;
+    threadranks[i+1] = i+1;
     job_chain.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_chain.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_chain[i]);CHKERRQ(ierr);

@@ -32,6 +32,7 @@ void* PetscThreadFunc_LockFree(void* arg)
   int iVal;
 
   iVal = *(int*)arg;
+  pthread_setspecific(rankkey,&threadranks[iVal+1]);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   DoCoreAffinity();
@@ -47,6 +48,8 @@ void* PetscThreadFunc_LockFree(void* arg)
     }
   }
   __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
+
+  pthread_setspecific(rankkey,NULL);
   return NULL;
 }
 
@@ -65,9 +68,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   job_lockfree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_lockfree.my_job_status = (int*)malloc(N*sizeof(int));
 
+  threadranks[0] = 0; /* rank of main thread */
+  pthread_setspecific(rankkey,&threadranks[0]);
   /* Create threads */
   for(i=0; i<N; i++) {
     pVal_lockfree[i] = i;
+    threadranks[i+1] = i+1;
     job_lockfree.my_job_status[i] = 1;
     job_lockfree.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
@@ -94,6 +100,7 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree()
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
 
+  pthread_setspecific(rankkey,PETSC_NULL);
   free(job_lockfree.my_job_status);
   free(job_lockfree.funcArr);
   free(PetscThreadPoint);

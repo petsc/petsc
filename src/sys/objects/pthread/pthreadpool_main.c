@@ -29,12 +29,12 @@ static char* arrready;
    ----------------------------
    'Main' Thread Pool Functions
    ---------------------------- 
-*/
-void* PetscThreadFunc_Main(void* arg) {
+*/void* PetscThreadFunc_Main(void* arg) {
 
   int* pId = (int*)arg;
   int ThreadId = *pId;
 
+  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   DoCoreAffinity();
 #endif
@@ -120,9 +120,13 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
   pVal_main = (int*)malloc(N*sizeof(int));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+
+  threadranks[0] = 0; /* rank of main thread */
+  pthread_setspecific(rankkey,&threadranks[0]);
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_main[i] = i;
+    threadranks[i+1] = i+1;
     job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);CHKERRQ(ierr);

@@ -33,14 +33,15 @@
 #include <sys/sysctl.h>
 #endif
 
-extern PetscBool    PetscThreadGo;                /* Flag to keep the threads spinning in a loop */
-extern PetscMPIInt  PetscMaxThreads;              /* Max. threads created */
-extern pthread_t*   PetscThreadPoint;             /* Pointer to thread ids */
-extern PetscInt*    ThreadCoreAffinity;           /* Core affinity of each thread */
-extern PetscInt     PetscMainThreadShareWork;     /* Is the main thread also a worker? 1 = Yes */
-extern PetscInt     MainThreadCoreAffinity;       /* Core affinity of the main thread */
-extern PetscBool    PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
-
+extern PetscBool      PetscThreadGo;                /* Flag to keep the threads spinning in a loop */
+extern PetscMPIInt    PetscMaxThreads;              /* Max. threads created */
+extern pthread_t*     PetscThreadPoint;             /* Pointer to thread ids */
+extern PetscInt*      ThreadCoreAffinity;           /* Core affinity of each thread */
+extern PetscInt       PetscMainThreadShareWork;     /* Is the main thread also a worker? 1 = Yes */
+extern PetscInt       MainThreadCoreAffinity;       /* Core affinity of the main thread */
+extern PetscBool      PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
+extern pthread_key_t  rankkey;
+extern PetscInt*      threadranks;                  /* Array to hold thread ranks */
 /*
   ThreadSynchronizationType - Type of thread synchronization for pthreads
 
