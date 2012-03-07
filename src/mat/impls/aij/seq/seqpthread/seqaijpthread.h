@@ -16,4 +16,8 @@ typedef struct {
 Mat_KernelData *mat_kerneldatap;
 Mat_KernelData **mat_pdata;
 
+EXTERN_C_BEGIN
+extern PetscErrorCode MatSeqAIJPThreadSetPreallocation_SeqAIJPThread(Mat,PetscInt,const PetscInt*);
+EXTERN_C_END
+
 #endif
