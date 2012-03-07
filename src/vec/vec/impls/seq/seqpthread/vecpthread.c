@@ -1434,7 +1434,7 @@ PetscErrorCode VecSetNThreads(Vec v,PetscInt nthreads)
   PetscFunctionBegin;
 
   if(!tmap) {
-    ierr = PetscThreadsLayoutCreate(&tmap);
+    ierr = PetscThreadsLayoutCreate(&tmap);CHKERRQ(ierr);
     v->map->tmap = tmap;
   }
 
