@@ -1198,23 +1198,14 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     }
 
     /* correct as x <- x + I(x^c - Rx)*/
-    ierr = VecAXPY(X_c, -1.0, Xo_c);CHKERRQ(ierr);
+    ierr = VecAYPX(X_c, -1.0, Xo_c);CHKERRQ(ierr);
     ierr = MatInterpolate(fas->interpolate, X_c, Xhat);CHKERRQ(ierr);
 
     /* additive correction of the coarse direction*/
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-    ierr = VecScale(Xhat, -1.0);CHKERRQ(ierr);
     ierr = LineSearchApply(fas->linesearch, X, F, &fnorm, Xhat);CHKERRQ(ierr);
     ierr = LineSearchGetSuccess(fas->linesearch, &lssuccess);CHKERRQ(ierr);
-#if 0
-    if (!lssuccess) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(0);
-      }
-    }
-#endif
     ierr = LineSearchGetNorms(fas->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
   } else {
     ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
