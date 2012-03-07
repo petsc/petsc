@@ -1,6 +1,5 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
-#include <private/vecimpl.h>   /*I   "petscvec.h"  I*/
 
 /* Initialize global variables and function pointers */
 PetscBool   PetscThreadGo = PETSC_TRUE;

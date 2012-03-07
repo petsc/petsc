@@ -51,6 +51,8 @@ PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout *tmap)
   if(!*tmap) PetscFunctionReturn(0);
   ierr = PetscFree((*tmap)->trstarts);CHKERRQ(ierr);
   ierr = PetscFree((*tmap)->affinity);CHKERRQ(ierr);
+  ierr = PetscFree((*tmap));CHKERRQ(ierr);
+  *tmap = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
