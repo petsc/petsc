@@ -65,7 +65,6 @@ void PetscSetMainThreadAffinity(PetscInt icorr)
 void DoCoreAffinity(void)
 {
   PetscInt  i,icorr=0; 
-  pthread_t pThread = pthread_self();
   cpu_set_t mset;
   PetscInt  myrank;
   
@@ -73,15 +72,11 @@ void DoCoreAffinity(void)
 
   switch(thread_aff_policy) {
   case THREADAFFINITYPOLICY_ONECORE:
-    for (i=0; i<PetscMaxThreads; i++) {
-      if (pthread_equal(pThread,PetscThreadPoint[i])) {
-	icorr = ThreadCoreAffinity[i];
-	CPU_ZERO(&mset);
-	CPU_SET(icorr%N_CORES,&mset);
-	pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
-	break;
-      }
-    }
+    if(myrank == 0) icorr = MainThreadCoreAffinity;
+    else icorr = ThreadCoreAffinity[myrank-1];
+    CPU_ZERO(&mset);
+    CPU_SET(icorr%N_CORES,&mset);
+    pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
   case THREADAFFINITYPOLICY_ALL:
     CPU_ZERO(&mset);
