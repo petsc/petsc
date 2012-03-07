@@ -3,7 +3,7 @@
 #include <private/vecimpl.h>
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>  /*I   "petscvec.h"  I*/
 #include <petscblaslapack.h>
 
 extern PetscInt     vecs_created;
@@ -439,7 +439,7 @@ EXTERN_C_END
 .seealso: VecCreateSeqPThread(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
 
 @*/ 
-PetscErrorCode  VecCreateMPIPThread(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nthreads,PetscInt affinities[],Vec *v)
+PetscErrorCode VecCreateMPIPThread(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nthreads,PetscInt affinities[],Vec *v)
 {
   PetscErrorCode ierr;
 
