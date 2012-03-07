@@ -62,7 +62,7 @@ PetscErrorCode  LineSearchApply_Basic(LineSearch linesearch)
   /* postcheck */
   ierr = LineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
-    ierr = VecWAXPY(W,-snes->damping,Y,X);CHKERRQ(ierr);
+    ierr = VecWAXPY(W,-linesearch->damping,Y,X);CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
   if (snes->domainerror) {

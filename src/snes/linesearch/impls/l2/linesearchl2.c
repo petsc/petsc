@@ -71,13 +71,15 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecDot(F, F, &fnrm_mid);CHKERRQ(ierr);
+  ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+  fnrm_mid = fnrm_mid*fnrm_mid;
 
   /* compute the norm at lambda */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecDot(F, F, &fnrm);CHKERRQ(ierr);
+  ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+  fnrm = fnrm*fnrm;
 
   /* this gives us the derivatives at the endpoints -- compute them from here
 
@@ -106,14 +108,15 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
     del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
 
     /* check for positive curvature -- looking for that root wouldn't be a good thing. */
-    while ((PetscRealPart(del2Fnrm) < 0.0) && (fabs(delLambda) > snes->steptol)) {
+    while ((del2Fnrm < 0.0) && (fabs(delLambda) > linesearch->steptol)) {
       fnrm_old = fnrm_mid;
       lambda_old = lambda_mid;
       lambda_mid = 0.5*(lambda_old + lambda);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-      ierr = VecDot(F, F, &fnrm_mid);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+      fnrm_mid = fnrm_mid*fnrm_mid;
       delLambda    = lambda - lambda_old;
       delFnrm      = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
       delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
@@ -121,16 +124,16 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
     }
 
     if (linesearch->monitor) {
-      ierr = PetscViewerASCIIAddTab(linesearch->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(linesearch->monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
-                                    lambda, lambda_mid, lambda_old, PetscSqrtReal(PetscRealPart(fnrm)), PetscSqrtReal(PetscRealPart(fnrm_mid)), PetscSqrtReal(PetscRealPart(fnrm_old)));CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(linesearch->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+                                    lambda, lambda_mid, lambda_old, PetscSqrtReal(fnrm), PetscSqrtReal(fnrm_mid), PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
 
     /* compute the search direction */
-    lambda_update = lambda - PetscRealPart(delFnrm)*delLambda / PetscRealPart(delFnrm - delFnrm_old);
+    lambda_update = lambda - delFnrm*delLambda / (delFnrm - delFnrm_old);
     if (PetscIsInfOrNanScalar(lambda_update)) break;
-    if (lambda_update > snes->maxstep) {
+    if (lambda_update > linesearch->maxstep) {
       break;
     }
 
@@ -143,7 +146,7 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
   /* postcheck */
   ierr = LineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
-    ierr = VecAXPY(X,-snes->damping,Y);CHKERRQ(ierr);
+    ierr = VecAXPY(X,-linesearch->damping,Y);CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   if (snes->domainerror) {
@@ -161,11 +164,11 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
 
   linesearch->lambda = lambda;
   if (linesearch->monitor) {
-    ierr = PetscViewerASCIIAddTab(linesearch->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(linesearch->monitor,"    Line search terminated: lambda = %g, fnorms = %g\n", lambda, linesearch->fnorm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(linesearch->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
   }
-  if (lambda <= snes->steptol) {
+  if (lambda <= linesearch->steptol) {
     linesearch->success = PETSC_FALSE;
   }
   PetscFunctionReturn(0);

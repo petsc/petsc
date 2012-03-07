@@ -156,11 +156,12 @@ PetscErrorCode LineSearchDestroy(LineSearch * linesearch) {
     (*linesearch)->ops->destroy(*linesearch);
   }
   ierr = PetscViewerDestroy(&(*linesearch)->monitor);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetMonitor"
+#define __FUNCT__ "LineSearchSetMonitor"
 /*@C
    SNESLineSearchSetMonitor - Prints information about the progress or lack of progress of the line search
 
@@ -309,6 +310,70 @@ PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "LineSearchAppendOptionsPrefix"
+/*@C
+   LineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   SNES options in the database.
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: SNES, append, options, prefix, database
+
+.seealso: SNESGetOptionsPrefix()
+@*/
+PetscErrorCode  LineSearchAppendOptionsPrefix(LineSearch linesearch,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)linesearch,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetOptionsPrefix"
+/*@C
+   LineSearchGetOptionsPrefix - Sets the prefix used for searching for all
+   SNES options in the database.
+
+   Not Collective
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   sufficient length to hold the prefix.
+
+   Level: advanced
+
+.keywords: SNES, get, options, prefix, database
+
+.seealso: SNESAppendOptionsPrefix()
+@*/
+PetscErrorCode  LineSearchGetOptionsPrefix(LineSearch linesearch,const char *prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)linesearch,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchGetWork"
