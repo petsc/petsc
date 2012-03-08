@@ -37,7 +37,8 @@ PetscErrorCode get_new_node( llNode **a_out, PetscInt a_gid )
     ierr = PetscMalloc( POOL_CHK_SZ*sizeof(llNode), &node_pool.data.array ); CHKERRQ(ierr);
     node_pool.next = 0;
     new_left = POOL_CHK_SZ;
-    new_node = node_pool.data.array;
+    new_node->next = PETSC_NULL;
+    new_node->data.array = node_pool.data.array;
   }
   else if( !new_left ){
     llNode *node;
@@ -220,11 +221,12 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     /* set 'locMaxEdge' and create list of edges - count edges */
     for(nEdges=0,lid=0,gid=my0;lid<nloc;lid++,gid++){
       PetscReal max_dege = 0.;
+      PetscScalar vval;
       ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
       ap = matA->a + ii[lid];
       for (j=0; j<n; j++) {
         PetscInt lidj = idx[j];
-        if(lidj != lid && PetscAbs(ap[j]) > max_dege ) max_dege = PetscAbs(ap[j]);
+        if(lidj != lid && PetscAbsScalar(ap[j]) > max_dege ) max_dege = PetscAbsScalar(ap[j]);
         if(lidj > lid) nEdges++;
       }
       if( (ix=lid_cprowID[lid]) != -1 ) { /* if I have any ghost neighbors */
@@ -232,11 +234,12 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         ap = matB->a + ii[ix];
         idx = matB->j + ii[ix];
         for( j=0 ; j<n ; j++ ) {
-          if( PetscAbs(ap[j]) > max_dege ) max_dege = PetscAbs(ap[j]);
+          if( PetscAbsScalar(ap[j]) > max_dege ) max_dege = PetscAbsScalar(ap[j]);
           if( idx[j] > my0 ) nEdges++;
         }
-      } 
-      ierr = VecSetValues( locMaxEdge, 1, &gid, &max_dege, INSERT_VALUES );  CHKERRQ(ierr); /* set with GID */
+      }
+      vval = max_dege;
+      ierr = VecSetValues( locMaxEdge, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr); /* set with GID */
     }
     ierr = VecAssemblyBegin( locMaxEdge ); CHKERRQ(ierr);
     ierr = VecAssemblyEnd( locMaxEdge ); CHKERRQ(ierr);
@@ -272,11 +275,11 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
       ap = matA->a + ii[lid];
       for (j=0; j<n; j++) {
-        PetscInt lidj = idx[j];        assert(ap[j]>0.);
+        PetscInt lidj = idx[j];        assert(PetscRealPart(ap[j])>0.);
         if(lidj > lid) {
           Edges[nEdges].lid0 = lid;
           Edges[nEdges].gid1 = lidj + my0;
-          Edges[nEdges].weight = ap[j];
+          Edges[nEdges].weight = PetscRealPart(ap[j]);
           nEdges++;
         }
       }
@@ -286,11 +289,11 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         idx = matB->j + ii[ix];
         nn += n;
         for( j=0 ; j<n ; j++ ) {
-          assert(ap[j]>0.);
+          assert(PetscRealPart(ap[j])>0.);
           if( idx[j] > my0 )  {
             Edges[nEdges].lid0 = lid;
             Edges[nEdges].gid1 = (PetscInt)PetscRealPart(cpcol_gid[idx[j]]);
-            Edges[nEdges].weight = ap[j];
+            Edges[nEdges].weight = PetscRealPart(ap[j]);
             nEdges++;
           }
         }
@@ -376,7 +379,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
 
   /* create output IS of aggregates in linked list -- does not work in parallel!!!! */
   if( a_locals_llist ) {
-    PetscInt *id_llist,cc=0; /* linked list with locality info - output */
+    PetscInt *id_llist; /* linked list with locality info - output */
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &id_llist ); CHKERRQ(ierr);
     for(kk=0;kk<nloc;kk++) id_llist[kk] = -1;
     for(kk=0;kk<nloc;kk++) {
