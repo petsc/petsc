@@ -27,7 +27,7 @@ extern PetscLogEvent LineSearch_Apply;
 typedef PetscErrorCode (*LineSearchPreCheckFunc)(LineSearch,Vec,Vec,PetscBool *);
 typedef PetscErrorCode (*LineSearchPostCheckFunc)(LineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
 typedef PetscErrorCode (*LineSearchApplyFunc)(LineSearch);
-typedef PetscErrorCode (*LineSearchUserFunc)(LineSearch,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
+typedef PetscErrorCode (*LineSearchUserFunc)(LineSearch, void *);
 
 extern PetscErrorCode LineSearchCreate(MPI_Comm, LineSearch*);
 extern PetscErrorCode LineSearchReset(LineSearch);
@@ -40,7 +40,6 @@ extern PetscErrorCode LineSearchApply(LineSearch, Vec, Vec, PetscReal *, Vec);
 extern PetscErrorCode LineSearchPreCheck(LineSearch, PetscBool *);
 extern PetscErrorCode LineSearchPostCheck(LineSearch, PetscBool *, PetscBool *);
 extern PetscErrorCode LineSearchGetWork(LineSearch, PetscInt);
-extern PetscErrorCode LineSearchGetNorms(LineSearch, PetscReal *, PetscReal *, PetscReal *);
 
 /*
 extern PetscErrorCode  LineSearchSetFunction(LineSearch,Vec,SNESFunction,void*);
@@ -50,27 +49,46 @@ extern PetscErrorCode  LineSearchSetJacobian(LineSearch,Mat,Mat,SNESJacobian,voi
 extern PetscErrorCode  LineSearchGetJacobian(LineSearch,Mat*,Mat*,SNESJacobian*,void**);
  */
 
-/* TEMPORARY pointers to the associated SNES in order to be able to get the function evaluation out */
+/* INELEGANT HACK pointers to the associated SNES in order to be able to get the function evaluation out */
 extern PetscErrorCode  LineSearchSetSNES(LineSearch,SNES);
 extern PetscErrorCode  LineSearchGetSNES(LineSearch,SNES*);
 
-/* unlike before; set and get the parameters */
-extern PetscErrorCode  LineSearchGetLambda(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchGetDamping(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchGetMaxStep(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchGetStepTolerance(LineSearch,PetscScalar*);
+/* set and get the parameters and vectors */
+extern PetscErrorCode  LineSearchGetLambda(LineSearch,PetscReal*);
+extern PetscErrorCode  LineSearchSetLambda(LineSearch,PetscReal);
 
-extern PetscErrorCode  LineSearchSetLambda(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchSetDamping(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchSetMaxStep(LineSearch,PetscScalar*);
-extern PetscErrorCode  LineSearchSetStepTolerance(LineSearch,PetscScalar*);
+extern PetscErrorCode  LineSearchGetStepTolerance(LineSearch,PetscReal*);
+extern PetscErrorCode  LineSearchSetStepTolerance(LineSearch,PetscReal);
+
+extern PetscErrorCode  LineSearchGetDamping(LineSearch,PetscReal*);
+extern PetscErrorCode  LineSearchSetDamping(LineSearch,PetscReal);
+
+extern PetscErrorCode  LineSearchGetMaxStep(LineSearch,PetscReal*);
+extern PetscErrorCode  LineSearchSetMaxStep(LineSearch,PetscReal);
 
 extern PetscErrorCode  LineSearchGetSuccess(LineSearch, PetscBool*);
+extern PetscErrorCode  LineSearchSetSuccess(LineSearch, PetscBool);
+
+extern PetscErrorCode LineSearchGetVecs(LineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
+extern PetscErrorCode LineSearchSetVecs(LineSearch,Vec,Vec,Vec,Vec,Vec);
+
+extern PetscErrorCode LineSearchGetNorms(LineSearch, PetscReal *, PetscReal *, PetscReal *);
+extern PetscErrorCode LineSearchSetNorms(LineSearch, PetscReal, PetscReal, PetscReal);
+extern PetscErrorCode LineSearchComputeNorms(LineSearch);
+
+extern PetscErrorCode LineSearchGetMaxIts(LineSearch, PetscInt *);
+extern PetscErrorCode LineSearchSetMaxIts(LineSearch, PetscInt);
 
 extern PetscErrorCode  LineSearchSetMonitor(LineSearch, PetscBool);
+extern PetscErrorCode  LineSearchGetMonitor(LineSearch, PetscViewer*);
 
 extern PetscErrorCode  LineSearchAppendOptionsPrefix(LineSearch, const char prefix[]);
 extern PetscErrorCode  LineSearchGetOptionsPrefix(LineSearch, const char *prefix[]);
+
+
+/* Shell interface functions */
+extern PetscErrorCode LineSearchShellSetUserFunc(LineSearch,LineSearchUserFunc,void*);
+extern PetscErrorCode LineSearchShellGetUserFunc(LineSearch,LineSearchUserFunc*,void**);
 
 /*register line search types */
 extern PetscErrorCode LineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(LineSearch));

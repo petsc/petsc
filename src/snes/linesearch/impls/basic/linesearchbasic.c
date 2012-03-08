@@ -41,47 +41,41 @@ PetscErrorCode  LineSearchApply_Basic(LineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
-  Vec            X = linesearch->vec_sol;
-  Vec            F = linesearch->vec_func;
-  Vec            Y = linesearch->vec_update;
-  Vec            W = linesearch->vec_sol_new;
-  SNES           snes = linesearch->snes;
-  PetscReal      *gnorm = &linesearch->fnorm;
-  PetscReal      *ynorm = &linesearch->ynorm;
-  PetscReal      *xnorm = &linesearch->xnorm;
+  Vec            X, F, Y, W;
+  SNES           snes;
+  PetscReal      gnorm, xnorm, ynorm, lambda;
+  PetscBool      domainerror;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(SNES_LineSearch,linesearch,X,F,snes);CHKERRQ(ierr);
+
+  ierr = LineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = LineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  ierr = LineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
+  ierr = LineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = LineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
 
   /* precheck */
   ierr = LineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
 
   /* update */
-  ierr = VecWAXPY(W,-linesearch->damping,Y,X);CHKERRQ(ierr);
+  ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
 
   /* postcheck */
   ierr = LineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
-    ierr = VecWAXPY(W,-linesearch->damping,Y,X);CHKERRQ(ierr);
+    ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    linesearch->success = PETSC_FALSE;
+  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+  if (domainerror) {
+    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);
     PetscFunctionReturn(0);
   }
-  if (linesearch->norms) {
-    ierr = VecNormBegin(F,NORM_2,gnorm);CHKERRQ(ierr);
-    ierr = VecNormBegin(X,NORM_2,xnorm);CHKERRQ(ierr);
-    ierr = VecNormBegin(Y,NORM_2,ynorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(F,NORM_2,gnorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(X,NORM_2,xnorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(Y,NORM_2,ynorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  }
+
+  ierr = LineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+
   /* copy the solution over */
   ierr = VecCopy(W, X);CHKERRQ(ierr);
-
-  ierr = PetscLogEventEnd(SNES_LineSearch,linesearch,X,F,snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

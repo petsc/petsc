@@ -195,6 +195,8 @@ extern PetscErrorCode  SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(
 extern PetscErrorCode  SNESPythonSetType(SNES,const char[]);
 
 extern PetscErrorCode  SNESSetFunctionDomainError(SNES);
+extern PetscErrorCode  SNESGetFunctionDomainError(SNES, PetscBool *);
+
 /*E
     SNESConvergedReason - reason a SNES method was said to 
          have converged or diverged

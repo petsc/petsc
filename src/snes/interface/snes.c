@@ -87,7 +87,7 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFunctionDomainError"
 /*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your FormFunction is not
@@ -96,7 +96,7 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
    Logically Collective on SNES
 
    Input Parameters:
-.  SNES - the SNES context
+.  snes - the SNES context
 
    Level: advanced
 
@@ -111,6 +111,36 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
   snes->domainerror = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetFunctionDomainError"
+/*@
+   SNESSetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameters:
+.  domainerror Set to PETSC_TRUE if there's a domain error; PETSC_FALSE otherwise.
+
+   Level: advanced
+
+.keywords: SNES, view
+
+.seealso: SNESSetFunctionDomainError, SNESComputeFunction()
+@*/
+PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(domainerror, 2);
+  *domainerror = snes->domainerror;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"

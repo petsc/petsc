@@ -63,7 +63,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
   ierr = LineSearchCreate(((PetscObject)snes)->comm, &ncg->linesearch);CHKERRQ(ierr);
   ierr = LineSearchSetSNES(ncg->linesearch, snes);CHKERRQ(ierr);
-  if (snes->pc) {
+  if (!snes->pc) {
     ierr = LineSearchSetType(ncg->linesearch, LINESEARCHCP);CHKERRQ(ierr);
   } else {
     ierr = LineSearchSetType(ncg->linesearch, LINESEARCHL2);CHKERRQ(ierr);

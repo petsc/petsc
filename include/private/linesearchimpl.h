@@ -21,6 +21,8 @@ struct _p_LineSearch {
 
   SNES          snes;     /* temporary -- so we can pull out the function evaluation */
 
+  void          *data;
+
   PetscBool     setupcalled;
 
   Vec           vec_sol;

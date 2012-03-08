@@ -193,6 +193,21 @@ PetscErrorCode  LineSearchSetMonitor(LineSearch linesearch,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "LineSearchGetMonitor"
+
+PetscErrorCode  LineSearchGetMonitor(LineSearch linesearch, PetscViewer *monitor)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  if (monitor) {
+    PetscValidPointer(monitor, 2);
+    *monitor = linesearch->monitor;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "LineSearchSetFromOptions"
 PetscErrorCode LineSearchSetFromOptions(LineSearch linesearch) {
   PetscErrorCode ierr;
@@ -216,13 +231,13 @@ PetscErrorCode LineSearchSetFromOptions(LineSearch linesearch) {
     (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
   }
 
-    ierr = PetscOptionsBool("-linesearch_monitor","Print progress of line searches","SNESLineSearchSetMonitor",
-                            linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-    if (set) {ierr = LineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-linesearch_monitor","Print progress of line searches","SNESLineSearchSetMonitor",
+                          linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = LineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
 
   ierr = PetscOptionsReal("-linesearch_damping","Line search damping and initial step guess","LineSearchSetDamping",linesearch->damping,&linesearch->damping,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-linesearch_norms","Compute final norms in line search","LineSearchSetDamping",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-linesearch_keeplambda","Use previous lambda as damping","LineSearchSetDamping",linesearch->keeplambda,&linesearch->keeplambda,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-linesearch_norms","Compute final norms in line search","LineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-linesearch_keeplambda","Use previous lambda as damping","LineSearchSetKeepLambda",linesearch->keeplambda,&linesearch->keeplambda,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-linesearch_max_it","Maximum iterations for iterative line searches","",linesearch->max_its,&linesearch->max_its,0);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -288,16 +303,123 @@ PetscErrorCode  LineSearchSetSNES(LineSearch linesearch, SNES snes){
 #define __FUNCT__ "LineSearchGetSNES"
 PetscErrorCode  LineSearchGetSNES(LineSearch linesearch, SNES *snes){
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(snes, 2);
   *snes = linesearch->snes;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetLambda"
+PetscErrorCode  LineSearchGetLambda(LineSearch linesearch,PetscReal *lambda)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(lambda, 2);
+  *lambda = linesearch->lambda;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetLambda"
+PetscErrorCode  LineSearchSetLambda(LineSearch linesearch, PetscReal lambda)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  linesearch->lambda = lambda;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetStepTolerance"
+PetscErrorCode  LineSearchGetStepTolerance(LineSearch linesearch ,PetscReal *steptol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(steptol, 2);
+  *steptol = linesearch->steptol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetStepTolerance"
+PetscErrorCode  LineSearchSetStepTolerance(LineSearch linesearch,PetscReal steptol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  linesearch->steptol = steptol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetDamping"
+extern PetscErrorCode  LineSearchGetDamping(LineSearch linesearch,PetscReal *damping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(damping, 2);
+  *damping = linesearch->damping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetDamping"
+extern PetscErrorCode  LineSearchSetDamping(LineSearch linesearch,PetscReal damping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  linesearch->damping = damping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetMaxStep"
+extern PetscErrorCode  LineSearchGetMaxStep(LineSearch linesearch,PetscReal* maxstep)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(maxstep, 2);
+  *maxstep = linesearch->maxstep;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetMaxStep"
+extern PetscErrorCode  LineSearchSetMaxStep(LineSearch linesearch, PetscReal maxstep)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  linesearch->maxstep = maxstep;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetMaxIts"
+PetscErrorCode LineSearchGetMaxIts(LineSearch linesearch, PetscInt * max_its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(max_its, 2);
+  *max_its = linesearch->max_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetMaxIts"
+PetscErrorCode LineSearchSetMaxIts(LineSearch linesearch, PetscInt max_its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  linesearch->max_its = max_its;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchGetNorms"
 PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, PetscReal * fnorm, PetscReal * ynorm)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
   if (xnorm) {
     *xnorm = linesearch->xnorm;
   }
@@ -310,10 +432,103 @@ PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetNorms"
+PetscErrorCode  LineSearchSetNorms(LineSearch linesearch, PetscReal xnorm, PetscReal fnorm, PetscReal ynorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  if (xnorm) {
+    linesearch->xnorm = xnorm;
+  }
+  if (fnorm) {
+    linesearch->fnorm = fnorm;
+  }
+  if (ynorm) {
+    linesearch->ynorm = ynorm;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchComputeNorms"
+PetscErrorCode LineSearchComputeNorms(LineSearch linesearch)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (linesearch->norms) {
+    ierr = VecNormBegin(linesearch->vec_func,   NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
+    ierr = VecNormBegin(linesearch->vec_sol,    NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+    ierr = VecNormBegin(linesearch->vec_update, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(linesearch->vec_func,     NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(linesearch->vec_sol,      NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(linesearch->vec_update,   NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchGetVecs"
+PetscErrorCode LineSearchGetVecs(LineSearch linesearch,Vec *X,Vec *F, Vec *Y,Vec *W,Vec *G) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  if (X) {
+    PetscValidPointer(X, 2);
+    *X = linesearch->vec_sol;
+  }
+  if (F) {
+    PetscValidPointer(F, 3);
+    *F = linesearch->vec_func;
+  }
+  if (Y) {
+    PetscValidPointer(Y, 4);
+    *Y = linesearch->vec_update;
+  }
+  if (W) {
+    PetscValidPointer(W, 5);
+    *W = linesearch->vec_sol_new;
+  }
+  if (G) {
+    PetscValidPointer(G, 6);
+    *G = linesearch->vec_func_new;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetVecs"
+PetscErrorCode LineSearchSetVecs(LineSearch linesearch,Vec X,Vec F,Vec Y,Vec W, Vec G) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  if (X) {
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    linesearch->vec_sol = X;
+  }
+  if (F) {
+    PetscValidHeaderSpecific(F,VEC_CLASSID,3);
+    linesearch->vec_func = F;
+  }
+  if (Y) {
+    PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
+    linesearch->vec_update = Y;
+  }
+  if (W) {
+    PetscValidHeaderSpecific(W,VEC_CLASSID,5);
+    linesearch->vec_sol_new = W;
+  }
+  if (G) {
+    PetscValidHeaderSpecific(G,VEC_CLASSID,6);
+    linesearch->vec_func_new = G;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "LineSearchAppendOptionsPrefix"
 /*@C
-   LineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   LineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
    SNES options in the database.
 
    Logically Collective on SNES
@@ -389,14 +604,27 @@ PetscErrorCode  LineSearchGetWork(LineSearch linesearch, PetscInt nwork)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchGetSuccess"
 PetscErrorCode  LineSearchGetSuccess(LineSearch linesearch, PetscBool *success)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidPointer(success, 2);
   if (success) {
     *success = linesearch->success;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LineSearchSetSuccess"
+PetscErrorCode  LineSearchSetSuccess(LineSearch linesearch, PetscBool success)
+{
+  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscFunctionBegin;
+  linesearch->success = success;
   PetscFunctionReturn(0);
 }
 
