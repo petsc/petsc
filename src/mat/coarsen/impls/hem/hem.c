@@ -15,7 +15,7 @@ typedef struct llnode_tag{
 typedef llNode lList;
 
 #define POOL_CHK_SZ 10
-static lList node_pool = {.next=0,.data.array=0};
+static lList node_pool;
 static llNode *new_node = 0;
 static PetscInt new_left = 0;
 
