@@ -404,13 +404,11 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
     for(kk=0;kk<nloc;kk++) id_llist[kk] = -1;
     for(kk=0;kk<nloc;kk++) {
       if( ll_get_id(&agg_lists[kk]) != -1 ) {
-        //if(verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t\t[%d]%s %d) root %d\n",mype,__FUNCT__,++cc,kk);
         llNode *node = agg_lists[kk].next;
         while(node){
           PetscInt lidj = ll_get_id(node)-my0;             assert(id_llist[lidj] == -1);
           id_llist[lidj] = id_llist[kk]; id_llist[kk] = lidj; /* insert 'lidj' into head of llist */
           node = node->next;
-          //if(verbose) PetscPrintf(PETSC_COMM_WORLD,"\t\t\t\t[%d]%s %d) add %d\n",mype,__FUNCT__,++cc,lidj);
         }
       }
     }
