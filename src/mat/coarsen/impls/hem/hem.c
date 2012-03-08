@@ -9,7 +9,7 @@ typedef struct llnode_tag{
   struct llnode_tag *next;
   union data_tag{
     PetscInt   gid;
-    void      *array;
+    struct llnode_tag *array;
   }data;
 }llNode;
 typedef llNode lList;
@@ -35,9 +35,11 @@ PetscErrorCode get_new_node( llNode **a_out, PetscInt a_gid )
   PetscErrorCode ierr;
   if( !node_pool.data.array ){
     ierr = PetscMalloc( POOL_CHK_SZ*sizeof(llNode), &node_pool.data.array ); CHKERRQ(ierr);
-    node_pool.next = 0;
+    node_pool.next = PETSC_NULL;
     new_left = POOL_CHK_SZ;
-    new_node = (llNode*)node_pool.data.array;
+    new_node = node_pool.data.array;
+    new_node->next = PETSC_NULL;
+    new_node->data.array = node_pool.data.array;
   }
   else if( !new_left ){
     llNode *node;
@@ -46,10 +48,10 @@ PetscErrorCode get_new_node( llNode **a_out, PetscInt a_gid )
     node->next = node_pool.next;
     node_pool.next = node;
     new_left = POOL_CHK_SZ;
-    new_node = (llNode*)node->data.array;
+    new_node = node->data.array;
   }
   new_node->data.gid = a_gid;
-  new_node->next = 0;
+  new_node->next = PETSC_NULL;
   *a_out = new_node++; new_left--;
   return 0;
 }
@@ -122,7 +124,8 @@ typedef struct edge_tag{
 
 int hem_compare (const void *a, const void *b)
 {
-  return (((Edge*)a)->weight < ((Edge*)b)->weight) ? 1 : -1; /* 0 for equal */
+  PetscReal va = ((Edge*)a)->weight, vb = ((Edge*)b)->weight;
+  return (va < vb) ? 1 : (va == vb) ? 0 : -1; /* 0 for equal */
 }
 
 /* -------------------------------------------------------------------------- */
@@ -182,11 +185,11 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   ierr = PetscTypeCompare( (PetscObject)a_Gmat, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
   iter = 0; 
   while( iter++ < 100 ) { 
-    PetscScalar *cpcol_gid,*cpcol_me,*lid_me,one=1.0;
+    PetscScalar *cpcol_gid,*cpcol_me,*lid_me,one=1.;
     Vec          locMaxEdge,ghostMaxEdge;
     PetscInt     nEdges,n_nz_row,nn;
     Edge        *Edges;
-    PetscInt     lid,gid;
+    PetscInt     gid;
     const PetscInt *perm_ix;
 
     /* get submatrices of cMat */
@@ -218,14 +221,15 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     }
     
     /* set 'locMaxEdge' and create list of edges - count edges */
-    for(nEdges=0,lid=0,gid=my0;lid<nloc;lid++,gid++){
-      PetscReal max_dege = 0.;
+    for(nEdges=0,kk=0,gid=my0;kk<nloc;kk++,gid++){
+      PetscReal max_e = 0.;
       PetscScalar vval;
+      PetscInt lid = kk;
       ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
       ap = matA->a + ii[lid];
       for (j=0; j<n; j++) {
         PetscInt lidj = idx[j];
-        if(lidj != lid && PetscAbsScalar(ap[j]) > max_dege ) max_dege = PetscAbsScalar(ap[j]);
+        if(lidj != lid && PetscRealPart(ap[j]) > max_e ) max_e = PetscRealPart(ap[j]);
         if(lidj > lid) nEdges++;
       }
       if( (ix=lid_cprowID[lid]) != -1 ) { /* if I have any ghost neighbors */
@@ -233,11 +237,11 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         ap = matB->a + ii[ix];
         idx = matB->j + ii[ix];
         for( j=0 ; j<n ; j++ ) {
-          if( PetscAbsScalar(ap[j]) > max_dege ) max_dege = PetscAbsScalar(ap[j]);
+          if( PetscRealPart(ap[j]) > max_e ) max_e = PetscRealPart(ap[j]);
           if( idx[j] > my0 ) nEdges++;
         }
       }
-      vval = max_dege;
+      vval = max_e;
       ierr = VecSetValues( locMaxEdge, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr); /* set with GID */
     }
     ierr = VecAssemblyBegin( locMaxEdge ); CHKERRQ(ierr);
@@ -269,8 +273,9 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     /* setup sorted list of edges */
     ierr = PetscMalloc( nEdges*sizeof(Edge), &Edges ); CHKERRQ(ierr);
     ierr = ISGetIndices( perm, &perm_ix );     CHKERRQ(ierr);
+    for(kk=0;kk<nloc;kk++) lid_state[kk] = -1;
     for(nEdges=n_nz_row=kk=0;kk<nloc;kk++){
-      lid = perm_ix[kk];
+      PetscInt lid = perm_ix[kk];
       ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
       ap = matA->a + ii[lid];
       for (j=0; j<n; j++) {
@@ -298,6 +303,10 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         }
       }
       if( nn > 1 ) n_nz_row++;
+      else {
+        lid_state[lid] = -2; /* flag for singleton */
+        /* PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d) found singleton %d (n=%d)\n",mype,__FUNCT__,iter,lid+my0,nn); */
+      }
     }
     ierr = ISRestoreIndices(perm,&perm_ix);     CHKERRQ(ierr);
     qsort( Edges, nEdges, sizeof(Edge), hem_compare );
@@ -308,16 +317,16 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
                          1, 0, 1, 0, &P );
     CHKERRQ(ierr);
     /* HEM */
-    for(kk=0;kk<nloc;kk++) lid_state[kk] = -1;
     for(kk=0;kk<nEdges;kk++){
       Edge *e = &Edges[kk];
-      PetscInt lid0=e->lid0,gid1=e->gid1,gid0=lid0+my0;      
+      PetscInt lid0=e->lid0,gid1=e->gid1,gid0=lid0+my0;      assert(lid_state[gid1-my0] != -2);
       PetscBool isOK = PETSC_TRUE;
+
       if(lid_state[lid0] != -1 || ( gid1>=my0 && gid1<Iend && lid_state[gid1-my0] != -1) ) {
-        continue;
+        continue; /* skip if either vertex is done already */
       }
-      /* parallel test -- see if larger edged vertex neighbor */
-      if( (ix=lid_cprowID[lid0]) != -1 ) { /* if I have any ghost neighbors */
+      /* parallel test -- see if larger edged vertex neighbor - ghost might not get done */
+      if( (ix=lid_cprowID[lid0]) != -1 && isOK ) { /* if I have any ghost neighbors */
         ii = matB->compressedrow.i; n = ii[ix+1] - ii[ix];
         idx = matB->j + ii[ix];
         for( j=0 ; j<n ; j++ ) {
@@ -332,7 +341,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
       }
       if( isOK ){
         ierr = ll_set_id( &agg_lists[lid0], gid0 );  CHKERRQ(ierr); /* this selects this */
-        lid_state[lid0] = lid+my0; /* keep track of what we've done this round */
+        lid_state[lid0] = lid0 + my0; /* keep track of what we've done this round */
         if( gid1>=my0 && gid1<Iend ) {
           lid_state[gid1-my0] = gid1;  /* keep track of what we've done this round */
           if( ll_get_id(&agg_lists[gid1-my0]) != -1 ) {
@@ -345,10 +354,15 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
         else {
           ierr = ll_add_id( &agg_lists[lid0], gid1 );  CHKERRQ(ierr); /* ghost??? */
         }
-        ierr = MatSetValues(P,1,&gid0,1,&gid0,&one,ADD_VALUES); CHKERRQ(ierr);
-        ierr = MatSetValues(P,1,&gid1,1,&gid0,&one,ADD_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(P,1,&gid0,1,&gid0,&one,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(P,1,&gid1,1,&gid0,&one,INSERT_VALUES); CHKERRQ(ierr);
       } /* matched */
     } /* edge loop */
+    for(kk=0,gid=my0;kk<nloc;kk++,gid++){
+      if( lid_state[kk] == -1 ) {
+        ierr = MatSetValues(P,1,&gid,1,&gid,&one,INSERT_VALUES); CHKERRQ(ierr);
+      }
+    }
     ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -363,16 +377,23 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
     ierr = VecDestroy( &locMaxEdge ); CHKERRQ(ierr); 
 
     /* create next G if needed */
-    if( iter==6 ) { /* hard wired test - need to look at full surrounded nodes or something */
+    if( iter==4 ) { /* hard wired test - need to look at full surrounded nodes or something */
       ierr = MatDestroy( &P );  CHKERRQ(ierr);
       ierr = MatDestroy( &cMat );  CHKERRQ(ierr);
       break;
     }
     else {
+      Vec diag;
       ierr = MatPtAP(cMat,P,MAT_INITIAL_MATRIX,1.0,&tMat);CHKERRQ(ierr);
       ierr = MatDestroy( &P );  CHKERRQ(ierr);
       ierr = MatDestroy( &cMat );  CHKERRQ(ierr);
       cMat = tMat;
+      ierr = MatGetVecs( cMat, &diag, 0 );    CHKERRQ(ierr);
+      ierr = MatGetDiagonal( cMat, diag );    CHKERRQ(ierr); /* effectively PCJACOBI */
+      ierr = VecReciprocal( diag );         CHKERRQ(ierr);
+      ierr = VecSqrtAbs( diag );              CHKERRQ(ierr);
+      ierr = MatDiagonalScale( cMat, diag, diag ); CHKERRQ(ierr);
+      ierr = VecDestroy( &diag );           CHKERRQ(ierr);
     }
   } /* coarsen iterator */
 

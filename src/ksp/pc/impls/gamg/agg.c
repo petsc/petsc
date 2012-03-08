@@ -754,7 +754,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
         if(llev==1) {
           char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
           PetscInt M,pi,pj,gid=Istart+flid;
-          str[12] = col[clid%6]; str[13] = sim[(clid/6)%11]; 
+          str[12] = col[clid%6]; str[13] = sim[clid%11]; 
           M = (PetscInt)(PetscSqrtScalar((PetscScalar)nFineLoc*npe));
           pj = gid/M; pi = gid%M;
           fprintf(file,str,(double)pi,(double)pj);
