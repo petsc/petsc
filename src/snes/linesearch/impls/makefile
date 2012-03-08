@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = basic l2
+DIRS     = basic l2 cp
 LOCDIR   = src/snes/impls/
 
 include ${PETSC_DIR}/conf/variables

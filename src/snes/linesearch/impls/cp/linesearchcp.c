@@ -2,10 +2,10 @@
 #include <private/snesimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchApply_L2"
+#define __FUNCT__ "LineSearchApply_CP"
 
 /*@C
-   LineSearchL2 - This routine is not a line search at all;
+   LineSearchCP - This routine is not a line search at all;
    it simply uses the full step.  Thus, this routine is intended
    to serve as a template and is not recommended for general use.
 
@@ -37,7 +37,7 @@
 .seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
           SNESLineSearchSet(), SNESLineSearchNoNorms()
 @*/
-PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
+PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
 {
 
   PetscBool      changed_y, changed_w;
@@ -51,87 +51,37 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
   PetscReal       *ynorm  = &linesearch->ynorm;
   PetscReal       *xnorm =  &linesearch->xnorm;
 
-  PetscReal        lambda, lambda_old, lambda_mid, lambda_update, delLambda;
-  PetscReal        fnrm, fnrm_old, fnrm_mid;
-  PetscReal        delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt         i;
+  PetscReal       lambda, lambda_old, lambda_update, delLambda;
+  PetscScalar     fty, fty_old;
+  PetscInt        i;
 
   PetscFunctionBegin;
   /* precheck */
   ierr = LineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
-
   lambda = linesearch->lambda;
   lambda_old = 0.0;
-  fnrm_old = (*gnorm)*(*gnorm);
-  lambda_mid = 0.5*(lambda + lambda_old);
+  ierr = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
   linesearch->success = PETSC_TRUE;
   for (i = 0; i < linesearch->max_its; i++) {
 
-  /* compute the norm at the midpoint */
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
-  fnrm_mid = fnrm_mid*fnrm_mid;
+    /* compute the norm at lambda */
+    ierr = VecCopy(X, W);CHKERRQ(ierr);
+    ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
 
-  /* compute the norm at lambda */
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
-  fnrm = fnrm*fnrm;
-
-  /* this gives us the derivatives at the endpoints -- compute them from here
-
-   a = x - a0
-
-   p_0(x) = (x / dA - 1)(2x / dA - 1)
-   p_1(x) = 4(x / dA)(1 - x / dA)
-   p_2(x) = (x / dA)(2x / dA - 1)
-
-   dp_0[0] / dx = 3 / dA
-   dp_1[0] / dx = -4 / dA
-   dp_2[0] / dx = 1 / dA
-
-   dp_0[dA] / dx = -1 / dA
-   dp_1[dA] / dx = 4 / dA
-   dp_2[dA] / dx = -3 / dA
-
-   d^2p_0[0] / dx^2 =  4 / dA^2
-   d^2p_1[0] / dx^2 = -8 / dA^2
-   d^2p_2[0] / dx^2 =  4 / dA^2
-     */
+    ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);
 
     delLambda    = lambda - lambda_old;
-    delFnrm      = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
-    delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
-    del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
-
-    /* check for positive curvature -- looking for that root wouldn't be a good thing. */
-    while ((del2Fnrm < 0.0) && (fabs(delLambda) > linesearch->steptol)) {
-      fnrm_old = fnrm_mid;
-      lambda_old = lambda_mid;
-      lambda_mid = 0.5*(lambda_old + lambda);
-      ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-      ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
-      fnrm_mid = fnrm_mid*fnrm_mid;
-      delLambda    = lambda - lambda_old;
-      delFnrm      = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
-      delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
-      del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
-    }
-
+    if (PetscAbsReal(delLambda) < linesearch->steptol) break;
     if (linesearch->monitor) {
       ierr = PetscViewerASCIIAddTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(linesearch->monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
-                                    lambda, lambda_mid, lambda_old, PetscSqrtReal(fnrm), PetscSqrtReal(fnrm_mid), PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(linesearch->monitor,"    Line search: lambdas = [%g, %g], ftys = [%g, %g]\n",
+                                    lambda, lambda_old, PetscRealPart(fty), PetscRealPart(fty_old));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(linesearch->monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
 
     /* compute the search direction */
-    lambda_update = lambda - delFnrm*delLambda / (delFnrm - delFnrm_old);
+    lambda_update =  PetscRealPart((fty*lambda_old - fty_old*lambda) / (fty - fty_old));
     if (PetscIsInfOrNanScalar(lambda_update)) break;
     if (lambda_update > linesearch->maxstep) {
       break;
@@ -140,8 +90,7 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
     /* compute the new state of the line search */
     lambda_old = lambda;
     lambda = lambda_update;
-    fnrm_old = fnrm;
-    lambda_mid = 0.5*(lambda + lambda_old);
+    fty_old = fty;
   }
   /* construct the solution */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
@@ -159,6 +108,7 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
     linesearch->success = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
+
   ierr = VecNormBegin(F, NORM_2, gnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X, NORM_2, xnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(Y, NORM_2, ynorm);CHKERRQ(ierr);
@@ -180,11 +130,11 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchCreate_L2"
-PetscErrorCode LineSearchCreate_L2(LineSearch linesearch)
+#define __FUNCT__ "LineSearchCreate_CP"
+PetscErrorCode LineSearchCreate_CP(LineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = LineSearchApply_L2;
+  linesearch->ops->apply          = LineSearchApply_CP;
   linesearch->ops->destroy        = PETSC_NULL;
   linesearch->ops->setfromoptions = PETSC_NULL;
   linesearch->ops->reset          = PETSC_NULL;
