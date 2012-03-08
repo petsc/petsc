@@ -183,7 +183,7 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
     /* -pc_gamg_sym_graph */
     pc_gamg_agg->sym_graph = PETSC_FALSE;
     ierr = PetscOptionsBool("-pc_gamg_sym_graph",
-                            "Set for asymetric matrices",
+                            "Set for asymmetric matrices",
                             "PCGAMGSetSymGraph",
                             pc_gamg_agg->sym_graph,
                             &pc_gamg_agg->sym_graph,
@@ -193,7 +193,7 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
     /* -pc_gamg_square_graph */
     pc_gamg_agg->square_graph = PETSC_TRUE;
     ierr = PetscOptionsBool("-pc_gamg_square_graph",
-                            "Set for asymetric matrices",
+                            "Set for asymmetric matrices",
                             "PCGAMGSetSquareGraph",
                             pc_gamg_agg->square_graph,
                             &pc_gamg_agg->square_graph,
