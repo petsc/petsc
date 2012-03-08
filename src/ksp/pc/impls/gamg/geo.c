@@ -18,7 +18,7 @@ typedef struct{
   PetscInt       lid;      /* local vertex index */
   PetscInt       degree;   /* vertex degree */
 } GAMGNode;
-int compare (const void *a, const void *b)
+int geo_mg_compare (const void *a, const void *b)
 {
   return (((GAMGNode*)a)->degree - ((GAMGNode*)b)->degree);
 }
@@ -663,7 +663,7 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC pc,
     ierr = PetscFree( bIndexSet );  CHKERRQ(ierr);
   }
   /* only sort locals */
-  qsort( gnodes, nloc, sizeof(GAMGNode), compare );
+  qsort( gnodes, nloc, sizeof(GAMGNode), geo_mg_compare );
   /* create IS of permutation */
   for(kk=0;kk<nloc;kk++) { /* locals only */
     permute[kk] = gnodes[kk].lid;

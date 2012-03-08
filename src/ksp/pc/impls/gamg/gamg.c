@@ -147,9 +147,9 @@ PetscErrorCode createLevel( const PC pc,
 	}
 	
 	ierr = MatCreateAIJ( wcomm, ncrs0, ncrs0,
-				PETSC_DETERMINE, PETSC_DETERMINE,
-				0, d_nnz, 0, o_nnz,
-				&tMat );
+                             PETSC_DETERMINE, PETSC_DETERMINE,
+                             0, d_nnz, 0, o_nnz,
+                             &tMat );
 	CHKERRQ(ierr);
 	ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
 	ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
