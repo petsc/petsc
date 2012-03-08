@@ -37,8 +37,7 @@ PetscErrorCode get_new_node( llNode **a_out, PetscInt a_gid )
     ierr = PetscMalloc( POOL_CHK_SZ*sizeof(llNode), &node_pool.data.array ); CHKERRQ(ierr);
     node_pool.next = 0;
     new_left = POOL_CHK_SZ;
-    new_node->next = PETSC_NULL;
-    new_node->data.array = node_pool.data.array;
+    new_node = (llNode*)node_pool.data.array;
   }
   else if( !new_left ){
     llNode *node;
