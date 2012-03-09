@@ -2,7 +2,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-int*           pVal_true;
+PetscInt*           pVal_true;
 
 #define CACHE_LINE_SIZE 64
 
@@ -16,8 +16,8 @@ typedef struct {
   pthread_cond_t cond;
   pfunc *funcArr;
   void** pdata;
-  int iNumJobThreads;
-  int iNumReadyThreads;
+  PetscInt iNumJobThreads;
+  PetscInt iNumReadyThreads;
   PetscBool startJob;
 } sjob_true;
 
@@ -34,10 +34,11 @@ static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER;
 */
 void* PetscThreadFunc_True(void* arg) 
 {
+  PetscInt* pId      = (PetscInt*)arg;
+  PetscInt  ThreadId = *pId; 
 
+  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  int* pId      = (int*)arg;
-  int  ThreadId = *pId; 
   DoCoreAffinity();
 #endif
   pthread_mutex_lock(&job_true.mutex);
@@ -91,15 +92,19 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
   PetscInt       i;
 
   PetscFunctionBegin;
-  pVal_true = (int*)malloc(N*sizeof(int));
+  pVal_true = (PetscInt*)malloc(N*sizeof(PetscInt));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   /* Initialize the barrier */
   ierr = pthread_barrier_init(&pbarr,NULL,PetscMaxThreads);CHKERRQ(ierr);
   job_true.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
   job_true.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
+
+  threadranks[0] = 0;
+  pthread_setspecific(rankkey,&threadranks[0]);
   for(i=0; i<N; i++) {
     pVal_true[i] = i;
+    threadranks[i+1] = i+1;
     job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);CHKERRQ(ierr);
@@ -110,7 +115,7 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsSynchronizationFinalize_True"
 PetscErrorCode PetscThreadsSynchronizationFinalize_True() {
-  int            i;
+  PetscInt            i;
   void*          jstatus;
   PetscErrorCode ierr;
 
@@ -145,7 +150,7 @@ void* PetscThreadsWait_True(void* arg) {
 #define __FUNCT__ "PetscThreadsRunKernel_True"
 PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
-  int i,j,issetaffinity;
+  PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -187,7 +192,7 @@ PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,Pets
   PetscFunctionReturn(0);
 }
 #else
-int PetscPthread_dummy()
+PetscInt PetscPthread_dummy()
 {
   return 0;
 }

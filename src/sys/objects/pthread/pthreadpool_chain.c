@@ -2,10 +2,10 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-int*           pVal_chain;
+PetscInt*           pVal_chain;
 
 #define CACHE_LINE_SIZE 64
-extern int* ThreadCoreAffinity;
+extern PetscInt* ThreadCoreAffinity;
 
 typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_chain;
 
@@ -37,11 +37,12 @@ static char* arrready;
  -----------------------------
 */
 void* PetscThreadFunc_Chain(void* arg) {
-  int* pId = (int*)arg;
-  int ThreadId = *pId;
-  int SubWorker = ThreadId + 1;
+  PetscInt* pId = (PetscInt*)arg;
+  PetscInt ThreadId = *pId;
+  PetscInt SubWorker = ThreadId + 1;
   PetscBool PeeOn;
 
+  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   DoCoreAffinity();
 #endif
@@ -181,12 +182,16 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Chain(PetscInt N)
   job_chain.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
   job_chain.startJob = PETSC_FALSE;
   job_chain.eJobStat = JobInitiated;
-  pVal_chain = (int*)malloc(N*sizeof(int));
+  pVal_chain = (PetscInt*)malloc(N*sizeof(PetscInt));
   /* allocate memory in the heap for the thread structure */
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+
+  threadranks[0] = 0;
+  pthread_setspecific(rankkey,&threadranks[0]);
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_chain[i] = i;
+    threadranks[i+1] = i+1;
     job_chain.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_chain.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_chain[i]);CHKERRQ(ierr);
@@ -237,7 +242,7 @@ void* PetscThreadsWait_Chain(void* arg) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Chain"
 PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
-  int i,j,issetaffinity;
+  PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

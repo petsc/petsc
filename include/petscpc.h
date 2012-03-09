@@ -451,6 +451,7 @@ extern PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 extern PetscErrorCode PCGAMGSetType( PC,const PCGAMGType );
 extern PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 extern PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
+extern PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */

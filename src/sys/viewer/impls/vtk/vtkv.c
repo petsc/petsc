@@ -8,12 +8,17 @@
    Collective
 
    Input Arguments:
-
-   Output Arguments:
++ viewer - VTK viewer
+. dm - DM on which Vec lives
+. func - function to write this Vec
+- vec - Vec to write
 
    Level: developer
 
-.seealso:
+   Note:
+   This routine keeps exclusive ownership of the Vec. The caller should not use or destroy the Vec after adding it.
+
+.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll()
 @*/
 PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction func,PetscObject vec)
 {

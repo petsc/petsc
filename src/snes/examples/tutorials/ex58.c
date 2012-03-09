@@ -1,7 +1,7 @@
 #include <petscsnes.h>
 #include <petscdmda.h>
 
-static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
+static const char help[] = "Parallel version of the minimum surface area problem in 2D using DMDA.\n\
  It solves a system of nonlinear equations in mixed\n\
 complementarity form.This example is based on a\n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and\n\

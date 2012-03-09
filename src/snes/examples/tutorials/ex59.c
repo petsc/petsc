@@ -1,7 +1,7 @@
 
 #include <stdlib.h>
 
-static char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an impossible case\n\n";
+static const char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an impossible case.\n\n";
 
 /*
        This example was contributed by Peter Graf to show how SNES fails when given a nonlinear problem with no solution.

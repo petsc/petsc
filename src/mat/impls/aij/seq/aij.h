@@ -258,6 +258,7 @@ extern PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,
 extern PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
 extern PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,PetscInt *[],PetscInt *[],PetscBool  *);
 extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
+extern PetscErrorCode MatSetUp_SeqAIJ(Mat);
 extern PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
 extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );

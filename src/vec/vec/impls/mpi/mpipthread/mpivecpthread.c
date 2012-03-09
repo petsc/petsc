@@ -1,8 +1,10 @@
 
 
-#include <../src/vec/vec/impls/mpi/mpipthread/mpivecpthreadimpl.h>   /*I  "petscvec.h"   I*/
-#include <petscblaslapack.h>
+#include <private/vecimpl.h>
 #include <../src/sys/objects/pthread/pthreadimpl.h>
+#include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>  /*I   "petscvec.h"  I*/
+#include <petscblaslapack.h>
 
 extern PetscInt     vecs_created;
 extern Kernel_Data  *kerneldatap;
@@ -141,7 +143,7 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec,PetscBool,PetscInt,const PetscSc
 PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPIPthread *vw,*w = (Vec_MPIPthread *)win->data;
+  Vec_MPI        *vw,*w = (Vec_MPI *)win->data;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -149,10 +151,9 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPIPThread_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
-  vw   = (Vec_MPIPthread *)(*v)->data;
+  vw   = (Vec_MPI *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-  ierr = VecPThreadSetNThreads(*v,w->nthreads-PetscMainThreadShareWork);CHKERRQ(ierr);
-  ierr = VecPThreadSetThreadAffinities(*v,w->cpu_affinity+PetscMainThreadShareWork);CHKERRQ(ierr);
+
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
@@ -182,7 +183,7 @@ PetscErrorCode VecDuplicate_MPIPThread(Vec win,Vec *v)
 #define __FUNCT__ "VecDestroy_MPIPThread"
 PetscErrorCode VecDestroy_MPIPThread(Vec v)
 {
-  Vec_MPIPthread *x = (Vec_MPIPthread*)v->data;
+  Vec_MPI *x = (Vec_MPI*)v->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -191,13 +192,15 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree2(x->arrindex,x->nelem);CHKERRQ(ierr);
-  ierr = PetscFree(x->cpu_affinity);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
     ierr = VecDestroy(&x->localrep);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&x->localupdate);CHKERRQ(ierr);
+  }
+
+  if(!v->map->refcnt) {
+    ierr = PetscThreadsLayoutDestroy(&v->map->tmap);CHKERRQ(ierr);
   }
 
   vecs_created--;
@@ -284,12 +287,13 @@ static struct _VecOps DvOps = { VecDuplicate_MPIPThread, /* 1 */
 #define __FUNCT__ "VecCreate_MPIPThread_Private"
 PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt nghost,const PetscScalar array[])
 {
-  Vec_MPIPthread *s;
+  Vec_MPI         *s;
   PetscErrorCode ierr;
+  PetscThreadsLayout tmap=v->map->tmap;
 
   PetscFunctionBegin;
 
-  ierr           = PetscNewLog(v,Vec_MPIPthread,&s);CHKERRQ(ierr);
+  ierr           = PetscNewLog(v,Vec_MPI,&s);CHKERRQ(ierr);
   v->data        = (void*)s;
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   s->nghost      = nghost;
@@ -297,11 +301,27 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
 
   if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
+
+  if(!v->map->tmap) {
+    ierr = PetscThreadsLayoutCreate(&v->map->tmap);CHKERRQ(ierr);
+    tmap = v->map->tmap;
+  }
+  tmap->N = v->map->n;
+
+ /* Set the number of threads */
+  if(tmap->nthreads == PETSC_DECIDE) {
+    ierr = VecSetNThreads(v,PETSC_DECIDE);CHKERRQ(ierr);
+  }
+  /* Set thread affinities */
+  if(!tmap->affinity) {
+    ierr = VecSetThreadAffinities(v,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  ierr = PetscThreadsLayoutSetUp(tmap);CHKERRQ(ierr);
+
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
-  s->nthreads        = 0;
-  s->arrindex        = 0;
-  s->cpu_affinity    = 0;
+
   if (alloc && !array) {
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
@@ -313,9 +333,6 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
     ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
   }
   vecs_created++;
-
-  ierr = VecPThreadSetNThreads(v,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecPThreadSetThreadAffinities(v,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecSet_SeqPThread(v,0.0);CHKERRQ(ierr);
   s->array_allocated = (PetscScalar*)s->array;
@@ -422,15 +439,15 @@ EXTERN_C_END
 .seealso: VecCreateSeqPThread(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
 
 @*/ 
-PetscErrorCode  VecCreateMPIPThread(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nthreads,PetscInt affinities[],Vec *v)
+PetscErrorCode VecCreateMPIPThread(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nthreads,PetscInt affinities[],Vec *v)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
+  ierr = VecSetNThreads(*v,nthreads);CHKERRQ(ierr);
+  ierr = VecSetThreadAffinities(*v,affinities);CHKERRQ(ierr);
   ierr = VecSetType(*v,VECMPIPTHREAD);CHKERRQ(ierr);
-  ierr = VecPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
-  ierr = VecPThreadSetThreadAffinities(*v,affinities);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

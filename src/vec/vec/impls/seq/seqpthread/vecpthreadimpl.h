@@ -5,14 +5,6 @@
 #include <petscsys.h>
 #include <private/vecimpl.h>
 
-typedef struct {
-  VECHEADER
-  PetscInt nthreads;      /* Number of threads */
-  PetscInt *arrindex;     /* Starting array index for each thread */
-  PetscInt *nelem;        /* Number of array elements assigned to each thread */
-  PetscInt *cpu_affinity; /* CPU affinities */
-}Vec_SeqPthread;
-
 /* Common data for all kernels */
 typedef struct {
   PetscScalar   *x,*y,*w;
@@ -50,7 +42,6 @@ extern PetscErrorCode VecAYPX_SeqPThread(Vec,PetscScalar,Vec);
 extern PetscErrorCode VecWAXPY_SeqPThread(Vec,PetscScalar,Vec,Vec);
 extern PetscErrorCode VecMAXPY_SeqPThread(Vec,PetscInt,const PetscScalar[],Vec*);
 extern PetscErrorCode VecSet_SeqPThread(Vec,PetscScalar);
-extern PetscErrorCode VecSetFromOptions_SeqPThread(Vec);
 
 EXTERN_C_BEGIN
 extern PetscErrorCode VecCreate_SeqPThread(Vec);

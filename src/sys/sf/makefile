@@ -4,7 +4,7 @@ SOURCEH	 = ../../../include/private/sfimpl.h ../../../include/petscsf.h
 SOURCEC  = dlregissf.c sf.c
 OBJSC	 = $(SOURCEC:.c=.o)
 OBJSF	 =
-LIBBASE	 = libpetscvec
+LIBBASE	 = libpetscsys
 DIRS	 = examples
 LOCDIR   = src/sys/sf/
 MANSEC   = PetscSF

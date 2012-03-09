@@ -1,4 +1,4 @@
-static const char help[] = "Uses analytic Jacobians to solve individual problems and a coupled problem\n\n";
+static const char help[] = "1D multiphysics prototype with analytic Jacobians to solve individual problems and a coupled problem.\n\n";
 
 /* Solve a PDE coupled to an algebraic system in 1D
  *

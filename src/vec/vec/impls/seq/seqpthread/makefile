@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vecpthread.c
+SOURCEC  = vecpthread.c tmap.c
 SOURCEF  =
 SOURCEH  = vecpthreadimpl.h
-OBJSC    = vecpthread.o
+OBJSC    = vecpthread.o tmap.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec

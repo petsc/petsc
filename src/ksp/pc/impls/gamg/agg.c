@@ -12,6 +12,7 @@ typedef struct {
   PetscInt nsmooths;
   Mat aux_mat;
   PetscBool sym_graph;
+  PetscBool square_graph;
 }PC_GAMG_AGG;
 
 #undef __FUNCT__  
@@ -102,6 +103,50 @@ PetscErrorCode PCGAMGSetSymGraph_GAMG(PC pc, PetscBool n)
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetSquareGraph"
+/*@
+   PCGAMGSetSquareGraph - 
+
+   Not Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+.  -pc_gamg_square_graph
+
+   Level: intermediate
+
+   Concepts: Aggregation AMG preconditioner
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscBool n)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetSquareGraph_C",(PC,PetscBool),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCGAMGSetSquareGraph_GAMG"
+PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscBool n)
+{
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+  PC_GAMG_AGG      *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  pc_gamg_agg->square_graph = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /* -------------------------------------------------------------------------- */
 /*
    PCSetFromOptions_GAMG_AGG
@@ -138,10 +183,20 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG( PC pc )
     /* -pc_gamg_sym_graph */
     pc_gamg_agg->sym_graph = PETSC_FALSE;
     ierr = PetscOptionsBool("-pc_gamg_sym_graph",
-                            "Set for asymetric matrices",
+                            "Set for asymmetric matrices",
                             "PCGAMGSetSymGraph",
                             pc_gamg_agg->sym_graph,
                             &pc_gamg_agg->sym_graph,
+                            &flag); 
+    CHKERRQ(ierr);
+
+    /* -pc_gamg_square_graph */
+    pc_gamg_agg->square_graph = PETSC_TRUE;
+    ierr = PetscOptionsBool("-pc_gamg_square_graph",
+                            "Set for asymmetric matrices",
+                            "PCGAMGSetSquareGraph",
+                            pc_gamg_agg->square_graph,
+                            &pc_gamg_agg->square_graph,
                             &flag); 
     CHKERRQ(ierr);
   }
@@ -662,7 +717,6 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
   for( mm = clid = 0 ; mm < nSelected ; mm++ ){
     PetscInt lid = selected_idx[mm];
     PetscInt cgid = my0crs + clid, cids[100];
-
     if( lid>=nFineLoc || llist_idx[lid]==-1 ) continue; /* skip ghost or singleton */
 
     /* count agg */
@@ -700,7 +754,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
         if(llev==1) {
           char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
           PetscInt M,pi,pj,gid=Istart+flid;
-          str[12] = col[clid%6]; str[13] = sim[(clid/6)%11]; 
+          str[12] = col[clid%6]; str[13] = sim[clid%11]; 
           M = (PetscInt)(PetscSqrtScalar((PetscScalar)nFineLoc*npe));
           pj = gid/M; pi = gid%M;
           fprintf(file,str,(double)pi,(double)pj);
@@ -764,7 +818,7 @@ PetscErrorCode formProl0( IS selected, /* list of selected local ID, includes se
 /* ierr = MPI_Allreduce( &ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); */
 /* MatGetSize( a_Prol, &kk, &jj ); */
 /* ierr = MPI_Allreduce( &minsz, &jj, 1, MPIU_INT, MPIU_MIN, wcomm ); */
-/* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, N=%d (%d local done), min agg. size = %d\n",mype,__FUNCT__,ii,kk/bs,ndone,jj); */
+/* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",mype,__FUNCT__,ii,kk/bs,ndone,jj); */
 
 #ifdef OUT_AGGS
   if(llev==1) fclose(file);
@@ -809,16 +863,18 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
 
   ierr  = createSimpleGraph( Amat, &Gmat ); CHKERRQ( ierr );
-  
   ierr  = scaleFilterGraph( &Gmat, vfilter, pc_gamg_agg->sym_graph, verbose ); CHKERRQ( ierr );
   
-  ierr = MatTransposeMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
-  CHKERRQ(ierr);
-  
-  /* attach auxilary matrix */
-  pc_gamg_agg->aux_mat = Gmat;
-  
-  *a_Gmat = Gmat2;
+  if( pc_gamg_agg->square_graph ) {
+    ierr = MatTransposeMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    CHKERRQ(ierr);
+    /* attach auxilary matrix */
+    pc_gamg_agg->aux_mat = Gmat;
+    *a_Gmat = Gmat2;
+  }
+  else {
+    *a_Gmat = Gmat;       assert(pc_gamg_agg->aux_mat == 0);
+  }
   
   PetscFunctionReturn(0);
 }
@@ -864,7 +920,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
 
   /* get unsquared graph */
   Gmat1 = pc_gamg_agg->aux_mat; pc_gamg_agg->aux_mat = 0;
-  
+
   /* get MIS aggs */
   /* randomize */  
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute ); CHKERRQ(ierr);
@@ -907,9 +963,10 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
   ierr = PetscLogEventEnd(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* smooth aggs */
-  ierr = smoothAggs( Gmat2, Gmat1, selected, llist_parent ); CHKERRQ(ierr);
-
-  ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);
+  if( Gmat1 ) {
+    ierr = smoothAggs( Gmat2, Gmat1, selected, llist_parent ); CHKERRQ(ierr);
+    ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);
+  }
 
   *a_selected = selected;
   *a_llist_parent = llist_parent;
@@ -974,10 +1031,10 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
 
   /* create prolongator, create P matrix */
   ierr = MatCreateAIJ( wcomm, 
-                          nloc*bs, nLocalSelected*col_bs,
-                          PETSC_DETERMINE, PETSC_DETERMINE,
-                          data_cols, PETSC_NULL, data_cols, PETSC_NULL,
-                          &Prol );
+                       nloc*bs, nLocalSelected*col_bs,
+                       PETSC_DETERMINE, PETSC_DETERMINE,
+                       data_cols, PETSC_NULL, data_cols, PETSC_NULL,
+                       &Prol );
   CHKERRQ(ierr);
   
   /* can get all points "removed" */
@@ -991,7 +1048,7 @@ PetscErrorCode PCGAMGprolongator_AGG( PC pc,
     PetscFunctionReturn(0);
   }
   if( verbose ) {
-    PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s New grid %d nodes\n",mype,__FUNCT__,ii/bs);
+    PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s New grid %d nodes\n",mype,__FUNCT__,ii/col_bs);
   }
   ierr = MatGetOwnershipRangeColumn( Prol, &myCrs0, &kk ); CHKERRQ(ierr);
   myCrs0 = myCrs0/col_bs;
