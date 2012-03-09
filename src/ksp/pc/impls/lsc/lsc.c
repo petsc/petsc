@@ -46,8 +46,10 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
 
   PetscFunctionBegin;
   ierr = PCLSCAllocate_Private(pc);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);
+  if (!L) {ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);}
   ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);
+  if (!Lp) {ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);}
   if (!L) {
     ierr = MatSchurComplementGetSubmatrices(pc->mat,PETSC_NULL,PETSC_NULL,&B,&C,PETSC_NULL);CHKERRQ(ierr);
     if (!lsc->L) {

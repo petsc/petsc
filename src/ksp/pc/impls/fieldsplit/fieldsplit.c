@@ -439,6 +439,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS       ccis;
     PetscInt rstart,rend;
+    char     lscname[256];
+    PetscObject LSC_L;
     if (nsplit != 2) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
@@ -503,7 +505,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink->x = jac->x[0]; ilink->y = jac->y[0];
       ilink = ilink->next;
       ilink->x = jac->x[1]; ilink->y = jac->y[1];
-    } 
+    }
+
+    /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
+    ierr = PetscSNPrintf(lscname,sizeof lscname,"%s_LSC_L",ilink->splitname);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);
+    if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->pmat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
+    if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_L",(PetscObject)LSC_L);CHKERRQ(ierr);}
+    ierr = PetscSNPrintf(lscname,sizeof lscname,"%s_LSC_Lp",ilink->splitname);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)pc->pmat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);
+    if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
+    if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_Lp",(PetscObject)LSC_L);CHKERRQ(ierr);}
   } else {
     /* set up the individual PCs */
     i    = 0;
