@@ -11,95 +11,91 @@ typedef struct llnode_tag{
     PetscInt   gid;
     struct llnode_tag *array;
   }data;
-}llNode;
-typedef llNode lList;
+}LLNode;
 
-#define POOL_CHK_SZ 1000
-static lList node_pool;
-static llNode *new_node = 0;
-static PetscInt new_left = 0;
+typedef struct nodepool_tag{
+  LLNode  array_list;
+  LLNode *new_node;
+  PetscInt new_left;
+  PetscInt chk_sz;
+}NodePool;
 
-PetscErrorCode ll_set_id( lList *a_this, PetscInt a_gid )
+PetscErrorCode NPCreate( PetscInt chsz, NodePool *pool)
+{
+  PetscErrorCode ierr;
+  pool->chk_sz = chsz;
+  pool->array_list.next = PETSC_NULL;
+  ierr = PetscMalloc( chsz*sizeof(LLNode), &pool->array_list.data.array ); CHKERRQ(ierr);
+  pool->new_node = pool->array_list.data.array;
+  pool->new_left = chsz;
+  pool->new_node->next = PETSC_NULL;
+  return 0;
+}
+
+PetscErrorCode LLNSetID( LLNode *a_this, PetscInt a_gid )
 {
   a_this->data.gid = a_gid;
   return 0;
 }
 
-PetscInt ll_get_id( lList *a_this )
+PetscInt LLNGetID( LLNode *a_this )
 {
   return a_this->data.gid;
 }
 
-PetscErrorCode get_new_node( llNode **a_out, PetscInt a_gid )
+PetscErrorCode NPGetNewNode( NodePool *pool, LLNode **a_out, PetscInt a_gid )
 {
   PetscErrorCode ierr;
-  if( !node_pool.data.array ){
-    ierr = PetscMalloc( POOL_CHK_SZ*sizeof(llNode), &node_pool.data.array ); CHKERRQ(ierr);
-    node_pool.next = PETSC_NULL;
-    new_left = POOL_CHK_SZ;
-    new_node = node_pool.data.array;
-    new_node->next = PETSC_NULL;
-    new_node->data.array = node_pool.data.array;
+  if( !pool->new_left ){
+    LLNode *node;
+    ierr = PetscMalloc((pool->chk_sz+1)*sizeof(LLNode), &node ); CHKERRQ(ierr); 
+    node->data.array = node + 1;
+    node->next = pool->array_list.next;
+    pool->array_list.next = node;
+    pool->new_left = pool->chk_sz;
+    pool->new_node = node->data.array;
   }
-  else if( !new_left ){
-    llNode *node;
-    ierr = PetscMalloc(sizeof(llNode), &node); CHKERRQ(ierr);
-    ierr = PetscMalloc(POOL_CHK_SZ*sizeof(llNode), &node->data.array); CHKERRQ(ierr);
-    node->next = node_pool.next;
-    node_pool.next = node;
-    new_left = POOL_CHK_SZ;
-    new_node = node->data.array;
-  }
-  new_node->data.gid = a_gid;
-  new_node->next = PETSC_NULL;
-  *a_out = new_node++; new_left--;
+  pool->new_node->data.gid = a_gid;
+  pool->new_node->next = PETSC_NULL;
+  *a_out = pool->new_node++; pool->new_left--;
   return 0;
 }
 
-PetscErrorCode delete_node_pool(lList *a_node)
+PetscErrorCode NPDestroy( NodePool *pool )
 {
   PetscErrorCode ierr;
-  llNode *n;
-  if( !a_node ) a_node = &node_pool;
-  if( a_node->data.array ) {
-    ierr = PetscFree( a_node->data.array );  CHKERRQ(ierr);
-    a_node->data.array = 0;
-  }
-  n = a_node->next;
-  while( n ){
-    llNode *lstn = n; 
+  LLNode *n = &pool->array_list;
+  if( n->data.array ) {
     ierr = PetscFree( n->data.array );  CHKERRQ(ierr);
+    n->data.array = 0;
+  }
+  n = n->next;
+  while( n ){
+    LLNode *lstn = n; 
     n = n->next;
     ierr = PetscFree( lstn );  CHKERRQ(ierr);
   }
-  a_node->next = 0; new_node = 0; new_left = 0;
+  pool->array_list.next = 0; pool->new_node = 0; pool->new_left = 0;
   return 0;
 }
 
-PetscErrorCode ll_add_n( lList *a_this, llNode *n ) 
+PetscErrorCode LLNAddID( LLNode *a_this, NodePool *pool, PetscInt a_gid )
 {
+  PetscErrorCode ierr;
+  LLNode *n;
+  ierr = NPGetNewNode( pool, &n, a_gid );  CHKERRQ(ierr);
   n->next = a_this->next; 
   a_this->next = n;
   return 0;
 }
 
-PetscErrorCode ll_add_id( lList *a_this, PetscInt a_gid )
+PetscErrorCode LLNAddDestroy( LLNode *a_this, NodePool *pool, LLNode *a_list )
 {
   PetscErrorCode ierr;
-  llNode *n;
-  ierr = get_new_node( &n, a_gid );  CHKERRQ(ierr);
-  n->next = a_this->next; 
-  a_this->next = n;
-  return 0;
-}
-
-PetscErrorCode ll_add_destroy( lList *a_this, lList *a_list )
-{
-  PetscErrorCode ierr;
-  llNode *n = a_this->next, *n1; assert(ll_get_id(a_list) != -1);
-  ierr = get_new_node( &n1, ll_get_id(a_list) );  CHKERRQ(ierr);
+  LLNode *n = a_this->next, *n1; 
+  ierr = NPGetNewNode( pool, &n1, LLNGetID(a_list) );  CHKERRQ(ierr);
   n1->next = a_list->next;
-  ll_set_id( a_list, -1 ); /* flag for not a root */
+  LLNSetID( a_list, -1 ); /* flag for not a root */
   a_this->next = n1;
   while( n1 ){
     if( !n1->next ){
@@ -110,12 +106,6 @@ PetscErrorCode ll_add_destroy( lList *a_this, lList *a_list )
   }
   return 0;
 }
-
-/* PetscErrorCode clear_node( llNode *n )  */
-/* { */
-/*   n->next=0; n->prev=0; n->data.gid=-1; */
-/*   return 0; */
-/* } */
 
 typedef struct edge_tag{
   PetscReal   weight;
@@ -159,9 +149,10 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   Mat_SeqAIJ    *matA, *matB=0;
   Mat_MPIAIJ    *mpimat=0;
   PetscScalar   *lid_max_edge;
-  lList         *agg_lists;
+  LLNode        *agg_lists;
   Mat            cMat,tMat,P;
   MatScalar     *ap;
+  NodePool       nodepool;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank( wcomm, &mype );   CHKERRQ(ierr);
@@ -171,12 +162,14 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_cprowID ); CHKERRQ(ierr);
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_state ); CHKERRQ(ierr);
   ierr = PetscMalloc( nloc*sizeof(PetscScalar), &lid_max_edge ); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(lList), &agg_lists ); CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(LLNode), &agg_lists ); CHKERRQ(ierr);
+
+  ierr = NPCreate( 10, &nodepool ); CHKERRQ(ierr);
 
   /* need an inverse map - locals */
   for(kk=0;kk<nloc;kk++) {
     lid_gid[kk] = kk + my0;
-    ll_set_id( &agg_lists[kk], -1 ); /* flag for not a root */
+    LLNSetID( &agg_lists[kk], -1 ); /* flag for not a root */
     agg_lists[kk].next = 0;
   }
 
@@ -340,19 +333,19 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
         }
       }
       if( isOK ){
-        ierr = ll_set_id( &agg_lists[lid0], gid0 );  CHKERRQ(ierr); /* this selects this */
+        ierr = LLNSetID( &agg_lists[lid0], gid0 );  CHKERRQ(ierr); /* this selects this */
         lid_state[lid0] = lid0 + my0; /* keep track of what we've done this round */
         if( gid1>=my0 && gid1<Iend ) {
           lid_state[gid1-my0] = gid1;  /* keep track of what we've done this round */
-          if( ll_get_id(&agg_lists[gid1-my0]) != -1 ) {
-            ll_add_destroy( &agg_lists[lid0], &agg_lists[gid1-my0] );
+          if( LLNGetID( &agg_lists[gid1-my0] ) != -1 ) {
+            LLNAddDestroy( &agg_lists[lid0], &nodepool, &agg_lists[gid1-my0] );
           }
           else {
-            ierr = ll_add_id( &agg_lists[lid0], gid1 );  CHKERRQ(ierr);
+            ierr = LLNAddID( &agg_lists[lid0], &nodepool, gid1 );  CHKERRQ(ierr);
           }
         }
         else {
-          ierr = ll_add_id( &agg_lists[lid0], gid1 );  CHKERRQ(ierr); /* ghost??? */
+          ierr = LLNAddID( &agg_lists[lid0], &nodepool, gid1 );  CHKERRQ(ierr); /* ghost??? */
         }
         ierr = MatSetValues(P,1,&gid0,1,&gid0,&one,INSERT_VALUES); CHKERRQ(ierr);
         ierr = MatSetValues(P,1,&gid1,1,&gid0,&one,INSERT_VALUES); CHKERRQ(ierr);
@@ -403,10 +396,10 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &id_llist ); CHKERRQ(ierr);
     for(kk=0;kk<nloc;kk++) id_llist[kk] = -1;
     for(kk=0;kk<nloc;kk++) {
-      if( ll_get_id(&agg_lists[kk]) != -1 ) {
-        llNode *node = agg_lists[kk].next;
+      if( LLNGetID(&agg_lists[kk]) != -1 ) {
+        LLNode *node = agg_lists[kk].next;
         while(node){
-          PetscInt lidj = ll_get_id(node)-my0;             assert(id_llist[lidj] == -1);
+          PetscInt lidj = LLNGetID(node)-my0;             assert(id_llist[lidj] == -1);
           id_llist[lidj] = id_llist[kk]; id_llist[kk] = lidj; /* insert 'lidj' into head of llist */
           node = node->next;
         }
@@ -420,10 +413,10 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
   /* make 'a_selected' - output */
   {
     PetscInt nselected = 0, *selected_set, gid;
-    for(kk=0;kk<nloc;kk++) if(ll_get_id( &agg_lists[kk] ) != -1) nselected++;    
+    for(kk=0;kk<nloc;kk++) if(LLNGetID( &agg_lists[kk] ) != -1) nselected++;    
     ierr = PetscMalloc( nselected*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr); 
     for(kk=nselected=0;kk<nloc;kk++) {
-      if((gid=ll_get_id(&agg_lists[kk])) != -1) {
+      if((gid=LLNGetID(&agg_lists[kk])) != -1) {
         selected_set[nselected++] = gid-my0;
       }
     }
@@ -438,7 +431,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s skip big iwht=%e jwht=%e\n",mype,__FUNCT_
   ierr = PetscFree( lid_max_edge );  CHKERRQ(ierr);
   ierr = PetscFree( agg_lists );  CHKERRQ(ierr);
   ierr = PetscFree( lid_state );  CHKERRQ(ierr);
-  ierr = delete_node_pool( 0 );  CHKERRQ(ierr);
+  ierr = NPDestroy( &nodepool );  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
