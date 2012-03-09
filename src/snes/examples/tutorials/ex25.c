@@ -1,5 +1,4 @@
-
-static char help[] ="Minimum surface problem\n\
+static const char help[] ="Minimum surface problem in 2D.\n\
 Uses 2-dimensional distributed arrays.\n\
 \n\
   Solves the linear systems via multilevel methods \n\

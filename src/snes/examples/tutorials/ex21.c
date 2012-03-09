@@ -1,5 +1,5 @@
 
-static char help[] = "Solves PDE optimization problem.\n\n";
+static const char help[] = "Solves PDE optimization problem using full-space method, treats state and adjoint variables separately.\n\n";
 
 #include <petscdmda.h>
 #include <petscdmredundant.h>
