@@ -116,7 +116,7 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetFunctionDomainError"
 /*@
-   SNESSetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
+   SNESGetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
 
    Logically Collective on SNES
 
