@@ -5,15 +5,15 @@
 #include <assert.h>
 
 /* linked list for aggregates */
-typedef struct llnode_tag{
-  struct llnode_tag *next;
-  union data_tag{
+typedef struct _LLNode{
+  struct _LLNode *next;
+  union{
     PetscInt   gid;
-    struct llnode_tag *array;
+    struct _LLNode *array; /* only used by node pool */
   }data;
 }LLNode;
 
-typedef struct nodepool_tag{
+typedef struct _NodePool{
   LLNode  array_list;
   LLNode *new_node;
   PetscInt new_left;
@@ -30,17 +30,6 @@ PetscErrorCode NPCreate( PetscInt chsz, NodePool *pool)
   pool->new_left = chsz;
   pool->new_node->next = PETSC_NULL;
   return 0;
-}
-
-PetscErrorCode LLNSetID( LLNode *a_this, PetscInt a_gid )
-{
-  a_this->data.gid = a_gid;
-  return 0;
-}
-
-PetscInt LLNGetID( LLNode *a_this )
-{
-  return a_this->data.gid;
 }
 
 PetscErrorCode NPGetNewNode( NodePool *pool, LLNode **a_out, PetscInt a_gid )
@@ -79,6 +68,17 @@ PetscErrorCode NPDestroy( NodePool *pool )
   return 0;
 }
 
+PetscErrorCode LLNSetID( LLNode *a_this, PetscInt a_gid )
+{
+  a_this->data.gid = a_gid;
+  return 0;
+}
+
+PetscInt LLNGetID( LLNode *a_this )
+{
+  return a_this->data.gid;
+}
+
 PetscErrorCode LLNAddID( LLNode *a_this, NodePool *pool, PetscInt a_gid )
 {
   PetscErrorCode ierr;
@@ -107,6 +107,7 @@ PetscErrorCode LLNAddDestroy( LLNode *a_this, NodePool *pool, LLNode *a_list )
   return 0;
 }
 
+/* edge for priority queue */
 typedef struct edge_tag{
   PetscReal   weight;
   PetscInt    lid0,gid1;
@@ -120,7 +121,7 @@ int hem_compare (const void *a, const void *b)
 
 /* -------------------------------------------------------------------------- */
 /*
-   heavyEdgeMatchAgg - parallel heavy edge matching (HEM) with data locality info. MatAIJ specific!!!
+   heavyEdgeMatchAgg - parallel heavy edge matching (HEM). MatAIJ specific!!!
 
    Input Parameter:
    . perm - permutation
@@ -442,7 +443,7 @@ typedef struct {
 /*
    HEM coarsen, simple greedy. 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenApply_HEM" 
 static PetscErrorCode MatCoarsenApply_HEM( MatCoarsen coarse )
 {
