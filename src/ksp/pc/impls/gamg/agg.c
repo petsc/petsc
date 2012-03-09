@@ -10,7 +10,6 @@
 
 typedef struct {
   PetscInt nsmooths;
-  Mat aux_mat;
   PetscBool sym_graph;
   PetscBool square_graph;
 }PC_GAMG_AGG;
@@ -855,7 +854,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   const PetscReal vfilter = pc_gamg->threshold;
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   PetscMPIInt    mype,npe;
-  Mat            Gmat, Gmat2;
+  Mat            Gmat;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
 
   PetscFunctionBegin;
@@ -865,16 +864,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr  = createSimpleGraph( Amat, &Gmat ); CHKERRQ( ierr );
   ierr  = scaleFilterGraph( &Gmat, vfilter, pc_gamg_agg->sym_graph, verbose ); CHKERRQ( ierr );
   
-  if( pc_gamg_agg->square_graph ) {
-    ierr = MatTransposeMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
-    CHKERRQ(ierr);
-    /* attach auxilary matrix */
-    pc_gamg_agg->aux_mat = Gmat;
-    *a_Gmat = Gmat2;
-  }
-  else {
-    *a_Gmat = Gmat;       assert(pc_gamg_agg->aux_mat == 0);
-  }
+  *a_Gmat = Gmat;
   
   PetscFunctionReturn(0);
 }
@@ -884,42 +874,46 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
    PCGAMGCoarsen_AGG
 
   Input Parameter:
-   . pc - this
-   . Gmat2 - matrix on this fine level
+   . a_pc - this
+  Input/Output Parameter:
+   . a_Gmat1 - graph on this fine level - coarsening can change this
   Output Parameter:
    . a_selected - prolongation operator to the next level
    . a_llist_parent - data of coarse grid points (num local columns in 'a_P_out')
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGCoarsen_AGG"
-PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
-                                  const Mat Gmat2,
+PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
+                                  Mat *a_Gmat1,
                                   IS *a_selected,
                                   IS *a_llist_parent
                                   )
 {
   PetscErrorCode ierr;
-  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG          *mg = (PC_MG*)a_pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
-  Mat             Gmat1; /* unsquared graph (not symetrized!) */
+  Mat             Gmat2, Gmat1 = *a_Gmat1; /* squared graph */
   IS              perm, selected, llist_parent;
   PetscInt        Ii,nloc,bs,n,m;
-  PetscInt *permute; 
+  PetscInt *permute;
   PetscBool *bIndexSet;
   MatCoarsen crs;
-  MPI_Comm        wcomm = ((PetscObject)Gmat2)->comm;
+  MPI_Comm        wcomm = ((PetscObject)Gmat1)->comm;
   /* PetscMPIInt     mype,npe; */
 
   PetscFunctionBegin;
   /* ierr = MPI_Comm_rank( wcomm, &mype);  CHKERRQ(ierr); */
   /* ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr); */
-  ierr = MatGetLocalSize( Gmat2, &n, &m ); CHKERRQ(ierr);
-  ierr = MatGetBlockSize( Gmat2, &bs ); CHKERRQ(ierr); assert(bs==1);
+  ierr = MatGetLocalSize( Gmat1, &n, &m ); CHKERRQ(ierr);
+  ierr = MatGetBlockSize( Gmat1, &bs ); CHKERRQ(ierr); assert(bs==1);
   nloc = n/bs;
-
-  /* get unsquared graph */
-  Gmat1 = pc_gamg_agg->aux_mat; pc_gamg_agg->aux_mat = 0;
+  
+  if( pc_gamg_agg->square_graph ) {
+    ierr = MatTransposeMatMult( Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    CHKERRQ(ierr);
+  }
+  else Gmat2 = Gmat1;
 
   /* get MIS aggs */
   /* randomize */  
@@ -963,13 +957,14 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC pc,
   ierr = PetscLogEventEnd(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* smooth aggs */
-  if( Gmat1 ) {
+  if( Gmat2 != Gmat1 ) {
     ierr = smoothAggs( Gmat2, Gmat1, selected, llist_parent ); CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);
+    *a_Gmat1 = Gmat2; /* output */
   }
 
-  *a_selected = selected;
-  *a_llist_parent = llist_parent;
+  *a_selected = selected; /* output */
+  *a_llist_parent = llist_parent; /* output */
 
   PetscFunctionReturn(0);
 }

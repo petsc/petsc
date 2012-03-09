@@ -23,7 +23,7 @@ typedef struct gamg_TAG{
   PetscInt       data_cell_cols;
   PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscErrorCode (*graph)( PC, const Mat, Mat * );
-  PetscErrorCode (*coarsen)( PC, const Mat, IS*, IS* );
+  PetscErrorCode (*coarsen)( PC, Mat *, IS*, IS* );
   PetscErrorCode (*prolongator)( PC, const Mat, const Mat, IS, IS, Mat* );
   PetscErrorCode (*optprol)( PC, const Mat, Mat* );
 

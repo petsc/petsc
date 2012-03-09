@@ -374,7 +374,8 @@ static PetscErrorCode MatCoarsenApply_MIS( MatCoarsen coarse )
     ierr = ISDestroy( &perm );                    CHKERRQ(ierr);
   }
   else {
-    ierr = maxIndSetAgg( coarse->perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->mis,&coarse->agg_llist );CHKERRQ(ierr);
+    ierr = maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->mis,&coarse->agg_llist);
+    CHKERRQ(ierr);
   }
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -397,7 +398,9 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MIS coarsener",((PetscObject)viewer)->type_name);
+  } 
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MIS coarsener",
+                ((PetscObject)viewer)->type_name);
 
   PetscFunctionReturn(0);
 }
