@@ -1,4 +1,4 @@
-static const char help[] = "Time-dependent advection-reaction PDE in 1d. Demonstrates IMEX methods.\n";
+static const char help[] = "Time-dependent advection-reaction PDE in 1d, demonstrates IMEX methods.\n";
 /*
    u_t + a1*u_x = -k1*u + k2*v + s1
    v_t + a2*v_x = k1*u - k2*v + s2

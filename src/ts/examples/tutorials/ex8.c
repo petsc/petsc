@@ -1,7 +1,7 @@
 
 /* Program usage:  ./ex8 [-help] [all PETSc options] */
 
-static char help[] = "Nonlinear DAE.\n";
+static char help[] = "Nonlinear DAE benchmark problems.\n";
 
 
 /*
