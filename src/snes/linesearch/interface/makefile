@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = linesearch.o linesearchregi.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = LineSearch
+MANSEC   = SNES
 DIRS     =
 LOCDIR   = src/snes/linesearch/interface
 

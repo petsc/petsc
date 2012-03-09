@@ -1,6 +1,19 @@
 #include <private/linesearchimpl.h>
 #include <private/snesimpl.h>
 
+/*MC
+
+LineSearchShell - Provides context for a user-provided line search routine.
+
+The user routine has one argument, the LineSearch context.  The user uses the interface to
+extract line search parameters and set them accordingly when the computation is finished.
+
+Any of the other line searches may serve as a guide to how this is to be done.
+
+Level: advanced
+
+ M*/
+
 typedef struct {
   LineSearchUserFunc func;
   void               *ctx;
@@ -8,6 +21,18 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchShellSetUserFunc"
+/*@C
+   LineSearchShellSetUserFunc - Sets the user function for the LineSearch Shell implementation.
+
+   Not Collective
+
+   Level: advanced
+
+   .keywords: LineSearch, LineSearchShell, Shell
+
+   .seealso: LineSearchShellGetUserFunc()
+@*/
+
 PetscErrorCode LineSearchShellSetUserFunc(LineSearch linesearch, LineSearchUserFunc func, void *ctx) {
 
   PetscErrorCode   ierr;
@@ -25,6 +50,17 @@ PetscErrorCode LineSearchShellSetUserFunc(LineSearch linesearch, LineSearchUserF
 
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchShellGetUserFunc"
+/*@C
+   LineSearchShellGetUserFunc - Gets the user function and context for the shell implementation.
+
+   Not Collective
+
+   Level: advanced
+
+   .keywords: LineSearch, LineSearchShell, Shell
+
+   .seealso: LineSearchShellSetUserFunc()
+@*/
 PetscErrorCode LineSearchShellGetUserFunc(LineSearch linesearch, LineSearchUserFunc *func, void **ctx) {
 
   PetscErrorCode   ierr;
