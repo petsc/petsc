@@ -107,7 +107,7 @@ Downloaded package %s from: %s is not a tarball.
     try:
       config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
     except RuntimeError, e:
-      raise RuntimeError('Error  changing permissions for '+dirname+' obtained from '+LocalFile+ ' : '+str(e))
+      raise RuntimeError('Error changing permissions for '+dirname+' obtained from '+localFile+ ' : '+str(e))
     os.unlink(localFile)
     return
 
