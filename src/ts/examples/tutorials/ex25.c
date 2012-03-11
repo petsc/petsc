@@ -62,13 +62,20 @@ int main(int argc,char **argv)
 
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); {
-    ierr = PetscOptionsReal("-A","Reaction rate","",user.A=1,&user.A,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-B","Reaction rate","",user.B=3,&user.B,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha=0.02,&user.alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft=1,&user.uleft,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright=1,&user.uright,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft=3,&user.vleft,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright=3,&user.vright,PETSC_NULL);CHKERRQ(ierr);
+    user.A      = 1;
+    user.B      = 3;
+    user.alpha  = 0.02;
+    user.uleft  = 1;
+    user.uright = 1;
+    user.vleft  = 3;
+    user.vright = 3;
+    ierr = PetscOptionsReal("-A","Reaction rate","",user.A,&user.A,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-B","Reaction rate","",user.B,&user.B,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha,&user.alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft,&user.uleft,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright,&user.uright,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,PETSC_NULL);CHKERRQ(ierr);
   } ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

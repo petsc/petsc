@@ -9,34 +9,35 @@ The command line options include:\n\
 \n";
 
 
-/* ------------------------------------------------------------------------
+/*F
+    The $p$-Bratu problem is a combination of the $p$-Laplacian (nonlinear diffusion) and the Brutu solid fuel ignition problem.
+    This problem is modeled by the partial differential equation
 
-    p-Laplacian and Solid Fuel Ignition problem.  This problem is modeled by
-    the partial differential equation
+\begin{equation*}
+        -\nabla\cdot (\eta \nabla u) - \lambda \exp(u) = 0
+\end{equation*}
 
-        -div(eta grad(u)) - lambda exp(u) = 0,  0 < x,y < 1,
+    on $\Omega = (-1,1)^2$ with closure
 
-    with closure
+\begin{equation*}
+        \eta(\gamma) &= (\epsilon^2 + \gamma)^{(p-2)/2} & gamma &= \frac 1 2 |\nabla u|^2
+\end{equation*}
 
-        eta(gamma) = (epsilon^2 + gamma)^((p-2)/2),   gamma = 1/2 |grad u|^2
+    and boundary conditions $u = 0$ for $(x,y) \in \partial \Omega$
 
-    with boundary conditions
-
-        u = 0  for  x = 0, x = 1, y = 0, y = 1.
-
-    A finite difference approximation a 9-point stencil is used to discretize
+    A 9-point finite difference stencil is used to discretize
     the boundary value problem to obtain a nonlinear system of equations.
-    This would be a 5-point stencil if not for the p-Laplacian's nonlinearity.
-
-    Program usage:  mpiexec -n <procs> ./pbratu [-help] [all PETSc options]
-     e.g.,
-      ./ex15 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
-      mpiexec -n 2 ./ex15 -fd_jacobian_ghosted -log_summary
-
-  ------------------------------------------------------------------------- */
+    This would be a 5-point stencil if not for the $p$-Laplacian's nonlinearity.
+F*/
 
 /*
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+    Program usage:  mpiexec -n <procs> ./pbratu [-help] [all PETSc options]
+     e.g.,
+      mpiexec -n 2 ./ex15 -snes_monitor -ksp_monitor log_summary
+*/
+
+/*
+   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -68,8 +69,7 @@ typedef struct {
 static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
-static PetscErrorCode MySNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
 
 typedef struct _n_PreCheck *PreCheck;
 struct _n_PreCheck {
@@ -93,10 +93,8 @@ int main(int argc,char **argv)
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;               /* Check convergence */
-  PetscBool              alloc_star,fd_jacobian = PETSC_FALSE,fd_jacobian_ghosted = PETSC_FALSE;
+  PetscBool              alloc_star;           /* Only allocate for the STAR stencil  */
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  MatFDColoring          matfdcoloring = 0;
-  ISColoring             iscoloring;
   DM                     da,dastar;            /* distributed array data structure */
   PreCheck               precheck = PETSC_NULL; /* precheck context for version in this file */
   PetscInt               use_precheck;   /* 0=none, 1=version in this file, 2=SNES-provided version */
@@ -141,7 +139,7 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
@@ -150,7 +148,7 @@ int main(int argc,char **argv)
 
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DA; then duplicate for remaining
+     Extract global vectors from DM; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -170,46 +168,19 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* B can be type of MATAIJ,MATBAIJ or MATSBAIJ */
   ierr = DMCreateMatrix(alloc_star ? dastar : da,MATAIJ,&B);CHKERRQ(ierr);
-
   A    = B;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_ghosted",&fd_jacobian_ghosted,0);CHKERRQ(ierr);
-
-  if (fd_jacobian) {
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-  } else if (fd_jacobian_ghosted) {
-    ierr = DMCreateColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,A,B,MySNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-  } else {
-    if (!user.picard) {
-      ierr = SNESSetJacobian(snes,A,B,SNESDMDAComputeJacobian,&user);CHKERRQ(ierr);
-    }
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (user.picard) {
-    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionPicardLocal);CHKERRQ(ierr);
-  } else {
-    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
-  }
-  ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (user.picard) {
+    ierr = DMDASNESSetFunctionLocal(da,(DMDALocalFunction1)FormFunctionPicardLocal,&user);CHKERRQ(ierr);
     ierr = SNESSetPicard(snes,r,SNESDMDAComputeFunction,A,B,SNESDMDAComputeJacobian,&user);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,SNESDMDAComputeFunction,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetFunctionLocal(da,(DMDALocalFunction1)FormFunctionLocal,&user);CHKERRQ(ierr);
   }
+  ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -253,7 +224,6 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -441,7 +411,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat B,MatStructure *mstr,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -473,7 +443,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         v[0] = 1.0;
-        ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
       /* interior grid points */
         const PetscScalar
@@ -513,7 +483,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[2] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(u);       col[2].j = row.j; col[2].i = row.i;
             v[3] = -hydhx;                                           col[3].j = j;     col[3].i = i+1;
             v[4] = -hxdhy;                                           col[4].j = j+1;   col[4].i = i;
-            ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
           case 2:
             /* Jacobian arising from Picard linearization */
@@ -522,7 +492,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[2] = (e_W+e_E)*hydhx + (e_S+e_N)*hxdhy;                    col[2].j = row.j; col[2].i = row.i;
             v[3] = -hydhx*e_E;                                           col[3].j = j;     col[3].i = i+1;
             v[4] = -hxdhy*e_N;                                           col[4].j = j+1;   col[4].i = i;
-            ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
           case 3:
             /* Full Jacobian, but only a star stencil */
@@ -536,7 +506,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[2] = hxdhy*(newt_N + newt_S) + hydhx*(newt_E + newt_W) - sc*PetscExpScalar(u);
             v[3] = -hydhx*newt_E - cross_NS;
             v[4] = -hxdhy*newt_N - cross_EW;
-            ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
           case 4:
             /** The Jacobian is
@@ -562,7 +532,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[6] =  0.25*(skew_N + skew_W);
             v[7] = -hxdhy*newt_N - cross_EW;
             v[8] = -0.25*(skew_N + skew_E);
-            ierr = MatSetValuesStencil(jac,1,&row,9,col,v,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValuesStencil(B,1,&row,9,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
           default:
             SETERRQ1(((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Jacobian type %d not implemented",user->jtype);
@@ -575,54 +545,15 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *mstr = SAME_NONZERO_PATTERN;
+
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MySNESDefaultComputeJacobianColor"
-/*
-  MySNESDefaultComputeJacobianColor - Computes the Jacobian using
-    finite differences and coloring to exploit matrix sparsity.
-    It is customized from SNESDefaultComputeJacobianColor.
-    The input global vector x1 is scattered to x1_local
-    which then is passed into MatFDColoringApply() for reducing the
-    VecScatterBingin/End.
-*/
-static PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
-{
-  MatFDColoring  color = (MatFDColoring) ctx;
-  PetscErrorCode ierr;
-  Vec            f;
-  PetscErrorCode (*ff)(void),(*fd)(void);
-  void           *fctx;
-  DM             da;
-  Vec            x1_loc;
-
-  PetscFunctionBegin;
-  *flag = SAME_NONZERO_PATTERN;
-  ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
-  ierr  = MatFDColoringGetFunction(color,&fd,&fctx);CHKERRQ(ierr);
-  if (fd == ff) { /* reuse function value computed in SNES */
-    ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
-  }
-  /* Now, get x1_loc and scatter global x1 onto x1_loc */
-  da = *(DM*)fctx;
-  ierr = DMGetLocalVector(da,&x1_loc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);
-  ierr = MatFDColoringApply(*B,color,x1_loc,flag,snes);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
-  if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

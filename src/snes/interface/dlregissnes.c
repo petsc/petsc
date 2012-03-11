@@ -1,7 +1,9 @@
 
 #include <private/snesimpl.h>
+#include <private/linesearchimpl.h>
 
 static PetscBool  SNESPackageInitialized = PETSC_FALSE;
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESFinalizePackage"
 /*@C
@@ -19,6 +21,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
   SNESList               = PETSC_NULL;
+  LineSearchList         = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -51,8 +54,10 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = SNESMSInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("LineSearch",&LineSearch_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
+  ierr = LineSearchRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("SNESSolve",        SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",   SNES_CLASSID,&SNES_LineSearch);CHKERRQ(ierr);

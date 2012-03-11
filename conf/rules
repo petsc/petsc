@@ -751,9 +751,9 @@ html: chk_c2html
             if [ "${EXAMPLESC}" != "" ] ; then \
                for file in ${EXAMPLESC} foo ; do \
 		if [ -f $$file ]; then \
-                   cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                   cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
                    echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
-                   ${PETSC_DIR}/bin/maint/latexinexamples.py $${file}.html;\
+                   ${PYTHON} ${PETSC_DIR}/bin/maint/latexinexamples.py $${file}.html;\
 		fi; \
                done ;\
             else \

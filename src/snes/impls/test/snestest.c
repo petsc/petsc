@@ -33,6 +33,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
 
   for (i=0; i<3; i++) {
+    void *functx;
     static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
     if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
     else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
@@ -55,7 +56,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
       ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
     }
-    ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
+    ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;

@@ -31,7 +31,7 @@ PthreadVersion: PthreadVersion.o  chkopts
 	@${RM} -f PthreadVersion.o
 
 test:  BasicVersion OpenMPVersion
-	@if [ "${NP}foo" == "foo" ]; then echo "---------\n Run with make streams NP=<integer number of cores to use>"; exit 1 ; fi
+	@if [ "${NP}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NP=<integer number of cores to use>"; exit 1 ; fi
 	-@echo "------------------------------------------------"
 	-@${MPIEXEC} -n 1 ./BasicVersion
 	-@echo "------------------------------------------------"

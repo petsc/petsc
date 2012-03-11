@@ -1,4 +1,4 @@
-static const char help[] = "1D nonequilibrium radiation diffusion with Saha ionization model\n\n";
+static const char help[] = "1D nonequilibrium radiation diffusion with Saha ionization model.\n\n";
 
 /*
   This example implements the model described in

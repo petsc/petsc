@@ -1,4 +1,4 @@
-static const char help[] = "Toy hydrostatic ice flow with multigrid in 3D\n\
+static const char help[] = "Toy hydrostatic ice flow with multigrid in 3D.\n\
 \n\
 Solves the hydrostatic (aka Blatter/Pattyn/First Order) equations for ice sheet flow\n\
 using multigrid.  The ice uses a power-law rheology with \"Glen\" exponent 3 (corresponds\n\

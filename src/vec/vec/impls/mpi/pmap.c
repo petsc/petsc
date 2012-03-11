@@ -154,15 +154,15 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLayoutCopy"
+#define __FUNCT__ "PetscLayoutDuplicate"
 /*@C
 
-    PetscLayoutCopy - creates a new PetscLayout with the same information as a given one. If the PetscLayout already exists it is destroyed first.
+    PetscLayoutDuplicate - creates a new PetscLayout with the same information as a given one. If the PetscLayout already exists it is destroyed first.
 
      Collective on PetscLayout
 
     Input Parameter:
-.     in - input PetscLayout to be copied
+.     in - input PetscLayout to be duplicated
 
     Output Parameter:
 .     out - the copy
@@ -171,13 +171,10 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 
     Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
 
-    Developer Note: Unlike all other copy routines this destroys any input object and makes a new one. This routine should be fixed to have a PetscLayoutDuplicate() 
-      that ONLY creates a new one and a PetscLayoutCopy() that truely copies the data and does not delete the old object.
-
 .seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutReference()
 
 @*/
-PetscErrorCode  PetscLayoutCopy(PetscLayout in,PetscLayout *out)
+PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -214,7 +211,7 @@ PetscErrorCode  PetscLayoutCopy(PetscLayout in,PetscLayout *out)
 
     If the out location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutCopy()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate()
 
 @*/
 PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
@@ -247,7 +244,7 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
     If the ltog location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutCopy(), PetscLayoutSetLocalToGlobalMappingBlock()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
 
 @*/
 PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlobalMapping ltog)
@@ -280,7 +277,7 @@ PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlo
 
     If the ltog location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutCopy(), PetscLayoutSetLocalToGlobalMappingBlock()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
 
 @*/
 PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocalToGlobalMapping ltog)

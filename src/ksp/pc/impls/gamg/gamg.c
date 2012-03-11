@@ -147,9 +147,9 @@ PetscErrorCode createLevel( const PC pc,
 	}
 	
 	ierr = MatCreateAIJ( wcomm, ncrs0, ncrs0,
-				PETSC_DETERMINE, PETSC_DETERMINE,
-				0, d_nnz, 0, o_nnz,
-				&tMat );
+                             PETSC_DETERMINE, PETSC_DETERMINE,
+                             0, d_nnz, 0, o_nnz,
+                             &tMat );
 	CHKERRQ(ierr);
 	ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
 	ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
@@ -512,11 +512,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     { /* construct prolongator */
       Mat Gmat;
       IS selected, llist;
-      assert(pc_gamg->graph);
-      assert(pc_gamg->coarsen);
       
       ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
-      ierr = pc_gamg->coarsen( pc, Gmat, &selected, &llist ); CHKERRQ(ierr);
+      ierr = pc_gamg->coarsen( pc, &Gmat, &selected, &llist ); CHKERRQ(ierr);
       ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, selected, llist, &Parr[level1] );
       CHKERRQ(ierr);
 

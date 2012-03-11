@@ -1,5 +1,4 @@
-
-static char help[] = "-Laplacian u = b as a  \n\n";
+static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
 
 /*T
    Concepts: SNES^parallel Bratu example

@@ -475,6 +475,10 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     Vec Y;
     ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
     ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
+    if (((PetscObject)xin)->name) {
+      /* If xin was named, copy the name over to Y. The duplicate names are safe because nobody else will ever see Y. */
+      ierr = PetscObjectSetName((PetscObject)Y,((PetscObject)xin)->name);CHKERRQ(ierr);
+    }
     ierr = VecCopy(xin,Y);CHKERRQ(ierr);
     ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,(PetscObject)Y);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)

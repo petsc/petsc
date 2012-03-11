@@ -712,6 +712,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
     ISLocalToGlobalMapping ltog,ltogb;
     ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
     ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
   }

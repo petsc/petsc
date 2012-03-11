@@ -728,6 +728,7 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

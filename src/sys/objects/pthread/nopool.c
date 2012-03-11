@@ -1,11 +1,13 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
+PetscInt *pVal_none;
+
 typedef void* (*pfunc)(void*);
 typedef struct {
-  pfunc kernelfunc;
-  int   nthreads;
-  void** data;
+  pfunc* funcArr;
+  PetscInt   nthreads;
+  void** pdata;
   pthread_t* ThreadId;
 }sjob_none;
 
@@ -16,30 +18,32 @@ sjob_none job_none;
      'NO' THREAD POOL FUNCTION 
    -----------------------------
 */
-void* PetscThreadFunc_None(void* arg) 
+void* PetscThreadFunc_None(void* arg)
 {
-  sjob_none         *job = (sjob_none*)arg;
-  PetscInt          i;
-  PetscInt          nthreads= (int)job->nthreads;
-  void**            data = (void**)job->data;
-  pthread_t*        ThreadId = (pthread_t*)job->ThreadId;
-  pfunc             funcp = (pfunc)job->kernelfunc;
+  PetscInt iVal;
 
-  for(i=0; i<nthreads; i++) {
-    pthread_create(&ThreadId[i],NULL,funcp,data[i]);
-  }
-  return(0);
+  iVal = *(PetscInt*)arg;
+  pthread_setspecific(rankkey,&threadranks[iVal+1]);
+
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  DoCoreAffinity();
+#endif
+
+  job_none.funcArr[iVal+PetscMainThreadShareWork](job_none.pdata[iVal+PetscMainThreadShareWork]);
+
+  pthread_setspecific(rankkey,NULL);
+  return NULL;
 }
-
+  
 void* PetscThreadsWait_None(void* arg)
 {
-  sjob_none      *job=(sjob_none*)arg;
-  int            nthreads = job->nthreads;
-  pthread_t*     ThreadId = (pthread_t*)job->ThreadId;
+  PetscInt            nthreads;
   PetscInt       i;
   void*          joinstatus;
+
+  nthreads = *(PetscInt*)arg;
   for (i=0; i<nthreads; i++) {
-    pthread_join(ThreadId[i], &joinstatus);
+    pthread_join(PetscThreadPoint[i], &joinstatus);
   }
   return(0);
 }
@@ -49,18 +53,32 @@ void* PetscThreadsWait_None(void* arg)
 PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
   PetscInt i;
+  PetscInt Nnew_threads=n-PetscMainThreadShareWork;
 
   PetscFunctionBegin;
-  pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-  PetscThreadPoint = apThread; /* point to same place */
-  job_none.nthreads = n;
-  job_none.kernelfunc = pFunc;
-  job_none.data = data;
-  job_none.ThreadId = apThread;
-  for(i=0;i<n;i++) ThreadCoreAffinity[i] = cpu_affinity[i];
-  PetscThreadFunc(&job_none);
-  PetscThreadsWait(&job_none); /* ensures that all threads are finished with the job */
-  free(apThread);
+  pVal_none = (PetscInt*)malloc((n-PetscMainThreadShareWork)*sizeof(PetscInt));
+  PetscThreadPoint = (pthread_t*)malloc((n-PetscMainThreadShareWork)*sizeof(pthread_t));
+  job_none.funcArr = (pfunc*)malloc(n*sizeof(pfunc));
+  job_none.pdata   = (void**)malloc(n*sizeof(void*));
+
+  threadranks[0] = 0;
+  pthread_setspecific(rankkey,&threadranks[0]);
+  for(i=0;i< Nnew_threads;i++) {
+    pVal_none[i] = i;
+    threadranks[i+1] = i+1;
+    ThreadCoreAffinity[i] = cpu_affinity[i+PetscMainThreadShareWork];
+    job_none.funcArr[i+PetscMainThreadShareWork] = pFunc;
+    job_none.pdata[i+PetscMainThreadShareWork]  = data[i+PetscMainThreadShareWork];
+    pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc_None,&pVal_none[i]);
+  }
+  if(PetscMainThreadShareWork) pFunc(data[0]);
+
+  PetscThreadsWait(&Nnew_threads);
+
+  free(PetscThreadPoint);
+  free(job_none.funcArr);
+  free(job_none.pdata);
+  free(pVal_none);
 
   PetscFunctionReturn(0);
 }

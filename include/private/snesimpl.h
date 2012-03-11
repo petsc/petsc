@@ -7,9 +7,6 @@
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
-  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
   PetscErrorCode (*computescaling)(Vec,Vec,void*);
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
@@ -51,13 +48,10 @@ struct _p_SNES {
   Vec  vec_sol;                  /* pointer to solution */
 
   Vec  vec_func;                 /* pointer to function */
-  void *funP;                    /* user-defined function context */
 
   Mat  jacobian;                 /* Jacobian matrix */
   Mat  jacobian_pre;             /* preconditioner matrix */
-  void *jacP;                    /* user-defined Jacobian context */
   void *initialguessP;           /* user-defined initial guess context */
-  void *gsP;                     /* user-defined Gauss-Seidel context */
   KSP  ksp;                      /* linear solver context */
   PetscBool usesksp;
   MatStructure matstruct;        /* Used by Picard solver */
@@ -156,6 +150,31 @@ struct _p_SNES {
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
 };
+
+/* Context for resolution-dependent SNES callback information */
+typedef struct _n_SNESDM *SNESDM;
+struct _n_SNESDM {
+  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  void *functionctx;
+  void *gsctx;
+  void *jacobianctx;
+
+  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
+  PetscErrorCode (*destroy)(SNESDM);
+  void *data;
+
+  /* This is NOT reference counted. The SNES that originally created this context is cached here to implement copy-on-write.
+   * Fields in the SNESDM should only be written if the SNES matches originalsnes.
+   */
+  DM originaldm;
+};
+extern PetscErrorCode DMSNESGetContext(DM,SNESDM*);
+extern PetscErrorCode DMSNESGetContextWrite(DM,SNESDM*);
+extern PetscErrorCode DMSNESCopyContext(DM,DM);
+extern PetscErrorCode DMSNESDuplicateContext(DM,DM);
+extern PetscErrorCode DMSNESSetUpLegacy(DM);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {

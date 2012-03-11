@@ -337,7 +337,7 @@ runex5_4:
 	   ${RM} -f ex5_4.tmp
 
 #COMPOSABLE SOLVER DEMOS: OPTIONS
-CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 1 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 50 -par 6.0 -snes_view
+CSD_BASIC_COMMAND_LINE = -@${MPIEXEC} -n 1 ./ex5 -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 50 -par 6.0
 N_SMOOTHS = 3
 N_RESTART = 10
 
@@ -399,7 +399,7 @@ runex5_5_fas:
 
 runex5_5_fas_additive:
 	-@./ex5 -fas_coarse_smoother_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas \
-           -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive \
+           -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 \
            > ex5_5_fas_additive.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas_additive, diffs above \n========================================="; fi; \

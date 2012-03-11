@@ -1,4 +1,6 @@
-#include <petsc.h>
+static const char help[] = "Isogeometric analysis of isothermal Navier-Stokes-Korteweg in 2D.";
+
+#include <petscts.h>
 #include <petscdmiga.h>
 
 #define SQ(x) ((x)*(x))
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
  */
 
   // Petsc Initialization rite of passage
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
   // Define simulation specific parameters

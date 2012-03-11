@@ -1,5 +1,5 @@
 
-static char help[] = "Model multi-physics solver\n\n";
+static const char help[] = "Model multi-physics solver.\n\n";
 
 /*
      A model "multi-physics" solver based on the Vincent Mousseau's reactor core pilot code.

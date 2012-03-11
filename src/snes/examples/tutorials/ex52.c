@@ -1,4 +1,4 @@
-static char help[] = "Testbed for FEM operations on the GPU\n\n";
+static const char help[] = "Testbed for FEM operations on the GPU.\n\n";
 
 #if 0
  - Automate testing of different:

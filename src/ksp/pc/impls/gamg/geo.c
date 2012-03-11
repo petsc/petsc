@@ -18,7 +18,7 @@ typedef struct{
   PetscInt       lid;      /* local vertex index */
   PetscInt       degree;   /* vertex degree */
 } GAMGNode;
-int compare (const void *a, const void *b)
+int geo_mg_compare (const void *a, const void *b)
 {
   return (((GAMGNode*)a)->degree - ((GAMGNode*)b)->degree);
 }
@@ -598,28 +598,29 @@ PetscErrorCode PCGAMGgraph_GEO( PC pc,
    PCGAMGcoarsen_GEO
 
   Input Parameter:
-   . pc - this
-   . Gmat - graph
+   . a_pc - this
+   . a_Gmat - graph
   Output Parameter:
    . a_selected - selected indices (local)
    . a_llist_parent - linked list from selected indices for data locality only
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGcoarsen_GEO"
-PetscErrorCode PCGAMGcoarsen_GEO( PC pc,
-                                  const Mat Gmat,
+PetscErrorCode PCGAMGcoarsen_GEO( PC a_pc,
+                                  Mat *a_Gmat,
                                   IS *a_selected,
                                   IS *a_llist_parent
                                   )
 {
   PetscErrorCode ierr;
-  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG          *mg = (PC_MG*)a_pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscInt       Istart,Iend,nloc,kk,Ii,ncols;
   PetscMPIInt    mype,npe;
   IS perm,selected,llist_parent;
   GAMGNode *gnodes;
   PetscInt *permute;
+  Mat       Gmat = *a_Gmat;
   MPI_Comm  wcomm = ((PetscObject)Gmat)->comm;
   MatCoarsen crs;
 
@@ -663,7 +664,7 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC pc,
     ierr = PetscFree( bIndexSet );  CHKERRQ(ierr);
   }
   /* only sort locals */
-  qsort( gnodes, nloc, sizeof(GAMGNode), compare );
+  qsort( gnodes, nloc, sizeof(GAMGNode), geo_mg_compare );
   /* create IS of permutation */
   for(kk=0;kk<nloc;kk++) { /* locals only */
     permute[kk] = gnodes[kk].lid;
@@ -675,8 +676,7 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC pc,
   ierr = PetscFree( permute );  CHKERRQ(ierr);
   
   /* get MIS aggs */
-  /*ierr = maxIndSetAgg( perm, Gmat, PETSC_FALSE, pc_gamg->verbose, &selected, &llist_parent ); CHKERRQ(ierr);*/
-  
+
   ierr = MatCoarsenCreate( wcomm, &crs ); CHKERRQ(ierr);
   ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering( crs, perm ); CHKERRQ(ierr);

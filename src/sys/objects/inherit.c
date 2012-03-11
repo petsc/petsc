@@ -756,7 +756,7 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
-  if (--((PetscObject)(*obj))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*obj))->refct > 0) {*obj = 0; PetscFunctionReturn(0);}
   if ((*obj)->userdestroy) (*(*obj)->userdestroy)((*obj)->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -19,9 +19,8 @@ S*/
 typedef struct _n_PetscThreadsLayout* PetscThreadsLayout;
 struct _n_PetscThreadsLayout{
   PetscInt nthreads;        /* Number of threads used for vector/matrix operations */
-  PetscInt *n;              /* local size of each thread */
-  PetscInt N;               /* the global size  */
-  PetscInt *rstart,*rend;   /* local start,end for each thread */
+  PetscInt N;               /* global size = sum(local sizes of all threads)  */
+  PetscInt *trstarts;       /* local start for each thread */
   PetscInt *affinity;       /* Core affinity of each thread */
 };
 
@@ -49,7 +48,7 @@ struct _n_PetscLayout{
 extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
 extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
 extern PetscErrorCode PetscLayoutDestroy(PetscLayout*);
-extern PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
+extern PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
 extern PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
 extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
@@ -63,6 +62,12 @@ extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
 extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
 extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
+
+extern PetscErrorCode PetscThreadsLayoutCreate(PetscThreadsLayout*);
+extern PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout*);
+extern PetscErrorCode PetscThreadsLayoutSetNThreads(PetscThreadsLayout,PetscInt);
+extern PetscErrorCode PetscThreadsLayoutSetThreadAffinities(PetscThreadsLayout, PetscInt[]);
+extern PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"

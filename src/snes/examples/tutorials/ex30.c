@@ -1,5 +1,4 @@
-static char help[] = 
-"ex30: Steady-state 2D subduction flow, pressure and temperature solver.\n\
+static const char help[] = "Steady-state 2D subduction flow, pressure and temperature solver.\n\
        The flow is driven by the subducting slab.\n\
 ---------------------------------ex30 help---------------------------------\n\
   -OPTION <DEFAULT> = (UNITS) DESCRIPTION.\n\n\

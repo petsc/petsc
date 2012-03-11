@@ -4786,6 +4786,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  ierr = MatSetOption(B_mpi,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
   B_mpi->assembled     = PETSC_FALSE;
@@ -4839,8 +4840,20 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
 PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1){
+     ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
+     if (scall == MAT_INITIAL_MATRIX){
+       ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
+     } else {
+       ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+     }
+     ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
+     PetscFunctionReturn(0);
+  }
   ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);

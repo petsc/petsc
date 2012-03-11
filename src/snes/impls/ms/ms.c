@@ -372,6 +372,7 @@ static PetscErrorCode SNESSetUp_MS(SNES snes)
   PetscFunctionBegin;
   if (!ms->tableau) {ierr = SNESMSSetType(snes,SNESMSDefault);CHKERRQ(ierr);}
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

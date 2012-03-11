@@ -1390,9 +1390,14 @@ runex94_2_mattransposematmult:
 	   ${RM} -f ex94_2.tmp
 
 runex95:
-	-@${MPIEXEC} -n 3 ./ex95 | grep -v "MPI processes" > ex95_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex95 -options_left no | grep -v "MPI processes" > ex95_1.tmp 2>&1; \
 	   if (${DIFF} output/ex95_1.out ex95_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex95_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex95_1.tmp
+runex95_2:
+	-@${MPIEXEC} -n 1 ./ex95 -options_left no | grep -v "MPI processes" > ex95_1.tmp 2>&1; \
+	   if (${DIFF} output/ex95_2.out ex95_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex95_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex95_1.tmp
 
 runex96:
@@ -1779,7 +1784,7 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_4 runex56_5 \
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
-                                 ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 
+                                 ex96.PETSc runex96 ex96.rm ex95.PETSc runex95 runex95_2 ex95.rm 
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
                                  ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
