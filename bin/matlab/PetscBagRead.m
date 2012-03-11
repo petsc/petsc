@@ -7,8 +7,7 @@ function bag = PetscBagRead(fd)
 
 [name_len help_len] = ParsePetscBagDotH;
 
-bagsizecount = read(fd,2,'int32');
-count        = bagsizecount(2);
+count = read(fd,1,'int32');
 
 bag.bag_name      = deblank(char(read(fd,name_len,'uchar')'));
 bag.help.bag_help = deblank(char(read(fd,help_len,'uchar')'));

@@ -105,7 +105,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
    Collective on Mat
 
    Input Parameter:
-.   A00,A01,A10,A11  - the four parts of the original matrix (D is optional)
+.   A00,A01,A10,A11  - the four parts of the original matrix (A00 is optional)
 
    Output Parameter:
 .   N - the matrix that the Schur complement A11 - A10 ksp(A00) A01
