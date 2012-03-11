@@ -1805,7 +1805,6 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
   PetscValidType(x,1);
   PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
   PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-  MatCheckPreallocated(x,1);
 
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,rmapping,cmapping);CHKERRQ(ierr);
@@ -1847,7 +1846,6 @@ PetscErrorCode  MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rma
   PetscValidType(x,1);
   PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
   PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-  MatCheckPreallocated(x,1);
 
   ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->rmap,rmapping);CHKERRQ(ierr);
   ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->cmap,cmapping);CHKERRQ(ierr);
