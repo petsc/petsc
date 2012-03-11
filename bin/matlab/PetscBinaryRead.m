@@ -24,7 +24,7 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %  'cell',cnt  means return a Matlab cell array containing the first cnt objects in the file, use 10,000 to read in all objects
 %  'precision','float32' indicates the PETSc program was built with --with-precision=single
 %
-%  Examples:  A = PetscBinaryRead('myfile','cell',10,000);  read all objects in file
+%  Examples:  A = PetscBinaryRead('myfile','cell',10000);  read all objects in file
 %             A = PetscBinaryRead(1024,'cell',2);  read two objects from socket 
 %   
 if nargin == 0
