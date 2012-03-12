@@ -49,6 +49,7 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   PetscValidPointer(gvec,2);
   *gvec = 0;
   X = shell->Xglobal;
+  if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
   if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     ierr = VecZeroEntries(X);CHKERRQ(ierr);
@@ -80,8 +81,13 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 {
   DM_Shell *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
+  PetscBool isshell;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,2);
+  ierr = PetscTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
   shell->A = J;
@@ -131,8 +137,13 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
 {
   DM_Shell *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
+  PetscBool isshell;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  ierr = PetscTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   shell->Xglobal = X;
@@ -180,19 +191,19 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Shell"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM p)
+PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
 {
   PetscErrorCode ierr;
   DM_Shell      *shell;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(p,DM_Shell,&shell);CHKERRQ(ierr);
-  p->data = shell;
+  ierr = PetscNewLog(dm,DM_Shell,&shell);CHKERRQ(ierr);
+  dm->data = shell;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)p,DMSHELL);CHKERRQ(ierr);
-  p->ops->createglobalvector = DMCreateGlobalVector_Shell;
-  p->ops->creatematrix       = DMCreateMatrix_Shell;
-  p->ops->destroy            = DMDestroy_Shell;
+  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
+  dm->ops->destroy            = DMDestroy_Shell;
+  dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
+  dm->ops->creatematrix       = DMCreateMatrix_Shell;
   PetscFunctionReturn(0);
 }
 
