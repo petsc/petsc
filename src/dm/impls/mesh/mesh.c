@@ -368,173 +368,6 @@ PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshCreateAllocationVectors"
-PetscErrorCode DMMeshCreateAllocationVectors(DM dm, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
-{
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscLayout    layout;
-  PetscInt       numLocalRows, firstRow;
-  PetscInt       pStart, pEnd, p;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMemzero(dnz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onz,  numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(dnzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onzu, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
-    PetscBool isOwned;
-
-    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
-    {
-      const PetscInt *leaves;
-      PetscInt        nleaves, l;
-
-      isOwned = PETSC_TRUE;
-      ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
-      for(l = 0; l < nleaves; ++l) {
-        if (p == leaves[l]) {
-          isOwned = PETSC_FALSE;
-          break;
-        }
-      }
-    }
-    if (isOwned) {
-      const PetscInt *cone;
-      PetscInt        coneSize, q, row, rSize;
-
-      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
-      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
-      rSize /= bs;
-      if ((bs == 1) || (row%bs == 0)) {ierr = PetscPrintf(comm, "[%d]: row %d size %d bs %d\n", rank, row, rSize*bs, bs);CHKERRQ(ierr);}
-      if (rSize == 0) continue;
-      for(q = 0; q < coneSize; ++q) {
-        const PetscInt neighbor = cone[q];
-        PetscInt       col, cSize, r;
-
-        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
-        col    = col >= 0 ? col : -(col+1);
-        cSize /= bs;
-        /* TODO ierr = PetscSFIsOwned(sf, neighbor, &isOwned);CHKERRQ(ierr); */
-        {
-          const PetscInt *leaves;
-          PetscInt        nleaves, l;
-
-          isOwned = PETSC_TRUE;
-          ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
-          for(l = 0; l < nleaves; ++l) {
-            if (neighbor == leaves[l]) {
-              isOwned = PETSC_FALSE;
-              break;
-            }
-          }
-        }
-        if ((bs == 1) || (col%bs == 0)) {ierr = PetscPrintf(comm, "[%d]:   col %d size %d bs %d\n", rank, col, cSize*bs, bs);CHKERRQ(ierr);}
-        if (cSize > 0) {
-          if (isOwned) {
-            for(r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
-            if (col >= row) {
-              for(r = 0; r < rSize; ++r) {dnzu[(row - firstRow)/bs + r] += cSize;}
-            }
-          } else {
-            for(r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
-            if (col >= row) {
-              for(r = 0; r < rSize; ++r) {onzu[(row - firstRow)/bs + r] += cSize;}
-            }
-          }
-        }
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshFillMatrixWithZero"
-PetscErrorCode DMMeshFillMatrixWithZero(DM dm, Mat A, PetscInt bs, PetscSF sf, PetscSection globalSection, DM dmAdj, PetscInt dnz[], PetscInt onz[])
-{
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscLayout   layout;
-  PetscInt      *cols;
-  PetscScalar   *values;
-  PetscInt       numLocalRows, firstRow, maxRowLen, r;
-  PetscInt       pStart, pEnd, p;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(layout, &numLocalRows);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(layout, &firstRow, PETSC_NULL);CHKERRQ(ierr);
-  for(r = 0, maxRowLen = 0; r < numLocalRows/bs; ++r) {
-    maxRowLen = PetscMax(maxRowLen, dnz[r] + onz[r]);
-  }
-  ierr = PetscMalloc2(maxRowLen,PetscInt,&cols,maxRowLen,PetscScalar,&values);CHKERRQ(ierr);
-  ierr = PetscMemzero((void *) values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
-    PetscInt  rowLen = 0;
-    PetscBool isOwned;
-
-    /* TODO ierr = PetscSFIsOwned(sf, p, &isOwned);CHKERRQ(ierr); */
-    {
-      const PetscInt *leaves;
-      PetscInt        nleaves, l;
-
-      isOwned = PETSC_TRUE;
-      ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
-      for(l = 0; l < nleaves; ++l) {
-        if (p == leaves[l]) {
-          isOwned = PETSC_FALSE;
-          break;
-        }
-      }
-    }
-    if (isOwned) {
-      const PetscInt *cone;
-      PetscInt        coneSize, q, row, rSize, r;
-
-      ierr = DMMeshGetConeSize(dmAdj, p, &coneSize);CHKERRQ(ierr);
-      ierr = DMMeshGetCone(dmAdj, p, &cone);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(globalSection, p, &rSize);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(globalSection, p, &row);CHKERRQ(ierr);
-      rSize /= bs;
-      if (rSize == 0) continue;
-      for(q = 0; q < coneSize; ++q) {
-        const PetscInt neighbor = cone[q];
-        PetscInt       col, cSize, c;
-
-        ierr = PetscSectionGetDof(globalSection, neighbor, &cSize);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(globalSection, neighbor, &col);CHKERRQ(ierr);
-        col    = col >= 0 ? col : -(col+1);
-        cSize /= bs;
-        for(c = col; c < col+cSize; ++c) {
-          cols[rowLen++] = c;
-        }
-      }
-      for(r = 0; r < rSize; ++r) {
-        PetscInt fullRow = row + r;
-
-        if (rowLen != dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]) {
-          SETERRQ5(comm, PETSC_ERR_ARG_WRONG, "Invalid row length %d, should be dnz[%d]: %d + onz[%d]: %d", rowLen, (row - firstRow)/bs+r, dnz[(row - firstRow)/bs+r], (row - firstRow)/bs+r, onz[(row - firstRow)/bs+r]);
-        }
-        ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
-      }
-    }
-  }
-  ierr = PetscFree2(cols,values);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "GetAdjacentDof_Private"
 PetscErrorCode GetAdjacentDof_Private()
 {
@@ -1234,7 +1067,7 @@ PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStru
   const PetscScalar y3   = vertices[7];
   const PetscScalar f_01 = x2 - x1 - x3 + x0;
   const PetscScalar g_01 = y2 - y1 - y3 + y0;
-  PetscScalar      *ref, *real;
+  PetscScalar      *ref;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1440,7 +1273,7 @@ PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStruc
   const PetscScalar f_xyz = x6 - x0 + x1 - x2 + x3 + x4 - x5 - x7;
   const PetscScalar g_xyz = y6 - y0 + y1 - y2 + y3 + y4 - y5 - y7;
   const PetscScalar h_xyz = z6 - z0 + z1 - z2 + z3 + z4 - z5 - z7;
-  PetscScalar      *ref, *real;
+  PetscScalar      *ref;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -3641,7 +3474,6 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreatePartitionClosure"
 PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition) {
-  const PetscInt  height = 0;
   const PetscInt *partArray;
   PetscInt       *allPoints, *partPoints = PETSC_NULL;
   PetscInt        rStart, rEnd, rank, maxPartSize = 0, newSize;
