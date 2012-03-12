@@ -313,8 +313,8 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     /* HEM */
     for(kk=0;kk<nEdges;kk++){
       Edge *e = &Edges[kk];
-      PetscInt lid0=e->lid0,gid1=e->gid1,gid0=lid0+my0;      assert(lid_state[gid1-my0] != -2);
       PetscBool isOK = PETSC_TRUE;
+      PetscInt lid0=e->lid0,gid1=e->gid1,gid0=lid0+my0;      assert(lid_state[gid1-my0] != -2);
 
       if(lid_state[lid0] != -1 || ( gid1>=my0 && gid1<Iend && lid_state[gid1-my0] != -1) ) {
         continue; /* skip if either vertex is done already */
