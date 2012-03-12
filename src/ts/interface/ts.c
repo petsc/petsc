@@ -1,5 +1,6 @@
 
 #include <private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petscdmshell.h>
 
 /* Logging support */
 PetscClassId  TS_CLASSID;
@@ -1347,6 +1348,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+    if (ts->dm) {ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);}
     if (ts->problem_type == TS_LINEAR) {
       ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);
     }
@@ -1486,6 +1488,7 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 PetscErrorCode  TSSetSolution(TS ts,Vec x)
 {
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1493,6 +1496,8 @@ PetscErrorCode  TSSetSolution(TS ts,Vec x)
   ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
   ts->vec_sol = x;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMShellSetGlobalVector(dm,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2501,8 +2506,14 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
 @*/
 PetscErrorCode  TSGetDM(TS ts,DM *dm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->dm) {
+    ierr = DMShellCreate(((PetscObject)ts)->comm,&ts->dm);CHKERRQ(ierr);
+    if (ts->snes) {ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);}
+  }
   *dm = ts->dm;
   PetscFunctionReturn(0);
 }
