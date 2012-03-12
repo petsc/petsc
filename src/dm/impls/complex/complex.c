@@ -1,5 +1,9 @@
 #include <private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
+#if !defined(PETSC_HAVE_MPI_WIN_CREATE)
+#define MPI_REPLACE ((MPI_Op)0)
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)

@@ -339,7 +339,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
   Mat_Nest       *vs = (Mat_Nest*)A->data;
   PetscErrorCode ierr;
   PetscInt       row,col;
-  PetscBool      same,isFullCol;
+  PetscBool      same,isFullCol,isFullColGlobal;
 
   PetscFunctionBegin;
   /* Check if full column space. This is a hack */
@@ -358,9 +358,9 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
     }
     if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
   }
-  ierr = MPI_Allreduce(MPI_IN_PLACE,&isFullCol,1,MPI_INT,MPI_LAND,((PetscObject)iscol)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&isFullCol,&isFullColGlobal,1,MPI_INT,MPI_LAND,((PetscObject)iscol)->comm);CHKERRQ(ierr);
 
-  if (isFullCol) {
+  if (isFullColGlobal) {
     PetscInt row;
     ierr = MatNestFindIS(A,vs->nr,is->row,isrow,&row);CHKERRQ(ierr);
     ierr = MatNestGetRow(A,row,B);CHKERRQ(ierr);
