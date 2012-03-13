@@ -1171,17 +1171,18 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     A->ops->mult          = MatMult_MPIFFTW;
     A->ops->multtranspose = MatMultTranspose_MPIFFTW;
   }
-  fft->matdestroy          = MatDestroy_FFTW;
-  A->assembled          = PETSC_TRUE;
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);   
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);   
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterFFTWToPetsc_C","VecScatterFFTWToPetsc_FFTW",VecScatterFFTWToPetsc_FFTW);  
+  fft->matdestroy = MatDestroy_FFTW;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);CHKERRQ(ierr);    
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);CHKERRQ(ierr);    
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterFFTWToPetsc_C","VecScatterFFTWToPetsc_FFTW",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);   
     
   /* get runtime options */
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-mat_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg);CHKERRQ(ierr);
     if (flg) {fftw->p_flag = (unsigned)p_flag;}
-  PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

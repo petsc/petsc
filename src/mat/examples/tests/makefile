@@ -1722,15 +1722,15 @@ runex151_3:
 	   ${RM} -f ex151_3.tmp
 
 runex158:
-	-@${MPIEXEC} -n 1 ./ex158  > ex158.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex158 -options_left no > ex158.tmp 2>&1; \
 	   ${DIFF} output/ex158.out ex158.tmp || echo ${PWD} "\nPossible problem with with ex158, diffs above \n========================================="; \
 	   ${RM} -f ex158.tmp
 runex158_2:
-	-@${MPIEXEC} -n 2 ./ex158  > ex158_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex158 -options_left no > ex158_2.tmp 2>&1; \
 	   ${DIFF} output/ex158_2.out ex158_2.tmp || echo ${PWD} "\nPossible problem with with ex158_2, diffs above \n========================================="; \
 	   ${RM} -f ex158_2.tmp
 runex158_3:
-	-@${MPIEXEC} -n 3 ./ex158  > ex158_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex158 -options_left no > ex158_3.tmp 2>&1; \
 	   ${DIFF} output/ex158_3.out ex158_3.tmp || echo ${PWD} "\nPossible problem with with ex158_3, diffs above \n========================================="; \
 	   ${RM} -f ex158_3.tmp
 runex159:
