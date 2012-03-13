@@ -19,6 +19,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt    maxConeSize, maxSupportSize;
     PetscInt    pStart, pEnd, p;
     PetscMPIInt rank;
+    PetscBool   hasLabel;
 
     ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -51,6 +52,35 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);
+    ierr = DMComplexHasLabel(dm, "marker", &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      const char     *name = "marker";
+      IS              ids;
+      const PetscInt *markers;
+      PetscInt        num, i;
+
+      ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
+      ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
+      ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
+      ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
+      for(i = 0; i < num; ++i) {
+        IS              pIS;
+        const PetscInt *points;
+        PetscInt        size, p;
+
+        ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
+        ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
+        ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
+        for(p = 0; p < size; ++p) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, points[p], markers[i]);CHKERRQ(ierr);
+        }
+        ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
+        ierr = ISDestroy(&pIS);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(ids, &markers);CHKERRQ(ierr);
+      ierr = ISDestroy(&ids);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
     const char  *name;
     const char  *colors[3] = {"red", "blue", "green"};
@@ -1731,6 +1761,44 @@ PetscErrorCode DMComplexStratify(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexHasLabel"
+/*@C
+  DMComplexHasLabel - Determine whether the mesh has a label of a given name
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+- name - The label name
+
+  Output Parameter:
+. hasLabel - PETSC_TRUE if the label is present
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetLabelStratum()
+@*/
+PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  SieveLabel     next = mesh->labels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(hasLabel, 3);
+  *hasLabel = PETSC_FALSE;
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
+    if (*hasLabel) break;
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetLabelValue"
 /*@C
   DMComplexGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
@@ -1754,7 +1822,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   SieveLabel     next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
+  PetscBool      flg;
   PetscInt       v, p;
   PetscErrorCode ierr;
 
@@ -1762,11 +1830,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   *value = -1;
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMComplexHasLabel(dm, name, &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);}
   /* Find, or add, label value */
   for(v = 0; v < next->numStrata; ++v) {
@@ -3983,7 +4047,7 @@ PetscErrorCode DMComplexGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 #ifdef PETSC_HAVE_TETGEN
     ierr = DMComplexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
-    SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation needs external package support.\nPlease reconfigure with --download-tetgen.");
+    SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
 #endif
     break;
   default:
@@ -4094,11 +4158,7 @@ PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *
     ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) {PetscFunctionReturn(0);}
   }
-  while(next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMComplexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = stratumValue;
@@ -4133,11 +4193,7 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
     ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) {PetscFunctionReturn(0);}
   }
-  while(next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMComplexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = next->stratumValues[next->numStrata-1] - stratumValue;
