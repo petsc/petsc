@@ -1366,8 +1366,6 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
     ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr);
     ierr = VecDestroy(&snes->vec_func);CHKERRQ(ierr);
     snes->vec_func = r;
-  } else if (!snes->vec_func && snes->dm) {
-    ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
   }
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESSetFunction(dm,func,ctx);CHKERRQ(ierr);
@@ -3280,9 +3278,9 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     if (snes->printreason) {
       ierr = PetscViewerASCIIAddTab(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       if (snes->reason > 0) {
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),"Nonlinear solve converged due to %s iterations %D\n",SNESConvergedReasons[snes->reason],snes->iter);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),"Nonlinear solve did not converge due to %s iterations %D\n",SNESConvergedReasons[snes->reason],snes->iter);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISubtractTab(PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm),((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
