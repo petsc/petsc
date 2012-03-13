@@ -56,6 +56,7 @@ extern PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
 extern PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMComplexLoad(PetscViewer, DM);
 
+extern PetscErrorCode DMComplexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 extern PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 extern PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
 extern PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);

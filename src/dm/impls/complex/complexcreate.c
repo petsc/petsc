@@ -157,23 +157,23 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
     }
     { /* Side 1 (Back) */
       PetscInt cone[4] = {numFaces+1, numFaces+0, numFaces+2, numFaces+3};
-      ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(dm, 1, cone);CHKERRQ(ierr);
     }
-    { /* Side 0 (Bottom) */
+    { /* Side 2 (Bottom) */
       PetscInt cone[4] = {numFaces+0, numFaces+1, numFaces+5, numFaces+4};
-      ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(dm, 2, cone);CHKERRQ(ierr);
     }
-    { /* Side 0 (Top) */
+    { /* Side 3 (Top) */
       PetscInt cone[4] = {numFaces+6, numFaces+7, numFaces+3, numFaces+2};
-      ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(dm, 3, cone);CHKERRQ(ierr);
     }
-    { /* Side 0 (Left) */
+    { /* Side 4 (Left) */
       PetscInt cone[4] = {numFaces+0, numFaces+4, numFaces+6, numFaces+2};
-      ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(dm, 4, cone);CHKERRQ(ierr);
     }
-    { /* Side 0 (Right) */
+    { /* Side 5 (Right) */
       PetscInt cone[4] = {numFaces+5, numFaces+1, numFaces+3, numFaces+7};
-      ierr = DMComplexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(dm, 5, cone);CHKERRQ(ierr);
     }
   }
   ierr = DMComplexSymmetrize(dm);CHKERRQ(ierr);
@@ -186,6 +186,7 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
   for(vz = 0; vz <= faces[2]; ++vz) {
     for(vy = 0; vy <= faces[1]; ++vy) {
