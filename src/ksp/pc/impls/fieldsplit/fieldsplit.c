@@ -807,7 +807,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
     ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
-    if (ilink->is_col) { ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr); }
+    ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr); 
     next = ilink->next;
     ilink = next;
   }
@@ -1014,12 +1014,15 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc(3*sizeof(char),&ilink->splitname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(ilink->splitname,2,"%s",jac->nsplits);CHKERRQ(ierr);
+    ierr = PetscMalloc(8*sizeof(char),&ilink->splitname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ilink->splitname,7,"%D",jac->nsplits);CHKERRQ(ierr);
   }
+  ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+  ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
   ilink->is      = is;
+  ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+  ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr);
   ilink->is_col  = is;
-  ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
