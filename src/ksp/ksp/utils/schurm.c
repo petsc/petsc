@@ -417,7 +417,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
     ierr = MatMatMult(Ad,B,MAT_INITIAL_MATRIX,1,&AdB);CHKERRQ(ierr);
-    S = (preuse == MAT_REUSE_MATRIX) ? *newpmat : 0;
+    S = (preuse == MAT_REUSE_MATRIX) ? *newpmat : (Mat)0;
     ierr = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&S);CHKERRQ(ierr);
     ierr = MatAYPX(S,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     *newpmat = S;

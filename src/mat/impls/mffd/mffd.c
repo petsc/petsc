@@ -591,7 +591,7 @@ EXTERN_C_END
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 {
-  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : (MatMFFD)PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

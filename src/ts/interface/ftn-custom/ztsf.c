@@ -125,7 +125,7 @@ void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   CHKFORTRANNULLOBJECT(fP);
-  R = r ? *r : PETSC_NULL;
+  R = r ? *r : (Vec)PETSC_NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsfunctionlinear_) {
     *ierr = TSSetRHSFunction(*ts,R,TSComputeRHSFunctionLinear,fP);
   } else {
@@ -145,7 +145,7 @@ void PETSC_STDCALL tssetifunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL *
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   CHKFORTRANNULLOBJECT(fP);
-  R = r ? *r : PETSC_NULL;
+  R = r ? *r : (Vec)PETSC_NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeifunctionlinear_) {
     *ierr = TSSetIFunction(*ts,R,TSComputeIFunctionLinear,fP);
   } else {

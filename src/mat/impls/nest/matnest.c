@@ -261,7 +261,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatRow(Mat A,PetscInt row,Mat *B)
   Mat            sub;
 
   PetscFunctionBegin;
-  sub = (row < vs->nc) ? vs->m[row][row] : PETSC_NULL; /* Prefer to find on the diagonal */
+  sub = (row < vs->nc) ? vs->m[row][row] : (Mat)PETSC_NULL; /* Prefer to find on the diagonal */
   for (j=0; !sub && j<vs->nc; j++) sub = vs->m[row][j];
   if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
@@ -278,7 +278,7 @@ static PetscErrorCode MatNestFindNonzeroSubMatCol(Mat A,PetscInt col,Mat *B)
   Mat            sub;
 
   PetscFunctionBegin;
-  sub = (col < vs->nr) ? vs->m[col][col] : PETSC_NULL; /* Prefer to find on the diagonal */
+  sub = (col < vs->nr) ? vs->m[col][col] : (Mat)PETSC_NULL; /* Prefer to find on the diagonal */
   for (i=0; !sub && i<vs->nr; i++) sub = vs->m[i][col];
   if (sub) {ierr = MatSetUp(sub);CHKERRQ(ierr);}       /* Ensure that the sizes are available */
   *B = sub;
@@ -964,7 +964,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype)
   PetscFunctionBegin;
   ierr = PetscStrcmp(vtype,VECNEST,&flg);CHKERRQ(ierr);
   /* In reality, this only distinguishes VECNEST and "other" */
-  A->ops->getvecs       = flg ? MatGetVecs_Nest       : 0;
+  A->ops->getvecs       = flg ? MatGetVecs_Nest : (PetscErrorCode (*)(Mat,Vec*,Vec*))0;
  PetscFunctionReturn(0);
 }
 EXTERN_C_END
