@@ -7,6 +7,7 @@ function bag = PetscBagRead(fd)
 
 [name_len help_len] = ParsePetscBagDotH;
 
+bagsize = read(fd,1,'int32');  %  no longer used after petsc-3.2 just here for backward compatibility of the binary files
 count = read(fd,1,'int32');
 
 bag.bag_name      = deblank(char(read(fd,name_len,'uchar')'));

@@ -503,7 +503,9 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
     }
   } else if (isbinary) {
     PetscInt classid = PETSC_BAG_FILE_CLASSID, dtype;
+    PetscInt deprecatedbagsize = 0;
     ierr = PetscViewerBinaryWrite(view,&classid,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
@@ -552,7 +554,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
-  PetscInt       classid,bagcount,i,dtype,msize,offset;
+  PetscInt       classid,bagcount,i,dtype,msize,offset,deprecatedbagsize;
   char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH],**list;
   PetscBagItem   nitem;
   MPI_Comm       comm;
@@ -567,6 +569,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 
   ierr = PetscViewerBinaryRead(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
   if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
+  ierr = PetscViewerBinaryRead(view,&deprecatedbagsize,1,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(view,&bagcount,1,PETSC_INT);CHKERRQ(ierr);
   if (bagcount != bag->count) SETERRQ2(comm,PETSC_ERR_ARG_INCOMP,"Bag in file has different number of entries %d then passed in bag %d\n",(int)bagcount,(int)bag->count);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
