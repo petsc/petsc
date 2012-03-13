@@ -779,10 +779,14 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   PetscReal          gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
+  DM                 dm;
+  SNESDM             sdm;
 
   PetscFunctionBegin;
-  vi->computeuserfunction    = snes->ops->computefunction;
-  snes->ops->computefunction = SNESVIComputeFunction;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  vi->computeuserfunction = sdm->computefunction;
+  sdm->computefunction    = SNESVIComputeFunction;
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -804,7 +808,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    snes->ops->computefunction = vi->computeuserfunction;
+    sdm->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
    /* Compute Merit function */
@@ -825,7 +829,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) {
-    snes->ops->computefunction = vi->computeuserfunction;
+    sdm->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
 
@@ -880,7 +884,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      snes->ops->computefunction = vi->computeuserfunction;
+      sdm->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
     if (!lssucceed) {
@@ -913,7 +917,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  snes->ops->computefunction = vi->computeuserfunction;
+  sdm->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
 }
 
