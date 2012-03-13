@@ -15092,6 +15092,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 #define __FUNCT__ "CreateBoxMesh"
 PetscErrorCode CreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
   DM             boundary;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -15113,7 +15114,12 @@ PetscErrorCode CreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate,
   default:
     SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
   }
-  ierr = DMComplexGenerate_CTetgen(boundary, interpolate, dm);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-use_c_tetgen", &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMComplexGenerate_CTetgen(boundary, interpolate, dm);CHKERRQ(ierr);
+  } else {
+    ierr = DMComplexGenerate(boundary, interpolate, dm);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
