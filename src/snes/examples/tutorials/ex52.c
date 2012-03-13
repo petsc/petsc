@@ -157,6 +157,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
   PetscFunctionBegin;
   switch(user->dim) {
   case 2:
+  case 3:
     user->q.numQuadPoints = NUM_QUADRATURE_POINTS_0;
     user->q.quadPoints    = points_0;
     user->q.quadWeights   = weights_0;
@@ -448,8 +449,12 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt N
 EXTERN_C_END
 
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
-  f1[0] = gradU[0];
-  f1[1] = gradU[1];
+  const PetscInt dim = SPATIAL_DIM_0;
+  PetscInt       d;
+
+  for(d = 0; d < dim; ++d) {
+    f1[d] = gradU[d];
+  }
   return;
 }
 
@@ -457,7 +462,7 @@ void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
 #define __FUNCT__ "IntegrateLaplacianBatchCPU"
 PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug = user->debug;
-  const PetscInt dim = 2;
+  const PetscInt dim   = SPATIAL_DIM_0;
   PetscInt       e;
   PetscErrorCode ierr;
 
@@ -519,7 +524,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
 };
 
 void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const PetscInt dim   = 2;
+  const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = dim;
   PetscInt       comp, d;
 
@@ -535,7 +540,7 @@ void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
 #define __FUNCT__ "IntegrateElasticityBatchCPU"
 PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug = user->debug;
-  const PetscInt dim = 2;
+  const PetscInt dim   = SPATIAL_DIM_0;
   PetscInt       e;
   PetscErrorCode ierr;
 
