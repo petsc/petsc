@@ -205,6 +205,7 @@ M*/
 #define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
 #define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
 #define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRQ8(comm,n,s,a1,a2,a3,a4,a5,a6,a7,a8) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8)
 #define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
 
 /*MC
