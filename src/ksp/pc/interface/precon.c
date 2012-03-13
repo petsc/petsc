@@ -77,7 +77,7 @@ PetscErrorCode  PCReset(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->ops->reset) {
-    ierr = (*pc->ops->reset)(pc);
+    ierr = (*pc->ops->reset)(pc);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&pc->diagonalscaleright);CHKERRQ(ierr);
   ierr = VecDestroy(&pc->diagonalscaleleft);CHKERRQ(ierr);
