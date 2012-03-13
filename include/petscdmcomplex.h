@@ -37,6 +37,7 @@ extern PetscErrorCode DMComplexSetUp(DM);
 extern PetscErrorCode DMComplexSymmetrize(DM);
 extern PetscErrorCode DMComplexStratify(DM);
 
+extern PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
 extern PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 extern PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
 extern PetscErrorCode DMComplexGetLabelSize(DM, const char[], PetscInt *);
