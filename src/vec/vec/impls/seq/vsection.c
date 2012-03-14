@@ -462,7 +462,8 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     (*gsection)->atlasOff[p] = off;
     off += (*gsection)->atlasDof[p] > 0 ? (*gsection)->atlasDof[p]-cdof : 0;
   }
-  ierr = MPI_Exscan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
+  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
+  globalOff -= off;
   for(p = 0, off = 0; p < pEnd-pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
     neg[p-pStart] = -((*gsection)->atlasOff[p]+1);
