@@ -6,9 +6,10 @@
 #ifndef __SNES_LS_H
 #define __SNES_LS_H
 #include <private/snesimpl.h>
+#include <petsclinesearch.h>
 
 typedef struct {
-  int dummy;
+  LineSearch linesearch;
 } SNES_LS;
 
 #endif
