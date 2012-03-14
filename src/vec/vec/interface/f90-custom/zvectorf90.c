@@ -31,9 +31,13 @@ void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_
 void PETSC_STDCALL vecrestorearrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
+  PetscInt    n;
   *__ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = F90Array1dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = VecRestoreArray(*x,&fa);
+  *__ierr = VecGetLocalSize(*x,&n);if (*__ierr) return;
+  if (n > 0) {
+    *__ierr = VecRestoreArray(*x,&fa);
+  }
 }
 
 void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
