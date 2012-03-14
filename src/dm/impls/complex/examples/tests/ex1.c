@@ -2326,6 +2326,7 @@ PetscErrorCode ListItem(List *l, int i, void **item)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  //*item = l->base + i * l->itembytes;
   ierr = PetscMemcpy(item, l->base + i * l->itembytes, l->itembytes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2333,7 +2334,7 @@ PetscErrorCode ListItem(List *l, int i, void **item)
 #undef __FUNCT__
 #define __FUNCT__ "ListSetItem"
 /* tetgenmesh::list::operator[]() */
-PetscErrorCode ListSetItem(List *l, int i, void **item)
+PetscErrorCode ListSetItem(List *l, int i, void *item)
 {
   PetscErrorCode ierr;
 
@@ -2927,6 +2928,8 @@ PetscErrorCode TetGenMeshFindEdge_triface(TetGenMesh *m, triface *tface, point e
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find an edge in tet");
 }
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFindEdge_face"
 PetscErrorCode TetGenMeshFindEdge_face(TetGenMesh *m, face *sface, point eorg, point edest)
 {
   PetscInt       i;
@@ -3761,7 +3764,8 @@ PetscErrorCode TetGenMeshMakeSubfaceMap(TetGenMesh *m, int **index2facelist, she
     idx2facelist[i + 1] = idx2facelist[i];
   }
   idx2facelist[0] = 0;
-  *index2facelist = idx2facelist;
+  *index2facelist     = idx2facelist;
+  *facespervertexlist = facesperverlist;
   PetscFunctionReturn(0);
 }
 
@@ -4114,8 +4118,8 @@ PetscErrorCode TetGenMeshCircumsphere(TetGenMesh *m, PetscReal* pa, PetscReal* p
   // Solve the 3 by 3 equations use LU decomposition with partial pivoting
   //   and backward and forward substitute..
   if (!lu_decmp(A, 3, indx, &D, 0)) {
-    if (radius) *radius = 0.0;
-    *notDegenerate = PETSC_FALSE;
+    if (radius) {*radius = 0.0;}
+    if (notDegenerate) {*notDegenerate = PETSC_FALSE;}
     PetscFunctionReturn(0);
   }
   lu_solve(A, 3, indx, rhs, 0);
@@ -4127,7 +4131,7 @@ PetscErrorCode TetGenMeshCircumsphere(TetGenMesh *m, PetscReal* pa, PetscReal* p
   if (radius) {
     *radius = sqrt(rhs[0] * rhs[0] + rhs[1] * rhs[1] + rhs[2] * rhs[2]);
   }
-  *notDegenerate = PETSC_TRUE;
+  if (notDegenerate) {*notDegenerate = PETSC_TRUE;}
   PetscFunctionReturn(0);
 }
 
@@ -4160,8 +4164,8 @@ PetscErrorCode TetGenMeshFaceNormal(TetGenMesh *m, PetscReal* pa, PetscReal* pb,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TetGenMeshFaceNormal"
-// facenormal()    Calculate the normal of the face.                         //
+#define __FUNCT__ "TetGenMeshFaceNormal2"
+// facenormal2()    Calculate the normal of the face.                         //
 //                                                                           //
 // The normal of the face abc can be calculated by the cross product of 2 of //
 // its 3 edge vectors.  A better choice of two edge vectors will reduce the  //
@@ -5805,7 +5809,7 @@ PetscErrorCode TetGenMeshLocateSub(TetGenMesh *m, point searchpt, face *searchsh
     if (ori > 0.0) break;
     senextself(searchsh);
   }
-  if (i < 3) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+  if (i >= 3) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
 
   while (1) {
     fapex = sapex(searchsh);
@@ -6597,7 +6601,7 @@ PetscErrorCode TetGenMeshFormStarPolyhedron(TetGenMesh *m, point pt, List* tetli
   }
   if (starttet.loc >= 4) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate opposing vertex");}
   // Add t into T.
-  ierr = ListSetItem(tetlist, 0, (void **) &starttet);CHKERRQ(ierr);
+  ierr = ListSetItem(tetlist, 0, &starttet);CHKERRQ(ierr);
   infect(m, &starttet);
   if (verlist) {
     // Add three verts of t into V.
@@ -7368,7 +7372,7 @@ PetscErrorCode TetGenMeshInsertVertexBW(TetGenMesh *m, point insertpt, triface *
         if (!marktested(m, &neightet)) {
           ppt = (point *) &(neightet.tet[4]);
           ierr = TetGenMeshInSphereS(m, ppt[0], ppt[1], ppt[2], ppt[3], insertpt, &sign);CHKERRQ(ierr);
-          enqflag = (sign < 0.0);
+          enqflag = (sign < 0.0) ? PETSC_TRUE : PETSC_FALSE;
           // Avoid redundant insphere tests.
           marktest(m, &neightet);
         }
@@ -7526,7 +7530,7 @@ PetscErrorCode TetGenMeshInsertVertexBW(TetGenMesh *m, point insertpt, triface *
             pc = apex(cavetet);
             ori = orient3d(pa, pb, pc, insertpt); m->orient3dcount++;
             if (ori == 0.0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
-            enqflag = (ori > 0.0);
+            enqflag = (ori > 0.0) ? PETSC_TRUE : PETSC_FALSE;
           } else {
             enqflag = PETSC_TRUE; // A hull face.
           }
@@ -7924,7 +7928,7 @@ PetscErrorCode TetGenMeshDelaunizeVertices(TetGenMesh *m)
 
   PetscInfo(b->in, "  Incrementally inserting vertices.\n");
   // Form the DT by incremental flip Delaunay algorithm.
-  ierr = TetGenMeshDelaunayIncrFlip(m, PETSC_NULL, insertarray, arraysize, PETSC_TRUE, b->plc, 0.0, PETSC_NULL);CHKERRQ(ierr);
+  ierr = TetGenMeshDelaunayIncrFlip(m, PETSC_NULL, insertarray, arraysize, PETSC_TRUE, b->plc ? PETSC_TRUE : PETSC_FALSE, 0.0, PETSC_NULL);CHKERRQ(ierr);
 
   if (b->btree) {
     point **pptary;
@@ -8491,7 +8495,7 @@ PetscErrorCode TetGenMeshFormStarPolygon(TetGenMesh *m, point pt, List *trilist,
   }
   if (i >= 3) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
   // Add the edge f into list.
-  ierr = ListSetItem(trilist, 0, (void **) &steinsh);CHKERRQ(ierr);
+  ierr = ListSetItem(trilist, 0, &steinsh);CHKERRQ(ierr);
   pa = sorg(&steinsh);
   pb = sdest(&steinsh);
   if (vertlist) {
@@ -9408,7 +9412,7 @@ PetscErrorCode TetGenMeshCarveHolesSub(TetGenMesh *m, int holes, PetscReal *hole
 PetscErrorCode TetGenMeshTriangulate(TetGenMesh *m, int shmark, PetscReal eps, List *ptlist, List *conlist, int holes, PetscReal *holelist, MemoryPool *viri, Queue *flipqueue)
 {
   TetGenOpts    *b  = m->b;
-  face newsh;
+  face newsh = {PETSC_NULL, 0};
   point *cons;
   int len, len2, i;
   PetscBool isFlipped;
@@ -9428,8 +9432,9 @@ PetscErrorCode TetGenMeshTriangulate(TetGenMesh *m, int shmark, PetscReal eps, L
       // Insert segments into the DT.
       ierr = ListLength(conlist, &len2);CHKERRQ(ierr);
       for(i = 0; i < len2; i++) {
-        ierr = ListItem(conlist, i, (void **) &cons);CHKERRQ(ierr);
-        ierr = TetGenMeshRecoverSegment(m, cons[0], cons[1], flipqueue);CHKERRQ(ierr);
+        point cons2[2];
+        ierr = ListItem(conlist, i, (void **) cons2);CHKERRQ(ierr);
+        ierr = TetGenMeshRecoverSegment(m, cons2[0], cons2[1], flipqueue);CHKERRQ(ierr);
       }
       // Carve holes and concavities.
       ierr = TetGenMeshCarveHolesSub(m, holes, holelist, viri);CHKERRQ(ierr);
@@ -9446,10 +9451,11 @@ PetscErrorCode TetGenMeshTriangulate(TetGenMesh *m, int shmark, PetscReal eps, L
       // This facet is actually a segment. It is not support by the mesh data
       //   strcuture. Hence the segment will not be maintained in the mesh.
       //   However, during segment recovery, the segment can be processed.
-      ierr = ListItem(conlist, 0, (void **) &cons);CHKERRQ(ierr);
+      point cons2[2];
+      ierr = ListItem(conlist, 0, (void **) cons2);CHKERRQ(ierr);
       ierr = TetGenMeshMakeShellFace(m, m->subsegs, &newsh);CHKERRQ(ierr);
-      setsorg(&newsh, cons[0]);
-      setsdest(&newsh, cons[1]);
+      setsorg(&newsh, cons2[0]);
+      setsdest(&newsh, cons2[1]);
     }
   }
   PetscFunctionReturn(0);
@@ -9845,7 +9851,7 @@ PetscErrorCode TetGenMeshMeshSurface(TetGenMesh *m, long *numSegments)
     for(i = 0; i < len; i++) {
       ierr = ListItem(ptlist, i, (void **) &tstart);CHKERRQ(ierr);
       end1 = pointmark(m, tstart);
-      if (worklist[end1] != 1) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+      if (worklist[end1] != 1) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Vertex %d mark %d should be 1", end1, worklist[end1]);}
       worklist[end1] = 0;
     }
 
@@ -13938,6 +13944,7 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
       slivercount = 0;
       for(i = 0; i < len; i++) {
         ierr = ListItem(splittetlist, i, (void **) &remtet);CHKERRQ(ierr);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong, you need to fix the ListItem");
         if (!isdead_triface(&remtet->tt) && org(&remtet->tt) == remtet->forg &&
             dest(&remtet->tt) == remtet->fdest &&
             apex(&remtet->tt) == remtet->fapex &&
@@ -14573,7 +14580,7 @@ PetscErrorCode TetGenTetrahedralize(TetGenOpts *b, PLC *in, PLC *out)
 
   // PetscLogEventBegin(Holes)
   if (b->plc && !(b->diagnose == 1)) {
-    /* THIS IS BROKEN BECAUSE SOMEHOW TETS ARE NOT ASSOCIATED WITH BOUNDARY SEGMENTS ierr = TetGenMeshCarveHoles(m);CHKERRQ(ierr); */
+    ierr = TetGenMeshCarveHoles(m);CHKERRQ(ierr);
   }
   // PetscLogEventEnd(Holes)
 
@@ -14857,7 +14864,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       in->facetlist[idx].holelist         = PETSC_NULL;
 
       ierr = DMComplexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         const PetscInt point = points[p];
         if ((point >= vStart) && (point < vEnd)) {
           points[numVertices++] = point;
@@ -14951,6 +14958,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       PetscInt  firstFace = numCells+numVertices, numFaces = 0, face, f, firstEdge, numEdges = 0, edge, e;
 
       SETERRQ(comm, PETSC_ERR_SUP, "Interpolation is not yet implemented in 3D");
+#if 0
       /* TODO: Rewrite algorithm here to do all meets with neighboring cells and return counts */
       /* Count faces using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
@@ -15034,6 +15042,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       }
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = imesh;
+#endif
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {

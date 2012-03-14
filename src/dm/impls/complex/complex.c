@@ -1832,6 +1832,12 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   *value = -1;
   ierr = DMComplexHasLabel(dm, name, &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);}
+  /* We should have a generic GetLabel() and a Label class */
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
   /* Find, or add, label value */
   for(v = 0; v < next->numStrata; ++v) {
     for(p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
@@ -3581,7 +3587,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
     in.facetmarkerlist = new int[in.numberoffacets];
     for(f = fStart; f < fEnd; ++f) {
       const PetscInt idx    = f - fStart;
-      PetscInt      *points = PETSC_NULL, numPoints, p, numVertices, v;
+      PetscInt      *points = PETSC_NULL, numPoints, p, numVertices = 0, v;
 
       in.facetlist[idx].numberofpolygons = 1;
       in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
@@ -3589,7 +3595,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
       in.facetlist[idx].holelist         = NULL;
 
       ierr = DMComplexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-      for(p = 0; p < numPoints; ++p) {
+      for(p = 0; p < numPoints*2; p += 2) {
         const PetscInt point = points[p];
         if ((point >= vStart) && (point < vEnd)) {
           points[numVertices++] = point;
@@ -3610,7 +3616,8 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    ierr = PetscStrcpy(args, "pqezQ");CHKERRQ(ierr);
+    //ierr = PetscStrcpy(args, "pqezQ");CHKERRQ(ierr);
+    ierr = PetscStrcpy(args, "pqezVVVV");CHKERRQ(ierr);
     ::tetrahedralize(args, &in, &out);
   }
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -4160,6 +4167,12 @@ PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *
   }
   ierr = DMComplexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
+  /* We should have a generic GetLabel() and a Label class */
+  while(next) {
+    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = stratumValue;
   if ((depth < 0) || (depth >= next->numStrata)) {
@@ -4195,6 +4208,12 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
   }
   ierr = DMComplexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
   if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
+  /* We should have a generic GetLabel() and a Label class */
+  while(next) {
+    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = next->stratumValues[next->numStrata-1] - stratumValue;
   if ((depth < 0) || (depth >= next->numStrata)) {
