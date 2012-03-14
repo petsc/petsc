@@ -72,7 +72,7 @@ void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXE
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
   PETSC_NULL_REAL_Fortran       = fnull_real;
   PETSC_NULL_OBJECT_Fortran     = fnull_object;
-  PETSC_NULL_TRUTH_Fortran      = fnull_truth;
+  PETSC_NULL_BOOL_Fortran      = fnull_truth;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 

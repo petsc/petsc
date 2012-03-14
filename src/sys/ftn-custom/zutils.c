@@ -32,7 +32,7 @@ void   *PETSC_NULL_Fortran           = 0;
 void   *PETSC_NULL_SCALAR_Fortran    = 0;
 void   *PETSC_NULL_DOUBLE_Fortran    = 0;
 void   *PETSC_NULL_REAL_Fortran      = 0;
-void   *PETSC_NULL_TRUTH_Fortran     = 0;
+void   *PETSC_NULL_BOOL_Fortran     = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END

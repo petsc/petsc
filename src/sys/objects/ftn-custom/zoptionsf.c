@@ -105,7 +105,7 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetInt(c1,c2,ivalue,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -119,7 +119,7 @@ void PETSC_STDCALL petscoptionsgetbool_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetBool(c1,c2,ivalue,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -133,7 +133,7 @@ void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetReal(c1,c2,dvalue,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -147,7 +147,7 @@ void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetRealArray(c1,c2,dvalue,nmax,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -161,7 +161,7 @@ void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetIntArray(c1,c2,dvalue,nmax,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -180,7 +180,7 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
   len3 = len - 1;
 
   *ierr = PetscOptionsGetString(c1,c2,c3,len3,&flag);
-  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
   FIXRETURNCHAR(flag,string,len);

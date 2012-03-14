@@ -17,7 +17,7 @@
       call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
      &     PETSC_NULL_INTEGER,PETSC_NULL,PETSC_NULL_SCALAR,             &
      &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,PETSC_NULL_OBJECT,         &
-     &     PETSC_NULL_TRUTH,PETSC_NULL_FUNCTION)
+     &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION)
 
       return
       end

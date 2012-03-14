@@ -21,7 +21,7 @@ extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_REAL_Fortran;
 extern void   *PETSC_NULL_OBJECT_Fortran;
-extern void   *PETSC_NULL_TRUTH_Fortran;
+extern void   *PETSC_NULL_BOOL_Fortran;
 EXTERN_C_BEGIN
 extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
@@ -77,7 +77,7 @@ if (flg) {					\
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
-#define FORTRANNULLTRUTH(a)    (((void*)a) == PETSC_NULL_TRUTH_Fortran)
+#define FORTRANNULLBOOL(a)    (((void*)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
 
 

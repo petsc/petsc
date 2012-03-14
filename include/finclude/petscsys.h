@@ -189,7 +189,7 @@
       external PETSC_NULL_FUNCTION
       PetscScalar   PETSC_NULL_SCALAR
       PetscReal     PETSC_NULL_REAL
-      PetscBool     PETSC_NULL_TRUTH
+      PetscBool     PETSC_NULL_BOOL
 !
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
@@ -203,7 +203,7 @@
       common /petscfortran4/ PETSC_NULL_SCALAR
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
-      common /petscfortran7/ PETSC_NULL_TRUTH
+      common /petscfortran7/ PETSC_NULL_BOOL
       common /petscfortran8/ PETSC_NULL_OBJECT
       common /petscfortran9/ PETSC_COMM_WORLD
       common /petscfortran10/ PETSC_COMM_SELF
