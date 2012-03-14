@@ -248,7 +248,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
                   {1/(2*s2),1/(2*s2),1-1/s2}},
-      bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
+      bembedt[3] = {5./12.,1./3.,1./4.},
         binterpt[3][2] = {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
     ierr = TSARKIMEXRegister(TSARKIMEX2C,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
@@ -260,7 +260,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
                   {1/(2*s2),1/(2*s2),1-1/s2}},
-      bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
+      bembedt[3] = {5./12.,1./3.,1./4.},
       binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
       ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
@@ -272,7 +272,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
                   {1/(2*s2),1/(2*s2),1-1/s2}},
-      bembedt[3] = {0.29289321881345247560,0.50000000000000000000,0.20710678118654752440},
+      bembedt[3] = {5./12.,1./3.,1./4.},
       binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
     ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
