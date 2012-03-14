@@ -44,7 +44,7 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
   PetscErrorCode ierr;
   Vec             X, Y, F, W;
   SNES            snes;
-  PetscReal       xnorm, ynorm, gnorm, steptol, maxstep;
+  PetscReal       xnorm, ynorm, gnorm, steptol, atol, rtol, ltol, maxstep;
 
   PetscReal       lambda, lambda_old, lambda_update, delLambda;
   PetscScalar     fty, fty_old;
@@ -58,9 +58,7 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
   ierr = LineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = LineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = LineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = LineSearchGetMaxIts(linesearch, &max_its);CHKERRQ(ierr);
-  ierr = LineSearchGetStepTolerance(linesearch, &steptol);CHKERRQ(ierr);
-  ierr = LineSearchGetMaxStep(linesearch, &maxstep);CHKERRQ(ierr);
+  ierr = LineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
   ierr = LineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
   ierr = LineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 

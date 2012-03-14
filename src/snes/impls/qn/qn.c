@@ -305,7 +305,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (PetscAbs(PetscRealPart(DolddotD)) > qn->powell_gamma*PetscAbs(PetscRealPart(DolddotDold)) || (i_r > qn->n_restart - 1 && qn->n_restart > 0)) {
       if (qn->monitor) {
         ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "restart! |%14.12e| > %4.2f*|%14.12e| or i_r = %d\n", k, PetscRealPart(DolddotD), qn->powell_gamma, PetscRealPart(DolddotDold), i_r);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(qn->monitor, "restart! |%14.12e| > %4.2f*|%14.12e| or i_r = %d\n", PetscRealPart(DolddotD), qn->powell_gamma, PetscRealPart(DolddotDold), i_r);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
       }
       i_r = -1;

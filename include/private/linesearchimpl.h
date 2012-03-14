@@ -47,6 +47,10 @@ struct _p_LineSearch {
   PetscReal     maxstep;
   PetscReal     steptol;
   PetscInt      max_its;
+  PetscReal     rtol;
+  PetscReal     atol;
+  PetscReal     ltol;
+
 
   void *        precheckctx;
   void *        postcheckctx;

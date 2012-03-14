@@ -50,7 +50,7 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
   PetscReal       gnorm;
   PetscReal       ynorm;
   PetscReal       xnorm;
-  PetscReal       steptol, maxstep;
+  PetscReal       steptol, maxstep, rtol, atol, ltol;
 
   PetscViewer     monitor;
   PetscBool       domainerror;
@@ -66,10 +66,7 @@ PetscErrorCode  LineSearchApply_L2(LineSearch linesearch)
   ierr = LineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = LineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = LineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = LineSearchGetMaxIts(linesearch, &max_its);CHKERRQ(ierr);
-  ierr = LineSearchGetStepTolerance(linesearch, &steptol);CHKERRQ(ierr);
-  ierr = LineSearchGetMaxStep(linesearch, &maxstep);CHKERRQ(ierr);
-
+  ierr = LineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
   ierr = LineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   /* precheck */

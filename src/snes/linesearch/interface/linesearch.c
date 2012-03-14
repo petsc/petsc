@@ -46,9 +46,12 @@ PetscErrorCode LineSearchCreate(MPI_Comm comm, LineSearch * outlinesearch) {
   linesearch->damping       = 1.0;
   linesearch->maxstep       = 1e8;
   linesearch->steptol       = 1e-12;
+  linesearch->rtol          = 1e-8;
+  linesearch->atol          = 1e-15;
+  linesearch->ltol          = 1e-8;
   linesearch->precheckctx   = PETSC_NULL;
   linesearch->postcheckctx  = PETSC_NULL;
-  linesearch->max_its       = 1;
+  linesearch->max_its       = 3;
   linesearch->setupcalled   = PETSC_FALSE;
   *outlinesearch            = linesearch;
   PetscFunctionReturn(0);
@@ -397,6 +400,7 @@ PetscErrorCode LineSearchSetFromOptions(LineSearch linesearch) {
   if (set) {ierr = LineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
 
   ierr = PetscOptionsReal("-linesearch_damping","Line search damping and initial step guess","LineSearchSetDamping",linesearch->damping,&linesearch->damping,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-linesearch_rtol","Tolerance for iterative line search","LineSearchSetRTolerance",linesearch->rtol,&linesearch->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-linesearch_norms","Compute final norms in line search","LineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-linesearch_keeplambda","Use previous lambda as damping","LineSearchSetKeepLambda",linesearch->keeplambda,&linesearch->keeplambda,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-linesearch_max_it","Maximum iterations for iterative line searches","",linesearch->max_its,&linesearch->max_its,0);CHKERRQ(ierr);
@@ -568,55 +572,93 @@ PetscErrorCode  LineSearchSetLambda(LineSearch linesearch, PetscReal lambda)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchGetStepTolerance"
+#undef  __FUNCT__
+#define __FUNCT__ "LineSearchGetTolerances"
 /*@
-   LineSearchGetStepTolerance - Gets the line search step tolerance.
+   LineSearchGetTolerances - Gets the tolerances for the method
 
    Input Parameters:
 .  linesearch - linesearch context.
 
    Output Parameters:
-.  steptol - The last steplength.
++  steptol - The minimum steplength
+.  rtol    - The relative tolerance for iterative line searches
+.  atol    - The absolute tolerance for iterative line searches
+.  ltol    - The change in lambda tolerance for iterative line searches
+-  max_it  - The maximum number of iterations of the line search
 
-   Level: intermediate
 
-.seealso: LineSearchSetStepTolerance()
+   Level: advanced
+
+.seealso: LineSearchSetTolerances()
 @*/
-PetscErrorCode  LineSearchGetStepTolerance(LineSearch linesearch ,PetscReal *steptol)
+PetscErrorCode  LineSearchGetTolerances(LineSearch linesearch,PetscReal *steptol,PetscReal *maxstep, PetscReal *rtol, PetscReal *atol, PetscReal *ltol, PetscInt *max_its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  PetscValidPointer(steptol, 2);
-  *steptol = linesearch->steptol;
+  if (steptol) {
+    PetscValidPointer(steptol, 2);
+    *steptol = linesearch->steptol;
+  }
+  if (maxstep) {
+    PetscValidPointer(maxstep, 3);
+    *maxstep = linesearch->maxstep;
+  }
+  if (rtol) {
+    PetscValidPointer(rtol, 4);
+    *rtol = linesearch->rtol;
+  }
+  if (atol) {
+    PetscValidPointer(atol, 5);
+    *atol = linesearch->atol;
+  }
+  if (ltol) {
+    PetscValidPointer(ltol, 6);
+    *ltol = linesearch->ltol;
+  }
+  if (max_its) {
+    PetscValidPointer(max_its, 7);
+    *max_its = linesearch->max_its;
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchSetStepTolerance"
+#undef  __FUNCT__
+#define __FUNCT__ "LineSearchSetTolerances"
 /*@
-   LineSearchSetStepTolerance - Gets the line search step tolerance.
+   LineSearchSetTolerances - Sets the tolerances for the method
 
    Input Parameters:
-.  linesearch - linesearch context.
-.  steptol - The last steplength.
++  linesearch - linesearch context.
+.  steptol - The minimum steplength
+.  rtol    - The relative tolerance for iterative line searches
+.  atol    - The absolute tolerance for iterative line searches
+.  ltol    - The change in lambda tolerance for iterative line searches
+-  max_it  - The maximum number of iterations of the line search
 
-   Level: intermediate
 
-.seealso: LineSearchGetStepTolerance()
+   Level: advanced
+
+.seealso: LineSearchGetTolerances()
 @*/
-PetscErrorCode  LineSearchSetStepTolerance(LineSearch linesearch,PetscReal steptol)
+PetscErrorCode  LineSearchSetTolerances(LineSearch linesearch,PetscReal steptol,PetscReal maxstep, PetscReal rtol, PetscReal atol, PetscReal ltol, PetscInt max_its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
   linesearch->steptol = steptol;
+  linesearch->maxstep = maxstep;
+  linesearch->rtol = rtol;
+  linesearch->atol = atol;
+  linesearch->ltol = ltol;
+  linesearch->max_its = max_its;
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "LineSearchGetDamping"
 /*@
-   LineSearchGetDamping - Gets the line search damping paramter.
+   LineSearchGetDamping - Gets the line search damping parameter.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -656,96 +698,6 @@ PetscErrorCode  LineSearchSetDamping(LineSearch linesearch,PetscReal damping)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
   linesearch->damping = damping;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchGetMaxStep"
-/*@
-   LineSearchGetMaxStep - Gets the maximum allowable step size for the line search.
-
-   Input Parameters:
-.  linesearch - linesearch context.
-
-   Output Parameters:
-.  maxstep - The maximum step.
-
-   Level: intermediate
-
-.seealso: LineSearchSetMaxStep()
-@*/
-PetscErrorCode  LineSearchGetMaxStep(LineSearch linesearch,PetscReal* maxstep)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  PetscValidPointer(maxstep, 2);
-  *maxstep = linesearch->maxstep;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchSetMaxStep"
-/*@
-   LineSearchSetMaxStep - Sets the maximum allowable step size for the line search.
-
-   Input Parameters:
-.  linesearch - linesearch context.
-.  maxstep - The maximum step.
-
-   Level: intermediate
-
-.seealso: LineSearchGetStepTolerance()
-@*/
-PetscErrorCode  LineSearchSetMaxStep(LineSearch linesearch, PetscReal maxstep)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  linesearch->maxstep = maxstep;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchGetMaxIts"
-/*@
-   LineSearchGetMaxIts - Gets the maximum iterations for iterative line searches.
-
-   Input Parameters:
-.  linesearch - linesearch context.
-
-   Output Parameters:
-.  max_its - The maximum number of iterations.
-
-   Level: intermediate
-
-.seealso: LineSearchSetMaxIts()
-@*/
-PetscErrorCode LineSearchGetMaxIts(LineSearch linesearch, PetscInt * max_its)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  PetscValidPointer(max_its, 2);
-  *max_its = linesearch->max_its;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "LineSearchSetMaxIts"
-/*@
-   LineSearchSetMaxIts - Sets the maximum iterations for iterative line searches.
-
-   Input Parameters:
-.  linesearch - linesearch context.
-.  max_its - The maximum number of iterations.
-
-   Level: intermediate
-
-.seealso: LineSearchGetMaxIts()
-@*/
-PetscErrorCode LineSearchSetMaxIts(LineSearch linesearch, PetscInt max_its)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  linesearch->max_its = max_its;
   PetscFunctionReturn(0);
 }
 

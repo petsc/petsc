@@ -12,8 +12,7 @@ typedef struct _p_LineSearch* LineSearch;
 */
 
 #define LineSearchType char*
-#define LINESEARCHCUBIC              "cubic"
-#define LINESEARCHQUADRATIC          "quadratic"
+#define LINESEARCHBT                 "bt"
 #define LINESEARCHBASIC              "basic"
 #define LINESEARCHL2                 "l2"
 #define LINESEARCHCP                 "cp"
@@ -41,30 +40,19 @@ extern PetscErrorCode LineSearchPreCheck(LineSearch, PetscBool *);
 extern PetscErrorCode LineSearchPostCheck(LineSearch, PetscBool *, PetscBool *);
 extern PetscErrorCode LineSearchGetWork(LineSearch, PetscInt);
 
-/*
-extern PetscErrorCode  LineSearchSetFunction(LineSearch,Vec,SNESFunction,void*);
-extern PetscErrorCode  LineSearchGetFunction(LineSearch,Vec*,SNESFunction*,void**);
-extern PetscErrorCode  LineSearchComputeFunction(LineSearch,Vec,Vec);
-extern PetscErrorCode  LineSearchSetJacobian(LineSearch,Mat,Mat,SNESJacobian,void*);
-extern PetscErrorCode  LineSearchGetJacobian(LineSearch,Mat*,Mat*,SNESJacobian*,void**);
- */
-
 /* INELEGANT HACK pointers to the associated SNES in order to be able to get the function evaluation out */
 extern PetscErrorCode  LineSearchSetSNES(LineSearch,SNES);
 extern PetscErrorCode  LineSearchGetSNES(LineSearch,SNES*);
 
 /* set and get the parameters and vectors */
+extern PetscErrorCode  LineSearchGetTolerances(LineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
+extern PetscErrorCode  LineSearchSetTolerances(LineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
+
 extern PetscErrorCode  LineSearchGetLambda(LineSearch,PetscReal*);
 extern PetscErrorCode  LineSearchSetLambda(LineSearch,PetscReal);
 
-extern PetscErrorCode  LineSearchGetStepTolerance(LineSearch,PetscReal*);
-extern PetscErrorCode  LineSearchSetStepTolerance(LineSearch,PetscReal);
-
 extern PetscErrorCode  LineSearchGetDamping(LineSearch,PetscReal*);
 extern PetscErrorCode  LineSearchSetDamping(LineSearch,PetscReal);
-
-extern PetscErrorCode  LineSearchGetMaxStep(LineSearch,PetscReal*);
-extern PetscErrorCode  LineSearchSetMaxStep(LineSearch,PetscReal);
 
 extern PetscErrorCode  LineSearchGetSuccess(LineSearch, PetscBool*);
 extern PetscErrorCode  LineSearchSetSuccess(LineSearch, PetscBool);
@@ -75,9 +63,6 @@ extern PetscErrorCode LineSearchSetVecs(LineSearch,Vec,Vec,Vec,Vec,Vec);
 extern PetscErrorCode LineSearchGetNorms(LineSearch, PetscReal *, PetscReal *, PetscReal *);
 extern PetscErrorCode LineSearchSetNorms(LineSearch, PetscReal, PetscReal, PetscReal);
 extern PetscErrorCode LineSearchComputeNorms(LineSearch);
-
-extern PetscErrorCode LineSearchGetMaxIts(LineSearch, PetscInt *);
-extern PetscErrorCode LineSearchSetMaxIts(LineSearch, PetscInt);
 
 extern PetscErrorCode  LineSearchSetMonitor(LineSearch, PetscBool);
 extern PetscErrorCode  LineSearchGetMonitor(LineSearch, PetscViewer*);
