@@ -112,9 +112,7 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
       ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
       if (maxval > 1e-5) {
 	ierr = PetscInfo(tao,"subproblem solution < lower bound"); CHKERRQ(ierr);
-	reason = TAO_DIVERGED_TR_REDUCTION;
 	tao->reason = TAO_DIVERGED_TR_REDUCTION;
-	continue;
       }
 
       ierr = VecCopy(mfqP->subx,mfqP->subpdel); CHKERRQ(ierr);
@@ -122,9 +120,7 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
       ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
       if (maxval > 1e-5) {
 	ierr = PetscInfo(tao,"subproblem solution > upper bound");
-	reason = TAO_DIVERGED_TR_REDUCTION;
 	tao->reason = TAO_DIVERGED_TR_REDUCTION;
-	continue;
       }
       
 
