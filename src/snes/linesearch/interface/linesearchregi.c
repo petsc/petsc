@@ -4,6 +4,7 @@ EXTERN_C_BEGIN
 extern PetscErrorCode  LineSearchCreate_Basic(LineSearch);
 extern PetscErrorCode  LineSearchCreate_L2(LineSearch);
 extern PetscErrorCode  LineSearchCreate_CP(LineSearch);
+extern PetscErrorCode  LineSearchCreate_BT(LineSearch);
 extern PetscErrorCode  LineSearchCreate_Shell(LineSearch);
 EXTERN_C_END
 
@@ -45,6 +46,7 @@ PetscErrorCode LineSearchRegisterAll(const char path[])
   ierr = LineSearchRegisterDynamic(LINESEARCHSHELL,             path,"LineSearchCreate_Shell",             LineSearchCreate_Shell);CHKERRQ(ierr);
   ierr = LineSearchRegisterDynamic(LINESEARCHBASIC,             path,"LineSearchCreate_Basic",             LineSearchCreate_Basic);CHKERRQ(ierr);
   ierr = LineSearchRegisterDynamic(LINESEARCHL2,                path,"LineSearchCreate_L2",                LineSearchCreate_L2);CHKERRQ(ierr);
+  ierr = LineSearchRegisterDynamic(LINESEARCHBT,                path,"LineSearchCreate_BT",                LineSearchCreate_BT);CHKERRQ(ierr);
   ierr = LineSearchRegisterDynamic(LINESEARCHCP,                path,"LineSearchCreate_CP",                LineSearchCreate_CP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
