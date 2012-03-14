@@ -753,15 +753,9 @@ PetscErrorCode  LineSearchSetNorms(LineSearch linesearch, PetscReal xnorm, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
-  if (xnorm) {
-    linesearch->xnorm = xnorm;
-  }
-  if (fnorm) {
-    linesearch->fnorm = fnorm;
-  }
-  if (ynorm) {
-    linesearch->ynorm = ynorm;
-  }
+  linesearch->xnorm = xnorm;
+  linesearch->fnorm = fnorm;
+  linesearch->ynorm = ynorm;
   PetscFunctionReturn(0);
 }
 

@@ -99,7 +99,7 @@ PetscErrorCode  LineSearchApply_BT(LineSearch linesearch)
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
 
-  ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);
+  ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
   if (snes->nfuncs >= snes->max_funcs) {
     ierr  = PetscInfo(snes,"Exceeded maximum function evaluations, while checking full step length!\n");CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -107,7 +107,9 @@ PetscErrorCode  LineSearchApply_BT(LineSearch linesearch)
     PetscFunctionReturn(0);
   }
   ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
-  if (snes->domainerror) {
+  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+  if (domainerror) {
+    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,X,F,G);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -199,7 +201,8 @@ PetscErrorCode  LineSearchApply_BT(LineSearch linesearch)
           PetscFunctionReturn(0);
         }
         ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
-        if (snes->domainerror) {
+        ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+        if (domainerror) {
           ierr = PetscLogEventEnd(SNES_LineSearch,snes,X,F,G);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
@@ -236,17 +239,27 @@ PetscErrorCode  LineSearchApply_BT(LineSearch linesearch)
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-  if (domainerror) {
-    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);
-    PetscFunctionReturn(0);
+  if (changed_y || changed_w) { /* recompute the function if the step has changed */
+    ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
+    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+    if (domainerror) {
+      ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_LineSearch,linesearch,X,F,G);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    ierr = VecNormBegin(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    ierr = VecNormBegin(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(Y,NORM_2,&ynorm);CHKERRQ(ierr);
   }
 
   /* copy the solution over */
   ierr = VecCopy(W, X);CHKERRQ(ierr);
+  ierr = VecCopy(G, F);CHKERRQ(ierr);
+  ierr = VecNorm(X, NORM_2, &xnorm);CHKERRQ(ierr);
   ierr = LineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
-  ierr = LineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+  ierr = LineSearchSetNorms(linesearch, xnorm, gnorm, ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
