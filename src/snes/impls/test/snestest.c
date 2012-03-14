@@ -55,6 +55,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
       ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
       ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = MatSetUp(B);CHKERRQ(ierr);
     }
     ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
