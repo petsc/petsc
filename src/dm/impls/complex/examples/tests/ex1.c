@@ -1047,7 +1047,7 @@ PETSC_STATIC_INLINE PetscBool fnext(TetGenMesh *m, triface *t1, triface *t2)
 
 PETSC_STATIC_INLINE PetscBool fnextself(TetGenMesh *m, triface *t1)
 {
-  triface t2;
+  triface t2 = {PETSC_NULL, 0, 0};
 
   // Get the next face.
   t2.loc = locver2nextf[t1->loc][t1->ver][0];
@@ -3498,7 +3498,7 @@ PetscErrorCode TetGenMeshInitializePools(TetGenMesh *m)
   ierr = MemoryPoolCreate(pointsize, VERPERBLOCK, wtype, 0, &m->points);CHKERRQ(ierr);
 
   if (b->useshelles) { /* For abovepoint() */
-    ierr = PetscMalloc(sizeof(pointsize), &m->dummypoint);CHKERRQ(ierr);
+    ierr = PetscMalloc(pointsize, &m->dummypoint);CHKERRQ(ierr);
   }
 
   // The number of bytes occupied by a tetrahedron.  There are four pointers
