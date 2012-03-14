@@ -68,6 +68,9 @@ typedef struct {
 
   Vec WL;   /* Work vector */
   PetscReal rho; /* Penalty parameter */
+  PetscReal rho0;
+  PetscReal rhomax;
+  PetscReal eps1,eps2;
   PetscReal aug,aug0,lgn,lgn0;
   PetscInt    subset_type;
   PetscInt    solve_type;
@@ -75,7 +78,7 @@ typedef struct {
   PetscBool recompute_jacobian_flag;
   PetscInt phase2_niter;
   PetscBool verbose;
-  PetscReal tola,tolb,tolc,told;
+  PetscReal tau[4];
   
 
 } TAO_LCL;

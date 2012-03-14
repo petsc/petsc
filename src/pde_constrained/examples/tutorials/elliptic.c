@@ -92,7 +92,6 @@ typedef struct {
   PetscInt stages[10];
   PetscBool use_ptap;
   PetscBool use_lrc;
-  PetscReal tau[4];
   TAO_LCL* lcl;
 
 } AppCtx;
@@ -154,11 +153,6 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,&flag); CHKERRQ(ierr);
   user.noise = 0.01;
   ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag); CHKERRQ(ierr);
-  user.tau[0] = user.tau[1] = user.tau[2] = user.tau[3] = 1.0e-4;
-  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tau[0],&user.tau[0],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tau[1],&user.tau[1],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tau[2],&user.tau[2],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.tau[3],&user.tau[3],&flag); CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",PETSC_FALSE,&user.use_ptap,&flag); CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",PETSC_FALSE,&user.use_lrc,&flag); CHKERRQ(ierr);
@@ -442,7 +436,7 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
   if (Y == user->ytrue) {
     KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   } else if (user->lcl) {
-    tau = user->tau[user->lcl->solve_type];
+    tau = user->lcl->tau[user->lcl->solve_type];
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 

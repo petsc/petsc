@@ -82,7 +82,6 @@ typedef struct {
   PC prec;
 
   TAO_LCL *lcl;
-  PetscReal tau[4];
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 
@@ -158,11 +157,6 @@ int main(int argc, char **argv)
   user.noise = 0.01;
   ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag); CHKERRQ(ierr);
 
-  user.tau[0] = user.tau[1] = user.tau[2] = user.tau[3] = 1.0e-4;
-  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tau[0],&user.tau[0],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tau[1],&user.tau[1],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tau[2],&user.tau[2],&flag); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.tau[3],&user.tau[3],&flag); CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.mx; /*  number of constraints per time step */
   user.n = user.m*(user.nt+1); /*  number of variables */
@@ -654,7 +648,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   if (Y == user->ytrue) {
     KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   } else if (user->lcl) {
-    tau = user->tau[user->lcl->solve_type];
+    tau = user->lcl->tau[user->lcl->solve_type];
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 
@@ -695,7 +689,7 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
   if (user->lcl) {
-    tau = user->tau[user->lcl->solve_type];
+    tau = user->lcl->tau[user->lcl->solve_type];
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 
