@@ -215,10 +215,12 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE___INT64)
+#if (PETSC_SIZEOF_LONG_LONG == 8)
+typedef long long Petsc64bitInt;
+#elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
 #else
-typedef long long Petsc64bitInt;
+typedef unknown64bit Petsc64bitInt
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
