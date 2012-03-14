@@ -623,8 +623,8 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 
    Notes:
       The size of the A struct must be small enough to fit in a PetscInt; by default
-      PetscInt is 4 bytes. The warning about casting to a shorter length can be ignored
-      below unless your A struct is too large
+      PetscInt is 4 bytes; this means a bag cannot be larger than 2 gigabytes in length.
+      The warning about casting to a shorter length can be ignored below unless your A struct is too large
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
