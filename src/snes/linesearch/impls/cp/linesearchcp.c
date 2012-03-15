@@ -2,7 +2,7 @@
 #include <petscsnes.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchApply_CP"
+#define __FUNCT__ "PetscLineSearchApply_CP"
 
 /*@C
    LineSearchCP - This routine is not a line search at all;
