@@ -7,6 +7,7 @@ typedef struct {
   PetscInt  *ai;
   PetscInt  *aj;
   PetscInt  *adiag;
+  PetscInt  rstart;
   PetscInt  nz;
   PetscScalar *x,*y,*z;
   PetscInt   nrows;

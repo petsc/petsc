@@ -6,6 +6,177 @@
 
 static PetscInt    mats_created=0;
 
+void* MatRealPart_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai;
+  MatScalar         *aabase = data->aa,*aa;
+  PetscInt          nrows=data->nrows;
+  PetscInt          nz,i;
+
+  DoCoreAffinity();
+  nz = ai[nrows] - ai[0];
+  aa = aabase + ai[0];
+  for(i=0;i<nz;i++) aa[i] = PetscRealPart(aa[i]);
+
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRealPart_SeqAIJPThread"
+PetscErrorCode MatRealPart_SeqAIJPThread(Mat A)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts = tmap->trstarts;
+  PetscInt           i;
+  MatScalar          *aa=a->a;
+  PetscInt           *ai=a->i;
+
+  PetscFunctionBegin;
+
+  for(i=0; i < tmap->nthreads; i++) {
+    mat_kerneldatap[i].ai = ai + trstarts[i];
+    mat_kerneldatap[i].aa = aa;
+    mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+    mat_pdata[i] = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatRealPart_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+  a->idiagvalid = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+void* MatImaginaryPart_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai;
+  MatScalar         *aabase = data->aa,*aa;
+  PetscInt          nrows=data->nrows;
+  PetscInt          nz,i;
+
+  DoCoreAffinity();
+  nz = ai[nrows] - ai[0];
+  aa = aabase + ai[0];
+  for(i=0;i<nz;i++) aa[i] = PetscImaginaryPart(aa[i]);
+
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatImaginaryPart_SeqAIJPThread"
+PetscErrorCode MatImaginaryPart_SeqAIJPThread(Mat A)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts = tmap->trstarts;
+  PetscInt           i;
+  MatScalar          *aa=a->a;
+  PetscInt           *ai=a->i;
+
+  PetscFunctionBegin;
+
+  for(i=0; i < tmap->nthreads; i++) {
+    mat_kerneldatap[i].ai = ai + trstarts[i];
+    mat_kerneldatap[i].aa = aa;
+    mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+    mat_pdata[i] = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatImaginaryPart_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+  a->idiagvalid = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+void* MatFactorGetDiagonal_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *adiag = (const PetscInt*)data->adiag;
+  const MatScalar   *aa = (const MatScalar*)data->aa;
+  PetscScalar       *x = (PetscScalar*)data->x; 
+  PetscInt           nrows=(PetscInt)data->nrows,i;
+
+  DoCoreAffinity();
+  for(i=0;i < nrows;i++) {
+    x[i] = 1.0/aa[adiag[i]];
+  }
+  return(0);
+}
+
+void* MatGetDiagonal_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
+  const MatScalar   *aa = (const MatScalar*)data->aa;
+  PetscScalar       *x = (PetscScalar*)data->x; 
+  PetscInt           nrows=(PetscInt)data->nrows;
+  PetscInt           i,j,row;
+  PetscInt           rstart=(PetscInt)data->rstart;
+
+  DoCoreAffinity();
+  for(i=0;i < nrows;i++) {
+    row = rstart+i;
+    for(j=ai[i]; j < ai[i+1];j++) {
+      if(aj[j] == row) { 
+	x[i] = aa[j];
+	break;
+      }
+    }
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonal_SeqAIJPThread"
+PetscErrorCode MatGetDiagonal_SeqAIJPThread(Mat A,Vec v)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts=tmap->trstarts;
+  PetscScalar        *x;
+  MatScalar          *aa=a->a;
+  PetscInt           *ai=a->i,*aj=a->j;
+  PetscInt           i,n;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+
+  if(A->factortype == MAT_FACTOR_ILU || A->factortype == MAT_FACTOR_LU) {
+    PetscInt *diag=a->diag;
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for(i=0;i < tmap->nthreads; i++) {
+      mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+      mat_kerneldatap[i].aa    = aa;
+      mat_kerneldatap[i].adiag = diag + trstarts[i];
+      mat_kerneldatap[i].x     = x + trstarts[i];
+      mat_pdata[i]             = &mat_kerneldatap[i];
+    }
+    ierr = PetscThreadsRunKernel(MatFactorGetDiagonal_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for(i=0;i < tmap->nthreads; i++) {
+    mat_kerneldatap[i].ai     = ai + trstarts[i];
+    mat_kerneldatap[i].rstart = trstarts[i];
+    mat_kerneldatap[i].aj     = aj;
+    mat_kerneldatap[i].aa     = aa;
+    mat_kerneldatap[i].nrows  = trstarts[i+1]-trstarts[i];
+    mat_kerneldatap[i].x      = x + trstarts[i];
+    mat_pdata[i]              = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatGetDiagonal_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 void* MatZeroEntries_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
@@ -32,15 +203,14 @@ PetscErrorCode MatZeroEntries_SeqAIJPThread(Mat A)
   PetscThreadsLayout tmap=A->rmap->tmap;
   PetscInt           *trstarts = tmap->trstarts;
   PetscInt           i;
-  MatScalar          *aa=a->a;;
-  PetscInt           *ai=a->i,*aj=a->j;
+  MatScalar          *aa=a->a;
+  PetscInt           *ai=a->i;
 
   PetscFunctionBegin;
 
   for(i=0; i < tmap->nthreads; i++) {
     mat_kerneldatap[i].ai = ai + trstarts[i];
     mat_kerneldatap[i].aa = aa;
-    mat_kerneldatap[i].aj = aj;
     mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
     mat_pdata[i] = &mat_kerneldatap[i];
   }
@@ -384,6 +554,9 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJPThread;
   B->ops->setup   = MatSetUp_SeqAIJPThread;
   B->ops->zeroentries = MatZeroEntries_SeqAIJPThread;
+  B->ops->getdiagonal = MatGetDiagonal_SeqAIJPThread;
+  B->ops->realpart = MatRealPart_SeqAIJPThread;
+  B->ops->imaginarypart = MatImaginaryPart_SeqAIJPThread;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","MatSeqAIJPThreadSetPreallocation_SeqAIJPThread",MatSeqAIJPThreadSetPreallocation_SeqAIJPThread);CHKERRQ(ierr);
