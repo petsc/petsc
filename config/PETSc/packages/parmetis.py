@@ -73,7 +73,7 @@ class Configure(PETSc.package.NewPackage):
 
       try:
         self.logPrintBox('Configuring ParMETIS; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && cmake .. '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ParMETIS: '+str(e))
       try:
