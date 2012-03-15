@@ -67,14 +67,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pVal_lockfree = (PetscInt*)malloc(N*sizeof(PetscInt));
-  /* allocate memory in the heap for the thread structure */
-  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-  job_lockfree.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
-  job_lockfree.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
-  job_lockfree.my_job_status = (PetscInt*)malloc(N*sizeof(PetscInt));
-
-  busy_threads.list = (PetscInt*)malloc(N*sizeof(PetscInt));
+  ierr = PetscMalloc(N*sizeof(PetscInt),&pVal_lockfree);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(pthread_t),&PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+PetscMainThreadShareWork)*sizeof(pfunc),&(job_lockfree.funcArr));CHKERRQ(ierr);
+  ierr = PetscMalloc((N+PetscMainThreadShareWork)*sizeof(void*),&(job_lockfree.pdata));CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscInt),&(job_lockfree.my_job_status));CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscInt),&(busy_threads.list));CHKERRQ(ierr);
 
   threadranks[0] = 0; /* rank of main thread */
   pthread_setspecific(rankkey,&threadranks[0]);
@@ -108,12 +106,14 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree()
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
 
-  pthread_setspecific(rankkey,PETSC_NULL);
-  free(job_lockfree.my_job_status);
-  free(job_lockfree.funcArr);
-  free(PetscThreadPoint);
-  free(pVal_lockfree);
-  free(busy_threads.list);
+  ierr = pthread_setspecific(rankkey,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscFree(pVal_lockfree);CHKERRQ(ierr);
+  ierr = PetscFree(PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscFree(job_lockfree.my_job_status);CHKERRQ(ierr);
+  ierr = PetscFree(job_lockfree.funcArr);CHKERRQ(ierr);
+  ierr = PetscFree(job_lockfree.pdata);CHKERRQ(ierr);
+  ierr = PetscFree(busy_threads.list);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
