@@ -43,9 +43,9 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
-PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscBool*);
-PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool*,PetscBool*);
-PetscErrorCode PostSetSubKSP(SNES,Vec,Vec,Vec,void*,PetscBool*,PetscBool*);
+PetscErrorCode PreCheck(PetscLineSearch,Vec,Vec,PetscBool*);
+PetscErrorCode PostCheck(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*);
+PetscErrorCode PostSetSubKSP(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*);
 
 /* 
    User-defined application context
@@ -84,6 +84,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
+  PetscLineSearch linesearch;          /* PetscLineSearch context */
   Mat            J;                    /* Jacobian matrix */
   ApplicationCtx ctx;                  /* user-defined context */
   Vec            x,r,U,F;              /* vectors */
@@ -183,10 +184,12 @@ int main(int argc,char **argv)
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
+  ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-post_check_iterates",&post_check);CHKERRQ(ierr);
+
   if (post_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(snes,PostCheck,&checkP);CHKERRQ(ierr); 
+    ierr = PetscLineSearchSetPostCheck(linesearch,PostCheck,&checkP);CHKERRQ(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
@@ -196,13 +199,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-post_setsubksp",&post_setsubksp);CHKERRQ(ierr);
   if (post_setsubksp) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post setsubksp\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(snes,PostSetSubKSP,&checkP1);CHKERRQ(ierr); 
+    ierr = PetscLineSearchSetPostCheck(linesearch,PostSetSubKSP,&checkP1);CHKERRQ(ierr); 
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
   if (pre_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating pre step checking routine\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(snes,PreCheck,&checkP);CHKERRQ(ierr); 
+    ierr = PetscLineSearchSetPreCheck(linesearch,PreCheck,&checkP);CHKERRQ(ierr); 
   }
 
   /* 
@@ -511,20 +514,18 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
 #define __FUNCT__ "PreCheck"
 /*
    PreCheck - Optional user-defined routine that checks the validity of
-   candidate steps of a line search method.  Set by SNESLineSearchSetPreCheck().
+   candidate steps of a line search method.  Set by PetscLineSearchSetPreCheck().
 
    Input Parameters:
    snes - the SNES context
-   ctx  - optional user-defined context for private data for the 
-          monitor routine, as set by SNESLineSearchSetPostCheck()
    xcurrent - current solution
    y - search direction and length
 
    Output Parameters:
-   y    - proposed step (search direction and length) (possibly changed)
-   
+   y         - proposed step (search direction and length) (possibly changed)
+   changed_y - tells if the step has changed or not
  */
-PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscBool  *changed_y)
+PetscErrorCode PreCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y, PetscBool *changed_y)
 {
   PetscFunctionBegin;
   *changed_y = PETSC_FALSE;
@@ -536,12 +537,12 @@ PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscBool  *chang
 #define __FUNCT__ "PostCheck"
 /*
    PostCheck - Optional user-defined routine that checks the validity of
-   candidate steps of a line search method.  Set by SNESLineSearchSetPostCheck().
+   candidate steps of a line search method.  Set by PetscLineSearchSetPostCheck().
 
    Input Parameters:
    snes - the SNES context
    ctx  - optional user-defined context for private data for the 
-          monitor routine, as set by SNESLineSearchSetPostCheck()
+          monitor routine, as set by PetscLineSearchSetPostCheck()
    xcurrent - current solution
    y - search direction and length
    x    - the new candidate iterate
@@ -551,21 +552,25 @@ PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscBool  *chang
    x    - current iterate (possibly modified)
    
  */
-PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool  *changed_y,PetscBool  *changed_x)
+PetscErrorCode PostCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x)
 {
   PetscErrorCode ierr;
   PetscInt       i,iter,xs,xm;
-  StepCheckCtx   *check = (StepCheckCtx*) ctx;
-  ApplicationCtx *user = check->user;
+  StepCheckCtx   *check;
+  ApplicationCtx *user;
   PetscScalar    *xa,*xa_last,tmp;
   PetscReal      rdiff;
   DM             da;
+  SNES           snes;
 
   PetscFunctionBegin;
   *changed_x = PETSC_FALSE;
   *changed_y = PETSC_FALSE;
+  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetPostCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+  user = check->user;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-
+  ierr = PetscLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
     da   = user->da;
@@ -607,12 +612,10 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
    PostSetSubKSP - Optional user-defined routine that reset SubKSP options when hierarchical bjacobi PC is used
    e.g, 
      mpiexec -n 8 ./ex3 -nox -n 10000 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 4 -sub_ksp_type gmres -sub_ksp_max_it 3 -post_setsubksp -sub_ksp_rtol 1.e-16
-   Set by SNESLineSearchSetPostCheck().
+   Set by PetscLineSearchSetPostCheck().
 
    Input Parameters:
-   snes - the SNES context
-   ctx  - optional user-defined context for private data for the 
-          monitor routine, as set by SNESLineSearchSetPostCheck()
+   linesearch - the LineSearch context
    xcurrent - current solution
    y - search direction and length
    x    - the new candidate iterate
@@ -622,16 +625,19 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
    x    - current iterate (possibly modified)
    
  */
-PetscErrorCode PostSetSubKSP(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool  *changed_y,PetscBool  *changed_x)
+PetscErrorCode PostSetSubKSP(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x)
 {
   PetscErrorCode ierr;
-  SetSubKSPCtx   *check = (SetSubKSPCtx*)ctx;
+  SetSubKSPCtx   *check;
   PetscInt       iter,its,sub_its,maxit;
   KSP            ksp,sub_ksp,*sub_ksps;
   PC             pc;
   PetscReal      ksp_ratio;
-  
+  SNES           snes;
+
   PetscFunctionBegin;
+  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetPostCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

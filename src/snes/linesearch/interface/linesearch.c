@@ -127,6 +127,136 @@ PetscErrorCode PetscLineSearchReset(PetscLineSearch linesearch) {
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchSetPreCheck"
+/*@C
+   PetscLineSearchSetPreCheck - Sets a pre-check function for the line search routine.
+
+   Logically Collective on PetscLineSearch
+
+   Input Parameters:
++  linesearch - the PetscLineSearch context
+.  func       - [optional] function evaluation routine
+-  ctx        - [optional] user-defined context for private data for the
+                function evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (PetscLineSearch snes,Vec x,Vec y, PetscBool *changed);
+
++  x - solution vector
+.  y - search direction vector
+-  changed - flag to indicate the precheck changed something.
+
+   Level: intermediate
+
+.keywords: set, linesearch, pre-check
+
+.seealso: PetscLineSearchSetPostCheck()
+@*/
+PetscErrorCode  PetscLineSearchSetPreCheck(PetscLineSearch linesearch, PetscLineSearchPreCheckFunc func,void *ctx)
+{
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
+  if (func) linesearch->ops->precheckstep = func;
+  if (ctx) linesearch->precheckctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchGetPreCheck"
+/*@C
+   PetscLineSearchSetPreCheck - Sets a pre-check function for the line search routine.
+
+   Input Parameters:
+.  linesearch - the PetscLineSearch context
+
+   Output Parameters:
++  func       - [optional] function evaluation routine
+-  ctx        - [optional] user-defined context for private data for the
+                function evaluation routine (may be PETSC_NULL)
+
+   Level: intermediate
+
+.keywords: get, linesearch, pre-check
+
+.seealso: PetscLineSearchGetPostCheck(), PetscLineSearchSetPreCheck()
+@*/
+PetscErrorCode  PetscLineSearchGetPreCheck(PetscLineSearch linesearch, PetscLineSearchPreCheckFunc *func,void **ctx)
+{
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
+  if (func) *func = linesearch->ops->precheckstep;
+  if (ctx) *ctx = linesearch->precheckctx;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchSetPostCheck"
+/*@C
+   PetscLineSearchSetPostCheck - Sets a post-check function for the line search routine.
+
+   Logically Collective on PetscLineSearch
+
+   Input Parameters:
++  linesearch - the PetscLineSearch context
+.  func       - [optional] function evaluation routine
+-  ctx        - [optional] user-defined context for private data for the
+                function evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (PetscLineSearch linesearch,Vec x, Vec w, Vec y, PetscBool *changed_w, *changed_y);
+
++  x - old solution vector
+.  y - search direction vector
+.  w - new solution vector
+.  changed_y - indicates that the line search changed y.
+.  changed_w - indicates that the line search changed w.
+
+   Level: intermediate
+
+.keywords: set, linesearch, post-check
+
+.seealso: PetscLineSearchSetPreCheck()
+@*/
+PetscErrorCode  PetscLineSearchSetPostCheck(PetscLineSearch linesearch, PetscLineSearchPostCheckFunc func,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
+  if (func) linesearch->ops->postcheckstep = func;
+  if (ctx) linesearch->postcheckctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchGetPostCheck"
+/*@C
+   PetscLineSearchGetPostCheck - Gets the post-check function for the line search routine.
+
+   Input Parameters:
+.  linesearch - the PetscLineSearch context
+
+   Output Parameters:
++  func       - [optional] function evaluation routine
+-  ctx        - [optional] user-defined context for private data for the
+                function evaluation routine (may be PETSC_NULL)
+
+   Level: intermediate
+
+.keywords: get, linesearch, post-check
+
+.seealso: PetscLineSearchGetPreCheck(), PetscLineSearchSetPostCheck()
+@*/
+PetscErrorCode  PetscLineSearchGetPostCheck(PetscLineSearch linesearch, PetscLineSearchPostCheckFunc *func,void **ctx)
+{
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
+  if (func) *func = linesearch->ops->postcheckstep;
+  if (ctx) *ctx = linesearch->postcheckctx;
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchPreCheck"
 /*@
@@ -168,8 +298,8 @@ PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch linesearch, PetscBool * c
 .  linesearch - The linesearch instance.
 
    Output Parameters:
-+  changed_W - Indicator if the solution has been changed.
--  changed_Y - Indicator if the direction has been changed.
++  changed_Y - Indicator if the solution has been changed.
+-  changed_W - Indicator if the direction has been changed.
 
    Level: Intermediate
 
@@ -177,14 +307,97 @@ PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch linesearch, PetscBool * c
 
    .seealso: PetscLineSearchPreCheck()
 @*/
-PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch linesearch, PetscBool * changed_W, PetscBool * changed_Y)
+PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch linesearch, PetscBool * changed_Y, PetscBool * changed_W)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (linesearch->ops->postcheckstep) {
-    ierr = (*linesearch->ops->postcheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_sol_new, linesearch->vec_update, changed_W, changed_Y);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->postcheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, linesearch->vec_sol_new, changed_Y, changed_W);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchPreCheckPicard"
+/*@C
+   SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
+
+   Logically Collective
+
+   Input Arguments:
++  linesearch - linesearch context
+.  X - base state for this step
+.  Y - initial correction
+
+   Output Arguments:
++  Y - correction, possibly modified
+-  changed - flag indicating that Y was modified
+
+   Options Database Key:
++  -snes_ls_precheck_picard - activate this routine
+-  -snes_ls_precheck_picard_angle - angle
+
+   Level: advanced
+
+   Notes:
+   This function should be passed to SNESLineSearchSetPreCheck()
+
+   The justification for this method involves the linear convergence of a Picard iteration
+   so the Picard linearization should be provided in place of the "Jacobian". This correction
+   is generally not useful when using a Newton linearization.
+
+   Reference:
+   Hindmarsh and Payne (1996) Time step limits for stable solutions of the ice sheet equation, Annals of Glaciology.
+
+.seealso: SNESLineSearchSetPreCheck()
+@*/
+PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
+{
+  PetscErrorCode ierr;
+  PetscReal      angle = *(PetscReal*)linesearch->precheckctx;
+  Vec            Ylast;
+  PetscScalar    dot;
+  PetscInt       iter;
+  PetscReal      ynorm,ylastnorm,theta,angle_radians;
+  SNES           snes;
+
+  PetscFunctionBegin;
+  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)snes,"SNESLineSearchPreCheckPicard_Ylast",(PetscObject*)&Ylast);CHKERRQ(ierr);
+  if (!Ylast) {
+    ierr = VecDuplicate(Y,&Ylast);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)snes,"SNESLineSearchPreCheckPicard_Ylast",(PetscObject)Ylast);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)Ylast);CHKERRQ(ierr);
+  }
+  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  if (iter < 2) {
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecDot(Y,Ylast,&dot);CHKERRQ(ierr);
+  ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
+  /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
+  theta = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  angle_radians = angle * PETSC_PI / 180.;
+  if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
+    /* Modify the step Y */
+    PetscReal alpha,ydiffnorm;
+    ierr = VecAXPY(Ylast,-1.0,Y);CHKERRQ(ierr);
+    ierr = VecNorm(Ylast,NORM_2,&ydiffnorm);CHKERRQ(ierr);
+    alpha = ylastnorm / ydiffnorm;
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    ierr = VecScale(Y,alpha);CHKERRQ(ierr);
+    ierr = PetscInfo3(snes,"Angle %G degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,angle,alpha);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo2(snes,"Angle %G degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,angle);CHKERRQ(ierr);
+    ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
+    *changed = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }

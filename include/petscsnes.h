@@ -461,13 +461,12 @@ extern PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch, PetscBool *, Pet
 extern PetscErrorCode PetscLineSearchGetWork(PetscLineSearch, PetscInt);
 
 /* set the functions for precheck, VIcheck, and postcheck */
-/*
+
 extern PetscErrorCode PetscLineSearchSetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc, void *ctx);
 extern PetscErrorCode PetscLineSearchSetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc, void *ctx);
 
 extern PetscErrorCode PetscLineSearchGetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc*, void **ctx);
-extern PetscErrorCode PetscLineSearchGetPostCheck(PetscLineSearch*, PetscLineSearchPostCheckFunc*, void **ctx);
- */
+extern PetscErrorCode PetscLineSearchGetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc*, void **ctx);
 
 /* pointers to the associated SNES in order to be able to get the function evaluation out */
 extern PetscErrorCode  PetscLineSearchSetSNES(PetscLineSearch,SNES);
@@ -476,6 +475,8 @@ extern PetscErrorCode  PetscLineSearchGetSNES(PetscLineSearch,SNES*);
 /* set and get the parameters and vectors */
 extern PetscErrorCode  PetscLineSearchGetTolerances(PetscLineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 extern PetscErrorCode  PetscLineSearchSetTolerances(PetscLineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
+
+extern PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch,Vec,Vec,PetscBool*);
 
 extern PetscErrorCode  PetscLineSearchGetLambda(PetscLineSearch,PetscReal*);
 extern PetscErrorCode  PetscLineSearchSetLambda(PetscLineSearch,PetscReal);
