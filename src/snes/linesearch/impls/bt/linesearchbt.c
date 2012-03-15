@@ -260,11 +260,13 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchDestroy_BT"
-PetscErrorCode PetscLineSearchDestroy_BT(PetscLineSearch linesearch) {
+PetscErrorCode PetscLineSearchDestroy_BT(PetscLineSearch linesearch)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(linesearch->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 
