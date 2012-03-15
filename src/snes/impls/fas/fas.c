@@ -61,7 +61,6 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->usedmfornumberoflevels = PETSC_FALSE;
   fas->fastype                = SNES_FAS_MULTIPLICATIVE;
   fas->linesearch_smooth      = PETSC_NULL;
-  fas->linesearch             = PETSC_NULL;
 
   PetscFunctionReturn(0);
 }
@@ -599,7 +598,6 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   if (fas->next)       ierr = SNESReset(fas->next);CHKERRQ(ierr);
 
   ierr = PetscLineSearchDestroy(&fas->linesearch_smooth);CHKERRQ(ierr);
-  ierr = PetscLineSearchDestroy(&fas->linesearch);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -724,15 +722,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     ierr = PetscLineSearchSetFromOptions(fas->linesearch_smooth);CHKERRQ(ierr);
   }
 
-  /* set up the default line search for coarse grid corrections */
-  if (fas->fastype == SNES_FAS_ADDITIVE) {
-    ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &fas->linesearch);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetSNES(fas->linesearch, snes);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetType(fas->linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
-    ierr = PetscLineSearchAppendOptionsPrefix(fas->linesearch, optionsprefix);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetFromOptions(fas->linesearch);CHKERRQ(ierr);
-  }
-
   /* setup FAS work vectors */
   if (fas->galerkin) {
     ierr = VecDuplicate(snes->vec_sol, &fas->Xg);CHKERRQ(ierr);
@@ -753,6 +742,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   SNESFASType    fastype;
   const char     *optionsprefix;
   const char     *prefix;
+  PetscLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNESFAS Options-----------------------------------");CHKERRQ(ierr);
@@ -871,6 +861,15 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     /* unset the monitors on the coarse levels */
     if (fas->level != fas->levels - 1) {
       ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
+    }
+  }
+
+
+  /* set up the default line search for coarse grid corrections */
+  if (fas->fastype == SNES_FAS_ADDITIVE) {
+    if (!snes->linesearch) {
+      ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
     }
   }
 
@@ -1204,9 +1203,15 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
     /* additive correction of the coarse direction*/
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-    ierr = PetscLineSearchApply(fas->linesearch, X, F, &fnorm, Xhat);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetSuccess(fas->linesearch, &lssuccess);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetNorms(fas->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(snes->linesearch, X, F, &fnorm, Xhat);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssuccess);CHKERRQ(ierr);
+    if (!lssuccess) {
+      if (++snes->numFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_LINE_SEARCH;
+        PetscFunctionReturn(0);
+      }
+    }
+    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
   } else {
     ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
   }

@@ -1,5 +1,4 @@
 #include <private/snesimpl.h>
-#include <petsclinesearch.h>
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
@@ -19,8 +18,6 @@ typedef struct {
   PetscReal    powell_downhill;  /* Powell descent restart condition */
   PetscReal    scaling;          /* scaling of H0 */
   PetscInt     n_restart;        /* the maximum iterations between restart */
-
-  PetscLineSearch   linesearch;       /* line search */
 
   SNESQNCompositionType compositiontype; /* determine if the composition is done sequentially or as a composition */
   SNESQNScalingType scalingtype; /* determine if the composition is done sequentially or as a composition */
@@ -236,22 +233,22 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ynorm = 1; gnorm = fnorm;
     ierr = VecCopy(D, Dold);CHKERRQ(ierr);
     ierr = VecCopy(X, Xold);CHKERRQ(ierr);
-    ierr = PetscLineSearchApply(qn->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
       }
-    ierr = PetscLineSearchGetSuccess(qn->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
       }
     }
-    ierr = PetscLineSearchGetNorms(qn->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     if (qn->scalingtype == SNES_QN_LSSCALE) {
-      ierr = PetscLineSearchGetLambda(qn->linesearch, &qn->scaling);CHKERRQ(ierr);
+      ierr = PetscLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
     }
 
     /* convergence monitoring */
@@ -364,7 +361,6 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
   SNES_QN        *qn = (SNES_QN*)snes->data;
   PetscErrorCode ierr;
-  const char     *optionsprefix;
 
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dX);CHKERRQ(ierr);
@@ -381,16 +377,6 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   ierr = SNESDefaultGetWork(snes,4);CHKERRQ(ierr);
 
   /* set up the line search */
-  ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-  ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &qn->linesearch);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetSNES(qn->linesearch, snes);CHKERRQ(ierr);
-  if (!snes->pc || qn->compositiontype == SNES_QN_SEQUENTIAL) {
-    ierr = PetscLineSearchSetType(qn->linesearch, PETSCLINESEARCHCP);CHKERRQ(ierr);
-  } else {
-    ierr = PetscLineSearchSetType(qn->linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
-  }
-  ierr = PetscLineSearchAppendOptionsPrefix(qn->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetFromOptions(qn->linesearch);CHKERRQ(ierr);
   if (qn->scalingtype == SNES_QN_JACOBIANSCALE) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   }
@@ -416,7 +402,6 @@ static PetscErrorCode SNESReset_QN(SNES snes)
       ierr = PetscFree3(qn->dXdFmat, qn->dFtdX, qn->YtdX);CHKERRQ(ierr);
     }
     ierr = PetscFree3(qn->alpha, qn->beta, qn->dXtdF);CHKERRQ(ierr);
-    ierr = PetscLineSearchDestroy(&qn->linesearch);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -445,6 +430,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   PetscInt   indx = 0;
   PetscBool  flg;
   PetscBool  monflg = PETSC_FALSE;
+  PetscLineSearch linesearch;
   PetscFunctionBegin;
 
   qn = (SNES_QN*)snes->data;
@@ -479,6 +465,14 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if (!snes->linesearch) {
+    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    if (!snes->pc || qn->compositiontype == SNES_QN_SEQUENTIAL) {
+      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHCP);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+    }
+  }
   if (monflg) {
     qn->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }

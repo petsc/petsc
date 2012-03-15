@@ -1,13 +1,13 @@
 #ifndef __LINESEARCHIMPL_H
 #define __LINESEARCHIMPL_H
 
-#include <petsclinesearch.h>
+#include <petscsnes.h>
 
 struct _LineSearchOps {
   PetscErrorCode (*view)          (PetscLineSearch);
   PetscLineSearchApplyFunc        apply;
   PetscLineSearchPreCheckFunc     precheckstep;
-  PetscLineSearchMidCheckFunc     midcheckstep;
+  PetscLineSearchVICheckFunc      vicheckstep;
   PetscLineSearchPostCheckFunc    postcheckstep;
   PetscErrorCode (*setfromoptions)(PetscLineSearch);
   PetscErrorCode (*reset)         (PetscLineSearch);

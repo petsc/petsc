@@ -19,7 +19,6 @@ typedef struct {
   SNES           downsmooth;                   /* the SNES for postsmoothing */
 
   PetscLineSearch     linesearch_smooth;            /* the line search for default upsmoothing */
-  PetscLineSearch     linesearch;                   /* the line search used to stabilize coarse corrections */
 
   /* coarse grid correction objects */
   SNES           next;                         /* the SNES instance for the next coarser level in the hierarchy */

@@ -4,11 +4,8 @@
 #define __FUNCT__ "SNESReset_NCG"
 PetscErrorCode SNESReset_NCG(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_NCG       *ncg = (SNES_NCG *)snes->data;
 
   PetscFunctionBegin;
-  ierr = PetscLineSearchDestroy(&ncg->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,23 +50,11 @@ EXTERN_C_END;
 PetscErrorCode SNESSetUp_NCG(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_NCG       *ncg = (SNES_NCG *)snes->data;
-  const char     *optionsprefix;
 
   PetscFunctionBegin;
   ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHNCGLINEAR, PETSC_NULL,"PetscLineSearchCreate_NCGLinear", PetscLineSearchCreate_NCGLinear);CHKERRQ(ierr);
-  ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-  ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &ncg->linesearch);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetSNES(ncg->linesearch, snes);CHKERRQ(ierr);
-  if (!snes->pc) {
-    ierr = PetscLineSearchSetType(ncg->linesearch, PETSCLINESEARCHCP);CHKERRQ(ierr);
-  } else {
-    ierr = PetscLineSearchSetType(ncg->linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
-  }
-  ierr = PetscLineSearchAppendOptionsPrefix(ncg->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetFromOptions(ncg->linesearch);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -90,6 +75,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   PetscErrorCode     ierr;
   PetscBool          debug, flg;
   PetscInt           indx;
+  PetscLineSearch    linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);
@@ -102,6 +88,14 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
     ncg->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if (!snes->linesearch) {
+    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    if (!snes->pc) {
+      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHCP);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -120,12 +114,10 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
   PetscBool        iascii;
   PetscErrorCode   ierr;
-  SNES_NCG         *ncg = (SNES_NCG *)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  line search type variant: %s\n", ((PetscObject)ncg->linesearch)->type_name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -235,6 +227,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscErrorCode      ierr;
   SNESConvergedReason reason;
   PetscBool           lsSuccess = PETSC_TRUE;
+  PetscLineSearch     linesearch;
 
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -246,6 +239,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   lX     = snes->vec_sol_update;     /* the conjugate direction */
   F      = snes->vec_func;           /* residual vector */
   B      = snes->vec_rhs;            /* the right hand side */
+
+  ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -305,8 +300,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (ncg->betatype == 1 || ncg->betatype == 2 || ncg->betatype == 3 || ncg->betatype == 4) { /* prp, hs, dy, cd need dXold*/
       ierr = VecCopy(F, Fold);CHKERRQ(ierr);
     }
-    ierr = PetscLineSearchApply(ncg->linesearch, X, F, &fnorm, lX);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetSuccess(ncg->linesearch, &lsSuccess);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(linesearch, X, F, &fnorm, lX);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(linesearch, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -321,7 +316,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
-    ierr = PetscLineSearchGetNorms(ncg->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i;

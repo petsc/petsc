@@ -2,7 +2,6 @@
 #define _SNESNGMRES_H
 
 #include <private/snesimpl.h>
-#include <petsclinesearch.h>
 
 /*  Data structure for the Nonlinear GMRES method.  */
 typedef struct {
@@ -23,7 +22,6 @@ typedef struct {
   PetscScalar  *xi;            /* the dot-product of the current and previous res. */
 
   /* Line searches */
-  PetscLineSearch   linesearch;     /* Line search for the default step */
   PetscLineSearch   additive_linesearch; /* Line search for the additive variant */
 
   /* Selection constants */

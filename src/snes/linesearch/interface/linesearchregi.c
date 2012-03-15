@@ -1,4 +1,4 @@
-#include <private/linesearchimpl.h>     /*I  "petsclinesearch.h"  I*/
+#include <private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  PetscLineSearchCreate_Basic(PetscLineSearch);

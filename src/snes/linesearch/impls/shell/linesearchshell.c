@@ -43,6 +43,7 @@ PetscErrorCode PetscLineSearchShellSetUserFunc(PetscLineSearch linesearch, Petsc
   ierr = PetscTypeCompare((PetscObject)linesearch,PETSCLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
+    shell->func = func;
   }
   PetscFunctionReturn(0);
 }
