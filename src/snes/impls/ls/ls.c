@@ -218,9 +218,9 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     gnorm = fnorm;
-    ierr = LineSearchApply(ls->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
-    ierr = LineSearchGetSuccess(ls->linesearch, &lssucceed);CHKERRQ(ierr);
-    ierr = LineSearchGetNorms(ls->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(ls->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(ls->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(ls->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)gnorm,(double)fnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
@@ -286,12 +286,12 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
 
   /* set up the line search */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchCreate(((PetscObject)snes)->comm, &ls->linesearch);CHKERRQ(ierr);
-  ierr = LineSearchSetSNES(ls->linesearch, snes);CHKERRQ(ierr);
-  ierr = LineSearchSetType(ls->linesearch, LINESEARCHBT);CHKERRQ(ierr);
+  ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &ls->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetSNES(ls->linesearch, snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetType(ls->linesearch, PETSCLINESEARCHBT);CHKERRQ(ierr);
 
-  ierr = LineSearchAppendOptionsPrefix(ls->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchSetFromOptions(ls->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchAppendOptionsPrefix(ls->linesearch, optionsprefix);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetFromOptions(ls->linesearch);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -305,7 +305,7 @@ PetscErrorCode SNESReset_LS(SNES snes)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ls = (SNES_LS *)snes->data;
-  ierr = LineSearchDestroy(&ls->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchDestroy(&ls->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

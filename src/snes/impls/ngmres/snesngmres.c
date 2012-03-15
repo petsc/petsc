@@ -11,8 +11,8 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->Fdot);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->Xdot);CHKERRQ(ierr);
-  ierr = LineSearchDestroy(&ngmres->linesearch);CHKERRQ(ierr);
-  ierr = LineSearchDestroy(&ngmres->additive_linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchDestroy(&ngmres->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchDestroy(&ngmres->additive_linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -76,19 +76,19 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   /* linesearch setup */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
 
-  ierr = LineSearchCreate(((PetscObject)snes)->comm, &ngmres->linesearch);CHKERRQ(ierr);
-  ierr = LineSearchSetSNES(ngmres->linesearch, snes);CHKERRQ(ierr);
-  ierr = LineSearchSetType(ngmres->linesearch, LINESEARCHBASIC);CHKERRQ(ierr);
-  ierr = LineSearchAppendOptionsPrefix(ngmres->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchSetFromOptions(ngmres->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &ngmres->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetSNES(ngmres->linesearch, snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetType(ngmres->linesearch, PETSCLINESEARCHBASIC);CHKERRQ(ierr);
+  ierr = PetscLineSearchAppendOptionsPrefix(ngmres->linesearch, optionsprefix);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetFromOptions(ngmres->linesearch);CHKERRQ(ierr);
 
   if (ngmres->additive) {
-    ierr = LineSearchCreate(((PetscObject)snes)->comm, &ngmres->additive_linesearch);CHKERRQ(ierr);
-    ierr = LineSearchSetSNES(ngmres->additive_linesearch, snes);CHKERRQ(ierr);
-    ierr = LineSearchSetType(ngmres->additive_linesearch, LINESEARCHL2);CHKERRQ(ierr);
-    ierr = LineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "additive_");CHKERRQ(ierr);
-    ierr = LineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix);CHKERRQ(ierr);
-    ierr = LineSearchSetFromOptions(ngmres->additive_linesearch);CHKERRQ(ierr);
+    ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &ngmres->additive_linesearch);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetSNES(ngmres->additive_linesearch, snes);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(ngmres->additive_linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+    ierr = PetscLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "additive_");CHKERRQ(ierr);
+    ierr = PetscLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetFromOptions(ngmres->additive_linesearch);CHKERRQ(ierr);
   }
 
   ngmres->setup_called = PETSC_TRUE;
@@ -249,8 +249,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr = VecCopy(F, FM);CHKERRQ(ierr);
       ierr = VecCopy(X, XM);CHKERRQ(ierr);
       fMnorm = fnorm;
-      ierr = LineSearchApply(ngmres->linesearch,XM,FM,&fMnorm,Y);CHKERRQ(ierr);
-      ierr = LineSearchGetSuccess(ngmres->linesearch, &lssucceed);CHKERRQ(ierr);
+      ierr = PetscLineSearchApply(ngmres->linesearch,XM,FM,&fMnorm,Y);CHKERRQ(ierr);
+      ierr = PetscLineSearchGetSuccess(ngmres->linesearch, &lssucceed);CHKERRQ(ierr);
       if (!lssucceed) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -355,15 +355,15 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
       ierr = VecCopy(XA, Y);CHKERRQ(ierr);
       ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
-      ierr = LineSearchApply(ngmres->additive_linesearch,X,F,&fnorm,Y);CHKERRQ(ierr);
-      ierr = LineSearchGetSuccess(ngmres->additive_linesearch, &lssucceed);CHKERRQ(ierr);
+      ierr = PetscLineSearchApply(ngmres->additive_linesearch,X,F,&fnorm,Y);CHKERRQ(ierr);
+      ierr = PetscLineSearchGetSuccess(ngmres->additive_linesearch, &lssucceed);CHKERRQ(ierr);
       if (!lssucceed) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
           PetscFunctionReturn(0);
         }
       }
-      ierr = LineSearchGetNorms(ngmres->additive_linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+      ierr = PetscLineSearchGetNorms(ngmres->additive_linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
       if (ngmres->monitor) {
         ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", fnorm);CHKERRQ(ierr);
       }

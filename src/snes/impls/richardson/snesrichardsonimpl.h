@@ -9,7 +9,7 @@
 
 typedef struct {
 
-  LineSearch linesearch;
+  PetscLineSearch linesearch;
 
   int dummy;
 } SNES_NRichardson;

@@ -23,8 +23,8 @@ typedef struct {
   PetscScalar  *xi;            /* the dot-product of the current and previous res. */
 
   /* Line searches */
-  LineSearch   linesearch;     /* Line search for the default step */
-  LineSearch   additive_linesearch; /* Line search for the additive variant */
+  PetscLineSearch   linesearch;     /* Line search for the default step */
+  PetscLineSearch   additive_linesearch; /* Line search for the additive variant */
 
   /* Selection constants */
   PetscBool    anderson;       /* use anderson-mixing approach */

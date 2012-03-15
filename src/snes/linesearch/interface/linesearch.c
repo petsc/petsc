@@ -1,15 +1,15 @@
 #include <private/linesearchimpl.h> /*I "petsclinesearch.h" I*/
 
-PetscBool  LineSearchRegisterAllCalled = PETSC_FALSE;
-PetscFList LineSearchList              = PETSC_NULL;
+PetscBool  PetscLineSearchRegisterAllCalled = PETSC_FALSE;
+PetscFList PetscLineSearchList              = PETSC_NULL;
 
-PetscClassId   LineSearch_CLASSID;
-PetscLogEvent  LineSearch_Apply;
+PetscClassId   PETSCLINESEARCH_CLASSID;
+PetscLogEvent  PetscLineSearch_Apply;
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchCreate"
+#define __FUNCT__ "PetscLineSearchCreate"
 /*@
-   LineSearchCreate - Creates the line search.
+   PetscLineSearchCreate - Creates the line search.
 
    Collective on LineSearch
 
@@ -26,12 +26,12 @@ PetscLogEvent  LineSearch_Apply;
    .seealso: LineSearchDestroy()
 @*/
 
-PetscErrorCode LineSearchCreate(MPI_Comm comm, LineSearch * outlinesearch) {
+PetscErrorCode PetscLineSearchCreate(MPI_Comm comm, PetscLineSearch * outlinesearch) {
   PetscErrorCode ierr;
-  LineSearch     linesearch;
+  PetscLineSearch     linesearch;
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(linesearch, _p_LineSearch,struct _LineSearchOps,LineSearch_CLASSID, 0,
-                           "LineSearch","Line-search method","LineSearch",comm,LineSearchDestroy,LineSearchView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(linesearch, _p_LineSearch,struct _LineSearchOps,PETSCLINESEARCH_CLASSID, 0,
+                           "LineSearch","Line-search method","LineSearch",comm,PetscLineSearchDestroy,PetscLineSearchView);CHKERRQ(ierr);
 
   linesearch->ops->precheckstep = PETSC_NULL;
   linesearch->ops->postcheckstep = PETSC_NULL;
@@ -58,9 +58,9 @@ PetscErrorCode LineSearchCreate(MPI_Comm comm, LineSearch * outlinesearch) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetUp"
+#define __FUNCT__ "PetscLineSearchSetUp"
 /*@
-   LineSearchSetUp - Prepares the line search for being applied.
+   PetscLineSearchSetUp - Prepares the line search for being applied.
 
    Collective on LineSearch
 
@@ -69,17 +69,17 @@ PetscErrorCode LineSearchCreate(MPI_Comm comm, LineSearch * outlinesearch) {
 
    Level: Intermediate
 
-   .keywords: LineSearch, SetUp
+   .keywords: PetscLineSearch, SetUp
 
-   .seealso: LineSearchReset()
+   .seealso: PetscLineSearchReset()
 @*/
 
-PetscErrorCode LineSearchSetUp(LineSearch linesearch) {
+PetscErrorCode PetscLineSearchSetUp(PetscLineSearch linesearch) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
   if (!((PetscObject)linesearch)->type_name) {
-    ierr = LineSearchSetType(linesearch,LINESEARCHBASIC);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch,PETSCLINESEARCHBASIC);CHKERRQ(ierr);
   }
 
   if (!linesearch->setupcalled) {
@@ -95,24 +95,24 @@ PetscErrorCode LineSearchSetUp(LineSearch linesearch) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchReset"
+#define __FUNCT__ "PetscLineSearchReset"
 
 /*@
-   LineSearchReset - Tears down the structures required for application
+   PetscLineSearchReset - Tears down the structures required for application
 
-   Collective on LineSearch
+   Collective on PetscLineSearch
 
    Input Parameters:
 .  linesearch - The LineSearch instance.
 
    Level: Intermediate
 
-   .keywords: LineSearch, Create
+   .keywords: PetscLineSearch, Create
 
-   .seealso: LineSearchSetUp()
+   .seealso: PetscLineSearchSetUp()
 @*/
 
-PetscErrorCode LineSearchReset(LineSearch linesearch) {
+PetscErrorCode PetscLineSearchReset(PetscLineSearch linesearch) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (linesearch->ops->reset) {
@@ -128,11 +128,11 @@ PetscErrorCode LineSearchReset(LineSearch linesearch) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchPreCheck"
+#define __FUNCT__ "PetscLineSearchPreCheck"
 /*@
-   LineSearchPreCheck - Prepares the line search for being applied.
+   PetscLineSearchPreCheck - Prepares the line search for being applied.
 
-   Collective on LineSearch
+   Collective on PetscLineSearch
 
    Input Parameters:
 .  linesearch - The linesearch instance.
@@ -142,11 +142,11 @@ PetscErrorCode LineSearchReset(LineSearch linesearch) {
 
    Level: Beginner
 
-   .keywords: LineSearch, Create
+   .keywords: PetscLineSearch, Create
 
-   .seealso: LineSearchPostCheck()
+   .seealso: PetscLineSearchPostCheck()
 @*/
-PetscErrorCode LineSearchPreCheck(LineSearch linesearch, PetscBool * changed)
+PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch linesearch, PetscBool * changed)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -158,11 +158,11 @@ PetscErrorCode LineSearchPreCheck(LineSearch linesearch, PetscBool * changed)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchPostCheck"
+#define __FUNCT__ "PetscLineSearchPostCheck"
 /*@
-   LineSearchPostCheck - Prepares the line search for being applied.
+   PetscLineSearchPostCheck - Prepares the line search for being applied.
 
-   Collective on LineSearch
+   Collective on PetscLineSearch
 
    Input Parameters:
 .  linesearch - The linesearch instance.
@@ -173,11 +173,11 @@ PetscErrorCode LineSearchPreCheck(LineSearch linesearch, PetscBool * changed)
 
    Level: Intermediate
 
-   .keywords: LineSearch, Create
+   .keywords: PetscLineSearch, Create
 
-   .seealso: LineSearchPreCheck()
+   .seealso: PetscLineSearchPreCheck()
 @*/
-PetscErrorCode LineSearchPostCheck(LineSearch linesearch, PetscBool * changed_W, PetscBool * changed_Y)
+PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch linesearch, PetscBool * changed_W, PetscBool * changed_Y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -190,11 +190,11 @@ PetscErrorCode LineSearchPostCheck(LineSearch linesearch, PetscBool * changed_W,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchApply"
+#define __FUNCT__ "PetscLineSearchApply"
 /*@
-   LineSearchApply - Computes the line-search update
+   PetscLineSearchApply - Computes the line-search update
 
-   Collective on LineSearch
+   Collective on PetscLineSearch
 
    Input Parameters:
 +  linesearch - The linesearch instance.
@@ -210,16 +210,16 @@ PetscErrorCode LineSearchPostCheck(LineSearch linesearch, PetscBool * changed_W,
 
    Level: Intermediate
 
-   .keywords: LineSearch, Create
+   .keywords: PetscLineSearch, Create
 
-   .seealso: LineSearchCreate(), LineSearchPreCheck(), LineSearchPostCheck()
+   .seealso: PetscLineSearchCreate(), PetscLineSearchPreCheck(), PetscLineSearchPostCheck()
 @*/
-PetscErrorCode LineSearchApply(LineSearch linesearch, Vec X, Vec F, PetscReal * fnorm, Vec Y) {
+PetscErrorCode PetscLineSearchApply(PetscLineSearch linesearch, Vec X, Vec F, PetscReal * fnorm, Vec Y) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
   /* check the pointers */
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
@@ -230,7 +230,7 @@ PetscErrorCode LineSearchApply(LineSearch linesearch, Vec X, Vec F, PetscReal * 
   linesearch->vec_update = Y;
   linesearch->vec_func = F;
 
-  ierr = LineSearchSetUp(linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetUp(linesearch);CHKERRQ(ierr);
 
   if (!linesearch->keeplambda)
     linesearch->lambda = linesearch->damping; /* set the initial guess to lambda */
@@ -241,11 +241,11 @@ PetscErrorCode LineSearchApply(LineSearch linesearch, Vec X, Vec F, PetscReal * 
     ierr = VecNorm(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(LineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PetscLineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
 
   ierr = (*linesearch->ops->apply)(linesearch);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(LineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PetscLineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
 
   if (fnorm)
     *fnorm = linesearch->fnorm;
@@ -253,29 +253,29 @@ PetscErrorCode LineSearchApply(LineSearch linesearch, Vec X, Vec F, PetscReal * 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchDestroy"
+#define __FUNCT__ "PetscLineSearchDestroy"
 /*@
-   LineSearchDestroy - Destroys the line search instance.
+   PetscLineSearchDestroy - Destroys the line search instance.
 
-   Collective on LineSearch
+   Collective on PetscLineSearch
 
    Input Parameters:
 .  linesearch - The linesearch instance.
 
    Level: Intermediate
 
-   .keywords: LineSearch, Create
+   .keywords: PetscLineSearch, Create
 
-   .seealso: LineSearchCreate(), LineSearchReset()
+   .seealso: PetscLineSearchCreate(), PetscLineSearchReset()
 @*/
-PetscErrorCode LineSearchDestroy(LineSearch * linesearch) {
+PetscErrorCode PetscLineSearchDestroy(PetscLineSearch * linesearch) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!*linesearch) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*linesearch),LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific((*linesearch),PETSCLINESEARCH_CLASSID,1);
   if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
   ierr = PetscObjectDepublish((*linesearch));CHKERRQ(ierr);
-  ierr = LineSearchReset(*linesearch);
+  ierr = PetscLineSearchReset(*linesearch);
   if ((*linesearch)->ops->destroy) {
     (*linesearch)->ops->destroy(*linesearch);
   }
@@ -285,9 +285,9 @@ PetscErrorCode LineSearchDestroy(LineSearch * linesearch) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetMonitor"
+#define __FUNCT__ "PetscLineSearchSetMonitor"
 /*@
-   LineSearchSetMonitor - Turns on/off printing useful things about the line search.
+   PetscLineSearchSetMonitor - Turns on/off printing useful things about the line search.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -301,9 +301,9 @@ PetscErrorCode LineSearchDestroy(LineSearch * linesearch) {
    Level: intermediate
 
 
-.seealso: LineSearchGetMonitor()
+.seealso: PetscLineSearchGetMonitor()
 @*/
-PetscErrorCode  LineSearchSetMonitor(LineSearch linesearch, PetscBool flg)
+PetscErrorCode  PetscLineSearchSetMonitor(PetscLineSearch linesearch, PetscBool flg)
 {
 
   PetscErrorCode ierr;
@@ -317,9 +317,9 @@ PetscErrorCode  LineSearchSetMonitor(LineSearch linesearch, PetscBool flg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetMonitor"
+#define __FUNCT__ "PetscLineSearchGetMonitor"
 /*@
-   LineSearchGetMonitor - Gets the monitor instance for the line search
+   PetscLineSearchGetMonitor - Gets the monitor instance for the line search
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -336,13 +336,13 @@ PetscErrorCode  LineSearchSetMonitor(LineSearch linesearch, PetscBool flg)
    Level: intermediate
 
 
-.seealso: LineSearchSetMonitor()
+.seealso: PetscLineSearchSetMonitor()
 @*/
-PetscErrorCode  LineSearchGetMonitor(LineSearch linesearch, PetscViewer *monitor)
+PetscErrorCode  PetscLineSearchGetMonitor(PetscLineSearch linesearch, PetscViewer *monitor)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (monitor) {
     PetscValidPointer(monitor, 2);
     *monitor = linesearch->monitor;
@@ -351,9 +351,9 @@ PetscErrorCode  LineSearchGetMonitor(LineSearch linesearch, PetscViewer *monitor
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetFromOptions"
+#define __FUNCT__ "PetscLineSearchSetFromOptions"
 /*@
-   LineSearchSetFromOptions - Sets options for the line search
+   PetscLineSearchSetFromOptions - Sets options for the line search
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -366,43 +366,43 @@ PetscErrorCode  LineSearchGetMonitor(LineSearch linesearch, PetscViewer *monitor
 . -linesearch_keeplambda - Keep the previous search length as the initial guess.
 - -linesearch_max_it - The number of iterations for iterative line searches.
 
-   Logically Collective on LineSearch
+   Logically Collective on PetscLineSearch
 
    Level: intermediate
 
 
-.seealso: LineSearchCreate()
+.seealso: PetscLineSearchCreate()
 @*/
-PetscErrorCode LineSearchSetFromOptions(LineSearch linesearch) {
+PetscErrorCode PetscLineSearchSetFromOptions(PetscLineSearch linesearch) {
   PetscErrorCode ierr;
-  const char     *deft = LINESEARCHBASIC;
+  const char     *deft = PETSCLINESEARCHBASIC;
   char           type[256];
   PetscBool      flg, set;
   PetscFunctionBegin;
-  if (!LineSearchRegisterAllCalled) {ierr = LineSearchRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!PetscLineSearchRegisterAllCalled) {ierr = PetscLineSearchRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject)linesearch);CHKERRQ(ierr);
   if (((PetscObject)linesearch)->type_name) {
     deft = ((PetscObject)linesearch)->type_name;
   }
-  ierr = PetscOptionsList("-linesearch_type","Line-search method","LineSearchSetType",LineSearchList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-linesearch_type","Line-search method","PetscLineSearchSetType",PetscLineSearchList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = LineSearchSetType(linesearch,type);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch,type);CHKERRQ(ierr);
   } else if (!((PetscObject)linesearch)->type_name) {
-    ierr = LineSearchSetType(linesearch,deft);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch,deft);CHKERRQ(ierr);
   }
   if (linesearch->ops->setfromoptions) {
     (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsBool("-linesearch_monitor","Print progress of line searches","SNESLineSearchSetMonitor",
+  ierr = PetscOptionsBool("-linesearch_monitor","Print progress of line searches","SNESPetscLineSearchSetMonitor",
                           linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = LineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
+  if (set) {ierr = PetscLineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
 
-  ierr = PetscOptionsReal("-linesearch_damping","Line search damping and initial step guess","LineSearchSetDamping",linesearch->damping,&linesearch->damping,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-linesearch_rtol","Tolerance for iterative line search","LineSearchSetRTolerance",linesearch->rtol,&linesearch->rtol,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-linesearch_norms","Compute final norms in line search","LineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-linesearch_keeplambda","Use previous lambda as damping","LineSearchSetKeepLambda",linesearch->keeplambda,&linesearch->keeplambda,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-linesearch_damping","Line search damping and initial step guess","PetscLineSearchSetDamping",linesearch->damping,&linesearch->damping,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-linesearch_rtol","Tolerance for iterative line search","PetscLineSearchSetRTolerance",linesearch->rtol,&linesearch->rtol,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-linesearch_norms","Compute final norms in line search","PetscLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-linesearch_keeplambda","Use previous lambda as damping","PetscLineSearchSetKeepLambda",linesearch->keeplambda,&linesearch->keeplambda,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-linesearch_max_it","Maximum iterations for iterative line searches","",linesearch->max_its,&linesearch->max_its,0);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -410,63 +410,63 @@ PetscErrorCode LineSearchSetFromOptions(LineSearch linesearch) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchView"
+#define __FUNCT__ "PetscLineSearchView"
 /*@
-   LineSearchView - Views useful information for the line search.
+   PetscLineSearchView - Views useful information for the line search.
 
    Input Parameters:
 .  linesearch - linesearch context.
 
-   Logically Collective on LineSearch
+   Logically Collective on PetscLineSearch
 
    Level: intermediate
 
 
-.seealso: LineSearchCreate()
+.seealso: PetscLineSearchCreate()
 @*/
-PetscErrorCode LineSearchView(LineSearch linesearch) {
+PetscErrorCode PetscLineSearchView(PetscLineSearch linesearch) {
   PetscFunctionBegin;
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetType"
+#define __FUNCT__ "PetscLineSearchSetType"
 /*@
-   LineSearchSetType - Sets the linesearch type
+   PetscLineSearchSetType - Sets the linesearch type
 
    Input Parameters:
 +  linesearch - linesearch context.
 -  type - The type of line search to be used
 
-   Logically Collective on LineSearch
+   Logically Collective on PetscLineSearch
 
    Level: intermediate
 
 
-.seealso: LineSearchCreate()
+.seealso: PetscLineSearchCreate()
 @*/
-PetscErrorCode LineSearchSetType(LineSearch linesearch, const LineSearchType type)
+PetscErrorCode PetscLineSearchSetType(PetscLineSearch linesearch, const PetscLineSearchType type)
 {
 
-  PetscErrorCode ierr,(*r)(LineSearch);
+  PetscErrorCode ierr,(*r)(PetscLineSearch);
   PetscBool      match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)linesearch,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(LineSearchList,((PetscObject)linesearch)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PetscLineSearchList,((PetscObject)linesearch)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Line Search type %s",type);
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
     ierr = (*(linesearch)->ops->destroy)(linesearch);CHKERRQ(ierr);
     linesearch->ops->destroy = PETSC_NULL;
   }
-  /* Reinitialize function pointers in LineSearchOps structure */
+  /* Reinitialize function pointers in PetscLineSearchOps structure */
   linesearch->ops->apply          = 0;
   linesearch->ops->view           = 0;
   linesearch->ops->setfromoptions = 0;
@@ -483,9 +483,9 @@ PetscErrorCode LineSearchSetType(LineSearch linesearch, const LineSearchType typ
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetSNES"
+#define __FUNCT__ "PetscLineSearchSetSNES"
 /*@
-   LineSearchSetSNES - Sets the SNES for the linesearch for function evaluation
+   PetscLineSearchSetSNES - Sets the SNES for the linesearch for function evaluation
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -494,20 +494,20 @@ PetscErrorCode LineSearchSetType(LineSearch linesearch, const LineSearchType typ
    Level: intermediate
 
 
-.seealso: LineSearchGetSNES(), LineSearchSetVecs()
+.seealso: PetscLineSearchGetSNES(), PetscLineSearchSetVecs()
 @*/
-PetscErrorCode  LineSearchSetSNES(LineSearch linesearch, SNES snes){
+PetscErrorCode  PetscLineSearchSetSNES(PetscLineSearch linesearch, SNES snes){
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(snes,SNES_CLASSID,2);
   linesearch->snes = snes;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetSNES"
+#define __FUNCT__ "PetscLineSearchGetSNES"
 /*@
-   LineSearchGetSNES - Gets the SNES for the linesearch for function evaluation
+   PetscLineSearchGetSNES - Gets the SNES for the linesearch for function evaluation
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -517,20 +517,20 @@ PetscErrorCode  LineSearchSetSNES(LineSearch linesearch, SNES snes){
 
    Level: intermediate
 
-.seealso: LineSearchGetSNES(), LineSearchSetVecs()
+.seealso: PetscLineSearchGetSNES(), PetscLineSearchSetVecs()
 @*/
-PetscErrorCode  LineSearchGetSNES(LineSearch linesearch, SNES *snes){
+PetscErrorCode  PetscLineSearchGetSNES(PetscLineSearch linesearch, SNES *snes){
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidPointer(snes, 2);
   *snes = linesearch->snes;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetLambda"
+#define __FUNCT__ "PetscLineSearchGetLambda"
 /*@
-   LineSearchGetLambda - Gets the last linesearch steplength discovered.
+   PetscLineSearchGetLambda - Gets the last linesearch steplength discovered.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -540,21 +540,21 @@ PetscErrorCode  LineSearchGetSNES(LineSearch linesearch, SNES *snes){
 
    Level: intermediate
 
-.seealso: LineSearchGetSNES(), LineSearchSetVecs()
+.seealso: PetscLineSearchGetSNES(), PetscLineSearchSetVecs()
 @*/
-PetscErrorCode  LineSearchGetLambda(LineSearch linesearch,PetscReal *lambda)
+PetscErrorCode  PetscLineSearchGetLambda(PetscLineSearch linesearch,PetscReal *lambda)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidPointer(lambda, 2);
   *lambda = linesearch->lambda;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetLambda"
+#define __FUNCT__ "PetscLineSearchSetLambda"
 /*@
-   LineSearchSetLambda - Sets the linesearch steplength.
+   PetscLineSearchSetLambda - Sets the linesearch steplength.
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -562,20 +562,20 @@ PetscErrorCode  LineSearchGetLambda(LineSearch linesearch,PetscReal *lambda)
 
    Level: intermediate
 
-.seealso: LineSearchGetLambda()
+.seealso: PetscLineSearchGetLambda()
 @*/
-PetscErrorCode  LineSearchSetLambda(LineSearch linesearch, PetscReal lambda)
+PetscErrorCode  PetscLineSearchSetLambda(PetscLineSearch linesearch, PetscReal lambda)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   linesearch->lambda = lambda;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "LineSearchGetTolerances"
+#define __FUNCT__ "PetscLineSearchGetTolerances"
 /*@
-   LineSearchGetTolerances - Gets the tolerances for the method
+   PetscLineSearchGetTolerances - Gets the tolerances for the method
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -590,12 +590,12 @@ PetscErrorCode  LineSearchSetLambda(LineSearch linesearch, PetscReal lambda)
 
    Level: advanced
 
-.seealso: LineSearchSetTolerances()
+.seealso: PetscLineSearchSetTolerances()
 @*/
-PetscErrorCode  LineSearchGetTolerances(LineSearch linesearch,PetscReal *steptol,PetscReal *maxstep, PetscReal *rtol, PetscReal *atol, PetscReal *ltol, PetscInt *max_its)
+PetscErrorCode  PetscLineSearchGetTolerances(PetscLineSearch linesearch,PetscReal *steptol,PetscReal *maxstep, PetscReal *rtol, PetscReal *atol, PetscReal *ltol, PetscInt *max_its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (steptol) {
     PetscValidPointer(steptol, 2);
     *steptol = linesearch->steptol;
@@ -624,9 +624,9 @@ PetscErrorCode  LineSearchGetTolerances(LineSearch linesearch,PetscReal *steptol
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "LineSearchSetTolerances"
+#define __FUNCT__ "PetscLineSearchSetTolerances"
 /*@
-   LineSearchSetTolerances - Sets the tolerances for the method
+   PetscLineSearchSetTolerances - Sets the tolerances for the method
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -639,12 +639,12 @@ PetscErrorCode  LineSearchGetTolerances(LineSearch linesearch,PetscReal *steptol
 
    Level: advanced
 
-.seealso: LineSearchGetTolerances()
+.seealso: PetscLineSearchGetTolerances()
 @*/
-PetscErrorCode  LineSearchSetTolerances(LineSearch linesearch,PetscReal steptol,PetscReal maxstep, PetscReal rtol, PetscReal atol, PetscReal ltol, PetscInt max_its)
+PetscErrorCode  PetscLineSearchSetTolerances(PetscLineSearch linesearch,PetscReal steptol,PetscReal maxstep, PetscReal rtol, PetscReal atol, PetscReal ltol, PetscInt max_its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   linesearch->steptol = steptol;
   linesearch->maxstep = maxstep;
   linesearch->rtol = rtol;
@@ -656,9 +656,9 @@ PetscErrorCode  LineSearchSetTolerances(LineSearch linesearch,PetscReal steptol,
 
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetDamping"
+#define __FUNCT__ "PetscLineSearchGetDamping"
 /*@
-   LineSearchGetDamping - Gets the line search damping parameter.
+   PetscLineSearchGetDamping - Gets the line search damping parameter.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -668,22 +668,22 @@ PetscErrorCode  LineSearchSetTolerances(LineSearch linesearch,PetscReal steptol,
 
    Level: intermediate
 
-.seealso: LineSearchGetStepTolerance()
+.seealso: PetscLineSearchGetStepTolerance()
 @*/
 
-PetscErrorCode  LineSearchGetDamping(LineSearch linesearch,PetscReal *damping)
+PetscErrorCode  PetscLineSearchGetDamping(PetscLineSearch linesearch,PetscReal *damping)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidPointer(damping, 2);
   *damping = linesearch->damping;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetDamping"
+#define __FUNCT__ "PetscLineSearchSetDamping"
 /*@
-   LineSearchSetDamping - Sets the line search damping paramter.
+   PetscLineSearchSetDamping - Sets the line search damping paramter.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -691,20 +691,20 @@ PetscErrorCode  LineSearchGetDamping(LineSearch linesearch,PetscReal *damping)
 
    Level: intermediate
 
-.seealso: LineSearchGetDamping()
+.seealso: PetscLineSearchGetDamping()
 @*/
-PetscErrorCode  LineSearchSetDamping(LineSearch linesearch,PetscReal damping)
+PetscErrorCode  PetscLineSearchSetDamping(PetscLineSearch linesearch,PetscReal damping)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   linesearch->damping = damping;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetNorms"
+#define __FUNCT__ "PetscLineSearchGetNorms"
 /*@
-   LineSearchGetNorms - Gets the norms for for X, Y, and F.
+   PetscLineSearchGetNorms - Gets the norms for for X, Y, and F.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -716,12 +716,12 @@ PetscErrorCode  LineSearchSetDamping(LineSearch linesearch,PetscReal damping)
 
    Level: intermediate
 
-.seealso: LineSearchSetNorms() LineSearchGetVecs()
+.seealso: PetscLineSearchSetNorms() PetscLineSearchGetVecs()
 @*/
-PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, PetscReal * fnorm, PetscReal * ynorm)
+PetscErrorCode  PetscLineSearchGetNorms(PetscLineSearch linesearch, PetscReal * xnorm, PetscReal * fnorm, PetscReal * ynorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (xnorm) {
     *xnorm = linesearch->xnorm;
   }
@@ -735,9 +735,9 @@ PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetNorms"
+#define __FUNCT__ "PetscLineSearchSetNorms"
 /*@
-   LineSearchSetNorms - Gets the computed norms for for X, Y, and F.
+   PetscLineSearchSetNorms - Gets the computed norms for for X, Y, and F.
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -747,12 +747,12 @@ PetscErrorCode  LineSearchGetNorms(LineSearch linesearch, PetscReal * xnorm, Pet
 
    Level: intermediate
 
-.seealso: LineSearchGetNorms(), LineSearchSetVecs()
+.seealso: PetscLineSearchGetNorms(), PetscLineSearchSetVecs()
 @*/
-PetscErrorCode  LineSearchSetNorms(LineSearch linesearch, PetscReal xnorm, PetscReal fnorm, PetscReal ynorm)
+PetscErrorCode  PetscLineSearchSetNorms(PetscLineSearch linesearch, PetscReal xnorm, PetscReal fnorm, PetscReal ynorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   linesearch->xnorm = xnorm;
   linesearch->fnorm = fnorm;
   linesearch->ynorm = ynorm;
@@ -760,9 +760,9 @@ PetscErrorCode  LineSearchSetNorms(LineSearch linesearch, PetscReal xnorm, Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchComputeNorms"
+#define __FUNCT__ "PetscLineSearchComputeNorms"
 /*@
-   LineSearchComputeNorms - Computes the norms of X, F, and Y.
+   PetscLineSearchComputeNorms - Computes the norms of X, F, and Y.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -772,9 +772,9 @@ PetscErrorCode  LineSearchSetNorms(LineSearch linesearch, PetscReal xnorm, Petsc
 
    Level: intermediate
 
-.seealso: LineSearchGetNorms, LineSearchSetNorms()
+.seealso: PetscLineSearchGetNorms, PetscLineSearchSetNorms()
 @*/
-PetscErrorCode LineSearchComputeNorms(LineSearch linesearch)
+PetscErrorCode PetscLineSearchComputeNorms(PetscLineSearch linesearch)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -790,9 +790,9 @@ PetscErrorCode LineSearchComputeNorms(LineSearch linesearch)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetVecs"
+#define __FUNCT__ "PetscLineSearchGetVecs"
 /*@
-   LineSearchGetVecs - Gets the vectors from the LineSearch context
+   PetscLineSearchGetVecs - Gets the vectors from the PetscLineSearch context
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -806,11 +806,11 @@ PetscErrorCode LineSearchComputeNorms(LineSearch linesearch)
 
    Level: intermediate
 
-.seealso: LineSearchGetNorms(), LineSearchSetVecs()
+.seealso: PetscLineSearchGetNorms(), PetscLineSearchSetVecs()
 @*/
-PetscErrorCode LineSearchGetVecs(LineSearch linesearch,Vec *X,Vec *F, Vec *Y,Vec *W,Vec *G) {
+PetscErrorCode PetscLineSearchGetVecs(PetscLineSearch linesearch,Vec *X,Vec *F, Vec *Y,Vec *W,Vec *G) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (X) {
     PetscValidPointer(X, 2);
     *X = linesearch->vec_sol;
@@ -836,9 +836,9 @@ PetscErrorCode LineSearchGetVecs(LineSearch linesearch,Vec *X,Vec *F, Vec *Y,Vec
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetVecs"
+#define __FUNCT__ "PetscLineSearchSetVecs"
 /*@
-   LineSearchSetVecs - Sets the vectors on the LineSearch context
+   PetscLineSearchSetVecs - Sets the vectors on the PetscLineSearch context
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -850,11 +850,11 @@ PetscErrorCode LineSearchGetVecs(LineSearch linesearch,Vec *X,Vec *F, Vec *Y,Vec
 
    Level: intermediate
 
-.seealso: LineSearchSetNorms(), LineSearchGetVecs()
+.seealso: PetscLineSearchSetNorms(), PetscLineSearchGetVecs()
 @*/
-PetscErrorCode LineSearchSetVecs(LineSearch linesearch,Vec X,Vec F,Vec Y,Vec W, Vec G) {
+PetscErrorCode PetscLineSearchSetVecs(PetscLineSearch linesearch,Vec X,Vec F,Vec Y,Vec W, Vec G) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (X) {
     PetscValidHeaderSpecific(X,VEC_CLASSID,2);
     linesearch->vec_sol = X;
@@ -880,9 +880,9 @@ PetscErrorCode LineSearchSetVecs(LineSearch linesearch,Vec X,Vec F,Vec Y,Vec W, 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchAppendOptionsPrefix"
+#define __FUNCT__ "PetscLineSearchAppendOptionsPrefix"
 /*@C
-   LineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
+   PetscLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
    SNES options in the database.
 
    Logically Collective on SNES
@@ -897,25 +897,25 @@ PetscErrorCode LineSearchSetVecs(LineSearch linesearch,Vec X,Vec F,Vec Y,Vec W, 
 
    Level: advanced
 
-.keywords: LineSearch, append, options, prefix, database
+.keywords: PetscLineSearch, append, options, prefix, database
 
 .seealso: SNESGetOptionsPrefix()
 @*/
-PetscErrorCode  LineSearchAppendOptionsPrefix(LineSearch linesearch,const char prefix[])
+PetscErrorCode  PetscLineSearchAppendOptionsPrefix(PetscLineSearch linesearch,const char prefix[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)linesearch,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetOptionsPrefix"
+#define __FUNCT__ "PetscLineSearchGetOptionsPrefix"
 /*@C
-   LineSearchGetOptionsPrefix - Sets the prefix used for searching for all
-   LineSearch options in the database.
+   PetscLineSearchGetOptionsPrefix - Sets the prefix used for searching for all
+   PetscLineSearch options in the database.
 
    Not Collective
 
@@ -930,36 +930,36 @@ PetscErrorCode  LineSearchAppendOptionsPrefix(LineSearch linesearch,const char p
 
    Level: advanced
 
-.keywords: LineSearch, get, options, prefix, database
+.keywords: PetscLineSearch, get, options, prefix, database
 
 .seealso: SNESAppendOptionsPrefix()
 @*/
-PetscErrorCode  LineSearchGetOptionsPrefix(LineSearch linesearch,const char *prefix[])
+PetscErrorCode  PetscLineSearchGetOptionsPrefix(PetscLineSearch linesearch,const char *prefix[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)linesearch,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetWork"
+#define __FUNCT__ "PetscLineSearchGetWork"
 /*@
-   LineSearchGetWork - Gets work vectors for the line search.
+   PetscLineSearchGetWork - Gets work vectors for the line search.
 
    Input Parameter:
-+  linesearch - the LineSearch context
++  linesearch - the PetscLineSearch context
 -  nwork - the number of work vectors
 
    Level: developer
 
-.keywords: LineSearch, work, vector
+.keywords: PetscLineSearch, work, vector
 
 .seealso: SNESDefaultGetWork()
 @*/
-PetscErrorCode  LineSearchGetWork(LineSearch linesearch, PetscInt nwork)
+PetscErrorCode  PetscLineSearchGetWork(PetscLineSearch linesearch, PetscInt nwork)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -973,9 +973,9 @@ PetscErrorCode  LineSearchGetWork(LineSearch linesearch, PetscInt nwork)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchGetSuccess"
+#define __FUNCT__ "PetscLineSearchGetSuccess"
 /*@
-   LineSearchGetSuccess - Gets the success/failure status of the last line search application
+   PetscLineSearchGetSuccess - Gets the success/failure status of the last line search application
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -985,12 +985,12 @@ PetscErrorCode  LineSearchGetWork(LineSearch linesearch, PetscInt nwork)
 
    Level: intermediate
 
-.seealso: LineSearchSetSuccess()
+.seealso: PetscLineSearchSetSuccess()
 @*/
-PetscErrorCode  LineSearchGetSuccess(LineSearch linesearch, PetscBool *success)
+PetscErrorCode  PetscLineSearchGetSuccess(PetscLineSearch linesearch, PetscBool *success)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscValidPointer(success, 2);
   if (success) {
     *success = linesearch->success;
@@ -999,9 +999,9 @@ PetscErrorCode  LineSearchGetSuccess(LineSearch linesearch, PetscBool *success)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchSetSuccess"
+#define __FUNCT__ "PetscLineSearchSetSuccess"
 /*@
-   LineSearchSetSuccess - Sets the success/failure status of the last line search application
+   PetscLineSearchSetSuccess - Sets the success/failure status of the last line search application
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -1009,30 +1009,30 @@ PetscErrorCode  LineSearchGetSuccess(LineSearch linesearch, PetscBool *success)
 
    Level: intermediate
 
-.seealso: LineSearchGetSuccess()
+.seealso: PetscLineSearchGetSuccess()
 @*/
-PetscErrorCode  LineSearchSetSuccess(LineSearch linesearch, PetscBool success)
+PetscErrorCode  PetscLineSearchSetSuccess(PetscLineSearch linesearch, PetscBool success)
 {
-  PetscValidHeaderSpecific(linesearch,LineSearch_CLASSID,1);
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscFunctionBegin;
   linesearch->success = success;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchRegister"
+#define __FUNCT__ "PetscLineSearchRegister"
 /*@C
-  LineSearchRegister - See LineSearchRegisterDynamic()
+  PetscLineSearchRegister - See PetscLineSearchRegisterDynamic()
 
   Level: advanced
 @*/
-PetscErrorCode  LineSearchRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(LineSearch))
+PetscErrorCode  PetscLineSearchRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PetscLineSearch))
 {
   char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LineSearchList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscLineSearchList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

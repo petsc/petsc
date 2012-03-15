@@ -5,85 +5,87 @@
 
 PETSC_EXTERN_CXX_BEGIN
 
-typedef struct _p_LineSearch* LineSearch;
+typedef struct _p_LineSearch* PetscLineSearch;
 
 /*
  User interface for Line Searches
 */
 
-#define LineSearchType char*
-#define LINESEARCHBT                 "bt"
-#define LINESEARCHBASIC              "basic"
-#define LINESEARCHL2                 "l2"
-#define LINESEARCHCP                 "cp"
-#define LINESEARCHSHELL              "shell"
+#define PetscLineSearchType char*
+#define PETSCLINESEARCHBT                 "bt"
+#define PETSCLINESEARCHBASIC              "basic"
+#define PETSCLINESEARCHL2                 "l2"
+#define PETSCLINESEARCHCP                 "cp"
+#define PETSCLINESEARCHSHELL              "shell"
 
-extern PetscClassId  LineSearch_CLASSID;
-extern PetscBool     LineSearchRegisterAllCalled;
-extern PetscFList    LineSearchList;
-extern PetscLogEvent LineSearch_Apply;
+extern PetscClassId  PETSCLINESEARCH_CLASSID;
+extern PetscBool     PetscLineSearchRegisterAllCalled;
+extern PetscFList    PetscLineSearchList;
+extern PetscLogEvent PetscLineSearch_Apply;
 
-typedef PetscErrorCode (*LineSearchPreCheckFunc)(LineSearch,Vec,Vec,PetscBool *);
-typedef PetscErrorCode (*LineSearchPostCheckFunc)(LineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
-typedef PetscErrorCode (*LineSearchApplyFunc)(LineSearch);
-typedef PetscErrorCode (*LineSearchUserFunc)(LineSearch, void *);
+typedef PetscErrorCode (*PetscLineSearchPreCheckFunc)(PetscLineSearch,Vec,Vec,PetscBool *);
+typedef PetscErrorCode (*PetscLineSearchMidCheckFunc)(PetscLineSearch,Vec,Vec,PetscScalar *);
+typedef PetscErrorCode (*PetscLineSearchPostCheckFunc)(PetscLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
+typedef PetscErrorCode (*PetscLineSearchApplyFunc)(PetscLineSearch);
+typedef PetscErrorCode (*PetscLineSearchUserFunc)(PetscLineSearch, void *);
 
-extern PetscErrorCode LineSearchCreate(MPI_Comm, LineSearch*);
-extern PetscErrorCode LineSearchReset(LineSearch);
-extern PetscErrorCode LineSearchView(LineSearch);
-extern PetscErrorCode LineSearchDestroy(LineSearch *);
-extern PetscErrorCode LineSearchSetType(LineSearch, const LineSearchType);
-extern PetscErrorCode LineSearchSetFromOptions(LineSearch);
-extern PetscErrorCode LineSearchSetUp(LineSearch);
-extern PetscErrorCode LineSearchApply(LineSearch, Vec, Vec, PetscReal *, Vec);
-extern PetscErrorCode LineSearchPreCheck(LineSearch, PetscBool *);
-extern PetscErrorCode LineSearchPostCheck(LineSearch, PetscBool *, PetscBool *);
-extern PetscErrorCode LineSearchGetWork(LineSearch, PetscInt);
+extern PetscErrorCode PetscLineSearchCreate(MPI_Comm, PetscLineSearch*);
+extern PetscErrorCode PetscLineSearchReset(PetscLineSearch);
+extern PetscErrorCode PetscLineSearchView(PetscLineSearch);
+extern PetscErrorCode PetscLineSearchDestroy(PetscLineSearch *);
+extern PetscErrorCode PetscLineSearchSetType(PetscLineSearch, const PetscLineSearchType);
+extern PetscErrorCode PetscLineSearchSetFromOptions(PetscLineSearch);
+extern PetscErrorCode PetscLineSearchSetUp(PetscLineSearch);
+extern PetscErrorCode PetscLineSearchApply(PetscLineSearch, Vec, Vec, PetscReal *, Vec);
+extern PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch, PetscBool *);
+extern PetscErrorCode PetscLineSearchMidCheck(PetscLineSearch, Vec, Vec, PetscReal *);
+extern PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch, PetscBool *, PetscBool *);
+extern PetscErrorCode PetscLineSearchGetWork(PetscLineSearch, PetscInt);
 
 /* INELEGANT HACK pointers to the associated SNES in order to be able to get the function evaluation out */
-extern PetscErrorCode  LineSearchSetSNES(LineSearch,SNES);
-extern PetscErrorCode  LineSearchGetSNES(LineSearch,SNES*);
+extern PetscErrorCode  PetscLineSearchSetSNES(PetscLineSearch,SNES);
+extern PetscErrorCode  PetscLineSearchGetSNES(PetscLineSearch,SNES*);
 
 /* set and get the parameters and vectors */
-extern PetscErrorCode  LineSearchGetTolerances(LineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
-extern PetscErrorCode  LineSearchSetTolerances(LineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode  PetscLineSearchGetTolerances(PetscLineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
+extern PetscErrorCode  PetscLineSearchSetTolerances(PetscLineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
 
-extern PetscErrorCode  LineSearchGetLambda(LineSearch,PetscReal*);
-extern PetscErrorCode  LineSearchSetLambda(LineSearch,PetscReal);
+extern PetscErrorCode  PetscLineSearchGetLambda(PetscLineSearch,PetscReal*);
+extern PetscErrorCode  PetscLineSearchSetLambda(PetscLineSearch,PetscReal);
 
-extern PetscErrorCode  LineSearchGetDamping(LineSearch,PetscReal*);
-extern PetscErrorCode  LineSearchSetDamping(LineSearch,PetscReal);
+extern PetscErrorCode  PetscLineSearchGetDamping(PetscLineSearch,PetscReal*);
+extern PetscErrorCode  PetscLineSearchSetDamping(PetscLineSearch,PetscReal);
 
-extern PetscErrorCode  LineSearchGetSuccess(LineSearch, PetscBool*);
-extern PetscErrorCode  LineSearchSetSuccess(LineSearch, PetscBool);
+extern PetscErrorCode  PetscLineSearchGetSuccess(PetscLineSearch, PetscBool*);
+extern PetscErrorCode  PetscLineSearchSetSuccess(PetscLineSearch, PetscBool);
 
-extern PetscErrorCode LineSearchGetVecs(LineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
-extern PetscErrorCode LineSearchSetVecs(LineSearch,Vec,Vec,Vec,Vec,Vec);
+extern PetscErrorCode PetscLineSearchGetVecs(PetscLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
+extern PetscErrorCode PetscLineSearchSetVecs(PetscLineSearch,Vec,Vec,Vec,Vec,Vec);
 
-extern PetscErrorCode LineSearchGetNorms(LineSearch, PetscReal *, PetscReal *, PetscReal *);
-extern PetscErrorCode LineSearchSetNorms(LineSearch, PetscReal, PetscReal, PetscReal);
-extern PetscErrorCode LineSearchComputeNorms(LineSearch);
+extern PetscErrorCode PetscLineSearchGetNorms(PetscLineSearch, PetscReal *, PetscReal *, PetscReal *);
+extern PetscErrorCode PetscLineSearchSetNorms(PetscLineSearch, PetscReal, PetscReal, PetscReal);
+extern PetscErrorCode PetscLineSearchComputeNorms(PetscLineSearch);
 
-extern PetscErrorCode  LineSearchSetMonitor(LineSearch, PetscBool);
-extern PetscErrorCode  LineSearchGetMonitor(LineSearch, PetscViewer*);
+extern PetscErrorCode  PetscLineSearchSetMonitor(PetscLineSearch, PetscBool);
+extern PetscErrorCode  PetscLineSearchGetMonitor(PetscLineSearch, PetscViewer*);
 
-extern PetscErrorCode  LineSearchAppendOptionsPrefix(LineSearch, const char prefix[]);
-extern PetscErrorCode  LineSearchGetOptionsPrefix(LineSearch, const char *prefix[]);
+extern PetscErrorCode  PetscLineSearchAppendOptionsPrefix(PetscLineSearch, const char prefix[]);
+extern PetscErrorCode  PetscLineSearchGetOptionsPrefix(PetscLineSearch, const char *prefix[]);
 
 
 /* Shell interface functions */
-extern PetscErrorCode LineSearchShellSetUserFunc(LineSearch,LineSearchUserFunc,void*);
-extern PetscErrorCode LineSearchShellGetUserFunc(LineSearch,LineSearchUserFunc*,void**);
+extern PetscErrorCode PetscLineSearchShellSetUserFunc(PetscLineSearch,PetscLineSearchUserFunc,void*);
+extern PetscErrorCode PetscLineSearchShellGetUserFunc(PetscLineSearch,PetscLineSearchUserFunc*,void**);
 
 /*register line search types */
-extern PetscErrorCode LineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(LineSearch));
-extern PetscErrorCode LineSearchRegisterAll(const char path[]);
-extern PetscErrorCode LineSearchRegisterDestroy(void);
+extern PetscErrorCode PetscLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscLineSearch));
+extern PetscErrorCode PetscLineSearchRegisterAll(const char path[]);
+extern PetscErrorCode PetscLineSearchRegisterDestroy(void);
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define LineSearchRegisterDynamic(a,b,c,d) LineSearchRegister(a,b,c,0)
+#define PetscLineSearchRegisterDynamic(a,b,c,d) PetscLineSearchRegister(a,b,c,0)
 #else
-#define LineSearchRegisterDynamic(a,b,c,d) LineSearchRegister(a,b,c,d)
+#define PetscLineSearchRegisterDynamic(a,b,c,d) PetscLineSearchRegister(a,b,c,d)
 #endif
 
 PETSC_EXTERN_CXX_END

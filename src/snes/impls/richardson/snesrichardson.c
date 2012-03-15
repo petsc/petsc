@@ -9,7 +9,7 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = LineSearchDestroy(&neP->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchDestroy(&neP->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -54,11 +54,11 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
   PetscFunctionBegin;
 
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchCreate(((PetscObject)snes)->comm, &neP->linesearch);CHKERRQ(ierr);
-  ierr = LineSearchSetSNES(neP->linesearch, snes);CHKERRQ(ierr);
-  ierr = LineSearchSetType(neP->linesearch, LINESEARCHL2);CHKERRQ(ierr);
-  ierr = LineSearchAppendOptionsPrefix(neP->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchSetFromOptions(neP->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchCreate(((PetscObject)snes)->comm, &neP->linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetSNES(neP->linesearch, snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetType(neP->linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+  ierr = PetscLineSearchAppendOptionsPrefix(neP->linesearch, optionsprefix);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetFromOptions(neP->linesearch);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -179,9 +179,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-    ierr = LineSearchApply(neP->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
-    ierr = LineSearchGetNorms(neP->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
-    ierr = LineSearchGetSuccess(neP->linesearch, &lsSuccess);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(neP->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(neP->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(neP->linesearch, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

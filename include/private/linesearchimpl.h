@@ -4,14 +4,15 @@
 #include <petsclinesearch.h>
 
 struct _LineSearchOps {
-  PetscErrorCode (*view)          (LineSearch);
-  LineSearchApplyFunc             apply;
-  LineSearchPreCheckFunc          precheckstep;
-  LineSearchPostCheckFunc         postcheckstep;
-  PetscErrorCode (*setfromoptions)(LineSearch);
-  PetscErrorCode (*reset)         (LineSearch);
-  PetscErrorCode (*destroy)       (LineSearch);
-  PetscErrorCode (*setup)         (LineSearch);
+  PetscErrorCode (*view)          (PetscLineSearch);
+  PetscLineSearchApplyFunc        apply;
+  PetscLineSearchPreCheckFunc     precheckstep;
+  PetscLineSearchMidCheckFunc     midcheckstep;
+  PetscLineSearchPostCheckFunc    postcheckstep;
+  PetscErrorCode (*setfromoptions)(PetscLineSearch);
+  PetscErrorCode (*reset)         (PetscLineSearch);
+  PetscErrorCode (*destroy)       (PetscLineSearch);
+  PetscErrorCode (*setup)         (PetscLineSearch);
 };
 
 typedef struct _LineSearchOps *LineSearchOps;

@@ -37,7 +37,7 @@
 .seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
           SNESLineSearchSet(), SNESLineSearchNoNorms()
 @*/
-PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
+PetscErrorCode  PetscLineSearchApply_CP(PetscLineSearch linesearch)
 {
 
   PetscBool      changed_y, changed_w, domainerror;
@@ -54,16 +54,16 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
 
   PetscFunctionBegin;
 
-  ierr = LineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
-  ierr = LineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
-  ierr = LineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = LineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = LineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
-  ierr = LineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = LineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   /* precheck */
-  ierr = LineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
+  ierr = PetscLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
   ierr = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
   for (i = 0; i < max_its; i++) {
@@ -101,7 +101,7 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
   ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
 
   /* postcheck */
-  ierr = LineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
+  ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
   } else {
@@ -110,14 +110,14 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
-    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  ierr = LineSearchComputeNorms(linesearch);CHKERRQ(ierr);
-  ierr = LineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  ierr = PetscLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
 
-  ierr = LineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
 
   if (monitor) {
     ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
@@ -125,18 +125,18 @@ PetscErrorCode  LineSearchApply_CP(LineSearch linesearch)
     ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
   }
   if (lambda <= steptol) {
-    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchCreate_CP"
-PetscErrorCode LineSearchCreate_CP(LineSearch linesearch)
+#define __FUNCT__ "PetscLineSearchCreate_CP"
+PetscErrorCode PetscLineSearchCreate_CP(PetscLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = LineSearchApply_CP;
+  linesearch->ops->apply          = PetscLineSearchApply_CP;
   linesearch->ops->destroy        = PETSC_NULL;
   linesearch->ops->setfromoptions = PETSC_NULL;
   linesearch->ops->reset          = PETSC_NULL;

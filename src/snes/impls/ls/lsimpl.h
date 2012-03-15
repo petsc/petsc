@@ -9,7 +9,7 @@
 #include <petsclinesearch.h>
 
 typedef struct {
-  LineSearch linesearch;
+  PetscLineSearch linesearch;
 } SNES_LS;
 
 #endif
