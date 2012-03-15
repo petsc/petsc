@@ -74,10 +74,13 @@ PetscErrorCode  F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
     f90array1daccessscalar_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+    if (*array == PETSC_NULL_SCALAR_Fortran) *array = 0;
   } else if (type == PETSC_REAL) {
     f90array1daccessreal_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+    if (*array == PETSC_NULL_REAL_Fortran) *array = 0;
   } else if (type == PETSC_INT) {
     f90array1daccessint_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+    if (*array == PETSC_NULL_INTEGER_Fortran) *array = 0;
   } else if (type == PETSC_FORTRANADDR) {
     f90array1daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
