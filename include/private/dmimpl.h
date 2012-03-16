@@ -15,7 +15,7 @@ struct _DMOps {
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*createlocaltoglobalmapping)(DM);
   PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
-  PetscErrorCode (*createfieldis)(DM,PetscInt*,const char***,IS**);
+  PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
   PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);

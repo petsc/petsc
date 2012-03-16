@@ -689,7 +689,7 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldIS_Composite"
-PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields, const char ***fieldNames, IS **fields)
+PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fieldNames, IS **fields)
 {
   PetscInt       nDM;
   DM            *dms;
@@ -725,7 +725,7 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields, const char 
         ierr = PetscSNPrintf(buf,sizeof buf,"%D",i);CHKERRQ(ierr);
         splitname = buf;
       }
-      (*fieldNames)[i] = splitname;
+      ierr = PetscStrallocpy(splitname,&(*fieldNames)[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
   }

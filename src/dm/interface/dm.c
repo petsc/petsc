@@ -719,15 +719,20 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
 . dm - the DM object
 
   Output Parameters:
-+ numFields - The number of fields
-. names     - The name for each field
-- fields    - The global indices for each field
++ numFields - The number of fields (or PETSC_NULL if not requested)
+. names     - The name for each field (or PETSC_NULL if not requested)
+- fields    - The global indices for each field (or PETSC_NULL if not requested)
 
   Level: intermediate
 
+  Notes:
+  The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
+  PetscFree(), every entry of fields should be destroyed with ISDestroy(), and both arrays should be freed with
+  PetscFree().
+
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 @*/
-PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, const char ***names, IS **fields)
+PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **fields)
 {
   PetscErrorCode ierr;
 

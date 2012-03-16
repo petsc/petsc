@@ -117,7 +117,7 @@ extern PetscErrorCode   DMRestoreGlobalVector(DM,Vec *);
 extern PetscErrorCode   DMClearGlobalVectors(DM);
 extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
-extern PetscErrorCode   DMCreateFieldIS(DM,PetscInt*,const char***,IS**);
+extern PetscErrorCode   DMCreateFieldIS(DM,PetscInt*,char***,IS**);
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);
 extern PetscErrorCode   DMCreateColoring(DM,ISColoringType,const MatType,ISColoring*);
 extern PetscErrorCode   DMCreateMatrix(DM,const MatType,Mat*);
