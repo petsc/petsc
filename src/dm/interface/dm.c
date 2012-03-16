@@ -768,6 +768,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
+    (*dmf)->ops->creatematrix = dm->ops->creatematrix;
     (*dmf)->ops->initialguess = dm->ops->initialguess;
     (*dmf)->ops->function     = dm->ops->function;
     (*dmf)->ops->functionj    = dm->ops->functionj;
@@ -988,6 +989,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   (*dmc)->ops->initialguess = dm->ops->initialguess;
   (*dmc)->ops->function     = dm->ops->function;
   (*dmc)->ops->functionj    = dm->ops->functionj;
