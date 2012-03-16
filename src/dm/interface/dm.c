@@ -1060,7 +1060,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fine,DM_CLASSID,1);
-  for (p=&fine->coarsenhook; *p; *p=(*p)->next) {} /* Scan to the end of the current list of hooks */
+  for (p=&fine->coarsenhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
   ierr = PetscMalloc(sizeof(struct _DMCoarsenHookLink),&link);CHKERRQ(ierr);
   link->coarsenhook = coarsenhook;
   link->restricthook = restricthook;
