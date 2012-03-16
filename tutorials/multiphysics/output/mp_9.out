@@ -1,16 +1,7 @@
-  0 SNES Function norm 222.222 
-    0 KSP Residual norm 222.222 
-    1 KSP Residual norm 0.00244187 
-    2 KSP Residual norm 1.46286e-09 
-  1 SNES Function norm 86.4218 
-    0 KSP Residual norm 86.4218 
-    1 KSP Residual norm 0.000412255 
-  2 SNES Function norm 4.45439 
-    0 KSP Residual norm 4.45439 
-    1 KSP Residual norm 1.67201e-05 
-  3 SNES Function norm 0.01801 
-    0 KSP Residual norm 0.01801 
-    1 KSP Residual norm 8.45119e-08 
-  4 SNES Function norm 4.058e-07 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  Linear solve converged due to CONVERGED_RTOL iterations 1
+  Linear solve converged due to CONVERGED_RTOL iterations 1
+  Linear solve converged due to CONVERGED_RTOL iterations 1
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 Composite Physics: Number of SNES iterations = 4
 
