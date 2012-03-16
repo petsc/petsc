@@ -1338,17 +1338,17 @@ runex93:
 	   ${RM} -f ex93_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex94:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_sparseaxpy 0> ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_sparseaxpy 0 -options_left no > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex94_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_matmatmult:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info> ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -options_left no > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex94_matmatmult, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_matmatmult_2:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matmatmult_scalable> ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matmatmult_scalable -options_left no > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex94_matmatmult_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp

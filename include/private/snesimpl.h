@@ -53,6 +53,7 @@ struct _p_SNES {
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *initialguessP;           /* user-defined initial guess context */
   KSP  ksp;                      /* linear solver context */
+  PetscLineSearch linesearch;    /* line search context */
   PetscBool usesksp;
   MatStructure matstruct;        /* Used by Picard solver */
 

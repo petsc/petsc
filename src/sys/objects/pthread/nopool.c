@@ -54,12 +54,13 @@ PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,Pets
 {
   PetscInt i;
   PetscInt Nnew_threads=n-PetscMainThreadShareWork;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pVal_none = (PetscInt*)malloc((n-PetscMainThreadShareWork)*sizeof(PetscInt));
-  PetscThreadPoint = (pthread_t*)malloc((n-PetscMainThreadShareWork)*sizeof(pthread_t));
-  job_none.funcArr = (pfunc*)malloc(n*sizeof(pfunc));
-  job_none.pdata   = (void**)malloc(n*sizeof(void*));
+  ierr = PetscMalloc(Nnew_threads*sizeof(PetscInt),&pVal_none);CHKERRQ(ierr);
+  ierr = PetscMalloc(Nnew_threads*sizeof(pthread_t),&PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(pfunc),&(job_none.funcArr));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(void*),&(job_none.pdata));CHKERRQ(ierr);
 
   threadranks[0] = 0;
   pthread_setspecific(rankkey,&threadranks[0]);
@@ -75,10 +76,10 @@ PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,Pets
 
   PetscThreadsWait(&Nnew_threads);
 
-  free(PetscThreadPoint);
-  free(job_none.funcArr);
-  free(job_none.pdata);
-  free(pVal_none);
+  ierr = PetscFree(PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscFree(job_none.funcArr);CHKERRQ(ierr);
+  ierr = PetscFree(job_none.pdata);CHKERRQ(ierr);
+  ierr = PetscFree(pVal_none);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

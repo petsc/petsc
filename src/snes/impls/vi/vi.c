@@ -1,8 +1,4 @@
-
-#include <../include/private/snesimpl.h> /*I "petscsnes.h" I*/
-#include <../include/private/kspimpl.h>
-#include <../include/private/matimpl.h>
-#include <../include/private/dmimpl.h>
+#include "viimpl.h"  /*I "petscsnes.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetComputeVariableBounds"
@@ -352,7 +348,7 @@ PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec F,IS* ISact,IS* ISin
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeInactiveSetFnorm"
-PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscReal *fnorm)
+PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *fnorm)
 {
   PetscErrorCode    ierr;
   const PetscScalar *x,*xl,*xu,*f;
@@ -414,7 +410,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   PetscFunctionBegin;
 
-  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
   if(!snes->ops->computevariablebounds && snes->dm) {
@@ -500,7 +496,7 @@ PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,Petsc
   PetscBool      changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = PETSC_TRUE; 
+  *flag = PETSC_TRUE;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
@@ -532,7 +528,7 @@ PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,Petsc
 }
 
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchNoNorms_VI"
 
 /*

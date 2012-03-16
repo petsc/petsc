@@ -97,29 +97,31 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
   arrstart = (char*)malloc(Val2);
   arrready = (char*)malloc(Val2);
 #endif
+
+  ierr = PetscMalloc(N*sizeof(PetscInt),&pVal_main);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(pthread_t),&PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+PetscMainThreadShareWork)*sizeof(pfunc),&(job_main.funcArr));CHKERRQ(ierr);
+  ierr = PetscMalloc((N+PetscMainThreadShareWork)*sizeof(void*),&(job_main.pdata));CHKERRQ(ierr);
+
+
+  ierr = PetscMalloc(N*sizeof(pthread_mutex_t*),&job_main.mutexarray);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(pthread_cond_t*),&job_main.cond1array);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(pthread_cond_t*),&job_main.cond2array);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscBool*),&job_main.arrThreadReady);CHKERRQ(ierr);
+
   
-  job_main.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
-  job_main.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-  job_main.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
-  job_main.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
   /* initialize job structure */
   for(i=0; i<PetscMaxThreads; i++) {
     job_main.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
     job_main.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
     job_main.cond2array[i]        = (pthread_cond_t*)(arrcond2+CACHE_LINE_SIZE*i);
     job_main.arrThreadReady[i]    = (PetscBool*)(arrready+CACHE_LINE_SIZE*i);
-  }
-  for(i=0; i<PetscMaxThreads; i++) {
+
     ierr = pthread_mutex_init(job_main.mutexarray[i],NULL);CHKERRQ(ierr);
     ierr = pthread_cond_init(job_main.cond1array[i],NULL);CHKERRQ(ierr);
     ierr = pthread_cond_init(job_main.cond2array[i],NULL);CHKERRQ(ierr);
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
-  job_main.funcArr = (pfunc*)malloc((N+PetscMainThreadShareWork)*sizeof(pfunc));
-  job_main.pdata = (void**)malloc((N+PetscMainThreadShareWork)*sizeof(void*));
-  pVal_main = (PetscInt*)malloc(N*sizeof(PetscInt));
-  /* allocate memory in the heap for the thread structure */
-  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
 
   threadranks[0] = 0; /* rank of main thread */
   pthread_setspecific(rankkey,&threadranks[0]);
@@ -148,15 +150,22 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_Main() {
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);CHKERRQ(ierr);
   }
-  free(PetscThreadPoint);
+
+  ierr = PetscFree(pVal_main);CHKERRQ(ierr);
+  ierr = PetscFree(PetscThreadPoint);CHKERRQ(ierr);
+  ierr = PetscFree(job_main.funcArr);CHKERRQ(ierr);
+  ierr = PetscFree(job_main.pdata);CHKERRQ(ierr);
+
+  ierr = PetscFree(job_main.mutexarray);CHKERRQ(ierr);
+  ierr = PetscFree(job_main.cond1array);CHKERRQ(ierr);
+  ierr = PetscFree(job_main.cond2array);CHKERRQ(ierr);
+  ierr = PetscFree(job_main.arrThreadReady);CHKERRQ(ierr);
+
   free(arrmutex);
   free(arrcond1);
   free(arrcond2);
   free(arrstart);
   free(arrready);
-  free(job_main.funcArr);
-  free(job_main.pdata);
-  free(pVal_main);
 
   PetscFunctionReturn(0);
 }

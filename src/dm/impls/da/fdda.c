@@ -526,8 +526,13 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   PetscInt       rstart,rend,*petsc,i;
   IS             is;
   MPI_Comm       comm;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
+  /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)A,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");

@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://www.cmake.org/files/v2.8/cmake-2.8.6.tar.gz']
+    self.download          = ['http://www.cmake.org/files/v2.8/cmake-2.8.7.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
@@ -58,9 +58,4 @@ class Configure(PETSc.package.NewPackage):
       if hasattr(self, 'cmake'):
         self.addMakeMacro('CMAKE ', self.cmake)
         self.found = 1
-    # add cmake location to begining of PATH for parmetis/metis
-    if hasattr(self, 'cmake'):
-      import os
-      (dirname,basename) = os.path.split(self.cmake)
-      os.environ['PATH'] = dirname+os.pathsep+os.environ['PATH']
     return

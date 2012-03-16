@@ -910,7 +910,7 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldIS_Complex"
-PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, const char ***fieldNames, IS **fields)
+PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, char ***fieldNames, IS **fields)
 {
   PetscSection   section, sectionGlobal;
   PetscInt      *fieldSizes, **fieldIndices;

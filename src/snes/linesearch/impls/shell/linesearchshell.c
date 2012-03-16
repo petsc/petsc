@@ -3,9 +3,9 @@
 
 /*MC
 
-LineSearchShell - Provides context for a user-provided line search routine.
+PetscLineSearchShell - Provides context for a user-provided line search routine.
 
-The user routine has one argument, the LineSearch context.  The user uses the interface to
+The user routine has one argument, the PetscLineSearch context.  The user uses the interface to
 extract line search parameters and set them accordingly when the computation is finished.
 
 Any of the other line searches may serve as a guide to how this is to be done.
@@ -15,62 +15,63 @@ Level: advanced
  M*/
 
 typedef struct {
-  LineSearchUserFunc func;
+  PetscLineSearchUserFunc func;
   void               *ctx;
-} LineSearch_Shell;
+} PetscLineSearch_Shell;
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchShellSetUserFunc"
+#define __FUNCT__ "PetscLineSearchShellSetUserFunc"
 /*@C
-   LineSearchShellSetUserFunc - Sets the user function for the LineSearch Shell implementation.
+   PetscLineSearchShellSetUserFunc - Sets the user function for the PetscLineSearch Shell implementation.
 
    Not Collective
 
    Level: advanced
 
-   .keywords: LineSearch, LineSearchShell, Shell
+   .keywords: PetscLineSearch, PetscLineSearchShell, Shell
 
-   .seealso: LineSearchShellGetUserFunc()
+   .seealso: PetscLineSearchShellGetUserFunc()
 @*/
 
-PetscErrorCode LineSearchShellSetUserFunc(LineSearch linesearch, LineSearchUserFunc func, void *ctx) {
+PetscErrorCode PetscLineSearchShellSetUserFunc(PetscLineSearch linesearch, PetscLineSearchUserFunc func, void *ctx) {
 
   PetscErrorCode   ierr;
   PetscBool        flg;
-  LineSearch_Shell *shell = (LineSearch_Shell *)linesearch->data;
+  PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch, LineSearch_CLASSID, 1);
-  ierr = PetscTypeCompare((PetscObject)linesearch,LINESEARCHSHELL,&flg);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(linesearch, PETSCLINESEARCH_CLASSID, 1);
+  ierr = PetscTypeCompare((PetscObject)linesearch,PETSCLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
+    shell->func = func;
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchShellGetUserFunc"
+#define __FUNCT__ "PetscLineSearchShellGetUserFunc"
 /*@C
-   LineSearchShellGetUserFunc - Gets the user function and context for the shell implementation.
+   PetscLineSearchShellGetUserFunc - Gets the user function and context for the shell implementation.
 
    Not Collective
 
    Level: advanced
 
-   .keywords: LineSearch, LineSearchShell, Shell
+   .keywords: PetscLineSearch, PetscLineSearchShell, Shell
 
-   .seealso: LineSearchShellSetUserFunc()
+   .seealso: PetscLineSearchShellSetUserFunc()
 @*/
-PetscErrorCode LineSearchShellGetUserFunc(LineSearch linesearch, LineSearchUserFunc *func, void **ctx) {
+PetscErrorCode PetscLineSearchShellGetUserFunc(PetscLineSearch linesearch, PetscLineSearchUserFunc *func, void **ctx) {
 
   PetscErrorCode   ierr;
   PetscBool        flg;
-  LineSearch_Shell *shell = (LineSearch_Shell *)linesearch->data;
+  PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(linesearch, LineSearch_CLASSID, 1);
+  PetscValidHeaderSpecific(linesearch, PETSCLINESEARCH_CLASSID, 1);
   if (func) PetscValidPointer(func,2);
   if (ctx)  PetscValidPointer(ctx,3);
-  ierr = PetscTypeCompare((PetscObject)linesearch,LINESEARCHSHELL,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)linesearch,PETSCLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     *ctx  = shell->ctx;
     *func = shell->func;
@@ -80,10 +81,10 @@ PetscErrorCode LineSearchShellGetUserFunc(LineSearch linesearch, LineSearchUserF
 
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchApply_Shell"
-PetscErrorCode  LineSearchApply_Shell(LineSearch linesearch)
+#define __FUNCT__ "PetscLineSearchApply_Shell"
+PetscErrorCode  PetscLineSearchApply_Shell(PetscLineSearch linesearch)
 {
-  LineSearch_Shell *shell = (LineSearch_Shell *)linesearch->data;
+  PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -92,16 +93,16 @@ PetscErrorCode  LineSearchApply_Shell(LineSearch linesearch)
   if (shell->func) {
     ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);
   } else {
-    SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "LineSearchShell needs to have a shell function set with LineSearchShellSetUserFunc");
+    SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "PetscLineSearchShell needs to have a shell function set with PetscLineSearchShellSetUserFunc");
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchDestroy_Shell"
-PetscErrorCode  LineSearchDestroy_Shell(LineSearch linesearch)
+#define __FUNCT__ "PetscLineSearchDestroy_Shell"
+PetscErrorCode  PetscLineSearchDestroy_Shell(PetscLineSearch linesearch)
 {
-  LineSearch_Shell *shell = (LineSearch_Shell *)linesearch->data;
+  PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -111,23 +112,23 @@ PetscErrorCode  LineSearchDestroy_Shell(LineSearch linesearch)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchCreate_Shell"
-PetscErrorCode LineSearchCreate_Shell(LineSearch linesearch)
+#define __FUNCT__ "PetscLineSearchCreate_Shell"
+PetscErrorCode PetscLineSearchCreate_Shell(PetscLineSearch linesearch)
 {
 
-  LineSearch_Shell     *shell;
+  PetscLineSearch_Shell     *shell;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
 
-  linesearch->ops->apply          = LineSearchApply_Shell;
-  linesearch->ops->destroy        = LineSearchDestroy_Shell;
+  linesearch->ops->apply          = PetscLineSearchApply_Shell;
+  linesearch->ops->destroy        = PetscLineSearchDestroy_Shell;
   linesearch->ops->setfromoptions = PETSC_NULL;
   linesearch->ops->reset          = PETSC_NULL;
   linesearch->ops->view           = PETSC_NULL;
   linesearch->ops->setup          = PETSC_NULL;
 
-  ierr = PetscNewLog(linesearch, LineSearch_Shell, &shell);CHKERRQ(ierr);
+  ierr = PetscNewLog(linesearch, PetscLineSearch_Shell, &shell);CHKERRQ(ierr);
   linesearch->data = (void*) shell;
   PetscFunctionReturn(0);
 }

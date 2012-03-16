@@ -8,7 +8,7 @@
 #include <private/snesimpl.h>
 
 typedef struct {
-  int dummy;
+  PetscInt dummy;
 } SNES_LS;
 
 #endif

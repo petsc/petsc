@@ -842,7 +842,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr); 
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         str = SAME_NONZERO_PATTERN;
-        ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);
+        ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
         ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);     
         ierr = MatMult(J,Zstage,Zdot);
 

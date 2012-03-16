@@ -1,20 +1,22 @@
 #ifndef __LINESEARCHIMPL_H
 #define __LINESEARCHIMPL_H
 
-#include <petsclinesearch.h>
-
-struct _LineSearchOps {
-  PetscErrorCode (*view)          (LineSearch);
-  LineSearchApplyFunc             apply;
-  LineSearchPreCheckFunc          precheckstep;
-  LineSearchPostCheckFunc         postcheckstep;
-  PetscErrorCode (*setfromoptions)(LineSearch);
-  PetscErrorCode (*reset)         (LineSearch);
-  PetscErrorCode (*destroy)       (LineSearch);
-  PetscErrorCode (*setup)         (LineSearch);
-};
+#include <petscsnes.h>
 
 typedef struct _LineSearchOps *LineSearchOps;
+
+struct _LineSearchOps {
+  PetscErrorCode (*view)          (PetscLineSearch);
+  PetscLineSearchApplyFunc        apply;
+  PetscLineSearchPreCheckFunc     precheckstep;
+  PetscLineSearchVIProjectFunc    viproject;
+  PetscLineSearchVINormFunc       vinorm;
+  PetscLineSearchPostCheckFunc    postcheckstep;
+  PetscErrorCode (*setfromoptions)(PetscLineSearch);
+  PetscErrorCode (*reset)         (PetscLineSearch);
+  PetscErrorCode (*destroy)       (PetscLineSearch);
+  PetscErrorCode (*setup)         (PetscLineSearch);
+};
 
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
@@ -47,6 +49,10 @@ struct _p_LineSearch {
   PetscReal     maxstep;
   PetscReal     steptol;
   PetscInt      max_its;
+  PetscReal     rtol;
+  PetscReal     atol;
+  PetscReal     ltol;
+
 
   void *        precheckctx;
   void *        postcheckctx;

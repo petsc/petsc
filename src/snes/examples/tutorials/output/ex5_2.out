@@ -103,7 +103,6 @@
         6 SNES Function norm 1.41669e-09 
       SNES Object:       1 MPI processes
         type: ls
-          line search variant: CUBIC
           alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
           damping factor=1.000000000000e+00
         maximum iterations=50, maximum function evaluations=10000
@@ -148,6 +147,7 @@
             total: nonzeros=64, allocated nonzeros=64
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
+        line search variant: bt
       0 SNES Function norm 0.937398 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.268244 
@@ -224,7 +224,6 @@
       3 SNES Function norm 5.918e-10 
     SNES Object:     1 MPI processes
       type: ls
-        line search variant: CUBIC
         alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
         damping factor=1.000000000000e+00
       maximum iterations=50, maximum function evaluations=10000
@@ -299,6 +298,7 @@
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
+      line search variant: bt
     0 SNES Function norm 0.517003 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.0110284 
@@ -495,7 +495,6 @@
     3 SNES Function norm < 1.e-11
   SNES Object:   1 MPI processes
     type: ls
-      line search variant: CUBIC
       alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
       damping factor=1.000000000000e+00
     maximum iterations=50, maximum function evaluations=10000
@@ -591,6 +590,7 @@
         total: nonzeros=793, allocated nonzeros=793
         total number of mallocs used during MatSetValues calls =0
           not using I-node routines
+    line search variant: bt
   0 SNES Function norm 0.269931 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.00303821 
@@ -855,7 +855,6 @@
   2 SNES Function norm 3.419e-10 
 SNES Object: 1 MPI processes
   type: ls
-    line search variant: CUBIC
     alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
     damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
@@ -972,3 +971,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=3025, allocated nonzeros=3025
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
+  line search variant: bt

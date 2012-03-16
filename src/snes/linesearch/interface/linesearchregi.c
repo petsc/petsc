@@ -1,63 +1,65 @@
-#include <private/linesearchimpl.h>     /*I  "petsclinesearch.h"  I*/
+#include <private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  LineSearchCreate_Basic(LineSearch);
-extern PetscErrorCode  LineSearchCreate_L2(LineSearch);
-extern PetscErrorCode  LineSearchCreate_CP(LineSearch);
-extern PetscErrorCode  LineSearchCreate_Shell(LineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_Basic(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_L2(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_CP(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_BT(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_Shell(PetscLineSearch);
 EXTERN_C_END
 
 /*
-extern PetscErrorCode  LineSearchCreate_Cubic(LineSearch);
-extern PetscErrorCode  LineSearchCreate_Quadratic(LineSearch);
-extern PetscErrorCode  LineSearchCreate_BasicNoNorms(LineSearch);
-extern PetscErrorCode  LineSearchCreate_QuadraticSecant(LineSearch);
-extern PetscErrorCode  LineSearchCreate_CriticalSecant(LineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_Cubic(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_Quadratic(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_BasicNoNorms(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_QuadraticSecant(PetscLineSearch);
+extern PetscErrorCode  PetscLineSearchCreate_CriticalSecant(PetscLineSearch);
  */
 
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchRegisterAll"
+#define __FUNCT__ "PetscLineSearchRegisterAll"
 /*@C
-   LineSearchRegisterAll - Registers all of the nonlinear solver methods in the LineSearch package.
+   PetscLineSearchRegisterAll - Registers all of the nonlinear solver methods in the PetscLineSearch package.
 
    Not Collective
 
    Level: advanced
 
-.keywords: LineSearch, register, all
+.keywords: PetscLineSearch, register, all
 
-.seealso:  LineSearchRegisterDestroy()
+.seealso:  PetscLineSearchRegisterDestroy()
 @*/
-PetscErrorCode LineSearchRegisterAll(const char path[])
+PetscErrorCode PetscLineSearchRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  LineSearchRegisterAllCalled = PETSC_TRUE;
+  PetscLineSearchRegisterAllCalled = PETSC_TRUE;
   /*
-  ierr = LineSearchRegisterDynamic(LINESEARCHCUBIC,             path,"LineSearchCreate_Cubic",             LineSearchCreate_Cubic);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(LINESEARCHCUBIC,             path,"PetscLineSearchCreate_Cubic",             PetscLineSearchCreate_Cubic);CHKERRQ(ierr);
 
-  ierr = LineSearchRegisterDynamic(LINESEARCHQUADRATIC,         path,"LineSearchCreate_Quadratic",         LineSearchCreate_Quadratic);CHKERRQ(ierr);
-  ierr = LineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"LineSearchCreate_CriticalSecant",    LineSearchCreate_CriticalSecant);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(LINESEARCHQUADRATIC,         path,"PetscLineSearchCreate_Quadratic",         PetscLineSearchCreate_Quadratic);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"PetscLineSearchCreate_CriticalSecant",    PetscLineSearchCreate_CriticalSecant);CHKERRQ(ierr);
 
    */
-  ierr = LineSearchRegisterDynamic(LINESEARCHSHELL,             path,"LineSearchCreate_Shell",             LineSearchCreate_Shell);CHKERRQ(ierr);
-  ierr = LineSearchRegisterDynamic(LINESEARCHBASIC,             path,"LineSearchCreate_Basic",             LineSearchCreate_Basic);CHKERRQ(ierr);
-  ierr = LineSearchRegisterDynamic(LINESEARCHL2,                path,"LineSearchCreate_L2",                LineSearchCreate_L2);CHKERRQ(ierr);
-  ierr = LineSearchRegisterDynamic(LINESEARCHCP,                path,"LineSearchCreate_CP",                LineSearchCreate_CP);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHSHELL,             path,"PetscLineSearchCreate_Shell",             PetscLineSearchCreate_Shell);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHBASIC,             path,"PetscLineSearchCreate_Basic",             PetscLineSearchCreate_Basic);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHL2,                path,"PetscLineSearchCreate_L2",                PetscLineSearchCreate_L2);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHBT,                path,"PetscLineSearchCreate_BT",                PetscLineSearchCreate_BT);CHKERRQ(ierr);
+  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHCP,                path,"PetscLineSearchCreate_CP",                PetscLineSearchCreate_CP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchRegisterDestroy"
-PetscErrorCode  LineSearchRegisterDestroy(void)
+#define __FUNCT__ "PetscLineSearchRegisterDestroy"
+PetscErrorCode  PetscLineSearchRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&LineSearchList);CHKERRQ(ierr);
-  LineSearchRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFListDestroy(&PetscLineSearchList);CHKERRQ(ierr);
+  PetscLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

@@ -719,15 +719,20 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
 . dm - the DM object
 
   Output Parameters:
-+ numFields - The number of fields
-. names     - The name for each field
-- fields    - The global indices for each field
++ numFields - The number of fields (or PETSC_NULL if not requested)
+. names     - The name for each field (or PETSC_NULL if not requested)
+- fields    - The global indices for each field (or PETSC_NULL if not requested)
 
   Level: intermediate
 
+  Notes:
+  The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
+  PetscFree(), every entry of fields should be destroyed with ISDestroy(), and both arrays should be freed with
+  PetscFree().
+
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 @*/
-PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, const char ***names, IS **fields)
+PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **fields)
 {
   PetscErrorCode ierr;
 
@@ -768,6 +773,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
+    (*dmf)->ops->creatematrix = dm->ops->creatematrix;
     (*dmf)->ops->initialguess = dm->ops->initialguess;
     (*dmf)->ops->function     = dm->ops->function;
     (*dmf)->ops->functionj    = dm->ops->functionj;
@@ -988,6 +994,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   (*dmc)->ops->initialguess = dm->ops->initialguess;
   (*dmc)->ops->function     = dm->ops->function;
   (*dmc)->ops->functionj    = dm->ops->functionj;
@@ -1053,7 +1060,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fine,DM_CLASSID,1);
-  for (p=&fine->coarsenhook; *p; *p=(*p)->next) {} /* Scan to the end of the current list of hooks */
+  for (p=&fine->coarsenhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
   ierr = PetscMalloc(sizeof(struct _DMCoarsenHookLink),&link);CHKERRQ(ierr);
   link->coarsenhook = coarsenhook;
   link->restricthook = restricthook;

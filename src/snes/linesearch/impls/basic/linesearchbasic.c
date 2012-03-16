@@ -2,21 +2,21 @@
 #include <private/snesimpl.h>
 
 /*MC
-   LineSearchBasic - This routine is not a line search at all;
+   PetscLineSearchBasic - This routine is not a line search at all;
    it simply uses the full step.  Thus, this routine is intended
    to serve as a template and is not recommended for general use.
 
    Level: advanced
 
-.keywords: SNES, LineSearch, damping
+.keywords: SNES, PetscLineSearch, damping
 
-.seealso: LineSearchCreate(), LineSearchSetType()
+.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchApply_Basic"
+#define __FUNCT__ "PetscLineSearchApply_Basic"
 
-PetscErrorCode  LineSearchApply_Basic(LineSearch linesearch)
+PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
@@ -27,31 +27,48 @@ PetscErrorCode  LineSearchApply_Basic(LineSearch linesearch)
 
   PetscFunctionBegin;
 
-  ierr = LineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
-  ierr = LineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
-  ierr = LineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = LineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = LineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
+  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
 
   /* precheck */
-  ierr = LineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
+  ierr = PetscLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
 
   /* update */
   ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
 
   /* postcheck */
-  ierr = LineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
+  ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
   }
   ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
-    ierr = LineSearchSetSuccess(linesearch, PETSC_FALSE);
+    ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);
     PetscFunctionReturn(0);
   }
 
-  ierr = LineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+  ierr = VecNorm(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+  if (linesearch->ops->vinorm) {
+    linesearch->fnorm = gnorm;
+    ierr = (*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(F,NORM_2,&linesearch->fnorm);CHKERRQ(ierr);
+  }
+
+  /*
+  ierr = PetscLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+   */
 
   /* copy the solution over */
   ierr = VecCopy(W, X);CHKERRQ(ierr);
@@ -60,11 +77,11 @@ PetscErrorCode  LineSearchApply_Basic(LineSearch linesearch)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "LineSearchCreate_Basic"
-PetscErrorCode LineSearchCreate_Basic(LineSearch linesearch)
+#define __FUNCT__ "PetscLineSearchCreate_Basic"
+PetscErrorCode PetscLineSearchCreate_Basic(PetscLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = LineSearchApply_Basic;
+  linesearch->ops->apply          = PetscLineSearchApply_Basic;
   linesearch->ops->destroy        = PETSC_NULL;
   linesearch->ops->setfromoptions = PETSC_NULL;
   linesearch->ops->reset          = PETSC_NULL;

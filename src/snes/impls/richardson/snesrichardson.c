@@ -5,11 +5,8 @@
 #define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
-  SNES_NRichardson        *neP = (SNES_NRichardson *)snes->data;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = LineSearchDestroy(&neP->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,19 +44,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 #define __FUNCT__ "SNESSetUp_NRichardson"
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
-  const char              *optionsprefix;
-  SNES_NRichardson        *neP = (SNES_NRichardson *)snes->data;
-  PetscErrorCode          ierr;
-
   PetscFunctionBegin;
-
-  ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchCreate(((PetscObject)snes)->comm, &neP->linesearch);CHKERRQ(ierr);
-  ierr = LineSearchSetSNES(neP->linesearch, snes);CHKERRQ(ierr);
-  ierr = LineSearchSetType(neP->linesearch, LINESEARCHL2);CHKERRQ(ierr);
-  ierr = LineSearchAppendOptionsPrefix(neP->linesearch, optionsprefix);CHKERRQ(ierr);
-  ierr = LineSearchSetFromOptions(neP->linesearch);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -76,9 +61,14 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
+  PetscLineSearch linesearch;
   PetscFunctionBegin;
-    ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
-    ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if (!snes->linesearch) {
+    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -97,12 +87,10 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 {
   PetscBool        iascii;
   PetscErrorCode   ierr;
-  SNES_NRichardson *neP = (SNES_NRichardson *)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Line search variant: %s\n", ((PetscObject)neP->linesearch)->type_name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -122,7 +110,6 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 #define __FUNCT__ "SNESSolve_NRichardson"
 PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
-  SNES_NRichardson    *neP = (SNES_NRichardson *)snes->data;
   Vec                 X, Y, F;
   PetscReal           xnorm, fnorm, ynorm;
   PetscInt            maxits, i;
@@ -179,9 +166,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-    ierr = LineSearchApply(neP->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
-    ierr = LineSearchGetNorms(neP->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
-    ierr = LineSearchGetSuccess(neP->linesearch, &lsSuccess);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

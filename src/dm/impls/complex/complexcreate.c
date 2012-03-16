@@ -248,7 +248,7 @@ extern PetscErrorCode DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, 
 extern PetscErrorCode DMCreateGlobalVector_Complex(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
-extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, const char ***names, IS **fields);
+extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, char ***names, IS **fields);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);

@@ -20,8 +20,8 @@ Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x
         Linear solve converged due to CONVERGED_ITS iterations 1
         8 SNES Function norm 0.032632 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        9 SNES Function norm 7.96768e-07 
-      Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+        9 SNES Function norm 7.96769e-07 
+      Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 9
       0 SNES Function norm 1086.02 
         0 KSP Residual norm 1086.02 
         1 KSP Residual norm 243.29 
@@ -91,7 +91,7 @@ Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x
         7 KSP Residual norm 6.90773e-06 
       Linear solve converged due to CONVERGED_RTOL iterations 7
       8 SNES Function norm 6.9093e-06 
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
     0 SNES Function norm 923.33 
       0 KSP Residual norm 923.33 
       1 KSP Residual norm 176.105 
@@ -173,8 +173,8 @@ Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x
       4 KSP Residual norm 2.01888e-05 
       5 KSP Residual norm 9.11133e-06 
     Linear solve converged due to CONVERGED_RTOL iterations 5
-   10 SNES Function norm 9.11206e-06 
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+   10 SNES Function norm 9.11207e-06 
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 10
   0 SNES Function norm 636.227 
     0 KSP Residual norm 636.227 
     1 KSP Residual norm 45.898 
@@ -211,8 +211,8 @@ Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x
     5 KSP Residual norm 2.94749e-06 
     6 KSP Residual norm 1.48429e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  5 SNES Function norm 1.48429e-06 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+  5 SNES Function norm 1.4843e-06 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 DMMG Object with 4 levels
 Using ghosted Jacobian coloring computation
   Processor [0] M 2 N 4 P 4 m 1 n 2 p 3 w 2 s 1
@@ -320,12 +320,6 @@ PC Object: 6 MPI processes
         rows=64, cols=64
         total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes
-            type: mpiaij
-            rows=64, cols=64
-            total: nonzeros=2304, allocated nonzeros=2304
-            total number of mallocs used during MatSetValues calls =0
-              using I-node (on process 0) routines: found 4 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object:    (mg_levels_1_)     6 MPI processes
       type: gmres
@@ -373,9 +367,6 @@ PC Object: 6 MPI processes
         rows=256, cols=256
         total: nonzeros=4864, allocated nonzeros=4864
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes
-            type: submatrix
-            rows=256, cols=256
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object:    (mg_levels_2_)     6 MPI processes
@@ -425,9 +416,6 @@ PC Object: 6 MPI processes
         rows=1024, cols=1024
         total: nonzeros=19456, allocated nonzeros=19456
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           6 MPI processes
-            type: submatrix
-            rows=1024, cols=1024
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object:    (mg_levels_3_)     6 MPI processes
@@ -477,9 +465,6 @@ PC Object: 6 MPI processes
         rows=2048, cols=2048
         total: nonzeros=48128, allocated nonzeros=48128
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:          (thi_)           6 MPI processes
-            type: submatrix
-            rows=2048, cols=2048
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
   Matrix Object:  (thi_)   6 MPI processes
@@ -487,9 +472,6 @@ PC Object: 6 MPI processes
     rows=2048, cols=2048
     total: nonzeros=48128, allocated nonzeros=48128
     total number of mallocs used during MatSetValues calls =0
-      Matrix Object:      (thi_)       6 MPI processes
-        type: submatrix
-        rows=2048, cols=2048
 Solution statistics after solve: Full
 CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 21
 |X|_2 564267   -187.04 <= u <=  23814.8   -979.938 <= v <=  5720.23   3.24766 <= c <=  23904.5 

@@ -103,7 +103,7 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
   PetscMPIInt    mype, npe;
-  Mat            Gmat = *a_Gmat, tGmat;
+  Mat            Gmat = *a_Gmat, tGmat, matTrans;
   MPI_Comm       wcomm = ((PetscObject)Gmat)->comm;
   const PetscScalar *vals;
   const PetscInt *idx;
@@ -127,6 +127,10 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   ierr = MatDiagonalScale( Gmat, diag, diag ); CHKERRQ(ierr);
   ierr = VecDestroy( &diag );           CHKERRQ(ierr);
 
+  if( symm ) {
+    ierr = MatTranspose( Gmat, MAT_INITIAL_MATRIX, &matTrans );    CHKERRQ(ierr);
+  }
+
   /* filter - dup zeros out matrix */
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
@@ -135,6 +139,12 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
     d_nnz[jj] = ncols;
     o_nnz[jj] = ncols;
     ierr = MatRestoreRow(Gmat,Ii,&ncols,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    if( symm ) {
+      ierr = MatGetRow(matTrans,Ii,&ncols,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      d_nnz[jj] += ncols;
+      o_nnz[jj] += ncols;
+      ierr = MatRestoreRow(matTrans,Ii,&ncols,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    }
     if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
     if( o_nnz[jj] > (MM-nloc) ) o_nnz[jj] = MM - nloc;
   }
@@ -142,6 +152,9 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   CHKERRQ(ierr);
   ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
   ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
+  if( symm ) {
+    ierr = MatDestroy( &matTrans );  CHKERRQ(ierr);
+  }
 
   for( Ii = Istart, nnz0 = nnz1 = 0 ; Ii < Iend; Ii++ ){
     ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -163,7 +176,7 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   }
   ierr = MatAssemblyBegin(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(gamg_setup_events[GRAPH],0,0,0,0);   CHKERRQ(ierr);
 #endif
