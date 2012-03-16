@@ -391,7 +391,7 @@ class Configure(config.base.Configure):
         if x not in lst:
           lst.append(x)
     def notstandardinclude(path):
-      return path not in '/usr/include /usr/local/include'.split()
+      return path not in '/usr/include'.split() # /usr/local/include is not automatically included on FreeBSD
     def writeMacroDefinitions(fd):
       if self.mpi.usingMPIUni:
         cmakeset(fd,'PETSC_HAVE_MPIUNI')
@@ -418,13 +418,13 @@ class Configure(config.base.Configure):
         libs = ensurelist(lib)
         lib_paths.extend(map(libpath,libs))
         lib_libs.extend(map(cleanlib,libs))
-        uniqextend(includes,pkg.include)
       lib_paths = []
       lib_libs  = []
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
         extendby(pkg.lib)
+        uniqextend(includes,pkg.include)
       extendby(self.libraries.math)
       extendby(self.libraries.rt)
       extendby(self.compilers.flibs)
@@ -439,7 +439,8 @@ class Configure(config.base.Configure):
         libvars.append(libvar)
       fd.write('mark_as_advanced (' + ' '.join(libvars) + ')\n')
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
-      fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',filter(notstandardinclude,includes))) + ')\n')
+      includes = filter(notstandardinclude,includes)
+      fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
     fd = open(os.path.join(self.arch.arch,'conf','PETScConfig.cmake'), 'w')
     writeMacroDefinitions(fd)
     writeBuildFlags(fd)
