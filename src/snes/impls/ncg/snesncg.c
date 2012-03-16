@@ -41,9 +41,9 @@ PetscErrorCode SNESDestroy_NCG(SNES snes)
    Application Interface Routine: SNESSetUp()
  */
 
-EXTERN_C_BEGIN;
+EXTERN_C_BEGIN
 extern PetscErrorCode PetscLineSearchCreate_NCGLinear(PetscLineSearch);
-EXTERN_C_END;
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_NCG"
