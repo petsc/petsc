@@ -227,7 +227,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
     if (pc->dm && !stokes) {
       PetscInt     numFields, f;
-      const char **fieldNames;
+      char         **fieldNames;
       IS          *fields;
       PetscBool    dmcomposite;
 
