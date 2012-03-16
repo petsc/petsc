@@ -235,7 +235,7 @@ PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool int
   default:
     SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
   }
-  ierr = DMComplexGenerate(boundary, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMComplexGenerate(boundary, PETSC_NULL, interpolate, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

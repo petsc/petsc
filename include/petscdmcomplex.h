@@ -52,7 +52,7 @@ extern PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, Pet
 extern PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
 extern PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 
-extern PetscErrorCode DMComplexGenerate(DM, PetscBool , DM *);
+extern PetscErrorCode DMComplexGenerate(DM, const char [], PetscBool , DM *);
 extern PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
 extern PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
 extern PetscErrorCode DMComplexLoad(PetscViewer, DM);

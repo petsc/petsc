@@ -656,7 +656,7 @@ float uniformfloatrand()
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal exactinit()
+PetscReal TetGenExactInit()
 {
   PetscReal half;
   PetscReal check, lastcheck;
@@ -723,7 +723,7 @@ PetscReal exactinit()
 
 /*****************************************************************************/
 /*                                                                           */
-/*  grow_expansion()   Add a scalar to an expansion.                         */
+/*  TetGenGrowExpansion()   Add a scalar to an expansion.                    */
 /*                                                                           */
 /*  Sets h = e + b.  See the long version of my paper for details.           */
 /*                                                                           */
@@ -734,7 +734,7 @@ PetscReal exactinit()
 /*                                                                           */
 /*****************************************************************************/
 
-int grow_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
+int TetGenGrowExpansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /* e and h can be the same. */
 {
   PetscReal Q;
@@ -756,7 +756,7 @@ int grow_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  grow_expansion_zeroelim()   Add a scalar to an expansion, eliminating    */
+/*  TetGenGrowExpansionZeroelim()   Add a scalar to an expansion, eliminating*/
 /*                              zero components from the output expansion.   */
 /*                                                                           */
 /*  Sets h = e + b.  See the long version of my paper for details.           */
@@ -768,7 +768,7 @@ int grow_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /*                                                                           */
 /*****************************************************************************/
 
-int grow_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
+int TetGenGrowExpansionZeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /* e and h can be the same. */
 {
   PetscReal Q, hh;
@@ -796,7 +796,7 @@ int grow_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  expansion_sum()   Sum two expansions.                                    */
+/*  TetGenExpansionSum()   Sum two expansions.                               */
 /*                                                                           */
 /*  Sets h = e + f.  See the long version of my paper for details.           */
 /*                                                                           */
@@ -807,7 +807,7 @@ int grow_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /*                                                                           */
 /*****************************************************************************/
 
-int expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenExpansionSum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* e and h can be the same, but f and h cannot. */
 {
   PetscReal Q;
@@ -839,7 +839,7 @@ int expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  expansion_sum_zeroelim1()   Sum two expansions, eliminating zero         */
+/*  TetGenExpansionSumZeroelim1()   Sum two expansions, eliminating zero     */
 /*                              components from the output expansion.        */
 /*                                                                           */
 /*  Sets h = e + f.  See the long version of my paper for details.           */
@@ -851,7 +851,7 @@ int expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /*                                                                           */
 /*****************************************************************************/
 
-int expansion_sum_zeroelim1(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenExpansionSumZeroelim1(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* e and h can be the same, but f and h cannot. */
 {
   PetscReal Q;
@@ -894,7 +894,7 @@ int expansion_sum_zeroelim1(int elen, PetscReal *e, int flen, PetscReal *f, Pets
 
 /*****************************************************************************/
 /*                                                                           */
-/*  expansion_sum_zeroelim2()   Sum two expansions, eliminating zero         */
+/*  TetGenExpansionSumZeroelim2()   Sum two expansions, eliminating zero     */
 /*                              components from the output expansion.        */
 /*                                                                           */
 /*  Sets h = e + f.  See the long version of my paper for details.           */
@@ -906,7 +906,7 @@ int expansion_sum_zeroelim1(int elen, PetscReal *e, int flen, PetscReal *f, Pets
 /*                                                                           */
 /*****************************************************************************/
 
-int expansion_sum_zeroelim2(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenExpansionSumZeroelim2(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* e and h can be the same, but f and h cannot. */
 {
   PetscReal Q, hh;
@@ -947,7 +947,7 @@ int expansion_sum_zeroelim2(int elen, PetscReal *e, int flen, PetscReal *f, Pets
 
 /*****************************************************************************/
 /*                                                                           */
-/*  fast_expansion_sum()   Sum two expansions.                               */
+/*  TetGenFastExpansionSum()   Sum two expansions.                           */
 /*                                                                           */
 /*  Sets h = e + f.  See the long version of my paper for details.           */
 /*                                                                           */
@@ -958,7 +958,7 @@ int expansion_sum_zeroelim2(int elen, PetscReal *e, int flen, PetscReal *f, Pets
 /*                                                                           */
 /*****************************************************************************/
 
-int fast_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenFastExpansionSum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* h cannot be e or f. */
 {
   PetscReal Q;
@@ -1019,7 +1019,7 @@ int fast_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal
 
 /*****************************************************************************/
 /*                                                                           */
-/*  fast_expansion_sum_zeroelim()   Sum two expansions, eliminating zero     */
+/*  TetGenFastExpansionSumZeroelim()   Sum two expansions, eliminating zero  */
 /*                                  components from the output expansion.    */
 /*                                                                           */
 /*  Sets h = e + f.  See the long version of my paper for details.           */
@@ -1031,7 +1031,7 @@ int fast_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal
 /*                                                                           */
 /*****************************************************************************/
 
-int fast_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenFastExpansionSumZeroelim(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* h cannot be e or f. */
 {
   PetscReal Q;
@@ -1103,7 +1103,7 @@ int fast_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f, 
 
 /*****************************************************************************/
 /*                                                                           */
-/*  linear_expansion_sum()   Sum two expansions.                             */
+/*  TetGenLinearExpansionSum()   Sum two expansions.                         */
 /*                                                                           */
 /*  Sets h = e + f.  See either version of my paper for details.             */
 /*                                                                           */
@@ -1112,7 +1112,7 @@ int fast_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f, 
 /*                                                                           */
 /*****************************************************************************/
 
-int linear_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
+int TetGenLinearExpansionSum(int elen, PetscReal *e, int flen, PetscReal *f, PetscReal *h)
 /* h cannot be e or f. */
 {
   PetscReal Q, q;
@@ -1162,7 +1162,7 @@ int linear_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscRe
 
 /*****************************************************************************/
 /*                                                                           */
-/*  linear_expansion_sum_zeroelim()   Sum two expansions, eliminating zero   */
+/*  TetGenLinearExpansionSumZeroelim()   Sum two expansions, eliminating zero*/
 /*                                    components from the output expansion.  */
 /*                                                                           */
 /*  Sets h = e + f.  See either version of my paper for details.             */
@@ -1172,8 +1172,8 @@ int linear_expansion_sum(int elen, PetscReal *e, int flen, PetscReal *f, PetscRe
 /*                                                                           */
 /*****************************************************************************/
 
-int linear_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f,
-                                  PetscReal *h)
+int TetGenLinearExpansionSumZeroelim(int elen, PetscReal *e, int flen, PetscReal *f,
+                                     PetscReal *h)
 /* h cannot be e or f. */
 {
   PetscReal Q, q, hh;
@@ -1232,7 +1232,7 @@ int linear_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f
 
 /*****************************************************************************/
 /*                                                                           */
-/*  scale_expansion()   Multiply an expansion by a scalar.                   */
+/*  TetGenScaleExpansion()   Multiply an expansion by a scalar.              */
 /*                                                                           */
 /*  Sets h = be.  See either version of my paper for details.                */
 /*                                                                           */
@@ -1243,7 +1243,7 @@ int linear_expansion_sum_zeroelim(int elen, PetscReal *e, int flen, PetscReal *f
 /*                                                                           */
 /*****************************************************************************/
 
-int scale_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
+int TetGenScaleExpansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /* e and h cannot be the same. */
 {
   INEXACT PetscReal Q;
@@ -1276,7 +1276,7 @@ int scale_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  scale_expansion_zeroelim()   Multiply an expansion by a scalar,          */
+/*  TetGenScaleExpansionZeroelim()   Multiply an expansion by a scalar,      */
 /*                               eliminating zero components from the        */
 /*                               output expansion.                           */
 /*                                                                           */
@@ -1289,7 +1289,7 @@ int scale_expansion(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /*                                                                           */
 /*****************************************************************************/
 
-int scale_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
+int TetGenScaleExpansionZeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /* e and h cannot be the same. */
 {
   INEXACT PetscReal Q, sum;
@@ -1331,7 +1331,7 @@ int scale_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  compress()   Compress an expansion.                                      */
+/*  TetGenCompress()   Compress an expansion.                                */
 /*                                                                           */
 /*  See the long version of my paper for details.                            */
 /*                                                                           */
@@ -1341,7 +1341,7 @@ int scale_expansion_zeroelim(int elen, PetscReal *e, PetscReal b, PetscReal *h)
 /*                                                                           */
 /*****************************************************************************/
 
-int compress(int elen, PetscReal *e, PetscReal *h)
+int TetGenCompress(int elen, PetscReal *e, PetscReal *h)
 /* e and h may be the same. */
 {
   PetscReal Q, q;
@@ -1378,13 +1378,13 @@ int compress(int elen, PetscReal *e, PetscReal *h)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  estimate()   Produce a one-word estimate of an expansion's value.        */
+/*  TetGenEstimate()   Produce a one-word estimate of an expansion's value.  */
 /*                                                                           */
 /*  See either version of my paper for details.                              */
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal estimate(int elen, PetscReal *e)
+PetscReal TetGenEstimate(int elen, PetscReal *e)
 {
   PetscReal Q;
   int eindex;
@@ -1398,10 +1398,10 @@ PetscReal estimate(int elen, PetscReal *e)
 
 /*****************************************************************************/
 /*                                                                           */
-/*  orient2dfast()   Approximate 2D orientation test.  Nonrobust.            */
-/*  orient2dexact()   Exact 2D orientation test.  Robust.                    */
-/*  orient2dslow()   Another exact 2D orientation test.  Robust.             */
-/*  orient2d()   Adaptive exact 2D orientation test.  Robust.                */
+/*  TetGenOrient2DFast()   Approximate 2D orientation test.  Nonrobust.      */
+/*  TetGenOrient2DExact()   Exact 2D orientation test.  Robust.              */
+/*  TetGenOrient2DSlow()   Another exact 2D orientation test.  Robust.       */
+/*  TetGenOrient2D()   Adaptive exact 2D orientation test.  Robust.                */
 /*                                                                           */
 /*               Return a positive value if the points pa, pb, and pc occur  */
 /*               in counterclockwise order; a negative value if they occur   */
@@ -1422,7 +1422,7 @@ PetscReal estimate(int elen, PetscReal *e)
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal orient2dfast(PetscReal *pa, PetscReal *pb, PetscReal *pc)
+PetscReal TetGenOrient2DFast(PetscReal *pa, PetscReal *pb, PetscReal *pc)
 {
   PetscReal acx, bcx, acy, bcy;
 
@@ -1433,7 +1433,7 @@ PetscReal orient2dfast(PetscReal *pa, PetscReal *pb, PetscReal *pc)
   return acx * bcy - acy * bcx;
 }
 
-PetscReal orient2dexact(PetscReal *pa, PetscReal *pb, PetscReal *pc)
+PetscReal TetGenOrient2DExact(PetscReal *pa, PetscReal *pb, PetscReal *pc)
 {
   INEXACT PetscReal axby1, axcy1, bxcy1, bxay1, cxay1, cxby1;
   PetscReal axby0, axcy0, bxcy0, bxay0, cxay0, cxby0;
@@ -1469,13 +1469,13 @@ PetscReal orient2dexact(PetscReal *pa, PetscReal *pb, PetscReal *pc)
                cterms3, cterms[2], cterms[1], cterms[0]);
   cterms[3] = cterms3;
 
-  vlength = fast_expansion_sum_zeroelim(4, aterms, 4, bterms, v);
-  wlength = fast_expansion_sum_zeroelim(vlength, v, 4, cterms, w);
+  vlength = TetGenFastExpansionSumZeroelim(4, aterms, 4, bterms, v);
+  wlength = TetGenFastExpansionSumZeroelim(vlength, v, 4, cterms, w);
 
   return w[wlength - 1];
 }
 
-PetscReal orient2dslow(PetscReal *pa, PetscReal *pb, PetscReal *pc)
+PetscReal TetGenOrient2DSlow(PetscReal *pa, PetscReal *pb, PetscReal *pc)
 {
   INEXACT PetscReal acx, acy, bcx, bcy;
   PetscReal acxtail, acytail;
@@ -1511,12 +1511,12 @@ PetscReal orient2dslow(PetscReal *pa, PetscReal *pb, PetscReal *pc)
                   bxay[3], bxay[2], bxay[1], bxay[0]);
   bxay[7] = bxay7;
 
-  deterlen = fast_expansion_sum_zeroelim(8, axby, 8, bxay, deter);
+  deterlen = TetGenFastExpansionSumZeroelim(8, axby, 8, bxay, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal orient2dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal detsum)
+PetscReal TetGenOrient2DAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal detsum)
 {
   INEXACT PetscReal acx, acy, bcx, bcy;
   PetscReal acxtail, acytail, bcxtail, bcytail;
@@ -1552,7 +1552,7 @@ PetscReal orient2dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal d
                B3, B[2], B[1], B[0]);
   B[3] = B3;
 
-  det = estimate(4, B);
+  det = TetGenEstimate(4, B);
   errbound = ccwerrboundB * detsum;
   if ((det >= errbound) || (-det >= errbound)) {
     return det;
@@ -1579,24 +1579,24 @@ PetscReal orient2dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal d
   Two_Product(acytail, bcx, t1, t0);
   Two_Two_Diff(s1, s0, t1, t0, u3, u[2], u[1], u[0]);
   u[3] = u3;
-  C1length = fast_expansion_sum_zeroelim(4, B, 4, u, C1);
+  C1length = TetGenFastExpansionSumZeroelim(4, B, 4, u, C1);
 
   Two_Product(acx, bcytail, s1, s0);
   Two_Product(acy, bcxtail, t1, t0);
   Two_Two_Diff(s1, s0, t1, t0, u3, u[2], u[1], u[0]);
   u[3] = u3;
-  C2length = fast_expansion_sum_zeroelim(C1length, C1, 4, u, C2);
+  C2length = TetGenFastExpansionSumZeroelim(C1length, C1, 4, u, C2);
 
   Two_Product(acxtail, bcytail, s1, s0);
   Two_Product(acytail, bcxtail, t1, t0);
   Two_Two_Diff(s1, s0, t1, t0, u3, u[2], u[1], u[0]);
   u[3] = u3;
-  Dlength = fast_expansion_sum_zeroelim(C2length, C2, 4, u, D);
+  Dlength = TetGenFastExpansionSumZeroelim(C2length, C2, 4, u, D);
 
   return(D[Dlength - 1]);
 }
 
-PetscReal orient2d(PetscReal *pa, PetscReal *pb, PetscReal *pc)
+PetscReal TetGenOrient2D(PetscReal *pa, PetscReal *pb, PetscReal *pc)
 {
   PetscReal detleft, detright, det;
   PetscReal detsum, errbound;
@@ -1626,15 +1626,15 @@ PetscReal orient2d(PetscReal *pa, PetscReal *pb, PetscReal *pc)
     return det;
   }
 
-  return orient2dadapt(pa, pb, pc, detsum);
+  return TetGenOrient2DAdapt(pa, pb, pc, detsum);
 }
 
 /*****************************************************************************/
 /*                                                                           */
-/*  orient3dfast()   Approximate 3D orientation test.  Nonrobust.            */
-/*  orient3dexact()   Exact 3D orientation test.  Robust.                    */
-/*  orient3dslow()   Another exact 3D orientation test.  Robust.             */
-/*  orient3d()   Adaptive exact 3D orientation test.  Robust.                */
+/*  TetGenOrient3DFast()   Approximate 3D orientation test.  Nonrobust.      */
+/*  TetGenOrient3DExact()   Exact 3D orientation test.  Robust.              */
+/*  TetGenOrient3DSlow()   Another exact 3D orientation test.  Robust.       */
+/*  TetGenOrient3D()   Adaptive exact 3D orientation test.  Robust.          */
 /*                                                                           */
 /*               Return a positive value if the point pd lies below the      */
 /*               plane passing through pa, pb, and pc; "below" is defined so */
@@ -1658,7 +1658,7 @@ PetscReal orient2d(PetscReal *pa, PetscReal *pb, PetscReal *pc)
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal orient3dfast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenOrient3DFast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   PetscReal adx, bdx, cdx;
   PetscReal ady, bdy, cdy;
@@ -1679,7 +1679,7 @@ PetscReal orient3dfast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
        + cdx * (ady * bdz - adz * bdy);
 }
 
-PetscReal orient3dexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenOrient3DExact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   INEXACT PetscReal axby1, bxcy1, cxdy1, dxay1, axcy1, bxdy1;
   INEXACT PetscReal bxay1, cxby1, dxcy1, axdy1, cxay1, dxby1;
@@ -1731,32 +1731,32 @@ PetscReal orient3dexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Product(pd[0], pb[1], dxby1, dxby0);
   Two_Two_Diff(bxdy1, bxdy0, dxby1, dxby0, bd[3], bd[2], bd[1], bd[0]);
 
-  templen = fast_expansion_sum_zeroelim(4, cd, 4, da, temp8);
-  cdalen = fast_expansion_sum_zeroelim(templen, temp8, 4, ac, cda);
-  templen = fast_expansion_sum_zeroelim(4, da, 4, ab, temp8);
-  dablen = fast_expansion_sum_zeroelim(templen, temp8, 4, bd, dab);
+  templen = TetGenFastExpansionSumZeroelim(4, cd, 4, da, temp8);
+  cdalen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, ac, cda);
+  templen = TetGenFastExpansionSumZeroelim(4, da, 4, ab, temp8);
+  dablen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, bd, dab);
   for (i = 0; i < 4; i++) {
     bd[i] = -bd[i];
     ac[i] = -ac[i];
   }
-  templen = fast_expansion_sum_zeroelim(4, ab, 4, bc, temp8);
-  abclen = fast_expansion_sum_zeroelim(templen, temp8, 4, ac, abc);
-  templen = fast_expansion_sum_zeroelim(4, bc, 4, cd, temp8);
-  bcdlen = fast_expansion_sum_zeroelim(templen, temp8, 4, bd, bcd);
+  templen = TetGenFastExpansionSumZeroelim(4, ab, 4, bc, temp8);
+  abclen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, ac, abc);
+  templen = TetGenFastExpansionSumZeroelim(4, bc, 4, cd, temp8);
+  bcdlen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, bd, bcd);
 
-  alen = scale_expansion_zeroelim(bcdlen, bcd, pa[2], adet);
-  blen = scale_expansion_zeroelim(cdalen, cda, -pb[2], bdet);
-  clen = scale_expansion_zeroelim(dablen, dab, pc[2], cdet);
-  dlen = scale_expansion_zeroelim(abclen, abc, -pd[2], ddet);
+  alen = TetGenScaleExpansionZeroelim(bcdlen, bcd, pa[2], adet);
+  blen = TetGenScaleExpansionZeroelim(cdalen, cda, -pb[2], bdet);
+  clen = TetGenScaleExpansionZeroelim(dablen, dab, pc[2], cdet);
+  dlen = TetGenScaleExpansionZeroelim(abclen, abc, -pd[2], ddet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  cdlen = fast_expansion_sum_zeroelim(clen, cdet, dlen, ddet, cddet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, cdlen, cddet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  cdlen = TetGenFastExpansionSumZeroelim(clen, cdet, dlen, ddet, cddet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, cdlen, cddet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal orient3dslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenOrient3DSlow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   INEXACT PetscReal adx, ady, adz, bdx, bdy, bdz, cdx, cdy, cdz;
   PetscReal adxtail, adytail, adztail;
@@ -1824,31 +1824,31 @@ PetscReal orient3dslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   axcy[3], axcy[2], axcy[1], axcy[0]);
   axcy[7] = axcy7;
 
-  temp16len = fast_expansion_sum_zeroelim(8, bxcy, 8, cxby, temp16);
-  temp32len = scale_expansion_zeroelim(temp16len, temp16, adz, temp32);
-  temp32tlen = scale_expansion_zeroelim(temp16len, temp16, adztail, temp32t);
-  alen = fast_expansion_sum_zeroelim(temp32len, temp32, temp32tlen, temp32t,
+  temp16len = TetGenFastExpansionSumZeroelim(8, bxcy, 8, cxby, temp16);
+  temp32len = TetGenScaleExpansionZeroelim(temp16len, temp16, adz, temp32);
+  temp32tlen = TetGenScaleExpansionZeroelim(temp16len, temp16, adztail, temp32t);
+  alen = TetGenFastExpansionSumZeroelim(temp32len, temp32, temp32tlen, temp32t,
                                      adet);
 
-  temp16len = fast_expansion_sum_zeroelim(8, cxay, 8, axcy, temp16);
-  temp32len = scale_expansion_zeroelim(temp16len, temp16, bdz, temp32);
-  temp32tlen = scale_expansion_zeroelim(temp16len, temp16, bdztail, temp32t);
-  blen = fast_expansion_sum_zeroelim(temp32len, temp32, temp32tlen, temp32t,
+  temp16len = TetGenFastExpansionSumZeroelim(8, cxay, 8, axcy, temp16);
+  temp32len = TetGenScaleExpansionZeroelim(temp16len, temp16, bdz, temp32);
+  temp32tlen = TetGenScaleExpansionZeroelim(temp16len, temp16, bdztail, temp32t);
+  blen = TetGenFastExpansionSumZeroelim(temp32len, temp32, temp32tlen, temp32t,
                                      bdet);
 
-  temp16len = fast_expansion_sum_zeroelim(8, axby, 8, bxay, temp16);
-  temp32len = scale_expansion_zeroelim(temp16len, temp16, cdz, temp32);
-  temp32tlen = scale_expansion_zeroelim(temp16len, temp16, cdztail, temp32t);
-  clen = fast_expansion_sum_zeroelim(temp32len, temp32, temp32tlen, temp32t,
+  temp16len = TetGenFastExpansionSumZeroelim(8, axby, 8, bxay, temp16);
+  temp32len = TetGenScaleExpansionZeroelim(temp16len, temp16, cdz, temp32);
+  temp32tlen = TetGenScaleExpansionZeroelim(temp16len, temp16, cdztail, temp32t);
+  clen = TetGenFastExpansionSumZeroelim(temp32len, temp32, temp32tlen, temp32t,
                                      cdet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, clen, cdet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, clen, cdet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal permanent)
+PetscReal TetGenOrient3DAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal permanent)
 {
   INEXACT PetscReal adx, bdx, cdx, ady, bdy, cdy, adz, bdz, cdz;
   PetscReal det, errbound;
@@ -1926,24 +1926,24 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Product(cdx, bdy, cdxbdy1, cdxbdy0);
   Two_Two_Diff(bdxcdy1, bdxcdy0, cdxbdy1, cdxbdy0, bc3, bc[2], bc[1], bc[0]);
   bc[3] = bc3;
-  alen = scale_expansion_zeroelim(4, bc, adz, adet);
+  alen = TetGenScaleExpansionZeroelim(4, bc, adz, adet);
 
   Two_Product(cdx, ady, cdxady1, cdxady0);
   Two_Product(adx, cdy, adxcdy1, adxcdy0);
   Two_Two_Diff(cdxady1, cdxady0, adxcdy1, adxcdy0, ca3, ca[2], ca[1], ca[0]);
   ca[3] = ca3;
-  blen = scale_expansion_zeroelim(4, ca, bdz, bdet);
+  blen = TetGenScaleExpansionZeroelim(4, ca, bdz, bdet);
 
   Two_Product(adx, bdy, adxbdy1, adxbdy0);
   Two_Product(bdx, ady, bdxady1, bdxady0);
   Two_Two_Diff(adxbdy1, adxbdy0, bdxady1, bdxady0, ab3, ab[2], ab[1], ab[0]);
   ab[3] = ab3;
-  clen = scale_expansion_zeroelim(4, ab, cdz, cdet);
+  clen = TetGenScaleExpansionZeroelim(4, ab, cdz, cdet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  finlength = fast_expansion_sum_zeroelim(ablen, abdet, clen, cdet, fin1);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  finlength = TetGenFastExpansionSumZeroelim(ablen, abdet, clen, cdet, fin1);
 
-  det = estimate(finlength, fin1);
+  det = TetGenEstimate(finlength, fin1);
   errbound = o3derrboundB * permanent;
   if ((det >= errbound) || (-det >= errbound)) {
     return det;
@@ -2100,39 +2100,39 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
     }
   }
 
-  bctlen = fast_expansion_sum_zeroelim(bt_clen, bt_c, ct_blen, ct_b, bct);
-  wlength = scale_expansion_zeroelim(bctlen, bct, adz, w);
-  finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+  bctlen = TetGenFastExpansionSumZeroelim(bt_clen, bt_c, ct_blen, ct_b, bct);
+  wlength = TetGenScaleExpansionZeroelim(bctlen, bct, adz, w);
+  finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                           finother);
   finswap = finnow; finnow = finother; finother = finswap;
 
-  catlen = fast_expansion_sum_zeroelim(ct_alen, ct_a, at_clen, at_c, cat);
-  wlength = scale_expansion_zeroelim(catlen, cat, bdz, w);
-  finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+  catlen = TetGenFastExpansionSumZeroelim(ct_alen, ct_a, at_clen, at_c, cat);
+  wlength = TetGenScaleExpansionZeroelim(catlen, cat, bdz, w);
+  finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                           finother);
   finswap = finnow; finnow = finother; finother = finswap;
 
-  abtlen = fast_expansion_sum_zeroelim(at_blen, at_b, bt_alen, bt_a, abt);
-  wlength = scale_expansion_zeroelim(abtlen, abt, cdz, w);
-  finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+  abtlen = TetGenFastExpansionSumZeroelim(at_blen, at_b, bt_alen, bt_a, abt);
+  wlength = TetGenScaleExpansionZeroelim(abtlen, abt, cdz, w);
+  finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                           finother);
   finswap = finnow; finnow = finother; finother = finswap;
 
   if (adztail != 0.0) {
-    vlength = scale_expansion_zeroelim(4, bc, adztail, v);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, vlength, v,
+    vlength = TetGenScaleExpansionZeroelim(4, bc, adztail, v);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, vlength, v,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (bdztail != 0.0) {
-    vlength = scale_expansion_zeroelim(4, ca, bdztail, v);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, vlength, v,
+    vlength = TetGenScaleExpansionZeroelim(4, ca, bdztail, v);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, vlength, v,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (cdztail != 0.0) {
-    vlength = scale_expansion_zeroelim(4, ab, cdztail, v);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, vlength, v,
+    vlength = TetGenScaleExpansionZeroelim(4, ab, cdztail, v);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, vlength, v,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
@@ -2142,13 +2142,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(adxtail, bdytail, adxt_bdyt1, adxt_bdyt0);
       Two_One_Product(adxt_bdyt1, adxt_bdyt0, cdz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (cdztail != 0.0) {
         Two_One_Product(adxt_bdyt1, adxt_bdyt0, cdztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2158,13 +2158,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(negate, cdytail, adxt_cdyt1, adxt_cdyt0);
       Two_One_Product(adxt_cdyt1, adxt_cdyt0, bdz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (bdztail != 0.0) {
         Two_One_Product(adxt_cdyt1, adxt_cdyt0, bdztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2175,13 +2175,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(bdxtail, cdytail, bdxt_cdyt1, bdxt_cdyt0);
       Two_One_Product(bdxt_cdyt1, bdxt_cdyt0, adz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (adztail != 0.0) {
         Two_One_Product(bdxt_cdyt1, bdxt_cdyt0, adztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2191,13 +2191,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(negate, adytail, bdxt_adyt1, bdxt_adyt0);
       Two_One_Product(bdxt_adyt1, bdxt_adyt0, cdz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (cdztail != 0.0) {
         Two_One_Product(bdxt_adyt1, bdxt_adyt0, cdztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2208,13 +2208,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(cdxtail, adytail, cdxt_adyt1, cdxt_adyt0);
       Two_One_Product(cdxt_adyt1, cdxt_adyt0, bdz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (bdztail != 0.0) {
         Two_One_Product(cdxt_adyt1, cdxt_adyt0, bdztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2224,13 +2224,13 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(negate, bdytail, cdxt_bdyt1, cdxt_bdyt0);
       Two_One_Product(cdxt_bdyt1, cdxt_bdyt0, adz, u3, u[2], u[1], u[0]);
       u[3] = u3;
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                               finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (adztail != 0.0) {
         Two_One_Product(cdxt_bdyt1, cdxt_bdyt0, adztail, u3, u[2], u[1], u[0]);
         u[3] = u3;
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, 4, u,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, 4, u,
                                                 finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
@@ -2238,20 +2238,20 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   }
 
   if (adztail != 0.0) {
-    wlength = scale_expansion_zeroelim(bctlen, bct, adztail, w);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+    wlength = TetGenScaleExpansionZeroelim(bctlen, bct, adztail, w);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (bdztail != 0.0) {
-    wlength = scale_expansion_zeroelim(catlen, cat, bdztail, w);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+    wlength = TetGenScaleExpansionZeroelim(catlen, cat, bdztail, w);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (cdztail != 0.0) {
-    wlength = scale_expansion_zeroelim(abtlen, abt, cdztail, w);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, wlength, w,
+    wlength = TetGenScaleExpansionZeroelim(abtlen, abt, cdztail, w);
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, wlength, w,
                                             finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
@@ -2259,7 +2259,7 @@ PetscReal orient3dadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   return finnow[finlength - 1];
 }
 
-PetscReal orient3d(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenOrient3D(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   PetscReal adx, bdx, cdx, ady, bdy, cdy, adz, bdz, cdz;
   PetscReal bdxcdy, cdxbdy, cdxady, adxcdy, adxbdy, bdxady;
@@ -2297,15 +2297,15 @@ PetscReal orient3d(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
     return det;
   }
 
-  return orient3dadapt(pa, pb, pc, pd, permanent);
+  return TetGenOrient3DAdapt(pa, pb, pc, pd, permanent);
 }
 
 /*****************************************************************************/
 /*                                                                           */
-/*  incirclefast()   Approximate 2D incircle test.  Nonrobust.               */
-/*  incircleexact()   Exact 2D incircle test.  Robust.                       */
-/*  incircleslow()   Another exact 2D incircle test.  Robust.                */
-/*  incircle()   Adaptive exact 2D incircle test.  Robust.                   */
+/*  TetGenIncircleFast()   Approximate 2D incircle test.  Nonrobust.         */
+/*  TetGenIncircleExact()   Exact 2D incircle test.  Robust.                 */
+/*  TetGenIncircleSlow()   Another exact 2D incircle test.  Robust.          */
+/*  TetGenIncircle()   Adaptive exact 2D incircle test.  Robust.             */
 /*                                                                           */
 /*               Return a positive value if the point pd lies inside the     */
 /*               circle passing through pa, pb, and pc; a negative value if  */
@@ -2326,7 +2326,7 @@ PetscReal orient3d(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal incirclefast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenIncircleFast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   PetscReal adx, ady, bdx, bdy, cdx, cdy;
   PetscReal abdet, bcdet, cadet;
@@ -2349,7 +2349,7 @@ PetscReal incirclefast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
   return alift * bcdet + blift * cadet + clift * abdet;
 }
 
-PetscReal incircleexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenIncircleExact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   INEXACT PetscReal axby1, bxcy1, cxdy1, dxay1, axcy1, bxdy1;
   INEXACT PetscReal bxay1, cxby1, dxcy1, axdy1, cxay1, dxby1;
@@ -2403,51 +2403,51 @@ PetscReal incircleexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Product(pd[0], pb[1], dxby1, dxby0);
   Two_Two_Diff(bxdy1, bxdy0, dxby1, dxby0, bd[3], bd[2], bd[1], bd[0]);
 
-  templen = fast_expansion_sum_zeroelim(4, cd, 4, da, temp8);
-  cdalen = fast_expansion_sum_zeroelim(templen, temp8, 4, ac, cda);
-  templen = fast_expansion_sum_zeroelim(4, da, 4, ab, temp8);
-  dablen = fast_expansion_sum_zeroelim(templen, temp8, 4, bd, dab);
+  templen = TetGenFastExpansionSumZeroelim(4, cd, 4, da, temp8);
+  cdalen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, ac, cda);
+  templen = TetGenFastExpansionSumZeroelim(4, da, 4, ab, temp8);
+  dablen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, bd, dab);
   for (i = 0; i < 4; i++) {
     bd[i] = -bd[i];
     ac[i] = -ac[i];
   }
-  templen = fast_expansion_sum_zeroelim(4, ab, 4, bc, temp8);
-  abclen = fast_expansion_sum_zeroelim(templen, temp8, 4, ac, abc);
-  templen = fast_expansion_sum_zeroelim(4, bc, 4, cd, temp8);
-  bcdlen = fast_expansion_sum_zeroelim(templen, temp8, 4, bd, bcd);
+  templen = TetGenFastExpansionSumZeroelim(4, ab, 4, bc, temp8);
+  abclen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, ac, abc);
+  templen = TetGenFastExpansionSumZeroelim(4, bc, 4, cd, temp8);
+  bcdlen = TetGenFastExpansionSumZeroelim(templen, temp8, 4, bd, bcd);
 
-  xlen = scale_expansion_zeroelim(bcdlen, bcd, pa[0], det24x);
-  xlen = scale_expansion_zeroelim(xlen, det24x, pa[0], det48x);
-  ylen = scale_expansion_zeroelim(bcdlen, bcd, pa[1], det24y);
-  ylen = scale_expansion_zeroelim(ylen, det24y, pa[1], det48y);
-  alen = fast_expansion_sum_zeroelim(xlen, det48x, ylen, det48y, adet);
+  xlen = TetGenScaleExpansionZeroelim(bcdlen, bcd, pa[0], det24x);
+  xlen = TetGenScaleExpansionZeroelim(xlen, det24x, pa[0], det48x);
+  ylen = TetGenScaleExpansionZeroelim(bcdlen, bcd, pa[1], det24y);
+  ylen = TetGenScaleExpansionZeroelim(ylen, det24y, pa[1], det48y);
+  alen = TetGenFastExpansionSumZeroelim(xlen, det48x, ylen, det48y, adet);
 
-  xlen = scale_expansion_zeroelim(cdalen, cda, pb[0], det24x);
-  xlen = scale_expansion_zeroelim(xlen, det24x, -pb[0], det48x);
-  ylen = scale_expansion_zeroelim(cdalen, cda, pb[1], det24y);
-  ylen = scale_expansion_zeroelim(ylen, det24y, -pb[1], det48y);
-  blen = fast_expansion_sum_zeroelim(xlen, det48x, ylen, det48y, bdet);
+  xlen = TetGenScaleExpansionZeroelim(cdalen, cda, pb[0], det24x);
+  xlen = TetGenScaleExpansionZeroelim(xlen, det24x, -pb[0], det48x);
+  ylen = TetGenScaleExpansionZeroelim(cdalen, cda, pb[1], det24y);
+  ylen = TetGenScaleExpansionZeroelim(ylen, det24y, -pb[1], det48y);
+  blen = TetGenFastExpansionSumZeroelim(xlen, det48x, ylen, det48y, bdet);
 
-  xlen = scale_expansion_zeroelim(dablen, dab, pc[0], det24x);
-  xlen = scale_expansion_zeroelim(xlen, det24x, pc[0], det48x);
-  ylen = scale_expansion_zeroelim(dablen, dab, pc[1], det24y);
-  ylen = scale_expansion_zeroelim(ylen, det24y, pc[1], det48y);
-  clen = fast_expansion_sum_zeroelim(xlen, det48x, ylen, det48y, cdet);
+  xlen = TetGenScaleExpansionZeroelim(dablen, dab, pc[0], det24x);
+  xlen = TetGenScaleExpansionZeroelim(xlen, det24x, pc[0], det48x);
+  ylen = TetGenScaleExpansionZeroelim(dablen, dab, pc[1], det24y);
+  ylen = TetGenScaleExpansionZeroelim(ylen, det24y, pc[1], det48y);
+  clen = TetGenFastExpansionSumZeroelim(xlen, det48x, ylen, det48y, cdet);
 
-  xlen = scale_expansion_zeroelim(abclen, abc, pd[0], det24x);
-  xlen = scale_expansion_zeroelim(xlen, det24x, -pd[0], det48x);
-  ylen = scale_expansion_zeroelim(abclen, abc, pd[1], det24y);
-  ylen = scale_expansion_zeroelim(ylen, det24y, -pd[1], det48y);
-  dlen = fast_expansion_sum_zeroelim(xlen, det48x, ylen, det48y, ddet);
+  xlen = TetGenScaleExpansionZeroelim(abclen, abc, pd[0], det24x);
+  xlen = TetGenScaleExpansionZeroelim(xlen, det24x, -pd[0], det48x);
+  ylen = TetGenScaleExpansionZeroelim(abclen, abc, pd[1], det24y);
+  ylen = TetGenScaleExpansionZeroelim(ylen, det24y, -pd[1], det48y);
+  dlen = TetGenFastExpansionSumZeroelim(xlen, det48x, ylen, det48y, ddet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  cdlen = fast_expansion_sum_zeroelim(clen, cdet, dlen, ddet, cddet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, cdlen, cddet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  cdlen = TetGenFastExpansionSumZeroelim(clen, cdet, dlen, ddet, cddet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, cdlen, cddet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal incircleslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenIncircleSlow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   INEXACT PetscReal adx, bdx, cdx, ady, bdy, cdy;
   PetscReal adxtail, bdxtail, cdxtail;
@@ -2517,93 +2517,93 @@ PetscReal incircleslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
   axcy[7] = axcy7;
 
 
-  temp16len = fast_expansion_sum_zeroelim(8, bxcy, 8, cxby, temp16);
+  temp16len = TetGenFastExpansionSumZeroelim(8, bxcy, 8, cxby, temp16);
 
-  xlen = scale_expansion_zeroelim(temp16len, temp16, adx, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, adx, detxx);
-  xtlen = scale_expansion_zeroelim(temp16len, temp16, adxtail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, adx, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp16len, temp16, adx, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, adx, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp16len, temp16, adxtail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, adx, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, adxtail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, adxtail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
 
-  ylen = scale_expansion_zeroelim(temp16len, temp16, ady, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, ady, detyy);
-  ytlen = scale_expansion_zeroelim(temp16len, temp16, adytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, ady, detyyt);
+  ylen = TetGenScaleExpansionZeroelim(temp16len, temp16, ady, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, ady, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp16len, temp16, adytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, ady, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, adytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, adytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
 
-  alen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, adet);
+  alen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, adet);
 
 
-  temp16len = fast_expansion_sum_zeroelim(8, cxay, 8, axcy, temp16);
+  temp16len = TetGenFastExpansionSumZeroelim(8, cxay, 8, axcy, temp16);
 
-  xlen = scale_expansion_zeroelim(temp16len, temp16, bdx, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, bdx, detxx);
-  xtlen = scale_expansion_zeroelim(temp16len, temp16, bdxtail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, bdx, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp16len, temp16, bdx, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, bdx, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp16len, temp16, bdxtail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, bdx, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, bdxtail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, bdxtail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
 
-  ylen = scale_expansion_zeroelim(temp16len, temp16, bdy, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, bdy, detyy);
-  ytlen = scale_expansion_zeroelim(temp16len, temp16, bdytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, bdy, detyyt);
+  ylen = TetGenScaleExpansionZeroelim(temp16len, temp16, bdy, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, bdy, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp16len, temp16, bdytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, bdy, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, bdytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, bdytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
 
-  blen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, bdet);
+  blen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, bdet);
 
 
-  temp16len = fast_expansion_sum_zeroelim(8, axby, 8, bxay, temp16);
+  temp16len = TetGenFastExpansionSumZeroelim(8, axby, 8, bxay, temp16);
 
-  xlen = scale_expansion_zeroelim(temp16len, temp16, cdx, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, cdx, detxx);
-  xtlen = scale_expansion_zeroelim(temp16len, temp16, cdxtail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, cdx, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp16len, temp16, cdx, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, cdx, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp16len, temp16, cdxtail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, cdx, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, cdxtail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, cdxtail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
 
-  ylen = scale_expansion_zeroelim(temp16len, temp16, cdy, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, cdy, detyy);
-  ytlen = scale_expansion_zeroelim(temp16len, temp16, cdytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, cdy, detyyt);
+  ylen = TetGenScaleExpansionZeroelim(temp16len, temp16, cdy, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, cdy, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp16len, temp16, cdytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, cdy, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, cdytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, cdytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
 
-  clen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, cdet);
+  clen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, cdet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, clen, cdet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, clen, cdet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal permanent)
+PetscReal TetGenIncircleAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal permanent)
 {
   INEXACT PetscReal adx, bdx, cdx, ady, bdy, cdy;
   PetscReal det, errbound;
@@ -2677,36 +2677,36 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Product(cdx, bdy, cdxbdy1, cdxbdy0);
   Two_Two_Diff(bdxcdy1, bdxcdy0, cdxbdy1, cdxbdy0, bc3, bc[2], bc[1], bc[0]);
   bc[3] = bc3;
-  axbclen = scale_expansion_zeroelim(4, bc, adx, axbc);
-  axxbclen = scale_expansion_zeroelim(axbclen, axbc, adx, axxbc);
-  aybclen = scale_expansion_zeroelim(4, bc, ady, aybc);
-  ayybclen = scale_expansion_zeroelim(aybclen, aybc, ady, ayybc);
-  alen = fast_expansion_sum_zeroelim(axxbclen, axxbc, ayybclen, ayybc, adet);
+  axbclen = TetGenScaleExpansionZeroelim(4, bc, adx, axbc);
+  axxbclen = TetGenScaleExpansionZeroelim(axbclen, axbc, adx, axxbc);
+  aybclen = TetGenScaleExpansionZeroelim(4, bc, ady, aybc);
+  ayybclen = TetGenScaleExpansionZeroelim(aybclen, aybc, ady, ayybc);
+  alen = TetGenFastExpansionSumZeroelim(axxbclen, axxbc, ayybclen, ayybc, adet);
 
   Two_Product(cdx, ady, cdxady1, cdxady0);
   Two_Product(adx, cdy, adxcdy1, adxcdy0);
   Two_Two_Diff(cdxady1, cdxady0, adxcdy1, adxcdy0, ca3, ca[2], ca[1], ca[0]);
   ca[3] = ca3;
-  bxcalen = scale_expansion_zeroelim(4, ca, bdx, bxca);
-  bxxcalen = scale_expansion_zeroelim(bxcalen, bxca, bdx, bxxca);
-  bycalen = scale_expansion_zeroelim(4, ca, bdy, byca);
-  byycalen = scale_expansion_zeroelim(bycalen, byca, bdy, byyca);
-  blen = fast_expansion_sum_zeroelim(bxxcalen, bxxca, byycalen, byyca, bdet);
+  bxcalen = TetGenScaleExpansionZeroelim(4, ca, bdx, bxca);
+  bxxcalen = TetGenScaleExpansionZeroelim(bxcalen, bxca, bdx, bxxca);
+  bycalen = TetGenScaleExpansionZeroelim(4, ca, bdy, byca);
+  byycalen = TetGenScaleExpansionZeroelim(bycalen, byca, bdy, byyca);
+  blen = TetGenFastExpansionSumZeroelim(bxxcalen, bxxca, byycalen, byyca, bdet);
 
   Two_Product(adx, bdy, adxbdy1, adxbdy0);
   Two_Product(bdx, ady, bdxady1, bdxady0);
   Two_Two_Diff(adxbdy1, adxbdy0, bdxady1, bdxady0, ab3, ab[2], ab[1], ab[0]);
   ab[3] = ab3;
-  cxablen = scale_expansion_zeroelim(4, ab, cdx, cxab);
-  cxxablen = scale_expansion_zeroelim(cxablen, cxab, cdx, cxxab);
-  cyablen = scale_expansion_zeroelim(4, ab, cdy, cyab);
-  cyyablen = scale_expansion_zeroelim(cyablen, cyab, cdy, cyyab);
-  clen = fast_expansion_sum_zeroelim(cxxablen, cxxab, cyyablen, cyyab, cdet);
+  cxablen = TetGenScaleExpansionZeroelim(4, ab, cdx, cxab);
+  cxxablen = TetGenScaleExpansionZeroelim(cxablen, cxab, cdx, cxxab);
+  cyablen = TetGenScaleExpansionZeroelim(4, ab, cdy, cyab);
+  cyyablen = TetGenScaleExpansionZeroelim(cyablen, cyab, cdy, cyyab);
+  clen = TetGenFastExpansionSumZeroelim(cxxablen, cxxab, cyyablen, cyyab, cdet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  finlength = fast_expansion_sum_zeroelim(ablen, abdet, clen, cdet, fin1);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  finlength = TetGenFastExpansionSumZeroelim(ablen, abdet, clen, cdet, fin1);
 
-  det = estimate(finlength, fin1);
+  det = TetGenEstimate(finlength, fin1);
   errbound = iccerrboundB * permanent;
   if ((det >= errbound) || (-det >= errbound)) {
     return det;
@@ -2763,116 +2763,116 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   }
 
   if (adxtail != 0.0) {
-    axtbclen = scale_expansion_zeroelim(4, bc, adxtail, axtbc);
-    temp16alen = scale_expansion_zeroelim(axtbclen, axtbc, 2.0 * adx,
+    axtbclen = TetGenScaleExpansionZeroelim(4, bc, adxtail, axtbc);
+    temp16alen = TetGenScaleExpansionZeroelim(axtbclen, axtbc, 2.0 * adx,
                                           temp16a);
 
-    axtcclen = scale_expansion_zeroelim(4, cc, adxtail, axtcc);
-    temp16blen = scale_expansion_zeroelim(axtcclen, axtcc, bdy, temp16b);
+    axtcclen = TetGenScaleExpansionZeroelim(4, cc, adxtail, axtcc);
+    temp16blen = TetGenScaleExpansionZeroelim(axtcclen, axtcc, bdy, temp16b);
 
-    axtbblen = scale_expansion_zeroelim(4, bb, adxtail, axtbb);
-    temp16clen = scale_expansion_zeroelim(axtbblen, axtbb, -cdy, temp16c);
+    axtbblen = TetGenScaleExpansionZeroelim(4, bb, adxtail, axtbb);
+    temp16clen = TetGenScaleExpansionZeroelim(axtbblen, axtbb, -cdy, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (adytail != 0.0) {
-    aytbclen = scale_expansion_zeroelim(4, bc, adytail, aytbc);
-    temp16alen = scale_expansion_zeroelim(aytbclen, aytbc, 2.0 * ady,
+    aytbclen = TetGenScaleExpansionZeroelim(4, bc, adytail, aytbc);
+    temp16alen = TetGenScaleExpansionZeroelim(aytbclen, aytbc, 2.0 * ady,
                                           temp16a);
 
-    aytbblen = scale_expansion_zeroelim(4, bb, adytail, aytbb);
-    temp16blen = scale_expansion_zeroelim(aytbblen, aytbb, cdx, temp16b);
+    aytbblen = TetGenScaleExpansionZeroelim(4, bb, adytail, aytbb);
+    temp16blen = TetGenScaleExpansionZeroelim(aytbblen, aytbb, cdx, temp16b);
 
-    aytcclen = scale_expansion_zeroelim(4, cc, adytail, aytcc);
-    temp16clen = scale_expansion_zeroelim(aytcclen, aytcc, -bdx, temp16c);
+    aytcclen = TetGenScaleExpansionZeroelim(4, cc, adytail, aytcc);
+    temp16clen = TetGenScaleExpansionZeroelim(aytcclen, aytcc, -bdx, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (bdxtail != 0.0) {
-    bxtcalen = scale_expansion_zeroelim(4, ca, bdxtail, bxtca);
-    temp16alen = scale_expansion_zeroelim(bxtcalen, bxtca, 2.0 * bdx,
+    bxtcalen = TetGenScaleExpansionZeroelim(4, ca, bdxtail, bxtca);
+    temp16alen = TetGenScaleExpansionZeroelim(bxtcalen, bxtca, 2.0 * bdx,
                                           temp16a);
 
-    bxtaalen = scale_expansion_zeroelim(4, aa, bdxtail, bxtaa);
-    temp16blen = scale_expansion_zeroelim(bxtaalen, bxtaa, cdy, temp16b);
+    bxtaalen = TetGenScaleExpansionZeroelim(4, aa, bdxtail, bxtaa);
+    temp16blen = TetGenScaleExpansionZeroelim(bxtaalen, bxtaa, cdy, temp16b);
 
-    bxtcclen = scale_expansion_zeroelim(4, cc, bdxtail, bxtcc);
-    temp16clen = scale_expansion_zeroelim(bxtcclen, bxtcc, -ady, temp16c);
+    bxtcclen = TetGenScaleExpansionZeroelim(4, cc, bdxtail, bxtcc);
+    temp16clen = TetGenScaleExpansionZeroelim(bxtcclen, bxtcc, -ady, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (bdytail != 0.0) {
-    bytcalen = scale_expansion_zeroelim(4, ca, bdytail, bytca);
-    temp16alen = scale_expansion_zeroelim(bytcalen, bytca, 2.0 * bdy,
+    bytcalen = TetGenScaleExpansionZeroelim(4, ca, bdytail, bytca);
+    temp16alen = TetGenScaleExpansionZeroelim(bytcalen, bytca, 2.0 * bdy,
                                           temp16a);
 
-    bytcclen = scale_expansion_zeroelim(4, cc, bdytail, bytcc);
-    temp16blen = scale_expansion_zeroelim(bytcclen, bytcc, adx, temp16b);
+    bytcclen = TetGenScaleExpansionZeroelim(4, cc, bdytail, bytcc);
+    temp16blen = TetGenScaleExpansionZeroelim(bytcclen, bytcc, adx, temp16b);
 
-    bytaalen = scale_expansion_zeroelim(4, aa, bdytail, bytaa);
-    temp16clen = scale_expansion_zeroelim(bytaalen, bytaa, -cdx, temp16c);
+    bytaalen = TetGenScaleExpansionZeroelim(4, aa, bdytail, bytaa);
+    temp16clen = TetGenScaleExpansionZeroelim(bytaalen, bytaa, -cdx, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (cdxtail != 0.0) {
-    cxtablen = scale_expansion_zeroelim(4, ab, cdxtail, cxtab);
-    temp16alen = scale_expansion_zeroelim(cxtablen, cxtab, 2.0 * cdx,
+    cxtablen = TetGenScaleExpansionZeroelim(4, ab, cdxtail, cxtab);
+    temp16alen = TetGenScaleExpansionZeroelim(cxtablen, cxtab, 2.0 * cdx,
                                           temp16a);
 
-    cxtbblen = scale_expansion_zeroelim(4, bb, cdxtail, cxtbb);
-    temp16blen = scale_expansion_zeroelim(cxtbblen, cxtbb, ady, temp16b);
+    cxtbblen = TetGenScaleExpansionZeroelim(4, bb, cdxtail, cxtbb);
+    temp16blen = TetGenScaleExpansionZeroelim(cxtbblen, cxtbb, ady, temp16b);
 
-    cxtaalen = scale_expansion_zeroelim(4, aa, cdxtail, cxtaa);
-    temp16clen = scale_expansion_zeroelim(cxtaalen, cxtaa, -bdy, temp16c);
+    cxtaalen = TetGenScaleExpansionZeroelim(4, aa, cdxtail, cxtaa);
+    temp16clen = TetGenScaleExpansionZeroelim(cxtaalen, cxtaa, -bdy, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
   if (cdytail != 0.0) {
-    cytablen = scale_expansion_zeroelim(4, ab, cdytail, cytab);
-    temp16alen = scale_expansion_zeroelim(cytablen, cytab, 2.0 * cdy,
+    cytablen = TetGenScaleExpansionZeroelim(4, ab, cdytail, cytab);
+    temp16alen = TetGenScaleExpansionZeroelim(cytablen, cytab, 2.0 * cdy,
                                           temp16a);
 
-    cytaalen = scale_expansion_zeroelim(4, aa, cdytail, cytaa);
-    temp16blen = scale_expansion_zeroelim(cytaalen, cytaa, bdx, temp16b);
+    cytaalen = TetGenScaleExpansionZeroelim(4, aa, cdytail, cytaa);
+    temp16blen = TetGenScaleExpansionZeroelim(cytaalen, cytaa, bdx, temp16b);
 
-    cytbblen = scale_expansion_zeroelim(4, bb, cdytail, cytbb);
-    temp16clen = scale_expansion_zeroelim(cytbblen, cytbb, -adx, temp16c);
+    cytbblen = TetGenScaleExpansionZeroelim(4, bb, cdytail, cytbb);
+    temp16clen = TetGenScaleExpansionZeroelim(cytbblen, cytbb, -adx, temp16c);
 
-    temp32alen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+    temp32alen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                             temp16blen, temp16b, temp32a);
-    temp48len = fast_expansion_sum_zeroelim(temp16clen, temp16c,
+    temp48len = TetGenFastExpansionSumZeroelim(temp16clen, temp16c,
                                             temp32alen, temp32a, temp48);
-    finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+    finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                             temp48, finother);
     finswap = finnow; finnow = finother; finother = finswap;
   }
@@ -2890,7 +2890,7 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(cdx, negate, tj1, tj0);
       Two_Two_Sum(ti1, ti0, tj1, tj0, v3, v[2], v[1], v[0]);
       v[3] = v3;
-      bctlen = fast_expansion_sum_zeroelim(4, u, 4, v, bct);
+      bctlen = TetGenFastExpansionSumZeroelim(4, u, 4, v, bct);
 
       Two_Product(bdxtail, cdytail, ti1, ti0);
       Two_Product(cdxtail, bdytail, tj1, tj0);
@@ -2905,71 +2905,71 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
     }
 
     if (adxtail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(axtbclen, axtbc, adxtail, temp16a);
-      axtbctlen = scale_expansion_zeroelim(bctlen, bct, adxtail, axtbct);
-      temp32alen = scale_expansion_zeroelim(axtbctlen, axtbct, 2.0 * adx,
+      temp16alen = TetGenScaleExpansionZeroelim(axtbclen, axtbc, adxtail, temp16a);
+      axtbctlen = TetGenScaleExpansionZeroelim(bctlen, bct, adxtail, axtbct);
+      temp32alen = TetGenScaleExpansionZeroelim(axtbctlen, axtbct, 2.0 * adx,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (bdytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, cc, adxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, bdytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, cc, adxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, bdytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
       if (cdytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, bb, -adxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, cdytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, bb, -adxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, cdytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
 
-      temp32alen = scale_expansion_zeroelim(axtbctlen, axtbct, adxtail,
+      temp32alen = TetGenScaleExpansionZeroelim(axtbctlen, axtbct, adxtail,
                                             temp32a);
-      axtbcttlen = scale_expansion_zeroelim(bcttlen, bctt, adxtail, axtbctt);
-      temp16alen = scale_expansion_zeroelim(axtbcttlen, axtbctt, 2.0 * adx,
+      axtbcttlen = TetGenScaleExpansionZeroelim(bcttlen, bctt, adxtail, axtbctt);
+      temp16alen = TetGenScaleExpansionZeroelim(axtbcttlen, axtbctt, 2.0 * adx,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(axtbcttlen, axtbctt, adxtail,
+      temp16blen = TetGenScaleExpansionZeroelim(axtbcttlen, axtbctt, adxtail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
     if (adytail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(aytbclen, aytbc, adytail, temp16a);
-      aytbctlen = scale_expansion_zeroelim(bctlen, bct, adytail, aytbct);
-      temp32alen = scale_expansion_zeroelim(aytbctlen, aytbct, 2.0 * ady,
+      temp16alen = TetGenScaleExpansionZeroelim(aytbclen, aytbc, adytail, temp16a);
+      aytbctlen = TetGenScaleExpansionZeroelim(bctlen, bct, adytail, aytbct);
+      temp32alen = TetGenScaleExpansionZeroelim(aytbctlen, aytbct, 2.0 * ady,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
 
 
-      temp32alen = scale_expansion_zeroelim(aytbctlen, aytbct, adytail,
+      temp32alen = TetGenScaleExpansionZeroelim(aytbctlen, aytbct, adytail,
                                             temp32a);
-      aytbcttlen = scale_expansion_zeroelim(bcttlen, bctt, adytail, aytbctt);
-      temp16alen = scale_expansion_zeroelim(aytbcttlen, aytbctt, 2.0 * ady,
+      aytbcttlen = TetGenScaleExpansionZeroelim(bcttlen, bctt, adytail, aytbctt);
+      temp16alen = TetGenScaleExpansionZeroelim(aytbcttlen, aytbctt, 2.0 * ady,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(aytbcttlen, aytbctt, adytail,
+      temp16blen = TetGenScaleExpansionZeroelim(aytbcttlen, aytbctt, adytail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
@@ -2987,7 +2987,7 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(adx, negate, tj1, tj0);
       Two_Two_Sum(ti1, ti0, tj1, tj0, v3, v[2], v[1], v[0]);
       v[3] = v3;
-      catlen = fast_expansion_sum_zeroelim(4, u, 4, v, cat);
+      catlen = TetGenFastExpansionSumZeroelim(4, u, 4, v, cat);
 
       Two_Product(cdxtail, adytail, ti1, ti0);
       Two_Product(adxtail, cdytail, tj1, tj0);
@@ -3002,71 +3002,71 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
     }
 
     if (bdxtail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(bxtcalen, bxtca, bdxtail, temp16a);
-      bxtcatlen = scale_expansion_zeroelim(catlen, cat, bdxtail, bxtcat);
-      temp32alen = scale_expansion_zeroelim(bxtcatlen, bxtcat, 2.0 * bdx,
+      temp16alen = TetGenScaleExpansionZeroelim(bxtcalen, bxtca, bdxtail, temp16a);
+      bxtcatlen = TetGenScaleExpansionZeroelim(catlen, cat, bdxtail, bxtcat);
+      temp32alen = TetGenScaleExpansionZeroelim(bxtcatlen, bxtcat, 2.0 * bdx,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (cdytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, aa, bdxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, cdytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, aa, bdxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, cdytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
       if (adytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, cc, -bdxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, adytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, cc, -bdxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, adytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
 
-      temp32alen = scale_expansion_zeroelim(bxtcatlen, bxtcat, bdxtail,
+      temp32alen = TetGenScaleExpansionZeroelim(bxtcatlen, bxtcat, bdxtail,
                                             temp32a);
-      bxtcattlen = scale_expansion_zeroelim(cattlen, catt, bdxtail, bxtcatt);
-      temp16alen = scale_expansion_zeroelim(bxtcattlen, bxtcatt, 2.0 * bdx,
+      bxtcattlen = TetGenScaleExpansionZeroelim(cattlen, catt, bdxtail, bxtcatt);
+      temp16alen = TetGenScaleExpansionZeroelim(bxtcattlen, bxtcatt, 2.0 * bdx,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(bxtcattlen, bxtcatt, bdxtail,
+      temp16blen = TetGenScaleExpansionZeroelim(bxtcattlen, bxtcatt, bdxtail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
     if (bdytail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(bytcalen, bytca, bdytail, temp16a);
-      bytcatlen = scale_expansion_zeroelim(catlen, cat, bdytail, bytcat);
-      temp32alen = scale_expansion_zeroelim(bytcatlen, bytcat, 2.0 * bdy,
+      temp16alen = TetGenScaleExpansionZeroelim(bytcalen, bytca, bdytail, temp16a);
+      bytcatlen = TetGenScaleExpansionZeroelim(catlen, cat, bdytail, bytcat);
+      temp32alen = TetGenScaleExpansionZeroelim(bytcatlen, bytcat, 2.0 * bdy,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
 
 
-      temp32alen = scale_expansion_zeroelim(bytcatlen, bytcat, bdytail,
+      temp32alen = TetGenScaleExpansionZeroelim(bytcatlen, bytcat, bdytail,
                                             temp32a);
-      bytcattlen = scale_expansion_zeroelim(cattlen, catt, bdytail, bytcatt);
-      temp16alen = scale_expansion_zeroelim(bytcattlen, bytcatt, 2.0 * bdy,
+      bytcattlen = TetGenScaleExpansionZeroelim(cattlen, catt, bdytail, bytcatt);
+      temp16alen = TetGenScaleExpansionZeroelim(bytcattlen, bytcatt, 2.0 * bdy,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(bytcattlen, bytcatt, bdytail,
+      temp16blen = TetGenScaleExpansionZeroelim(bytcattlen, bytcatt, bdytail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
@@ -3084,7 +3084,7 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
       Two_Product(bdx, negate, tj1, tj0);
       Two_Two_Sum(ti1, ti0, tj1, tj0, v3, v[2], v[1], v[0]);
       v[3] = v3;
-      abtlen = fast_expansion_sum_zeroelim(4, u, 4, v, abt);
+      abtlen = TetGenFastExpansionSumZeroelim(4, u, 4, v, abt);
 
       Two_Product(adxtail, bdytail, ti1, ti0);
       Two_Product(bdxtail, adytail, tj1, tj0);
@@ -3099,71 +3099,71 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
     }
 
     if (cdxtail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(cxtablen, cxtab, cdxtail, temp16a);
-      cxtabtlen = scale_expansion_zeroelim(abtlen, abt, cdxtail, cxtabt);
-      temp32alen = scale_expansion_zeroelim(cxtabtlen, cxtabt, 2.0 * cdx,
+      temp16alen = TetGenScaleExpansionZeroelim(cxtablen, cxtab, cdxtail, temp16a);
+      cxtabtlen = TetGenScaleExpansionZeroelim(abtlen, abt, cdxtail, cxtabt);
+      temp32alen = TetGenScaleExpansionZeroelim(cxtabtlen, cxtabt, 2.0 * cdx,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
       if (adytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, bb, cdxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, adytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, bb, cdxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, adytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
       if (bdytail != 0.0) {
-        temp8len = scale_expansion_zeroelim(4, aa, -cdxtail, temp8);
-        temp16alen = scale_expansion_zeroelim(temp8len, temp8, bdytail,
+        temp8len = TetGenScaleExpansionZeroelim(4, aa, -cdxtail, temp8);
+        temp16alen = TetGenScaleExpansionZeroelim(temp8len, temp8, bdytail,
                                               temp16a);
-        finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp16alen,
+        finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp16alen,
                                                 temp16a, finother);
         finswap = finnow; finnow = finother; finother = finswap;
       }
 
-      temp32alen = scale_expansion_zeroelim(cxtabtlen, cxtabt, cdxtail,
+      temp32alen = TetGenScaleExpansionZeroelim(cxtabtlen, cxtabt, cdxtail,
                                             temp32a);
-      cxtabttlen = scale_expansion_zeroelim(abttlen, abtt, cdxtail, cxtabtt);
-      temp16alen = scale_expansion_zeroelim(cxtabttlen, cxtabtt, 2.0 * cdx,
+      cxtabttlen = TetGenScaleExpansionZeroelim(abttlen, abtt, cdxtail, cxtabtt);
+      temp16alen = TetGenScaleExpansionZeroelim(cxtabttlen, cxtabtt, 2.0 * cdx,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(cxtabttlen, cxtabtt, cdxtail,
+      temp16blen = TetGenScaleExpansionZeroelim(cxtabttlen, cxtabtt, cdxtail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
     if (cdytail != 0.0) {
-      temp16alen = scale_expansion_zeroelim(cytablen, cytab, cdytail, temp16a);
-      cytabtlen = scale_expansion_zeroelim(abtlen, abt, cdytail, cytabt);
-      temp32alen = scale_expansion_zeroelim(cytabtlen, cytabt, 2.0 * cdy,
+      temp16alen = TetGenScaleExpansionZeroelim(cytablen, cytab, cdytail, temp16a);
+      cytabtlen = TetGenScaleExpansionZeroelim(abtlen, abt, cdytail, cytabt);
+      temp32alen = TetGenScaleExpansionZeroelim(cytabtlen, cytabt, 2.0 * cdy,
                                             temp32a);
-      temp48len = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp48len = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp32alen, temp32a, temp48);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp48len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp48len,
                                               temp48, finother);
       finswap = finnow; finnow = finother; finother = finswap;
 
 
-      temp32alen = scale_expansion_zeroelim(cytabtlen, cytabt, cdytail,
+      temp32alen = TetGenScaleExpansionZeroelim(cytabtlen, cytabt, cdytail,
                                             temp32a);
-      cytabttlen = scale_expansion_zeroelim(abttlen, abtt, cdytail, cytabtt);
-      temp16alen = scale_expansion_zeroelim(cytabttlen, cytabtt, 2.0 * cdy,
+      cytabttlen = TetGenScaleExpansionZeroelim(abttlen, abtt, cdytail, cytabtt);
+      temp16alen = TetGenScaleExpansionZeroelim(cytabttlen, cytabtt, 2.0 * cdy,
                                             temp16a);
-      temp16blen = scale_expansion_zeroelim(cytabttlen, cytabtt, cdytail,
+      temp16blen = TetGenScaleExpansionZeroelim(cytabttlen, cytabtt, cdytail,
                                             temp16b);
-      temp32blen = fast_expansion_sum_zeroelim(temp16alen, temp16a,
+      temp32blen = TetGenFastExpansionSumZeroelim(temp16alen, temp16a,
                                               temp16blen, temp16b, temp32b);
-      temp64len = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+      temp64len = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                               temp32blen, temp32b, temp64);
-      finlength = fast_expansion_sum_zeroelim(finlength, finnow, temp64len,
+      finlength = TetGenFastExpansionSumZeroelim(finlength, finnow, temp64len,
                                               temp64, finother);
       finswap = finnow; finnow = finother; finother = finswap;
     }
@@ -3172,7 +3172,7 @@ PetscReal incircleadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   return finnow[finlength - 1];
 }
 
-PetscReal incircle(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
+PetscReal TetGenIncircle(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 {
   PetscReal adx, bdx, cdx, ady, bdy, cdy;
   PetscReal bdxcdy, cdxbdy, cdxady, adxcdy, adxbdy, bdxady;
@@ -3211,15 +3211,15 @@ PetscReal incircle(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
     return det;
   }
 
-  return incircleadapt(pa, pb, pc, pd, permanent);
+  return TetGenIncircleAdapt(pa, pb, pc, pd, permanent);
 }
 
 /*****************************************************************************/
 /*                                                                           */
-/*  inspherefast()   Approximate 3D insphere test.  Nonrobust.               */
-/*  insphereexact()   Exact 3D insphere test.  Robust.                       */
-/*  insphereslow()   Another exact 3D insphere test.  Robust.                */
-/*  insphere()   Adaptive exact 3D insphere test.  Robust.                   */
+/*  TetGenInsphereFast()   Approximate 3D insphere test.  Nonrobust.         */
+/*  TetGenInsphereExact()   Exact 3D insphere test.  Robust.                 */
+/*  TetGenInsphereSlow()   Another exact 3D insphere test.  Robust.          */
+/*  TetGenInsphere()   Adaptive exact 3D insphere test.  Robust.             */
 /*                                                                           */
 /*               Return a positive value if the point pe lies inside the     */
 /*               sphere passing through pa, pb, pc, and pd; a negative value */
@@ -3241,7 +3241,7 @@ PetscReal incircle(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd)
 /*                                                                           */
 /*****************************************************************************/
 
-PetscReal inspherefast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
+PetscReal TetGenInsphereFast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
 {
   PetscReal aex, bex, cex, dex;
   PetscReal aey, bey, cey, dey;
@@ -3284,7 +3284,7 @@ PetscReal inspherefast(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
   return (dlift * abc - clift * dab) + (blift * cda - alift * bcd);
 }
 
-PetscReal insphereexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
+PetscReal TetGenInsphereExact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
 {
   INEXACT PetscReal axby1, bxcy1, cxdy1, dxey1, exay1;
   INEXACT PetscReal bxay1, cxby1, dxcy1, exdy1, axey1;
@@ -3368,175 +3368,175 @@ PetscReal insphereexact(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Product(pb[0], pe[1], bxey1, bxey0);
   Two_Two_Diff(exby1, exby0, bxey1, bxey0, eb[3], eb[2], eb[1], eb[0]);
 
-  temp8alen = scale_expansion_zeroelim(4, bc, pa[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ac, -pb[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, bc, pa[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ac, -pb[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, ab, pc[2], temp8a);
-  abclen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ab, pc[2], temp8a);
+  abclen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        abc);
 
-  temp8alen = scale_expansion_zeroelim(4, cd, pb[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, bd, -pc[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, cd, pb[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, bd, -pc[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, bc, pd[2], temp8a);
-  bcdlen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, bc, pd[2], temp8a);
+  bcdlen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        bcd);
 
-  temp8alen = scale_expansion_zeroelim(4, de, pc[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ce, -pd[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, de, pc[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ce, -pd[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, cd, pe[2], temp8a);
-  cdelen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, cd, pe[2], temp8a);
+  cdelen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        cde);
 
-  temp8alen = scale_expansion_zeroelim(4, ea, pd[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, da, -pe[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ea, pd[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, da, -pe[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, de, pa[2], temp8a);
-  dealen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, de, pa[2], temp8a);
+  dealen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        dea);
 
-  temp8alen = scale_expansion_zeroelim(4, ab, pe[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, eb, -pa[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ab, pe[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, eb, -pa[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, ea, pb[2], temp8a);
-  eablen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ea, pb[2], temp8a);
+  eablen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        eab);
 
-  temp8alen = scale_expansion_zeroelim(4, bd, pa[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, da, pb[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, bd, pa[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, da, pb[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, ab, pd[2], temp8a);
-  abdlen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ab, pd[2], temp8a);
+  abdlen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        abd);
 
-  temp8alen = scale_expansion_zeroelim(4, ce, pb[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, eb, pc[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ce, pb[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, eb, pc[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, bc, pe[2], temp8a);
-  bcelen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, bc, pe[2], temp8a);
+  bcelen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        bce);
 
-  temp8alen = scale_expansion_zeroelim(4, da, pc[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ac, pd[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, da, pc[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ac, pd[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, cd, pa[2], temp8a);
-  cdalen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, cd, pa[2], temp8a);
+  cdalen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        cda);
 
-  temp8alen = scale_expansion_zeroelim(4, eb, pd[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, bd, pe[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, eb, pd[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, bd, pe[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, de, pb[2], temp8a);
-  deblen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, de, pb[2], temp8a);
+  deblen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        deb);
 
-  temp8alen = scale_expansion_zeroelim(4, ac, pe[2], temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ce, pa[2], temp8b);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp8blen, temp8b,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ac, pe[2], temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ce, pa[2], temp8b);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp8blen, temp8b,
                                           temp16);
-  temp8alen = scale_expansion_zeroelim(4, ea, pc[2], temp8a);
-  eaclen = fast_expansion_sum_zeroelim(temp8alen, temp8a, temp16len, temp16,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ea, pc[2], temp8a);
+  eaclen = TetGenFastExpansionSumZeroelim(temp8alen, temp8a, temp16len, temp16,
                                        eac);
 
-  temp48alen = fast_expansion_sum_zeroelim(cdelen, cde, bcelen, bce, temp48a);
-  temp48blen = fast_expansion_sum_zeroelim(deblen, deb, bcdlen, bcd, temp48b);
+  temp48alen = TetGenFastExpansionSumZeroelim(cdelen, cde, bcelen, bce, temp48a);
+  temp48blen = TetGenFastExpansionSumZeroelim(deblen, deb, bcdlen, bcd, temp48b);
   for (i = 0; i < temp48blen; i++) {
     temp48b[i] = -temp48b[i];
   }
-  bcdelen = fast_expansion_sum_zeroelim(temp48alen, temp48a,
+  bcdelen = TetGenFastExpansionSumZeroelim(temp48alen, temp48a,
                                         temp48blen, temp48b, bcde);
-  xlen = scale_expansion_zeroelim(bcdelen, bcde, pa[0], temp192);
-  xlen = scale_expansion_zeroelim(xlen, temp192, pa[0], det384x);
-  ylen = scale_expansion_zeroelim(bcdelen, bcde, pa[1], temp192);
-  ylen = scale_expansion_zeroelim(ylen, temp192, pa[1], det384y);
-  zlen = scale_expansion_zeroelim(bcdelen, bcde, pa[2], temp192);
-  zlen = scale_expansion_zeroelim(zlen, temp192, pa[2], det384z);
-  xylen = fast_expansion_sum_zeroelim(xlen, det384x, ylen, det384y, detxy);
-  alen = fast_expansion_sum_zeroelim(xylen, detxy, zlen, det384z, adet);
+  xlen = TetGenScaleExpansionZeroelim(bcdelen, bcde, pa[0], temp192);
+  xlen = TetGenScaleExpansionZeroelim(xlen, temp192, pa[0], det384x);
+  ylen = TetGenScaleExpansionZeroelim(bcdelen, bcde, pa[1], temp192);
+  ylen = TetGenScaleExpansionZeroelim(ylen, temp192, pa[1], det384y);
+  zlen = TetGenScaleExpansionZeroelim(bcdelen, bcde, pa[2], temp192);
+  zlen = TetGenScaleExpansionZeroelim(zlen, temp192, pa[2], det384z);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, det384x, ylen, det384y, detxy);
+  alen = TetGenFastExpansionSumZeroelim(xylen, detxy, zlen, det384z, adet);
 
-  temp48alen = fast_expansion_sum_zeroelim(dealen, dea, cdalen, cda, temp48a);
-  temp48blen = fast_expansion_sum_zeroelim(eaclen, eac, cdelen, cde, temp48b);
+  temp48alen = TetGenFastExpansionSumZeroelim(dealen, dea, cdalen, cda, temp48a);
+  temp48blen = TetGenFastExpansionSumZeroelim(eaclen, eac, cdelen, cde, temp48b);
   for (i = 0; i < temp48blen; i++) {
     temp48b[i] = -temp48b[i];
   }
-  cdealen = fast_expansion_sum_zeroelim(temp48alen, temp48a,
+  cdealen = TetGenFastExpansionSumZeroelim(temp48alen, temp48a,
                                         temp48blen, temp48b, cdea);
-  xlen = scale_expansion_zeroelim(cdealen, cdea, pb[0], temp192);
-  xlen = scale_expansion_zeroelim(xlen, temp192, pb[0], det384x);
-  ylen = scale_expansion_zeroelim(cdealen, cdea, pb[1], temp192);
-  ylen = scale_expansion_zeroelim(ylen, temp192, pb[1], det384y);
-  zlen = scale_expansion_zeroelim(cdealen, cdea, pb[2], temp192);
-  zlen = scale_expansion_zeroelim(zlen, temp192, pb[2], det384z);
-  xylen = fast_expansion_sum_zeroelim(xlen, det384x, ylen, det384y, detxy);
-  blen = fast_expansion_sum_zeroelim(xylen, detxy, zlen, det384z, bdet);
+  xlen = TetGenScaleExpansionZeroelim(cdealen, cdea, pb[0], temp192);
+  xlen = TetGenScaleExpansionZeroelim(xlen, temp192, pb[0], det384x);
+  ylen = TetGenScaleExpansionZeroelim(cdealen, cdea, pb[1], temp192);
+  ylen = TetGenScaleExpansionZeroelim(ylen, temp192, pb[1], det384y);
+  zlen = TetGenScaleExpansionZeroelim(cdealen, cdea, pb[2], temp192);
+  zlen = TetGenScaleExpansionZeroelim(zlen, temp192, pb[2], det384z);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, det384x, ylen, det384y, detxy);
+  blen = TetGenFastExpansionSumZeroelim(xylen, detxy, zlen, det384z, bdet);
 
-  temp48alen = fast_expansion_sum_zeroelim(eablen, eab, deblen, deb, temp48a);
-  temp48blen = fast_expansion_sum_zeroelim(abdlen, abd, dealen, dea, temp48b);
+  temp48alen = TetGenFastExpansionSumZeroelim(eablen, eab, deblen, deb, temp48a);
+  temp48blen = TetGenFastExpansionSumZeroelim(abdlen, abd, dealen, dea, temp48b);
   for (i = 0; i < temp48blen; i++) {
     temp48b[i] = -temp48b[i];
   }
-  deablen = fast_expansion_sum_zeroelim(temp48alen, temp48a,
+  deablen = TetGenFastExpansionSumZeroelim(temp48alen, temp48a,
                                         temp48blen, temp48b, deab);
-  xlen = scale_expansion_zeroelim(deablen, deab, pc[0], temp192);
-  xlen = scale_expansion_zeroelim(xlen, temp192, pc[0], det384x);
-  ylen = scale_expansion_zeroelim(deablen, deab, pc[1], temp192);
-  ylen = scale_expansion_zeroelim(ylen, temp192, pc[1], det384y);
-  zlen = scale_expansion_zeroelim(deablen, deab, pc[2], temp192);
-  zlen = scale_expansion_zeroelim(zlen, temp192, pc[2], det384z);
-  xylen = fast_expansion_sum_zeroelim(xlen, det384x, ylen, det384y, detxy);
-  clen = fast_expansion_sum_zeroelim(xylen, detxy, zlen, det384z, cdet);
+  xlen = TetGenScaleExpansionZeroelim(deablen, deab, pc[0], temp192);
+  xlen = TetGenScaleExpansionZeroelim(xlen, temp192, pc[0], det384x);
+  ylen = TetGenScaleExpansionZeroelim(deablen, deab, pc[1], temp192);
+  ylen = TetGenScaleExpansionZeroelim(ylen, temp192, pc[1], det384y);
+  zlen = TetGenScaleExpansionZeroelim(deablen, deab, pc[2], temp192);
+  zlen = TetGenScaleExpansionZeroelim(zlen, temp192, pc[2], det384z);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, det384x, ylen, det384y, detxy);
+  clen = TetGenFastExpansionSumZeroelim(xylen, detxy, zlen, det384z, cdet);
 
-  temp48alen = fast_expansion_sum_zeroelim(abclen, abc, eaclen, eac, temp48a);
-  temp48blen = fast_expansion_sum_zeroelim(bcelen, bce, eablen, eab, temp48b);
+  temp48alen = TetGenFastExpansionSumZeroelim(abclen, abc, eaclen, eac, temp48a);
+  temp48blen = TetGenFastExpansionSumZeroelim(bcelen, bce, eablen, eab, temp48b);
   for (i = 0; i < temp48blen; i++) {
     temp48b[i] = -temp48b[i];
   }
-  eabclen = fast_expansion_sum_zeroelim(temp48alen, temp48a,
+  eabclen = TetGenFastExpansionSumZeroelim(temp48alen, temp48a,
                                         temp48blen, temp48b, eabc);
-  xlen = scale_expansion_zeroelim(eabclen, eabc, pd[0], temp192);
-  xlen = scale_expansion_zeroelim(xlen, temp192, pd[0], det384x);
-  ylen = scale_expansion_zeroelim(eabclen, eabc, pd[1], temp192);
-  ylen = scale_expansion_zeroelim(ylen, temp192, pd[1], det384y);
-  zlen = scale_expansion_zeroelim(eabclen, eabc, pd[2], temp192);
-  zlen = scale_expansion_zeroelim(zlen, temp192, pd[2], det384z);
-  xylen = fast_expansion_sum_zeroelim(xlen, det384x, ylen, det384y, detxy);
-  dlen = fast_expansion_sum_zeroelim(xylen, detxy, zlen, det384z, ddet);
+  xlen = TetGenScaleExpansionZeroelim(eabclen, eabc, pd[0], temp192);
+  xlen = TetGenScaleExpansionZeroelim(xlen, temp192, pd[0], det384x);
+  ylen = TetGenScaleExpansionZeroelim(eabclen, eabc, pd[1], temp192);
+  ylen = TetGenScaleExpansionZeroelim(ylen, temp192, pd[1], det384y);
+  zlen = TetGenScaleExpansionZeroelim(eabclen, eabc, pd[2], temp192);
+  zlen = TetGenScaleExpansionZeroelim(zlen, temp192, pd[2], det384z);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, det384x, ylen, det384y, detxy);
+  dlen = TetGenFastExpansionSumZeroelim(xylen, detxy, zlen, det384z, ddet);
 
-  temp48alen = fast_expansion_sum_zeroelim(bcdlen, bcd, abdlen, abd, temp48a);
-  temp48blen = fast_expansion_sum_zeroelim(cdalen, cda, abclen, abc, temp48b);
+  temp48alen = TetGenFastExpansionSumZeroelim(bcdlen, bcd, abdlen, abd, temp48a);
+  temp48blen = TetGenFastExpansionSumZeroelim(cdalen, cda, abclen, abc, temp48b);
   for (i = 0; i < temp48blen; i++) {
     temp48b[i] = -temp48b[i];
   }
-  abcdlen = fast_expansion_sum_zeroelim(temp48alen, temp48a,
+  abcdlen = TetGenFastExpansionSumZeroelim(temp48alen, temp48a,
                                         temp48blen, temp48b, abcd);
-  xlen = scale_expansion_zeroelim(abcdlen, abcd, pe[0], temp192);
-  xlen = scale_expansion_zeroelim(xlen, temp192, pe[0], det384x);
-  ylen = scale_expansion_zeroelim(abcdlen, abcd, pe[1], temp192);
-  ylen = scale_expansion_zeroelim(ylen, temp192, pe[1], det384y);
-  zlen = scale_expansion_zeroelim(abcdlen, abcd, pe[2], temp192);
-  zlen = scale_expansion_zeroelim(zlen, temp192, pe[2], det384z);
-  xylen = fast_expansion_sum_zeroelim(xlen, det384x, ylen, det384y, detxy);
-  elen = fast_expansion_sum_zeroelim(xylen, detxy, zlen, det384z, edet);
+  xlen = TetGenScaleExpansionZeroelim(abcdlen, abcd, pe[0], temp192);
+  xlen = TetGenScaleExpansionZeroelim(xlen, temp192, pe[0], det384x);
+  ylen = TetGenScaleExpansionZeroelim(abcdlen, abcd, pe[1], temp192);
+  ylen = TetGenScaleExpansionZeroelim(ylen, temp192, pe[1], det384y);
+  zlen = TetGenScaleExpansionZeroelim(abcdlen, abcd, pe[2], temp192);
+  zlen = TetGenScaleExpansionZeroelim(zlen, temp192, pe[2], det384z);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, det384x, ylen, det384y, detxy);
+  elen = TetGenFastExpansionSumZeroelim(xylen, detxy, zlen, det384z, edet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  cdlen = fast_expansion_sum_zeroelim(clen, cdet, dlen, ddet, cddet);
-  cdelen = fast_expansion_sum_zeroelim(cdlen, cddet, elen, edet, cdedet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, cdelen, cdedet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  cdlen = TetGenFastExpansionSumZeroelim(clen, cdet, dlen, ddet, cddet);
+  cdelen = TetGenFastExpansionSumZeroelim(cdlen, cddet, elen, edet, cdedet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, cdelen, cdedet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
+PetscReal TetGenInsphereSlow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
 {
   INEXACT PetscReal aex, bex, cex, dex, aey, bey, cey, dey, aez, bez, cez, dez;
   PetscReal aextail, bextail, cextail, dextail;
@@ -3605,7 +3605,7 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   bxay7, bxay[6], bxay[5], bxay[4],
                   bxay[3], bxay[2], bxay[1], bxay[0]);
   bxay[7] = bxay7;
-  ablen = fast_expansion_sum_zeroelim(8, axby, 8, bxay, ab);
+  ablen = TetGenFastExpansionSumZeroelim(8, axby, 8, bxay, ab);
   Two_Two_Product(bex, bextail, cey, ceytail,
                   bxcy7, bxcy[6], bxcy[5], bxcy[4],
                   bxcy[3], bxcy[2], bxcy[1], bxcy[0]);
@@ -3616,7 +3616,7 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   cxby7, cxby[6], cxby[5], cxby[4],
                   cxby[3], cxby[2], cxby[1], cxby[0]);
   cxby[7] = cxby7;
-  bclen = fast_expansion_sum_zeroelim(8, bxcy, 8, cxby, bc);
+  bclen = TetGenFastExpansionSumZeroelim(8, bxcy, 8, cxby, bc);
   Two_Two_Product(cex, cextail, dey, deytail,
                   cxdy7, cxdy[6], cxdy[5], cxdy[4],
                   cxdy[3], cxdy[2], cxdy[1], cxdy[0]);
@@ -3627,7 +3627,7 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   dxcy7, dxcy[6], dxcy[5], dxcy[4],
                   dxcy[3], dxcy[2], dxcy[1], dxcy[0]);
   dxcy[7] = dxcy7;
-  cdlen = fast_expansion_sum_zeroelim(8, cxdy, 8, dxcy, cd);
+  cdlen = TetGenFastExpansionSumZeroelim(8, cxdy, 8, dxcy, cd);
   Two_Two_Product(dex, dextail, aey, aeytail,
                   dxay7, dxay[6], dxay[5], dxay[4],
                   dxay[3], dxay[2], dxay[1], dxay[0]);
@@ -3638,7 +3638,7 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   axdy7, axdy[6], axdy[5], axdy[4],
                   axdy[3], axdy[2], axdy[1], axdy[0]);
   axdy[7] = axdy7;
-  dalen = fast_expansion_sum_zeroelim(8, dxay, 8, axdy, da);
+  dalen = TetGenFastExpansionSumZeroelim(8, dxay, 8, axdy, da);
   Two_Two_Product(aex, aextail, cey, ceytail,
                   axcy7, axcy[6], axcy[5], axcy[4],
                   axcy[3], axcy[2], axcy[1], axcy[0]);
@@ -3649,7 +3649,7 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   cxay7, cxay[6], cxay[5], cxay[4],
                   cxay[3], cxay[2], cxay[1], cxay[0]);
   cxay[7] = cxay7;
-  aclen = fast_expansion_sum_zeroelim(8, axcy, 8, cxay, ac);
+  aclen = TetGenFastExpansionSumZeroelim(8, axcy, 8, cxay, ac);
   Two_Two_Product(bex, bextail, dey, deytail,
                   bxdy7, bxdy[6], bxdy[5], bxdy[4],
                   bxdy[3], bxdy[2], bxdy[1], bxdy[0]);
@@ -3660,212 +3660,212 @@ PetscReal insphereslow(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *p
                   dxby7, dxby[6], dxby[5], dxby[4],
                   dxby[3], dxby[2], dxby[1], dxby[0]);
   dxby[7] = dxby7;
-  bdlen = fast_expansion_sum_zeroelim(8, bxdy, 8, dxby, bd);
+  bdlen = TetGenFastExpansionSumZeroelim(8, bxdy, 8, dxby, bd);
 
-  temp32alen = scale_expansion_zeroelim(cdlen, cd, -bez, temp32a);
-  temp32blen = scale_expansion_zeroelim(cdlen, cd, -beztail, temp32b);
-  temp64alen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(cdlen, cd, -bez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(cdlen, cd, -beztail, temp32b);
+  temp64alen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64a);
-  temp32alen = scale_expansion_zeroelim(bdlen, bd, cez, temp32a);
-  temp32blen = scale_expansion_zeroelim(bdlen, bd, ceztail, temp32b);
-  temp64blen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(bdlen, bd, cez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(bdlen, bd, ceztail, temp32b);
+  temp64blen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64b);
-  temp32alen = scale_expansion_zeroelim(bclen, bc, -dez, temp32a);
-  temp32blen = scale_expansion_zeroelim(bclen, bc, -deztail, temp32b);
-  temp64clen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(bclen, bc, -dez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(bclen, bc, -deztail, temp32b);
+  temp64clen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64c);
-  temp128len = fast_expansion_sum_zeroelim(temp64alen, temp64a,
+  temp128len = TetGenFastExpansionSumZeroelim(temp64alen, temp64a,
                                            temp64blen, temp64b, temp128);
-  temp192len = fast_expansion_sum_zeroelim(temp64clen, temp64c,
+  temp192len = TetGenFastExpansionSumZeroelim(temp64clen, temp64c,
                                            temp128len, temp128, temp192);
-  xlen = scale_expansion_zeroelim(temp192len, temp192, aex, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, aex, detxx);
-  xtlen = scale_expansion_zeroelim(temp192len, temp192, aextail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, aex, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp192len, temp192, aex, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, aex, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp192len, temp192, aextail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, aex, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, aextail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
-  ylen = scale_expansion_zeroelim(temp192len, temp192, aey, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, aey, detyy);
-  ytlen = scale_expansion_zeroelim(temp192len, temp192, aeytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, aey, detyyt);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, aextail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  ylen = TetGenScaleExpansionZeroelim(temp192len, temp192, aey, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, aey, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp192len, temp192, aeytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, aey, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, aeytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
-  zlen = scale_expansion_zeroelim(temp192len, temp192, aez, detz);
-  zzlen = scale_expansion_zeroelim(zlen, detz, aez, detzz);
-  ztlen = scale_expansion_zeroelim(temp192len, temp192, aeztail, detzt);
-  zztlen = scale_expansion_zeroelim(ztlen, detzt, aez, detzzt);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, aeytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
+  zlen = TetGenScaleExpansionZeroelim(temp192len, temp192, aez, detz);
+  zzlen = TetGenScaleExpansionZeroelim(zlen, detz, aez, detzz);
+  ztlen = TetGenScaleExpansionZeroelim(temp192len, temp192, aeztail, detzt);
+  zztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, aez, detzzt);
   for (i = 0; i < zztlen; i++) {
     detzzt[i] *= 2.0;
   }
-  ztztlen = scale_expansion_zeroelim(ztlen, detzt, aeztail, detztzt);
-  z1len = fast_expansion_sum_zeroelim(zzlen, detzz, zztlen, detzzt, z1);
-  z2len = fast_expansion_sum_zeroelim(z1len, z1, ztztlen, detztzt, z2);
-  xylen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, detxy);
-  alen = fast_expansion_sum_zeroelim(z2len, z2, xylen, detxy, adet);
+  ztztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, aeztail, detztzt);
+  z1len = TetGenFastExpansionSumZeroelim(zzlen, detzz, zztlen, detzzt, z1);
+  z2len = TetGenFastExpansionSumZeroelim(z1len, z1, ztztlen, detztzt, z2);
+  xylen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, detxy);
+  alen = TetGenFastExpansionSumZeroelim(z2len, z2, xylen, detxy, adet);
 
-  temp32alen = scale_expansion_zeroelim(dalen, da, cez, temp32a);
-  temp32blen = scale_expansion_zeroelim(dalen, da, ceztail, temp32b);
-  temp64alen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(dalen, da, cez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(dalen, da, ceztail, temp32b);
+  temp64alen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64a);
-  temp32alen = scale_expansion_zeroelim(aclen, ac, dez, temp32a);
-  temp32blen = scale_expansion_zeroelim(aclen, ac, deztail, temp32b);
-  temp64blen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(aclen, ac, dez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(aclen, ac, deztail, temp32b);
+  temp64blen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64b);
-  temp32alen = scale_expansion_zeroelim(cdlen, cd, aez, temp32a);
-  temp32blen = scale_expansion_zeroelim(cdlen, cd, aeztail, temp32b);
-  temp64clen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(cdlen, cd, aez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(cdlen, cd, aeztail, temp32b);
+  temp64clen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64c);
-  temp128len = fast_expansion_sum_zeroelim(temp64alen, temp64a,
+  temp128len = TetGenFastExpansionSumZeroelim(temp64alen, temp64a,
                                            temp64blen, temp64b, temp128);
-  temp192len = fast_expansion_sum_zeroelim(temp64clen, temp64c,
+  temp192len = TetGenFastExpansionSumZeroelim(temp64clen, temp64c,
                                            temp128len, temp128, temp192);
-  xlen = scale_expansion_zeroelim(temp192len, temp192, bex, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, bex, detxx);
-  xtlen = scale_expansion_zeroelim(temp192len, temp192, bextail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, bex, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp192len, temp192, bex, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, bex, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp192len, temp192, bextail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, bex, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, bextail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
-  ylen = scale_expansion_zeroelim(temp192len, temp192, bey, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, bey, detyy);
-  ytlen = scale_expansion_zeroelim(temp192len, temp192, beytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, bey, detyyt);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, bextail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  ylen = TetGenScaleExpansionZeroelim(temp192len, temp192, bey, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, bey, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp192len, temp192, beytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, bey, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, beytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
-  zlen = scale_expansion_zeroelim(temp192len, temp192, bez, detz);
-  zzlen = scale_expansion_zeroelim(zlen, detz, bez, detzz);
-  ztlen = scale_expansion_zeroelim(temp192len, temp192, beztail, detzt);
-  zztlen = scale_expansion_zeroelim(ztlen, detzt, bez, detzzt);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, beytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
+  zlen = TetGenScaleExpansionZeroelim(temp192len, temp192, bez, detz);
+  zzlen = TetGenScaleExpansionZeroelim(zlen, detz, bez, detzz);
+  ztlen = TetGenScaleExpansionZeroelim(temp192len, temp192, beztail, detzt);
+  zztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, bez, detzzt);
   for (i = 0; i < zztlen; i++) {
     detzzt[i] *= 2.0;
   }
-  ztztlen = scale_expansion_zeroelim(ztlen, detzt, beztail, detztzt);
-  z1len = fast_expansion_sum_zeroelim(zzlen, detzz, zztlen, detzzt, z1);
-  z2len = fast_expansion_sum_zeroelim(z1len, z1, ztztlen, detztzt, z2);
-  xylen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, detxy);
-  blen = fast_expansion_sum_zeroelim(z2len, z2, xylen, detxy, bdet);
+  ztztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, beztail, detztzt);
+  z1len = TetGenFastExpansionSumZeroelim(zzlen, detzz, zztlen, detzzt, z1);
+  z2len = TetGenFastExpansionSumZeroelim(z1len, z1, ztztlen, detztzt, z2);
+  xylen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, detxy);
+  blen = TetGenFastExpansionSumZeroelim(z2len, z2, xylen, detxy, bdet);
 
-  temp32alen = scale_expansion_zeroelim(ablen, ab, -dez, temp32a);
-  temp32blen = scale_expansion_zeroelim(ablen, ab, -deztail, temp32b);
-  temp64alen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(ablen, ab, -dez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(ablen, ab, -deztail, temp32b);
+  temp64alen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64a);
-  temp32alen = scale_expansion_zeroelim(bdlen, bd, -aez, temp32a);
-  temp32blen = scale_expansion_zeroelim(bdlen, bd, -aeztail, temp32b);
-  temp64blen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(bdlen, bd, -aez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(bdlen, bd, -aeztail, temp32b);
+  temp64blen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64b);
-  temp32alen = scale_expansion_zeroelim(dalen, da, -bez, temp32a);
-  temp32blen = scale_expansion_zeroelim(dalen, da, -beztail, temp32b);
-  temp64clen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(dalen, da, -bez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(dalen, da, -beztail, temp32b);
+  temp64clen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64c);
-  temp128len = fast_expansion_sum_zeroelim(temp64alen, temp64a,
+  temp128len = TetGenFastExpansionSumZeroelim(temp64alen, temp64a,
                                            temp64blen, temp64b, temp128);
-  temp192len = fast_expansion_sum_zeroelim(temp64clen, temp64c,
+  temp192len = TetGenFastExpansionSumZeroelim(temp64clen, temp64c,
                                            temp128len, temp128, temp192);
-  xlen = scale_expansion_zeroelim(temp192len, temp192, cex, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, cex, detxx);
-  xtlen = scale_expansion_zeroelim(temp192len, temp192, cextail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, cex, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp192len, temp192, cex, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, cex, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp192len, temp192, cextail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, cex, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, cextail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
-  ylen = scale_expansion_zeroelim(temp192len, temp192, cey, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, cey, detyy);
-  ytlen = scale_expansion_zeroelim(temp192len, temp192, ceytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, cey, detyyt);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, cextail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  ylen = TetGenScaleExpansionZeroelim(temp192len, temp192, cey, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, cey, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp192len, temp192, ceytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, cey, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, ceytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
-  zlen = scale_expansion_zeroelim(temp192len, temp192, cez, detz);
-  zzlen = scale_expansion_zeroelim(zlen, detz, cez, detzz);
-  ztlen = scale_expansion_zeroelim(temp192len, temp192, ceztail, detzt);
-  zztlen = scale_expansion_zeroelim(ztlen, detzt, cez, detzzt);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, ceytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
+  zlen = TetGenScaleExpansionZeroelim(temp192len, temp192, cez, detz);
+  zzlen = TetGenScaleExpansionZeroelim(zlen, detz, cez, detzz);
+  ztlen = TetGenScaleExpansionZeroelim(temp192len, temp192, ceztail, detzt);
+  zztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, cez, detzzt);
   for (i = 0; i < zztlen; i++) {
     detzzt[i] *= 2.0;
   }
-  ztztlen = scale_expansion_zeroelim(ztlen, detzt, ceztail, detztzt);
-  z1len = fast_expansion_sum_zeroelim(zzlen, detzz, zztlen, detzzt, z1);
-  z2len = fast_expansion_sum_zeroelim(z1len, z1, ztztlen, detztzt, z2);
-  xylen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, detxy);
-  clen = fast_expansion_sum_zeroelim(z2len, z2, xylen, detxy, cdet);
+  ztztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, ceztail, detztzt);
+  z1len = TetGenFastExpansionSumZeroelim(zzlen, detzz, zztlen, detzzt, z1);
+  z2len = TetGenFastExpansionSumZeroelim(z1len, z1, ztztlen, detztzt, z2);
+  xylen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, detxy);
+  clen = TetGenFastExpansionSumZeroelim(z2len, z2, xylen, detxy, cdet);
 
-  temp32alen = scale_expansion_zeroelim(bclen, bc, aez, temp32a);
-  temp32blen = scale_expansion_zeroelim(bclen, bc, aeztail, temp32b);
-  temp64alen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(bclen, bc, aez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(bclen, bc, aeztail, temp32b);
+  temp64alen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64a);
-  temp32alen = scale_expansion_zeroelim(aclen, ac, -bez, temp32a);
-  temp32blen = scale_expansion_zeroelim(aclen, ac, -beztail, temp32b);
-  temp64blen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(aclen, ac, -bez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(aclen, ac, -beztail, temp32b);
+  temp64blen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64b);
-  temp32alen = scale_expansion_zeroelim(ablen, ab, cez, temp32a);
-  temp32blen = scale_expansion_zeroelim(ablen, ab, ceztail, temp32b);
-  temp64clen = fast_expansion_sum_zeroelim(temp32alen, temp32a,
+  temp32alen = TetGenScaleExpansionZeroelim(ablen, ab, cez, temp32a);
+  temp32blen = TetGenScaleExpansionZeroelim(ablen, ab, ceztail, temp32b);
+  temp64clen = TetGenFastExpansionSumZeroelim(temp32alen, temp32a,
                                            temp32blen, temp32b, temp64c);
-  temp128len = fast_expansion_sum_zeroelim(temp64alen, temp64a,
+  temp128len = TetGenFastExpansionSumZeroelim(temp64alen, temp64a,
                                            temp64blen, temp64b, temp128);
-  temp192len = fast_expansion_sum_zeroelim(temp64clen, temp64c,
+  temp192len = TetGenFastExpansionSumZeroelim(temp64clen, temp64c,
                                            temp128len, temp128, temp192);
-  xlen = scale_expansion_zeroelim(temp192len, temp192, dex, detx);
-  xxlen = scale_expansion_zeroelim(xlen, detx, dex, detxx);
-  xtlen = scale_expansion_zeroelim(temp192len, temp192, dextail, detxt);
-  xxtlen = scale_expansion_zeroelim(xtlen, detxt, dex, detxxt);
+  xlen = TetGenScaleExpansionZeroelim(temp192len, temp192, dex, detx);
+  xxlen = TetGenScaleExpansionZeroelim(xlen, detx, dex, detxx);
+  xtlen = TetGenScaleExpansionZeroelim(temp192len, temp192, dextail, detxt);
+  xxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, dex, detxxt);
   for (i = 0; i < xxtlen; i++) {
     detxxt[i] *= 2.0;
   }
-  xtxtlen = scale_expansion_zeroelim(xtlen, detxt, dextail, detxtxt);
-  x1len = fast_expansion_sum_zeroelim(xxlen, detxx, xxtlen, detxxt, x1);
-  x2len = fast_expansion_sum_zeroelim(x1len, x1, xtxtlen, detxtxt, x2);
-  ylen = scale_expansion_zeroelim(temp192len, temp192, dey, dety);
-  yylen = scale_expansion_zeroelim(ylen, dety, dey, detyy);
-  ytlen = scale_expansion_zeroelim(temp192len, temp192, deytail, detyt);
-  yytlen = scale_expansion_zeroelim(ytlen, detyt, dey, detyyt);
+  xtxtlen = TetGenScaleExpansionZeroelim(xtlen, detxt, dextail, detxtxt);
+  x1len = TetGenFastExpansionSumZeroelim(xxlen, detxx, xxtlen, detxxt, x1);
+  x2len = TetGenFastExpansionSumZeroelim(x1len, x1, xtxtlen, detxtxt, x2);
+  ylen = TetGenScaleExpansionZeroelim(temp192len, temp192, dey, dety);
+  yylen = TetGenScaleExpansionZeroelim(ylen, dety, dey, detyy);
+  ytlen = TetGenScaleExpansionZeroelim(temp192len, temp192, deytail, detyt);
+  yytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, dey, detyyt);
   for (i = 0; i < yytlen; i++) {
     detyyt[i] *= 2.0;
   }
-  ytytlen = scale_expansion_zeroelim(ytlen, detyt, deytail, detytyt);
-  y1len = fast_expansion_sum_zeroelim(yylen, detyy, yytlen, detyyt, y1);
-  y2len = fast_expansion_sum_zeroelim(y1len, y1, ytytlen, detytyt, y2);
-  zlen = scale_expansion_zeroelim(temp192len, temp192, dez, detz);
-  zzlen = scale_expansion_zeroelim(zlen, detz, dez, detzz);
-  ztlen = scale_expansion_zeroelim(temp192len, temp192, deztail, detzt);
-  zztlen = scale_expansion_zeroelim(ztlen, detzt, dez, detzzt);
+  ytytlen = TetGenScaleExpansionZeroelim(ytlen, detyt, deytail, detytyt);
+  y1len = TetGenFastExpansionSumZeroelim(yylen, detyy, yytlen, detyyt, y1);
+  y2len = TetGenFastExpansionSumZeroelim(y1len, y1, ytytlen, detytyt, y2);
+  zlen = TetGenScaleExpansionZeroelim(temp192len, temp192, dez, detz);
+  zzlen = TetGenScaleExpansionZeroelim(zlen, detz, dez, detzz);
+  ztlen = TetGenScaleExpansionZeroelim(temp192len, temp192, deztail, detzt);
+  zztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, dez, detzzt);
   for (i = 0; i < zztlen; i++) {
     detzzt[i] *= 2.0;
   }
-  ztztlen = scale_expansion_zeroelim(ztlen, detzt, deztail, detztzt);
-  z1len = fast_expansion_sum_zeroelim(zzlen, detzz, zztlen, detzzt, z1);
-  z2len = fast_expansion_sum_zeroelim(z1len, z1, ztztlen, detztzt, z2);
-  xylen = fast_expansion_sum_zeroelim(x2len, x2, y2len, y2, detxy);
-  dlen = fast_expansion_sum_zeroelim(z2len, z2, xylen, detxy, ddet);
+  ztztlen = TetGenScaleExpansionZeroelim(ztlen, detzt, deztail, detztzt);
+  z1len = TetGenFastExpansionSumZeroelim(zzlen, detzz, zztlen, detzzt, z1);
+  z2len = TetGenFastExpansionSumZeroelim(z1len, z1, ztztlen, detztzt, z2);
+  xylen = TetGenFastExpansionSumZeroelim(x2len, x2, y2len, y2, detxy);
+  dlen = TetGenFastExpansionSumZeroelim(z2len, z2, xylen, detxy, ddet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  cdlen = fast_expansion_sum_zeroelim(clen, cdet, dlen, ddet, cddet);
-  deterlen = fast_expansion_sum_zeroelim(ablen, abdet, cdlen, cddet, deter);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  cdlen = TetGenFastExpansionSumZeroelim(clen, cdet, dlen, ddet, cddet);
+  deterlen = TetGenFastExpansionSumZeroelim(ablen, abdet, cdlen, cddet, deter);
 
   return deter[deterlen - 1];
 }
 
-PetscReal insphereadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe,
+PetscReal TetGenInsphereAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe,
                    PetscReal permanent)
 {
   INEXACT PetscReal aex, bex, cex, dex, aey, bey, cey, dey, aez, bez, cez, dez;
@@ -3947,75 +3947,75 @@ PetscReal insphereadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
   Two_Two_Diff(bexdey1, bexdey0, dexbey1, dexbey0, bd3, bd[2], bd[1], bd[0]);
   bd[3] = bd3;
 
-  temp8alen = scale_expansion_zeroelim(4, cd, bez, temp8a);
-  temp8blen = scale_expansion_zeroelim(4, bd, -cez, temp8b);
-  temp8clen = scale_expansion_zeroelim(4, bc, dez, temp8c);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a,
+  temp8alen = TetGenScaleExpansionZeroelim(4, cd, bez, temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, bd, -cez, temp8b);
+  temp8clen = TetGenScaleExpansionZeroelim(4, bc, dez, temp8c);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a,
                                           temp8blen, temp8b, temp16);
-  temp24len = fast_expansion_sum_zeroelim(temp8clen, temp8c,
+  temp24len = TetGenFastExpansionSumZeroelim(temp8clen, temp8c,
                                           temp16len, temp16, temp24);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, aex, temp48);
-  xlen = scale_expansion_zeroelim(temp48len, temp48, -aex, xdet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, aey, temp48);
-  ylen = scale_expansion_zeroelim(temp48len, temp48, -aey, ydet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, aez, temp48);
-  zlen = scale_expansion_zeroelim(temp48len, temp48, -aez, zdet);
-  xylen = fast_expansion_sum_zeroelim(xlen, xdet, ylen, ydet, xydet);
-  alen = fast_expansion_sum_zeroelim(xylen, xydet, zlen, zdet, adet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, aex, temp48);
+  xlen = TetGenScaleExpansionZeroelim(temp48len, temp48, -aex, xdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, aey, temp48);
+  ylen = TetGenScaleExpansionZeroelim(temp48len, temp48, -aey, ydet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, aez, temp48);
+  zlen = TetGenScaleExpansionZeroelim(temp48len, temp48, -aez, zdet);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, xdet, ylen, ydet, xydet);
+  alen = TetGenFastExpansionSumZeroelim(xylen, xydet, zlen, zdet, adet);
 
-  temp8alen = scale_expansion_zeroelim(4, da, cez, temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ac, dez, temp8b);
-  temp8clen = scale_expansion_zeroelim(4, cd, aez, temp8c);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a,
+  temp8alen = TetGenScaleExpansionZeroelim(4, da, cez, temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ac, dez, temp8b);
+  temp8clen = TetGenScaleExpansionZeroelim(4, cd, aez, temp8c);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a,
                                           temp8blen, temp8b, temp16);
-  temp24len = fast_expansion_sum_zeroelim(temp8clen, temp8c,
+  temp24len = TetGenFastExpansionSumZeroelim(temp8clen, temp8c,
                                           temp16len, temp16, temp24);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, bex, temp48);
-  xlen = scale_expansion_zeroelim(temp48len, temp48, bex, xdet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, bey, temp48);
-  ylen = scale_expansion_zeroelim(temp48len, temp48, bey, ydet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, bez, temp48);
-  zlen = scale_expansion_zeroelim(temp48len, temp48, bez, zdet);
-  xylen = fast_expansion_sum_zeroelim(xlen, xdet, ylen, ydet, xydet);
-  blen = fast_expansion_sum_zeroelim(xylen, xydet, zlen, zdet, bdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, bex, temp48);
+  xlen = TetGenScaleExpansionZeroelim(temp48len, temp48, bex, xdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, bey, temp48);
+  ylen = TetGenScaleExpansionZeroelim(temp48len, temp48, bey, ydet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, bez, temp48);
+  zlen = TetGenScaleExpansionZeroelim(temp48len, temp48, bez, zdet);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, xdet, ylen, ydet, xydet);
+  blen = TetGenFastExpansionSumZeroelim(xylen, xydet, zlen, zdet, bdet);
 
-  temp8alen = scale_expansion_zeroelim(4, ab, dez, temp8a);
-  temp8blen = scale_expansion_zeroelim(4, bd, aez, temp8b);
-  temp8clen = scale_expansion_zeroelim(4, da, bez, temp8c);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a,
+  temp8alen = TetGenScaleExpansionZeroelim(4, ab, dez, temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, bd, aez, temp8b);
+  temp8clen = TetGenScaleExpansionZeroelim(4, da, bez, temp8c);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a,
                                           temp8blen, temp8b, temp16);
-  temp24len = fast_expansion_sum_zeroelim(temp8clen, temp8c,
+  temp24len = TetGenFastExpansionSumZeroelim(temp8clen, temp8c,
                                           temp16len, temp16, temp24);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, cex, temp48);
-  xlen = scale_expansion_zeroelim(temp48len, temp48, -cex, xdet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, cey, temp48);
-  ylen = scale_expansion_zeroelim(temp48len, temp48, -cey, ydet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, cez, temp48);
-  zlen = scale_expansion_zeroelim(temp48len, temp48, -cez, zdet);
-  xylen = fast_expansion_sum_zeroelim(xlen, xdet, ylen, ydet, xydet);
-  clen = fast_expansion_sum_zeroelim(xylen, xydet, zlen, zdet, cdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, cex, temp48);
+  xlen = TetGenScaleExpansionZeroelim(temp48len, temp48, -cex, xdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, cey, temp48);
+  ylen = TetGenScaleExpansionZeroelim(temp48len, temp48, -cey, ydet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, cez, temp48);
+  zlen = TetGenScaleExpansionZeroelim(temp48len, temp48, -cez, zdet);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, xdet, ylen, ydet, xydet);
+  clen = TetGenFastExpansionSumZeroelim(xylen, xydet, zlen, zdet, cdet);
 
-  temp8alen = scale_expansion_zeroelim(4, bc, aez, temp8a);
-  temp8blen = scale_expansion_zeroelim(4, ac, -bez, temp8b);
-  temp8clen = scale_expansion_zeroelim(4, ab, cez, temp8c);
-  temp16len = fast_expansion_sum_zeroelim(temp8alen, temp8a,
+  temp8alen = TetGenScaleExpansionZeroelim(4, bc, aez, temp8a);
+  temp8blen = TetGenScaleExpansionZeroelim(4, ac, -bez, temp8b);
+  temp8clen = TetGenScaleExpansionZeroelim(4, ab, cez, temp8c);
+  temp16len = TetGenFastExpansionSumZeroelim(temp8alen, temp8a,
                                           temp8blen, temp8b, temp16);
-  temp24len = fast_expansion_sum_zeroelim(temp8clen, temp8c,
+  temp24len = TetGenFastExpansionSumZeroelim(temp8clen, temp8c,
                                           temp16len, temp16, temp24);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, dex, temp48);
-  xlen = scale_expansion_zeroelim(temp48len, temp48, dex, xdet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, dey, temp48);
-  ylen = scale_expansion_zeroelim(temp48len, temp48, dey, ydet);
-  temp48len = scale_expansion_zeroelim(temp24len, temp24, dez, temp48);
-  zlen = scale_expansion_zeroelim(temp48len, temp48, dez, zdet);
-  xylen = fast_expansion_sum_zeroelim(xlen, xdet, ylen, ydet, xydet);
-  dlen = fast_expansion_sum_zeroelim(xylen, xydet, zlen, zdet, ddet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, dex, temp48);
+  xlen = TetGenScaleExpansionZeroelim(temp48len, temp48, dex, xdet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, dey, temp48);
+  ylen = TetGenScaleExpansionZeroelim(temp48len, temp48, dey, ydet);
+  temp48len = TetGenScaleExpansionZeroelim(temp24len, temp24, dez, temp48);
+  zlen = TetGenScaleExpansionZeroelim(temp48len, temp48, dez, zdet);
+  xylen = TetGenFastExpansionSumZeroelim(xlen, xdet, ylen, ydet, xydet);
+  dlen = TetGenFastExpansionSumZeroelim(xylen, xydet, zlen, zdet, ddet);
 
-  ablen = fast_expansion_sum_zeroelim(alen, adet, blen, bdet, abdet);
-  cdlen = fast_expansion_sum_zeroelim(clen, cdet, dlen, ddet, cddet);
-  finlength = fast_expansion_sum_zeroelim(ablen, abdet, cdlen, cddet, fin1);
+  ablen = TetGenFastExpansionSumZeroelim(alen, adet, blen, bdet, abdet);
+  cdlen = TetGenFastExpansionSumZeroelim(clen, cdet, dlen, ddet, cddet);
+  finlength = TetGenFastExpansionSumZeroelim(ablen, abdet, cdlen, cddet, fin1);
 
-  det = estimate(finlength, fin1);
+  det = TetGenEstimate(finlength, fin1);
   errbound = isperrboundB * permanent;
   if ((det >= errbound) || (-det >= errbound)) {
     return det;
@@ -4077,10 +4077,10 @@ PetscReal insphereadapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *
     return det;
   }
 
-  return insphereexact(pa, pb, pc, pd, pe);
+  return TetGenInsphereExact(pa, pb, pc, pd, pe);
 }
 
-PetscReal insphere(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
+PetscReal TetGenInsphere(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, PetscReal *pe)
 {
   PetscReal aex, bex, cex, dex;
   PetscReal aey, bey, cey, dey;
@@ -4179,5 +4179,5 @@ PetscReal insphere(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd, P
     return det;
   }
 
-  return insphereadapt(pa, pb, pc, pd, pe, permanent);
+  return TetGenInsphereAdapt(pa, pb, pc, pd, pe, permanent);
 }
