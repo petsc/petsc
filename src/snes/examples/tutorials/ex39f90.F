@@ -167,6 +167,7 @@
 !
 !
       SNES                snes
+      PetscLineSearch     linesearch
       Vec                 x,r
       Mat                 J
       integer             its,matrix_free,flg,ierr
@@ -301,18 +302,23 @@
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
       call SNESSetFromOptions(snes,ierr)
-      test_linesearch = 0
-      test_check      = 0
+      test_linesearch = PETSC_FALSE
+      test_check      = PETSC_FALSE
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-test_check',
      &                          test_check,PETSC_NULL_INTEGER,ierr)
-      if (test_check.eq.1) then
-        call SNESLineSearchSetPreCheck(snes,FormPreCheck,user,ierr)
-        call SNESLineSearchSetPostCheck(snes,FormPostCheck,user,ierr) 
+      call SNESGetPetscLineSearch(snes, linesearch, ierr)
+      if (test_check.eqv.PETSC_TRUE) then
+         call PetscLineSearchSetPreCheck(linesearch,FormPreCheck,user,  &
+     &    ierr)
+         call PetscLineSearchSetPostCheck(linesearch,FormPostCheck,user,&
+     &    ierr)
       else
-        call PetscOptionsGetBool(PETSC_NULL_CHARACTER,
+         call PetscOptionsGetBool(PETSC_NULL_CHARACTER,
      &       '-test_linesearch',test_linesearch,PETSC_NULL_INTEGER,ierr)
-        if (test_linesearch.eq.1) then
-          call SNESLineSearchSet(snes,FormLineSearch,user,ierr)
+         if (test_linesearch.eqv.PETSC_TRUE) then
+            call PetscLineSearchSetType(linesearch,"shell", ierr)
+            call PetscLineSearchShellSetUserFunc(linesearch,              &
+     &           FormLineSearch, user, ierr)
         end if
       end if
  
@@ -352,8 +358,7 @@
 !
 !  FormLineSearch - Applies the line search to the step size
 !
-      subroutine FormLineSearch(snes,user,x,f,g,y,w,fnorm,ynorm,gnorm,
-     & flag,ierr)
+      subroutine FormLineSearch(linesearch, user, ierr)
 
       use f90module
 
@@ -369,7 +374,7 @@
       SNES              snes
       type (userctx)    user
       Vec               x,f,g,y,w
-      PetscReal fnorm,ynorm,gnorm
+      PetscReal fnorm,ynorm,gnorm,xnorm
       PetscBool            flag
       PetscErrorCode ierr
 
@@ -377,11 +382,14 @@
 
 	write(*,*)"Inside FormLineSearch, user%xm=",user%xm
       mone = -1.0d0
-      flag = 0
+      call PetscLineSearchGetSNES(linesearch, snes, ierr)
+      call PetscLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)
-      call VecAYPX(y,mone,x,ierr)
-      call SNESComputeFunction(snes,y,g,ierr)
-      call VecNorm(g,NORM_2,gnorm,ierr)
+      call VecAXPY(x,mone,y,ierr)
+      call SNESComputeFunction(snes,x,f,ierr)
+      call VecNorm(f,NORM_2,gnorm,ierr)
+      call VecNorm(x,NORM_2,xnorm,ierr)
+      call PetscLineSearchSetNorms(linesearch,xnorm,gnorm,ynorm,ierr)
       return 
       end
 
@@ -783,7 +791,8 @@
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
-!  Compute entries for the locally owned part of the Jacobian.
+
+!     Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
 !     contiguous chunks of rows across the processors. 
 !   - Each processor needs to insert only elements that it owns
@@ -828,7 +837,7 @@
       return
       end
 
-      subroutine FormPreCheck(snes,X,Y,user,changed_Y,ierr)
+      subroutine FormPreCheck(snes,X,Y,changed_Y,user,ierr)
       use f90module
 
       SNES           snes
@@ -840,7 +849,7 @@
      	write(*,*)"Inside formPreCheck, user%xm=",user%xm        
       end subroutine formPreCheck
 
-      subroutine FormPostCheck(snes,X,Y,W,user,changed_Y,changed_W,ierr)
+      subroutine FormPostCheck(snes,X,Y,W,changed_Y,changed_W,user,ierr)
       use f90module
 
       SNES           snes

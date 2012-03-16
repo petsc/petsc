@@ -54,6 +54,7 @@
       KSP      ksp
       Vec      x,r
       Mat      J
+      PetscLineSearch linesearch
       PetscErrorCode  ierr
       PetscInt its,i2,i20
       PetscMPIInt size,rank
@@ -152,6 +153,11 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls) then
+        call SNESGetPetscLineSearch(snes, linesearch, ierr)
+        call PetscLineSearchSetType(linesearch, "shell", ierr)
+        call PetscLineSearchShellSetUserFunc(linesearch, MyLineSearch,  &
+     &PETSC_NULL_OBJECT, ierr)
+
         call SNESLineSearchSet(snes,MyLineSearch,                       &
      &                         PETSC_NULL_OBJECT,ierr)
       endif
@@ -311,8 +317,7 @@
       end
 
 
-      subroutine MyLineSearch(snes,lctx,x,f,g,y,w,fnorm,ynorm,gnorm,     &
-     &                        flag,ierr)
+      subroutine MyLineSearch(linesearch, lctx, ierr)
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
@@ -323,17 +328,23 @@
       SNES              snes
       integer           lctx
       Vec               x, f,g, y, w
-      double  precision fnorm,ynorm,gnorm
-      PetscBool            flag
-      PetscErrorCode ierr
+      PetscReal         ynorm,gnorm,xnorm
+      PetscBool         flag
+      PetscErrorCode    ierr
 
       PetscScalar       mone
 
       mone = -1.0d0
-      flag = .false.
+      call PetscLineSearchGetSNES(linesearch, snes, ierr)
+      call PetscLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)
-      call VecAYPX(y,mone,x,ierr)
-      call SNESComputeFunction(snes,y,g,ierr)
-      call VecNorm(g,NORM_2,gnorm,ierr)
+      call VecAXPY(x,mone,y,ierr)
+      call SNESComputeFunction(snes,x,f,ierr)
+      call VecNorm(f,NORM_2,gnorm,ierr)
+      call VecNorm(x,NORM_2,xnorm,ierr)
+      call VecNorm(y,NORM_2,ynorm,ierr)
+      call PetscLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,     &
+     & ierr)
+      flag = PETSC_FALSE
       return 
       end

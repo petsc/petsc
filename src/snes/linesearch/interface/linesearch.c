@@ -295,7 +295,7 @@ PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch linesearch, PetscBool * c
   PetscFunctionBegin;
   *changed = PETSC_FALSE;
   if (linesearch->ops->precheckstep) {
-    ierr = (*linesearch->ops->precheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, changed);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->precheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, changed, linesearch->precheckctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -327,7 +327,7 @@ PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch linesearch, PetscBool * 
   *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (linesearch->ops->postcheckstep) {
-    ierr = (*linesearch->ops->postcheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, linesearch->vec_sol_new, changed_Y, changed_W);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->postcheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, linesearch->vec_sol_new, changed_Y, changed_W, linesearch->postcheckctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -367,12 +367,13 @@ PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch linesearch, PetscBool * 
 
 .seealso: SNESLineSearchSetPreCheck()
 @*/
-PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
+PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed,void *ctx)
 {
   PetscErrorCode ierr;
   PetscReal      angle = *(PetscReal*)linesearch->precheckctx;
   Vec            Ylast;
   PetscScalar    dot;
+  
   PetscInt       iter;
   PetscReal      ynorm,ylastnorm,theta,angle_radians;
   SNES           snes;

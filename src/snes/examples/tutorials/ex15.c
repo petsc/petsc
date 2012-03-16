@@ -80,7 +80,7 @@ struct _n_PreCheck {
 };
 PetscErrorCode PreCheckCreate(MPI_Comm,PreCheck*);
 PetscErrorCode PreCheckDestroy(PreCheck*);
-PetscErrorCode PreCheckFunction(PetscLineSearch,Vec,Vec,PetscBool*);
+PetscErrorCode PreCheckFunction(PetscLineSearch,Vec,Vec,PetscBool*,void*);
 PetscErrorCode PreCheckSetFromOptions(PreCheck);
 
 #undef __FUNCT__
@@ -585,7 +585,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
 /*
   Compare the direction of the current and previous step, modify the current step accordingly
 */
-PetscErrorCode PreCheckFunction(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
+PetscErrorCode PreCheckFunction(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed, void *ctx)
 {
   PetscErrorCode ierr;
   PreCheck       precheck;
@@ -597,7 +597,7 @@ PetscErrorCode PreCheckFunction(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool
 
   PetscFunctionBegin;
   ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&precheck);
+  precheck = (PreCheck)ctx;
   if (!precheck->Ylast) {ierr = VecDuplicate(Y,&precheck->Ylast);CHKERRQ(ierr);}
   Ylast = precheck->Ylast;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);

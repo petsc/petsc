@@ -23,7 +23,7 @@ void PETSC_STDCALL petsclinesearchshellsetuserfunc_(PetscLineSearch *linesearch,
                                                     void *ctx,
                                                     PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*linesearch,1);
+  PetscObjectAllocateFortranPointers(*linesearch,3);
   ((PetscObject)*linesearch)->fortran_func_pointers[0] = (PetscVoidFunction)func;
   *ierr = PetscLineSearchShellSetUserFunc(*linesearch,ourpetsclinesearchshellfunction,ctx);
 }

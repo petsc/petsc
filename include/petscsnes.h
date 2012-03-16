@@ -441,10 +441,10 @@ extern PetscBool     PetscLineSearchRegisterAllCalled;
 extern PetscFList    PetscLineSearchList;
 extern PetscLogEvent PetscLineSearch_Apply;
 
-typedef PetscErrorCode (*PetscLineSearchPreCheckFunc)(PetscLineSearch,Vec,Vec,PetscBool *);
+typedef PetscErrorCode (*PetscLineSearchPreCheckFunc)(PetscLineSearch,Vec,Vec,PetscBool*,void*);
 typedef PetscErrorCode (*PetscLineSearchVIProjectFunc)(SNES,Vec);
 typedef PetscErrorCode (*PetscLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
-typedef PetscErrorCode (*PetscLineSearchPostCheckFunc)(PetscLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
+typedef PetscErrorCode (*PetscLineSearchPostCheckFunc)(PetscLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
 typedef PetscErrorCode (*PetscLineSearchApplyFunc)(PetscLineSearch);
 typedef PetscErrorCode (*PetscLineSearchUserFunc)(PetscLineSearch, void *);
 
@@ -481,7 +481,7 @@ extern PetscErrorCode  PetscLineSearchGetSNES(PetscLineSearch,SNES*);
 extern PetscErrorCode  PetscLineSearchGetTolerances(PetscLineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 extern PetscErrorCode  PetscLineSearchSetTolerances(PetscLineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
 
-extern PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch,Vec,Vec,PetscBool*);
+extern PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch,Vec,Vec,PetscBool*,void*);
 
 extern PetscErrorCode  PetscLineSearchGetLambda(PetscLineSearch,PetscReal*);
 extern PetscErrorCode  PetscLineSearchSetLambda(PetscLineSearch,PetscReal);

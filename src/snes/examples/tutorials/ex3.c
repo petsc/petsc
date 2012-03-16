@@ -43,9 +43,9 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
-PetscErrorCode PreCheck(PetscLineSearch,Vec,Vec,PetscBool*);
-PetscErrorCode PostCheck(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*);
-PetscErrorCode PostSetSubKSP(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*);
+PetscErrorCode PreCheck(PetscLineSearch,Vec,Vec,PetscBool*,void*);
+PetscErrorCode PostCheck(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
+PetscErrorCode PostSetSubKSP(PetscLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
 
 /* 
    User-defined application context
@@ -525,7 +525,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
    y         - proposed step (search direction and length) (possibly changed)
    changed_y - tells if the step has changed or not
  */
-PetscErrorCode PreCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y, PetscBool *changed_y)
+PetscErrorCode PreCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y, PetscBool *changed_y, void * ctx)
 {
   PetscFunctionBegin;
   *changed_y = PETSC_FALSE;
@@ -552,7 +552,7 @@ PetscErrorCode PreCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y, PetscBool
    x    - current iterate (possibly modified)
    
  */
-PetscErrorCode PostCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x)
+PetscErrorCode PostCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x, void * ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,iter,xs,xm;
@@ -567,7 +567,7 @@ PetscErrorCode PostCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pet
   *changed_x = PETSC_FALSE;
   *changed_y = PETSC_FALSE;
   ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetPostCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+  check = (StepCheckCtx *)ctx;
   user = check->user;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
   ierr = PetscLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
@@ -625,7 +625,7 @@ PetscErrorCode PostCheck(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pet
    x    - current iterate (possibly modified)
    
  */
-PetscErrorCode PostSetSubKSP(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x)
+PetscErrorCode PostSetSubKSP(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x, void * ctx)
 {
   PetscErrorCode ierr;
   SetSubKSPCtx   *check;
@@ -637,7 +637,7 @@ PetscErrorCode PostSetSubKSP(PetscLineSearch linesearch,Vec xcurrent,Vec y,Vec x
 
   PetscFunctionBegin;
   ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetPostCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+  check = (SetSubKSPCtx *)ctx;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
