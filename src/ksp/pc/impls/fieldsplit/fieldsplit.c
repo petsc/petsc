@@ -226,21 +226,34 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   if (!ilink) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
     if (pc->dm && !stokes) {
-      PetscBool dmcomposite;
-      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
+      PetscInt     numFields, f;
+      const char **fieldNames;
+      IS          *fields;
+      PetscBool    dmcomposite;
+
+      ierr = DMCreateFieldIS(pc->dm, &numFields, &fieldNames, &fields);CHKERRQ(ierr);
+      for(f = 0; f < numFields; ++f) {
+        ierr = PCFieldSplitSetIS(pc, fieldNames[f], fields[f]);CHKERRQ(ierr);
+        ierr = PetscFree(fieldNames[f]);CHKERRQ(ierr);
+        ierr = ISDestroy(&fields[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(fieldNames);CHKERRQ(ierr);
+      ierr = PetscFree(fields);CHKERRQ(ierr);
+
+      ierr = PetscTypeCompare((PetscObject) pc->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
       if (dmcomposite) {
+        DM      *dms;
         PetscInt nDM;
-        IS       *fields;
+
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
-        ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
-        ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
-        for (i=0; i<nDM; i++) {
-          char splitname[8];
-          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
-          ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
-          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+        ierr = DMCompositeGetNumberDM(pc->dm, &nDM);CHKERRQ(ierr);
+        ierr = PetscMalloc(nDM*sizeof(DM), &dms);CHKERRQ(ierr);
+        ierr = DMCompositeGetEntriesArray(pc->dm, dms);CHKERRQ(ierr);
+        for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
+          ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
         }
-        ierr = PetscFree(fields);CHKERRQ(ierr);
+        ierr = PetscFree(dms);CHKERRQ(ierr);
       }
     } else {
       if (jac->bs <= 0) {
@@ -290,7 +303,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+    } else SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   } else if (jac->reset) {
     /* PCReset() has been called on this PC, ilink exists but all IS and Vec data structures in it must be rebuilt 
        This is basically the !ilink portion of code above copied from above and the allocation of the ilinks removed
@@ -302,14 +315,20 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
+        DM       *dms;
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
         ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
+        ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
+          ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
           ilink->is = fields[i];
           ilink     = ilink->next;
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
+        ierr = PetscFree(dms);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -328,7 +347,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
     }
   }
 
-  if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
+  if (jac->nsplits < 2) SETERRQ1(((PetscObject) pc)->comm,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
   PetscFunctionReturn(0);
 }
 
@@ -481,6 +500,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
+      ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
@@ -851,6 +871,11 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   }
   ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitGetSubKSP_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetFields_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetIS_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetBlockSize_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1123,7 +1148,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidCharPointer(splitname,2);
+  if (splitname) PetscValidCharPointer(splitname,2);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
   PetscFunctionReturn(0);
