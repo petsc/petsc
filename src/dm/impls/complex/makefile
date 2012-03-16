@@ -3,10 +3,10 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = complexcreate.c complex.c
+SOURCEC  = complexcreate.c complex.c ctetgen.c predicates.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = complexcreate.o complex.o
+OBJSC    = complexcreate.o complex.o ctetgen.o predicates.o
 OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm
