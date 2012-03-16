@@ -16,4 +16,4 @@
  15 SNES Function norm 7.34059e-05 
  16 SNES Function norm 3.61999e-07 
  17 SNES Function norm 1.025e-11 
-CONVERGED_FNORM_RELATIVE Number of Newton iterations = 17
+CONVERGED_FNORM_RELATIVE Number of nonlinear iterations = 17

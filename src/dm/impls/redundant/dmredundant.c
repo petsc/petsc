@@ -15,6 +15,8 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,const MatType mtype,Mat *J)
   DM_Redundant           *red = (DM_Redundant*)dm->data;
   PetscErrorCode         ierr;
   ISLocalToGlobalMapping ltog,ltogb;
+  PetscInt               i,rstart,rend,*cols;
+  PetscScalar            *vals;
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
@@ -29,6 +31,19 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,const MatType mtype,Mat *J)
   ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,ltogb,ltogb);CHKERRQ(ierr);
+
+  ierr = PetscMalloc2(red->N,PetscInt,&cols,red->N,PetscScalar,&vals);CHKERRQ(ierr);
+  for (i=0; i<red->N; i++) {
+    cols[i] = i;
+    vals[i] = 0.0;
+  }
+  ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatSetValues(*J,1,&i,red->N,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(cols,vals);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

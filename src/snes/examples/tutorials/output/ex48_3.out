@@ -66,7 +66,7 @@ Level 1 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements  14 x  14 x
     4 KSP Residual norm 2.62033e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 4
   9 SNES Function norm 1.43431e-08 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 9
 Solution statistics after solve: Full
 CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 9, total linear iterations = 38
 |X|_2 3394.33   71.4442 <= u <=  101.987   -4.99479 <= v <=  4.96381   71.4475 <= c <=  101.987 

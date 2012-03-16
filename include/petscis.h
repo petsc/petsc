@@ -69,23 +69,26 @@ extern PetscErrorCode  ISCreate(MPI_Comm,IS*);
 
   Sample usage:
 .vb
-    ISRegisterDynamic("my_is","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyIStorCreate", MyIStorCreate);
+    ISRegisterDynamic("my_is_name","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyISCreate", MyISCreate);
 .ve
 
   Then, your vector type can be chosen with the procedural interface via
 .vb
     ISCreate(MPI_Comm, IS *);
-    ISSetType(IS,"my_vector_name");
+    ISSetType(IS,"my_is_name");
 .ve
    or at runtime via the option
 .vb
-    -vec_type my_vector_name
+    -is_type my_is_name
 .ve
 
   Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
          If your function is not being put into a shared library then use ISRegister() instead
-        
-  Level: advanced
+
+  This is no ISSetFromOptions() and the current implementations do not have a way to dynamically determine type, so
+  dynamic registration of custom IS types will be of limited use to users.
+
+  Level: developer
 
 .keywords: IS, register
 .seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
