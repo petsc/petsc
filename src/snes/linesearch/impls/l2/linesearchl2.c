@@ -80,15 +80,31 @@ PetscErrorCode  PetscLineSearchApply_L2(PetscLineSearch linesearch)
   /* compute the norm at the midpoint */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
   ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+  if (linesearch->ops->vinorm) {
+    fnrm_mid = gnorm;
+    ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+  }
   fnrm_mid = fnrm_mid*fnrm_mid;
 
   /* compute the norm at lambda */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
   ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+  if (linesearch->ops->vinorm) {
+    fnrm = gnorm;
+    ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+  }
   fnrm = fnrm*fnrm;
 
   /* this gives us the derivatives at the endpoints -- compute them from here
@@ -118,21 +134,30 @@ PetscErrorCode  PetscLineSearchApply_L2(PetscLineSearch linesearch)
     del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
 
     /* check for positive curvature -- looking for that root wouldn't be a good thing. */
+
     while ((del2Fnrm < 0.0) && (fabs(delLambda) > steptol)) {
       fnrm_old = fnrm_mid;
       lambda_old = lambda_mid;
       lambda_mid = 0.5*(lambda_old + lambda);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
+      if (linesearch->ops->viproject) {
+        ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+      }
       ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-      ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+      if (linesearch->ops->vinorm) {
+        fnrm_mid = gnorm;
+        ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
+      } else {
+        ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+      }
       fnrm_mid = fnrm_mid*fnrm_mid;
       delLambda    = lambda - lambda_old;
       delFnrm      = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
       delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
       del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
     }
-
+ 
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
@@ -156,11 +181,17 @@ PetscErrorCode  PetscLineSearchApply_L2(PetscLineSearch linesearch)
   /* construct the solution */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
 
   /* postcheck */
   ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, X);CHKERRQ(ierr);
+    }
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }

@@ -442,7 +442,8 @@ extern PetscFList    PetscLineSearchList;
 extern PetscLogEvent PetscLineSearch_Apply;
 
 typedef PetscErrorCode (*PetscLineSearchPreCheckFunc)(PetscLineSearch,Vec,Vec,PetscBool *);
-typedef PetscErrorCode (*PetscLineSearchVICheckFunc)(PetscLineSearch,Vec,Vec,PetscScalar *);
+typedef PetscErrorCode (*PetscLineSearchVIProjectFunc)(SNES,Vec);
+typedef PetscErrorCode (*PetscLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
 typedef PetscErrorCode (*PetscLineSearchPostCheckFunc)(PetscLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
 typedef PetscErrorCode (*PetscLineSearchApplyFunc)(PetscLineSearch);
 typedef PetscErrorCode (*PetscLineSearchUserFunc)(PetscLineSearch, void *);
@@ -456,17 +457,21 @@ extern PetscErrorCode PetscLineSearchSetFromOptions(PetscLineSearch);
 extern PetscErrorCode PetscLineSearchSetUp(PetscLineSearch);
 extern PetscErrorCode PetscLineSearchApply(PetscLineSearch, Vec, Vec, PetscReal *, Vec);
 extern PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch, PetscBool *);
-extern PetscErrorCode PetscLineSearchVICheck(PetscLineSearch, Vec, Vec, PetscReal *, Vec);
 extern PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch, PetscBool *, PetscBool *);
 extern PetscErrorCode PetscLineSearchGetWork(PetscLineSearch, PetscInt);
 
-/* set the functions for precheck, VIcheck, and postcheck */
+/* set the functions for precheck and postcheck */
 
 extern PetscErrorCode PetscLineSearchSetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc, void *ctx);
 extern PetscErrorCode PetscLineSearchSetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc, void *ctx);
 
 extern PetscErrorCode PetscLineSearchGetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc*, void **ctx);
 extern PetscErrorCode PetscLineSearchGetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc*, void **ctx);
+
+/* set the functions for VI-specific line search operations */
+
+extern PetscErrorCode PetscLineSearchSetVIFunctions(PetscLineSearch, PetscLineSearchVIProjectFunc, PetscLineSearchVINormFunc);
+extern PetscErrorCode PetscLineSearchGetVIFunctions(PetscLineSearch, PetscLineSearchVIProjectFunc*, PetscLineSearchVINormFunc*);
 
 /* pointers to the associated SNES in order to be able to get the function evaluation out */
 extern PetscErrorCode  PetscLineSearchSetSNES(PetscLineSearch,SNES);

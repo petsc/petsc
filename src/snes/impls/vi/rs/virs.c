@@ -319,7 +319,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   PetscFunctionReturn(0);
 }
 
-
+extern PetscErrorCode SNESLineSearchNo_VI(SNES,void *,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal *,PetscReal *,PetscBool *);
 
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
    implemented in this algorithm. It basically identifies the active constraints and does
@@ -334,10 +334,11 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
   PetscBool         lssucceed;
   MatStructure      flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal         fnorm,gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F,G,W;
+  Vec                Y,X,F;
   KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -346,8 +347,10 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
   Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
+
+  ierr = PetscLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetVecs(snes->linesearch, X, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLineSearchSetUp(snes->linesearch);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -580,7 +583,8 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
-    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = PetscLineSearchApply(snes->linesearch, X, F, &gnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -588,19 +592,19 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
       ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
+    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,F,X,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
     }
     /* Update function and solution vectors */
     fnorm = gnorm;
-    ierr = VecCopy(G,F);CHKERRQ(ierr);
-    ierr = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
@@ -717,9 +721,10 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
 PetscErrorCode SNESSetUp_VIRS(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_VIRS      *vi = (SNES_VIRS*) snes->data;
-  PetscInt       *indices;
-  PetscInt       i,n,rstart,rend;
+  SNES_VIRS       *vi = (SNES_VIRS*) snes->data;
+  PetscInt        *indices;
+  PetscInt        i,n,rstart,rend;
+  PetscLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
@@ -732,6 +737,12 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   for(i=0;i < n; i++) indices[i] = rstart + i;
   ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
+
+  /* set the line search functions */
+  if (!snes->linesearch) {
+    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHBT);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

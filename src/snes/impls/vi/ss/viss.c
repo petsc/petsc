@@ -239,7 +239,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   PetscBool          lssucceed;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F,G,W;
+  Vec                Y,X,F;
   KSPConvergedReason kspreason;
   DM                 dm;
   SNESDM             sdm;
@@ -258,8 +258,6 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
   Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -341,7 +339,9 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
-    ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    /* ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr); */
+    ierr = PetscLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
+    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -349,11 +349,12 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
       sdm->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
+    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -361,8 +362,6 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     /* Update function and solution vectors */
     vi->phinorm = gnorm;
     vi->merit = 0.5*vi->phinorm*vi->phinorm;
-    ierr = VecCopy(G,vi->phi);CHKERRQ(ierr);
-    ierr = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
@@ -449,11 +448,18 @@ PetscErrorCode SNESReset_VISS(SNES snes)
 static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
 {
   PetscErrorCode     ierr;
+  PetscLineSearch    linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
   ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  /* set up the default line search */
+  if (!snes->linesearch) {
+    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHBT);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -504,9 +510,6 @@ PetscErrorCode  SNESCreate_VISS(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VI);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

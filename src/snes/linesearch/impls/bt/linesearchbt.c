@@ -97,6 +97,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
   if (initslope == 0.0) initslope = -1.0;
 
   ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
   if (snes->nfuncs >= snes->max_funcs) {
     ierr  = PetscInfo(snes,"Exceeded maximum function evaluations, while checking full step length!\n");CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -109,7 +112,13 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
     ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+  if (linesearch->ops->vinorm) {
+    gnorm = fnorm;
+    ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+  }
+
   if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo2(snes,"Initial fnorm %14.12e gnorm %14.12e\n", fnorm, gnorm);CHKERRQ(ierr);
   if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* Sufficient reduction */
@@ -128,6 +137,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
     else                         lambda = lambdatemp;
 
     ierr  = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
     if (snes->nfuncs >= snes->max_funcs) {
       ierr  = PetscInfo1(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n",snes->nfuncs);CHKERRQ(ierr);
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -139,7 +151,12 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
     if (domainerror) {
       PetscFunctionReturn(0);
     }
-    ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    if (linesearch->ops->vinorm) {
+      gnorm = fnorm;
+      ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    }
     if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -202,7 +219,12 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
           ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
-        ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+        if (linesearch->ops->vinorm) {
+          gnorm = fnorm;
+          ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+        } else {
+          ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+        }
         if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
         if (.5*gnorm*gnorm < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
           if (monitor) {
@@ -234,6 +256,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
   ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
   }
   if (changed_y || changed_w) { /* recompute the function if the step has changed */
     ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
@@ -242,11 +267,15 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
       ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = VecNormBegin(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    if (linesearch->ops->vinorm) {
+      gnorm = fnorm;
+      ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
+    }
+    ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    ierr = VecNormBegin(Y,NORM_2,&ynorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(G,NORM_2,&gnorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+
   }
 
   /* copy the solution over */

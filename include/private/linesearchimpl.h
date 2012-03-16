@@ -7,7 +7,8 @@ struct _LineSearchOps {
   PetscErrorCode (*view)          (PetscLineSearch);
   PetscLineSearchApplyFunc        apply;
   PetscLineSearchPreCheckFunc     precheckstep;
-  PetscLineSearchVICheckFunc      vicheckstep;
+  PetscLineSearchVIProjectFunc    viproject;
+  PetscLineSearchVINormFunc       vinorm;
   PetscLineSearchPostCheckFunc    postcheckstep;
   PetscErrorCode (*setfromoptions)(PetscLineSearch);
   PetscErrorCode (*reset)         (PetscLineSearch);

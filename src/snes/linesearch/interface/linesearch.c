@@ -36,6 +36,12 @@ PetscErrorCode PetscLineSearchCreate(MPI_Comm comm, PetscLineSearch * outlinesea
   linesearch->ops->precheckstep = PETSC_NULL;
   linesearch->ops->postcheckstep = PETSC_NULL;
 
+  linesearch->vec_sol_new   = PETSC_NULL;
+  linesearch->vec_func_new  = PETSC_NULL;
+  linesearch->vec_sol       = PETSC_NULL;
+  linesearch->vec_func      = PETSC_NULL;
+  linesearch->vec_update    = PETSC_NULL;
+
   linesearch->lambda        = 1.0;
   linesearch->fnorm         = 1.0;
   linesearch->ynorm         = 1.0;
@@ -77,14 +83,16 @@ PetscErrorCode PetscLineSearchCreate(MPI_Comm comm, PetscLineSearch * outlinesea
 PetscErrorCode PetscLineSearchSetUp(PetscLineSearch linesearch) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-
   if (!((PetscObject)linesearch)->type_name) {
     ierr = PetscLineSearchSetType(linesearch,PETSCLINESEARCHBASIC);CHKERRQ(ierr);
   }
-
   if (!linesearch->setupcalled) {
-    ierr = VecDuplicate(linesearch->vec_sol, &linesearch->vec_sol_new);CHKERRQ(ierr);
-    ierr = VecDuplicate(linesearch->vec_func, &linesearch->vec_func_new);CHKERRQ(ierr);
+    if (!linesearch->vec_sol_new) {
+      ierr = VecDuplicate(linesearch->vec_sol, &linesearch->vec_sol_new);CHKERRQ(ierr);
+    }
+    if (!linesearch->vec_func_new) {
+      ierr = VecDuplicate(linesearch->vec_sol, &linesearch->vec_func_new);CHKERRQ(ierr);
+    }
     if (linesearch->ops->setup) {
       ierr = (*linesearch->ops->setup)(linesearch);CHKERRQ(ierr);
     }
@@ -156,6 +164,7 @@ $    func (PetscLineSearch snes,Vec x,Vec y, PetscBool *changed);
 @*/
 PetscErrorCode  PetscLineSearchSetPreCheck(PetscLineSearch linesearch, PetscLineSearchPreCheckFunc func,void *ctx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (func) linesearch->ops->precheckstep = func;
   if (ctx) linesearch->precheckctx = ctx;
@@ -184,6 +193,7 @@ PetscErrorCode  PetscLineSearchSetPreCheck(PetscLineSearch linesearch, PetscLine
 @*/
 PetscErrorCode  PetscLineSearchGetPreCheck(PetscLineSearch linesearch, PetscLineSearchPreCheckFunc *func,void **ctx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (func) *func = linesearch->ops->precheckstep;
   if (ctx) *ctx = linesearch->precheckctx;
@@ -250,6 +260,7 @@ PetscErrorCode  PetscLineSearchSetPostCheck(PetscLineSearch linesearch, PetscLin
 @*/
 PetscErrorCode  PetscLineSearchGetPostCheck(PetscLineSearch linesearch, PetscLineSearchPostCheckFunc *func,void **ctx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   if (func) *func = linesearch->ops->postcheckstep;
   if (ctx) *ctx = linesearch->postcheckctx;
@@ -990,14 +1001,22 @@ PetscErrorCode  PetscLineSearchSetNorms(PetscLineSearch linesearch, PetscReal xn
 PetscErrorCode PetscLineSearchComputeNorms(PetscLineSearch linesearch)
 {
   PetscErrorCode ierr;
+  SNES snes;
   PetscFunctionBegin;
   if (linesearch->norms) {
-    ierr = VecNormBegin(linesearch->vec_func,   NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
-    ierr = VecNormBegin(linesearch->vec_sol,    NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
-    ierr = VecNormBegin(linesearch->vec_update, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(linesearch->vec_func,     NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(linesearch->vec_sol,      NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(linesearch->vec_update,   NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+    if (linesearch->ops->vinorm) {
+      ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+      ierr = VecNorm(linesearch->vec_sol, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+      ierr = VecNorm(linesearch->vec_update, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->vinorm)(snes, linesearch->vec_func, linesearch->vec_sol, &linesearch->fnorm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNormBegin(linesearch->vec_func,   NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(linesearch->vec_sol,    NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(linesearch->vec_update, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(linesearch->vec_func,     NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(linesearch->vec_sol,      NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(linesearch->vec_update,   NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1229,6 +1248,87 @@ PetscErrorCode  PetscLineSearchSetSuccess(PetscLineSearch linesearch, PetscBool 
   PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
   PetscFunctionBegin;
   linesearch->success = success;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchSetVIFunctions"
+/*@C
+   PetscLineSearchSetVIFunctions - Sets VI-specific functions for line search computation.
+
+   Input Parameters:
++  snes - nonlinear context obtained from SNESCreate()
+.  projectfunc - function for projecting the function to the bounds
+-  normfunc - function for computing the norm of an active set
+
+   Logically Collective on SNES
+
+   Calling sequence of projectfunc:
+.vb
+   projectfunc (SNES snes, Vec X)
+.ve
+
+    Input parameters for projectfunc:
++   snes - nonlinear context
+-   X - current solution
+
+    Output parameters for func:
+.   X - Projected solution
+
+   Calling sequence of normfunc:
+.vb
+   projectfunc (SNES snes, Vec X, Vec F, PetscScalar * fnorm)
+.ve
+
+    Input parameters for projectfunc:
++   snes - nonlinear context
+.   X - current solution
+-   F - current residual
+
+    Output parameters for func:
+.   fnorm - VI-specific norm of the function
+
+
+    Level: developer
+
+.keywords: SNES, line search, VI, nonlinear, set, line search
+
+.seealso: PetscLineSearchGetVIFunctions(), PetscLineSearchSetPostCheck(), PetscLineSearchSetPreCheck()
+@*/
+extern PetscErrorCode PetscLineSearchSetVIFunctions(PetscLineSearch linesearch, PetscLineSearchVIProjectFunc projectfunc, PetscLineSearchVINormFunc normfunc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,PETSCLINESEARCH_CLASSID,1);
+  if (projectfunc) linesearch->ops->viproject = projectfunc;
+  if (normfunc) linesearch->ops->vinorm = normfunc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLineSearchGetVIFunctions"
+/*@C
+   PetscLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
+
+   Input Parameters:
+.  snes - nonlinear context obtained from SNESCreate()
+
+   Output Parameters:
++  projectfunc - function for projecting the function to the bounds
+-  normfunc - function for computing the norm of an active set
+
+   Logically Collective on SNES
+
+    Level: developer
+
+.keywords: SNES, line search, VI, nonlinear, get, line search
+
+.seealso: PetscLineSearchSetVIFunctions(), PetscLineSearchGetPostCheck(), PetscLineSearchGetPreCheck()
+@*/
+extern PetscErrorCode PetscLineSearchGetVIFunctions(PetscLineSearch linesearch, PetscLineSearchVIProjectFunc *projectfunc, PetscLineSearchVINormFunc *normfunc)
+{
+  PetscFunctionBegin;
+  if (projectfunc) *projectfunc = linesearch->ops->viproject;
+  if (normfunc) *normfunc = linesearch->ops->vinorm;
   PetscFunctionReturn(0);
 }
 

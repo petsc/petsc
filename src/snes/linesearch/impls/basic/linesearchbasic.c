@@ -38,11 +38,17 @@ PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
 
   /* update */
   ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
 
   /* postcheck */
   ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
   }
   ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
@@ -51,7 +57,18 @@ PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
     PetscFunctionReturn(0);
   }
 
+  ierr = VecNorm(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+  if (linesearch->ops->vinorm) {
+    linesearch->fnorm = gnorm;
+    ierr = (*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(F,NORM_2,&linesearch->fnorm);CHKERRQ(ierr);
+  }
+
+  /*
   ierr = PetscLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+   */
 
   /* copy the solution over */
   ierr = VecCopy(W, X);CHKERRQ(ierr);

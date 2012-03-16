@@ -71,6 +71,9 @@ PetscErrorCode  PetscLineSearchApply_CP(PetscLineSearch linesearch)
     /* compute the norm at lambda */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
     ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
 
     ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);
@@ -99,11 +102,16 @@ PetscErrorCode  PetscLineSearchApply_CP(PetscLineSearch linesearch)
   /* construct the solution */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
-
+  if (linesearch->ops->viproject) {
+    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+  }
   /* postcheck */
   ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, X);CHKERRQ(ierr);
+    }
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
