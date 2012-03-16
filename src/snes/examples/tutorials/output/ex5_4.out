@@ -17,7 +17,6 @@
       4 SNES Function norm < 1.e-11
     SNES Object:     2 MPI processes
       type: ls
-        line search variant: CUBIC
         alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
         damping factor=1.000000000000e+00
       maximum iterations=50, maximum function evaluations=10000
@@ -85,25 +84,14 @@
               rows=16, cols=16
               total: nonzeros=64, allocated nonzeros=64
               total number of mallocs used during MatSetValues calls =0
-                Matrix Object:                 2 MPI processes
-                  type: mpiaij
-                  rows=16, cols=16
-                  total: nonzeros=64, allocated nonzeros=64
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node (on process 0) routines
         linear system matrix = precond matrix:
         Matrix Object:         2 MPI processes
           type: mpiaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64
           total number of mallocs used during MatSetValues calls =0
-            Matrix Object:             2 MPI processes
-              type: mpiaij
-              rows=16, cols=16
-              total: nonzeros=64, allocated nonzeros=64
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node (on process 0) routines
-    Nonlinear solve converged due to CONVERGED_FNORM_ABS
+      line search variant: bt
+    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 4
     0 SNES Function norm 0.937398 
       0 KSP Residual norm 0.436616 
       1 KSP Residual norm 0.0121677 
@@ -142,7 +130,6 @@
     5 SNES Function norm 8.954e-11 
   SNES Object:   2 MPI processes
     type: ls
-      line search variant: CUBIC
       alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
       damping factor=1.000000000000e+00
     maximum iterations=50, maximum function evaluations=10000
@@ -205,12 +192,6 @@
             rows=16, cols=16
             total: nonzeros=64, allocated nonzeros=64
             total number of mallocs used during MatSetValues calls =0
-              Matrix Object:               2 MPI processes
-                type: mpiaij
-                rows=16, cols=16
-                total: nonzeros=64, allocated nonzeros=64
-                total number of mallocs used during MatSetValues calls =0
-                  not using I-node (on process 0) routines
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object:        (mg_levels_1_)         2 MPI processes
           type: gmres
@@ -260,12 +241,6 @@
             rows=49, cols=49
             total: nonzeros=217, allocated nonzeros=217
             total number of mallocs used during MatSetValues calls =0
-              Matrix Object:               2 MPI processes
-                type: mpiaij
-                rows=49, cols=49
-                total: nonzeros=217, allocated nonzeros=217
-                total number of mallocs used during MatSetValues calls =0
-                  not using I-node (on process 0) routines
       Up solver (post-smoother) same as down solver (pre-smoother)
       linear system matrix = precond matrix:
       Matrix Object:       2 MPI processes
@@ -273,13 +248,8 @@
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           2 MPI processes
-            type: mpiaij
-            rows=49, cols=49
-            total: nonzeros=217, allocated nonzeros=217
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node (on process 0) routines
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+    line search variant: bt
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
   0 SNES Function norm 0.517003 
     0 KSP Residual norm 0.251451 
     1 KSP Residual norm 0.00847913 
@@ -311,7 +281,6 @@
   4 SNES Function norm 9.968e-10 
 SNES Object: 2 MPI processes
   type: ls
-    line search variant: CUBIC
     alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
     damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
@@ -374,12 +343,6 @@ SNES Object: 2 MPI processes
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64
           total number of mallocs used during MatSetValues calls =0
-            Matrix Object:             2 MPI processes
-              type: mpiaij
-              rows=16, cols=16
-              total: nonzeros=64, allocated nonzeros=64
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node (on process 0) routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: gmres
@@ -429,12 +392,6 @@ SNES Object: 2 MPI processes
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
-            Matrix Object:             2 MPI processes
-              type: mpiaij
-              rows=49, cols=49
-              total: nonzeros=217, allocated nonzeros=217
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
@@ -485,12 +442,6 @@ SNES Object: 2 MPI processes
           rows=169, cols=169
           total: nonzeros=793, allocated nonzeros=793
           total number of mallocs used during MatSetValues calls =0
-            Matrix Object:             2 MPI processes
-              type: mpiaij
-              rows=169, cols=169
-              total: nonzeros=793, allocated nonzeros=793
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
     Matrix Object:     2 MPI processes
@@ -498,10 +449,5 @@ SNES Object: 2 MPI processes
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
       total number of mallocs used during MatSetValues calls =0
-        Matrix Object:         2 MPI processes
-          type: mpiaij
-          rows=169, cols=169
-          total: nonzeros=793, allocated nonzeros=793
-          total number of mallocs used during MatSetValues calls =0
-            not using I-node (on process 0) routines
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+  line search variant: bt
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4

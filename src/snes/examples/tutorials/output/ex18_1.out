@@ -1,6 +1,5 @@
 SNES Object: 1 MPI processes
   type: ls
-    line search variant: CUBIC
     alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
     damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
@@ -123,6 +122,7 @@ SNES Object: 1 MPI processes
       total: nonzeros=1377, allocated nonzeros=1377
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
+  line search variant: bt
 Number of SNES iterations = 6
 Number of Linear iterations = 32
 Average Linear its / SNES = 5.333333e+00

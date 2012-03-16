@@ -902,7 +902,7 @@ runex25:
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full > ex25_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full -options_left no> ex25_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_2.tmp
@@ -984,7 +984,7 @@ runex43_2:
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view -options_left no > ex43_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || echo ${PWD} "\nPossible problem with with ex43_3, diffs above \n========================================="; \
 	   ${RM} -f ex43_3.tmp
 

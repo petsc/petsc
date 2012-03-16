@@ -375,23 +375,11 @@ PC Object:(stokes_) 4 MPI processes
             rows=49923, cols=49923
             total: nonzeros=1325301, allocated nonzeros=1334025
             total number of mallocs used during MatSetValues calls =0
-              Matrix Object:               4 MPI processes
-                type: mpiaij
-                rows=49923, cols=49923
-                total: nonzeros=1325301, allocated nonzeros=1325301
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 4546 nodes, limit used is 5
           Matrix Object:           4 MPI processes
             type: mpiaij
             rows=49923, cols=49923
             total: nonzeros=1325301, allocated nonzeros=1334025
             total number of mallocs used during MatSetValues calls =0
-              Matrix Object:               4 MPI processes
-                type: mpiaij
-                rows=49923, cols=49923
-                total: nonzeros=1325301, allocated nonzeros=1325301
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 4546 nodes, limit used is 5
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -441,23 +429,11 @@ PC Object:(stokes_) 4 MPI processes
         rows=49923, cols=49923
         total: nonzeros=1325301, allocated nonzeros=1334025
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           4 MPI processes
-            type: mpiaij
-            rows=49923, cols=49923
-            total: nonzeros=1325301, allocated nonzeros=1325301
-            total number of mallocs used during MatSetValues calls =0
-              using I-node (on process 0) routines: found 4546 nodes, limit used is 5
       Matrix Object:       4 MPI processes
         type: mpiaij
         rows=49923, cols=49923
         total: nonzeros=1325301, allocated nonzeros=1334025
         total number of mallocs used during MatSetValues calls =0
-          Matrix Object:           4 MPI processes
-            type: mpiaij
-            rows=49923, cols=49923
-            total: nonzeros=1325301, allocated nonzeros=1325301
-            total number of mallocs used during MatSetValues calls =0
-              using I-node (on process 0) routines: found 4546 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix followed by preconditioner matrix:
   Matrix Object:   4 MPI processes
@@ -465,20 +441,8 @@ PC Object:(stokes_) 4 MPI processes
     rows=49923, cols=49923
     total: nonzeros=1325301, allocated nonzeros=1334025
     total number of mallocs used during MatSetValues calls =0
-      Matrix Object:       4 MPI processes
-        type: mpiaij
-        rows=49923, cols=49923
-        total: nonzeros=1325301, allocated nonzeros=1325301
-        total number of mallocs used during MatSetValues calls =0
-          using I-node (on process 0) routines: found 4546 nodes, limit used is 5
   Matrix Object:   4 MPI processes
     type: mpiaij
     rows=49923, cols=49923
     total: nonzeros=1325301, allocated nonzeros=1334025
     total number of mallocs used during MatSetValues calls =0
-      Matrix Object:       4 MPI processes
-        type: mpiaij
-        rows=49923, cols=49923
-        total: nonzeros=1325301, allocated nonzeros=1325301
-        total number of mallocs used during MatSetValues calls =0
-          using I-node (on process 0) routines: found 4546 nodes, limit used is 5
