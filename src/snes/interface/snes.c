@@ -4225,7 +4225,7 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
   Level: developer
 
 .keywords: SNES, set, linesearch
-.seealso: SNESGetLineSearch()
+.seealso: SNESGetPetscLineSearch()
 @*/
 PetscErrorCode SNESSetPetscLineSearch(SNES snes, PetscLineSearch linesearch)
 {
@@ -4244,7 +4244,7 @@ PetscErrorCode SNESSetPetscLineSearch(SNES snes, PetscLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetPetscLineSearch"
-/*@
+/*@C
   SNESGetPetscLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch().
 
   Not Collective
@@ -4260,7 +4260,7 @@ PetscErrorCode SNESSetPetscLineSearch(SNES snes, PetscLineSearch linesearch)
 .keywords: SNES, get, linesearch
 .seealso: SNESSetPetscLineSearch()
 @*/
-PetscErrorCode SNESGetPetscLineSearch(SNES snes, PetscLineSearch * linesearch)
+PetscErrorCode SNESGetPetscLineSearch(SNES snes, PetscLineSearch *linesearch)
 {
   PetscErrorCode ierr;
   const char     *optionsprefix;

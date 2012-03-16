@@ -26,12 +26,14 @@ PetscLogEvent  PetscLineSearch_Apply;
    .seealso: LineSearchDestroy()
 @*/
 
-PetscErrorCode PetscLineSearchCreate(MPI_Comm comm, PetscLineSearch * outlinesearch) {
-  PetscErrorCode ierr;
+PetscErrorCode PetscLineSearchCreate(MPI_Comm comm, PetscLineSearch *outlinesearch) {
+  PetscErrorCode      ierr;
   PetscLineSearch     linesearch;
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(linesearch, _p_LineSearch,struct _LineSearchOps,PETSCLINESEARCH_CLASSID, 0,
-                           "LineSearch","Line-search method","LineSearch",comm,PetscLineSearchDestroy,PetscLineSearchView);CHKERRQ(ierr);
+  PetscValidPointer(outlinesearch,2);
+  *outlinesearch = PETSC_NULL;
+  ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,PETSCLINESEARCH_CLASSID, 0,
+                           "PetscLineSearch","Line-search method","PetscLineSearch",comm,PetscLineSearchDestroy,PetscLineSearchView);CHKERRQ(ierr);
 
   linesearch->ops->precheckstep = PETSC_NULL;
   linesearch->ops->postcheckstep = PETSC_NULL;
@@ -656,7 +658,7 @@ PetscErrorCode PetscLineSearchView(PetscLineSearch linesearch) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchSetType"
-/*@
+/*@C
    PetscLineSearchSetType - Sets the linesearch type
 
    Input Parameters:

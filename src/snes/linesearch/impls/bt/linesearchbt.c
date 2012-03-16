@@ -66,9 +66,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
   ierr = VecNorm(Y, NORM_2, &ynorm);CHKERRQ(ierr);
   if (ynorm == 0.0) {
     if (monitor) {
-      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Initial direction and size is 0\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
     ierr   = VecCopy(X,W);CHKERRQ(ierr);
     ierr   = VecCopy(F,G);CHKERRQ(ierr);
@@ -77,9 +77,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
   }
   if (ynorm > maxstep) {	/* Step too big, so scale back */
     if (monitor) {
-      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Scaling step by %14.12e old ynorm %14.12e\n", (maxstep/ynorm),ynorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
     ierr = VecScale(Y,maxstep/(ynorm));CHKERRQ(ierr);
     ynorm = maxstep;
@@ -123,9 +123,9 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
   ierr = PetscInfo2(snes,"Initial fnorm %14.12e gnorm %14.12e\n", fnorm, gnorm);CHKERRQ(ierr);
   if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* Sufficient reduction */
     if (monitor) {
-      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Using full step: fnorm %14.12e gnorm %14.12e\n", fnorm, gnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
   } else {
     /* Fit points with quadratic */
@@ -159,27 +159,27 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
     }
     if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (monitor) {
-      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: gnorm after quadratic fit %14.12e\n",gnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
     if (.5*gnorm*gnorm < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
       if (monitor) {
-        ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",(double)lambda);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       }
     } else {
       /* Fit points with cubic */
       for (count = 0; count < max_its; count++) {
         if (lambda <= minlambda) {
           if (monitor) {
-            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPrintf(monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPrintf(monitor,
                                           "    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
                                           fnorm, gnorm, ynorm, minlambda, lambda, initslope);CHKERRQ(ierr);
-            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
           }
           ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
           PetscFunctionReturn(0);
@@ -228,24 +228,24 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
         if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
         if (.5*gnorm*gnorm < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
           if (monitor) {
-            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
             if (bt->order == PETSCLINESEARCH_BT_CUBIC) {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Cubically determined step, current gnorm %14.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             } else {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Quadratically determined step, current gnorm %14.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
           }
           break;
         } else {
           if (monitor) {
-            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
             if (bt->order == PETSCLINESEARCH_BT_CUBIC) {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Cubic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             } else {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Quadratic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
           }
         }
       }

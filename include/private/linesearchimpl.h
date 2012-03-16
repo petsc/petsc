@@ -3,6 +3,8 @@
 
 #include <petscsnes.h>
 
+typedef struct _LineSearchOps *LineSearchOps;
+
 struct _LineSearchOps {
   PetscErrorCode (*view)          (PetscLineSearch);
   PetscLineSearchApplyFunc        apply;
@@ -15,8 +17,6 @@ struct _LineSearchOps {
   PetscErrorCode (*destroy)       (PetscLineSearch);
   PetscErrorCode (*setup)         (PetscLineSearch);
 };
-
-typedef struct _LineSearchOps *LineSearchOps;
 
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
