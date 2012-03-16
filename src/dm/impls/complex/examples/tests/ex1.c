@@ -90,6 +90,9 @@ enum {VERPERBLOCK = 4092, SUBPERBLOCK = 4092, ELEPERBLOCK = 8188};
 // Labels that signify two edge rings of a triangle (see Muecke's thesis).
 enum {CCW = 0, CW = 1};
 
+// Used for the point location scheme of Mucke, Saias, and Zhu, to decide how large a random sample of tetrahedra to inspect.
+enum {SAMPLEFACTOR = 11};
+
 /* Replaces tetgenbehavior x*/
 typedef enum {NONE, NODES, POLY, OFF, PLY, STL, MEDIT, VTK, MESH} objecttype;
 typedef struct {
@@ -796,11 +799,17 @@ extern PetscErrorCode TetGenMeshPointTraverse(TetGenMesh *, point *);
 extern PetscErrorCode TetGenMeshShellFaceTraverse(TetGenMesh *, MemoryPool *, shellface **);
 extern PetscErrorCode TetGenMeshTetrahedronTraverse(TetGenMesh *, tetrahedron **);
 extern PetscErrorCode TetGenMeshGetNextSFace(TetGenMesh *, face *, face *);
+extern PetscErrorCode TetGenMeshSplitSubEdge_arraypool(TetGenMesh *, point, face *, ArrayPool *, ArrayPool *);
 extern PetscErrorCode TetGenMeshGetFacetAbovePoint(TetGenMesh *, face *);
-extern PetscErrorCode TetGenMeshSplitSubEdge(TetGenMesh *, point, face *, ArrayPool *, ArrayPool *);
 extern PetscErrorCode TetGenMeshSInsertVertex(TetGenMesh *, point, face *, face *, PetscBool, PetscBool, locateresult *);
 extern PetscErrorCode TetGenMeshInsertVertexBW(TetGenMesh *, point, triface *, PetscBool, PetscBool, PetscBool, PetscBool, locateresult *);
 extern PetscErrorCode TetGenMeshJettisonNodes(TetGenMesh *);
+extern PetscErrorCode TetGenMeshTallEncSegs(TetGenMesh *, point, int, List **, PetscBool *);
+extern PetscErrorCode TetGenMeshTallEncSubs(TetGenMesh *, point, int, List **, PetscBool *);
+extern PetscErrorCode TetGenMeshCheckTet4Opt(TetGenMesh *, triface *, PetscBool, PetscBool *);
+extern PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *, triface *, PetscBool, PetscBool *);
+extern PetscErrorCode TetGenMeshCheckSeg4Encroach(TetGenMesh *, face *, point, point *, PetscBool, PetscBool *);
+extern PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *, face *, point, PetscBool, PetscBool *);
 
 /*=========================== Start Converted TetGen Inline Functions ============================*/
 // Some macros for convenience
@@ -1766,6 +1775,7 @@ PetscErrorCode TetGenMeshDestroy(TetGenMesh **mesh)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*mesh) {PetscFunctionReturn(0);}
   /* (*mesh)->bgm = PETSC_NULL; */
   (*mesh)->in  = PETSC_NULL;
   (*mesh)->b   = PETSC_NULL;
@@ -2107,6 +2117,7 @@ PetscErrorCode PLCDestroy(PLC **p)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*p) {PetscFunctionReturn(0);}
   ierr = PetscFree(plc->pointlist);CHKERRQ(ierr);
   ierr = PetscFree(plc->pointattributelist);CHKERRQ(ierr);
   ierr = PetscFree(plc->pointmtrlist);CHKERRQ(ierr);
@@ -2127,7 +2138,7 @@ PetscErrorCode PLCDestroy(PLC **p)
   ierr = PetscFree(plc->segmentconstraintlist);CHKERRQ(ierr);
   ierr = PetscFree(plc->vpointlist);CHKERRQ(ierr);
   ierr = PetscFree(plc->vedgelist);CHKERRQ(ierr);
-  for (i = 0; i < plc->numberoffacets; i++) {
+  for (i = 0; i < plc->numberoffacets && plc->facetlist; i++) {
     facet *f = &plc->facetlist[i];
 
     for (j = 0; j < f->numberofpolygons; j++) {
@@ -2447,6 +2458,7 @@ PetscErrorCode QueueDestroy(Queue **q)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*q) {PetscFunctionReturn(0);}
   ierr = MemoryPoolDestroy(&(*q)->mp);CHKERRQ(ierr);
   ierr = PetscFree(*q);CHKERRQ(ierr);
   *q = PETSC_NULL;
@@ -2677,6 +2689,7 @@ PetscErrorCode MemoryPoolDestroy(MemoryPool **m)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*m) {PetscFunctionReturn(0);}
   while((*m)->firstblock) {
     (*m)->nowblock = (void **) *((*m)->firstblock);
     ierr = PetscFree((*m)->firstblock);CHKERRQ(ierr);
@@ -2831,6 +2844,7 @@ PetscErrorCode ArrayPoolDestroy(ArrayPool **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*a) {PetscFunctionReturn(0);}
   // Has anything been allocated at all?
   if ((*a)->toparray) {
     // Walk through the top array.
@@ -2849,6 +2863,7 @@ PetscErrorCode ArrayPoolDestroy(ArrayPool **a)
   (*a)->toparraylen = 0;
   (*a)->objects     = 0;
   (*a)->totalmemory = 0;
+  *a                = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -3182,7 +3197,7 @@ PetscErrorCode TetGenMeshGetSubsegFarDest(TetGenMesh *m, face *sseg, point *p)
 #undef __FUNCT__
 #define __FUNCT__ "TetGenMeshPrintTet"
 /* tetgenmesh::printtet() */
-PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
+PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showPointer)
 {
   TetGenOpts    *b = m->b;
   triface        tmpface = {PETSC_NULL, 0, 0}, prtface = {PETSC_NULL, 0, 0};
@@ -3193,7 +3208,11 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra x%lx with loc(%i) and ver(%i):", (PETSC_UINTPTR_T) tface->tet, tface->loc, tface->ver);
+  if (showPointer) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra x%lx with loc(%i) and ver(%i):", (PETSC_UINTPTR_T) tface->tet, tface->loc, tface->ver);
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra with loc(%i) and ver(%i):", tface->loc, tface->ver);
+  }
   if (infected(m, tface)) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");
   }
@@ -3211,7 +3230,11 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] Outer space.\n", facecount);
     } else {
       if (!isdead_triface(&prtface)) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] x%lx  loc(%i).", facecount, (PETSC_UINTPTR_T) prtface.tet, prtface.loc);
+        if (showPointer) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] x%lx  loc(%i).", facecount, (PETSC_UINTPTR_T) prtface.tet, prtface.loc);
+        } else {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] loc(%i).", facecount, prtface.loc);
+        }
         if (infected(m, &prtface)) {
           ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");
         }
@@ -3227,29 +3250,29 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
   if (!tmppt) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] NULL\n", locver2org[tface->loc][tface->ver]);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] x%lx (%.12g,%.12g,%.12g) %d\n",
-                       locver2org[tface->loc][tface->ver], (PETSC_UINTPTR_T) tmppt, tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] (%.12g,%.12g,%.12g) %d\n",
+                       locver2org[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
   }
   tmppt = dest(tface);
   if(tmppt == (point) NULL) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] NULL\n", locver2dest[tface->loc][tface->ver]);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] x%lx (%.12g,%.12g,%.12g) %d\n",
-                       locver2dest[tface->loc][tface->ver], (PETSC_UINTPTR_T) tmppt, tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] (%.12g,%.12g,%.12g) %d\n",
+                       locver2dest[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
   }
   tmppt = apex(tface);
   if (!tmppt) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] NULL\n", locver2apex[tface->loc][tface->ver]);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] x%lx (%.12g,%.12g,%.12g) %d\n",
-                       locver2apex[tface->loc][tface->ver], (PETSC_UINTPTR_T) tmppt, tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] (%.12g,%.12g,%.12g) %d\n",
+                       locver2apex[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
   }
   tmppt = oppo(tface);
   if (!tmppt) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] NULL\n", loc2oppo[tface->loc]);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] x%lx (%.12g,%.12g,%.12g) %d\n",
-                       loc2oppo[tface->loc], (PETSC_UINTPTR_T) tmppt, tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] (%.12g,%.12g,%.12g) %d\n",
+                       loc2oppo[tface->loc], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
   }
 
   if (b->useshelles) {
@@ -3258,7 +3281,11 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
       for (facecount = 0; facecount < 6; facecount++) {
         sdecode(shells[facecount], &checksh);
         if (checksh.sh != m->dummysh) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+          if (showPointer) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+          } else {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);
+          }
         } else {
           ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);
         }
@@ -3273,7 +3300,11 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
       for (facecount = 0; facecount < 4; facecount++) {
         sdecode(shells[facecount], &checksh);
         if (checksh.sh != m->dummysh) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+          if (showPointer) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+          } else {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);
+          }
         } else {
           ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);
         }
@@ -3281,6 +3312,176 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface)
           ierr = PetscPrintf(PETSC_COMM_SELF, " (*)");  // It is the current face.
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshPrintSh"
+// printsh()    Print out the details of a subface or subsegment on screen.  //
+//                                                                           //
+// It's also used when the highest level of verbosity (`-VVV') is specified. //
+/* tetgenmesh::printsh() */
+PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPointer)
+{
+  face prtsh = {PETSC_NULL, 0};
+  triface prttet = {PETSC_NULL, 0, 0};
+  point printpoint;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (sapex(sface)) {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "subface x%lx, ver %d, mark %d:", (uintptr_t) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "subface ver %d, mark %d:", sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+    }
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Subsegment x%lx, ver %d, mark %d:", (uintptr_t) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Subsegment ver %d, mark %d:", sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+    }
+  }
+  if (sinfected(m, sface)) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");CHKERRQ(ierr);
+  }
+  if (smarktested(sface)) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, " (marked)");CHKERRQ(ierr);
+  }
+  if (shell2badface(sface)) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, " (queued)");CHKERRQ(ierr);
+  }
+  if (sapex(sface)) {
+    if (shelltype(m, sface) == SHARP) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, " (sharp)");CHKERRQ(ierr);
+    }
+  } else {
+    if (shelltype(m, sface) == SHARP) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, " (sharp)");CHKERRQ(ierr);
+    }
+  }
+  if (m->checkpbcs) {
+    if (shellpbcgroup(m, sface) >= 0) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, " (pbc %d)", shellpbcgroup(m, sface));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+
+  sdecode(sface->sh[0], &prtsh);
+  if (prtsh.sh == m->dummysh) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = No shell\n");CHKERRQ(ierr);
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = %d\n", prtsh.shver);CHKERRQ(ierr);
+    }
+  }
+  sdecode(sface->sh[1], &prtsh);
+  if (prtsh.sh == m->dummysh) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] = No shell\n");CHKERRQ(ierr);
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] =  %d\n", prtsh.shver);CHKERRQ(ierr);
+    }
+  }
+  sdecode(sface->sh[2], &prtsh);
+  if (prtsh.sh == m->dummysh) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] = No shell\n");CHKERRQ(ierr);
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] =  %d\n", prtsh.shver);CHKERRQ(ierr);
+    }
+  }
+
+  printpoint = sorg(sface);
+  if (!printpoint) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = NULL\n", vo[sface->shver]);CHKERRQ(ierr);
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vo[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = (%.12g,%.12g,%.12g) %d\n", vo[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+    }
+  }
+  printpoint = sdest(sface);
+  if (!printpoint) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = NULL\n", vd[sface->shver]);CHKERRQ(ierr);
+  } else {
+    if (showPointer) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vd[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = (%.12g,%.12g,%.12g) %d\n", vd[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+    }
+  }
+
+  if (sapex(sface)) {
+    printpoint = sapex(sface);
+    if (!printpoint) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = NULL\n", va[sface->shver]);CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", va[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = (%.12g,%.12g,%.12g) %d\n", va[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+      }
+    }
+    decode(sface->sh[6], &prttet);
+    if (prttet.tet == m->dummytet) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = Outer space\n");CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = x%lx  %d\n", (uintptr_t)(prttet.tet), prttet.loc);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = %d\n", prttet.loc);CHKERRQ(ierr);
+      }
+    }
+    decode(sface->sh[7], &prttet);
+    if (prttet.tet == m->dummytet) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = Outer space\n");CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = x%lx  %d\n", (uintptr_t)(prttet.tet), prttet.loc);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = %d\n", prttet.loc);CHKERRQ(ierr);
+      }
+    }
+
+    sdecode(sface->sh[8], &prtsh);
+    if (prtsh.sh == m->dummysh) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = No subsegment\n");CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = %d\n", prtsh.shver);CHKERRQ(ierr);
+      }
+    }
+    sdecode(sface->sh[9], &prtsh);
+    if (prtsh.sh == m->dummysh) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = No subsegment\n");CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = %d\n", prtsh.shver);CHKERRQ(ierr);
+      }
+    }
+    sdecode(sface->sh[10], &prtsh);
+    if (prtsh.sh == m->dummysh) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= No subsegment\n");CHKERRQ(ierr);
+    } else {
+      if (showPointer) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= %d\n", prtsh.shver);CHKERRQ(ierr);
       }
     }
   }
@@ -3307,6 +3508,29 @@ PetscErrorCode TetGenMeshRandomChoice(TetGenMesh *m, unsigned int choices, int *
     newrandom = m->randomseed % choices;
   }
   *choice = newrandom;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshDistance2"
+// distance2()    Returns the square "distance" of a tetrahedron to point p. //
+/* tetgenmesh::distance2() */
+PetscErrorCode TetGenMeshDistance2(TetGenMesh *m, tetrahedron *tetptr, point p, PetscReal *dist)
+{
+  point p1, p2, p3, p4;
+  PetscReal dx, dy, dz;
+
+  PetscFunctionBegin;
+  p1 = (point) tetptr[4];
+  p2 = (point) tetptr[5];
+  p3 = (point) tetptr[6];
+  p4 = (point) tetptr[7];
+
+  dx = p[0] - 0.25 * (p1[0] + p2[0] + p3[0] + p4[0]);
+  dy = p[1] - 0.25 * (p1[1] + p2[1] + p3[1] + p4[1]);
+  dz = p[2] - 0.25 * (p1[2] + p2[2] + p3[2] + p4[2]);
+
+  *dist = dx * dx + dy * dy + dz * dz;
   PetscFunctionReturn(0);
 }
 
@@ -5711,11 +5935,78 @@ PetscErrorCode TetGenMeshPreciseLocate(TetGenMesh *m, point searchpt, triface *s
 /* tetgenmesh::randomsample() */
 PetscErrorCode TetGenMeshRandomSample(TetGenMesh *m, point searchpt, triface *searchtet)
 {
-  TetGenOpts    *b  = m->b;
+  tetrahedron *firsttet, *tetptr;
+  void **sampleblock;
+  long sampleblocks, samplesperblock;
+  int  samplenum;
+  long tetblocks, i, j;
+  PETSC_UINTPTR_T alignptr;
+  PetscReal searchdist, dist;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
+  // 'searchtet' should be a valid tetrahedron.
+  if (isdead_triface(searchtet)) {
+    searchtet->tet = m->dummytet;
+  }
+  if (searchtet->tet == m->dummytet) {
+    // This is an 'Outer Space' handle, get a hull tetrahedron.
+    searchtet->loc = 0;
+    symself(searchtet);
+  }
+
+  // Note 'searchtet' may be dead (chnaged in constrainedcavity2()).
+  if (!isdead_triface(searchtet)) {
+    // Get the distance from the suggested starting tet to the point we seek.
+    ierr = TetGenMeshDistance2(m, searchtet->tet, searchpt, &searchdist);CHKERRQ(ierr);
+  } else {
+    searchdist = m->longest * m->longest;
+  }
+
+  // If a recently encountered tetrahedron has been recorded and has not
+  //   been deallocated, test it as a good starting point.
+  if (!isdead_triface(&m->recenttet) && (m->recenttet.tet != searchtet->tet)) {
+    ierr = TetGenMeshDistance2(m, m->recenttet.tet, searchpt, &dist);CHKERRQ(ierr);
+    if (dist < searchdist) {
+      *searchtet = m->recenttet;
+      searchdist = dist;
+    }
+  }
+
+  // Select "good" candidate using k random samples, taking the closest one.
+  //   The number of random samples taken is proportional to the fourth root
+  //   of the number of tetrahedra in the mesh. The next bit of code assumes
+  //   that the number of tetrahedra increases monotonically.
+  while(SAMPLEFACTOR * m->samples * m->samples * m->samples * m->samples < m->tetrahedrons->items) {
+    m->samples++;
+  }
+  // Find how much blocks in current tet pool.
+  tetblocks = (m->tetrahedrons->maxitems + ELEPERBLOCK - 1) / ELEPERBLOCK;
+  // Find the average samles per block. Each block at least have 1 sample.
+  samplesperblock = 1 + (m->samples / tetblocks);
+  sampleblocks = m->samples / samplesperblock;
+  sampleblock = m->tetrahedrons->firstblock;
+  for(i = 0; i < sampleblocks; i++) {
+    alignptr = (PETSC_UINTPTR_T) (sampleblock + 1);
+    firsttet = (tetrahedron *) (alignptr + (PETSC_UINTPTR_T) m->tetrahedrons->alignbytes - (alignptr % (PETSC_UINTPTR_T) m->tetrahedrons->alignbytes));
+    for(j = 0; j < samplesperblock; j++) {
+      if (i == tetblocks - 1) {
+        // This is the last block.
+        ierr = TetGenMeshRandomChoice(m, (int) (m->tetrahedrons->maxitems - (i * ELEPERBLOCK)), &samplenum);CHKERRQ(ierr);
+      } else {
+        ierr = TetGenMeshRandomChoice(m, ELEPERBLOCK, &samplenum);CHKERRQ(ierr);
+      }
+      tetptr = (tetrahedron *) (firsttet + (samplenum * m->tetrahedrons->itemwords));
+      if (tetptr[4]) {
+        ierr = TetGenMeshDistance2(m, tetptr, searchpt, &dist);CHKERRQ(ierr);
+        if (dist < searchdist) {
+          searchtet->tet = tetptr;
+          searchdist = dist;
+        }
+      }
+    }
+    sampleblock = (void **) *sampleblock;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -5744,11 +6035,296 @@ PetscErrorCode TetGenMeshLocate(TetGenMesh *m, point searchpt, triface *searchte
 /* tetgenmesh::locate2() */
 PetscErrorCode TetGenMeshLocate2(TetGenMesh *m, point searchpt, triface *searchtet, ArrayPool *histtetarray, locateresult *result)
 {
-  TetGenOpts    *b  = m->b;
+  triface neightet = {PETSC_NULL, 0, 0}, backtracetet = {PETSC_NULL, 0, 0}, *parytet;
+  point torg, tdest, tapex, toppo, ntoppo;
+  enum {ORGMOVE, DESTMOVE, APEXMOVE} nextmove;
+  PetscReal ori, oriorg, oridest, oriapex;
+  PetscReal searchdist, dist;
+  locateresult loc;
+  int i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
+  if (searchtet->tet == m->dummytet) {
+    // A hull tet. Choose the neighbor of its base face.
+    searchtet->loc = 0;
+    symself(searchtet);
+  }
+
+  // Stay in the 0th edge ring.
+  searchtet->ver = 0;
+
+  // Let searchtet be the face such that 'searchpt' lies above to it.
+  for(searchtet->loc = 0; searchtet->loc < 4; searchtet->loc++) {
+    torg = org(searchtet);
+    tdest = dest(searchtet);
+    tapex = apex(searchtet);
+    ori = orient3d(torg, tdest, tapex, searchpt); m->orient3dcount++;
+    if (ori < 0.0) break;
+  }
+  if (!(searchtet->loc < 4)) {
+    // Either 'searchtet' is a very flat tet, or the 'searchpt' lies in
+    //   infinity, or both of them. Return OUTSIDE.
+    return OUTSIDE;
+  }
+
+  if (histtetarray) {
+    // Remember all the tets we've visited.
+    if (histtetarray->objects != 0l) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+    infect(m, searchtet);
+    ierr = ArrayPoolNewIndex(histtetarray, (void **) &parytet, PETSC_NULL);CHKERRQ(ierr);
+    *parytet = *searchtet;
+  }
+
+  loc = OUTSIDE; // Set a default return value.
+
+  // Walk through tetrahedra to locate the point.
+  while(1) {
+
+    m->ptloc_count++;  // Algorithimic count.
+
+    toppo = oppo(searchtet);
+
+    // Check if the vertex is we seek.
+    if (toppo == searchpt) {
+      // Adjust the origin of searchtet to be searchpt.
+      fnextself(m, searchtet);
+      esymself(searchtet);
+      enext2self(searchtet);
+      loc = ONVERTEX; // return ONVERTEX;
+      break;
+    }
+
+    // We enter from serarchtet's base face. There are three other faces in
+    //   searchtet (all connecting to toppo), which one is the exit?
+    oriorg = orient3d(tdest, tapex, toppo, searchpt);
+    oridest = orient3d(tapex, torg, toppo, searchpt);
+    oriapex = orient3d(torg, tdest, toppo, searchpt);
+    m->orient3dcount+=3;
+
+    // Now decide which face to move. It is possible there are more than one
+    //   faces are viable moves. Use the opposite points of thier neighbors
+    //   to discriminate, i.e., we choose the face whose opposite point has
+    //   the shortest distance to searchpt.
+    if (oriorg < 0) {
+      if (oridest < 0) {
+        if (oriapex < 0) {
+          // Any of the three faces is a viable move.
+          nextmove = ORGMOVE;
+          enextfnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            searchdist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            searchdist = NORM2(m->xmax - m->xmin, m->ymax - m->ymin, m->zmax - m->zmin);
+          }
+          enext2fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            dist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            dist = searchdist;
+          }
+          if (dist < searchdist) {
+            nextmove = DESTMOVE;
+            searchdist = dist;
+          }
+          fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            dist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            dist = searchdist;
+          }
+          if (dist < searchdist) {
+            nextmove = APEXMOVE;
+            searchdist = dist;
+          }
+        } else {
+          // Two faces, opposite to origin and destination, are viable.
+          nextmove = ORGMOVE;
+          enextfnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            searchdist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            searchdist = NORM2(m->xmax - m->xmin, m->ymax - m->ymin, m->zmax - m->zmin);
+          }
+          enext2fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            dist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            dist = searchdist;
+          }
+          if (dist < searchdist) {
+            nextmove = DESTMOVE;
+            searchdist = dist;
+          }
+        }
+      } else {
+        if (oriapex < 0) {
+          // Two faces, opposite to origin and apex, are viable.
+          nextmove = ORGMOVE;
+          enextfnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            searchdist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            searchdist = NORM2(m->xmax - m->xmin, m->ymax - m->ymin, m->zmax - m->zmin);
+          }
+          fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            dist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            dist = searchdist;
+          }
+          if (dist < searchdist) {
+            nextmove = APEXMOVE;
+            searchdist = dist;
+          }
+        } else {
+          // Only the face opposite to origin is viable.
+          nextmove = ORGMOVE;
+        }
+      }
+    } else {
+      if (oridest < 0) {
+        if (oriapex < 0) {
+          // Two faces, opposite to destination and apex, are viable.
+          nextmove = DESTMOVE;
+          enext2fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            searchdist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            searchdist = NORM2(m->xmax - m->xmin, m->ymax - m->ymin, m->zmax - m->zmin);
+          }
+          fnext(m, searchtet, &neightet);
+          symself(&neightet);
+          if (neightet.tet != m->dummytet) {
+            ntoppo = oppo(&neightet);
+            dist = NORM2(searchpt[0] - ntoppo[0], searchpt[1] - ntoppo[1], searchpt[2] - ntoppo[2]);
+          } else {
+            dist = searchdist;
+          }
+          if (dist < searchdist) {
+            nextmove = APEXMOVE;
+            searchdist = dist;
+          }
+        } else {
+          // Only the face opposite to destination is viable.
+          nextmove = DESTMOVE;
+        }
+      } else {
+        if (oriapex < 0) {
+          // Only the face opposite to apex is viable.
+          nextmove = APEXMOVE;
+        } else {
+          // The point we seek must be on the boundary of or inside this
+          //   tetrahedron. Check for boundary cases.
+          if (oriorg == 0) {
+            // Go to the face opposite to origin.
+            enextfnextself(m, searchtet);
+            if (oridest == 0) {
+              enextself(searchtet); // edge apex->oppo
+              if (oriapex == 0) {
+                enextself(searchtet); // oppo is duplicated with p.
+                loc = ONVERTEX; // return ONVERTEX;
+                break;
+              }
+              loc = ONEDGE; // return ONEDGE;
+              break;
+            }
+            if (oriapex == 0) {
+              enext2self(searchtet);
+              loc = ONEDGE; // return ONEDGE;
+              break;
+            }
+            loc = ONFACE; // return ONFACE;
+            break;
+          }
+          if (oridest == 0) {
+            // Go to the face opposite to destination.
+            enext2fnextself(m, searchtet);
+            if (oriapex == 0) {
+              enextself(searchtet);
+              loc = ONEDGE; // return ONEDGE;
+              break;
+            }
+            loc = ONFACE; // return ONFACE;
+            break;
+          }
+          if (oriapex == 0) {
+            // Go to the face opposite to apex
+            fnextself(m, searchtet);
+            loc = ONFACE; // return ONFACE;
+            break;
+          }
+          loc = INTETRAHEDRON; // return INTETRAHEDRON;
+          break;
+        }
+      }
+    }
+
+    // Move to the selected face.
+    if (nextmove == ORGMOVE) {
+      enextfnextself(m, searchtet);
+    } else if (nextmove == DESTMOVE) {
+      enext2fnextself(m, searchtet);
+    } else {
+      fnextself(m, searchtet);
+    }
+    // Move to the adjacent tetrahedron (maybe a hull tetrahedron).
+    backtracetet = *searchtet;
+    symself(searchtet);
+    if (searchtet->tet == m->dummytet) {
+      *searchtet = backtracetet;
+      loc = OUTSIDE; // return OUTSIDE;
+      break;
+    }
+
+    if (histtetarray) {
+      // Check if we have run into a loop.
+      if (infected(m, searchtet)) {
+        // We have visited this tet. A potential loop is found.
+        loc = OUTSIDE;
+        break;
+      } else {
+        // Remember this tet.
+        infect(m, searchtet);
+        ierr = ArrayPoolNewIndex(histtetarray, (void **) &parytet, PETSC_NULL);CHKERRQ(ierr);
+        *parytet = *searchtet;
+      }
+    }
+
+    // Retreat the three vertices of the base face.
+    searchtet->ver = 0;
+    torg = org(searchtet);
+    tdest = dest(searchtet);
+    tapex = apex(searchtet);
+
+  } // while (true)
+
+  if (histtetarray) {
+    // Unmark the visited tets.
+    for(i = 0; i < (int) histtetarray->objects; i++) {
+      parytet = (triface *) fastlookup(histtetarray, i);
+      uninfect(m, parytet);
+    }
+    ierr = ArrayPoolRestart(histtetarray);CHKERRQ(ierr);
+  }
+
+  if (result) {*result = loc;}
   PetscFunctionReturn(0);
 }
 
@@ -6190,7 +6766,1293 @@ PetscErrorCode TetGenMeshFlip22Sub(TetGenMesh *m, face *flipedge, Queue *flipque
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFlip23"
+// flip23()    Perform a 2-to-3 flip.                                        //
+//                                                                           //
+// On input, 'flipface' represents the face will be flipped.  Let it is abc, //
+// the two tetrahedra sharing abc are abcd, bace. abc is not a subface.      //
+//                                                                           //
+// A 2-to-3 flip is to change two tetrahedra abcd, bace to three tetrahedra  //
+// edab, edbc, and edca.  As a result, face abc has been removed and three   //
+// new faces eda, edb and edc have been created.                             //
+//                                                                           //
+// On completion, 'flipface' returns edab.  If 'flipqueue' is not NULL, all  //
+// possibly non-Delaunay faces are added into it.                            //
+/* tetgenmesh::flip23() */
+PetscErrorCode TetGenMeshFlip23(TetGenMesh *m, triface *flipface, Queue *flipqueue)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  triface abcd = {PETSC_NULL, 0, 0}, bace = {PETSC_NULL, 0, 0};                                     // Old configuration.
+  triface oldabd = {PETSC_NULL, 0, 0}, oldbcd = {PETSC_NULL, 0, 0}, oldcad = {PETSC_NULL, 0, 0};
+  triface abdcasing = {PETSC_NULL, 0, 0}, bcdcasing = {PETSC_NULL, 0, 0}, cadcasing = {PETSC_NULL, 0, 0};
+  triface oldbae = {PETSC_NULL, 0, 0}, oldcbe = {PETSC_NULL, 0, 0}, oldace = {PETSC_NULL, 0, 0};
+  triface baecasing = {PETSC_NULL, 0, 0}, cbecasing = {PETSC_NULL, 0, 0}, acecasing = {PETSC_NULL, 0, 0};
+  triface worktet = {PETSC_NULL, 0, 0};
+  face abdsh = {PETSC_NULL, 0}, bcdsh = {PETSC_NULL, 0}, cadsh = {PETSC_NULL, 0};                   // The six subfaces on the CH.
+  face baesh = {PETSC_NULL, 0}, cbesh = {PETSC_NULL, 0}, acesh = {PETSC_NULL, 0};
+  face abseg = {PETSC_NULL, 0}, bcseg = {PETSC_NULL, 0}, caseg = {PETSC_NULL, 0};                   // The nine segs on the CH.
+  face adseg = {PETSC_NULL, 0}, bdseg = {PETSC_NULL, 0}, cdseg = {PETSC_NULL, 0};
+  face aeseg = {PETSC_NULL, 0}, beseg = {PETSC_NULL, 0}, ceseg = {PETSC_NULL, 0};
+  triface edab = {PETSC_NULL, 0, 0}, edbc = {PETSC_NULL, 0, 0}, edca = {PETSC_NULL, 0, 0};          // New configuration.
+  point pa, pb, pc, pd, pe;
+  PetscReal attrib, volume;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  abcd = *flipface;
+  adjustedgering_triface(&abcd, CCW); // abcd represents edge ab.
+  pa = org(&abcd);
+  pb = dest(&abcd);
+  pc = apex(&abcd);
+  pd = oppo(&abcd);
+  // sym(abcd, bace);
+  // findedge(&bace, dest(abcd), org(abcd)); // bace represents edge ba.
+  sym(&abcd, &bace);
+  bace.ver = 0; // CCW.
+  for(i = 0; (i < 3) && (org(&bace) != pb); i++) {
+    enextself(&bace);
+  }
+  pe = oppo(&bace);
+
+  PetscInfo5(b->in, "    Do T23 on face (%d, %d, %d) %d, %d.\n", pointmark(m, pa), pointmark(m, pb), pointmark(m, pc), pointmark(m, pd), pointmark(m, pe));
+  m->flip23s++;
+
+  // Storing the old configuration outside the convex hull.
+  fnext(m, &abcd, &oldabd);
+  enextfnext(m, &abcd, &oldbcd);
+  enext2fnext(m, &abcd, &oldcad);
+  fnext(m, &bace, &oldbae);
+  enext2fnext(m, &bace, &oldcbe);
+  enextfnext(m, &bace, &oldace);
+  sym(&oldabd, &abdcasing);
+  sym(&oldbcd, &bcdcasing);
+  sym(&oldcad, &cadcasing);
+  sym(&oldbae, &baecasing);
+  sym(&oldcbe, &cbecasing);
+  sym(&oldace, &acecasing);
+  if (m->checksubfaces) {
+    tspivot(m, &oldabd, &abdsh);
+    tspivot(m, &oldbcd, &bcdsh);
+    tspivot(m, &oldcad, &cadsh);
+    tspivot(m, &oldbae, &baesh);
+    tspivot(m, &oldcbe, &cbesh);
+    tspivot(m, &oldace, &acesh);
+  }
+  if (m->checksubsegs) {
+    tsspivot1(m, &abcd, &abseg);
+    enext(&abcd, &worktet);
+    tsspivot1(m, &worktet, &bcseg);
+    enext2(&abcd, &worktet);
+    tsspivot1(m, &worktet, &caseg);
+    enext2(&oldabd, &worktet);
+    tsspivot1(m, &worktet, &adseg);
+    enext2(&oldbcd, &worktet);
+    tsspivot1(m, &worktet, &bdseg);
+    enext2(&oldcad, &worktet);
+    tsspivot1(m, &worktet, &cdseg);
+    enext(&oldbae, &worktet);
+    tsspivot1(m, &worktet, &aeseg);
+    enext(&oldcbe, &worktet);
+    tsspivot1(m, &worktet, &beseg);
+    enext(&oldace, &worktet);
+    tsspivot1(m, &worktet, &ceseg);
+  }
+
+  // Creating the new configuration inside the convex hull.
+  edab.tet = abcd.tet; // Update abcd to be edab.
+  setorg (&edab, pe);
+  setdest(&edab, pd);
+  setapex(&edab, pa);
+  setoppo(&edab, pb);
+  edbc.tet = bace.tet; // Update bace to be edbc.
+  setorg (&edbc, pe);
+  setdest(&edbc, pd);
+  setapex(&edbc, pb);
+  setoppo(&edbc, pc);
+  ierr = TetGenMeshMakeTetrahedron(m, &edca);CHKERRQ(ierr); // Create edca.
+  setorg (&edca, pe);
+  setdest(&edca, pd);
+  setapex(&edca, pc);
+  setoppo(&edca, pa);
+  // Set the element attributes of the new tetrahedron 'edca'.
+  for(i = 0; i < in->numberoftetrahedronattributes; i++) {
+    attrib = elemattribute(m, abcd.tet, i);
+    setelemattribute(m, edca.tet, i, attrib);
+  }
+  // Set the volume constraint of the new tetrahedron 'edca' if the -ra
+  //   switches are not used together. In -ra case, the various volume
+  //   constraints can be spreaded very far.
+  if (b->varvolume && !b->refine) {
+    volume = volumebound(m, abcd.tet);
+    setvolumebound(m, edca.tet, volume);
+  }
+
+  // Clear old bonds in edab(was abcd) and edbc(was bace).
+  for(i = 0; i < 4; i ++) {
+    edab.tet[i] = (tetrahedron) m->dummytet;
+  }
+  for(i = 0; i < 4; i ++) {
+    edbc.tet[i] = (tetrahedron) m->dummytet;
+  }
+  // Bond the faces inside the convex hull.
+  edab.loc = 0;
+  edca.loc = 1;
+  bond(m, &edab, &edca);
+  edab.loc = 1;
+  edbc.loc = 0;
+  bond(m, &edab, &edbc);
+  edbc.loc = 1;
+  edca.loc = 0;
+  bond(m, &edbc, &edca);
+  // Bond the faces on the convex hull.
+  edab.loc = 2;
+  bond(m, &edab, &abdcasing);
+  edab.loc = 3;
+  bond(m, &edab, &baecasing);
+  edbc.loc = 2;
+  bond(m, &edbc, &bcdcasing);
+  edbc.loc = 3;
+  bond(m, &edbc, &cbecasing);
+  edca.loc = 2;
+  bond(m, &edca, &cadcasing);
+  edca.loc = 3;
+  bond(m, &edca, &acecasing);
+  // There may exist subfaces that need to be bonded to new configuarton.
+  if (m->checksubfaces) {
+    // Clear old flags in edab(was abcd) and edbc(was bace).
+    for(i = 0; i < 4; i ++) {
+      edab.loc = i;
+      tsdissolve(m, &edab);
+      edbc.loc = i;
+      tsdissolve(m, &edbc);
+    }
+    if (abdsh.sh != m->dummysh) {
+      edab.loc = 2;
+      tsbond(m, &edab, &abdsh);
+    }
+    if (baesh.sh != m->dummysh) {
+      edab.loc = 3;
+      tsbond(m, &edab, &baesh);
+    }
+    if (bcdsh.sh != m->dummysh) {
+      edbc.loc = 2;
+      tsbond(m, &edbc, &bcdsh);
+    }
+    if (cbesh.sh != m->dummysh) {
+      edbc.loc = 3;
+      tsbond(m, &edbc, &cbesh);
+    }
+    if (cadsh.sh != m->dummysh) {
+      edca.loc = 2;
+      tsbond(m, &edca, &cadsh);
+    }
+    if (acesh.sh != m->dummysh) {
+      edca.loc = 3;
+      tsbond(m, &edca, &acesh);
+    }
+  }
+  if (m->checksubsegs) {
+    for(i = 0; i < 6; i++) {
+      edab.loc = edge2locver[i][0];
+      edab.ver = edge2locver[i][1];
+      tssdissolve1(m, &edab);
+    }
+    for(i = 0; i < 6; i++) {
+      edbc.loc = edge2locver[i][0];
+      edbc.ver = edge2locver[i][1];
+      tssdissolve1(m, &edbc);
+    }
+    edab.loc = edab.ver = 0;
+    edbc.loc = edab.ver = 0;
+    edca.loc = edab.ver = 0;
+    // Operate in tet edab (5 edges).
+    enext(&edab, &worktet);
+    tssbond1(m, &worktet, &adseg);
+    enext2(&edab, &worktet);
+    tssbond1(m, &worktet, &aeseg);
+    fnext(m, &edab, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &bdseg);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &beseg);
+    enextfnext(m, &edab, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &abseg);
+    // Operate in tet edbc (5 edges)
+    enext(&edbc, &worktet);
+    tssbond1(m, &worktet, &bdseg);
+    enext2(&edbc, &worktet);
+    tssbond1(m, &worktet, &beseg);
+    fnext(m, &edbc, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &cdseg);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &ceseg);
+    enextfnext(m, &edbc, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &bcseg);
+    // Operate in tet edca (5 edges)
+    enext(&edca, &worktet);
+    tssbond1(m, &worktet, &cdseg);
+    enext2(&edca, &worktet);
+    tssbond1(m, &worktet, &ceseg);
+    fnext(m, &edca, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &adseg);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &aeseg);
+    enextfnext(m, &edca, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &caseg);
+  }
+
+  edab.loc = 0;
+  edbc.loc = 0;
+  edca.loc = 0;
+  if (b->verbose > 3) {
+    PetscInfo(b->in, "    Updating edab "); ierr = TetGenMeshPrintTet(m, &edab, PETSC_FALSE);CHKERRQ(ierr);
+    PetscInfo(b->in, "    Updating edbc "); ierr = TetGenMeshPrintTet(m, &edbc, PETSC_FALSE);CHKERRQ(ierr);
+    PetscInfo(b->in, "    Creating edca "); ierr = TetGenMeshPrintTet(m, &edca, PETSC_FALSE);CHKERRQ(ierr);
+  }
+
+  // Update point-to-tet map.
+  setpoint2tet(m, pa, encode(&edab));
+  setpoint2tet(m, pb, encode(&edab));
+  setpoint2tet(m, pc, encode(&edbc));
+  setpoint2tet(m, pd, encode(&edab));
+  setpoint2tet(m, pe, encode(&edab));
+
+  if (flipqueue) {
+    enextfnext(m, &edab, &abdcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &abdcasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &edab, &baecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &baecasing, flipqueue);CHKERRQ(ierr);
+    enextfnext(m, &edbc, &bcdcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &bcdcasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &edbc, &cbecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &cbecasing, flipqueue);CHKERRQ(ierr);
+    enextfnext(m, &edca, &cadcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &cadcasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &edca, &acecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &acecasing, flipqueue);CHKERRQ(ierr);
+  }
+
+  // Save a live handle in 'recenttet'.
+  m->recenttet = edbc;
+  // Set the return handle be edab.
+  *flipface = edab;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFlip32"
+// flip32()    Perform a 3-to-2 flip.                                        //
+//                                                                           //
+// On input, 'flipface' represents the face will be flipped.  Let it is eda, //
+// where edge ed is locally non-convex. Three tetrahedra sharing ed are edab,//
+// edbc, and edca.  ed is not a subsegment.                                  //
+//                                                                           //
+// A 3-to-2 flip is to change the three tetrahedra edab, edbc, and edca into //
+// another two tetrahedra abcd and bace.  As a result, the edge ed has been  //
+// removed and the face abc has been created.                                //
+//                                                                           //
+// On completion, 'flipface' returns abcd.  If 'flipqueue' is not NULL, all  //
+// possibly non-Delaunay faces are added into it.                            //
+/* tetgenmesh::flip32() */
+PetscErrorCode TetGenMeshFlip32(TetGenMesh *m, triface *flipface, Queue *flipqueue)
+{
+  TetGenOpts    *b  = m->b;
+  triface edab = {PETSC_NULL, 0, 0}, edbc = {PETSC_NULL, 0, 0}, edca = {PETSC_NULL, 0, 0};                // Old configuration.
+  triface oldabd = {PETSC_NULL, 0, 0}, oldbcd = {PETSC_NULL, 0, 0}, oldcad = {PETSC_NULL, 0, 0};
+  triface abdcasing = {PETSC_NULL, 0, 0}, bcdcasing = {PETSC_NULL, 0, 0}, cadcasing = {PETSC_NULL, 0, 0};
+  triface oldbae = {PETSC_NULL, 0, 0}, oldcbe = {PETSC_NULL, 0, 0}, oldace = {PETSC_NULL, 0, 0};
+  triface baecasing = {PETSC_NULL, 0, 0}, cbecasing = {PETSC_NULL, 0, 0}, acecasing = {PETSC_NULL, 0, 0};
+  triface worktet = {PETSC_NULL, 0, 0};
+  face abdsh = {PETSC_NULL, 0}, bcdsh = {PETSC_NULL, 0}, cadsh = {PETSC_NULL, 0};
+  face baesh = {PETSC_NULL, 0}, cbesh = {PETSC_NULL, 0}, acesh = {PETSC_NULL, 0};
+  face abseg = {PETSC_NULL, 0}, bcseg = {PETSC_NULL, 0}, caseg = {PETSC_NULL, 0};                         // The nine segs on the CH.
+  face adseg = {PETSC_NULL, 0}, bdseg = {PETSC_NULL, 0}, cdseg = {PETSC_NULL, 0};
+  face aeseg = {PETSC_NULL, 0}, beseg = {PETSC_NULL, 0}, ceseg = {PETSC_NULL, 0};
+  triface abcd = {PETSC_NULL, 0, 0}, bace = {PETSC_NULL, 0, 0};                                           // New configuration.
+  point pa, pb, pc, pd, pe;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  edab = *flipface;
+  adjustedgering_triface(&edab, CCW);
+  pa = apex(&edab);
+  pb = oppo(&edab);
+  pd = dest(&edab);
+  pe = org(&edab);
+  fnext(m, &edab, &edbc);
+  symself(&edbc);
+  edbc.ver = 0;
+  for (i = 0; (i < 3) && (org(&edbc) != pe); i++) {
+    enextself(&edbc);
+  }
+  pc = oppo(&edbc);
+  fnext(m, &edbc, &edca);
+  symself(&edca);
+  edca.ver = 0;
+  for (i = 0; (i < 3) && (org(&edca) != pe); i++) {
+    enextself(&edca);
+  }
+
+  PetscInfo5(b->in, "    Do T32 on edge (%d, %d) %d, %d, %d.\n", pointmark(m, pe), pointmark(m, pd), pointmark(m, pa), pointmark(m, pb), pointmark(m, pc));
+  m->flip32s++;
+
+  // Storing the old configuration outside the convex hull.
+  enextfnext(m, &edab, &oldabd);
+  enext2fnext(m, &edab, &oldbae);
+  enextfnext(m, &edbc, &oldbcd);
+  enext2fnext(m, &edbc, &oldcbe);
+  enextfnext(m, &edca, &oldcad);
+  enext2fnext(m, &edca, &oldace);
+  sym(&oldabd, &abdcasing);
+  sym(&oldbcd, &bcdcasing);
+  sym(&oldcad, &cadcasing);
+  sym(&oldbae, &baecasing);
+  sym(&oldcbe, &cbecasing);
+  sym(&oldace, &acecasing);
+  if (m->checksubfaces) {
+    tspivot(m, &oldabd, &abdsh);
+    tspivot(m, &oldbcd, &bcdsh);
+    tspivot(m, &oldcad, &cadsh);
+    tspivot(m, &oldbae, &baesh);
+    tspivot(m, &oldcbe, &cbesh);
+    tspivot(m, &oldace, &acesh);
+  }
+  if (m->checksubsegs) {
+    enext(&edab, &worktet);
+    tsspivot1(m, &worktet, &adseg);
+    enext2(&edab, &worktet);
+    tsspivot1(m, &worktet, &aeseg);
+    enext(&edbc, &worktet);
+    tsspivot1(m, &worktet, &bdseg);
+    enext2(&edbc, &worktet);
+    tsspivot1(m, &worktet, &beseg);
+    enext(&edca, &worktet);
+    tsspivot1(m, &worktet, &cdseg);
+    enext2(&edca, &worktet);
+    tsspivot1(m, &worktet, &ceseg);
+    enextfnext(m, &edab, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &abseg);
+    enextfnext(m, &edbc, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &bcseg);
+    enextfnext(m, &edca, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &caseg);
+  }
+
+  // Creating the new configuration inside the convex hull.
+  abcd.tet = edab.tet; // Update edab to be abcd.
+  setorg (&abcd, pa);
+  setdest(&abcd, pb);
+  setapex(&abcd, pc);
+  setoppo(&abcd, pd);
+  bace.tet = edbc.tet; // Update edbc to be bace.
+  setorg (&bace, pb);
+  setdest(&bace, pa);
+  setapex(&bace, pc);
+  setoppo(&bace, pe);
+  // Dealloc a redundant tetrahedron (edca).
+  ierr = TetGenMeshTetrahedronDealloc(m, edca.tet);CHKERRQ(ierr);
+
+  // Clear the old bonds in abcd (was edab) and bace (was edbc).
+  for(i = 0; i < 4; i ++) {
+    abcd.tet[i] = (tetrahedron) m->dummytet;
+  }
+  for(i = 0; i < 4; i ++) {
+    bace.tet[i] = (tetrahedron) m->dummytet;
+  }
+  // Bond the inside face of the convex hull.
+  abcd.loc = 0;
+  bace.loc = 0;
+  bond(m, &abcd, &bace);
+  // Bond the outside faces of the convex hull.
+  abcd.loc = 1;
+  bond(m, &abcd, &abdcasing);
+  abcd.loc = 2;
+  bond(m, &abcd, &bcdcasing);
+  abcd.loc = 3;
+  bond(m, &abcd, &cadcasing);
+  bace.loc = 1;
+  bond(m, &bace, &baecasing);
+  bace.loc = 3;
+  bond(m, &bace, &cbecasing);
+  bace.loc = 2;
+  bond(m, &bace, &acecasing);
+  if (m->checksubfaces) {
+    // Clear old bonds in abcd(was edab) and bace(was edbc).
+    for(i = 0; i < 4; i ++) {
+      abcd.loc = i;
+      tsdissolve(m, &abcd);
+    }
+    for(i = 0; i < 4; i ++) {
+      bace.loc = i;
+      tsdissolve(m, &bace);
+    }
+    if (abdsh.sh != m->dummysh) {
+      abcd.loc = 1;
+      tsbond(m, &abcd, &abdsh);
+    }
+    if (bcdsh.sh != m->dummysh) {
+      abcd.loc = 2;
+      tsbond(m, &abcd, &bcdsh);
+    }
+    if (cadsh.sh != m->dummysh) {
+      abcd.loc = 3;
+      tsbond(m, &abcd, &cadsh);
+    }
+    if (baesh.sh != m->dummysh) {
+      bace.loc = 1;
+      tsbond(m, &bace, &baesh);
+    }
+    if (cbesh.sh != m->dummysh) {
+      bace.loc = 3;
+      tsbond(m, &bace, &cbesh);
+    }
+    if (acesh.sh != m->dummysh) {
+      bace.loc = 2;
+      tsbond(m, &bace, &acesh);
+    }
+  }
+  if (m->checksubsegs) {
+    for (i = 0; i < 6; i++) {
+      abcd.loc = edge2locver[i][0];
+      abcd.ver = edge2locver[i][1];
+      tssdissolve1(m, &abcd);
+    }
+    for (i = 0; i < 6; i++) {
+      bace.loc = edge2locver[i][0];
+      bace.ver = edge2locver[i][1];
+      tssdissolve1(m, &bace);
+    }
+    abcd.loc = abcd.ver = 0;
+    bace.loc = bace.ver = 0;
+    tssbond1(m, &abcd, &abseg);     // 1
+    enext(&abcd, &worktet);
+    tssbond1(m, &worktet, &bcseg);  // 2
+    enext2(&abcd, &worktet);
+    tssbond1(m, &worktet, &caseg);  // 3
+    fnext(m, &abcd, &worktet);
+    enext2self(&worktet);
+    tssbond1(m, &worktet, &adseg);  // 4
+    enextfnext(m, &abcd, &worktet);
+    enext2self(&worktet);
+    tssbond1(m, &worktet, &bdseg);  // 5
+    enext2fnext(m, &abcd, &worktet);
+    enext2self(&worktet);
+    tssbond1(m, &worktet, &cdseg);  // 6
+    tssbond1(m, &bace, &abseg);
+    enext2(&bace, &worktet);
+    tssbond1(m, &worktet, &bcseg);
+    enext(&bace, &worktet);
+    tssbond1(m, &worktet, &caseg);
+    fnext(m, &bace, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &aeseg);  // 7
+    enext2fnext(m, &bace, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &beseg);  // 8
+    enextfnext(m, &bace, &worktet);
+    enextself(&worktet);
+    tssbond1(m, &worktet, &ceseg);  // 9
+  }
+
+  abcd.loc = 0;
+  bace.loc = 0;
+  if (b->verbose > 3) {
+    PetscInfo(b->in, "    Updating abcd "); ierr = TetGenMeshPrintTet(m, &abcd, PETSC_FALSE);CHKERRQ(ierr);
+    PetscInfo(b->in, "    Updating bace "); ierr = TetGenMeshPrintTet(m, &bace, PETSC_FALSE);CHKERRQ(ierr);
+    PetscInfo(b->in, "    Deleting edca "); // ierr = TetGenMeshPrintTet(m, &edca, PETSC_FALSE);CHKERRQ(ierr);
+  }
+
+  // Update point-to-tet map.
+  setpoint2tet(m, pa, encode(&abcd));
+  setpoint2tet(m, pb, encode(&abcd));
+  setpoint2tet(m, pc, encode(&abcd));
+  setpoint2tet(m, pd, encode(&abcd));
+  setpoint2tet(m, pe, encode(&bace));
+
+  if (flipqueue) {
+    fnext(m, &abcd, &abdcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &abdcasing, flipqueue);CHKERRQ(ierr);
+    fnext(m, &bace, &baecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &baecasing, flipqueue);CHKERRQ(ierr);
+    enextfnext(m, &abcd, &bcdcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &bcdcasing, flipqueue);CHKERRQ(ierr);
+    enextfnext(m, &bace, &cbecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &cbecasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &abcd, &cadcasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &cadcasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &bace, &acecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &acecasing, flipqueue);CHKERRQ(ierr);
+  }
+
+  // Save a live handle in 'recenttet'.
+  m->recenttet = abcd;
+  // Set the return handle be abcd.
+  *flipface = abcd;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFlip22"
+// flip22()    Perform a 2-to-2 (or 4-to-4) flip.                            //
+//                                                                           //
+// On input, 'flipface' represents the face will be flipped.  Let it is abe, //
+// ab is the flipable edge, the two tetrahedra sharing abe are abce and bade,//
+// hence a, b, c and d are coplanar. If abc, bad are interior faces, the two //
+// tetrahedra opposite to e are bacf and abdf.  ab is not a subsegment.      //
+//                                                                           //
+// A 2-to-2 flip is to change two tetrahedra abce and bade into another two  //
+// tetrahedra dcae and cdbe. If bacf and abdf exist, they're changed to cdaf //
+// and dcbf, thus a 4-to-4 flip.  As a result, two or four tetrahedra have   //
+// rotated counterclockwise (using right-hand rule with thumb points to e):  //
+// abce->dcae, bade->cdbe, and bacf->cdaf, abdf->dcbf.                       //
+//                                                                           //
+// If abc and bad are subfaces, a 2-to-2 flip is performed simultaneously by //
+// calling routine flip22sub(), hence abc->dca, bad->cdb.  The edge rings of //
+// the flipped subfaces dca and cdb have the same orientation as abc and bad.//
+// Hence, they have the same orientation as other subfaces of the facet with //
+// respect to the lift point of this facet.                                  //
+//                                                                           //
+// On completion, 'flipface' holds edge dc of tetrahedron dcae. 'flipqueue'  //
+// contains all possibly non-Delaunay faces if it is not NULL.               //
+/* tetgenmesh::flip22() */
+PetscErrorCode TetGenMeshFlip22(TetGenMesh *m, triface *flipface, Queue *flipqueue)
+{
+  TetGenOpts    *b  = m->b;
+  triface abce = {PETSC_NULL, 0, 0}, bade = {PETSC_NULL, 0, 0};
+  triface oldbce = {PETSC_NULL, 0, 0}, oldcae = {PETSC_NULL, 0, 0}, oldade = {PETSC_NULL, 0, 0}, olddbe = {PETSC_NULL, 0, 0};
+  triface bcecasing = {PETSC_NULL, 0, 0}, caecasing = {PETSC_NULL, 0, 0}, adecasing = {PETSC_NULL, 0, 0}, dbecasing = {PETSC_NULL, 0, 0};
+  face bcesh = {PETSC_NULL, 0}, caesh = {PETSC_NULL, 0}, adesh = {PETSC_NULL, 0}, dbesh = {PETSC_NULL, 0};
+  triface bacf = {PETSC_NULL, 0, 0}, abdf = {PETSC_NULL, 0, 0};
+  triface oldacf = {PETSC_NULL, 0, 0}, oldcbf = {PETSC_NULL, 0, 0}, oldbdf = {PETSC_NULL, 0, 0}, olddaf = {PETSC_NULL, 0, 0};
+  triface acfcasing = {PETSC_NULL, 0, 0}, cbfcasing = {PETSC_NULL, 0, 0}, bdfcasing = {PETSC_NULL, 0, 0}, dafcasing = {PETSC_NULL, 0, 0};
+  triface worktet = {PETSC_NULL, 0, 0};
+  face acfsh = {PETSC_NULL, 0}, cbfsh = {PETSC_NULL, 0}, bdfsh = {PETSC_NULL, 0}, dafsh = {PETSC_NULL, 0};
+  face abc = {PETSC_NULL, 0}, bad = {PETSC_NULL, 0};
+  face adseg = {PETSC_NULL, 0}, dbseg = {PETSC_NULL, 0}, bcseg = {PETSC_NULL, 0}, caseg = {PETSC_NULL, 0};  // Coplanar segs.
+  face aeseg = {PETSC_NULL, 0}, deseg = {PETSC_NULL, 0}, beseg = {PETSC_NULL, 0}, ceseg = {PETSC_NULL, 0};  // Above segs.
+  face afseg = {PETSC_NULL, 0}, dfseg = {PETSC_NULL, 0}, bfseg = {PETSC_NULL, 0}, cfseg = {PETSC_NULL, 0};  // Below segs.
+  point pa, pb, pc, pd, pe, pf;
+  int mirrorflag, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  adjustedgering_triface(flipface, CCW); // 'flipface' is bae.
+  fnext(m, flipface, &abce);
+  esymself(&abce);
+  adjustedgering_triface(flipface, CW); // 'flipface' is abe.
+  fnext(m, flipface, &bade);
+#ifdef PETSC_USE_DEBUG
+  if (bade.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+  esymself(&bade);
+  pa = org(&abce);
+  pb = dest(&abce);
+  pc = apex(&abce);
+  pd = apex(&bade);
+  pe = oppo(&bade);
+#ifdef PETSC_USE_DEBUG
+  if (oppo(&abce) != pe) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+  sym(&abce, &bacf);
+  mirrorflag = bacf.tet != m->dummytet ? PETSC_TRUE : PETSC_FALSE;
+  if (mirrorflag) {
+    // findedge(&bacf, pb, pa);
+    bacf.ver = 0;
+    for(i = 0; (i < 3) && (org(&bacf) != pb); i++) {
+      enextself(&bacf);
+    }
+    sym(&bade, &abdf);
+#ifdef PETSC_USE_DEBUG
+    if (abdf.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+    // findedge(&abdf, pa, pb);
+    abdf.ver = 0;
+    for (i = 0; (i < 3) && (org(&abdf) != pa); i++) {
+      enextself(&abdf);
+    }
+    pf = oppo(&bacf);
+#ifdef PETSC_USE_DEBUG
+    if (oppo(&abdf) != pf) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+  }
+
+  PetscInfo5(b->in, "    Flip edge (%d, %d) to (%d, %d) %s.\n", pointmark(m, pa), pointmark(m, pb), pointmark(m, pc), pointmark(m, pd), mirrorflag ? "T44" : "T22");
+  mirrorflag ? m->flip44s++ : m->flip22s++;
+
+  // Save the old configuration at the convex hull.
+  enextfnext(m, &abce, &oldbce);
+  enext2fnext(m, &abce, &oldcae);
+  enextfnext(m, &bade, &oldade);
+  enext2fnext(m, &bade, &olddbe);
+  sym(&oldbce, &bcecasing);
+  sym(&oldcae, &caecasing);
+  sym(&oldade, &adecasing);
+  sym(&olddbe, &dbecasing);
+  if (m->checksubfaces) {
+    tspivot(m, &oldbce, &bcesh);
+    tspivot(m, &oldcae, &caesh);
+    tspivot(m, &oldade, &adesh);
+    tspivot(m, &olddbe, &dbesh);
+    tspivot(m, &abce, &abc);
+    tspivot(m, &bade, &bad);
+  }
+  if (m->checksubsegs) {
+    // Coplanar segs: a->d->b->c.
+    enext(&bade, &worktet);
+    tsspivot1(m, &worktet, &adseg);
+    enext2(&bade, &worktet);
+    tsspivot1(m, &worktet, &dbseg);
+    enext(&abce, &worktet);
+    tsspivot1(m, &worktet, &bcseg);
+    enext2(&abce, &worktet);
+    tsspivot1(m, &worktet, &caseg);
+    // Above segs: a->e, d->e, b->e, c->e.
+    fnext(m, &bade, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &aeseg);
+    enextfnext(m, &bade, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &deseg);
+    enext2fnext(m, &bade, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &beseg);
+    enextfnext(m, &abce, &worktet);
+    enextself(&worktet);
+    tsspivot1(m, &worktet, &ceseg);
+  }
+  if (mirrorflag) {
+    enextfnext(m, &bacf, &oldacf);
+    enext2fnext(m, &bacf, &oldcbf);
+    enextfnext(m, &abdf, &oldbdf);
+    enext2fnext(m, &abdf, &olddaf);
+    sym(&oldacf, &acfcasing);
+    sym(&oldcbf, &cbfcasing);
+    sym(&oldbdf, &bdfcasing);
+    sym(&olddaf, &dafcasing);
+    if (m->checksubfaces) {
+      tspivot(m, &oldacf, &acfsh);
+      tspivot(m, &oldcbf, &cbfsh);
+      tspivot(m, &oldbdf, &bdfsh);
+      tspivot(m, &olddaf, &dafsh);
+    }
+    if (m->checksubsegs) {
+      // Below segs: a->f, d->f, b->f, c->f.
+      fnext(m, &abdf, &worktet);
+      enext2self(&worktet);
+      tsspivot1(m, &worktet, &afseg);
+      enext2fnext(m, &abdf, &worktet);
+      enext2self(&worktet);
+      tsspivot1(m, &worktet, &dfseg);
+      enextfnext(m, &abdf, &worktet);
+      enext2self(&worktet);
+      tsspivot1(m, &worktet, &bfseg);
+      enextfnext(m, &bacf, &worktet);
+      enextself(&worktet);
+      tsspivot1(m, &worktet, &cfseg);
+    }
+  }
+
+  // Rotate abce, bade one-quarter turn counterclockwise.
+  bond(m, &oldbce, &caecasing);
+  bond(m, &oldcae, &adecasing);
+  bond(m, &oldade, &dbecasing);
+  bond(m, &olddbe, &bcecasing);
+  if (m->checksubfaces) {
+    // Check for subfaces and rebond them to the rotated tets.
+    if (caesh.sh == m->dummysh) {
+      tsdissolve(m, &oldbce);
+    } else {
+      tsbond(m, &oldbce, &caesh);
+    }
+    if (adesh.sh == m->dummysh) {
+      tsdissolve(m, &oldcae);
+    } else {
+      tsbond(m, &oldcae, &adesh);
+    }
+    if (dbesh.sh == m->dummysh) {
+      tsdissolve(m, &oldade);
+    } else {
+      tsbond(m, &oldade, &dbesh);
+    }
+    if (bcesh.sh == m->dummysh) {
+      tsdissolve(m, &olddbe);
+    } else {
+      tsbond(m, &olddbe, &bcesh);
+    }
+  }
+  if (m->checksubsegs) {
+    // 5 edges in abce are changed.
+    enext(&abce, &worktet);  // fit b->c into c->a.
+    if (caseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &caseg);
+    }
+    enext2(&abce, &worktet); // fit c->a into a->d.
+    if (adseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &adseg);
+    }
+    fnext(m, &abce, &worktet); // fit b->e into c->e.
+    enextself(&worktet);
+    if (ceseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &ceseg);
+    }
+    enextfnext(m, &abce, &worktet); // fit c->e into a->e.
+    enextself(&worktet);
+    if (aeseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &aeseg);
+    }
+    enext2fnext(m, &abce, &worktet); // fit a->e into d->e.
+    enextself(&worktet);
+    if (deseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &deseg);
+    }
+    // 5 edges in bade are changed.
+    enext(&bade, &worktet); // fit a->d into d->b.
+    if (dbseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &dbseg);
+    }
+    enext2(&bade, &worktet); // fit d->b into b->c.
+    if (bcseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &bcseg);
+    }
+    fnext(m, &bade, &worktet); // fit a->e into d->e.
+    enextself(&worktet);
+    if (deseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &deseg);
+    }
+    enextfnext(m, &bade, &worktet); // fit d->e into b->e.
+    enextself(&worktet);
+    if (beseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &beseg);
+    }
+    enext2fnext(m, &bade, &worktet); // fit b->e into c->e.
+    enextself(&worktet);
+    if (ceseg.sh == m->dummysh) {
+      tssdissolve1(m, &worktet);
+    } else {
+      tssbond1(m, &worktet, &ceseg);
+    }
+  }
+  if (mirrorflag) {
+    // Rotate bacf, abdf one-quarter turn counterclockwise.
+    bond(m, &oldcbf, &acfcasing);
+    bond(m, &oldacf, &dafcasing);
+    bond(m, &olddaf, &bdfcasing);
+    bond(m, &oldbdf, &cbfcasing);
+    if (m->checksubfaces) {
+      // Check for subfaces and rebond them to the rotated tets.
+      if (acfsh.sh == m->dummysh) {
+        tsdissolve(m, &oldcbf);
+      } else {
+        tsbond(m, &oldcbf, &acfsh);
+      }
+      if (dafsh.sh == m->dummysh) {
+        tsdissolve(m, &oldacf);
+      } else {
+        tsbond(m, &oldacf, &dafsh);
+      }
+      if (bdfsh.sh == m->dummysh) {
+        tsdissolve(m, &olddaf);
+      } else {
+        tsbond(m, &olddaf, &bdfsh);
+      }
+      if (cbfsh.sh == m->dummysh) {
+        tsdissolve(m, &oldbdf);
+      } else {
+        tsbond(m, &oldbdf, &cbfsh);
+      }
+    }
+    if (m->checksubsegs) {
+      // 5 edges in bacf are changed.
+      enext2(&bacf, &worktet); // fit b->c into c->a.
+      if (caseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &caseg);
+      }
+      enext(&bacf, &worktet); // fit c->a into a->d.
+      if (adseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &adseg);
+      }
+      fnext(m, &bacf, &worktet); // fit b->f into c->f.
+      enext2self(&worktet);
+      if (cfseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &cfseg);
+      }
+      enext2fnext(m, &bacf, &worktet); // fit c->f into a->f.
+      enext2self(&worktet);
+      if (afseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &afseg);
+      }
+      enextfnext(m, &bacf, &worktet); // fit a->f into d->f.
+      enext2self(&worktet);
+      if (dfseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &dfseg);
+      }
+      // 5 edges in abdf are changed.
+      enext2(&abdf, &worktet); // fit a->d into d->b.
+      if (dbseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &dbseg);
+      }
+      enext(&abdf, &worktet); // fit d->b into b->c.
+      if (bcseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &bcseg);
+      }
+      fnext(m, &abdf, &worktet); // fit a->f into d->f.
+      enext2self(&worktet);
+      if (dfseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &dfseg);
+      }
+      enext2fnext(m, &abdf, &worktet); // fit d->f into b->f.
+      enext2self(&worktet);
+      if (bfseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &bfseg);
+      }
+      enextfnext(m, &abdf, &worktet); // fit b->f into c->f.
+      enext2self(&worktet);
+      if (cfseg.sh == m->dummysh) {
+        tssdissolve1(m, &worktet);
+      } else {
+        tssbond1(m, &worktet, &cfseg);
+      }
+    }
+  }
+
+  // New vertex assignments for the rotated tetrahedra.
+  setorg(&abce, pd); // Update abce to dcae
+  setdest(&abce, pc);
+  setapex(&abce, pa);
+  setorg(&bade, pc); // Update bade to cdbe
+  setdest(&bade, pd);
+  setapex(&bade, pb);
+  if (mirrorflag) {
+    setorg(&bacf, pc); // Update bacf to cdaf
+    setdest(&bacf, pd);
+    setapex(&bacf, pa);
+    setorg(&abdf, pd); // Update abdf to dcbf
+    setdest(&abdf, pc);
+    setapex(&abdf, pb);
+  }
+
+  // Update point-to-tet map.
+  setpoint2tet(m, pa, encode(&abce));
+  setpoint2tet(m, pb, encode(&bade));
+  setpoint2tet(m, pc, encode(&abce));
+  setpoint2tet(m, pd, encode(&bade));
+  setpoint2tet(m, pe, encode(&abce));
+  if (mirrorflag) {
+    setpoint2tet(m, pf, encode(&bacf));
+  }
+
+  // Are there subfaces need to be flipped?
+  if (m->checksubfaces && abc.sh != m->dummysh) {
+#ifdef PETSC_USE_DEBUG
+    if (bad.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+    // Adjust the edge be ab, so the rotation of subfaces is according with
+    //   the rotation of tetrahedra.
+    ierr = TetGenMeshFindEdge_face(m, &abc, pa, pb);CHKERRQ(ierr);
+    // Flip an edge of two subfaces, ignore non-Delaunay edges.
+    ierr = TetGenMeshFlip22Sub(m, &abc, PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  if (b->verbose > 3) {
+    PetscInfo(b->in, "    Updating abce "); ierr = TetGenMeshPrintTet(m, &abce, PETSC_FALSE);CHKERRQ(ierr);
+    PetscInfo(b->in, "    Updating bade "); ierr = TetGenMeshPrintTet(m, &bade, PETSC_FALSE);CHKERRQ(ierr);
+    if (mirrorflag) {
+      PetscInfo(b->in, "    Updating bacf "); ierr = TetGenMeshPrintTet(m, &bacf, PETSC_FALSE);CHKERRQ(ierr);
+      PetscInfo(b->in, "    Updating abdf "); ierr = TetGenMeshPrintTet(m, &abdf, PETSC_FALSE);CHKERRQ(ierr);
+    }
+  }
+
+  if (flipqueue) {
+    enextfnext(m, &abce, &bcecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &bcecasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &abce, &caecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &caecasing, flipqueue);CHKERRQ(ierr);
+    enextfnext(m, &bade, &adecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &adecasing, flipqueue);CHKERRQ(ierr);
+    enext2fnext(m, &bade, &dbecasing);
+    ierr = TetGenMeshEnqueueFlipFace(m, &dbecasing, flipqueue);CHKERRQ(ierr);
+    if (mirrorflag) {
+      enextfnext(m, &bacf, &acfcasing);
+      ierr = TetGenMeshEnqueueFlipFace(m, &acfcasing, flipqueue);CHKERRQ(ierr);
+      enext2fnext(m, &bacf, &cbfcasing);
+      ierr = TetGenMeshEnqueueFlipFace(m, &cbfcasing, flipqueue);CHKERRQ(ierr);
+      enextfnext(m, &abdf, &bdfcasing);
+      ierr = TetGenMeshEnqueueFlipFace(m, &bdfcasing, flipqueue);CHKERRQ(ierr);
+      enext2fnext(m, &abdf, &dafcasing);
+      ierr = TetGenMeshEnqueueFlipFace(m, &dafcasing, flipqueue);CHKERRQ(ierr);
+    }
+    // The two new faces dcae (abce), cdbe (bade) may still not be locally
+    //   Delaunay, and may need be flipped (flip23).  On the other hand, in
+    //   conforming Delaunay algorithm, two new subfaces dca (abc), and cdb
+    //   (bad) may be non-conforming Delaunay, they need be queued if they
+    //   are locally Delaunay but non-conforming Delaunay.
+    ierr = TetGenMeshEnqueueFlipFace(m, &abce, flipqueue);CHKERRQ(ierr);
+    ierr = TetGenMeshEnqueueFlipFace(m, &bade, flipqueue);CHKERRQ(ierr);
+  }
+
+  // Save a live handle in 'recenttet'.
+  m->recenttet = abce;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshLawson3D"
+// lawson3d()    Perform 3D Lawson flips on non-Delaunay faces/edges.        //
+/* tetgenmesh::lawson3d() */
+PetscErrorCode TetGenMeshLawson3D(TetGenMesh *m, Queue *flipqueue, long *numFlips)
+{
+  TetGenOpts    *b  = m->b;
+  badface *qface;
+  triface flipface = {PETSC_NULL, 0, 0}, symface = {PETSC_NULL, 0, 0}, flipedge = {PETSC_NULL, 0, 0};
+  triface neighface = {PETSC_NULL, 0, 0}, symneighface = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0}, checkseg = {PETSC_NULL, 0};
+  face neighsh = {PETSC_NULL, 0}, symneighsh = {PETSC_NULL, 0};
+  point pa, pb, pc, pd, pe;
+  point end1, end2;
+  PetscReal sign, ori1, ori2, ori3;
+  PetscReal ori4, len, vol;
+  long flipcount;
+  int copflag;
+  int llen, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = QueueLength(flipqueue, &llen);CHKERRQ(ierr);
+  PetscInfo1(b->in, "    Lawson flip: %ld faces.\n", llen);
+  flipcount = m->flip23s + m->flip32s + m->flip22s + m->flip44s;
+
+  // Loop until the queue is empty.
+  while(llen) {
+    ierr = QueuePop(flipqueue, (void **) &qface);CHKERRQ(ierr);
+    flipface = qface->tt;
+    if (isdead_triface(&flipface)) continue;
+    if (flipface.tet == m->dummytet) continue;
+    // Do not flip it if it is a subface.
+    tspivot(m, &flipface, &checksh);
+    if (checksh.sh != m->dummysh) continue;
+
+    sym(&flipface, &symface);
+    // Only do check when the adjacent tet exists and it's not a "fake" tet.
+    if ((symface.tet != m->dummytet) && (oppo(&symface) == qface->foppo)) {
+      flipface.ver = 0; // CCW.
+      pa = org(&flipface);
+      pb = dest(&flipface);
+      pc = apex(&flipface);
+      pd = oppo(&flipface);
+      pe = oppo(&symface);
+      ierr = TetGenMeshInSphereS(m, pb, pa, pc, pd, pe, &sign);CHKERRQ(ierr);
+      if (sign == 0.0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+
+      if (sign > 0.0) {
+        // flipface is not locally Delaunay. Try to flip it.
+        ori1 = orient3d(pa, pb, pd, pe);
+        ori2 = orient3d(pb, pc, pd, pe);
+        ori3 = orient3d(pc, pa, pd, pe);
+
+        flipedge = flipface;  // Initialize flipedge.
+        copflag = 0;
+
+        // Find a suitable flip.
+        if (ori1 > 0) {
+          if (ori2 > 0) {
+            if (ori3 > 0) { // (+++)
+              // A 2-to-3 flip is found.
+              // Do not flip it if it is a subface.
+              // tspivot(flipface, checksh);
+              // if (checksh.sh == dummysh) {
+                // Do not flip it if it will create a tet spanning two
+                //   "coplanar" subfaces. We treat this case as either
+                //   a 2-to-2 or a 4-to-4 flip.
+                for(i = 0; i < 3; i++) {
+                  ierr = TetGenMeshTssPivot(m, &flipface, &checkseg);CHKERRQ(ierr);
+                  if (checkseg.sh == m->dummysh) {
+                    fnext(m, &flipface, &neighface);
+                    tspivot(m, &neighface, &neighsh);
+                    if (neighsh.sh != m->dummysh) {
+                      // Check if there exist another subface.
+                      symedge(m, &flipface, &symface);
+                      fnext(m, &symface, &symneighface);
+                      tspivot(m, &symneighface, &symneighsh);
+                      if (symneighsh.sh != m->dummysh) {
+                        // Do not flip this face. Try to do a 2-to-2 or a
+                        //   4-to-4 flip instead.
+                        flipedge = flipface;
+                        copflag = 1;
+                        break;
+                      }
+                    }
+                  }
+                  enextself(&flipface);
+                }
+                if (i == 3) {
+                  // Do not flip if it will create a nearly degenerate tet
+                  //   at a segment. Once we created such a tet, it may
+                  //   prevent you to split the segment later. An example
+                  //   is in dump-.lua
+                  for(i = 0; i < 3; i++) {
+                    ierr = TetGenMeshTssPivot(m, &flipface, &checkseg);CHKERRQ(ierr);
+                    if (checkseg.sh != m->dummysh) {
+                      end1 = (point) checkseg.sh[3];
+                      end2 = (point) checkseg.sh[4];
+                      ori4 = orient3d(end1, end2, pd, pe);
+                      len = distance(end1, end2);
+                      vol = len * len * len;
+                      // Is it nearly degnerate?
+                      if ((fabs(ori4) / vol) < b->epsilon) {
+                        flipedge = flipface;
+                        copflag = 0;
+                        break;
+                      }
+                    }
+                    enextself(&flipface);
+                  }
+                  if (i == 3) {
+                    ierr = TetGenMeshFlip23(m, &flipface, flipqueue);CHKERRQ(ierr);
+                    continue;
+                  }
+                }
+              // }
+            } else {
+              if (ori3 < 0) { // (++-)
+                // Try to flip edge [c, a].
+                flipedge.ver = 4;
+                copflag = 0;
+              } else { // (++0)
+                // A 2-to-2 or 4-to-4 flip at edge [c, a].
+                flipedge.ver = 4;
+                copflag = 1;
+              }
+            }
+          } else {
+            if (ori2 < 0) {
+              if (ori3 > 0) { // (+-+)
+                // Try to flip edge [b, c].
+                flipedge.ver = 2;
+                copflag = 0;
+              } else {
+                if (ori3 < 0) { // (+--)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                } else { // (+-0)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                }
+              }
+            } else { // ori2 == 0
+              if (ori3 > 0) { // (+0+)
+                // A 2-to-2 or 4-to-4 flip at edge [b, c].
+                flipedge.ver = 2;
+                copflag = 1;
+              } else {
+                if (ori3 < 0) { // (+0-)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                } else { // (+00)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                }
+              }
+            }
+          }
+        } else {
+          if (ori1 < 0) {
+            if (ori2 > 0) {
+              if (ori3 > 0) { // (-++)
+                // Try to flip edge [a, b].
+                flipedge.ver = 0;
+                copflag = 0;
+              } else {
+                if (ori3 < 0) { // (-+-)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                } else { // (-+0)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                }
+              }
+            } else {
+              if (ori2 < 0) {
+                if (ori3 > 0) { // (--+)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                } else {
+                  if (ori3 < 0) { // (---)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                  } else { // (--0)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                  }
+                }
+              } else { // ori2 == 0
+                if (ori3 > 0) { // (-0+)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                } else {
+                  if (ori3 < 0) { // (-0-)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                  } else { // (-00)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
+                  }
+                }
+              }
+            }
+          } else { // ori1 == 0
+            if (ori2 > 0) {
+              if (ori3 > 0) { // (0++)
+                // A 2-to-2 or 4-to-4 flip at edge [a, b].
+                flipedge.ver = 0;
+                copflag = 1;
+              } else {
+                if (ori3 < 0) { // (0+-)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                } else { // (0+0)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                }
+              }
+            } else {
+              if (ori2 < 0) {
+                if (ori3 > 0) { // (0-+)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                } else {
+                  if (ori3 < 0) { // (0--)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                  } else { // (0-0)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                  }
+                }
+              } else {
+                if (ori3 > 0) { // (00+)
+                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                } else {
+                  if (ori3 < 0) { // (00-)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                  } else { // (000)
+                    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // An edge (flipedge) is going to be flipped.
+        // Do not flip it it is a subsegment.
+        ierr = TetGenMeshTssPivot(m, &flipedge, &checkseg);CHKERRQ(ierr);
+        if (checkseg.sh == m->dummysh) {
+          symedge(m, &flipedge, &symface);
+          if (copflag == 0) {
+            // Check if a 3-to-2 flip is possible.
+            tfnext(m, &flipedge, &neighface);
+            if (neighface.tet != m->dummytet) {
+              // Check if neighface is a subface.
+              tspivot(m, &neighface, &neighsh);
+              if (neighsh.sh == m->dummysh) {
+                tfnext(m, &symface, &symneighface);
+                if (neighface.tet == symneighface.tet) {
+                  // symneighface should not be a subface. Check it.
+                  tspivot(m, &symneighface, &symneighsh);
+                  if (symneighsh.sh != m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+                  // Found a 3-to-2 flip.
+                  ierr = TetGenMeshFlip32(m, &flipedge, flipqueue);CHKERRQ(ierr);
+                }
+              } else {
+                // neighsh is a subface. Check a potential 4-to-4 flip.
+                tfnext(m, &symface, &symneighface);
+                tspivot(m, &symneighface, &symneighsh);
+                if (symneighsh.sh != m->dummysh) {
+                  if (oppo(&neighface) == oppo(&symneighface)) {
+                    // Found a 4-to-4 flip.
+                    ierr = TetGenMeshFlip22(m, &flipedge, flipqueue);CHKERRQ(ierr);
+                  }
+                }
+              }
+            } else {
+              // neightface is a hull face. Since flipedge is not a segment
+              //   and this edge is locally non-convex.
+              tfnext(m, &symface, &symneighface);
+              // symneighface should also be a hull face.
+              if (symneighface.tet == m->dummytet) {
+                // Force a 2-to-2 flip (recovery of Delaunay).
+                ierr = TetGenMeshFlip22(m, &flipedge, flipqueue);CHKERRQ(ierr);
+              }
+            }
+          } else {
+            // Check if a 2-to-2 or 4-to-4 flip is possible.
+            tfnext(m, &flipedge, &neighface);
+            tfnext(m, &symface, &symneighface);
+            if (neighface.tet != m->dummytet) {
+              if (symneighface.tet != m->dummytet) {
+                if (oppo(&neighface) == oppo(&symneighface)) {
+                  // Found a 4-to-4 flip.
+                  ierr = TetGenMeshFlip22(m, &flipedge, flipqueue);CHKERRQ(ierr);
+                }
+              }
+            } else {
+              if (symneighface.tet == m->dummytet) {
+                // Found a 2-to-2 flip.
+                ierr = TetGenMeshFlip22(m, &flipedge, flipqueue);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+
+      } // if (sign > 0)
+    }
+    ierr = QueueLength(flipqueue, &llen);CHKERRQ(ierr);
+  } // while (!flipqueue->empty())
+
+  flipcount = m->flip23s + m->flip32s + m->flip22s + m->flip44s - flipcount;
+  PetscInfo1(b->in, "    %ld flips.\n", flipcount);
+
+  if (numFlips) {*numFlips = flipcount;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TetGenMeshLawson"
+// lawson()    Perform lawson flips on non-Delaunay edges.                   //
+//                                                                           //
+// Assumpation:  Current triangulation T contains non-Delaunay edges (after  //
+// inserting a point or performing a flip). Non-Delaunay edges are queued in //
+// 'facequeue'. Returns the total number of flips done during this call.     //
 /* tetgenmesh::lawson() */
 PetscErrorCode TetGenMeshLawson(TetGenMesh *m, Queue *flipqueue, long *numFlips)
 {
@@ -6281,6 +8143,328 @@ PetscErrorCode TetGenMeshLawson(TetGenMesh *m, Queue *flipqueue, long *numFlips)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TetGenMeshSplitSubEdge_queue"
+// splitsubedge()    Insert a point on an edge of the surface mesh.          //
+//                                                                           //
+// The splitting edge is given by 'splitsh'. Assume its three corners are a, //
+// b, c, where ab is the edge will be split. ab may be a subsegment.         //
+//                                                                           //
+// To split edge ab is to split all subfaces conatining ab. If ab is not a   //
+// subsegment, there are only two subfaces need be split, otherwise, there   //
+// may have any number of subfaces need be split. Each splitting subface abc //
+// is shrunk to avc, a new subface vbc is created.  It is important to keep  //
+// the orientations of edge rings of avc and vbc be the same as abc's. If ab //
+// is a subsegment, it is shrunk to av and a new subsegment vb is created.   //
+//                                                                           //
+// If there are tetrahedra adjoining to the splitting subfaces, they should  //
+// be split before calling this routine, so the connection between the new   //
+// tetrahedra and the new subfaces can be correctly set.                     //
+//                                                                           //
+// On completion, 'splitsh' returns avc.  If 'flipqueue' is not NULL, it     //
+// returns all edges which may be non-Delaunay.                              //
+/* tetgenmesh::splitsubedge() */
+PetscErrorCode TetGenMeshSplitSubEdge_queue(TetGenMesh *m, point newpoint, face *splitsh, Queue *flipqueue)
+{
+  TetGenOpts    *b  = m->b;
+  triface abcd = {PETSC_NULL, 0, 0}, bace = {PETSC_NULL, 0, 0}, vbcd = {PETSC_NULL, 0, 0}, bvce = {PETSC_NULL, 0, 0};
+  face startabc = {PETSC_NULL, 0}, spinabc = {PETSC_NULL, 0}, spinsh = {PETSC_NULL, 0};
+  face oldbc = {PETSC_NULL, 0}, bccasin = {PETSC_NULL, 0}, bccasout = {PETSC_NULL, 0};
+  face ab = {PETSC_NULL, 0}, bc = {PETSC_NULL, 0};
+  face avc = {PETSC_NULL, 0}, vbc = {PETSC_NULL, 0}, vbc1 = {PETSC_NULL, 0};
+  face av = {PETSC_NULL, 0}, vb = {PETSC_NULL, 0};
+  point pa, pb;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  startabc = *splitsh;
+  // Is there a subsegment?
+  sspivot(m, &startabc, &ab);
+  if (ab.sh != m->dummysh) {
+    ab.shver = 0;
+    if (sorg(&startabc) != sorg(&ab)) {
+      sesymself(&startabc);
+    }
+  }
+  pa = sorg(&startabc);
+  pb = sdest(&startabc);
+
+  PetscInfo4(b->in, "  Inserting point %d on subedge (%d, %d) %s.\n", pointmark(m, newpoint), pointmark(m, pa), pointmark(m, pb), (ab.sh != m->dummysh ? "(seg)" : " "));
+
+  // Spin arround ab, split every subface containing ab.
+  spinabc = startabc;
+  do {
+    // Adjust spinabc be edge ab.
+    if (sorg(&spinabc) != pa) {
+      sesymself(&spinabc);
+    }
+    // Unmark the face for splitting (used for refinement) 2009-08-17.
+    sunmarktest(&spinabc);
+    // Save old configuration at edge bc, if bc has a subsegment, save the
+    //   face link of it and dissolve it from bc.
+    senext(&spinabc, &oldbc);
+    spivot(&oldbc, &bccasout);
+    sspivot(m, &oldbc, &bc);
+    if (bc.sh != m->dummysh) {
+      if (bccasout.sh != m->dummysh) {
+        // 'spinabc' is not self-bonded.
+        spinsh = bccasout;
+        do {
+          bccasin = spinsh;
+          spivotself(&spinsh);
+        } while (spinsh.sh != oldbc.sh);
+      } else {
+        bccasout.sh = m->dummysh;
+      }
+      ssdissolve(m, &oldbc);
+    }
+    // Create a new subface.
+    ierr = TetGenMeshMakeShellFace(m, m->subfaces, &vbc);CHKERRQ(ierr);
+    // Split abc.
+    avc = spinabc;  // Update 'abc' to 'avc'.
+    setsdest(&avc, newpoint);
+    // Make 'vbc' be in the same edge ring as 'avc'.
+    vbc.shver = avc.shver;
+    setsorg(&vbc, newpoint); // Set 'vbc'.
+    setsdest(&vbc, pb);
+    setsapex(&vbc, sapex(&avc));
+    if (b->quality && m->varconstraint) {
+      // Copy the area bound into the new subface.
+      setareabound(m, &vbc, areabound(m, &avc));
+    }
+    // Copy the shell marker and shell type into the new subface.
+    setshellmark(m, &vbc, shellmark(m, &avc));
+    setshelltype(m, &vbc, shelltype(m, &avc));
+    if (m->checkpbcs) {
+      // Copy the pbcgroup into the new subface.
+      setshellpbcgroup(m, &vbc, shellpbcgroup(m, &avc));
+    }
+    // Set the connection between updated and new subfaces.
+    senext2self(&vbc);
+    sbond(&vbc, &oldbc);
+    // Set the connection between new subface and casings.
+    senext2self(&vbc);
+    if (bc.sh != m->dummysh) {
+      if (bccasout.sh != m->dummysh) {
+        // Insert 'vbc' into face link.
+        sbond1(&bccasin, &vbc);
+        sbond1(&vbc, &bccasout);
+      } else {
+        // Bond 'vbc' to itself.
+        sdissolve(m, &vbc); // sbond(vbc, vbc);
+      }
+      ssbond(m, &vbc, &bc);
+    } else {
+      sbond(&vbc, &bccasout);
+    }
+    // Go to next subface at edge ab.
+    spivotself(&spinabc);
+    if (spinabc.sh == m->dummysh) {
+      break; // 'ab' is a hull edge.
+    }
+  } while (spinabc.sh != startabc.sh);
+
+  // Get the new subface vbc above the updated subface avc (= startabc).
+  senext(&startabc, &oldbc);
+  spivot(&oldbc, &vbc);
+  if (sorg(&vbc) == newpoint) {
+    sesymself(&vbc);
+  }
+#ifdef PETSC_USE_DEBUG
+  if (sorg(&vbc) != sdest(&oldbc) || sdest(&vbc) != sorg(&oldbc)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+  senextself(&vbc);
+  // Set the face link for the new created subfaces around edge vb.
+  spinabc = startabc;
+  do {
+    // Go to the next subface at edge av.
+    spivotself(&spinabc);
+    if (spinabc.sh == m->dummysh) {
+      break; // 'ab' is a hull edge.
+    }
+    if (sorg(&spinabc) != pa) {
+      sesymself(&spinabc);
+    }
+    // Get the new subface vbc1 above the updated subface avc (= spinabc).
+    senext(&spinabc, &oldbc);
+    spivot(&oldbc, &vbc1);
+    if (sorg(&vbc1) == newpoint) {
+      sesymself(&vbc1);
+    }
+#ifdef PETSC_USE_DEBUG
+    if (sorg(&vbc1) != sdest(&oldbc) || sdest(&vbc1) != sorg(&oldbc)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+    senextself(&vbc1);
+    // Set the connection: vbc->vbc1.
+    sbond1(&vbc, &vbc1);
+    // For the next connection.
+    vbc = vbc1;
+  } while (spinabc.sh != startabc.sh);
+
+  // Split ab if it is a subsegment.
+  if (ab.sh != m->dummysh) {
+    // Unmark the segment for mesh optimization. 2009-08-17.
+    sunmarktest(&ab);
+    // Update subsegment ab to av.
+    av = ab;
+    setsdest(&av, newpoint);
+    // Create a new subsegment vb.
+    ierr = TetGenMeshMakeShellFace(m, m->subsegs, &vb);CHKERRQ(ierr);
+    setsorg(&vb, newpoint);
+    setsdest(&vb, pb);
+    // vb gets the same mark and segment type as av.
+    setshellmark(m, &vb, shellmark(m, &av));
+    setshelltype(m, &vb, shelltype(m, &av));
+    if (b->quality && m->varconstraint) {
+      // Copy the area bound into the new subsegment.
+      setareabound(m, &vb, areabound(m, &av));
+    }
+    // Save the old connection at ab (re-use the handles oldbc, bccasout).
+    senext(&av, &oldbc);
+    spivot(&oldbc, &bccasout);
+    // Bond av and vb (bonded at their "fake" edges).
+    senext2(&vb, &bccasin);
+    sbond(&bccasin, &oldbc);
+    if (bccasout.sh != m->dummysh) {
+      // There is a subsegment connecting with ab at b. It will connect
+      //   to vb at b after splitting.
+      bccasout.shver = 0;
+      if (sorg(&bccasout) != pb) sesymself(&bccasout);
+#ifdef PETSC_USE_DEBUG
+      if (sorg(&bccasout) != pb) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+      senext2self(&bccasout);
+      senext(&vb, &bccasin);
+      sbond(&bccasin, &bccasout);
+    }
+    // Bond all new subfaces (vbc) to vb.
+    spinabc = startabc;
+    do {
+      // Adjust spinabc be edge av.
+      if (sorg(&spinabc) != pa) {
+        sesymself(&spinabc);
+      }
+      // Get new subface vbc above the updated subface avc (= spinabc).
+      senext(&spinabc, &oldbc);
+      spivot(&oldbc, &vbc);
+      if (sorg(&vbc) == newpoint) {
+        sesymself(&vbc);
+      }
+      senextself(&vbc);
+      // Bond the new subface and the new subsegment.
+      ssbond(m, &vbc, &vb);
+      // Go to the next.
+      spivotself(&spinabc);
+      if (spinabc.sh == m->dummysh) {
+        break; // There's only one facet at the segment.rr
+      }
+    } while (spinabc.sh != startabc.sh);
+  }
+
+  // Bond the new subfaces to new tetrahedra if they exist.  New tetrahedra
+  //   should have been created before calling this routine.
+  spinabc = startabc;
+  do {
+    // Adjust spinabc be edge av.
+    if (sorg(&spinabc) != pa) {
+      sesymself(&spinabc);
+    }
+    // Get new subface vbc above the updated subface avc (= spinabc).
+    senext(&spinabc, &oldbc);
+    spivot(&oldbc, &vbc);
+    if (sorg(&vbc) == newpoint) {
+      sesymself(&vbc);
+    }
+    senextself(&vbc);
+    // Get the adjacent tetrahedra at 'spinabc'.
+    stpivot(m, &spinabc, &abcd);
+    if (abcd.tet != m->dummytet) {
+      ierr = TetGenMeshFindEdge_triface(m, &abcd, sorg(&spinabc), sdest(&spinabc));CHKERRQ(ierr);
+      enextfnext(m, &abcd, &vbcd);
+      fnextself(m, &vbcd);
+#ifdef PETSC_USE_DEBUG
+      if (vbcd.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+      tsbond(m, &vbcd, &vbc);
+      sym(&vbcd, &bvce);
+      sesymself(&vbc);
+      tsbond(m, &bvce, &vbc);
+    } else {
+      // One side is empty, check the other side.
+      sesymself(&spinabc);
+      stpivot(m, &spinabc, &bace);
+      if (bace.tet != m->dummytet) {
+        ierr = TetGenMeshFindEdge_triface(m, &bace, sorg(&spinabc), sdest(&spinabc));CHKERRQ(ierr);
+        enext2fnext(m, &bace, &bvce);
+        fnextself(m, &bvce);
+#ifdef PETSC_USE_DEBUG
+        if (bvce.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+        sesymself(&vbc);
+        tsbond(m, &bvce, &vbc);
+      }
+    }
+    // Go to the next.
+    spivotself(&spinabc);
+    if (spinabc.sh == m->dummysh) {
+      break; // 'ab' is a hull edge.
+    }
+  } while (spinabc.sh != startabc.sh);
+
+  if (b->verbose > 3) {
+    spinabc = startabc;
+    do {
+      // Adjust spinabc be edge av.
+      if (sorg(&spinabc) != pa) {
+        sesymself(&spinabc);
+      }
+      PetscInfo(b->in, "    Updating abc:\n");
+      ierr = TetGenMeshPrintSh(m, &spinabc, PETSC_FALSE);CHKERRQ(ierr);
+      // Get new subface vbc above the updated subface avc (= spinabc).
+      senext(&spinabc, &oldbc);
+      spivot(&oldbc, &vbc);
+      if (sorg(&vbc) == newpoint) {
+        sesymself(&vbc);
+      }
+      senextself(&vbc);
+      PetscInfo(b->in, "    Creating vbc:\n");
+      ierr = TetGenMeshPrintSh(m, &vbc, PETSC_FALSE);CHKERRQ(ierr);
+      // Go to the next.
+      spivotself(&spinabc);
+      if (spinabc.sh == m->dummysh) {
+        break; // 'ab' is a hull edge.
+      }
+    } while (spinabc.sh != startabc.sh);
+  }
+
+  if (flipqueue) {
+    spinabc = startabc;
+    do {
+      // Adjust spinabc be edge av.
+      if (sorg(&spinabc) != pa) {
+        sesymself(&spinabc);
+      }
+      senext2(&spinabc, &oldbc); // Re-use oldbc.
+      ierr = TetGenMeshEnqueueFlipEdge(m, &oldbc, flipqueue);CHKERRQ(ierr);
+      // Get new subface vbc above the updated subface avc (= spinabc).
+      senext(&spinabc, &oldbc);
+      spivot(&oldbc, &vbc);
+      if (sorg(&vbc) == newpoint) {
+        sesymself(&vbc);
+      }
+      senextself(&vbc);
+      senext(&vbc, &oldbc); // Re-use oldbc.
+      ierr = TetGenMeshEnqueueFlipEdge(m, &oldbc, flipqueue);CHKERRQ(ierr);
+      // Go to the next.
+      spivotself(&spinabc);
+      if (spinabc.sh == m->dummysh) {
+        break; // 'ab' is a hull edge.
+      }
+    } while (spinabc.sh != startabc.sh);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TetGenMeshSplitTetEdge"
 // splittetedge()    Insert a point on an edge of the mesh.                  //
 //                                                                           //
@@ -6355,7 +8539,7 @@ PetscErrorCode TetGenMeshSplitTetEdge(TetGenMesh *m, point newpoint, triface *sp
         ierr = TetGenMeshFindEdge_face(m, &spinsh, pa, pb);CHKERRQ(ierr);
         sfnextself(m, &spinsh);
         stpivot(m, &spinsh, &spintet);
-#ifdef SELF_CHECK
+#ifdef PETSC_USE_DEBUG
         if (spintet.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Tet should not be null");}
 #endif
         ierr = TetGenMeshFindEdge_triface(m, &spintet, pa, pb);CHKERRQ(ierr);
@@ -6540,16 +8724,16 @@ PetscErrorCode TetGenMeshSplitTetEdge(TetGenMesh *m, point newpoint, triface *sp
     if (splitsh.sh != m->dummysh) {
       // Split subfaces (and subsegment).
       ierr = TetGenMeshFindEdge_face(m, &splitsh, pa, pb);CHKERRQ(ierr);
-      ierr = TetGenMeshSplitSubEdge(m, newpoint, &splitsh, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = TetGenMeshSplitSubEdge_queue(m, newpoint, &splitsh, PETSC_NULL);CHKERRQ(ierr);
     }
   }
 
   if (b->verbose > 3) {
     for(i = 0; i < wrapcount; i++) {
       printf("    Updating bots[%i] ", i);
-      ierr = TetGenMeshPrintTet(m, &(bots[i]));CHKERRQ(ierr);
+      ierr = TetGenMeshPrintTet(m, &(bots[i]), PETSC_FALSE);CHKERRQ(ierr);
       printf("    Creating newtops[%i] ", i);
-      ierr = TetGenMeshPrintTet(m, &(newtops[i]));CHKERRQ(ierr);
+      ierr = TetGenMeshPrintTet(m, &(newtops[i]), PETSC_FALSE);CHKERRQ(ierr);
     }
   }
 
@@ -6653,6 +8837,7 @@ PetscErrorCode TetGenMeshFormStarPolyhedron(TetGenMesh *m, point pt, List* tetli
       }
       enextself(&starttet);
     }
+    ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
   }
 
   // Uninfect tets.
@@ -6673,74 +8858,1236 @@ PetscErrorCode TetGenMeshFormStarPolyhedron(TetGenMesh *m, point pt, List* tetli
   PetscFunctionReturn(0);
 }
 
-////                                                                       ////
-////                                                                       ////
-//// flip_cxx /////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Terminology: BC(p) and CBC(p), B(p) and C(p).                             //
+//                                                                           //
+// Given an arbitrary point p,  the Bowyer-Watson cavity BC(p) is formed by  //
+// tets whose circumspheres containing p.  The outer faces of BC(p) form a   //
+// polyhedron B(p).                                                          //
+//                                                                           //
+// If p is on a facet F, the constrained Bowyer-Watson cavity CBC(p) on F is //
+// formed by subfaces of F whose circumspheres containing p. The outer edges //
+// of CBC(p) form a polygon C(p).  B(p) is separated into two parts by C(p), //
+// denoted as B_1(p) and B_2(p), one of them may be empty (F is on the hull).//
+//                                                                           //
+// If p is on a segment S which is shared by n facets.  There exist n C(p)s, //
+// each one is a non-closed polygon (without S). B(p) is split into n parts, //
+// each of them is denoted as B_i(p), some B_i(p) may be empty.              //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #undef __FUNCT__
-#define __FUNCT__ "TetGenMeshTransferNodes"
-// transfernodes()    Transfer nodes from 'io->pointlist' to 'this->points'. //
+#define __FUNCT__ "TetGenMeshFormBowatCavitySub"
+// formbowatcavitysub()    Form CBC(p) and C(p) on a facet F.                //
 //                                                                           //
-// Initializing 'this->points'.  Transferring all points from 'in->pointlist'//
-// into it. All points are indexed (start from in->firstnumber).  Each point //
-// is initialized be UNUSEDVERTEX.  The bounding box (xmin, xmax, ymin, ymax,//
-// zmin, zmax) and the diameter (longest) of the point set are calculated.   //
-/* tetgenmesh::transfernodes() */
-PetscErrorCode TetGenMeshTransferNodes(TetGenMesh *m)
+// Parameters: bp = p, bpseg = S, sublist = CBC(p), subceillist = C(p).      //
+//                                                                           //
+// CBC(p) contains at least one subface on input; S may be NULL which means  //
+// that p is inside a facet. On output, all subfaces of CBC(p) are infected, //
+// and the edge rings are oriented to the same halfspace.                    //
+/* tetgenmesh::formbowatcavitysub() */
+PetscErrorCode TetGenMeshFormBowatCavitySub(TetGenMesh *m, point bp, face *bpseg, List *sublist, List *subceillist)
 {
   TetGenOpts    *b  = m->b;
-  PLC           *in = m->in;
-  point          pointloop;
-  PetscReal      x, y, z;
-  int            coordindex, attribindex, mtrindex;
-  int            i, j;
+  triface adjtet = {PETSC_NULL, 0, 0};
+  face startsh = {PETSC_NULL, 0}, neighsh = {PETSC_NULL, 0};
+  face checkseg = {PETSC_NULL, 0};
+  point pa, pb, pc, pd;
+  PetscReal sign;
+  int len, len2, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  // Read the points.
-  coordindex  = 0;
-  attribindex = 0;
-  mtrindex    = 0;
-  for(i = 0; i < in->numberofpoints; i++) {
-    ierr = TetGenMeshMakePoint(m, &pointloop);CHKERRQ(ierr);
-    // Read the point coordinates.
-    x = pointloop[0] = in->pointlist[coordindex++];
-    y = pointloop[1] = in->pointlist[coordindex++];
-    z = pointloop[2] = in->pointlist[coordindex++];
-    // Read the point attributes.
-    for(j = 0; j < in->numberofpointattributes; j++) {
-      pointloop[3 + j] = in->pointattributelist[attribindex++];
+  // Form CBC(p) and C(p) by a broadth-first searching.
+  ierr = ListLength(sublist,  &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(sublist, i, (void **) &startsh);CHKERRQ(ierr); // startsh = f.
+    // Look for three neighbors of f.
+    for(j = 0; j < 3; j++) {
+      sspivot(m, &startsh, &checkseg);
+      if (checkseg.sh == m->dummysh) {
+        // Get its neighbor n.
+        spivot(&startsh, &neighsh);
+        // Is n already in CBC(p)?
+        if (!sinfected(m, &neighsh)) {
+          stpivot(m, &neighsh, &adjtet);
+          if (adjtet.tet == m->dummytet) {
+            sesymself(&neighsh);
+            stpivot(m, &neighsh, &adjtet);
+          }
+          // For positive orientation that insphere() test requires.
+          adjustedgering_triface(&adjtet, CW);
+          pa = org(&adjtet);
+          pb = dest(&adjtet);
+          pc = apex(&adjtet);
+          pd = oppo(&adjtet);
+          sign = insphere(pa, pb, pc, pd, bp);
+          if (sign >= 0.0) {
+            // Orient edge ring of n according to that of f.
+            if (sorg(&neighsh) != sdest(&startsh)) sesymself(&neighsh);
+            // Collect it into CBC(p).
+            sinfect(m, &neighsh);
+            ierr = ListAppend(sublist, &neighsh, PETSC_NULL);CHKERRQ(ierr);
+          } else {
+            ierr = ListAppend(subceillist, &startsh, PETSC_NULL);CHKERRQ(ierr); // Found an edge of C(p).
+          }
+        }
+      } else {
+        // Do not cross a segment.
+        if (bpseg) {
+          if (checkseg.sh != bpseg->sh) {
+            ierr = ListAppend(subceillist, &startsh, PETSC_NULL);CHKERRQ(ierr); // Found an edge of C(p).
+          }
+        } else {
+          ierr = ListAppend(subceillist, &startsh, PETSC_NULL);CHKERRQ(ierr); // Found an edge of C(p).
+        }
+      }
+      senextself(&startsh);
     }
-    // Read the point metric tensor.
-    for(j = 0; j < in->numberofpointmtrs; j++) {
-      pointloop[m->pointmtrindex + j] = in->pointmtrlist[mtrindex++];
-    }
-    // Determine the smallest and largests x, y and z coordinates.
-    if (i == 0) {
-      m->xmin = m->xmax = x;
-      m->ymin = m->ymax = y;
-      m->zmin = m->zmax = z;
-    } else {
-      m->xmin = (x < m->xmin) ? x : m->xmin;
-      m->xmax = (x > m->xmax) ? x : m->xmax;
-      m->ymin = (y < m->ymin) ? y : m->ymin;
-      m->ymax = (y > m->ymax) ? y : m->ymax;
-      m->zmin = (z < m->zmin) ? z : m->zmin;
-      m->zmax = (z > m->zmax) ? z : m->zmax;
-    }
+    ierr = ListLength(sublist,  &len);CHKERRQ(ierr);
   }
-  // 'longest' is the largest possible edge length formed by input vertices.
-  x = m->xmax - m->xmin;
-  y = m->ymax - m->ymin;
-  z = m->zmax - m->zmin;
-  m->longest = sqrt(x * x + y * y + z * z);
-  if (m->longest == 0.0) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The point set is trivial.\n");
-  }
-  // Two identical points are distinguished by 'lengthlimit'.
-  m->lengthlimit = m->longest * b->epsilon * 1e+2;
+
+  ierr = ListLength(sublist,     &len);CHKERRQ(ierr);
+  ierr = ListLength(subceillist, &len2);CHKERRQ(ierr);
+  PetscInfo3(b->in, "    Collect CBC(%d): %d subfaces, %d edges.\n", pointmark(m, bp), len, len2);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFormBowatCavityQuad"
+// formbowatcavityquad()    Form BC_i(p) and B_i(p) in a quadrant.           //
+//                                                                           //
+// Parameters: bp = p, tetlist = BC_i(p), ceillist = B_i(p).                 //
+//                                                                           //
+// BC_i(p) contains at least one tet on input. On finish, all tets collected //
+// in BC_i(p) are infected. B_i(p) may not closed when p is on segment or in //
+// facet. C(p) must be formed before this routine.  Check the infect flag of //
+// a subface to identify the unclosed side of B_i(p).  These sides will be   //
+// closed by new subfaces of C(p)s.                                          //
+/* tetgenmesh::formbowatcavityquad() */
+PetscErrorCode TetGenMeshFormBowatCavityQuad(TetGenMesh *m, point bp, List *tetlist, List *ceillist)
+{
+  TetGenOpts    *b  = m->b;
+  triface starttet = {PETSC_NULL, 0, 0}, neightet = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  point pa, pb, pc, pd;
+  PetscReal sign;
+  int len, len2, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Form BC_i(p) and B_i(p) by a broadth-first searching.
+  ierr = ListLength(tetlist,  &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(tetlist, i, (void **) &starttet);CHKERRQ(ierr);
+    for(starttet.loc = 0; starttet.loc < 4; starttet.loc++) {
+      // Try to collect the neighbor of the face (f).
+      tspivot(m, &starttet, &checksh);
+      if (checksh.sh == m->dummysh) {
+        // Get its neighbor n.
+        sym(&starttet, &neightet);
+        // Is n already in BC_i(p)?
+        if (!infected(m, &neightet)) {
+          // For positive orientation that insphere() test requires.
+          adjustedgering_triface(&neightet, CW);
+          pa = org(&neightet);
+          pb = dest(&neightet);
+          pc = apex(&neightet);
+          pd = oppo(&neightet);
+          sign = insphere(pa, pb, pc, pd, bp);
+          if (sign >= 0.0) {
+            // Collect it into BC_i(p).
+            infect(m, &neightet);
+            ierr = ListAppend(tetlist, &neightet, PETSC_NULL);CHKERRQ(ierr);
+          } else {
+            ierr = ListAppend(ceillist, &starttet, PETSC_NULL);CHKERRQ(ierr); // Found a face of B_i(p).
+          }
+        }
+      } else {
+        // Do not cross a boundary face.
+        if (!sinfected(m, &checksh)) {
+          ierr = ListAppend(ceillist, &starttet, PETSC_NULL);CHKERRQ(ierr); // Found a face of B_i(p).
+        }
+      }
+    }
+    ierr = ListLength(tetlist,  &len);CHKERRQ(ierr);
+  }
+
+  ierr = ListLength(tetlist,  &len);CHKERRQ(ierr);
+  ierr = ListLength(ceillist, &len2);CHKERRQ(ierr);
+  PetscInfo3(b->in, "    Collect BC_i(%d): %d tets, %d faces.\n", pointmark(m, bp), len, len2);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshFormBowatCavity"
+// formbowatcavity()    Form BC(p), B(p), CBC(p)s, and C(p)s.                //
+//                                                                           //
+// If 'bpseg'(S) != NULL, p is on segment S, else, p is on facet containing  //
+// 'bpsh' (F).  'n' returns the number of quadrants in BC(p). 'nmax' is the  //
+// maximum pre-allocated array length for the lists.                         //
+/* tetgenmesh::formbowatcavity() */
+PetscErrorCode TetGenMeshFormBowatCavity(TetGenMesh *m, point bp, face *bpseg, face *bpsh, int *n, int *nmax, List **sublists, List **subceillists, List **tetlists, List **ceillists)
+{
+  List *sublist;
+  triface adjtet = {PETSC_NULL, 0, 0};
+  face startsh = {PETSC_NULL, 0}, spinsh = {PETSC_NULL, 0};
+  point pa, pb;
+  int len, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *n = 0;
+  if (bpseg) {
+    // p is on segment S.
+    bpseg->shver = 0;
+    pa = sorg(bpseg);
+    pb = sdest(bpseg);
+    // Count the number of facets sharing at S.
+    spivot(bpseg, &startsh);
+    spinsh = startsh;
+    do {
+      (*n)++; // spinshlist->append(&spinsh);
+      spivotself(&spinsh);
+    } while (spinsh.sh != startsh.sh);
+    // *n is the number of quadrants around S.
+    if (*n > *nmax) {
+      // Reallocate arrays. Should not happen very often.
+      ierr = PetscFree(tetlists);CHKERRQ(ierr);
+      ierr = PetscFree(ceillists);CHKERRQ(ierr);
+      ierr = PetscFree(sublists);CHKERRQ(ierr);
+      ierr = PetscFree(subceillists);CHKERRQ(ierr);
+      ierr = PetscMalloc(*n * sizeof(List *), &tetlists);CHKERRQ(ierr);
+      ierr = PetscMalloc(*n * sizeof(List *), &ceillists);CHKERRQ(ierr);
+      ierr = PetscMalloc(*n * sizeof(List *), &sublists);CHKERRQ(ierr);
+      ierr = PetscMalloc(*n * sizeof(List *), &subceillists);CHKERRQ(ierr);
+      *nmax = *n;
+    }
+    // Form CBC(p)s and C(p)s.
+    spinsh = startsh;
+    for(i = 0; i < *n; i++) {
+      ierr = ListCreate(sizeof(face), PETSC_NULL, 256, PETSC_DECIDE, &sublists[i]);CHKERRQ(ierr);
+      ierr = ListCreate(sizeof(face), PETSC_NULL, 256, PETSC_DECIDE, &subceillists[i]);CHKERRQ(ierr);
+      // Set a subface f to start search.
+      startsh = spinsh;
+      // Let f face to the quadrant of interest (used in forming BC(p)).
+      ierr = TetGenMeshFindEdge_face(m, &startsh, pa, pb);CHKERRQ(ierr);
+      sinfect(m, &startsh);
+      ierr = ListAppend(sublists[i], &startsh, PETSC_NULL);CHKERRQ(ierr);
+      ierr = TetGenMeshFormBowatCavitySub(m, bp, bpseg, sublists[i], subceillists[i]);CHKERRQ(ierr);
+      // Go to the next facet.
+      spivotself(&spinsh);
+    }
+  } else if (sublists) {
+    // p is on a facet.
+    *n = 2;
+    // Form CBC(p) and C(p).
+    ierr = ListCreate(sizeof(face), PETSC_NULL, 256, PETSC_DECIDE, &sublists[0]);CHKERRQ(ierr);
+    ierr = ListCreate(sizeof(face), PETSC_NULL, 256, PETSC_DECIDE, &subceillists[0]);CHKERRQ(ierr);
+    sinfect(m, bpsh);
+    ierr = ListAppend(sublists[0], bpsh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = TetGenMeshFormBowatCavitySub(m, bp, PETSC_NULL, sublists[0], subceillists[0]);CHKERRQ(ierr);
+  } else {
+    // p is inside a tet.
+    *n = 1;
+  }
+
+  // Form BC_i(p) and B_i(p).
+  for(i = 0; i < *n; i++) {
+    ierr = ListCreate(sizeof(triface), PETSC_NULL, 256, PETSC_DECIDE, &tetlists[i]);CHKERRQ(ierr);
+    ierr = ListCreate(sizeof(triface), PETSC_NULL, 256, PETSC_DECIDE, &ceillists[i]);CHKERRQ(ierr);
+    if (sublists) {
+      // There are C(p)s.
+      sublist = ((!bpseg) ? sublists[0] : sublists[i]);
+      // Add all adjacent tets of C_i(p) into BC_i(p).
+      ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+      for(j = 0; j < len; j++) {
+        ierr = ListItem(sublist, j, (void **) &startsh);CHKERRQ(ierr);
+        // Adjust the side facing to the right quadrant for C(p).
+        if ((!bpseg) && (i == 1)) sesymself(&startsh);
+        stpivot(m, &startsh, &adjtet);
+        if (adjtet.tet != m->dummytet) {
+          if (!infected(m, &adjtet)) {
+            infect(m, &adjtet);
+            ierr = ListAppend(tetlists[i], &adjtet, PETSC_NULL);CHKERRQ(ierr);
+          }
+        }
+      }
+      if (bpseg) {
+        // The quadrant is bounded by another facet.
+        sublist = ((i < *n - 1) ? sublists[i + 1] : sublists[0]);
+        ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+        for (j = 0; j < len; j++) {
+          ierr = ListItem(sublist, j, (void **) &startsh);CHKERRQ(ierr);
+          // Adjust the side facing to the right quadrant for C(p).
+          sesymself(&startsh);
+          stpivot(m, &startsh, &adjtet);
+          if (adjtet.tet != m->dummytet) {
+            if (!infected(m, &adjtet)) {
+              infect(m, &adjtet);
+              ierr = ListAppend(tetlists[i], &adjtet, PETSC_NULL);CHKERRQ(ierr);
+            }
+          }
+        }
+      }
+    }
+    // It is possible that BC_i(p) is empty.
+    ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+    if (len == 0) continue;
+    // Collect the rest of tets of BC_i(p) and form B_i(p).
+    // if (b->conformdel) {
+      // formbowatcavitysegquad(bp, tetlists[i], ceillists[i]);
+    // } else {
+    ierr = TetGenMeshFormBowatCavityQuad(m, bp, tetlists[i], ceillists[i]);CHKERRQ(ierr);
+    // }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshReleaseBowatCavity"
+// releasebowatcavity()    Undo and free the memory allocated in routine     //
+//                         formbowatcavity().                                //
+/* tetgenmesh::releasebowatcavity() */
+PetscErrorCode TetGenMeshReleaseBowatCavity(TetGenMesh *m, face *bpseg, int n, List **sublists, List **subceillist, List **tetlists, List **ceillists)
+{
+  triface oldtet = {PETSC_NULL, 0, 0};
+  face oldsh = {PETSC_NULL, 0};
+  int len, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (sublists) {
+    // Release CBC(p)s.
+    for(i = 0; i < n; i++) {
+      // Uninfect subfaces of CBC(p).
+      ierr = ListLength(sublists[i], &len);CHKERRQ(ierr);
+      for(j = 0; j < len; j++) {
+        ierr = ListItem(sublists[i], j, (void **) &oldsh);CHKERRQ(ierr);
+#ifdef PETSC_USE_DEBUG
+        if (!sinfected(m, &oldsh)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+        suninfect(m, &oldsh);
+      }
+      ierr = ListDestroy(&sublists[i]);CHKERRQ(ierr);
+      ierr = ListDestroy(&subceillist[i]);CHKERRQ(ierr);
+      sublists[i] = PETSC_NULL;
+      subceillist[i] = PETSC_NULL;
+      if (!bpseg) break;
+    }
+  }
+  // Release BC(p).
+  for(i = 0; i < n; i++) {
+    // Uninfect tets of BC_i(p).
+    ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+    for(j = 0; j < len; j++) {
+      ierr = ListItem(tetlists[i], j, (void **) &oldtet);CHKERRQ(ierr);
+#ifdef PETSC_USE_DEBUG
+      if (!infected(m, &oldtet)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+      uninfect(m, &oldtet);
+    }
+    ierr = ListDestroy(&tetlists[i]);CHKERRQ(ierr);
+    ierr = ListDestroy(&ceillists[i]);CHKERRQ(ierr);
+    tetlists[i] = PETSC_NULL;
+    ceillists[i] = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshValidateBowatCavityQuad"
+// validatebowatcavityquad()    Valid B_i(p).                                //
+//                                                                           //
+// B_i(p) is valid if all faces of B_i(p) are visible by p, else B_i(p) is   //
+// invalid.  Each tet of BC_i(p) which has such a face is marked (uninfect). //
+// They will be removed in updatebowatcavityquad().                          //
+//                                                                           //
+// Return TRUE if B(p) is valid, else, return FALSE.                         //
+/* tetgenmesh::validatebowatcavityquad() */
+PetscErrorCode TetGenMeshValidateBowatCavityQuad(TetGenMesh *m, point bp, List *ceillist, PetscReal maxcosd, PetscBool *isValid)
+{
+  triface ceiltet = {PETSC_NULL, 0, 0};
+  point pa, pb, pc;
+  PetscReal ori, cosd;
+  int len, remcount, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Check the validate of B(p), cut tets having invisible faces.
+  remcount = 0;
+  ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(ceillist, i, (void **) &ceiltet);CHKERRQ(ierr);
+    if (infected(m, &ceiltet)) {
+      adjustedgering_triface(&ceiltet, CCW);
+      pa = org(&ceiltet);
+      pb = dest(&ceiltet);
+      pc = apex(&ceiltet);
+      ori = orient3d(pa, pb, pc, bp);
+      if (ori >= 0.0) {
+        // Found an invisible face.
+        uninfect(m, &ceiltet);
+        remcount++;
+        continue;
+      }
+      // If a non-trival 'maxcosd' is given.
+      if (maxcosd > -1.0) {
+        // Get the maximal dihedral angle of tet abcp.
+        ierr = TetGenMeshTetAllDihedral(m, pa, pb, pc, bp, PETSC_NULL, &cosd, PETSC_NULL);CHKERRQ(ierr);
+        // Do not form the tet if the maximal dihedral angle is not reduced.
+        if (cosd < maxcosd) {
+          uninfect(m, &ceiltet);
+          remcount++;
+        }
+      }
+    }
+  }
+  if (isValid) {*isValid = (remcount == 0) ? PETSC_TRUE : PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshUpdateBowatCavityQuad"
+// updatebowatcavityquad()    Update BC_i(p) and reform B_i(p).              //
+//                                                                           //
+// B_i(p) is invalid and some tets in BC_i(p) have been marked to be removed //
+// in validatebowatcavityquad().  This routine actually remove the cut tets  //
+// of BC_i(p) and re-form the B_i(p).                                        //
+/* tetgenmesh::updatebowatcavityquad() */
+PetscErrorCode TetGenMeshUpdateBowatCavityQuad(TetGenMesh *m, List *tetlist, List *ceillist)
+{
+  TetGenOpts    *b  = m->b;
+  triface cavtet = {PETSC_NULL, 0, 0}, neightet = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  int len, len2, remcount, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  remcount = 0;
+  ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(tetlist, i, (void **) &cavtet);CHKERRQ(ierr);
+    if (!infected(m, &cavtet)) {
+      ierr = ListDelete(tetlist, i, 1);CHKERRQ(ierr);
+      remcount++;
+      i--;
+    }
+    ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+  }
+
+  // Are there tets have been cut in BC_i(p)?
+  if (remcount > 0) {
+    // Re-form B_i(p).
+    ierr = ListClear(ceillist);CHKERRQ(ierr);
+    ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(tetlist, i, (void **) &cavtet);CHKERRQ(ierr);
+      for(cavtet.loc = 0; cavtet.loc < 4; cavtet.loc++) {
+        tspivot(m, &cavtet, &checksh);
+        if (checksh.sh == m->dummysh) {
+          sym(&cavtet, &neightet);
+          if (!infected(m, &neightet)) {
+            ierr = ListAppend(ceillist, &cavtet, PETSC_NULL);CHKERRQ(ierr); // Found a face of B_i(p).
+          }
+        } else {
+          // Do not cross a boundary face.
+          if (!sinfected(m, &checksh)) {
+            ierr = ListAppend(ceillist, &cavtet, PETSC_NULL);CHKERRQ(ierr); // Found a face of B_i(p).
+          }
+        }
+      }
+    }
+    ierr = ListLength(tetlist,  &len);CHKERRQ(ierr);
+    ierr = ListLength(ceillist, &len2);CHKERRQ(ierr);
+    PetscInfo2(b->in, "    Update BC_i(p): %d tets, %d faces.\n", len, len2);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshUpdateBowatCavitySub"
+// updatebowatcavitysub()    Check and update CBC(p) and C(p).               //
+//                                                                           //
+// A CBC(p) is valid if all its subfaces are inside or on the hull of BC(p). //
+// A subface s of CBC(p) is invalid if it is in one of the two cases:        //
+//   (1) s is completely outside BC(p);                                      //
+//   (2) s has two adjacent tets but only one of them is in BC(p);           //
+// s is removed from CBC(p) if it is invalid. If there is an adjacent tet of //
+// s which is in BC(p), it gets removed from BC(p) too. If CBC(p) is updated,//
+// C(p) is re-formed.                                                        //
+//                                                                           //
+// A C(p) is valid if all its edges are on the hull of BC(p).  An edge e of  //
+// C(p) may be inside BC(p) if e is a segment and belongs to only one facet. //
+// To correct C(p), a tet of BC(p) which shields e gets removed.             //
+//                                                                           //
+// If BC(p) is formed with locally non-Delaunay check (b->conformdel > 0).   //
+// A boundary-consistent check is needed for non-segment edges of C(p). Let  //
+// e be such an edge, the subface f contains e and outside C(p) may belong   //
+// to B(p) due to the non-coplanarity of the facet definition.  The tet of   //
+// BC(p) containing f gets removed to avoid creating a degenerate new tet.   //
+//                                                                           //
+// 'cutcount' accumulates the total number of cuttets(not only by this call).//
+/* tetgenmesh::updatebowatcavitysub() */
+PetscErrorCode TetGenMeshUpdateBowatCavitySub(TetGenMesh *m, List *sublist, List *subceillist, int *cutcount)
+{
+  TetGenOpts    *b  = m->b;
+  triface adjtet = {PETSC_NULL, 0, 0}, rotface = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0}, neighsh = {PETSC_NULL, 0};
+  face checkseg = {PETSC_NULL, 0};
+  point pa, pb, pc;
+  PetscReal ori1, ori2;
+  int remcount;
+  int len, len2, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  remcount = 0;
+  // Check the validity of CBC(p).
+  ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(sublist, i, (void **) &checksh);CHKERRQ(ierr);
+    // Check two adjacent tets of s.
+    for(j = 0; j < 2; j++) {
+      stpivot(m, &checksh, &adjtet);
+      if (adjtet.tet != m->dummytet) {
+        if (!infected(m, &adjtet)) {
+          // Could be either case (1) or (2).
+          suninfect(m, &checksh); // s survives.
+          // If the sym. adjtet exists, it should remove from BC(p) too.
+          sesymself(&checksh);
+          stpivot(m, &checksh, &adjtet);
+          if (adjtet.tet != m->dummytet) {
+            if (infected(m, &adjtet)) {
+              // Found an adj. tet in BC(p), remove it.
+              uninfect(m, &adjtet);
+              (*cutcount)++;
+            }
+          }
+          // Remove s from C(p).
+          ierr = ListDelete(sublist, i, 1);CHKERRQ(ierr);
+          i--;
+          remcount++;
+          break;
+        }
+      }
+      sesymself(&checksh);
+    }
+  }
+  if (remcount > 0) {
+    // Some subfaces have been removed from the cavity.
+    if (m->checkpbcs) {
+      // Check if the facet has a PBC defined.
+      ierr = ListItem(sublist, 0, (void **) &checksh);CHKERRQ(ierr);
+      if (shellpbcgroup(m, &checksh) >= 0) {
+        // Yes, A PBC facet. Remove all subfaces -- Do not insert the point.
+        ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+        for(i = 0; i < len; i++) {
+          ierr = ListItem(sublist, i, (void **) &checksh);CHKERRQ(ierr);
+          suninfect(m, &checksh);
+          // Remove both side tets from the cavity.
+          for(j = 0; j < 2; j++) {
+            stpivot(m, &checksh, &adjtet);
+            if (adjtet.tet != m->dummytet) {
+              if (infected(m, &adjtet)) {
+                uninfect(m, &adjtet);
+                (*cutcount)++;
+              }
+            }
+            sesymself(&checksh);
+          }
+        }
+        ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+        remcount += len;
+        ierr = ListClear(sublist);CHKERRQ(ierr);
+      }
+    }
+    PetscInfo1(b->in, "    Removed %d subfaces from CBC(p).\n", remcount);
+    // Re-generate C(p).
+    ierr = ListClear(subceillist);CHKERRQ(ierr);
+    ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(sublist, i, (void **) &checksh);CHKERRQ(ierr);
+      for(j = 0; j < 3; j++) {
+        spivot(&checksh, &neighsh);
+        if (!sinfected(m, &neighsh)) {
+          ierr = ListAppend(subceillist, &checksh, PETSC_NULL);CHKERRQ(ierr);
+        }
+        senextself(&checksh);
+      }
+    }
+    ierr = ListLength(sublist,     &len);CHKERRQ(ierr);
+    ierr = ListLength(subceillist, &len2);CHKERRQ(ierr);
+    PetscInfo2(b->in, "    Update CBC(p): %d subs, %d edges.\n", len, len2);
+  }
+
+  // Check the validity of C(p).
+  ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(subceillist, i, (void **) &checksh);CHKERRQ(ierr);
+    sspivot(m, &checksh, &checkseg);
+    if (checkseg.sh != m->dummysh) {
+      // A segment. Check if it is inside BC(p).
+      stpivot(m, &checksh, &adjtet);
+      if (adjtet.tet == m->dummytet) {
+        sesym(&checksh, &neighsh);
+        stpivot(m, &neighsh, &adjtet);
+      }
+      ierr = TetGenMeshFindEdge_triface(m, &adjtet, sorg(&checkseg), sdest(&checkseg));CHKERRQ(ierr);
+      adjustedgering_triface(&adjtet, CCW);
+      fnext(m, &adjtet, &rotface); // It's the same tet.
+      // Rotate rotface (f), stop on either of the following cases:
+      //   (a) meet a subface, or
+      //   (b) enter an uninfected tet, or
+      //   (c) rewind back to adjtet.
+      do {
+        if (!infected(m, &rotface)) break; // case (b)
+        tspivot(m, &rotface, &neighsh);
+        if (neighsh.sh != m->dummysh) break; // case (a)
+        // Go to the next tet of the facing ring.
+        fnextself(m, &rotface);
+      } while (apex(&rotface) != apex(&adjtet));
+      // Is it case (c)?
+      if (apex(&rotface) == apex(&adjtet)) {
+        // The segment is enclosed by BC(p), invalid cavity.
+        pa = org(&adjtet);
+        pb = dest(&adjtet);
+        pc = apex(&adjtet);
+        // Find the shield tet and cut it. Notice that the shield tet may
+        //   not be unique when there are four coplanar points, ie.,
+        //   ori1 * ori2 == 0.0. In such case, choose either of them.
+        fnext(m, &adjtet, &rotface);
+        do {
+          fnextself(m, &rotface);
+          if (!infected(m, &rotface)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+          ori1 = orient3d(pa, pb, pc, apex(&rotface));
+          ori2 = orient3d(pa, pb, pc, oppo(&rotface));
+        } while (ori1 * ori2 > 0.0);
+        // Cut this tet from BC(p).
+        uninfect(m, &rotface);
+        (*cutcount)++;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTrimBowatCavity"
+// trimbowatcavity()    Validate B(p), CBC(p)s and C(p)s, update BC(p).      //
+//                                                                           //
+// A B(p) is valid if all its faces are visible by p. If a face f of B(p) is //
+// found invisible by p, the tet of BC(p) containing f gets removed and B(p) //
+// is refromed. The new B(p) may still contain invisible faces by p. Iterat- //
+// ively do the above procedure until B(p) is satisfied.                     //
+//                                                                           //
+// A CBC(p) is valid if each subface of CBC(p) is either on the hull of BC(p)//
+// or completely inside BC(p). If a subface s of CBC(p) is not valid, it is  //
+// removed from CBC(p) and C(p) is reformed. If there exists a tet t of BC(p)//
+// containg s, t is removed from BC(p). The process for validating BC(p) and //
+// B(p) is re-excuted.                                                       //
+//                                                                           //
+// A C(p) is valid if each edge of C(p) is on the hull of BC(p). If an edge  //
+// e of C(p) is invalid (e should be a subsegment which only belong to one   //
+// facet), a tet of BC(p) which contains e and has two other faces shielding //
+// e is removed. The process for validating BC(p) and B(p) is re-excuted.    //
+//                                                                           //
+// If either BC(p) or CBC(p) becomes empty. No valid BC(p) is found, return  //
+// FALSE. else, return TRUE.                                                 //
+/* tetgenmesh::trimbowatcavity() */
+PetscErrorCode TetGenMeshTrimBowatCavity(TetGenMesh *m, point bp, face *bpseg, int n, List **sublists, List **subceillists, List **tetlists, List **ceillists, PetscReal maxcosd, PetscBool *isValid)
+{
+  PetscBool valflag;
+  int oldnum, cutnum, cutcount;
+  int            len, i;
+  PetscBool      isGood;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  cutnum = 0; // Count the total number of cut-off tets of BC(p).
+  valflag = PETSC_TRUE;
+
+  do {
+    // Validate BC(p), B(p).
+    for(i = 0; i < n && valflag; i++) {
+      ierr = ListLength(tetlists[i], &oldnum);CHKERRQ(ierr);
+      // Iteratively validate BC_i(p) and B_i(p).
+      ierr = TetGenMeshValidateBowatCavityQuad(m, bp, ceillists[i], maxcosd, &isGood);CHKERRQ(ierr);
+      while(!isGood) {
+        // Update BC_i(p) and B_i(p).
+        ierr = TetGenMeshUpdateBowatCavityQuad(m, tetlists[i], ceillists[i]);CHKERRQ(ierr);
+        ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+        valflag = len > 0 ? PETSC_TRUE : PETSC_FALSE;
+      }
+      ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+      cutnum += (oldnum - len);
+    }
+    if (valflag && sublists) {
+      // Validate CBC(p), C(p).
+      cutcount = 0;
+      for(i = 0; i < n; i++) {
+        ierr = TetGenMeshUpdateBowatCavitySub(m, sublists[i], subceillists[i], &cutcount);CHKERRQ(ierr);
+        // Only do once if p is on a facet.
+        if (!bpseg) break;
+      }
+      // Are there cut tets?
+      if (cutcount > 0) {
+        // Squeeze all cut tets in BC(p), keep valflag once it gets FLASE.
+        for (i = 0; i < n; i++) {
+          ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+          if (len > 0) {
+            ierr = TetGenMeshUpdateBowatCavityQuad(m, tetlists[i], ceillists[i]);CHKERRQ(ierr);
+            if (valflag) {
+              ierr = ListLength(tetlists[i], &len);CHKERRQ(ierr);
+              valflag = len > 0 ? PETSC_TRUE : PETSC_FALSE;
+            }
+          }
+        }
+        cutnum += cutcount;
+        // Go back to valid the updated BC(p).
+        continue;
+      }
+    }
+    break; // Leave the while-loop.
+  } while(1);
+
+  // Check if any CBC(p) becomes non-empty.
+  if (valflag && sublists) {
+    for(i = 0; i < n && valflag; i++) {
+      ierr = ListLength(sublists[i], &len);CHKERRQ(ierr);
+      valflag = (len > 0) ? PETSC_TRUE : PETSC_FALSE;
+      if (!bpseg) break;
+    }
+  }
+
+  if (valflag && (cutnum > 0)) {
+    // Accumulate counters.
+    if (bpseg) {
+      m->updsegcount++;
+    } else if (sublists) {
+      m->updsubcount++;
+    } else {
+      m->updvolcount++;
+    }
+  }
+
+  if (!valflag) {
+    // Accumulate counters.
+    if (bpseg) {
+      m->failsegcount++;
+    } else if (sublists) {
+      m->failsubcount++;
+    } else {
+      m->failvolcount++;
+    }
+  }
+
+  if (isValid) {*isValid = valflag;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshBowatInsertSite"
+// bowatinsertsite()    Insert a point using the Bowyer-Watson method.       //
+//                                                                           //
+// Parameters: 'bp' = p, 'splitseg' = S, 'n' = the number of quadrants,      //
+// 'sublists', an array of CBC_i(p)s, 'subceillists', an array of C_i(p)s,   //
+// 'tetlists', an array of BC_i(p)s, 'ceillists', an array of B_i(p)s.       //
+//                                                                           //
+// If p is inside the mesh domain, then S = NULL, n = 1, CBC(p) and C(p) are //
+//   NULLs. 'tetlists[0]' = BC(p), 'ceillists[0]' = B(p).                    //
+// If p is on a facet F, then S = NULL, n = 2, and 'subceillists[0]' = C(p), //
+//  'subceillists[1]' is not needed (set it to NULL). B_1(p) and B_2(p) are  //
+//  in 'ceillists[0]' and 'ceillists[1]'.                                    //
+// If p is on a segment S, then F(S) is a list of subfaces around S, and n = //
+//   len(F(S)), there are n C_i(p)s and B_i(p)s supplied in 'subceillists[i]'//
+//   and 'ceillists[i]'.                                                     //
+//                                                                           //
+// If 'verlist' != NULL, it returns a list of vertices which connect to p.   //
+//   This vertices are used for interpolating size of p.                     //
+//                                                                           //
+// If 'flipque' != NULL, it returns a list of internal faces of new tets in  //
+//   BC(p), faces on C(p)s are excluded. These faces may be locally non-     //
+//   Delaunay and will be flipped if they are flippable. Such non-Delaunay   //
+//   faces may exist when p is inserted to split an encroaching segment.     //
+//                                                                           //
+// 'chkencseg', 'chkencsub', and 'chkbadtet' are flags that indicate whether //
+// or not there should be checks for the creation of encroached subsegments, //
+// subfaces, or bad quality tets. If 'chkencseg' = TRUE, the encroached sub- //
+// segments are added to the list of subsegments to be split.                //
+//                                                                           //
+// On return, 'ceillists' returns Star(p).                                   //
+/* tetgenmesh::bowatinsertsite() */
+PetscErrorCode TetGenMeshBowatInsertSite(TetGenMesh *m, point bp, face *splitseg, int n, List **sublists, List **subceillists, List **tetlists, List **ceillists, List *verlist, Queue *flipque, PetscBool chkencseg, PetscBool chkencsub, PetscBool chkbadtet)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  List *ceillist, *subceillist;
+  triface oldtet = {PETSC_NULL, 0, 0}, newtet = {PETSC_NULL, 0, 0}, newface = {PETSC_NULL, 0, 0}, rotface = {PETSC_NULL, 0, 0}, neightet = {PETSC_NULL, 0, 0};
+  face oldsh = {PETSC_NULL, 0}, newsh = {PETSC_NULL, 0}, newedge = {PETSC_NULL, 0}, checksh = {PETSC_NULL, 0};
+  face spinsh = {PETSC_NULL, 0}, casingin = {PETSC_NULL, 0}, casingout = {PETSC_NULL, 0};
+  face *apsegshs, *pbsegshs;
+  face apseg = {PETSC_NULL, 0}, pbseg = {PETSC_NULL, 0}, checkseg = {PETSC_NULL, 0};
+  point pa, pb, pc;
+  PetscReal attrib, volume;
+  int len, len2, idx, i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo4(b->in, "    Insert point %d (%.12g, %.12g, %.12g)", pointmark(m, bp), bp[0], bp[1], bp[2]);
+  if (splitseg) {
+    PetscInfo(b->in, " on segment.\n");
+    m->bowatsegcount++;
+  } else {
+    if (subceillists) {
+      PetscInfo(b->in, " on facet.\n");
+      m->bowatsubcount++;
+    } else {
+      PetscInfo(b->in, " in volume.\n");
+      m->bowatvolcount++;
+    }
+  }
+
+  // Create new tets to fill B(p).
+  for(k = 0; k < n; k++) {
+    // Create new tets from each B_i(p).
+    ceillist = ceillists[k];
+    ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(ceillist, i, (void **) &oldtet);CHKERRQ(ierr);
+      adjustedgering_triface(&oldtet, CCW);
+      pa = org(&oldtet);
+      pb = dest(&oldtet);
+      pc = apex(&oldtet);
+      ierr = TetGenMeshMakeTetrahedron(m, &newtet);CHKERRQ(ierr);
+      setorg(&newtet, pa);
+      setdest(&newtet, pb);
+      setapex(&newtet, pc);
+      setoppo(&newtet, bp);
+      for(j = 0; j < in->numberoftetrahedronattributes; j++) {
+        attrib = elemattribute(m, oldtet.tet, j);
+        setelemattribute(m, newtet.tet, j, attrib);
+      }
+      if (b->varvolume) {
+        volume = volumebound(m, oldtet.tet);
+        if (volume > 0.0) {
+          if (!b->fixedvolume && b->refine) {
+            // '-r -a' switches and a .vol file case. Enlarge the maximum
+            //   volume constraint for the new tets. Hence the new points
+            //   only spread near the original constrained tet.
+            volume *= 1.2;
+          }
+        }
+        setvolumebound(m, newtet.tet, volume);
+      }
+      sym(&oldtet, &neightet);
+      tspivot(m, &oldtet, &checksh);
+      if (neightet.tet != m->dummytet) {
+        bond(m, &newtet, &neightet);
+      }
+      if (checksh.sh != m->dummysh) {
+        tsbond(m, &newtet, &checksh);
+      }
+      if (verlist) {
+        // Collect vertices connecting to p.
+        idx = pointmark(m, pa);
+        if (idx >= 0) {
+          setpointmark(m, pa, -idx - 1);
+          ierr = ListAppend(verlist, &pa, PETSC_NULL);CHKERRQ(ierr);
+        }
+        idx = pointmark(m, pb);
+        if (idx >= 0) {
+          setpointmark(m, pb, -idx - 1);
+          ierr = ListAppend(verlist, &pb, PETSC_NULL);CHKERRQ(ierr);
+        }
+        idx = pointmark(m, pc);
+        if (idx >= 0) {
+          setpointmark(m, pc, -idx - 1);
+          ierr = ListAppend(verlist, &pc, PETSC_NULL);CHKERRQ(ierr);
+        }
+      }
+      // Replace the tet by the newtet for checking the quality.
+      ierr = ListSetItem(ceillist, i, (void **) &newtet);CHKERRQ(ierr);
+    }
+  }
+  if (verlist) {
+    // Uninfect collected vertices.
+    ierr = ListLength(verlist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(verlist, i, (void **) &pa);CHKERRQ(ierr);
+      idx = pointmark(m, pa);
+      setpointmark(m, pa, -(idx + 1));
+    }
+  }
+
+  // Connect new tets of B(p). Not all faces of new tets can be connected,
+  //   e.g., if there are empty B_i(p)s.
+  for(k = 0; k < n; k++) {
+    ceillist = ceillists[k];
+    ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(ceillist, i, (void **) &newtet);CHKERRQ(ierr);
+      newtet.ver = 0;
+      for(j = 0; j < 3; j++) {
+        fnext(m, &newtet, &newface);
+        sym(&newface, &neightet);
+        if (neightet.tet == m->dummytet) {
+          // Find the neighbor face by rotating the faces at edge ab.
+          esym(&newtet, &rotface);
+          pa = org(&rotface);
+          pb = dest(&rotface);
+          while (fnextself(m, &rotface));
+          // Do we meet a boundary face?
+          tspivot(m, &rotface, &checksh);
+          if (checksh.sh != m->dummysh) {
+            // Walk through the boundary and continue to rotate faces.
+            do {
+              ierr = TetGenMeshFindEdge_face(m, &checksh, pa, pb);CHKERRQ(ierr);
+              sfnextself(m, &checksh);
+              if ((sorg(&checksh) != pa) || (sdest(&checksh) != pb)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              stpivot(m, &checksh, &rotface);
+              if (infected(m, &rotface)) {
+                // Meet an old tet of B_i(p). This side is on the hull and
+                //   will be connected to a new subface created in C(p).
+                break;
+              }
+              ierr = TetGenMeshFindEdge_triface(m, &rotface, pa, pb);CHKERRQ(ierr);
+              while (fnextself(m, &rotface));
+              tspivot(m, &rotface, &checksh);
+            } while (checksh.sh != m->dummysh);
+          }
+          // The rotface has edge ab, but it may not have newpt.
+          if (apex(&rotface) == apex(&newface)) {
+            // Bond the two tets together.
+            bond(m, &newface, &rotface);
+            // Queue (uniquely) this face if 'flipque' is given.
+            if (flipque) {
+              ierr = TetGenMeshEnqueueFlipFace(m, &newface, flipque);CHKERRQ(ierr);
+            }
+          }
+        }
+        enextself(&newtet);
+      }
+    }
+  }
+
+  if (subceillists) {
+    // There are C(p)s.
+    if (splitseg) {
+      // S (ab) is split by p.
+      splitseg->shver = 0;
+      pa = sorg(splitseg);
+      pb = sdest(splitseg);
+      // Allcate two arrays for saving the subface rings of the two new
+      //   segments a->p and p->b.
+      ierr = PetscMalloc(n * sizeof(face), &apsegshs);CHKERRQ(ierr);
+      ierr = PetscMalloc(n * sizeof(face), &pbsegshs);CHKERRQ(ierr);
+    }
+
+    // For each C_k(p), do the following:
+    //   (1) Create new subfaces to fill C_k(p), insert them into B(p);
+    //   (2) Connect new subfaces to each other;
+    for(k = 0; k < n; k++) {
+      subceillist = subceillists[k];
+
+      // Check if 'hullsize' should be updated.
+      ierr = ListItem(subceillist, 0, (void **) &oldsh);CHKERRQ(ierr);
+      stpivot(m, &oldsh, &neightet);
+      if (neightet.tet != m->dummytet) {
+        sesymself(&oldsh);
+        stpivot(m, &oldsh, &neightet);
+      }
+      if (neightet.tet == m->dummytet) {
+        // The hull size changes.
+        ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+        ierr = ListLength(sublists[k], &len2);CHKERRQ(ierr);
+        m->hullsize += (len - len2);
+      }
+
+      // (1) Create new subfaces to fill C_k(p), insert them into B(p).
+      ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(subceillist, i, (void **) &oldsh);CHKERRQ(ierr);
+        ierr = TetGenMeshMakeShellFace(m, m->subfaces, &newsh);CHKERRQ(ierr);
+        setsorg(&newsh, sorg(&oldsh));
+        setsdest(&newsh, sdest(&oldsh));
+        setsapex(&newsh, bp);
+        if (b->quality && m->varconstraint) {
+          setareabound(m, &newsh, areabound(m, &oldsh));
+        }
+        setshellmark(m, &newsh, shellmark(m, &oldsh));
+        setshelltype(m, &newsh, shelltype(m, &oldsh));
+        if (m->checkpbcs) {
+          setshellpbcgroup(m, &newsh, shellpbcgroup(m, &oldsh));
+        }
+        // Replace oldsh by newsh at the edge.
+        spivot(&oldsh, &casingout);
+        sspivot(m, &oldsh, &checkseg);
+        if (checkseg.sh != m->dummysh) {
+          // A segment. Insert s into the face ring, ie, s_in -> s -> s_out.
+          if (casingout.sh != m->dummysh) { // if (oldsh.sh != casingout.sh) {
+            // s is not bonded to itself.
+            spinsh = casingout;
+            do {
+              casingin = spinsh;
+              spivotself(&spinsh);
+            } while (sapex(&spinsh) != sapex(&oldsh));
+            if (casingin.sh == oldsh.sh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+            // Bond s_in -> s -> s_out (and dissolve s_in -> s_old -> s_out).
+            sbond1(&casingin, &newsh);
+            sbond1(&newsh, &casingout);
+          } else {
+            // Bond newsh -> newsh.
+            sdissolve(m, &newsh); // sbond(newsh, newsh);
+          }
+          // Bond the segment.
+          ssbond(m, &newsh, &checkseg);
+        } else {
+          // Bond s <-> s_out (and dissolve s_out -> s_old).
+          sbond(&newsh, &casingout);
+        }
+
+        // Insert newsh into B(p). Use the coonections of oldsh.
+        stpivot(m, &oldsh, &neightet);
+        if (neightet.tet == m->dummytet) {
+          sesymself(&oldsh);
+          sesymself(&newsh); // Keep the same orientation as oldsh.
+          stpivot(m, &oldsh, &neightet);
+        }
+        if (!infected(m, &neightet)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+        // Set on the rotating edge.
+        ierr = TetGenMeshFindEdge_triface(m, &neightet, sorg(&oldsh), sdest(&oldsh));CHKERRQ(ierr);
+        // Choose the rotating direction (to the inside of B(p)).
+        adjustedgering_triface(&neightet, CCW);
+        rotface = neightet;
+        // Rotate face. Stop at a non-infected tet t (not in B(p)) or a
+        //   hull face f (on B(p)). Get the neighbor n of t or f.  n is
+        //   a new tet that has just been created to fill B(p).
+        do {
+          fnextself(m, &rotface);
+          sym(&rotface, &neightet);
+          if (neightet.tet == m->dummytet) {
+            tspivot(m, &rotface, &checksh);
+            if (checksh.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+            stpivot(m, &checksh, &newtet);
+            break;
+          } else if (!infected(m, &neightet)) {
+            sym(&neightet, &newtet);
+            break;
+          }
+        } while (1);
+        if (newtet.tet == rotface.tet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+        // Set the rotating edge of n.
+        ierr = TetGenMeshFindEdge_triface(m, &newtet, sorg(&oldsh), sdest(&oldsh));CHKERRQ(ierr);
+        // Choose the rotating direction (to the inside of B(p)).
+        adjustedgering_triface(&newtet, CCW);
+        fnext(m, &newtet, &newface);
+        if (apex(&newface) != bp) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+        // newsh has already been oriented toward n.
+        tsbond(m, &newface, &newsh);
+        sym(&newface, &neightet); // 'neightet' maybe outside.
+        sesymself(&newsh);
+        tsbond(m, &neightet, &newsh); // Bond them anyway.
+
+        // Replace oldsh by newsh in list.
+        ierr = ListSetItem(subceillist, i, (void **) &newsh);CHKERRQ(ierr);
+      }
+
+      // (2) Connect new subfaces to each other.
+      ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        // Get a face cdp.
+        ierr = ListItem(subceillist, i, (void **) &newsh);CHKERRQ(ierr);
+        // Get a new tet containing cdp.
+        stpivot(m, &newsh, &newtet);
+        if (newtet.tet == m->dummytet) {
+          sesymself(&newsh);
+          stpivot(m, &newsh, &newtet);
+        }
+        for(j = 0; j < 2; j++) {
+          if (j == 0) {
+            senext(&newsh, &newedge); // edge dp.
+          } else {
+            senext2(&newsh, &newedge); // edge pc.
+            sesymself(&newedge); // edge cp.
+          }
+          if (splitseg) {
+            // Don not operate on newedge if it is ap or pb.
+            if (sorg(&newedge) == pa) {
+              apsegshs[k] = newedge;
+              continue;
+            } else if (sorg(&newedge) == pb) {
+              pbsegshs[k] = newedge;
+              continue;
+            }
+          }
+          // There should no segment inside the cavity. Check it.
+          sspivot(m, &newedge, &checkseg);
+          if (checkseg.sh != m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+          spivot(&newedge, &casingout);
+          if (casingout.sh == m->dummysh) {
+            rotface = newtet;
+            ierr = TetGenMeshFindEdge_triface(m, &rotface, sorg(&newedge), sdest(&newedge));CHKERRQ(ierr);
+            // Rotate newtet until meeting a new subface which contains
+            //   newedge. It must exist since newedge is not a seg.
+            adjustedgering_triface(&rotface, CCW);
+            do {
+              fnextself(m, &rotface);
+              tspivot(m, &rotface, &checksh);
+              if (checksh.sh != m->dummysh) break;
+            } while (1);
+            ierr = TetGenMeshFindEdge_face(m, &checksh, sorg(&newedge), sdest(&newedge));CHKERRQ(ierr);
+            sbond(&newedge, &checksh);
+          }
+        }
+      }
+      // Only do once if p is on a facet.
+      if (!splitseg) break;
+    } // for (k = 0; k < n; k++)
+
+    if (splitseg) {
+      // Update a->b to be a->p.
+      apseg = *splitseg;
+      setsdest(&apseg, bp);
+      // Create a new subsegment p->b.
+      ierr = TetGenMeshMakeShellFace(m, m->subsegs, &pbseg);CHKERRQ(ierr);
+      setsorg(&pbseg, bp);
+      setsdest(&pbseg, pb);
+      // p->b gets the same mark and segment type as a->p.
+      setshellmark(m, &pbseg, shellmark(m, &apseg));
+      setshelltype(m, &pbseg, shelltype(m, &apseg));
+      if (b->quality && m->varconstraint) {
+        // Copy the area bound into the new subsegment.
+        setareabound(m, &pbseg, areabound(m, &apseg));
+      }
+      senext(&apseg, &checkseg);
+      // Get the old connection at b of a->b.
+      spivot(&checkseg, &casingout);
+      // Bond a->p and p->b together.
+      senext2(&pbseg, &casingin);
+      sbond(&casingin, &checkseg);
+      if (casingout.sh != m->dummysh) {
+        // There is a subsegment connect at b of p->b.
+        casingout.shver = 0;
+#ifdef PETSC_USE_DEBUG
+        if (sorg(&casingout) != pb) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+        senext2self(&casingout);
+        senext(&pbseg, &casingin);
+        sbond(&casingin, &casingout);
+      }
+
+      // Bond all new subfaces to a->p and p->b.
+      for(i = 0; i < n; i++) {
+        spinsh = apsegshs[i];
+        ierr = TetGenMeshFindEdge_face(m, &spinsh, pa, bp);CHKERRQ(ierr);
+        ssbond(m, &spinsh, &apseg);
+        spinsh = pbsegshs[i];
+        ierr = TetGenMeshFindEdge_face(m, &spinsh, bp, pb);CHKERRQ(ierr);
+        ssbond(m, &spinsh, &pbseg);
+      }
+      // Bond all subfaces share at a->p together.
+      for(i = 0; i < n; i++) {
+        spinsh = apsegshs[i];
+        if (i < (n - 1)) {
+          casingout = apsegshs[i + 1];
+        } else {
+          casingout = apsegshs[0];
+        }
+        sbond1(&spinsh, &casingout);
+      }
+      // Bond all subfaces share at p->b together.
+      for(i = 0; i < n; i++) {
+        spinsh = pbsegshs[i];
+        if (i < (n - 1)) {
+          casingout = pbsegshs[i + 1];
+        } else {
+          casingout = pbsegshs[0];
+        }
+        sbond1(&spinsh, &casingout);
+      }
+      ierr = PetscFree(apsegshs);CHKERRQ(ierr);
+      ierr = PetscFree(pbsegshs);CHKERRQ(ierr);
+
+      // Check for newly encroached subsegments if the flag is set.
+      if (chkencseg) {
+        // Check if a->p and p->b are encroached by other vertices.
+        ierr = TetGenMeshCheckSeg4Encroach(m, &apseg, PETSC_NULL, PETSC_NULL, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+        ierr = TetGenMeshCheckSeg4Encroach(m, &pbseg, PETSC_NULL, PETSC_NULL, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+        // Check if the adjacent segments are encroached by p.
+        ierr = TetGenMeshTallEncSegs(m, bp, n, ceillists, PETSC_NULL);CHKERRQ(ierr);
+      }
+    } // if (splitseg != (face *) NULL)
+
+    // Delete subfaces of old CBC_i(p)s.
+    for(k = 0; k < n; k++) {
+      ierr = ListLength(sublists[k], &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(sublists[k], i, (void **) &oldsh);CHKERRQ(ierr);
+        ierr = TetGenMeshShellFaceDealloc(m, m->subfaces, oldsh.sh);CHKERRQ(ierr);
+      }
+      // Clear the list so that the subs will not get unmarked later in
+      //   routine releasebowatcavity() which only frees the memory.
+      ierr = ListClear(sublists[k]);CHKERRQ(ierr);
+      // Only do once if p is on a facet.
+      if (!splitseg) break;
+    }
+
+    // Check for newly encroached subfaces if the flag is set.
+    if (chkencsub) {
+      // Check if new subfaces of C_i(p) are encroached by other vertices.
+      for(k = 0; k < n; k++) {
+        subceillist = subceillists[k];
+        ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+        for(i = 0; i < len; i++) {
+          ierr = ListItem(subceillist, i, (void **) &newsh);CHKERRQ(ierr);
+          ierr = TetGenMeshCheckSub4Encroach(m, &newsh, PETSC_NULL, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+        }
+        // Only do once if p is on a facet.
+        if (!splitseg) break;
+      }
+      // Check if the adjacent subfaces are encroached by p.
+      ierr = TetGenMeshTallEncSubs(m, bp, n, ceillists, PETSC_NULL);CHKERRQ(ierr);
+    }
+  } // if (subceillists != (list **) NULL)
+
+  // Delete tets of old BC_i(p)s.
+  for(k = 0; k < n; k++) {
+    ierr = ListLength(tetlists[k], &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(tetlists[k], i, (void **) &oldtet);CHKERRQ(ierr);
+      ierr = TetGenMeshTetrahedronDealloc(m, oldtet.tet);CHKERRQ(ierr);
+    }
+    // Clear the list so that the tets will not get unmarked later in
+    //   routine releasebowatcavity() which only frees the memory.
+    ierr = ListClear(tetlists[k]);CHKERRQ(ierr);
+  }
+
+  // check for bad quality tets if the flags is set.
+  if (chkbadtet) {
+    for(k = 0; k < n; k++) {
+      ceillist = ceillists[k];
+      ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(ceillist, i, (void **) &newtet);CHKERRQ(ierr);
+        ierr = TetGenMeshCheckTet4BadQual(m, &newtet, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  if (flipque) {
+    // Newly created internal faces of BC(p) (excluding faces on C(p)s) are
+    //   in 'flipque'.  Some of these faces may be locally non-Delaunay due
+    //   to the existence of non-constrained tets. check and fix them.
+    ierr = TetGenMeshLawson3D(m, flipque, PETSC_NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+////                                                                       ////
+////                                                                       ////
+//// flip_cxx /////////////////////////////////////////////////////////////////
 
 #undef __FUNCT__
 #define __FUNCT__ "TetGenMeshMakeSegmentMap"
@@ -6812,6 +10159,70 @@ PetscErrorCode TetGenMeshMakeSegmentMap(TetGenMesh *m, int **idx2seglistPtr, she
   idx2seglist[0] = 0;
   *idx2seglistPtr    = idx2seglist;
   *segsperverlistPtr = segsperverlist;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshMakeTetrahedronMap"
+/* tetgenmesh::maketetrahedronmap() */
+PetscErrorCode TetGenMeshMakeTetrahedronMap(TetGenMesh *m, int **index2tetlist, tetrahedron ***tetspervertexlist)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  tetrahedron   *tetloop;
+  tetrahedron  **tetsperverlist;
+  int           *idx2tetlist;
+  int            i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo(b->in, "  Constructing mapping from points to tetrahedra.\n");
+
+  // Create and initialize 'idx2tetlist'.
+  ierr = PetscMalloc((m->points->items + 1) * sizeof(int), &idx2tetlist);CHKERRQ(ierr);
+  for(i = 0; i < m->points->items + 1; i++) idx2tetlist[i] = 0;
+
+  // Loop the set of tetrahedra once, counter the number of tetrahedra
+  //   sharing each vertex.
+  ierr = MemoryPoolTraversalInit(m->tetrahedrons);CHKERRQ(ierr);
+  ierr = TetGenMeshTetrahedronTraverse(m, &tetloop);CHKERRQ(ierr);
+  while(tetloop) {
+    // Increment the number of sharing tetrahedra for each endpoint.
+    for(i = 0; i < 4; i++) {
+      j = pointmark(m, (point) tetloop[4 + i]) - in->firstnumber;
+      idx2tetlist[j]++;
+    }
+    ierr = TetGenMeshTetrahedronTraverse(m, &tetloop);CHKERRQ(ierr);
+  }
+
+  // Calculate the total length of array 'tetsperverlist'.
+  j = idx2tetlist[0];
+  idx2tetlist[0] = 0;  // Array starts from 0 element.
+  for(i = 0; i < m->points->items; i++) {
+    k = idx2tetlist[i + 1];
+    idx2tetlist[i + 1] = idx2tetlist[i] + j;
+    j = k;
+  }
+  // The total length is in the last unit of idx2tetlist.
+  ierr = PetscMalloc(idx2tetlist[i] * sizeof(tetrahedron *), &tetsperverlist);CHKERRQ(ierr);
+  // Loop the set of tetrahedra again, set the info. of tet. per vertex.
+  ierr = MemoryPoolTraversalInit(m->tetrahedrons);CHKERRQ(ierr);
+  ierr = TetGenMeshTetrahedronTraverse(m, &tetloop);CHKERRQ(ierr);
+  while(tetloop) {
+    for(i = 0; i < 4; i++) {
+      j = pointmark(m, (point) tetloop[4 + i]) - in->firstnumber;
+      tetsperverlist[idx2tetlist[j]] = tetloop;
+      idx2tetlist[j]++;
+    }
+    ierr = TetGenMeshTetrahedronTraverse(m, &tetloop);CHKERRQ(ierr);
+  }
+  // Contents in 'idx2tetlist' are shifted, now shift them back.
+  for(i = m->points->items - 1; i >= 0; i--) {
+    idx2tetlist[i + 1] = idx2tetlist[i];
+  }
+  idx2tetlist[0] = 0;
+  *index2tetlist     = idx2tetlist;
+  *tetspervertexlist = tetsperverlist;
   PetscFunctionReturn(0);
 }
 
@@ -7681,7 +11092,7 @@ PetscErrorCode TetGenMeshInsertVertexBW(TetGenMesh *m, point insertpt, triface *
   for(i = 0; i < (int) m->cavebdrylist->objects; i++) {
     parytet = (triface *) fastlookup(m->cavebdrylist, i);
     decode(parytet->tet[parytet->loc], &newtet);
-    // assert(org(newtet) == org(*parytet)); // SELF_CHECK
+    // assert(org(newtet) == org(*parytet)); // PETSC_USE_DEBUG
     // assert((newtet.ver & 1) == 0); // in CCW edge ring.
     for(j = 0; j < 3; j++) {
       fnext(m, &newtet, &neightet); // Go to the "open" face.
@@ -7848,7 +11259,7 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
   setpoint2tet(m, lastpt,         encode(&newtet));
   if (b->verbose > 3) {
     PetscInfo(b->in, "    Creating tetra ");
-    ierr = TetGenMeshPrintTet(m, &newtet);CHKERRQ(ierr);
+    ierr = TetGenMeshPrintTet(m, &newtet, PETSC_FALSE);CHKERRQ(ierr);
   }
   // At init, all faces of this tet are hull faces.
   m->hullsize = 4;
@@ -9413,7 +12824,6 @@ PetscErrorCode TetGenMeshTriangulate(TetGenMesh *m, int shmark, PetscReal eps, L
 {
   TetGenOpts    *b  = m->b;
   face newsh = {PETSC_NULL, 0};
-  point *cons;
   int len, len2, i;
   PetscBool isFlipped;
   PetscErrorCode ierr;
@@ -11118,6 +14528,8 @@ PetscErrorCode TetGenMeshRecoverSubfaceByFlips(TetGenMesh *m, face *pssub, trifa
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* Initialize faces */
+  flipfaces[0] = flipfaces[1] = checkseg;
   // Get the missing subface is [a, b, c].
   pa = sorg(pssub);
   pb = sdest(pssub);
@@ -12088,7 +15500,7 @@ PetscErrorCode TetGenMeshConstrainedFacets(TetGenMesh *m)
         setpoint2sh(m, newpt, sencode(&ssub));
         m->dummypoint[0] = m->dummypoint[1] = m->dummypoint[2] = 0;
         // Insert the new point. Starting search it from 'ssub'.
-        ierr = TetGenMeshSplitSubEdge(m, newpt, &ssub, facfaces, facpoints);CHKERRQ(ierr);
+        ierr = TetGenMeshSplitSubEdge_arraypool(m, newpt, &ssub, facfaces, facpoints);CHKERRQ(ierr);
         ierr = ArrayPoolRestart(facfaces);CHKERRQ(ierr);
       }
       // Clear the list of facet vertices.
@@ -12134,7 +15546,7 @@ PetscErrorCode TetGenMeshConstrainedFacets(TetGenMesh *m)
 // Next,the actual inserted new point is also inserted into the surface mesh.//
 // Non-Delaunay segments and newly created subfaces are queued for recovery. //
 /* tetgenmesh::splitsubedge() */
-PetscErrorCode TetGenMeshSplitSubEdge(TetGenMesh *m, point newpt, face *searchsh, ArrayPool *facfaces, ArrayPool *facpoints)
+PetscErrorCode TetGenMeshSplitSubEdge_arraypool(TetGenMesh *m, point newpt, face *searchsh, ArrayPool *facfaces, ArrayPool *facpoints)
 {
   triface searchtet = {PETSC_NULL, 0, 0};
   face *psseg, sseg = {PETSC_NULL, 0};
@@ -12382,7 +15794,7 @@ PetscErrorCode TetGenMeshConstrainedFacets2(TetGenMesh *m)
         setpoint2sh(m, newpt, sencode(&ssub));
         m->dummypoint[0] = m->dummypoint[1] = m->dummypoint[2] = 0;
         // Insert the new point. Starting search it from 'ssub'.
-        ierr = TetGenMeshSplitSubEdge(m, newpt, &ssub, facfaces, facpoints);CHKERRQ(ierr);
+        ierr = TetGenMeshSplitSubEdge_arraypool(m, newpt, &ssub, facfaces, facpoints);CHKERRQ(ierr);
         ierr = ArrayPoolRestart(facfaces);CHKERRQ(ierr);
       }
       // Clear the list of facet vertices.
@@ -12991,6 +16403,627 @@ PetscErrorCode TetGenMeshCarveHoles(TetGenMesh *m)
 ////                                                                       ////
 ////                                                                       ////
 
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTransferNodes"
+// transfernodes()    Transfer nodes from 'io->pointlist' to 'this->points'. //
+//                                                                           //
+// Initializing 'this->points'.  Transferring all points from 'in->pointlist'//
+// into it. All points are indexed (start from in->firstnumber).  Each point //
+// is initialized be UNUSEDVERTEX.  The bounding box (xmin, xmax, ymin, ymax,//
+// zmin, zmax) and the diameter (longest) of the point set are calculated.   //
+/* tetgenmesh::transfernodes() */
+PetscErrorCode TetGenMeshTransferNodes(TetGenMesh *m)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  point          pointloop;
+  PetscReal      x, y, z;
+  int            coordindex, attribindex, mtrindex;
+  int            i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Read the points.
+  coordindex  = 0;
+  attribindex = 0;
+  mtrindex    = 0;
+  for(i = 0; i < in->numberofpoints; i++) {
+    ierr = TetGenMeshMakePoint(m, &pointloop);CHKERRQ(ierr);
+    // Read the point coordinates.
+    x = pointloop[0] = in->pointlist[coordindex++];
+    y = pointloop[1] = in->pointlist[coordindex++];
+    z = pointloop[2] = in->pointlist[coordindex++];
+    // Read the point attributes.
+    for(j = 0; j < in->numberofpointattributes; j++) {
+      pointloop[3 + j] = in->pointattributelist[attribindex++];
+    }
+    // Read the point metric tensor.
+    for(j = 0; j < in->numberofpointmtrs; j++) {
+      pointloop[m->pointmtrindex + j] = in->pointmtrlist[mtrindex++];
+    }
+    // Determine the smallest and largests x, y and z coordinates.
+    if (i == 0) {
+      m->xmin = m->xmax = x;
+      m->ymin = m->ymax = y;
+      m->zmin = m->zmax = z;
+    } else {
+      m->xmin = (x < m->xmin) ? x : m->xmin;
+      m->xmax = (x > m->xmax) ? x : m->xmax;
+      m->ymin = (y < m->ymin) ? y : m->ymin;
+      m->ymax = (y > m->ymax) ? y : m->ymax;
+      m->zmin = (z < m->zmin) ? z : m->zmin;
+      m->zmax = (z > m->zmax) ? z : m->zmax;
+    }
+  }
+  // 'longest' is the largest possible edge length formed by input vertices.
+  x = m->xmax - m->xmin;
+  y = m->ymax - m->ymin;
+  z = m->zmax - m->zmin;
+  m->longest = sqrt(x * x + y * y + z * z);
+  if (m->longest == 0.0) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The point set is trivial.\n");
+  }
+  // Two identical points are distinguished by 'lengthlimit'.
+  m->lengthlimit = m->longest * b->epsilon * 1e+2;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshReconstructMesh"
+// reconstructmesh()    Reconstruct a tetrahedral mesh.                      //
+//                                                                           //
+// The list of tetrahedra will be read from 'in->tetrahedronlist'. If 'in->  //
+// trifacelist' is not empty, boundary faces (faces with a non-zero marker)  //
+// from this list will be inserted into the mesh. In addition, this routine  //
+// automatically detects boundary faces (subfaces): all hull faces will be   //
+// recognized as subfaces, internal faces between two tetrahedra which have  //
+// different region attributes will also be recognized as subfaces.          //
+//                                                                           //
+// Subsegments will be identified after subfaces are reconstructed. Edges at //
+// the intersections of non-coplanar subfaces are recognized as subsegments. //
+// Edges between two coplanar subfaces with different boundary markers are   //
+// also recognized as subsegments.                                           //
+//                                                                           //
+// The facet index of each subface will be set automatically after we have   //
+// recovered subfaces and subsegments.  That is, the set of subfaces, which  //
+// are coplanar and have the same boundary marker will be recognized as a    //
+// facet and has a unique index, stored as the facet marker in each subface  //
+// of the set, the real boundary marker of each subface will be found in     //
+// 'in->facetmarkerlist' by the index.  Facet index will be used in Delaunay //
+// refinement for detecting two incident facets.                             //
+//                                                                           //
+// Points which are not corners of tetrahedra will be inserted into the mesh.//
+// Return the number of faces on the hull after the reconstruction.          //
+/* tetgenmesh::reconstructmesh() */
+PetscErrorCode TetGenMeshReconstructMesh(TetGenMesh *m, long *numFaces)
+{
+  TetGenOpts *b  = m->b;
+  PLC        *in = m->in;
+  tetrahedron **tetsperverlist;
+  shellface **facesperverlist;
+  triface tetloop = {PETSC_NULL, 0, 0}, neightet = {PETSC_NULL, 0, 0}, neineightet = {PETSC_NULL, 0, 0};
+  face subloop = {PETSC_NULL, 0}, neighsh = {PETSC_NULL, 0}, neineighsh = {PETSC_NULL, 0};
+  face sface1 = {PETSC_NULL, 0}, sface2 = {PETSC_NULL, 0};
+  face subseg = {PETSC_NULL, 0};
+  point *idx2verlist;
+  point torg, tdest, tapex, toppo;
+  point norg, napex;
+  List *neighshlist, *markerlist;
+  PetscReal sign, attrib, volume;
+  PetscReal da1, da2;
+  PetscBool bondflag, insertsegflag, isCoplanar;
+  int *idx2tetlist;
+  int *idx2facelist;
+  int *worklist;
+  int facetidx, marker;
+  int iorg, idest, iapex, ioppo;
+  int pivot, ipivot, isum;
+  int maxbandwidth;
+  int len, index, i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo(b->in, "Reconstructing mesh.\n");
+
+  // Create a map from index to points.
+  ierr = TetGenMeshMakeIndex2PointMap(m, &idx2verlist);CHKERRQ(ierr);
+
+  // Create the tetrahedra.
+  for(i = 0; i < in->numberoftetrahedra; i++) {
+    // Create a new tetrahedron and set its four corners, make sure that
+    //   four corners form a positive orientation.
+    ierr = TetGenMeshMakeTetrahedron(m, &tetloop);CHKERRQ(ierr);
+    index = i * in->numberofcorners;
+    // Although there may be 10 nodes, we only read the first 4.
+    iorg  = in->tetrahedronlist[index + 0] - in->firstnumber;
+    idest = in->tetrahedronlist[index + 1] - in->firstnumber;
+    iapex = in->tetrahedronlist[index + 2] - in->firstnumber;
+    ioppo = in->tetrahedronlist[index + 3] - in->firstnumber;
+    torg  = idx2verlist[iorg];
+    tdest = idx2verlist[idest];
+    tapex = idx2verlist[iapex];
+    toppo = idx2verlist[ioppo];
+    sign  = orient3d(torg, tdest, tapex, toppo);
+    if (sign > 0.0) {
+      norg = torg; torg = tdest; tdest = norg;
+    } else if (sign == 0.0) {
+      PetscInfo1(b->in, "Warning:  Tet %d is degenerate.\n", i + in->firstnumber);
+    }
+    setorg(&tetloop, torg);
+    setdest(&tetloop, tdest);
+    setapex(&tetloop, tapex);
+    setoppo(&tetloop, toppo);
+    // Temporarily set the vertices be type FREEVOLVERTEX, to indicate that
+    //   they belong to the mesh.  These types may be changed later.
+    setpointtype(m, torg, FREEVOLVERTEX);
+    setpointtype(m, tdest, FREEVOLVERTEX);
+    setpointtype(m, tapex, FREEVOLVERTEX);
+    setpointtype(m, toppo, FREEVOLVERTEX);
+    // Set element attributes if they exist.
+    for(j = 0; j < in->numberoftetrahedronattributes; j++) {
+      index  = i * in->numberoftetrahedronattributes;
+      attrib = in->tetrahedronattributelist[index + j];
+      setelemattribute(m, tetloop.tet, j, attrib);
+    }
+    // If -a switch is used (with no number follows) Set a volume
+    //   constraint if it exists.
+    if (b->varvolume) {
+      if (in->tetrahedronvolumelist) {
+        volume = in->tetrahedronvolumelist[i];
+      } else {
+        volume = -1.0;
+      }
+      setvolumebound(m, tetloop.tet, volume);
+    }
+  }
+
+  // Set the connection between tetrahedra.
+  m->hullsize = 0l;
+  // Create a map from nodes to tetrahedra.
+  ierr = TetGenMeshMakeTetrahedronMap(m, &idx2tetlist, &tetsperverlist);CHKERRQ(ierr);
+  // Initialize the worklist.
+  ierr = PetscMalloc(m->points->items * sizeof(int), &worklist);CHKERRQ(ierr);
+  for(i = 0; i < m->points->items; i++) worklist[i] = 0;
+  maxbandwidth = 0;
+
+  // Loop all tetrahedra, bond two tetrahedra if they share a common face.
+  ierr = MemoryPoolTraversalInit(m->tetrahedrons);CHKERRQ(ierr);
+  ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  while(tetloop.tet) {
+    // Loop the four sides of the tetrahedron.
+    for(tetloop.loc = 0; tetloop.loc < 4; tetloop.loc++) {
+      sym(&tetloop, &neightet);
+      if (neightet.tet != m->dummytet) continue; // This side has finished.
+      torg = org(&tetloop);
+      tdest = dest(&tetloop);
+      tapex = apex(&tetloop);
+      iorg = pointmark(m, torg) - in->firstnumber;
+      idest = pointmark(m, tdest) - in->firstnumber;
+      iapex = pointmark(m, tapex) - in->firstnumber;
+      worklist[iorg] = 1;
+      worklist[idest] = 1;
+      worklist[iapex] = 1;
+      // Pick the vertex which has the lowest degree.
+      if ((idx2tetlist[iorg + 1] - idx2tetlist[iorg]) > (idx2tetlist[idest + 1] - idx2tetlist[idest])) {
+        if ((idx2tetlist[idest + 1] - idx2tetlist[idest]) > (idx2tetlist[iapex + 1] - idx2tetlist[iapex])) {
+          pivot = iapex;
+        } else {
+          pivot = idest;
+        }
+      } else {
+        if ((idx2tetlist[iorg + 1] - idx2tetlist[iorg]) > (idx2tetlist[iapex + 1] - idx2tetlist[iapex])) {
+          pivot = iapex;
+        } else {
+          pivot = iorg;
+        }
+      }
+      if ((idx2tetlist[pivot + 1] - idx2tetlist[pivot]) > maxbandwidth) {
+        maxbandwidth = idx2tetlist[pivot + 1] - idx2tetlist[pivot];
+      }
+      bondflag = PETSC_FALSE;
+      // Search its neighbor in the adjacent tets of the pivoted vertex.
+      for(j = idx2tetlist[pivot]; j < idx2tetlist[pivot + 1] && !bondflag; j++) {
+        // Quickly check if this tet contains the neighbor.
+        isum = 0;
+        for(k = 0; k < 4; k++) {
+          norg = (point) tetsperverlist[j][4 + k];
+          ipivot = pointmark(m, norg) - in->firstnumber;
+          isum += worklist[ipivot];
+        }
+        if (isum != 3) continue;
+        if (tetsperverlist[j] == tetloop.tet) continue; // Skip myself.
+        // This tet contains its neighbor, find the face and bond them.
+        neightet.tet = tetsperverlist[j];
+        for(neightet.loc = 0; neightet.loc < 4; neightet.loc++) {
+          norg = oppo(&neightet);
+          ipivot = pointmark(m, norg) - in->firstnumber;
+          if (worklist[ipivot] == 0) {
+            // Find! Bond them together and break the loop.
+#ifdef PETSC_USE_DEBUG
+            sym(&neightet, &neineightet);
+            if (neineightet.tet != m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+            bond(m, &tetloop, &neightet);
+            bondflag = PETSC_TRUE;
+            break;
+          }
+        }
+      }
+      if (!bondflag) {
+        m->hullsize++;  // It's a hull face.
+        // Bond this side to outer space.
+        m->dummytet[0] = encode(&tetloop);
+        if ((in->pointmarkerlist) && !b->coarse) {
+          // Set its three corners's markers be boundary (hull) vertices.
+          if (in->pointmarkerlist[iorg] == 0) {
+            in->pointmarkerlist[iorg] = 1;
+          }
+          if (in->pointmarkerlist[idest] == 0) {
+            in->pointmarkerlist[idest] = 1;
+          }
+          if (in->pointmarkerlist[iapex] == 0) {
+            in->pointmarkerlist[iapex] = 1;
+          }
+        }
+      }
+      worklist[iorg] = 0;
+      worklist[idest] = 0;
+      worklist[iapex] = 0;
+    }
+    ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  }
+
+  PetscInfo1(b->in, "  Maximal vertex degree = %d.\n", maxbandwidth);
+
+  // Subfaces will be inserted into the mesh. It has two phases:
+  //   (1) Insert subfaces provided by user (in->trifacelist);
+  //   (2) Create subfaces for hull faces (if they're not subface yet) and
+  //       interior faces which separate two different materials.
+
+  // Phase (1). Is there a list of user-provided subfaces?
+  if (in->trifacelist) {
+    // Recover subfaces from 'in->trifacelist'.
+    for(i = 0; i < in->numberoftrifaces; i++) {
+      index = i * 3;
+      iorg = in->trifacelist[index] - in->firstnumber;
+      idest = in->trifacelist[index + 1] - in->firstnumber;
+      iapex = in->trifacelist[index + 2] - in->firstnumber;
+      // Look for the location of this subface.
+      worklist[iorg] = 1;
+      worklist[idest] = 1;
+      worklist[iapex] = 1;
+      // Pick the vertex which has the lowest degree.
+      if ((idx2tetlist[iorg + 1] - idx2tetlist[iorg]) > (idx2tetlist[idest + 1] - idx2tetlist[idest])) {
+        if ((idx2tetlist[idest + 1] - idx2tetlist[idest]) > (idx2tetlist[iapex + 1] - idx2tetlist[iapex])) {
+          pivot = iapex;
+        } else {
+          pivot = idest;
+        }
+      } else {
+        if ((idx2tetlist[iorg + 1] - idx2tetlist[iorg]) > (idx2tetlist[iapex + 1] - idx2tetlist[iapex])) {
+          pivot = iapex;
+        } else {
+          pivot = iorg;
+        }
+      }
+      bondflag = PETSC_FALSE;
+      // Search its neighbor in the adjacent tets of torg.
+      for (j = idx2tetlist[pivot]; j < idx2tetlist[pivot + 1] && !bondflag; j++) {
+        // Quickly check if this tet contains the neighbor.
+        isum = 0;
+        for(k = 0; k < 4; k++) {
+          norg = (point) tetsperverlist[j][4 + k];
+          ipivot = pointmark(m, norg) - in->firstnumber;
+          isum += worklist[ipivot];
+        }
+        if (isum != 3) continue;
+        neightet.tet = tetsperverlist[j];
+        for(neightet.loc = 0; neightet.loc < 4; neightet.loc++) {
+          norg = oppo(&neightet);
+          ipivot = pointmark(m, norg) - in->firstnumber;
+          if (worklist[ipivot] == 0) {
+            bondflag = PETSC_TRUE;  // Find!
+            break;
+          }
+        }
+      }
+      if (bondflag) {
+        // Create a new subface and insert it into the mesh.
+        ierr = TetGenMeshMakeShellFace(m, m->subfaces, &subloop);CHKERRQ(ierr);
+        torg = idx2verlist[iorg];
+        tdest = idx2verlist[idest];
+        tapex = idx2verlist[iapex];
+        setsorg(&subloop, torg);
+        setsdest(&subloop, tdest);
+        setsapex(&subloop, tapex);
+        // Set the vertices be FREESUBVERTEX to indicate they belong to a
+        //   facet of the domain.  They may be changed later.
+        setpointtype(m, torg, FREESUBVERTEX);
+        setpointtype(m, tdest, FREESUBVERTEX);
+        setpointtype(m, tapex, FREESUBVERTEX);
+        if (in->trifacemarkerlist) {
+          setshellmark(m, &subloop, in->trifacemarkerlist[i]);
+        }
+        adjustedgering_triface(&neightet, CCW);
+        ierr = TetGenMeshFindEdge_face(m, &subloop, org(&neightet), dest(&neightet));CHKERRQ(ierr);
+        tsbond(m, &neightet, &subloop);
+        sym(&neightet, &neineightet);
+        if (neineightet.tet != m->dummytet) {
+          sesymself(&subloop);
+          tsbond(m, &neineightet, &subloop);
+        }
+      } else {
+        PetscInfo1(b->in, "Warning:  Subface %d is discarded.\n", i + in->firstnumber);
+      }
+      worklist[iorg] = 0;
+      worklist[idest] = 0;
+      worklist[iapex] = 0;
+    }
+  }
+
+  // Phase (2). Indentify subfaces from the mesh.
+  ierr = MemoryPoolTraversalInit(m->tetrahedrons);CHKERRQ(ierr);
+  ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  while(tetloop.tet) {
+    // Loop the four sides of the tetrahedron.
+    for(tetloop.loc = 0; tetloop.loc < 4; tetloop.loc++) {
+      tspivot(m, &tetloop, &subloop);
+      if (subloop.sh != m->dummysh) continue;
+      bondflag = PETSC_FALSE;
+      sym(&tetloop, &neightet);
+      if (neightet.tet == m->dummytet) {
+        // It's a hull face. Insert a subface at here.
+        bondflag = PETSC_TRUE;
+      } else {
+        // It's an interior face. Insert a subface if two tetrahedra have
+        //   different attributes (i.e., they belong to two regions).
+        if (in->numberoftetrahedronattributes > 0) {
+          if (elemattribute(m, neightet.tet, in->numberoftetrahedronattributes - 1) != elemattribute(m, tetloop.tet, in->numberoftetrahedronattributes - 1)) {
+            bondflag = PETSC_TRUE;
+          }
+        }
+      }
+      if (bondflag) {
+        adjustedgering_triface(&tetloop, CCW);
+        ierr = TetGenMeshMakeShellFace(m, m->subfaces, &subloop);CHKERRQ(ierr);
+        torg = org(&tetloop);
+        tdest = dest(&tetloop);
+        tapex = apex(&tetloop);
+        setsorg(&subloop, torg);
+        setsdest(&subloop, tdest);
+        setsapex(&subloop, tapex);
+        // Set the vertices be FREESUBVERTEX to indicate they belong to a
+        //   facet of the domain.  They may be changed later.
+        setpointtype(m, torg, FREESUBVERTEX);
+        setpointtype(m, tdest, FREESUBVERTEX);
+        setpointtype(m, tapex, FREESUBVERTEX);
+        tsbond(m, &tetloop, &subloop);
+        if (neightet.tet != m->dummytet) {
+          sesymself(&subloop);
+          tsbond(m, &neightet, &subloop);
+        }
+      }
+    }
+    ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  }
+
+  // Set the connection between subfaces. A subsegment may have more than
+  //   two subfaces sharing it, 'neighshlist' stores all subfaces sharing
+  //   one edge.
+  ierr = ListCreate(sizeof(face), PETSC_NULL, PETSC_DECIDE, PETSC_DECIDE, &neighshlist);CHKERRQ(ierr);
+  // Create a map from nodes to subfaces.
+  ierr = TetGenMeshMakeSubfaceMap(m, &idx2facelist, &facesperverlist);CHKERRQ(ierr);
+
+  // Loop over the set of subfaces, setup the connection between subfaces.
+  ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  while(subloop.sh) {
+    for(i = 0; i < 3; i++) {
+      spivot(&subloop, &neighsh);
+      if (neighsh.sh == m->dummysh) {
+        // This side is 'empty', operate on it.
+        torg = sorg(&subloop);
+        tdest = sdest(&subloop);
+        tapex = sapex(&subloop);
+        ierr = ListAppend(neighshlist, &subloop, PETSC_NULL);CHKERRQ(ierr);
+        iorg = pointmark(m, torg) - in->firstnumber;
+        // Search its neighbor in the adjacent list of torg.
+        for(j = idx2facelist[iorg]; j < idx2facelist[iorg + 1]; j++) {
+          neighsh.sh = facesperverlist[j];
+          if (neighsh.sh == subloop.sh) continue;
+          neighsh.shver = 0;
+          if (isfacehasedge(&neighsh, torg, tdest)) {
+            ierr = TetGenMeshFindEdge_face(m, &neighsh, torg, tdest);CHKERRQ(ierr);
+            // Insert 'neighsh' into 'neighshlist'.
+            ierr = ListLength(neighshlist, &len);CHKERRQ(ierr);
+            if (len < 2) {
+              ierr = ListAppend(neighshlist, &neighsh, PETSC_NULL);CHKERRQ(ierr);
+            } else {
+              for(index = 0; index < len - 1; index++) {
+                ierr = ListItem(neighshlist, index,   (void **) &sface1);CHKERRQ(ierr);
+                ierr = ListItem(neighshlist, index+1, (void **) &sface2);CHKERRQ(ierr);
+                ierr = TetGenMeshFaceDihedral(m, torg, tdest, sapex(&sface1), sapex(&neighsh), &da1);CHKERRQ(ierr);
+                ierr = TetGenMeshFaceDihedral(m, torg, tdest, sapex(&sface1), sapex(&sface2), &da2);CHKERRQ(ierr);
+                if (da1 < da2) {
+                  break;  // Insert it after index.
+                }
+              }
+              ierr = ListInsert(neighshlist, index + 1, &neighsh, PETSC_NULL);CHKERRQ(ierr);
+            }
+          }
+        }
+        // Bond the subfaces in 'neighshlist'.
+        ierr = ListLength(neighshlist, &len);CHKERRQ(ierr);
+        if (len > 1) {
+          ierr = ListItem(neighshlist, 0, (void **) &neighsh);CHKERRQ(ierr);
+          for(j = 1; j <= len; j++) {
+            if (j < len) {
+              ierr = ListItem(neighshlist, j, (void **) &neineighsh);CHKERRQ(ierr);
+            } else {
+              ierr = ListItem(neighshlist, 0, (void **) &neineighsh);CHKERRQ(ierr);
+            }
+            sbond1(&neighsh, &neineighsh);
+            neighsh = neineighsh;
+          }
+        } else {
+          // No neighbor subface be found, bond 'subloop' to itself.
+          sdissolve(m, &subloop); // sbond(subloop, subloop);
+        }
+        ierr = ListClear(neighshlist);CHKERRQ(ierr);
+      }
+      senextself(&subloop);
+    }
+    ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  }
+
+  // Segments will be introudced. Each segment has a unique marker (1-based).
+  marker = 1;
+  ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  while(subloop.sh) {
+    for(i = 0; i < 3; i++) {
+      sspivot(m, &subloop, &subseg);
+      if (subseg.sh == m->dummysh) {
+        // This side has no subsegment bonded, check it.
+        torg = sorg(&subloop);
+        tdest = sdest(&subloop);
+        tapex = sapex(&subloop);
+        spivot(&subloop, &neighsh);
+        spivot(&neighsh, &neineighsh);
+        insertsegflag = PETSC_FALSE;
+        if (subloop.sh == neighsh.sh || subloop.sh != neineighsh.sh) {
+          // This side is either self-bonded or more than two subfaces,
+          //   insert a subsegment at this side.
+          insertsegflag = PETSC_TRUE;
+        } else {
+          // Only two subfaces case.
+#ifdef PETSC_USE_DEBUG
+          if (subloop.sh == neighsh.sh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+          napex = sapex(&neighsh);
+          sign = orient3d(torg, tdest, tapex, napex);
+          ierr = TetGenMeshIsCoplanar(m, torg, tdest, tapex, napex, sign, b->epsilon, &isCoplanar);CHKERRQ(ierr);
+          if (isCoplanar) {
+            // Although they are coplanar, we still need to check if they
+            //   have the same boundary marker.
+            insertsegflag = (shellmark(m, &subloop) != shellmark(m, &neighsh)) ? PETSC_TRUE : PETSC_FALSE;
+          } else {
+            // Non-coplanar.
+            insertsegflag = PETSC_TRUE;
+          }
+        }
+        if (insertsegflag) {
+          // Create a subsegment at this side.
+          ierr = TetGenMeshMakeShellFace(m, m->subsegs, &subseg);CHKERRQ(ierr);
+          setsorg(&subseg, torg);
+          setsdest(&subseg, tdest);
+          // The two vertices have been marked as FREESUBVERTEX. Now mark
+          //   them as NACUTEVERTEX.
+          setpointtype(m, torg, NACUTEVERTEX);
+          setpointtype(m, tdest, NACUTEVERTEX);
+          setshellmark(m, &subseg, marker);
+          marker++;
+          // Bond all subfaces to this subsegment.
+          neighsh = subloop;
+          do {
+            ssbond(m, &neighsh, &subseg);
+            spivotself(&neighsh);
+            if (neighsh.sh == m->dummysh) {
+              break; // Only one facet case.
+            }
+          } while (neighsh.sh != subloop.sh);
+        }
+      }
+      senextself(&subloop);
+    }
+    ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  }
+
+  // Remember the number of input segments.
+  m->insegments = m->subsegs->items;
+  // Find the acute vertices and set them be type ACUTEVERTEX.
+
+  // Indentify facets and set the facet marker (1-based) for subfaces.
+  ierr = ListCreate(sizeof(int), PETSC_NULL, 256, PETSC_DECIDE, &markerlist);CHKERRQ(ierr);
+
+  ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  while(subloop.sh) {
+    // Only operate on uninfected subface, after operating, infect it.
+    if (!sinfected(m, &subloop)) {
+      // A new facet is found.
+      marker = shellmark(m, &subloop);
+      ierr = ListAppend(markerlist, &marker, PETSC_NULL);CHKERRQ(ierr);
+      ierr = ListLength(markerlist, &facetidx);CHKERRQ(ierr); // 'facetidx' starts from 1.
+      setshellmark(m, &subloop, facetidx);
+      sinfect(m, &subloop);
+      ierr = ListAppend(neighshlist, &subloop, PETSC_NULL);CHKERRQ(ierr);
+      // Find out all subfaces of this facet (bounded by subsegments).
+      ierr = ListLength(neighshlist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(neighshlist, i, (void **) &neighsh);CHKERRQ(ierr);
+        for(j = 0; j < 3; j++) {
+          sspivot(m, &neighsh, &subseg);
+          if (subseg.sh == m->dummysh) {
+            spivot(&neighsh, &neineighsh);
+            if (!sinfected(m, &neineighsh)) {
+              // 'neineighsh' is in the same facet as 'subloop'.
+#ifdef PETSC_USE_DEBUG
+              if (shellmark(m, &neineighsh) != marker) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+              setshellmark(m, &neineighsh, facetidx);
+              sinfect(m, &neineighsh);
+              ierr = ListAppend(neighshlist, &neineighsh, PETSC_NULL);CHKERRQ(ierr);
+            }
+          }
+          senextself(&neighsh);
+        }
+      }
+      ierr = ListClear(neighshlist);CHKERRQ(ierr);
+    }
+    ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  }
+  // Uninfect all subfaces.
+  ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  while(subloop.sh) {
+#ifdef PETSC_USE_DEBUG
+    if (!sinfected(m, &subloop)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+    suninfect(m, &subloop);
+    ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &subloop.sh);CHKERRQ(ierr);
+  }
+  // Save the facet markers in 'in->facetmarkerlist'.
+  ierr = ListLength(markerlist, &in->numberoffacets);CHKERRQ(ierr);
+  ierr = PetscMalloc(in->numberoffacets * sizeof(int), &in->facetmarkerlist);CHKERRQ(ierr);
+  for(i = 0; i < in->numberoffacets; i++) {
+    ierr = ListItem(markerlist, i, (void **) &marker);CHKERRQ(ierr);
+    in->facetmarkerlist[i] = marker;
+  }
+  // Initialize the 'facetabovepointlist'.
+  ierr = PetscMalloc((in->numberoffacets + 1) * sizeof(point), &m->facetabovepointarray);CHKERRQ(ierr);
+  for(i = 0; i < in->numberoffacets + 1; i++) {
+    m->facetabovepointarray[i] = PETSC_NULL;
+  }
+
+  // The mesh contains boundary now.
+  m->checksubfaces = 1;
+  // The mesh is nonconvex now.
+  m->nonconvex = 1;
+
+  ierr = ListDestroy(&markerlist);CHKERRQ(ierr);
+  ierr = ListDestroy(&neighshlist);CHKERRQ(ierr);
+  ierr = PetscFree(worklist);CHKERRQ(ierr);
+  ierr = PetscFree(idx2tetlist);CHKERRQ(ierr);
+  ierr = PetscFree(tetsperverlist);CHKERRQ(ierr);
+  ierr = PetscFree(idx2facelist);CHKERRQ(ierr);
+  ierr = PetscFree(facesperverlist);CHKERRQ(ierr);
+  ierr = PetscFree(idx2verlist);CHKERRQ(ierr);
+
+  if (numFaces) {*numFaces = m->hullsize;}
+  PetscFunctionReturn(0);
+}
+
 ////                                                                       ////
 ////                                                                       ////
 //// reconstruct_cxx //////////////////////////////////////////////////////////
@@ -12998,6 +17031,1350 @@ PetscErrorCode TetGenMeshCarveHoles(TetGenMesh *m)
 //// refine_cxx ///////////////////////////////////////////////////////////////
 ////                                                                       ////
 ////                                                                       ////
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshMarkSharpSegments"
+// marksharpsegments()    Mark sharp segments.                               //
+//                                                                           //
+// A segment s is called sharp if it is in one of the two cases:             //
+//  (1) There is a segment s' intersecting with s.  The internal angle (*)   //
+//      between s and s' is acute.                                           //
+//  (2) There are two facets f1 and f2 intersecting at s.  The internal      //
+//      dihedral angle (*) between f1 and f2 is acute.                       //
+// This routine finds the sharp segments and marked them as type SHARP.      //
+//                                                                           //
+// The minimum angle between segments (minfaceang) and the minimum dihedral  //
+// angle between facets (minfacetdihed) are calulcated.                      //
+//                                                                           //
+// (*) The internal angle (or dihedral) bewteen two features means the angle //
+// inside the mesh domain.                                                   //
+/* tetgenmesh::marksharpsegments() */
+PetscErrorCode TetGenMeshMarkSharpSegments(TetGenMesh *m, PetscReal sharpangle)
+{
+  TetGenOpts *b  = m->b;
+  triface adjtet = {PETSC_NULL, 0, 0};
+  face startsh = {PETSC_NULL, 0}, spinsh = {PETSC_NULL, 0}, neighsh = {PETSC_NULL, 0};
+  face segloop = {PETSC_NULL, 0}, prevseg = {PETSC_NULL, 0}, nextseg = {PETSC_NULL, 0};
+  point eorg, edest;
+  PetscReal ang, smallang;
+  PetscBool issharp;
+  int sharpsegcount;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo(b->in, "  Marking sharp segments.\n");
+
+  smallang = sharpangle * PETSC_PI / 180.;
+  sharpsegcount = 0;
+  eorg = edest = PETSC_NULL; // To avoid compiler warnings.
+
+  // A segment s may have been split into many subsegments. Operate the one
+  //   which contains the origin of s. Then mark the rest of subsegments.
+  ierr = MemoryPoolTraversalInit(m->subsegs);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &segloop.sh);CHKERRQ(ierr);
+  while(segloop.sh) {
+    segloop.shver = 0;
+    senext2(&segloop, &prevseg);
+    spivotself(&prevseg);
+    if (prevseg.sh == m->dummysh) {
+      // Operate on this seg s.
+      issharp = PETSC_FALSE;
+      spivot(&segloop, &startsh);
+      if (startsh.sh != m->dummysh) {
+        // First check if two facets form an acute dihedral angle at s.
+        eorg = sorg(&segloop);
+        edest = sdest(&segloop);
+        spinsh = startsh;
+        do {
+          if (sorg(&spinsh) != eorg) {
+            sesymself(&spinsh);
+          }
+          // Only do test when the spinsh is faceing inward.
+          stpivot(m, &spinsh, &adjtet);
+          if (adjtet.tet != m->dummytet) {
+            // Get the subface on the adjacent facet.
+            spivot(&spinsh, &neighsh);
+            // Do not calculate if it is self-bonded.
+            if ((neighsh.sh != m->dummysh) && (neighsh.sh != spinsh.sh)) {
+              // Calculate the dihedral angle between the two subfaces.
+              ierr = TetGenMeshFaceDihedral(m, eorg, edest, sapex(&spinsh), sapex(&neighsh), &ang);CHKERRQ(ierr);
+              // Only do check if a sharp angle has not been found.
+              if (!issharp) issharp = (ang < smallang) ? PETSC_TRUE : PETSC_FALSE;
+              // Remember the smallest facet dihedral angle.
+              m->minfacetdihed = m->minfacetdihed < ang ? m->minfacetdihed : ang;
+            }
+          }
+          // Go to the next facet.
+          spivotself(&spinsh);
+          if (spinsh.sh == m->dummysh) break; // A single subface case.
+        } while (spinsh.sh != startsh.sh);
+        // if (!issharp) {
+          // Second check if s forms an acute angle with another seg.
+          spinsh = startsh;
+          do {
+            if (sorg(&spinsh) != eorg) {
+              sesymself(&spinsh);
+            }
+            // Calculate the angle between s and s' of this facet.
+            neighsh = spinsh;
+            // Rotate edges around 'eorg' until meeting another seg s'. Such
+            //   seg (s') must exist since the facet is segment-bounded.
+            //   The sum of the angles of faces at 'eorg' gives the internal
+            //   angle between the two segments.
+            ang = 0.0;
+            do {
+              ang += interiorangle(eorg, sdest(&neighsh), sapex(&neighsh), PETSC_NULL);
+              senext2self(&neighsh);
+              sspivot(m, &neighsh, &nextseg);
+              if (nextseg.sh != m->dummysh) break;
+              // Go to the next coplanar subface.
+              spivotself(&neighsh);
+              if (neighsh.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              if (sorg(&neighsh) != eorg) {
+                sesymself(&neighsh);
+              }
+            } while (1);
+            // Only do check if a sharp angle has not been found.
+            if (!issharp) issharp = (ang < smallang) ? PETSC_TRUE : PETSC_FALSE;
+            // Remember the smallest input face angle.
+            m->minfaceang = m->minfaceang < ang ? m->minfaceang : ang;
+            // Go to the next facet.
+            spivotself(&spinsh);
+            if (spinsh.sh == m->dummysh) break; // A single subface case.
+          } while (spinsh.sh != startsh.sh);
+        // }
+      }
+      if (issharp) {
+        setshelltype(m, &segloop, SHARP);
+        // Set the type for all subsegments at forwards.
+        edest = sdest(&segloop);
+        senext(&segloop, &nextseg);
+        spivotself(&nextseg);
+        while (nextseg.sh != m->dummysh) {
+          setshelltype(m, &nextseg, SHARP);
+          // Adjust the direction of nextseg.
+          nextseg.shver = 0;
+          if (sorg(&nextseg) != edest) {
+            sesymself(&nextseg);
+          }
+          if (sorg(&nextseg) != edest) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+          edest = sdest(&nextseg);
+          // Go the next connected subsegment at edest.
+          senextself(&nextseg);
+          spivotself(&nextseg);
+        }
+        sharpsegcount++;
+      }
+    }
+    ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &segloop.sh);CHKERRQ(ierr);
+  }
+
+  // So far we have marked all segments which have an acute dihedral angle
+  //   or whose ORIGINs have an acute angle. In the un-marked subsegments,
+  //   there are possible ones whose DESTINATIONs have an acute angle.
+  ierr = MemoryPoolTraversalInit(m->subsegs);CHKERRQ(ierr);
+  ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &segloop.sh);CHKERRQ(ierr);
+  while(segloop.sh) {
+    // Only operate if s is non-sharp and contains the dest.
+    segloop.shver = 0;
+    senext(&segloop, &nextseg);
+    spivotself(&nextseg);
+    // if ((nextseg.sh == dummysh) && (shelltype(segloop) != SHARP)) {
+    if (nextseg.sh == m->dummysh) {
+      // issharp = false;
+      issharp = (shelltype(m, &segloop) == SHARP) ? PETSC_TRUE : PETSC_FALSE;
+      spivot(&segloop, &startsh);
+      if (startsh.sh != m->dummysh) {
+        // Check if s forms an acute angle with another seg.
+        eorg = sdest(&segloop);
+        spinsh = startsh;
+        do {
+          if (sorg(&spinsh) != eorg) {
+            sesymself(&spinsh);
+          }
+          // Calculate the angle between s and s' of this facet.
+          neighsh = spinsh;
+          ang = 0.0;
+          do {
+            ang += interiorangle(eorg, sdest(&neighsh), sapex(&neighsh), PETSC_NULL);
+            senext2self(&neighsh);
+            sspivot(m, &neighsh, &nextseg);
+            if (nextseg.sh != m->dummysh) break;
+            // Go to the next coplanar subface.
+            spivotself(&neighsh);
+            if (neighsh.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+            if (sorg(&neighsh) != eorg) {
+              sesymself(&neighsh);
+            }
+          } while (1);
+          // Only do check if a sharp angle has not been found.
+          if (!issharp) issharp = (ang < smallang) ? PETSC_TRUE : PETSC_FALSE;
+          // Remember the smallest input face angle.
+          m->minfaceang = m->minfaceang < ang ? m->minfaceang : ang;
+          // Go to the next facet.
+          spivotself(&spinsh);
+          if (spinsh.sh == m->dummysh) break; // A single subface case.
+        } while (spinsh.sh != startsh.sh);
+      }
+      if (issharp) {
+        setshelltype(m, &segloop, SHARP);
+        // Set the type for all subsegments at backwards.
+        eorg = sorg(&segloop);
+        senext2(&segloop, &prevseg);
+        spivotself(&prevseg);
+        while (prevseg.sh != m->dummysh) {
+          setshelltype(m, &prevseg, SHARP);
+          // Adjust the direction of prevseg.
+          prevseg.shver = 0;
+          if (sdest(&prevseg) != eorg) {
+            sesymself(&prevseg);
+          }
+          if (sdest(&prevseg) != eorg) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+          eorg = sorg(&prevseg);
+          // Go to the next connected subsegment at eorg.
+          senext2self(&prevseg);
+          spivotself(&prevseg);
+        }
+        sharpsegcount++;
+      }
+    }
+    ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &segloop.sh);CHKERRQ(ierr);
+  }
+
+  if (sharpsegcount > 0) {
+    PetscInfo1(b->in, "  %d sharp segments.\n", sharpsegcount);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshDecideFeaturePointSizes"
+// decidefeaturepointsizes()    Decide the sizes for all feature points.     //
+//                                                                           //
+// A feature point is a point on a sharp segment. Every feature point p will //
+// be assigned a positive size which is the radius of the protecting ball.   //
+//                                                                           //
+// The size of a feature point may be specified by one of the following ways://
+//   (1) directly specifying on an input vertex (by using .mtr file);        //
+//   (2) imposing a fixed maximal volume constraint ('-a__' option);         //
+//   (3) imposing a maximal volume constraint in a region ('-a' option);     //
+//   (4) imposing a maximal area constraint on a facet (in .var file);       //
+//   (5) imposing a maximal length constraint on a segment (in .var file);   //
+//   (6) combining (1) - (5).                                                //
+//   (7) automatically deriving a size if none of (1) - (6) is available.    //
+// In case (7),the size of p is set to be the smallest edge length among all //
+// edges connecting at p.  The final size of p is the minimum of (1) - (7).  //
+/* tetgenmesh::decidefeaturepointsizes() */
+PetscErrorCode TetGenMeshDecideFeaturePointSizes(TetGenMesh *m)
+{
+  TetGenOpts *b  = m->b;
+  PLC        *in = m->in;
+  List *tetlist, *verlist;
+  shellface **segsperverlist;
+  triface starttet = {PETSC_NULL, 0, 0};
+  face shloop = {PETSC_NULL, 0};
+  face checkseg = {PETSC_NULL, 0}, prevseg = {PETSC_NULL, 0}, nextseg = {PETSC_NULL, 0}, testseg = {PETSC_NULL, 0};
+  point ploop, adjpt, e1, e2;
+  PetscReal lfs_0, len, vol, maxlen, varlen;
+  PetscBool isfeature;
+  int *idx2seglist;
+  int featurecount;
+  int llen, idx, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo(b->in, "  Deciding feature-point sizes.\n");
+
+  // Constructing a map from vertices to segments.
+  ierr = TetGenMeshMakeSegmentMap(m, &idx2seglist, &segsperverlist);CHKERRQ(ierr);
+  // Initialize working lists.
+  ierr = ListCreate(sizeof(triface), PETSC_NULL, 256, PETSC_DECIDE, &tetlist);CHKERRQ(ierr);
+  ierr = ListCreate(sizeof(point *), PETSC_NULL, 256, PETSC_DECIDE, &verlist);CHKERRQ(ierr);
+
+  if (b->fixedvolume) {
+    // A fixed volume constraint is imposed. This gives an upper bound of
+    //   the maximal radius of the protect ball of a vertex.
+    maxlen = pow(6.0 * b->maxvolume, 1.0/3.0);
+  }
+
+  // First only assign a size of p if p is not a Steiner point. The size of
+  //   a Steiner point will be interpolated later from the endpoints of the
+  //   segment on which it lies.
+  featurecount = 0;
+  ierr = MemoryPoolTraversalInit(m->points);CHKERRQ(ierr);
+  ierr = TetGenMeshPointTraverse(m, &ploop);CHKERRQ(ierr);
+  while(ploop) {
+    if (pointtype(m, ploop) != FREESEGVERTEX) {
+      // Is p a feature point?
+      isfeature = PETSC_FALSE;
+      idx = pointmark(m, ploop) - in->firstnumber;
+      for (i = idx2seglist[idx]; i < idx2seglist[idx + 1] && !isfeature; i++) {
+        checkseg.sh = segsperverlist[i];
+        isfeature = (shelltype(m, &checkseg) == SHARP) ? PETSC_TRUE : PETSC_FALSE;
+      }
+      // Decide the size of p if it is on a sharp segment.
+      if (isfeature) {
+        // Find a tet containing p;
+        ierr = TetGenMeshSstPivot(m, &checkseg, &starttet);CHKERRQ(ierr);
+        // Form star(p).
+        ierr = ListAppend(tetlist, &starttet, PETSC_NULL);CHKERRQ(ierr);
+        ierr = TetGenMeshFormStarPolyhedron(m, ploop, tetlist, verlist, PETSC_TRUE);CHKERRQ(ierr);
+        // Decide the size for p if no input size is given on input.
+        if (ploop[m->pointmtrindex] == 0.0) {
+          // Calculate lfs_0(p).
+          lfs_0 = m->longest;
+          ierr = ListLength(verlist, &llen);CHKERRQ(ierr);
+          for(i = 0; i < llen; i++) {
+            ierr = ListItem(verlist, i, (void **) &adjpt);CHKERRQ(ierr);
+            if (pointtype(m, adjpt) == FREESEGVERTEX) {
+              // A Steiner point q. Find the seg it lies on.
+              sdecode(point2seg(m, adjpt), &checkseg);
+              if (checkseg.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              checkseg.shver = 0;
+              // Find the origin of this seg.
+              prevseg = checkseg;
+              e1 = sorg(&prevseg);
+              do {
+                senext2(&prevseg, &testseg);
+                spivotself(&testseg);
+                if (testseg.sh == m->dummysh) break;
+                // Go to the previous subseg.
+                prevseg = testseg;
+                // Adjust the direction of the previous subsegment.
+                prevseg.shver = 0;
+                if (sdest(&prevseg) != e1) {
+                  sesymself(&prevseg);
+                }
+                if (sdest(&prevseg) != e1) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+                e1 = sorg(&prevseg);
+              } while (1);
+              // Find the dest of this seg.
+              nextseg = checkseg;
+              e2 = sdest(&nextseg);
+              do {
+                senext(&nextseg, &testseg);
+                spivotself(&testseg);
+                if (testseg.sh == m->dummysh) break;
+                // Go to the next subseg.
+                nextseg = testseg;
+                // Adjust the direction of the nextseg.
+                nextseg.shver = 0;
+                if (sorg(&nextseg) != e2) {
+                  sesymself(&nextseg);
+                }
+                if (sorg(&nextseg) != e2) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+                e2 = sdest(&nextseg);
+              } while (1);
+              // e1 = sorg(prevseg);
+              // e2 = sdest(nextseg);
+              // Check if p is the origin or the dest of this seg.
+              if (ploop == e1) {
+                // Set q to be the dest of this seg.
+                adjpt = e2;
+              } else if (ploop == e2) {
+                // Set q to be the org of this seg.
+                adjpt = e1;
+              }
+            }
+            len = distance(ploop, adjpt);
+            if (lfs_0 > len) lfs_0 = len;
+          }
+          ploop[m->pointmtrindex] = lfs_0;
+        }
+        if (b->fixedvolume) {
+          // A fixed volume constraint is imposed. Adjust H(p) <= maxlen.
+          if (ploop[m->pointmtrindex] > maxlen) {
+            ploop[m->pointmtrindex] = maxlen;
+          }
+        }
+        if (b->varvolume) {
+          // Variant volume constraints are imposed. Adjust H(p) <= varlen.
+          ierr = ListLength(tetlist, &llen);CHKERRQ(ierr);
+          for(i = 0; i < llen; i++) {
+            ierr = ListItem(tetlist, i, (void **) &starttet);CHKERRQ(ierr);
+            vol = volumebound(m, starttet.tet);
+            if (vol > 0.0) {
+              varlen = pow(6 * vol, 1.0/3.0);
+              if (ploop[m->pointmtrindex] > varlen) {
+                ploop[m->pointmtrindex] = varlen;
+              }
+            }
+          }
+        }
+        // Clear working lists.
+        ierr = ListClear(tetlist);CHKERRQ(ierr);
+        ierr = ListClear(verlist);CHKERRQ(ierr);
+        featurecount++;
+      } else {
+        // NO feature point, set the size of p be zero.
+        ploop[m->pointmtrindex] = 0.0;
+      }
+    } // if (pointtype(ploop) != FREESEGVERTEX) {
+    ierr = TetGenMeshPointTraverse(m, &ploop);CHKERRQ(ierr);
+  }
+
+  PetscInfo1(b->in, "  %d feature points.\n", featurecount);
+
+  if (!b->refine) {
+    // Second only assign sizes for all Steiner points. A Steiner point p
+    //   inserted on a sharp segment s is assigned a size by interpolating
+    //   the sizes of the original endpoints of s.
+    featurecount = 0;
+    ierr = MemoryPoolTraversalInit(m->points);CHKERRQ(ierr);
+    ierr = TetGenMeshPointTraverse(m, &ploop);CHKERRQ(ierr);
+    while(ploop) {
+      if (pointtype(m, ploop) == FREESEGVERTEX) {
+        if (ploop[m->pointmtrindex] == 0.0) {
+          sdecode(point2seg(m, ploop), &checkseg);
+          if (checkseg.sh == m->dummysh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+          if (shelltype(m, &checkseg) == SHARP) {
+            checkseg.shver = 0;
+            // Find the origin of this seg.
+            prevseg = checkseg;
+            e1 = sorg(&prevseg);
+            do {
+              senext2(&prevseg, &testseg);
+              spivotself(&testseg);
+              if (testseg.sh == m->dummysh) break;
+              prevseg = testseg; // Go the previous subseg.
+              // Adjust the direction of this subsegmnt.
+              prevseg.shver = 0;
+              if (sdest(&prevseg) != e1) {
+                sesymself(&prevseg);
+              }
+              if (sdest(&prevseg) != e1) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              e1 = sorg(&prevseg);
+            } while (1);
+            // Find the dest of this seg.
+            nextseg = checkseg;
+            e2 = sdest(&nextseg);
+            do {
+              senext(&nextseg, &testseg);
+              spivotself(&testseg);
+              if (testseg.sh == m->dummysh) break;
+              nextseg = testseg; // Go the next subseg.
+              // Adjust the direction of this subsegment.
+              nextseg.shver = 0;
+              if (sorg(&nextseg) != e2) {
+                sesymself(&nextseg);
+              }
+              if (sorg(&nextseg) != e2) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              e2 = sdest(&nextseg);
+            } while (1);
+            // e1 = sorg(prevseg);
+            // e2 = sdest(nextseg);
+            len = distance(e1, e2);
+            lfs_0 = distance(e1, ploop);
+            // The following assert() happens when -Y option is used.
+            if (b->nobisect == 0) {
+              if (lfs_0 >= len) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+            }
+            ploop[m->pointmtrindex] = e1[m->pointmtrindex] + (lfs_0 / len) * (e2[m->pointmtrindex] - e1[m->pointmtrindex]);
+            featurecount++;
+          } else {
+            // NO feature point, set the size of p be zero.
+            ploop[m->pointmtrindex] = 0.0;
+          } // if (shelltype(checkseg) == SHARP)
+        } // if (ploop[m->pointmtrindex] == 0.0)
+      } // if (pointtype(ploop) != FREESEGVERTEX)
+      ierr = TetGenMeshPointTraverse(m, &ploop);CHKERRQ(ierr);
+    }
+    if (featurecount > 0) {
+      PetscInfo1(b->in, "  %d Steiner feature points.\n", featurecount);
+    }
+  }
+
+  if (m->varconstraint) {
+    // A .var file exists. Adjust feature sizes.
+    if (in->facetconstraintlist) {
+      // Have facet area constrains.
+      ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+      ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &shloop.sh);CHKERRQ(ierr);
+      while(shloop.sh) {
+        varlen = areabound(m, &shloop);
+        if (varlen > 0.0) {
+          // Check if the three corners are feature points.
+          varlen = sqrt(varlen);
+          for(j = 0; j < 3; j++) {
+            ploop = (point) shloop.sh[3 + j];
+            isfeature = PETSC_FALSE;
+            idx = pointmark(m, ploop) - in->firstnumber;
+            for (i = idx2seglist[idx]; i < idx2seglist[idx + 1] && !isfeature; i++) {
+              checkseg.sh = segsperverlist[i];
+              isfeature = (shelltype(m, &checkseg) == SHARP) ? PETSC_TRUE : PETSC_FALSE;
+            }
+            if (isfeature) {
+              if (ploop[m->pointmtrindex] <= 0.0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              if (ploop[m->pointmtrindex] > varlen) {
+                ploop[m->pointmtrindex] = varlen;
+              }
+            }
+          } // for (j = 0; j < 3; j++)
+        }
+        ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &shloop.sh);CHKERRQ(ierr);
+      }
+    }
+    if (in->segmentconstraintlist) {
+      // Have facet area constrains.
+      ierr = MemoryPoolTraversalInit(m->subsegs);CHKERRQ(ierr);
+      ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &shloop.sh);CHKERRQ(ierr);
+      while(shloop.sh) {
+        varlen = areabound(m, &shloop);
+        if (varlen > 0.0) {
+          // Check if the two endpoints are feature points.
+          for(j = 0; j < 2; j++) {
+            ploop = (point) shloop.sh[3 + j];
+            isfeature = PETSC_FALSE;
+            idx = pointmark(m, ploop) - in->firstnumber;
+            for(i = idx2seglist[idx]; i < idx2seglist[idx + 1] && !isfeature; i++) {
+              checkseg.sh = segsperverlist[i];
+              isfeature = (shelltype(m, &checkseg) == SHARP) ? PETSC_TRUE : PETSC_FALSE;
+            }
+            if (isfeature) {
+              if (ploop[m->pointmtrindex] <= 0.0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+              if (ploop[m->pointmtrindex] > varlen) {
+                ploop[m->pointmtrindex] = varlen;
+              }
+            }
+          } // for (j = 0; j < 2; j++)
+        }
+        ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &shloop.sh);CHKERRQ(ierr);
+      }
+    }
+  } // if (varconstraint)
+
+  ierr = PetscFree(segsperverlist);CHKERRQ(ierr);
+  ierr = PetscFree(idx2seglist);CHKERRQ(ierr);
+  ierr = ListDestroy(&tetlist);CHKERRQ(ierr);
+  ierr = ListDestroy(&verlist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshEnqueueEncSub"
+// enqueueencsub()    Add an encroached subface into the queue.              //
+/* tetgenmesh::enqueueencsub() */
+PetscErrorCode TetGenMeshEnqueueEncSub(TetGenMesh *m, face *testsub, point encpt, int quenumber, PetscReal *cent)
+{
+  TetGenOpts *b  = m->b;
+  badface *encsub;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!smarktested(testsub)) {
+    if (!shell2badface(testsub)) {
+      ierr = MemoryPoolAlloc(m->badsubfaces, (void **) &encsub);CHKERRQ(ierr);
+      encsub->ss = *testsub;
+      encsub->forg = sorg(testsub);
+      encsub->fdest = sdest(testsub);
+      encsub->fapex = sapex(testsub);
+      encsub->foppo = (point) encpt;
+      for(i = 0; i < 3; i++) encsub->cent[i] = cent[i];
+      encsub->nextitem = PETSC_NULL;
+      // Set the pointer of 'encsubseg' into 'testsub'.  It has two purposes:
+      //   (1) We can regonize it is encroached; (2) It is uniquely queued.
+      setshell2badface(&encsub->ss, encsub);
+      // Add the subface to the end of a queue (quenumber = 2, high priority).
+      *m->subquetail[quenumber] = encsub;
+      // Maintain a pointer to the NULL pointer at the end of the queue.
+      m->subquetail[quenumber] = &encsub->nextitem;
+      PetscInfo4(b->in, "    Queuing subface (%d, %d, %d) [%d].\n", pointmark(m, encsub->forg), pointmark(m, encsub->fdest), pointmark(m, encsub->fapex), quenumber);
+    }
+  } else {
+    PetscInfo3(b->in, "    Ignore an encroached subface (%d, %d, %d).\n", pointmark(m, sorg(testsub)), pointmark(m, sdest(testsub)), pointmark(m, sapex(testsub)));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshDequeueEncSub"
+// dequeueencsub()    Remove an enc-subface from the front of the queue.     //
+/* tetgenmesh::dequeueencsub() */
+PetscErrorCode TetGenMeshDequeueEncSub(TetGenMesh *m, int *pquenumber, badface **subface)
+{
+  badface *result;
+  int quenumber;
+
+  PetscFunctionBegin;
+  // Look for a nonempty queue.
+  for(quenumber = 2; quenumber >= 0; quenumber--) {
+    result = m->subquefront[quenumber];
+    if (result) {
+      // Remove the badface from the queue.
+      m->subquefront[quenumber] = result->nextitem;
+      // Maintain a pointer to the NULL pointer at the end of the queue.
+      if (!m->subquefront[quenumber]) {
+        m->subquetail[quenumber] = &m->subquefront[quenumber];
+      }
+      *pquenumber = quenumber;
+      *subface    = result;
+      PetscFunctionReturn(0);
+    }
+  }
+  *pquenumber = -1;
+  *subface    = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshEnqueueBadTet"
+// enqueuebadtet()    Add a tetrahedron into the queue.                      //
+/* tetgenmesh::enqueuebadtet() */
+PetscErrorCode TetGenMeshEnqueueBadTet(TetGenMesh *m, triface *testtet, PetscReal ratio2, PetscReal *cent)
+{
+  TetGenOpts *b  = m->b;
+  badface *newbadtet;
+  int queuenumber;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Allocate space for the bad tetrahedron.
+  ierr = MemoryPoolAlloc(m->badtetrahedrons, (void **) &newbadtet);CHKERRQ(ierr);
+  newbadtet->tt = *testtet;
+  newbadtet->key = ratio2;
+  if (cent) {
+    for(i = 0; i < 3; i++) newbadtet->cent[i] = cent[i];
+  } else {
+    for(i = 0; i < 3; i++) newbadtet->cent[i] = 0.0;
+  }
+  newbadtet->forg = org(testtet);
+  newbadtet->fdest = dest(testtet);
+  newbadtet->fapex = apex(testtet);
+  newbadtet->foppo = oppo(testtet);
+  newbadtet->nextitem = PETSC_NULL;
+  // Determine the appropriate queue to put the bad tetrahedron into.
+  if (ratio2 > b->goodratio) {
+    // queuenumber = (int) ((ratio2 - b->goodratio) / 0.5);
+    queuenumber = (int) (64.0 - 64.0 / ratio2);
+    // 'queuenumber' may overflow (negative) caused by a very large ratio.
+    if ((queuenumber > 63) || (queuenumber < 0)) {
+      queuenumber = 63;
+    }
+  } else {
+    // It's not a bad ratio; put the tet in the lowest-priority queue.
+    queuenumber = 0;
+  }
+
+  // Are we inserting into an empty queue?
+  if (!m->tetquefront[queuenumber]) {
+    // Yes. Will this become the highest-priority queue?
+    if (queuenumber > m->firstnonemptyq) {
+      // Yes, this is the highest-priority queue.
+      m->nextnonemptyq[queuenumber] = m->firstnonemptyq;
+      m->firstnonemptyq = queuenumber;
+    } else {
+      // No. Find the queue with next higher priority.
+      i = queuenumber + 1;
+      while(!m->tetquefront[i]) {
+        i++;
+      }
+      // Mark the newly nonempty queue as following a higher-priority queue.
+      m->nextnonemptyq[queuenumber] = m->nextnonemptyq[i];
+      m->nextnonemptyq[i] = queuenumber;
+    }
+    // Put the bad tetrahedron at the beginning of the (empty) queue.
+    m->tetquefront[queuenumber] = newbadtet;
+  } else {
+    // Add the bad tetrahedron to the end of an already nonempty queue.
+    m->tetquetail[queuenumber]->nextitem = newbadtet;
+  }
+  // Maintain a pointer to the last tetrahedron of the queue.
+  m->tetquetail[queuenumber] = newbadtet;
+
+  PetscInfo6(b->in, "    Queueing bad tet: (%d, %d, %d, %d), ratio %g, qnum %d.\n",
+             pointmark(m, newbadtet->forg), pointmark(m, newbadtet->fdest), pointmark(m, newbadtet->fapex), pointmark(m, newbadtet->foppo), sqrt(ratio2), queuenumber);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTopBadTetra"
+/* tetgenmesh::topbadtetra() */
+PetscErrorCode TetGenMeshTopBadTetra(TetGenMesh *m, badface **badTet)
+{
+  PetscFunctionBegin;
+  // Keep a record of which queue was accessed in case dequeuebadtetra() is called later.
+  m->recentq = m->firstnonemptyq;
+  // If no queues are nonempty, return NULL.
+  if (m->firstnonemptyq < 0) {
+    *badTet = PETSC_NULL;
+  } else {
+    // Return the first tetrahedron of the highest-priority queue.
+    *badTet = m->tetquefront[m->firstnonemptyq];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshDequeueBadTet"
+// dequeuebadtet()    Remove a tetrahedron from the front of the queue.      //
+/* tetgenmesh::dequeuebadtet() */
+PetscErrorCode TetGenMeshDequeueBadTet(TetGenMesh *m)
+{
+  badface *deadbadtet;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // If queues were empty last time topbadtetra() was called, do nothing.
+  if (m->recentq >= 0) {
+    // Find the tetrahedron last returned by topbadtetra().
+    deadbadtet = m->tetquefront[m->recentq];
+    // Remove the tetrahedron from the queue.
+    m->tetquefront[m->recentq] = deadbadtet->nextitem;
+    // If this queue is now empty, update the list of nonempty queues.
+    if (deadbadtet == m->tetquetail[m->recentq]) {
+      // Was this the highest-priority queue?
+      if (m->firstnonemptyq == m->recentq) {
+        // Yes; find the queue with next lower priority.
+        m->firstnonemptyq = m->nextnonemptyq[m->firstnonemptyq];
+      } else {
+        // No; find the queue with next higher priority.
+        i = m->recentq + 1;
+        while(!m->tetquefront[i]) {
+          i++;
+        }
+        m->nextnonemptyq[i] = m->nextnonemptyq[m->recentq];
+      }
+    }
+    // Return the bad tetrahedron to the pool.
+    ierr = TetGenMeshBadFaceDealloc(m, m->badtetrahedrons, deadbadtet);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshCheckSeg4Encroach"
+// checkseg4encroach()    Check a subsegment to see if it is encroached.     //
+//                                                                           //
+// A segment s is encroached if there is a vertex lies inside or on its dia- //
+// metral circumsphere, i.e., s faces an angle theta > 90 degrees.           //
+//                                                                           //
+// If 'testpt' (p) != NULL, only test if 'testseg' (s) is encroached by it,  //
+// else, check all apexes of faces around s. Return TRUE if s is encroached. //
+// If and 'enqflag' is TRUE, add it into 'badsubsegs' if s is encroached.    //
+//                                                                           //
+// If 'prefpt' != NULL, it returns the reference point (defined in my paper) //
+// if it exists.  This point is will be used to split s.                     //
+/* tetgenmesh::checkseg4encroach() */
+PetscErrorCode TetGenMeshCheckSeg4Encroach(TetGenMesh *m, face *testseg, point testpt, point *prefpt, PetscBool enqflag, PetscBool *isEncroached)
+{
+  TetGenOpts *b  = m->b;
+  badface *encsubseg;
+  triface starttet = {PETSC_NULL, 0, 0}, spintet = {PETSC_NULL, 0, 0};
+  point eorg, edest, eapex, encpt;
+  PetscReal cent[3], radius, dist, diff;
+  PetscReal maxradius;
+  PetscBool enq;
+  int hitbdry;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  enq = PETSC_FALSE;
+  eorg = sorg(testseg);
+  edest = sdest(testseg);
+  cent[0] = 0.5 * (eorg[0] + edest[0]);
+  cent[1] = 0.5 * (eorg[1] + edest[1]);
+  cent[2] = 0.5 * (eorg[2] + edest[2]);
+  radius = distance(cent, eorg);
+
+  if (m->varconstraint && (areabound(m, testseg) > 0.0)) {
+    enq = ((2.0 * radius) > areabound(m, testseg)) ? PETSC_TRUE : PETSC_FALSE;
+  }
+
+  if (!enq) {
+    maxradius = 0.0;
+    if (!testpt) {
+      // Check if it is encroached by traversing all faces containing it.
+      ierr = TetGenMeshSstPivot(m, testseg, &starttet);CHKERRQ(ierr);
+      eapex = apex(&starttet);
+      spintet = starttet;
+      hitbdry = 0;
+      do {
+        dist = distance(cent, apex(&spintet));
+        diff = dist - radius;
+        if (fabs(diff) / radius <= b->epsilon) diff = 0.0; // Rounding.
+        if (diff <= 0.0) {
+          // s is encroached.
+          enq = PETSC_TRUE;
+          if (prefpt) {
+            // Find the reference point.
+            encpt = apex(&spintet);
+            ierr = TetGenMeshCircumsphere(m, eorg, edest, encpt, PETSC_NULL, PETSC_NULL, &dist, PETSC_NULL);CHKERRQ(ierr);
+            if (dist > maxradius) {
+              // Rememebr this point.
+              *prefpt = encpt;
+              maxradius = dist;
+            }
+          } else {
+            break;
+          }
+        }
+        if (!fnextself(m, &spintet)) {
+          hitbdry++;
+          if (hitbdry < 2) {
+            esym(&starttet, &spintet);
+            if (!fnextself(m, &spintet)) {
+              hitbdry++;
+            }
+          }
+        }
+      } while(apex(&spintet) != eapex && (hitbdry < 2));
+    } else {
+      // Only check if 'testseg' is encroached by 'testpt'.
+      dist = distance(cent, testpt);
+      diff = dist - radius;
+      if (fabs(diff) / radius <= b->epsilon) diff = 0.0; // Rounding.
+      enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
+    }
+  }
+
+  if (enq && enqflag) {
+    // This segment is encroached and should be repaired.
+    if (!smarktested(testseg)) {
+      if (!shell2badface(testseg)) { // Is it not queued yet?
+        PetscInfo2(b->in, "    Queuing encroaching subsegment (%d, %d).\n", pointmark(m, eorg), pointmark(m, edest));
+        ierr = MemoryPoolAlloc(m->badsubsegs, (void **) &encsubseg);CHKERRQ(ierr);
+        encsubseg->ss = *testseg;
+        encsubseg->forg = eorg;
+        encsubseg->fdest = edest;
+        encsubseg->foppo = PETSC_NULL; // Not used.
+        // Set the pointer of 'encsubseg' into 'testseg'.  It has two purposes:
+        //   (1) We can regonize it is encroached; (2) It is uniquely queued.
+        setshell2badface(&encsubseg->ss, encsubseg);
+      }
+    } else {
+      // This segment has been rejected for splitting. Do not queue it.
+      PetscInfo2(b->in, "    Ignore a rejected encroaching subsegment (%d, %d).\n", pointmark(m, eorg), pointmark(m, edest));
+    }
+  }
+  if (isEncroached) {*isEncroached = enq;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshCheckSub4Encroach"
+// checksub4encroach()    Check a subface to see if it is encroached.        //
+//                                                                           //
+// A subface f is encroached if there is a vertex inside or on its diametral //
+// circumsphere.                                                             //
+//                                                                           //
+// If 'testpt (p) != NULL', test if 'testsub' (f) is encroached by it, else, //
+// test if f is encroached by one of the two opposites of the adjacent tets. //
+// Return TRUE if f is encroached and queue it if 'enqflag' is set.          //
+/* tetgenmesh::checksub4encroach() */
+PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *m, face *testsub, point testpt, PetscBool enqflag, PetscBool *isEncroached)
+{
+  TetGenOpts *b  = m->b;
+  triface abuttet = {PETSC_NULL, 0, 0};
+  point pa, pb, pc, encpt;
+  PetscReal A[4][4], rhs[4], D;
+  PetscReal cent[3], area;
+  PetscReal radius, dist, diff;
+  PetscBool enq;
+  int indx[4];
+  int quenumber;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  enq = PETSC_FALSE;
+  radius = 0.0;
+  encpt = PETSC_NULL;
+
+  pa = sorg(testsub);
+  pb = sdest(testsub);
+  pc = sapex(testsub);
+
+  // Compute the coefficient matrix A (3x3).
+  A[0][0] = pb[0] - pa[0];
+  A[0][1] = pb[1] - pa[1];
+  A[0][2] = pb[2] - pa[2]; // vector V1 (pa->pb)
+  A[1][0] = pc[0] - pa[0];
+  A[1][1] = pc[1] - pa[1];
+  A[1][2] = pc[2] - pa[2]; // vector V2 (pa->pc)
+  cross(A[0], A[1], A[2]); // vector V3 (V1 X V2)
+
+  if (m->varconstraint && (areabound(m, testsub) > 0.0)) {
+    // Check if the subface has too big area.
+    area = 0.5 * sqrt(dot(A[2], A[2]));
+    enq = (area > areabound(m, testsub)) ? PETSC_TRUE : PETSC_FALSE;
+    if (enq) {
+      quenumber = 2; // A queue of subfaces having too big area.
+    }
+  }
+
+  // Compute the right hand side vector b (3x1).
+  rhs[0] = 0.5 * dot(A[0], A[0]);
+  rhs[1] = 0.5 * dot(A[1], A[1]);
+  rhs[2] = 0.0;
+  // Solve the 3 by 3 equations use LU decomposition with partial pivoting
+  //   and backward and forward substitute..
+  if (lu_decmp(A, 3, indx, &D, 0)) {
+    lu_solve(A, 3, indx, rhs, 0);
+    cent[0] = pa[0] + rhs[0];
+    cent[1] = pa[1] + rhs[1];
+    cent[2] = pa[2] + rhs[2];
+    radius = sqrt(rhs[0] * rhs[0] + rhs[1] * rhs[1] + rhs[2] * rhs[2]);
+  }
+
+  if (!enq) {
+    // Check if the subface is encroached.
+    if (!testpt) {
+      stpivot(m, testsub, &abuttet);
+      if (abuttet.tet != m->dummytet) {
+        dist = distance(cent, oppo(&abuttet));
+        diff = dist - radius;
+        if (fabs(diff) / radius <= b->epsilon) diff = 0.0; // Rounding.
+        enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
+        if (enq) encpt = oppo(&abuttet);
+      }
+      if (!enq) {
+        sesymself(testsub);
+        stpivot(m, testsub, &abuttet);
+        if (abuttet.tet != m->dummytet) {
+          dist = distance(cent, oppo(&abuttet));
+          diff = dist - radius;
+          if (fabs(diff) / radius <= b->epsilon) diff = 0.0; // Rounding.
+          enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
+          if (enq) encpt = oppo(&abuttet);
+        }
+      }
+    } else {
+      dist = distance(cent, testpt);
+      diff = dist - radius;
+      if (fabs(diff) / radius <= b->epsilon) diff = 0.0; // Rounding.
+      enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
+    }
+    if (enq) {
+      quenumber = 0; // A queue of encroached subfaces.
+    }
+  }
+
+  if (enq && enqflag) {
+    ierr = TetGenMeshEnqueueEncSub(m, testsub, encpt, quenumber, cent);CHKERRQ(ierr);
+  }
+
+  if (isEncroached) {*isEncroached = enq;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshCheckTet4BadQual"
+// checktet4badqual()    Test a tetrahedron for quality measures.            //
+//                                                                           //
+// Tests a tetrahedron to see if it satisfies the minimum ratio condition    //
+// and the maximum volume condition. Tetrahedra that aren't upto spec are    //
+// added to the bad tetrahedron queue.                                       //
+/* tetgenmesh::checktet4badqual() */
+PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *m, triface *testtet, PetscBool enqflag, PetscBool *isBad)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  point pa, pb, pc, pd, pe1, pe2;
+  PetscReal vda[3], vdb[3], vdc[3];
+  PetscReal vab[3], vbc[3], vca[3];
+  PetscReal N[4][3], A[4][4], rhs[4], D;
+  PetscReal elen[6], circumcent[3];
+  PetscReal bicent[3], offcent[3];
+  PetscReal volume, L, cosd;
+  PetscReal radius2, smlen2, ratio2;
+  PetscReal dist, sdist, split;
+  PetscBool enq;
+  int indx[4];
+  int sidx, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  pa = (point) testtet->tet[4];
+  pb = (point) testtet->tet[5];
+  pc = (point) testtet->tet[6];
+  pd = (point) testtet->tet[7];
+
+  // Get the edge vectors vda: d->a, vdb: d->b, vdc: d->c.
+  // Set the matrix A = [vda, vdb, vdc]^T.
+  for(i = 0; i < 3; i++) A[0][i] = vda[i] = pa[i] - pd[i];
+  for(i = 0; i < 3; i++) A[1][i] = vdb[i] = pb[i] - pd[i];
+  for(i = 0; i < 3; i++) A[2][i] = vdc[i] = pc[i] - pd[i];
+  // Get the rest edge vectors
+  for(i = 0; i < 3; i++) vab[i] = pb[i] - pa[i];
+  for(i = 0; i < 3; i++) vbc[i] = pc[i] - pb[i];
+  for(i = 0; i < 3; i++) vca[i] = pa[i] - pc[i];
+
+  // Lu-decompose the matrix A.
+  lu_decmp(A, 3, indx, &D, 0);
+  // Get the volume of abcd.
+  volume = (A[indx[0]][0] * A[indx[1]][1] * A[indx[2]][2]) / 6.0;
+  if (volume < 0.0) volume = -volume;
+  // Check the radiu-edge ratio of the tet.
+  rhs[0] = 0.5 * dot(vda, vda);
+  rhs[1] = 0.5 * dot(vdb, vdb);
+  rhs[2] = 0.5 * dot(vdc, vdc);
+  lu_solve(A, 3, indx, rhs, 0);
+  // Get the circumcenter.
+  for(i = 0; i < 3; i++) circumcent[i] = pd[i] + rhs[i];
+  // Get the square of the circumradius.
+  radius2 = dot(rhs, rhs);
+  // Find the square of the shortest edge length.
+  elen[0] = dot(vda, vda);
+  elen[1] = dot(vdb, vdb);
+  elen[2] = dot(vdc, vdc);
+  elen[3] = dot(vab, vab);
+  elen[4] = dot(vbc, vbc);
+  elen[5] = dot(vca, vca);
+  smlen2 = elen[0]; sidx = 0;
+  for(i = 1; i < 6; i++) {
+    if (smlen2 > elen[i]) {smlen2 = elen[i]; sidx = i;}
+  }
+  // Calculate the square of radius-edge ratio.
+  ratio2 = radius2 / smlen2;
+  // Check whether the ratio is smaller than permitted.
+  enq = (ratio2 > b->goodratio) ? PETSC_TRUE : PETSC_FALSE;
+  if (!enq) {
+    // abcd has good ratio.
+    // ratio2 = 0.0;
+    // if (b->offcenter) {
+      // Test if it is a sliver.
+      // Compute the 4 face normals (N[0], ..., N[3]).
+      for(j = 0; j < 3; j++) {
+        for(i = 0; i < 3; i++) rhs[i] = 0.0;
+        rhs[j] = 1.0;  // Positive means the inside direction
+        lu_solve(A, 3, indx, rhs, 0);
+        for(i = 0; i < 3; i++) N[j][i] = rhs[i];
+      }
+      // Get the fourth normal by summing up the first three.
+      for(i = 0; i < 3; i++) N[3][i] = - N[0][i] - N[1][i] - N[2][i];
+      // Normalized the normals.
+      for(i = 0; i < 4; i++) {
+        L = sqrt(dot(N[i], N[i]));
+        if (L > 0.0) {
+          for (j = 0; j < 3; j++) N[i][j] /= L;
+        }
+      }
+      // N[0] is the normal of face bcd. Test the dihedral angles at edge
+      //   cd, bd, and bc to see if they are too small or too big.
+      for(i = 1; i < 4 && !enq; i++) {
+        cosd = -dot(N[0], N[i]); // Edge cd, bd, bc.
+        enq = (cosd > m->cosmindihed) ? PETSC_TRUE : PETSC_FALSE;
+      }
+      if (!enq) {
+        for(i = 2; i < 4 && !enq; i++) {
+          cosd = -dot(N[1], N[i]); // Edge ad, ac
+          enq = (cosd > m->cosmindihed) ? PETSC_TRUE : PETSC_FALSE;
+        }
+        if (!enq) {
+          cosd = -dot(N[2], N[3]); // Edge ab
+          enq = (cosd > m->cosmindihed) ? PETSC_TRUE : PETSC_FALSE;
+        }
+      }
+    // }
+  } else if (b->offcenter) {
+    // abcd has bad-quality. Use off-center instead of circumcenter.
+    switch (sidx) {
+    case 0: // edge da.
+      pe1 = pd; pe2 = pa; break;
+    case 1: // edge db.
+      pe1 = pd; pe2 = pb; break;
+    case 2: // edge dc.
+      pe1 = pd; pe2 = pc; break;
+    case 3: // edge ab.
+      pe1 = pa; pe2 = pb; break;
+    case 4: // edge bc.
+      pe1 = pb; pe2 = pc; break;
+    case 5: // edge ca.
+      pe1 = pc; pe2 = pa; break;
+    default:
+      pe1 = pe2 = PETSC_NULL; // Avoid a compile warning.
+    }
+    // The shortest edge is e1->e2.
+    for (i = 0; i < 3; i++) bicent[i] = 0.5 * (pe1[i] + pe2[i]);
+    dist = distance(bicent, circumcent);
+    // sdist = sqrt(smlen2) * sin(PI / 3.0); // A icoso-triangle.
+    // The following formulae is from 
+    sdist = b->alpha3 * (b->minratio+sqrt(b->goodratio-0.25))* sqrt(smlen2);
+    split = sdist / dist;
+    if (split > 1.0) split = 1.0;
+    // Get the off-center.
+    for (i = 0; i < 3; i++) {
+      offcent[i] = bicent[i] + split * (circumcent[i] - bicent[i]);
+    }
+  }
+
+  if (!enq && (b->varvolume || b->fixedvolume)) {
+    // Check if the tet has too big volume.
+    enq = (b->fixedvolume && (volume > b->maxvolume)) ? PETSC_TRUE : PETSC_FALSE;
+    if (!enq && b->varvolume) {
+      enq = ((volume > volumebound(m, testtet->tet)) && (volumebound(m, testtet->tet) > 0.0)) ? PETSC_TRUE : PETSC_FALSE;
+    }
+  }
+
+  if (!enq) {
+    // Check if the user-defined sizing function is satisfied.
+    if (b->metric) {
+      if (in->tetunsuitable) {
+        // Execute the user-defined meshing sizing evaluation.
+        pa = (point) testtet->tet[4];
+        pb = (point) testtet->tet[5];
+        pc = (point) testtet->tet[6];
+        pd = (point) testtet->tet[7];
+        enq = (*(in->tetunsuitable))(pa, pb, pc, pd, elen, volume);
+      } else {
+        // assert(b->alpha1 > 0.0);
+        sdist = sqrt(radius2) / b->alpha1;
+        for(i = 0; i < 4; i++) {
+          pa = (point) testtet->tet[4 + i];
+          // Get the indicated size of p.
+          dist = pa[m->pointmtrindex]; // dist = b->alpha1 * pa[m->pointmtrindex];
+          enq = ((dist < sdist) && (dist > 0.0)) ? PETSC_TRUE : PETSC_FALSE;
+          if (enq) break; // It is bad wrt. a node constraint.
+          // *** Experiment ! Stop test if c is inside H(a).
+          // if ((dist > 0.0) && (dist > sdist)) break;
+        }
+      }
+      // *** Experiment !
+      // enq = (i == 4); // Does c lies outside all sparse-ball?
+    } // if (b->metric)
+  }
+
+  if (enq && enqflag) {
+    if (b->offcenter && (ratio2 > b->goodratio)) {
+      for(i = 0; i < 3; i++) circumcent[i] = offcent[i];
+    }
+    ierr = TetGenMeshEnqueueBadTet(m, testtet, ratio2, circumcent);CHKERRQ(ierr);
+  }
+  if (isBad) {*isBad = enq;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshAcceptSegPt"
+// acceptsegpt()    Check if a segment point can be inserted or not.         //
+//                                                                           //
+// Segment(ab) is indicated to be split by a point p (\in ab). This routine  //
+// decides whether p can be inserted or not.                                 //
+//                                                                           //
+// p can not be inserted either the '-Y' option is used and ab is a hull     //
+// segment or '-YY' option is used.                                          //
+//                                                                           //
+// p can be inserted if it is in one of the following cases:                 //
+//   (1) if L = |a - b| is too long wrt the edge constraint; or              //
+//   (2) if |x - p| > \alpha_2 H(x) for x = a, b; or                         //
+//   (3) if 'refpt' != NULL.                                                 //
+/* tetgenmesh::acceptsegpt() */
+PetscErrorCode TetGenMeshAcceptSegPt(TetGenMesh *m, point segpt, point refpt, face *splitseg, PetscBool *isInserted)
+{
+  TetGenOpts *b  = m->b;
+  point p[2];
+  PetscReal L, lfs;
+  int i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // This segment must have not been checked (and rejected) yet.
+  if (smarktested(splitseg)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+
+  if (b->nobisect == 1) {
+    // '-Y'. It can not be split if it is on the hull.
+    triface spintet;
+    point pc;
+
+    ierr = TetGenMeshSstPivot(m, splitseg, &spintet);CHKERRQ(ierr);
+    if (spintet.tet == m->dummytet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+    pc = apex(&spintet);
+    do {
+      if (!fnextself(m, &spintet)) {
+        // Meet a boundary face - s is on the hull.
+        if (isInserted) {*isInserted = PETSC_FALSE;}
+        PetscFunctionReturn(0);
+      }
+    } while (pc != apex(&spintet));
+  } else if (b->nobisect > 1) {
+    // '-YY'. Do not split it.
+    if (isInserted) {*isInserted = PETSC_FALSE;}
+    PetscFunctionReturn(0);
+  }
+
+  p[0] = sorg(splitseg);
+  p[1] = sdest(splitseg);
+  if (m->varconstraint && (areabound(m, splitseg) > 0)) {
+    lfs = areabound(m, splitseg);
+    L = distance(p[0], p[1]);
+    if (L > lfs) {
+      if (isInserted) {*isInserted = PETSC_TRUE;} // case (1)
+      PetscFunctionReturn(0);
+    }
+  }
+
+  j = 0; // Use j to count the number of inside balls.
+  for(i = 0; i < 2; i++) {
+    // Check if p is inside the protect ball of q.
+    if (p[i][m->pointmtrindex] > 0.0) {
+      lfs = b->alpha2 * p[i][m->pointmtrindex];
+      L = distance(p[i], segpt);
+      if (L < lfs) j++; // p is inside ball.
+    }
+  }
+  if (j == 0) {
+    if (isInserted) {*isInserted = PETSC_TRUE;} // case (3)
+    PetscFunctionReturn(0);
+  }
+
+  // If 'refpt' != NULL, force p to be inserted.
+  if (refpt) {
+    m->cdtenforcesegpts++;
+    if (isInserted) {*isInserted = PETSC_TRUE;}
+    PetscFunctionReturn(0);
+  }
+
+  // Do not split it.
+  m->rejsegpts++;
+  if (isInserted) {*isInserted = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshAcceptFacPt"
+// acceptfacpt()    Check if a facet point can be inserted or not.           //
+//                                                                           //
+// 'subceillist' is CBC(p). 'verlist' (V) is empty on input, it returns the  //
+// set of vertices of CBC(p).                                                //
+//                                                                           //
+// p can not be inserted either the '-Y' option is used and the facet is on  //
+// the hull or '-YY' option is used.                                         //
+//                                                                           //
+// p can be inserted if |p - v| > \alpha_2 H(v), for all v \in V.            //
+/* tetgenmesh::acceptfacpt() */
+PetscErrorCode TetGenMeshAcceptFacPt(TetGenMesh *m, point facpt, List *subceillist, List *verlist, PetscBool *isInserted)
+{
+  TetGenOpts *b  = m->b;
+  face testsh;
+  point p[2], ploop;
+  PetscReal L, lfs;
+  int len, idx, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (b->nobisect == 1) {
+    // '-Y'. p can not be inserted if CBC(p) is on the hull.
+    triface testtet = {PETSC_NULL, 0};
+
+    ierr = ListItem(subceillist, 0, (void **) &testsh);CHKERRQ(ierr);
+    stpivot(m, &testsh, &testtet);
+    if (testtet.tet != m->dummytet) {
+      sesymself(&testsh);
+      stpivot(m, &testsh, &testtet);
+    }
+    if (testtet.tet == m->dummytet) {
+      if (isInserted) {*isInserted = PETSC_FALSE;}
+      PetscFunctionReturn(0);
+    }
+  } else if (b->nobisect > 1) {
+    // '-YY'. Do not split s.
+    if (isInserted) {*isInserted = PETSC_FALSE;}
+    PetscFunctionReturn(0);
+  }
+
+  // Collect the vertices of CBC(p), save them in V.
+  ierr = ListLength(subceillist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(subceillist, i, (void **) &testsh);CHKERRQ(ierr);
+    p[0] = sorg(&testsh);
+    p[1] = sdest(&testsh);
+    for(j = 0; j < 2; j++) {
+      idx = pointmark(m, p[j]);
+      if (idx >= 0) {
+        setpointmark(m, p[j], -idx - 1);
+        ierr = ListAppend(verlist, &(p[j]), PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  j = 0; // Use j to count the number of inside balls.
+  ierr = ListLength(verlist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(verlist, i, (void **) &ploop);CHKERRQ(ierr);
+    // Uninfect q.
+    idx = pointmark(m, ploop);
+    setpointmark(m, ploop, -(idx + 1));
+    // Check if p is inside the protect ball of q.
+    if (ploop[m->pointmtrindex] > 0.0) {
+      lfs = b->alpha2 * ploop[m->pointmtrindex];
+      L = distance(ploop, facpt);
+      if (L < lfs) j++; // p is inside ball.
+    }
+  }
+  ierr = ListClear(verlist);CHKERRQ(ierr);
+
+  if (j == 0) {
+    if (isInserted) {*isInserted = PETSC_TRUE;} // case (3).
+    PetscFunctionReturn(0);
+  }
+
+  m->rejsubpts++;
+  if (isInserted) {*isInserted = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshAcceptVolPt"
+// acceptvolpt()    Check if a volume point can be inserted or not.          //
+//                                                                           //
+// 'ceillist' is B(p).  'verlist' (V) is empty on input, it returns the set  //
+// of vertices of B(p).                                                      //
+//                                                                           //
+// p can be split if |p - v| > \alpha_2 H(v), for all v \in V.               //
+/* tetgenmesh::acceptvolpt() */
+PetscErrorCode TetGenMeshAcceptVolPt(TetGenMesh *m, point volpt, List *ceillist, List *verlist, PetscBool *isInserted)
+{
+  TetGenOpts *b  = m->b;
+  triface testtet;
+  point p[3], ploop;
+  PetscReal L, lfs;
+  int len, idx, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Collect the vertices of CBC(p), save them in V.
+  ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(ceillist, i, (void **) &testtet);CHKERRQ(ierr);
+    p[0] = org(&testtet);
+    p[1] = dest(&testtet);
+    p[2] = apex(&testtet);
+    for(j = 0; j < 3; j++) {
+      idx = pointmark(m, p[j]);
+      if (idx >= 0) {
+        setpointmark(m, p[j], -idx - 1);
+        ierr = ListAppend(verlist, &(p[j]), PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  j = 0; // Use j to counte the number of inside balls.
+  ierr = ListLength(verlist, &len);CHKERRQ(ierr);
+  for(i = 0; i < len; i++) {
+    ierr = ListItem(verlist, i, (void **) &ploop);CHKERRQ(ierr);
+    // Uninfect q.
+    idx = pointmark(m, ploop);
+    setpointmark(m, ploop, -(idx + 1));
+    // Check if p is inside the protect ball of q.
+    if (ploop[m->pointmtrindex] > 0.0) {
+      lfs = b->alpha2 * ploop[m->pointmtrindex];
+      L = distance(ploop, volpt);
+      if (L < lfs) j++; // p is inside the protect ball.
+    }
+  }
+  ierr = ListClear(verlist);CHKERRQ(ierr);
+
+  if (j == 0) {
+    if (isInserted) {*isInserted = PETSC_TRUE;} // case (2).
+    PetscFunctionReturn(0);
+  }
+
+  m->rejtetpts++;
+  if (isInserted) {*isInserted = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TetGenMeshGetSplitPoint"
@@ -13090,6 +18467,807 @@ PetscErrorCode TetGenMeshSetNewPointSize(TetGenMesh *m, point newpt, point e1, p
       newpt[m->pointmtrindex] = (1.0 - split) * e1[m->pointmtrindex] + split * e2[m->pointmtrindex];
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshSplitEncSeg"
+// splitencseg()    Split an enc-seg and recover the Delaunayness by flips.  //
+/* tetgenmesh::splitencseg() */
+PetscErrorCode TetGenMeshSplitEncSeg(TetGenMesh *m, point newpt, face *splitseg, List *tetlist, List *sublist, List *verlist, Queue *flipque, PetscBool chkencsub, PetscBool chkbadtet, PetscBool optflag, PetscBool *isSplit)
+{
+  List *mytetlist;
+  Queue *myflipque;
+  triface starttet = {PETSC_NULL, 0, 0};
+  face startsh = {PETSC_NULL, 0}, spinsh = {PETSC_NULL, 0}, checksh = {PETSC_NULL, 0};
+  int            len, i;
+  PetscBool      isSp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (optflag) {
+    ierr = ListCreate(sizeof(triface), PETSC_NULL, 1024, PETSC_DECIDE, &mytetlist);CHKERRQ(ierr);
+    ierr = QueueCreate(sizeof(badface), PETSC_DECIDE, &myflipque);CHKERRQ(ierr);
+    tetlist = mytetlist;
+    flipque = myflipque;
+  }
+
+  // Use the base orientation (important in this routine).
+  splitseg->shver = 0;
+  // Insert p, this should always success.
+  ierr = TetGenMeshSstPivot(m, splitseg, &starttet);CHKERRQ(ierr);
+  ierr = TetGenMeshSplitTetEdge(m, newpt, &starttet, flipque, &isSp);CHKERRQ(ierr);
+  if (isSp) {
+    // Remove locally non-Delaunay faces by flipping.
+    ierr = TetGenMeshLawson3D(m, flipque, PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    if (optflag) {
+      ierr = ListDestroy(&mytetlist);CHKERRQ(ierr);
+      ierr = QueueDestroy(&myflipque);CHKERRQ(ierr);
+    }
+    if (isSplit) {*isSplit = PETSC_FALSE;}
+    PetscFunctionReturn(0);
+  }
+
+  if (!optflag) {
+    // Check the two new subsegs to see if they're encroached (not by p).
+    for(i = 0; i < 2; i++) {
+      //if (!shell2badface(*splitseg)) {
+      ierr = TetGenMeshCheckSeg4Encroach(m, splitseg, PETSC_NULL, PETSC_NULL, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+      //}
+      if (i == 1) break; // Two new segs have been checked.
+      senextself(splitseg);
+      spivotself(splitseg);
+#ifdef PETSC_USE_DEBUG
+      if (!splitseg->sh) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+#endif
+      splitseg->shver = 0;
+    }
+    // Check the new subfaces to see if they're encroached (not by p).
+    if (chkencsub) {
+      spivot(splitseg, &startsh);
+      spinsh = startsh;
+      do {
+        ierr = ListAppend(sublist, &spinsh, PETSC_NULL);CHKERRQ(ierr);
+        ierr = TetGenMeshFormStarPolygon(m, newpt, sublist, verlist);CHKERRQ(ierr);
+        ierr = ListLength(sublist, &len);CHKERRQ(ierr);
+        for(i = 0; i < len; i++) {
+          ierr = ListItem(sublist, i, (void **) &checksh);CHKERRQ(ierr);
+          //if (!shell2badface(checksh)) {
+          ierr = TetGenMeshCheckSub4Encroach(m, &checksh, PETSC_NULL, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+          //}
+        }
+        ierr = ListClear(sublist);CHKERRQ(ierr);
+        if (verlist) {ierr = ListClear(verlist);CHKERRQ(ierr);}
+        spivotself(&spinsh);
+        if (spinsh.sh == m->dummysh) {
+          break; // There's only one facet having this segment.
+        }
+      } while (spinsh.sh != startsh.sh);
+    }
+  } // if (!optflag)
+
+  // Collect the new tets connecting at p.
+  ierr = TetGenMeshSstPivot(m, splitseg, &starttet);CHKERRQ(ierr);
+  ierr = ListAppend(tetlist, &starttet, PETSC_NULL);CHKERRQ(ierr);
+  ierr = TetGenMeshFormStarPolyhedron(m, newpt, tetlist, verlist, PETSC_TRUE);CHKERRQ(ierr);
+
+  if (!optflag) {
+    // Check if p encroaches adjacent segments.
+    ierr = TetGenMeshTallEncSegs(m, newpt, 1, &tetlist, PETSC_NULL);CHKERRQ(ierr);
+    if (chkencsub) {
+      // Check if p encroaches adjacent subfaces.
+      ierr = TetGenMeshTallEncSubs(m, newpt, 1, &tetlist, PETSC_NULL);CHKERRQ(ierr);
+    }
+    if (chkbadtet) {
+      // Check if there are new bad quality tets at p.
+      ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(tetlist, i, (void **) &starttet);CHKERRQ(ierr);
+        ierr = TetGenMeshCheckTet4BadQual(m, &starttet, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
+    ierr = ListClear(tetlist);CHKERRQ(ierr);
+  } else {
+    // Check if new tets are non-optimal.
+    ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+    for(i = 0; i < len; i++) {
+      ierr = ListItem(tetlist, i, (void **) &starttet);CHKERRQ(ierr);
+      ierr = TetGenMeshCheckTet4Opt(m, &starttet, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = ListDestroy(&mytetlist);CHKERRQ(ierr);
+    ierr = QueueDestroy(&myflipque);CHKERRQ(ierr);
+  }
+
+  if (isSplit) {*isSplit = PETSC_TRUE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTallEncSegs"
+// tallencsegs()    Check for encroached segments and save them in list.     //
+//                                                                           //
+// If 'testpt' (p) != NULL, only check if segments are encroached by p, else,//
+// check all the nearby mesh vertices.                                       //
+//                                                                           //
+// If 'ceillists' (B_i(p)) != NULL, there are 'n' B_i(p)s, only check the    //
+// segments which are on B_i(p)s, else, check the entire list of segments    //
+// (in the pool 'this->subsegs').                                            //
+/* tetgenmesh::tallencsegs() */
+PetscErrorCode TetGenMeshTallEncSegs(TetGenMesh *m, point testpt, int n, List **ceillists, PetscBool *isEncroached)
+{
+  List *ceillist;
+  triface ceiltet = {PETSC_NULL, 0, 0};
+  face checkseg = {PETSC_NULL, 0};
+  int enccount; //long oldencnum;
+  int len, i, j, k;
+  PetscBool      isEnc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Remember the current number of encroached segments.
+  // oldencnum = badsubsegs->items;
+
+  // Count the number of encroached segments.
+  enccount = 0;
+
+  if (ceillists) {
+    for(k = 0; k < n; k++) {
+      ceillist = ceillists[k];
+      // Check the segments on B_i(p).
+      ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(ceillist, i, (void **) &ceiltet);CHKERRQ(ierr);
+        ceiltet.ver = 0;
+        for(j = 0; j < 3; j++) {
+          ierr = TetGenMeshTssPivot(m, &ceiltet, &checkseg);CHKERRQ(ierr);
+          if (checkseg.sh != m->dummysh) {
+            // Found a segment. Test it if it isn't in enc-list.
+            // if (!shell2badface(checkseg)) {
+              ierr = TetGenMeshCheckSeg4Encroach(m, &checkseg, testpt, PETSC_NULL, PETSC_TRUE, &isEnc);CHKERRQ(ierr);
+              if (isEnc) {
+                enccount++;
+              }
+            // }
+          }
+          enextself(&ceiltet);
+        }
+      }
+    }
+  } else {
+    // Check the entire list of segments.
+    ierr = MemoryPoolTraversalInit(m->subsegs);CHKERRQ(ierr);
+    ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &checkseg.sh);CHKERRQ(ierr);
+    while(checkseg.sh) {
+      // Test it if it isn't in enc-list.
+      // if (!shell2badface(checkseg)) {
+      ierr = TetGenMeshCheckSeg4Encroach(m, &checkseg, testpt, PETSC_NULL, PETSC_TRUE, &isEnc);CHKERRQ(ierr);
+        if (isEnc) {
+          enccount++;
+        }
+      // }
+      ierr = TetGenMeshShellFaceTraverse(m, m->subsegs, &checkseg.sh);CHKERRQ(ierr);
+    }
+  }
+
+  // return (badsubsegs->items > oldencnum);
+  if (isEncroached) {*isEncroached = (enccount > 0) ? PETSC_TRUE: PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTallEncSubs"
+// tallencsubs()    Find all encroached subfaces and save them in list.      //
+//                                                                           //
+// If 'testpt' (p) != NULL, only check if subfaces are encroached by p, else,//
+// check the adjacent vertices of subfaces.                                  //
+//                                                                           //
+// If 'ceillists' (B_i(p)) != NULL, there are 'n' B_i(p)s, only check the    //
+// subfaces which are on B_i(p)s, else, check the entire list of subfaces    //
+// (in the pool 'this->subfaces').                                           //
+/* tetgenmesh::tallencsubs() */
+PetscErrorCode TetGenMeshTallEncSubs(TetGenMesh *m, point testpt, int n, List **ceillists, PetscBool *isEncroached)
+{
+  List *ceillist;
+  triface ceiltet = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  int enccount; //long oldencnum;
+  int len, i, k;
+  PetscBool      isEnc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  // Remember the current number of encroached segments.
+  // oldencnum = badsubfaces->items;
+
+  enccount = 0; // Count the number encroached subfaces.
+
+  if (ceillists) {
+    for(k = 0; k < n; k++) {
+      ceillist = ceillists[k];
+      // Check the subfaces on B_i(p).
+      ierr = ListLength(ceillist, &len);CHKERRQ(ierr);
+      for(i = 0; i < len; i++) {
+        ierr = ListItem(ceillist, i, (void **) &ceiltet);CHKERRQ(ierr);
+        tspivot(m, &ceiltet, &checksh);
+        if (checksh.sh != m->dummysh) {
+          // Found a subface. Test it if it isn't in enc-list.
+          //if (!shell2badface(checksh)) {
+            ierr = TetGenMeshCheckSub4Encroach(m, &checksh, testpt, PETSC_TRUE, &isEnc);CHKERRQ(ierr);
+            if (isEnc) {
+              enccount++;
+            }
+          //}
+        }
+      }
+    }
+  } else {
+    // Check the entire list of subfaces.
+    ierr = MemoryPoolTraversalInit(m->subfaces);CHKERRQ(ierr);
+    ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &checksh.sh);CHKERRQ(ierr);
+    while(checksh.sh) {
+      // Test it if it isn't in enc-list.
+      // if (!shell2badface(checksh)) {
+        ierr = TetGenMeshCheckSub4Encroach(m, &checksh, testpt, PETSC_TRUE, &isEnc);CHKERRQ(ierr);
+        if (isEnc) {
+          enccount++;
+        }
+      // }
+      ierr = TetGenMeshShellFaceTraverse(m, m->subfaces, &checksh.sh);CHKERRQ(ierr);
+    }
+  }
+
+  //return (badsubfaces->items > oldencnum);
+  if (isEncroached) {*isEncroached = (enccount > 0) ? PETSC_TRUE: PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshTallBadTetrahedrons"
+// tallbadtetrahedrons()    Queue all the bad-quality tetrahedra in the mesh.//
+/* tetgenmesh::tallbadtetrahedrons() */
+PetscErrorCode TetGenMeshTallBadTetrahedrons(TetGenMesh *m)
+{
+  triface tetloop = {PETSC_NULL, 0, 0};
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MemoryPoolTraversalInit(m->tetrahedrons);CHKERRQ(ierr);
+  ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  while(tetloop.tet) {
+    ierr = TetGenMeshCheckTet4BadQual(m, &tetloop, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+    ierr = TetGenMeshTetrahedronTraverse(m, &tetloop.tet);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRepairEncSegs"
+// repairencsegs()    Repair (split) all the encroached segments.            //
+//                                                                           //
+// Each encroached segment is repaired by splitting it - inserting a vertex  //
+// at or near its midpoint.  Newly inserted vertices may encroach upon other //
+// subsegments, these are also repaired.                                     //
+//                                                                           //
+// 'chkencsub' and 'chkbadtet' are two flags that specify whether one should //
+// take note of new encroaced subfaces and bad quality tets that result from //
+// inserting vertices to repair encroached subsegments.                      //
+/* tetgenmesh::repairencsegs() */
+PetscErrorCode TetGenMeshRepairEncSegs(TetGenMesh *m, PetscBool chkencsub, PetscBool chkbadtet)
+{
+  TetGenOpts    *b = m->b;
+  List **tetlists, **ceillists;
+  List **sublists, **subceillists;
+  List *tetlist, *sublist;
+  Queue *flipque;
+  badface *encloop;
+  face splitseg = {PETSC_NULL, 0};
+  point newpt, refpt;
+  point e1, e2;
+  int nmax, n;
+  PetscBool      isInserted, isValid;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  n = 0;
+  nmax = 128;
+  if (!b->fliprepair) {
+    ierr = PetscMalloc(nmax * sizeof(List *), &tetlists);CHKERRQ(ierr);
+    ierr = PetscMalloc(nmax * sizeof(List *), &ceillists);CHKERRQ(ierr);
+    ierr = PetscMalloc(nmax * sizeof(List *), &sublists);CHKERRQ(ierr);
+    ierr = PetscMalloc(nmax * sizeof(List *), &subceillists);CHKERRQ(ierr);
+  } else {
+    ierr = ListCreate(sizeof(triface), PETSC_NULL, 1024, PETSC_DECIDE, &tetlist);CHKERRQ(ierr);
+    ierr = ListCreate(sizeof(face),    PETSC_NULL,  256, PETSC_DECIDE, &sublist);CHKERRQ(ierr);
+    ierr = QueueCreate(sizeof(badface), PETSC_DECIDE, &flipque);CHKERRQ(ierr);
+  }
+
+  // Loop until the pool 'badsubsegs' is empty. Note that steinerleft == -1
+  //   if an unlimited number of Steiner points is allowed.
+  while((m->badsubsegs->items > 0) && (m->steinerleft != 0)) {
+    ierr = MemoryPoolTraversalInit(m->badsubsegs);CHKERRQ(ierr);
+    ierr = TetGenMeshBadFaceTraverse(m, m->badsubsegs, &encloop);CHKERRQ(ierr);
+    while(encloop && (m->steinerleft != 0)) {
+      // Get an encroached subsegment s.
+      splitseg = encloop->ss;
+      // Clear the in-queue flag in s.
+      setshell2badface(&splitseg, PETSC_NULL);
+      if ((sorg(&splitseg) == encloop->forg) && (sdest(&splitseg) == encloop->fdest)) {
+        PetscInfo2(b->in, "  Get an enc-seg (%d, %d)\n", pointmark(m, encloop->forg), pointmark(m, encloop->fdest));
+        refpt = PETSC_NULL;
+        if (b->conformdel) {
+          // Look for a reference point.
+          ierr = TetGenMeshCheckSeg4Encroach(m, &splitseg, PETSC_NULL, &refpt, PETSC_FALSE, PETSC_NULL);CHKERRQ(ierr);
+        }
+        // Create the new point p (at the middle of s).
+        ierr = TetGenMeshMakePoint(m, &newpt);CHKERRQ(ierr);
+        ierr = TetGenMeshGetSplitPoint(m, encloop->forg, encloop->fdest, refpt, newpt);CHKERRQ(ierr);
+        setpointtype(m, newpt, FREESEGVERTEX);
+        setpoint2seg(m, newpt, sencode(&splitseg));
+        // Decide whether p can be inserted or not.
+        ierr = TetGenMeshAcceptSegPt(m, newpt, refpt, &splitseg, &isInserted);CHKERRQ(ierr);
+        if (isInserted) {
+          // Save the endpoints of the seg for size interpolation.
+          e1 = sorg(&splitseg);
+          if (shelltype(m, &splitseg) == SHARP) {
+            e2 = sdest(&splitseg);
+          } else {
+            e2 = PETSC_NULL; // No need to do size interoplation.
+          }
+          if (!b->fliprepair) {
+            // Form BC(p), B(p), CBC(p)s, and C(p)s.
+            ierr = TetGenMeshFormBowatCavity(m, newpt, &splitseg, PETSC_NULL, &n, &nmax, sublists, subceillists, tetlists, ceillists);CHKERRQ(ierr);
+            // Validate/update BC(p), B(p), CBC(p)s, and C(p)s.
+            ierr = TetGenMeshTrimBowatCavity(m, newpt, &splitseg, n, sublists, subceillists, tetlists, ceillists, -1.0, &isValid);CHKERRQ(ierr);
+            if (isValid) {
+              ierr = TetGenMeshBowatInsertSite(m, newpt, &splitseg, n, sublists, subceillists, tetlists, ceillists, PETSC_NULL, flipque, PETSC_TRUE, chkencsub, chkbadtet);CHKERRQ(ierr);
+              ierr = TetGenMeshSetNewPointSize(m, newpt, e1, e2);CHKERRQ(ierr);
+              if (m->steinerleft > 0) m->steinerleft--;
+            } else {
+              // p did not insert for invalid B(p).
+              ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+            }
+            // Free the memory allocated in formbowatcavity().
+            ierr = TetGenMeshReleaseBowatCavity(m, &splitseg, n, sublists, subceillists, tetlists, ceillists);CHKERRQ(ierr);
+          } else {
+            PetscBool isSplit;
+
+            ierr = TetGenMeshSplitEncSeg(m, newpt, &splitseg, tetlist, sublist, PETSC_NULL, flipque, chkencsub, chkbadtet, PETSC_FALSE, &isSplit);CHKERRQ(ierr);
+            if (isSplit) {
+              ierr = TetGenMeshSetNewPointSize(m, newpt, e1, e2);CHKERRQ(ierr);
+              if (m->steinerleft > 0) m->steinerleft--;
+            } else {
+              // Fail to split the segment. It MUST be caused by a very flat
+              //   tet connected at the splitting segment. We do not handle
+              //   this case yet. Hopefully, the later repairs will remove
+              //   the flat tet and hence the segment can be split later.
+              ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+            }
+          }
+        } else {
+          // This segment can not be split for not meeting the rules in
+          //   acceptsegpt(). Mark it to avoid re-checking it later.
+          smarktest(&splitseg);
+          // p did not accept for insertion.
+          ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+        } // if (checkseg4splitting(newpt, &splitseg))
+      } // if ((encloop->forg == pa) && (encloop->fdest == pb))
+      ierr = TetGenMeshBadFaceDealloc(m, m->badsubsegs, encloop);CHKERRQ(ierr); // Remove this entry from list.
+      ierr = TetGenMeshBadFaceTraverse(m, m->badsubsegs, &encloop);CHKERRQ(ierr); // Get the next enc-segment.
+    } // while ((encloop != (badface *) NULL) && (steinerleft != 0))
+  } // while ((badsubsegs->items > 0) && (steinerleft != 0))
+
+  if (!b->fliprepair) {
+    ierr = PetscFree(tetlists);CHKERRQ(ierr);
+    ierr = PetscFree(ceillists);CHKERRQ(ierr);
+    ierr = PetscFree(sublists);CHKERRQ(ierr);
+    ierr = PetscFree(subceillists);CHKERRQ(ierr);
+  } else {
+    ierr = ListDestroy(&tetlist);CHKERRQ(ierr);
+    ierr = ListDestroy(&sublist);CHKERRQ(ierr);
+    ierr = QueueDestroy(&flipque);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRepairEncSubs"
+// repairencsubs()    Repair (split) all the encroached subfaces.            //
+//                                                                           //
+// Each encroached subface is repaired by splitting it - inserting a vertex  //
+// at or near its circumcenter.  Newly inserted vertices may encroach upon   //
+// other subfaces, these are also repaired.                                  //
+//                                                                           //
+// 'chkbadtet' is a flag that specifies whether one should take note of new  //
+// bad quality tets that result from inserted vertices.                      //
+/* tetgenmesh::repairencsubs() */
+PetscErrorCode TetGenMeshRepairEncSubs(TetGenMesh *m, PetscBool chkbadtet)
+{
+  TetGenOpts    *b = m->b;
+  List *tetlists[2], *ceillists[2];
+  List *sublist, *subceillist;
+  List *verlist;
+  badface *encloop;
+  face splitsub = {PETSC_NULL, 0};
+  point newpt, e1;
+  locateresult loc;
+  PetscReal normal[3], len;
+  PetscBool reject;
+  long oldptnum, oldencsegnum;
+  int quenumber, n, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  n = 0;
+  sublist = PETSC_NULL;
+  subceillist = PETSC_NULL;
+  ierr = ListCreate(sizeof(point *), PETSC_NULL, 256, PETSC_DECIDE, &verlist);CHKERRQ(ierr);
+
+  // Loop until the pool 'badsubfaces' is empty. Note that steinerleft == -1
+  //   if an unlimited number of Steiner points is allowed.
+  while((m->badsubfaces->items > 0) && (m->steinerleft != 0)) {
+    // Get an encroached subface f.
+    ierr = TetGenMeshDequeueEncSub(m, &quenumber, &encloop);CHKERRQ(ierr);
+    splitsub = encloop->ss;
+    // Clear the in-queue flag of f.
+    setshell2badface(&splitsub, PETSC_NULL);
+    // f may not be the same one when it was determined to be encroached.
+    if (!isdead_face(&splitsub) && (sorg(&splitsub) == encloop->forg) && (sdest(&splitsub) == encloop->fdest) && (sapex(&splitsub) == encloop->fapex)) {
+      PetscInfo4(b->in, "    Dequeuing ensub (%d, %d, %d) [%d].\n", pointmark(m, encloop->forg), pointmark(m, encloop->fdest), pointmark(m, encloop->fapex), quenumber);
+      // Create a new point p at the circumcenter of f.
+      ierr = TetGenMeshMakePoint(m, &newpt);CHKERRQ(ierr);
+      for(i = 0; i < 3; i++) newpt[i] = encloop->cent[i];
+      setpointtype(m, newpt, FREESUBVERTEX);
+      setpoint2sh(m, newpt, sencode(&splitsub));
+      // Set the abovepoint of f for point location.
+      m->abovepoint = m->facetabovepointarray[shellmark(m, &splitsub)];
+      if (!m->abovepoint) {
+        // getfacetabovepoint(&splitsub);
+        // Calculate an abovepoint in dummypoint.
+        ierr = TetGenMeshFaceNormal2(m, encloop->forg, encloop->fdest, encloop->fapex, normal, 1);CHKERRQ(ierr);
+        len = sqrt(DOT(normal, normal));
+        normal[0] /= len;
+        normal[1] /= len;
+        normal[2] /= len;
+        len = DIST(encloop->forg, encloop->fdest);
+        len += DIST(encloop->fdest, encloop->fapex);
+        len += DIST(encloop->fapex, encloop->forg);
+        len /= 3.0;
+        m->dummypoint[0] = encloop->forg[0] + len * normal[0];
+        m->dummypoint[1] = encloop->forg[1] + len * normal[1];
+        m->dummypoint[2] = encloop->forg[2] + len * normal[2];
+        m->abovepoint = m->dummypoint;
+      }
+      // Locate p, start from f, stop at segment (1), use a tolerance to
+      //   detect ONVERTEX or OUTSIDE case. Update f on return.
+      ierr = TetGenMeshLocateSub(m, newpt, &splitsub, 1, b->epsilon * 1e+2, &loc);CHKERRQ(ierr);
+      if ((loc != ONVERTEX) && (loc != OUTSIDE)) {
+        // Form BC(p), B(p), CBC(p) and C(p).
+        ierr = TetGenMeshFormBowatCavity(m, newpt, PETSC_NULL, &splitsub, &n, PETSC_NULL, &sublist, &subceillist, tetlists, ceillists);CHKERRQ(ierr);
+        // Check for encroached subsegments (on B(p)).
+        oldencsegnum = m->badsubsegs->items;
+        ierr = TetGenMeshTallEncSegs(m, newpt, 2, ceillists, &reject);CHKERRQ(ierr);
+        if (reject && (oldencsegnum == m->badsubsegs->items)) {
+          // 'newpt' encroaches upon some subsegments. But none of them can
+          //    be split. So this subface can't be split as well. Mark it to
+          //    avoid re-checking it later.
+          smarktest(&encloop->ss);
+        }
+        // Execute point accept rule if p does not encroach upon any segment.
+        if (!reject) {
+          ierr = TetGenMeshAcceptFacPt(m, newpt, subceillist, verlist, &reject);CHKERRQ(ierr);
+          reject = !reject ? PETSC_TRUE : PETSC_FALSE;
+          if (reject) {
+            // 'newpt' lies in some protecting balls. This subface can't be
+            //    split. Mark it to avoid re-checking it later.
+            smarktest(&encloop->ss);
+          }
+        }
+        if (!reject) {
+          // Validate/update cavity.
+          ierr = TetGenMeshTrimBowatCavity(m, newpt, PETSC_NULL, n, &sublist, &subceillist, tetlists, ceillists, -1.0, &reject);CHKERRQ(ierr);
+          reject = !reject ? PETSC_TRUE : PETSC_FALSE;
+        }
+        if (!reject) {
+          // CBC(p) should include s, so that s can be removed after CBC(p)
+          //   is remeshed. However, if there are locally non-Delaunay faces
+          //   and encroached subsegments, s may not be collected in CBC(p).
+          //   p should not be inserted in such case.
+          reject = !sinfected(m, &encloop->ss) ? PETSC_TRUE : PETSC_FALSE;
+        }
+        if (!reject) {
+          // Save a point for size interpolation.
+          e1 = sorg(&splitsub);
+          ierr = TetGenMeshBowatInsertSite(m, newpt, PETSC_NULL, n, &sublist, &subceillist, tetlists, ceillists, PETSC_NULL, PETSC_NULL, PETSC_TRUE, PETSC_TRUE, chkbadtet);CHKERRQ(ierr);
+          ierr = TetGenMeshSetNewPointSize(m, newpt, e1, PETSC_NULL);CHKERRQ(ierr);
+          if (m->steinerleft > 0) m->steinerleft--;
+        } else {
+          // p is rejected for the one of the following reasons:
+          //   (1) BC(p) is not valid.
+          //   (2) s does not in CBC(p).
+          //   (3) p encroaches upon some segments (queued); or
+          //   (4) p is rejected by point accepting rule, or
+          //   (5) due to the rejection of symp (the PBC).
+          ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+        } // if (!reject)
+        // Release the cavity and free the memory.
+        ierr = TetGenMeshReleaseBowatCavity(m, PETSC_NULL, n, &sublist, &subceillist, tetlists, ceillists);CHKERRQ(ierr);
+        if (reject) {
+          // Are there queued encroached subsegments.
+          if (m->badsubsegs->items > 0) {
+            // Repair enc-subsegments.
+            oldptnum = m->points->items;
+            ierr = TetGenMeshRepairEncSegs(m, PETSC_TRUE, chkbadtet);CHKERRQ(ierr);
+          }
+        }
+      } else {
+        // Don't insert p for one of the following reasons:
+        //   (1) Locate on an existing vertex; or
+        //   (2) locate outside the domain.
+        // Case (1) should not be possible. If such vertex v exists, it is
+        //   the circumcenter of f, ie., f is non-Delaunay. Either f was got
+        //   split before by v, but survived after v was inserted, or the
+        //   same for a f' which is nearly co-circular with f.  Whatsoever,
+        //   there are encroached segs by v, but the routine tallencsegs()
+        //   did not find them out.
+        if (loc == ONVERTEX) {
+          SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "During repairing encroached subface (%d, %d, %d)\n  New point %d is coincident with an existing vertex %d\n",
+                   pointmark(m, encloop->forg), pointmark(m, encloop->fdest), pointmark(m, encloop->fapex), pointmark(m, newpt), pointmark(m, sorg(&splitsub)));
+        }
+        if (loc != OUTSIDE) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");}
+        // The circumcenter lies outside of the facet. Mark it to avoid
+        //   rechecking it later.
+        smarktest(&encloop->ss);
+        // Case (2) can happen when thers is a segment s which is close to f
+        //   and is non-conforming Delaunay. The circumcenter of f encroaches
+        //   upon s, but the circumcenter of s is rejected for insertion.
+        ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+      } // if ((loc != ONVERTEX) && (loc != OUTSIDE))
+    }
+    // Remove this entry from list.
+    ierr = TetGenMeshBadFaceDealloc(m, m->badsubfaces, encloop);CHKERRQ(ierr);
+  } // while ((badsubfaces->items > 0) && (steinerleft != 0))
+
+  ierr = ListDestroy(&verlist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRepairBadTets"
+// repairbadtets()    Repair all bad-quality tetrahedra.                     //
+//                                                                           //
+// All bad-quality tets are stored in pool 'badtetrahedrons'.  Each bad tet  //
+// is repaired by inserting a point at or near its circumcenter. However, if //
+// this point encroaches any subsegment or subface, it is not inserted. Ins- //
+// tead the encroached segment and subface are split.  Newly inserted points //
+// may create other bad-quality tets, these are also repaired.               //
+/* tetgenmesh::repairbadtets() */
+PetscErrorCode TetGenMeshRepairBadTets(TetGenMesh *m)
+{
+  TetGenOpts    *b = m->b;
+  List *tetlist, *ceillist;
+  List *verlist;
+  ArrayPool *histtetarray;
+  badface *badtet;
+  triface starttet = {PETSC_NULL, 0, 0};
+  point newpt, e1;
+  locateresult loc;
+  PetscBool reject;
+  long oldptnum;
+  int len, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ListCreate(sizeof(triface), PETSC_NULL, 1024, PETSC_DECIDE, &tetlist);CHKERRQ(ierr);
+  ierr = ListCreate(sizeof(triface), PETSC_NULL, 1024, PETSC_DECIDE, &ceillist);CHKERRQ(ierr);
+  ierr = ListCreate(sizeof(point *), PETSC_NULL,  256, PETSC_DECIDE, &verlist);CHKERRQ(ierr);
+  ierr = ArrayPoolCreate(sizeof(triface), 8, &histtetarray);CHKERRQ(ierr);
+
+  // Loop until pool 'badtetrahedrons' is empty. Note that steinerleft == -1
+  //   if an unlimited number of Steiner points is allowed.
+  while((m->badtetrahedrons->items > 0) && (m->steinerleft != 0)) {
+    // Get a bad-quality tet t.
+    ierr = TetGenMeshTopBadTetra(m, &badtet);CHKERRQ(ierr);
+    // Make sure that the tet is still the same one when it was tested.
+    //   Subsequent transformations may have made it a different tet.
+    if (badtet && !isdead_triface(&badtet->tt) &&
+        org(&badtet->tt)  == badtet->forg  && dest(&badtet->tt) == badtet->fdest &&
+        apex(&badtet->tt) == badtet->fapex && oppo(&badtet->tt) == badtet->foppo) {
+      PetscInfo4(b->in, "    Dequeuing btet (%d, %d, %d, %d).\n", pointmark(m, badtet->forg), pointmark(m, badtet->fdest), pointmark(m, badtet->fapex), pointmark(m, badtet->foppo));
+      // Create the new point p (at the circumcenter of t).
+      ierr = TetGenMeshMakePoint(m, &newpt);CHKERRQ(ierr);
+      for(i = 0; i < 3; i++) newpt[i] = badtet->cent[i];
+      setpointtype(m, newpt, FREEVOLVERTEX);
+      // Locate p.
+      starttet = badtet->tt;
+      //loc = preciselocate(newpt, &starttet, tetrahedrons->items);
+      ierr = TetGenMeshLocate2(m, newpt, &starttet, histtetarray, &loc);CHKERRQ(ierr);
+      PetscInfo1(b->in, "    loc = %d.\n", (int) loc);
+      if ((loc != ONVERTEX) && (loc != OUTSIDE)) {
+        // For BC(p) and B(p).
+        infect(m, &starttet);
+        ierr = ListAppend(tetlist, &starttet, PETSC_NULL);CHKERRQ(ierr);
+        ierr = TetGenMeshFormBowatCavityQuad(m, newpt, tetlist, ceillist);CHKERRQ(ierr);
+        // Check for encroached subsegments.
+        ierr = TetGenMeshTallEncSegs(m, newpt, 1, &ceillist, &reject);CHKERRQ(ierr);
+        if (!reject) {
+          // Check for encroached subfaces.
+          ierr = TetGenMeshTallEncSubs(m, newpt, 1, &ceillist, &reject);CHKERRQ(ierr);
+        }
+        // Execute point accepting rule if p does not encroach upon any subsegment and subface.
+        if (!reject) {
+          ierr = TetGenMeshAcceptVolPt(m, newpt, ceillist, verlist, &reject);CHKERRQ(ierr);
+          reject = !reject ? PETSC_TRUE : PETSC_FALSE;
+        }
+        if (!reject) {
+          ierr = TetGenMeshTrimBowatCavity(m, newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, -1.0, &reject);CHKERRQ(ierr);
+          reject = !reject ? PETSC_TRUE : PETSC_FALSE;
+        }
+        if (!reject) {
+          // BC(p) should include t, so that t can be removed after BC(p) is
+          //   remeshed. However, if there are locally non-Delaunay faces
+          //   and encroached subsegments/subfaces, t may not be collected
+          //   in BC(p). p should not be inserted in such case.
+          reject = !infected(m, &badtet->tt) ? PETSC_TRUE : PETSC_FALSE;
+          if (reject) m->outbowatcircumcount++;
+        }
+        if (!reject) {
+          // Save a point for size interpolation.
+          e1 = org(&starttet);
+          // Insert p.
+          ierr = TetGenMeshBowatInsertSite(m, newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, PETSC_NULL, PETSC_NULL, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+          ierr = TetGenMeshSetNewPointSize(m, newpt, e1, PETSC_NULL);CHKERRQ(ierr);
+          if (m->steinerleft > 0) m->steinerleft--;
+        } else {
+          // p is rejected for one of the following reasons:
+          //   (1) BC(p) is not valid.
+          //   (2) t does not in BC(p).
+          //   (3) p encroaches upon some segments;
+          //   (4) p encroaches upon some subfaces;
+          //   (5) p is rejected by the point accepting rule.
+          ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+          // Uninfect tets of BC(p).
+          ierr = ListLength(tetlist, &len);CHKERRQ(ierr);
+          for(i = 0; i < len; i++) {
+            ierr = ListItem(tetlist, i, (void **) &starttet);CHKERRQ(ierr);
+            uninfect(m, &starttet);
+          }
+        }
+        ierr = ListClear(tetlist);CHKERRQ(ierr);
+        ierr = ListClear(ceillist);CHKERRQ(ierr);
+        // Split encroached subsegments/subfaces if there are.
+        if (reject) {
+          oldptnum = m->points->items;
+          if (m->badsubsegs->items > 0) {
+            ierr = TetGenMeshRepairEncSegs(m, PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);
+          }
+          if (m->badsubfaces->items > 0) {
+            ierr = TetGenMeshRepairEncSubs(m, PETSC_TRUE);CHKERRQ(ierr);
+          }
+          if (m->points->items > oldptnum) {
+            // Some encroaching subsegments/subfaces got split. Re-queue the
+            //   tet if it is still alive.
+            starttet = badtet->tt;
+            if (!isdead_triface(&starttet)) {
+              ierr = TetGenMeshCheckTet4BadQual(m, &starttet, PETSC_TRUE, PETSC_NULL);CHKERRQ(ierr);
+            }
+          }
+        }
+      } else {
+        // Do not insert p. The reason may be one of:
+        //   (1) p is coincident (ONVERTEX) with an existing vertex; or
+        //   (2) p is outside (OUTSIDE) the mesh.
+        // Case (1) should not be possible. If such vertex v exists, it is
+        //   the circumcenter of t, ie., t is non-Delaunay. Either t was got
+        //   split before by v, but survived after v was inserted, or the
+        //   same for a t' which is nearly co-spherical with t.  Whatsoever,
+        //   there are encroached segments or subfaces by v but the routines
+        //   tallencsegs() or tallencsubs() did not find them out.
+        // Case (2) can happen when there is a segment s (or subface f) which
+        //   is close to f and is non-conforming Delaunay.  The circumcenter
+        //   of t encroaches upon s (or f), but the circumcenter of s (or f)
+        //   is rejected for insertion.
+        ierr = TetGenMeshPointDealloc(m, newpt);CHKERRQ(ierr);
+      } // if ((loc != ONVERTEX) && (loc != OUTSIDE))
+    } // if (!isdead(&badtet->tt) && org(badtet->tt) == badtet->forg &&
+    // Remove the tet from the queue.
+    ierr = TetGenMeshDequeueBadTet(m);CHKERRQ(ierr);
+  } // while ((badtetrahedrons->items > 0) && (steinerleft != 0))
+
+  ierr = ListDestroy(&tetlist);CHKERRQ(ierr);
+  ierr = ListDestroy(&ceillist);CHKERRQ(ierr);
+  ierr = ListDestroy(&verlist);CHKERRQ(ierr);
+  ierr = ArrayPoolDestroy(&histtetarray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshEnforceQuality"
+// enforcequality()    Refine the mesh.                                      //
+/* tetgenmesh::enforcequality() */
+PetscErrorCode TetGenMeshEnforceQuality(TetGenMesh *m)
+{
+  TetGenOpts    *b = m->b;
+  long total, vertcount;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscInfo(b->in, "Adding Steiner points to enforce quality.\n");
+
+  total = vertcount = 0l;
+  if (b->conformdel) {
+    m->r2count = m->r3count = 0l;
+  }
+
+  // If both '-D' and '-r' options are used.
+  if (b->conformdel && b->refine) {
+    ierr = TetGenMeshMarkAcuteVertices(m, 65.0);CHKERRQ(ierr);
+  }
+  // If '-m' is not used.
+  if (!b->metric) {
+    // Find and mark all sharp segments.
+    ierr = TetGenMeshMarkSharpSegments(m, 65.0);CHKERRQ(ierr);
+    // Decide the sizes for feature points.
+    ierr = TetGenMeshDecideFeaturePointSizes(m);CHKERRQ(ierr);
+  }
+
+  // Initialize the pool of encroached subsegments.
+  ierr = MemoryPoolCreate(sizeof(badface), SUBPERBLOCK, POINTER, 0, &m->badsubsegs);CHKERRQ(ierr);
+  // Looking for encroached subsegments.
+  ierr = TetGenMeshTallEncSegs(m, PETSC_NULL, 0, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (m->badsubsegs->items > 0) {
+    PetscInfo(b->in, "  Splitting encroached subsegments.\n");
+  }
+  vertcount = m->points->items;
+  // Fix encroached segments without noting any enc subfaces.
+  ierr = TetGenMeshRepairEncSegs(m, PETSC_FALSE, PETSC_FALSE);CHKERRQ(ierr);
+  PetscInfo1(b->in, "  %ld split points.\n", m->points->items - vertcount);
+  total += m->points->items - vertcount;
+
+  // Initialize the pool of encroached subfaces.
+  ierr = MemoryPoolCreate(sizeof(badface), SUBPERBLOCK, POINTER, 0, &m->badsubfaces);CHKERRQ(ierr);
+  // Initialize the priority queues of badfaces.
+  for(i = 0; i < 3; i++) m->subquefront[i] = PETSC_NULL;
+  for(i = 0; i < 3; i++) m->subquetail[i]  = &m->subquefront[i];
+  // Looking for encroached subfaces.
+  ierr = TetGenMeshTallEncSubs(m, PETSC_NULL, 0, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (m->badsubfaces->items > 0) {
+    PetscInfo(b->in, "  Splitting encroached subfaces.\n");
+  }
+  vertcount = m->points->items;
+  // Fix encroached subfaces without noting bad tetrahedra.
+  ierr = TetGenMeshRepairEncSubs(m, PETSC_FALSE);CHKERRQ(ierr);
+  PetscInfo1(b->in, "  %ld split points.\n", m->points->items - vertcount);
+  total += m->points->items - vertcount;
+  // At this point, the mesh should be conforming Delaunay if no input
+  //   angle is smaller than 90 degree.
+
+  // Next, fix bad quality tetrahedra.
+  if ((b->minratio > 0.0) || b->varvolume || b->fixedvolume) {
+    // Initialize the pool of bad tets
+    ierr = MemoryPoolCreate(sizeof(badface), ELEPERBLOCK, POINTER, 0, &m->badtetrahedrons);CHKERRQ(ierr);
+    // Initialize the priority queues of bad tets.
+    for(i = 0; i < 64; i++) m->tetquefront[i] = PETSC_NULL;
+    m->firstnonemptyq = -1;
+    m->recentq = -1;
+    // Looking for bad quality tets.
+    m->cosmaxdihed = cos(b->maxdihedral * PETSC_PI / 180.0);
+    m->cosmindihed = cos(b->mindihedral * PETSC_PI / 180.0);
+    ierr = TetGenMeshTallBadTetrahedrons(m);CHKERRQ(ierr);
+    if (m->badtetrahedrons->items > 0) {
+      PetscInfo(b->in, "  Splitting bad tetrahedra.\n");
+    }
+    vertcount = m->points->items;
+    ierr = TetGenMeshRepairBadTets(m);CHKERRQ(ierr);
+    PetscInfo1(b->in, "  %ld refinement points.\n", m->points->items - vertcount);
+    total += m->points->items - vertcount;
+    ierr = MemoryPoolDestroy(&m->badtetrahedrons);CHKERRQ(ierr);
+  }
+
+  PetscInfo1(b->in, "  Totally added %ld points.\n", total);
+  ierr = MemoryPoolDestroy(&m->badsubfaces);CHKERRQ(ierr);
+  ierr = MemoryPoolDestroy(&m->badsubsegs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -13186,7 +19364,7 @@ PetscErrorCode TetGenMeshCheckTet4Ill(TetGenMesh *m, triface* testtet, PetscBool
 // the shape of t likes a hat; finally, t has two big dihedral angles if d's //
 // projection onto abc is outside abc.                                       //
 /* tetgenmesh::checktet4opt() */
-PetscErrorCode TetGenMeshCheckTet4Opt(TetGenMesh *m, triface* testtet, PetscBool enqflag, PetscBool *doOpt)
+PetscErrorCode TetGenMeshCheckTet4Opt(TetGenMesh *m, triface *testtet, PetscBool enqflag, PetscBool *doOpt)
 {
   TetGenOpts    *b = m->b;
   badface *newbadtet;
@@ -13688,7 +19866,7 @@ PetscErrorCode TetGenMeshSplitSliver(TetGenMesh *m, badface *remedge, List *tetl
   triface starttet = {PETSC_NULL, 0, 0};
   face checkseg = {PETSC_NULL, 0};
   point newpt, pt[4];
-  PetscBool remflag;
+  PetscBool isValid, remflag;
   int i;
   PetscErrorCode ierr;
 
@@ -13748,22 +19926,19 @@ PetscErrorCode TetGenMeshSplitSliver(TetGenMesh *m, badface *remedge, List *tetl
   setpointtype(m, newpt, FREEVOLVERTEX);
 
   // Form the Bowyer-Watson cavity of p.
-#if 1
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
-#else
   remflag = PETSC_FALSE;
   infect(m, &starttet);
   ierr = ListAppend(tetlist, &starttet, PETSC_NULL);CHKERRQ(ierr);
-  formbowatcavityquad(newpt, tetlist, ceillist);
-  if (trimbowatcavity(newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, -1.0)) {
+  ierr = TetGenMeshFormBowatCavityQuad(m, newpt, tetlist, ceillist);CHKERRQ(ierr);
+  ierr = TetGenMeshTrimBowatCavity(m, newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, -1.0, &isValid);CHKERRQ(ierr);
+  if (isValid) {
     PetscBool isSmooth;
     // Smooth p.
     ierr = TetGenMeshSmoothPoint(m, newpt, PETSC_NULL, PETSC_NULL, ceillist, PETSC_FALSE, &remedge->key, &isSmooth);CHKERRQ(ierr);
     if (isSmooth) {
       int len;
       // Insert p.
-      bowatinsertsite(newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, PETSC_NULL,
-                      PETSC_NULL, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE);
+      ierr = TetGenMeshBowatInsertSite(m, newpt, PETSC_NULL, 1, PETSC_NULL, PETSC_NULL, &tetlist, &ceillist, PETSC_NULL, PETSC_NULL, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE);CHKERRQ(ierr);
       ierr = TetGenMeshSetNewPointSize(m, newpt, pt[0], PETSC_NULL);CHKERRQ(ierr);
       if (m->steinerleft > 0) m->steinerleft--;
       // Queue new slivers.
@@ -13775,7 +19950,6 @@ PetscErrorCode TetGenMeshSplitSliver(TetGenMesh *m, badface *remedge, List *tetl
       remflag = PETSC_TRUE;
     } // if (smoothpoint)
   } // if (trimbowatcavity)
-#endif
 
   if (!remflag) {
     int len;
@@ -13885,7 +20059,7 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
 
   // Start the mesh optimization iteration.
   do {
-    PetscInfo2(b->in, "  level = %d pass %d.\n", b->optlevel, optpasscount);
+    if (optflag) {PetscInfo2(b->in, "  level = %d pass %d.\n", b->optlevel, optpasscount);}
 
     // Improve the mesh quality by flips.
     iter = 0;
@@ -14531,11 +20705,7 @@ PetscErrorCode TetGenTetrahedralize(TetGenOpts *b, PLC *in, PLC *out)
 
   // PetscLogEventBegin(DelaunayOrReconstruct)
   if (b->refine) {
-#if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
-#else
-    m.reconstructmesh();
-#endif
+    ierr = TetGenMeshReconstructMesh(m, PETSC_NULL);CHKERRQ(ierr);
   } else {
     ierr = TetGenMeshDelaunizeVertices(m);CHKERRQ(ierr);
     if (!m->hullsize) {
@@ -14632,11 +20802,7 @@ PetscErrorCode TetGenTetrahedralize(TetGenOpts *b, PLC *in, PLC *out)
 
   // PetscLogEventBegin(Quality)
   if (b->quality) {
-#if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
-#else
-    m.enforcequality();
-#endif
+    ierr = TetGenMeshEnforceQuality(m);CHKERRQ(ierr);
   }
   // PetscLogEventEnd(Quality)
 
@@ -14814,6 +20980,44 @@ PetscErrorCode TetGenTetrahedralize(TetGenOpts *b, PLC *in, PLC *out)
 /*================================ End Converted TetGen Functions ================================*/
 
 #undef __FUNCT__
+#define __FUNCT__ "TetGenCheckOpts"
+PetscErrorCode TetGenCheckOpts(TetGenOpts *t)
+{
+  PetscFunctionBegin;
+  t->plc        = t->plc || t->diagnose;
+  t->useshelles = t->plc || t->refine || t->coarse || t->quality;
+  t->goodratio  = t->minratio;
+  t->goodratio *= t->goodratio;
+  if (t->plc && t->refine) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switch -r cannot use together with -p.");
+  }
+  if (t->refine && (t->plc || t->noiterationnum)) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -p, -d, and -I cannot use together with -r.\n");
+  }
+  if (t->diagnose && (t->quality || t->insertaddpoints || (t->order == 2) || t->neighout || t->docheck)) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -q, -i, -o2, -n, and -C cannot use together with -d.\n");
+  }
+  /* Be careful not to allocate space for element area constraints that will never be assigned any value (other than the default -1.0). */
+  if (!t->refine && !t->plc) {
+    t->varvolume = 0;
+  }
+  /* Be careful not to add an extra attribute to each element unless the input supports it (PLC in, but not refining a preexisting mesh). */
+  if (t->refine || !t->plc) {
+    t->regionattrib = 0;
+  }
+  /* If '-a' or '-aa' is in use, enable '-q' option too. */
+  if (t->fixedvolume || t->varvolume) {
+    if (t->quality == 0) {
+      t->quality = 1;
+    }
+  }
+  /* Calculate the goodangle for testing bad subfaces. */
+  t->goodangle = cos(t->minangle * PETSC_PI / 180.0);
+  t->goodangle *= t->goodangle;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGenerate_CTetgen"
 PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
@@ -14887,43 +21091,12 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     ierr = TetGenOptsInitialize(&t);CHKERRQ(ierr);
     t.in        = boundary; /* Should go away */
     t.plc       = 1;
-    t.quality   = 0; /* Change this */
+    t.quality   = 1;
     t.edgesout  = 1;
     t.zeroindex = 1;
     t.quiet     = 1;
     t.verbose   = 4; /* Change this */
-    {
-      t.plc        = t.plc || t.diagnose;
-      t.useshelles = t.plc || t.refine || t.coarse || t.quality;
-      t.goodratio  = t.minratio;
-      t.goodratio *= t.goodratio;
-      if (t.plc && t.refine) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switch -r cannot use together with -p.");
-      }
-      if (t.refine && (t.plc || t.noiterationnum)) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -p, -d, and -I cannot use together with -r.\n");
-      }
-      if (t.diagnose && (t.quality || t.insertaddpoints || (t.order == 2) || t.neighout || t.docheck)) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -q, -i, -o2, -n, and -C cannot use together with -d.\n");
-      }
-      /* Be careful not to allocate space for element area constraints that will never be assigned any value (other than the default -1.0). */
-      if (!t.refine && !t.plc) {
-        t.varvolume = 0;
-      }
-      /* Be careful not to add an extra attribute to each element unless the input supports it (PLC in, but not refining a preexisting mesh). */
-      if (t.refine || !t.plc) {
-        t.regionattrib = 0;
-      }
-      /* If '-a' or '-aa' is in use, enable '-q' option too. */
-      if (t.fixedvolume || t.varvolume) {
-        if (t.quality == 0) {
-          t.quality = 1;
-        }
-      }
-      /* Calculate the goodangle for testing bad subfaces. */
-      t.goodangle = cos(t.minangle * PETSC_PI / 180.0);
-      t.goodangle *= t.goodangle;
-    }
+    ierr = TetGenCheckOpts(&t);CHKERRQ(ierr);
     ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -15098,6 +21271,245 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexRefine_CTetgen"
+PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
+{
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  const PetscInt dim  = 3;
+  PLC           *in, *out;
+  PetscInt       vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = PLCCreate(&in);CHKERRQ(ierr);
+  ierr = PLCCreate(&out);CHKERRQ(ierr);
+  in->numberofpoints = vEnd - vStart;
+  if (in->numberofpoints > 0) {
+    PetscScalar *array;
+
+    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(double), &in->pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),    &in->pointmarkerlist);CHKERRQ(ierr);
+    ierr = VecGetArray(mesh->coordinates, &array);CHKERRQ(ierr);
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt idx = v - vStart;
+      PetscInt       off, d;
+
+      ierr = PetscSectionGetOffset(mesh->coordSection, v, &off);CHKERRQ(ierr);
+      for(d = 0; d < dim; ++d) {
+        in->pointlist[idx*dim + d] = array[off+d];
+      }
+      ierr = DMComplexGetLabelValue(dm, "marker", v, &in->pointmarkerlist[idx]);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(mesh->coordinates, &array);CHKERRQ(ierr);
+  }
+  ierr  = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  in->numberofcorners       = 4;
+  in->numberoftetrahedra    = cEnd - cStart;
+  in->tetrahedronvolumelist = (double *) maxVolumes;
+  if (in->numberoftetrahedra > 0) {
+    ierr = PetscMalloc(in->numberoftetrahedra*in->numberofcorners * sizeof(int), &in->tetrahedronlist);CHKERRQ(ierr);
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt idx     = c - cStart;
+      PetscInt      *closure = PETSC_NULL;
+      PetscInt       closureSize;
+
+      ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if ((closureSize != 5) && (closureSize != 15)) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a tetrahedron, %D vertices in closure", closureSize);}
+      for(v = 0; v < 4; ++v) {
+        in->tetrahedronlist[idx*in->numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
+      }
+    }
+  }
+  if (!rank) {
+    TetGenOpts t;
+
+    ierr = TetGenOptsInitialize(&t);CHKERRQ(ierr);
+    t.in        = dm; /* Should go away */
+    t.refine    = 1;
+    t.varvolume = 1;
+    t.quality   = 1;
+    t.edgesout  = 1;
+    t.zeroindex = 1;
+    t.quiet     = 1;
+    t.verbose   = 4; /* Change this */
+    ierr = TetGenCheckOpts(&t);CHKERRQ(ierr);
+    ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
+  }
+
+  ierr = DMCreate(comm, dmRefined);CHKERRQ(ierr);
+  ierr = DMSetType(*dmRefined, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(*dmRefined, dim);CHKERRQ(ierr);
+  {
+    DM_Complex    *mesh        = (DM_Complex *) (*dmRefined)->data;
+    const PetscInt numCorners  = 4;
+    const PetscInt numCells    = out->numberoftetrahedra;
+    const PetscInt numVertices = out->numberofpoints;
+    int           *cells       = out->tetrahedronlist;
+    double        *meshCoords  = out->pointlist;
+    PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
+    PetscInt       coordSize, c, e;
+    PetscScalar   *coords;
+
+    ierr = DMComplexSetChart(*dmRefined, 0, numCells+numVertices);CHKERRQ(ierr);
+    for(c = 0; c < numCells; ++c) {
+      ierr = DMComplexSetConeSize(*dmRefined, c, numCorners);CHKERRQ(ierr);
+    }
+    ierr = DMSetUp(*dmRefined);CHKERRQ(ierr);
+    for(c = 0; c < numCells; ++c) {
+      /* Should be numCorners, but c89 sucks shit */
+      PetscInt cone[4] = {cells[c*numCorners+0]+numCells, cells[c*numCorners+1]+numCells, cells[c*numCorners+2]+numCells, cells[c*numCorners+3]+numCells};
+
+      ierr = DMComplexSetCone(*dmRefined, c, cone);CHKERRQ(ierr);
+    }
+    ierr = DMComplexSymmetrize(*dmRefined);CHKERRQ(ierr);
+    ierr = DMComplexStratify(*dmRefined);CHKERRQ(ierr);
+
+    if (interpolate) {
+      DM        imesh;
+      PetscInt *off;
+      PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
+
+      SETERRQ(comm, PETSC_ERR_SUP, "Interpolation is not yet implemented in 3D");
+#if 0
+      /* Count edges using algorithm from CreateNeighborCSR */
+      ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
+      if (off) {
+        numEdges = off[numCells]/2;
+        /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+        numEdges += 3*numCells - off[numCells];
+      }
+      /* Create interpolated mesh */
+      ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
+      ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
+      ierr = DMComplexSetDimension(imesh, dim);CHKERRQ(ierr);
+      ierr = DMComplexSetChart(imesh, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
+      for(c = 0; c < numCells; ++c) {
+        ierr = DMComplexSetConeSize(imesh, c, numCorners);CHKERRQ(ierr);
+      }
+      for(e = firstEdge; e < firstEdge+numEdges; ++e) {
+        ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
+      }
+      ierr = DMSetUp(imesh);CHKERRQ(ierr);
+      for(c = 0, edge = firstEdge; c < numCells; ++c) {
+        const PetscInt *faces;
+        PetscInt        numFaces, faceSize, f;
+
+        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (faceSize != 2) {SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);}
+        for(f = 0; f < numFaces; ++f) {
+          PetscBool found = PETSC_FALSE;
+
+          /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
+          for(e = firstEdge; e < edge; ++e) {
+            const PetscInt *cone;
+
+            ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
+            if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
+                ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
+              found = PETSC_TRUE;
+              break;
+            }
+          }
+          if (!found) {
+            ierr = DMComplexSetCone(imesh, edge, &faces[f*faceSize]);CHKERRQ(ierr);
+            ++edge;
+          }
+          ierr = DMComplexInsertCone(imesh, c, f, e);CHKERRQ(ierr);
+        }
+      }
+      if (edge != firstEdge+numEdges) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);}
+      ierr = PetscFree(off);CHKERRQ(ierr);
+      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
+      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
+      mesh = (DM_Complex *) (imesh)->data;
+      for(c = 0; c < numCells; ++c) {
+        const PetscInt *cone, *faces;
+        PetscInt        coneSize, coff, numFaces, faceSize, f;
+
+        ierr = DMComplexGetConeSize(imesh, c, &coneSize);CHKERRQ(ierr);
+        ierr = DMComplexGetCone(imesh, c, &cone);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
+        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+        if (coneSize != numFaces) {SETERRQ3(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);}
+        for(f = 0; f < numFaces; ++f) {
+          const PetscInt *econe;
+          PetscInt        esize;
+
+          ierr = DMComplexGetConeSize(imesh, cone[f], &esize);CHKERRQ(ierr);
+          ierr = DMComplexGetCone(imesh, cone[f], &econe);CHKERRQ(ierr);
+          if (esize != 2) {SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);}
+          if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+            /* Correctly oriented */
+            mesh->coneOrientations[coff+f] = 0;
+          } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+            /* Start at index 1, and reverse orientation */
+            mesh->coneOrientations[coff+f] = -(1+1);
+          }
+        }
+      }
+      ierr = DMDestroy(dmRefined);CHKERRQ(ierr);
+      *dmRefined  = imesh;
+#endif
+    }
+    ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+    for(v = numCells; v < numCells+numVertices; ++v) {
+      ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
+    ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    for(v = 0; v < numVertices; ++v) {
+      coords[v*dim+0] = meshCoords[v*dim+0];
+      coords[v*dim+1] = meshCoords[v*dim+1];
+      coords[v*dim+2] = meshCoords[v*dim+2];
+    }
+    ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    for(v = 0; v < numVertices; ++v) {
+      if (out->pointmarkerlist[v]) {
+        ierr = DMComplexSetLabelValue(*dmRefined, "marker", v+numCells, out->pointmarkerlist[v]);CHKERRQ(ierr);
+      }
+    }
+    if (interpolate) {
+      PetscInt f;
+
+      for(e = 0; e < out->numberofedges; e++) {
+        if (out->edgemarkerlist[e]) {
+          const PetscInt vertices[2] = {out->edgelist[e*2+0]+numCells, out->edgelist[e*2+1]+numCells};
+          const PetscInt *edges;
+          PetscInt        numEdges;
+
+          ierr = DMComplexJoinPoints(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          if (numEdges != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);}
+          ierr = DMComplexSetLabelValue(*dmRefined, "marker", edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);
+        }
+      }
+      for(f = 0; f < out->numberoftrifaces; f++) {
+        if (out->trifacemarkerlist[f]) {
+          const PetscInt vertices[3] = {out->trifacelist[f*3+0]+numCells, out->trifacelist[f*3+1]+numCells, out->trifacelist[f*3+2]+numCells};
+          const PetscInt *faces;
+          PetscInt        numFaces;
+
+          ierr = DMComplexJoinPoints(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          if (numFaces != 1) {SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);}
+          ierr = DMComplexSetLabelValue(*dmRefined, "marker", faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  ierr = PLCDestroy(&in);CHKERRQ(ierr);
+  ierr = PLCDestroy(&out);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateBoxMesh"
 PetscErrorCode CreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
   DM             boundary;
@@ -15140,13 +21552,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  //const char    *partitioner     = user->partitioner;
+  const char    *partitioner     = "chaco";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = CreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
-#if 0
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
@@ -15165,7 +21576,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
   }
-#endif
+  ierr = PetscObjectSetName(*dm, "Simplical Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;

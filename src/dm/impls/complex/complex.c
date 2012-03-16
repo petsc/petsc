@@ -3616,8 +3616,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    //ierr = PetscStrcpy(args, "pqezQ");CHKERRQ(ierr);
-    ierr = PetscStrcpy(args, "pqezVVVV");CHKERRQ(ierr);
+    ierr = PetscStrcpy(args, "pqezQ");CHKERRQ(ierr);
     ::tetrahedralize(args, &in, &out);
   }
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -3837,7 +3836,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       if ((closureSize != 5) && (closureSize != 15)) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a tetrahedron, %D vertices in closure", closureSize);}
       for(v = 0; v < 4; ++v) {
-        in.tetrahedronlist[idx*in.numberofcorners + v] = closure[(v+closureSize-3)*2] - vStart;
+        in.tetrahedronlist[idx*in.numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
       }
     }
   }
@@ -3846,7 +3845,8 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr);
+    //ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr);
+    ierr = PetscStrcpy(args, "qezraVVVV");CHKERRQ(ierr);
     ::tetrahedralize(args, &in, &out);
   }
   in.tetrahedronvolumelist = NULL;
@@ -4090,6 +4090,7 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode DMComplexRefine_CTetgen(DM, double *, DM *);
 #undef __FUNCT__
 #define __FUNCT__ "DMRefine_Complex"
 PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
@@ -4097,6 +4098,7 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   double        *maxVolumes;
   PetscReal      refinementLimit;
   PetscInt       dim, cStart, cEnd, c;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4117,11 +4119,16 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 #endif
     break;
   case 3:
+    ierr = PetscOptionsHasName(PETSC_NULL, "-use_c_tetgen", &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMComplexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+    } else {
 #ifdef PETSC_HAVE_TETGEN
     ierr = DMComplexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-tetgen.");
 #endif
+    }
     break;
   default:
     SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Mesh generation in dimension %d is not supported.", dim);
