@@ -12,6 +12,8 @@ class Configure(PETSc.package.NewPackage):
     self.functionsFortran = 1
     self.complex   = 1
     self.useddirectly     = 0 # PETSc does not use BLACS, it is only used by ScaLAPACK which is used by MUMPS
+    self.worksonWindows   = 1
+    self.downloadonWindows= 1
     return
 
   def setupDependencies(self, framework):
