@@ -140,9 +140,10 @@ PetscErrorCode XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,
     wm_hints.initial_state  = NormalState;
     wm_hints.input          = True;
     wm_hints.flags          = StateHint|InputHint;
- 
-    class_hints.res_name    = 0;
-    class_hints.res_class   = (char*)"BaseClass"; /* this is nonsense */
+
+    /* These properties can be used by window managers to decide how to display a window */
+    class_hints.res_name    = (char*)"petsc";
+    class_hints.res_class   = (char*)"PETSc";
 
     size_hints.x            = x;
     size_hints.y            = y;
