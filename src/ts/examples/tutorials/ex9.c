@@ -1084,7 +1084,6 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
         : 2*PetscSqrtScalar(g*h) - 2*PetscSqrtScalar(g*R.h);   /* rarefaction */
       res = R.u - L.u + fr + fl;
       if (!isfinite(res)) SETERRQ1(PETSC_COMM_SELF,1,"non-finite residual=%g",res);
-      //PetscPrintf(PETSC_COMM_WORLD,"h=%g, res[%d] = %g\n",h,i,res);
       if (PetscAbsScalar(res) < 1e-8 || (i > 0 && PetscAbsScalar(h-h0) < 1e-8)) {
         star.h = h;
         star.u = L.u - fl;
@@ -1524,7 +1523,7 @@ int main(int argc,char *argv[])
 
   ctx.comm = comm;
   ctx.cfl = 0.9; ctx.bctype = FVBC_PERIODIC;
-  ctx.xmin = 0; ctx.xmax = 1;
+  ctx.xmin = -1; ctx.xmax = 1;
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Finite Volume solver options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,PETSC_NULL);CHKERRQ(ierr);
