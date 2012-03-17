@@ -538,7 +538,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   if (!rank) {
     va_list Argp;
     if (ascii->bviewer) {
-      queuefile = fd;
+      petsc_printfqueuefile = fd;
     }
 
     tab = ascii->tab;
@@ -564,9 +564,9 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 
     PrintfQueue next;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
-    if (queue) {queue->next = next; queue = next;}
-    else       {queuebase   = queue = next;}
-    queuelength++;
+    if (petsc_printfqueue) {petsc_printfqueue->next = next; petsc_printfqueue = next;}
+    else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
+    petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
     ierr = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
     ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
@@ -948,7 +948,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     err = fflush(fp);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
-    queuefile = fp;
+    petsc_printfqueuefile = fp;
     if (petsc_history) {
       va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
@@ -963,9 +963,9 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     PrintfQueue next;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
-    if (queue) {queue->next = next; queue = next;}
-    else       {queuebase   = queue = next;}
-    queuelength++;
+    if (petsc_printfqueue) {petsc_printfqueue->next = next; petsc_printfqueue = next;}
+    else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
+    petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
     ierr = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
     ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);

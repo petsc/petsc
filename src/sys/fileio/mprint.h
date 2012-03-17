@@ -16,8 +16,8 @@ struct _PrintfQueue {
   int         size;
   PrintfQueue next;
 };
-extern PrintfQueue queue,queuebase;
-extern int         queuelength;
-extern FILE        *queuefile;
+extern PrintfQueue petsc_printfqueue,petsc_printfqueuebase;
+extern int         petsc_printfqueuelength;
+extern FILE        *petsc_printfqueuefile;
 
 #endif

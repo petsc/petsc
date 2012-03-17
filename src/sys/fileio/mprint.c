@@ -309,9 +309,9 @@ PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size
 
 /* ----------------------------------------------------------------------- */
 
-PrintfQueue queue       = 0,queuebase = 0;
-int         queuelength = 0;
-FILE        *queuefile  = PETSC_NULL;
+PrintfQueue petsc_printfqueue = 0,petsc_printfqueuebase = 0;
+int         petsc_printfqueuelength = 0;
+FILE        *petsc_printfqueuefile  = PETSC_NULL;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSynchronizedPrintf" 
@@ -362,9 +362,9 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     size_t      fullLength = 8191;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
-    if (queue) {queue->next = next; queue = next; queue->next = 0;}
-    else       {queuebase   = queue = next;}
-    queuelength++;
+    if (petsc_printfqueue) {petsc_printfqueue->next = next; petsc_printfqueue = next; petsc_printfqueue->next = 0;}
+    else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
+    petsc_printfqueuelength++;
     next->size = -1;
     while((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
@@ -416,7 +416,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
-    queuefile = fp;
+    petsc_printfqueuefile = fp;
     if (petsc_history && (fp !=petsc_history)) {
       va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
@@ -427,9 +427,9 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
     PrintfQueue next;
     size_t      fullLength = 8191;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
-    if (queue) {queue->next = next; queue = next; queue->next = 0;}
-    else       {queuebase   = queue = next;}
-    queuelength++;
+    if (petsc_printfqueue) {petsc_printfqueue->next = next; petsc_printfqueue = next; petsc_printfqueue->next = 0;}
+    else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
+    petsc_printfqueuelength++;
     next->size = -1;
     while((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
@@ -478,8 +478,8 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 
   /* First processor waits for messages from all other processors */
   if (!rank) {
-    if (queuefile) {
-      fd = queuefile;
+    if (petsc_printfqueuefile) {
+      fd = petsc_printfqueuefile;
     } else {
       fd = PETSC_STDOUT;
     }
@@ -497,13 +497,13 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
         ierr = PetscFree(message);CHKERRQ(ierr);
       }
     }
-    queuefile = PETSC_NULL;
+    petsc_printfqueuefile = PETSC_NULL;
   } else { /* other processors send queue to processor 0 */
-    PrintfQueue next = queuebase,previous;
+    PrintfQueue next = petsc_printfqueuebase,previous;
 
     ierr = MPI_Recv(&dummy,1,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
-    for (i=0; i<queuelength; i++) {
+    ierr = MPI_Send(&petsc_printfqueuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
+    for (i=0; i<petsc_printfqueuelength; i++) {
       ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
       ierr     = MPI_Send(next->string,next->size,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
@@ -511,8 +511,8 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
       ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
     }
-    queue       = 0;
-    queuelength = 0;
+    petsc_printfqueue       = 0;
+    petsc_printfqueuelength = 0;
   }
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
