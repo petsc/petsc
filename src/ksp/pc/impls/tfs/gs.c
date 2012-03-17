@@ -194,7 +194,7 @@ gs_id *gs_init( PetscInt *elms, PetscInt nel, PetscInt level)
 
   PetscFunctionBegin;
   /* ensure that communication package has been initialized */
-  comm_init();
+  PCTFS_comm_init();
 
 
   /* determines if we have enough dynamic/semi-static memory */
@@ -371,7 +371,7 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   vals[6] = num_gs_ids;
 
   /* GLOBAL: send 'em out */
-  ierr = giop(vals,work,sizeof(oprs)/sizeof(oprs[0])-1,oprs);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+  ierr = PCTFS_giop(vals,work,sizeof(oprs)/sizeof(oprs[0])-1,oprs);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
   /* must be semi-pos def - only pairwise depends on this */
   /* LATER - remove this restriction */
@@ -390,8 +390,8 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   /* LATER :: add level == -1 -> program selects level */
   if (vals[5]<0)
     {vals[5]=0;}
-  else if (vals[5]>num_nodes)
-    {vals[5]=num_nodes;}
+  else if (vals[5]>PCTFS_num_nodes)
+    {vals[5]=PCTFS_num_nodes;}
   gs->level = vals[5];
 
   return(gs);
@@ -540,9 +540,9 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   elms  = gs->elms;
   level = gs->level;
   
-  /* det #bytes needed for processor bit masks and init w/mask cor. to my_id */
-  p_mask = (PetscInt*) malloc(p_mask_size=len_bit_mask(num_nodes));
-  ierr = set_bit_mask(p_mask,p_mask_size,my_id);CHKERRQ(ierr);
+  /* det #bytes needed for processor bit masks and init w/mask cor. to PCTFS_my_id */
+  p_mask = (PetscInt*) malloc(p_mask_size=len_bit_mask(PCTFS_num_nodes));
+  ierr = set_bit_mask(p_mask,p_mask_size,PCTFS_my_id);CHKERRQ(ierr);
 
   /* allocate space for masks and info bufs */
   gs->nghs = sh_proc_mask = (PetscInt*) malloc(p_mask_size);
@@ -568,7 +568,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   /* can we do it? */
   if (p_mask_size>buf_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);
 
-  /* get giop buf space ... make *only* one malloc */
+  /* get PCTFS_giop buf space ... make *only* one malloc */
   buf1 = (PetscInt*) malloc(buf_size<<1);
 
   /* more than one gior exchange needed? */
@@ -583,7 +583,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   /* convert buf sizes from #bytes to #ints - 32 bit only! */
   p_mask_size/=sizeof(PetscInt); ngh_buf_size/=sizeof(PetscInt); buf_size/=sizeof(PetscInt);
   
-  /* find giop work space */
+  /* find PCTFS_giop work space */
   buf2 = buf1+buf_size;
 
   /* hold #ints needed for processor masks */
@@ -612,7 +612,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
         }
 
       /* GLOBAL: pass buffer */
-      ierr = giop(buf1,buf2,buf_size,&oper);CHKERRQ(ierr);
+      ierr = PCTFS_giop(buf1,buf2,buf_size,&oper);CHKERRQ(ierr);
 
 
       /* unload buffer into ngh_buf */
@@ -682,7 +682,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
 
   oper = GL_MAX;
   ct1 = gs->num_nghs;
-  ierr = giop(&ct1,&ct2,1,&oper);CHKERRQ(ierr);
+  ierr = PCTFS_giop(&ct1,&ct2,1,&oper);CHKERRQ(ierr);
   gs->max_nghs = ct1;
 
   gs->tree_map_sz  = ntree_map;
@@ -715,12 +715,12 @@ static PetscErrorCode set_pairwise(gs_id *gs)
   sh_proc_mask  = gs->pw_nghs;
 
   /* need a few temp masks */
-  p_mask_size   = len_bit_mask(num_nodes);
+  p_mask_size   = len_bit_mask(PCTFS_num_nodes);
   p_mask        = (PetscInt*) malloc(p_mask_size);
   tmp_proc_mask = (PetscInt*) malloc(p_mask_size);
 
-  /* set mask to my my_id's bit mask */
-  ierr = set_bit_mask(p_mask,p_mask_size,my_id);CHKERRQ(ierr);
+  /* set mask to my PCTFS_my_id's bit mask */
+  ierr = set_bit_mask(p_mask,p_mask_size,PCTFS_my_id);CHKERRQ(ierr);
 
   p_mask_size /= sizeof(PetscInt);
           
@@ -789,22 +789,22 @@ static PetscErrorCode set_pairwise(gs_id *gs)
 
   j=gs->loc_node_pairs=i_start;
   t1 = GL_MAX;
-  ierr = giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
+  ierr = PCTFS_giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
   gs->max_node_pairs = i_start;
 
   i_start=j;
   t1 = GL_MIN;
-  ierr = giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
+  ierr = PCTFS_giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
   gs->min_node_pairs = i_start;
 
   i_start=j;
   t1 = GL_ADD;
-  ierr = giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
-  gs->avg_node_pairs = i_start/num_nodes + 1;
+  ierr = PCTFS_giop(&i_start,&offset,1,&t1);CHKERRQ(ierr);
+  gs->avg_node_pairs = i_start/PCTFS_num_nodes + 1;
 
   i_start=nprs;
   t1 = GL_MAX;
-  giop(&i_start,&offset,1,&t1);
+  PCTFS_giop(&i_start,&offset,1,&t1);
   gs->max_pairs = i_start;
 
 
@@ -1316,7 +1316,7 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
           dptr2+=step;
           iptr++;
         }
-      ierr = MPI_Isend(dptr3, *msg_size *step, MPIU_SCALAR, *msg_list, MSGTAG1+my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
+      ierr = MPI_Isend(dptr3, *msg_size *step, MPIU_SCALAR, *msg_list, MSGTAG1+PCTFS_my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
       msg_size++; msg_list++;msg_ids_out++;
     }
 
@@ -1387,8 +1387,8 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
     }
 
   /* perform fan in/out on full buffer */
-  /* must change grop to handle the blas */
-  grop(buf,work,size,op);
+  /* must change PCTFS_grop to handle the blas */
+  PCTFS_grop(buf,work,size,op);
 
   /* reset */
   in   = gs->tree_map_in;
@@ -1431,7 +1431,7 @@ static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, PetscInt di
     {  PetscFunctionReturn(0);}
 
   /* can't do more dimensions then exist */
-  dim = PetscMin(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,PCTFS_i_log2_num_nodes);
 
   /* local only operations!!! */
   if (gs->num_local)
@@ -1499,7 +1499,7 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      if ((my_id|mask)==(*list|mask))
+      if ((PCTFS_my_id|mask)==(*list|mask))
         {
           ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->gs_comm, msg_ids_in);CHKERRQ(ierr);
           list++; msg_ids_in++;in1 += *size++;
@@ -1518,14 +1518,14 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
   list = msg_list;
   while ((iptr = *msg_nodes++))
     {
-      if ((my_id|mask)==(*list|mask))
+      if ((PCTFS_my_id|mask)==(*list|mask))
         {
           dptr3 = dptr2;
           while (*iptr >= 0)
             {*dptr2++ = *(dptr1 + *iptr++);}
           /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
           /* is msg_ids_out++ correct? */
-          ierr = MPI_Isend(dptr3, *msg_size, MPIU_SCALAR, *list, MSGTAG1+my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
+          ierr = MPI_Isend(dptr3, *msg_size, MPIU_SCALAR, *list, MSGTAG1+PCTFS_my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
           msg_size++;list++;msg_ids_out++;
         }
       else
@@ -1541,7 +1541,7 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
   list = msg_list;
   while ((iptr = *nodes++))
     {
-      if ((my_id|mask)==(*list|mask))
+      if ((PCTFS_my_id|mask)==(*list|mask))
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -1561,7 +1561,7 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
   /* This changed for clarity though it could be the same */
   while (*msg_nodes++)
     {
-      if ((my_id|mask)==(*msg_list|mask))
+      if ((PCTFS_my_id|mask)==(*msg_list|mask))
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -1597,7 +1597,7 @@ static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, PetscInt
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
 
-  grop_hc(buf,work,size,op,dim);
+  PCTFS_grop_hc(buf,work,size,op,dim);
 
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}

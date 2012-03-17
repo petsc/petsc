@@ -88,11 +88,11 @@ PetscInt XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   )
 {
 
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xyt_handle);
 
   /* only 2^k for now and all nodes participating */
-  if ((1<<(xyt_handle->level=i_log2_num_nodes))!=num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);
+  if ((1<<(xyt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
 
   /* space for X info */
   xyt_handle->info = (xyt_info*)malloc(sizeof(xyt_info));
@@ -113,7 +113,7 @@ PetscInt XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 /**************************************xyt.c***********************************/
 PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
 {
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xyt_handle);
 
   /* need to copy b into x? */
@@ -127,7 +127,7 @@ PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
 /**************************************xyt.c***********************************/
 PetscInt XYT_free(xyt_ADT xyt_handle)
 {
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xyt_handle);
   n_xyt_handles--;
 
@@ -166,41 +166,41 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
   PetscInt    vals[9],  work[9];
   PetscScalar fvals[3], fwork[3];
 
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xyt_handle);
 
   /* if factorization not done there are no stats */
   if (!xyt_handle->info||!xyt_handle->mvi) {
-    if (!my_id) PetscPrintf(PETSC_COMM_WORLD,"XYT_stats() :: no stats available!\n");
+    if (!PCTFS_my_id) PetscPrintf(PETSC_COMM_WORLD,"XYT_stats() :: no stats available!\n");
     return 1;
   }
 
   vals[0]=vals[1]=vals[2]=xyt_handle->info->nnz;
   vals[3]=vals[4]=vals[5]=xyt_handle->mvi->n;
   vals[6]=vals[7]=vals[8]=xyt_handle->info->msg_buf_sz;
-  giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
 
   fvals[0]=fvals[1]=fvals[2]
     =xyt_handle->info->tot_solve_time/xyt_handle->info->nsolves++;
-  grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
+  PCTFS_grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
 
-  if (!my_id) {
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_nnz=%D\n",my_id,vals[0]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",my_id,vals[1]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",my_id,1.0*vals[2]/num_nodes);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",my_id,vals[2]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.5)));
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",my_id,vals[3]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",my_id,vals[4]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",my_id,1.0*vals[5]/num_nodes);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_n  =%D\n",my_id,vals[5]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_buf=%D\n",my_id,vals[6]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_buf=%D\n",my_id,vals[7]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_buf=%g\n",my_id,1.0*vals[8]/num_nodes);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_slv=%g\n",my_id,fvals[0]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_slv=%g\n",my_id,fvals[1]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_slv=%g\n",my_id,fvals[2]/num_nodes);
+  if (!PCTFS_my_id) {
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_nnz=%D\n",PCTFS_my_id,vals[0]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",PCTFS_my_id,vals[1]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",PCTFS_my_id,1.0*vals[2]/PCTFS_num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",PCTFS_my_id,vals[2]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.5)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",PCTFS_my_id,vals[3]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",PCTFS_my_id,vals[4]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",PCTFS_my_id,1.0*vals[5]/PCTFS_num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_n  =%D\n",PCTFS_my_id,vals[5]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_buf=%D\n",PCTFS_my_id,vals[6]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_buf=%D\n",PCTFS_my_id,vals[7]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_buf=%g\n",PCTFS_my_id,1.0*vals[8]/PCTFS_num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_slv=%g\n",PCTFS_my_id,fvals[0]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_slv=%g\n",PCTFS_my_id,fvals[1]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_slv=%g\n",PCTFS_my_id,fvals[2]/PCTFS_num_nodes);
   }
 
   return(0);
@@ -326,7 +326,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
   /* storage for sparse x values */
   n_global = xyt_handle->info->n_global;
-  xt_max_nnz = yt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
+  xt_max_nnz = yt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
   x = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
   y = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
 
@@ -346,7 +346,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       /* i.e. set v_l */
       /* use new seps and do global min across hc to determine which one to fire */
       (start<end) ? (col=fo[start]) : (col=INT_MAX);
-      giop_hc(&col,&work,1,op2,dim); 
+      PCTFS_giop_hc(&col,&work,1,op2,dim); 
 
       /* shouldn't need this */
       if (col==INT_MAX)
@@ -392,7 +392,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	}
 
       /* uu = X^T.u_l (comm portion) */
-      ssgl_radd  (uu, w, dim, stages);
+      PCTFS_ssgl_radd  (uu, w, dim, stages);
 
       /* z = X.uu */
       rvec_zero(z,n);
@@ -422,7 +422,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
      dlen = PetscBLASIntCast(n);
       alpha = BLASdot_(&dlen,u,&i1,u,&i1);
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
-      grop_hc(&alpha, &alpha_w, 1, op, dim);
+      PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
 
       alpha = (PetscScalar) PetscSqrtReal((PetscReal)alpha);
 
@@ -619,7 +619,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) {ssgl_radd(uu_ptr, solve_w, level, stages);}
+  if (level) {PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);}
 
   rvec_zero(uc,n);
 
@@ -642,7 +642,7 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
   if (!xyt_handle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D\n",xyt_handle);
 
   vals[0]=vals[1]=xyt_handle->id;
-  giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
   if ((vals[0]!=vals[1])||(xyt_handle->id<=0)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D\n", vals[0],vals[1], xyt_handle->id);
   PetscFunctionReturn(0);
 }
@@ -699,7 +699,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
         }
     }
 
-  grop_hc(rsum,rw,2,op,level);
+  PCTFS_grop_hc(rsum,rw,2,op,level);
   rsum[0]+=0.1;
   rsum[1]+=0.1;
 
@@ -714,7 +714,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
       /* and pick up the responses on the other sub-hc from the     */
       /* initial separator set obtained from the symm. shared case  */
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n"); 
-      for (iptr=fo+n,id=my_id,mask=num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
+      for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
@@ -769,8 +769,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 	  /* go for load balance - choose half with most unmarked dofs, bias LHS */
 	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
 	  (id<mask) ? (rsum[2]=ct) : (rsum[3]=ct);
-	  giop_hc(sum,w,4,op,edge);
-	  grop_hc(rsum,rw,4,op,edge);
+	  PCTFS_giop_hc(sum,w,4,op,edge);
+	  PCTFS_grop_hc(rsum,rw,4,op,edge);
 	  rsum[0]+=0.1; rsum[1]+=0.1; rsum[2]+=0.1; rsum[3]+=0.1;
 
 	  if (id<mask)
@@ -827,7 +827,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
     }
   else
     {
-      for (iptr=fo+n,id=my_id,mask=num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
+      for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
@@ -854,7 +854,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 	  /* for the non-symmetric case we need separators of width 2 */
 	  /* so take both sides */
 	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
-	  giop_hc(sum,w,4,op,edge);
+	  PCTFS_giop_hc(sum,w,4,op,edge);
 
 	  ct=0;
 	  if (id<mask)
@@ -945,7 +945,7 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *ma
   mvi->grid_data=grid_data;
 
   /* set xyt communication handle to perform restricted matvec */
-  mvi->gs_handle = gs_init(local2global, m, num_nodes);
+  mvi->gs_handle = gs_init(local2global, m, PCTFS_num_nodes);
 
   return(mvi);
 }

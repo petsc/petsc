@@ -134,17 +134,17 @@ Providence, RI 02912
 Last Modification: 
 6.21.97
 ***********************************comm.h*************************************/
-extern PetscMPIInt my_id;
-extern PetscMPIInt num_nodes;
-extern PetscMPIInt floor_num_nodes;
-extern PetscMPIInt i_log2_num_nodes;
+extern PetscMPIInt PCTFS_my_id;
+extern PetscMPIInt PCTFS_num_nodes;
+extern PetscMPIInt PCTFS_floor_num_nodes;
+extern PetscMPIInt PCTFS_i_log2_num_nodes;
 
-extern PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode comm_init(void);
-extern PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
-extern PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
-extern PetscErrorCode ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs);
+extern PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
+extern PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
+extern PetscErrorCode PCTFS_comm_init(void);
+extern PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
+extern PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
+extern PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs);
 
 #define MSGTAG0 101
 #define MSGTAG1 1001

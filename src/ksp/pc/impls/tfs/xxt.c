@@ -83,11 +83,11 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 	   void *grid_data     /* grid data for matvec        */
 	   )
 {
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xxt_handle);
 
   /* only 2^k for now and all nodes participating */
-  if ((1<<(xxt_handle->level=i_log2_num_nodes))!=num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);
+  if ((1<<(xxt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
 
   /* space for X info */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
@@ -109,7 +109,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 {
 
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xxt_handle);
 
   /* need to copy b into x? */
@@ -124,7 +124,7 @@ PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 PetscInt XXT_free(xxt_ADT xxt_handle)
 {
 
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xxt_handle);
   n_xxt_handles--;
 
@@ -159,43 +159,43 @@ PetscInt XXT_stats(xxt_ADT xxt_handle)
   PetscScalar    fvals[3], fwork[3];
   PetscErrorCode ierr;
 
-  comm_init();
+  PCTFS_comm_init();
   check_handle(xxt_handle);
 
   /* if factorization not done there are no stats */
   if (!xxt_handle->info||!xxt_handle->mvi)
     {
-      if (!my_id) {ierr = PetscPrintf(PETSC_COMM_WORLD,"XXT_stats() :: no stats available!\n");CHKERRQ(ierr);}
+      if (!PCTFS_my_id) {ierr = PetscPrintf(PETSC_COMM_WORLD,"XXT_stats() :: no stats available!\n");CHKERRQ(ierr);}
       return 1;
     }
 
   vals[0]=vals[1]=vals[2]=xxt_handle->info->nnz;
   vals[3]=vals[4]=vals[5]=xxt_handle->mvi->n;
   vals[6]=vals[7]=vals[8]=xxt_handle->info->msg_buf_sz;
-  giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
 
   fvals[0]=fvals[1]=fvals[2]
     =xxt_handle->info->tot_solve_time/xxt_handle->info->nsolves++;
-  grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
+  PCTFS_grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
 
-  if (!my_id) 
+  if (!PCTFS_my_id) 
     {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_nnz=%D\n",my_id,vals[0]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_nnz=%D\n",my_id,vals[1]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_nnz=%g\n",my_id,1.0*vals[2]/num_nodes);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_nnz=%D\n",my_id,vals[2]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(2d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.5)));CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(3d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.6667)));CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_n  =%D\n",my_id,vals[3]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_n  =%D\n",my_id,vals[4]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_n  =%g\n",my_id,1.0*vals[5]/num_nodes);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_n  =%D\n",my_id,vals[5]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_buf=%D\n",my_id,vals[6]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_buf=%D\n",my_id,vals[7]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_buf=%g\n",my_id,1.0*vals[8]/num_nodes);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_slv=%g\n",my_id,fvals[0]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_slv=%g\n",my_id,fvals[1]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_slv=%g\n",my_id,fvals[2]/num_nodes);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_nnz=%D\n",PCTFS_my_id,vals[0]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_nnz=%D\n",PCTFS_my_id,vals[1]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_nnz=%g\n",PCTFS_my_id,1.0*vals[2]/PCTFS_num_nodes);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_nnz=%D\n",PCTFS_my_id,vals[2]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.5)));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.6667)));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_n  =%D\n",PCTFS_my_id,vals[3]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_n  =%D\n",PCTFS_my_id,vals[4]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_n  =%g\n",PCTFS_my_id,1.0*vals[5]/PCTFS_num_nodes);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_n  =%D\n",PCTFS_my_id,vals[5]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_buf=%D\n",PCTFS_my_id,vals[6]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_buf=%D\n",PCTFS_my_id,vals[7]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_buf=%g\n",PCTFS_my_id,1.0*vals[8]/PCTFS_num_nodes);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_slv=%g\n",PCTFS_my_id,fvals[0]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_slv=%g\n",PCTFS_my_id,fvals[1]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_slv=%g\n",PCTFS_my_id,fvals[2]/PCTFS_num_nodes);CHKERRQ(ierr);
     }
 
   return(0);
@@ -301,7 +301,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
   /* storage for sparse x values */
   n_global = xxt_handle->info->n_global;
-  xxt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
+  xxt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
   x = (PetscScalar *) malloc(xxt_max_nnz*sizeof(PetscScalar));
   xxt_nnz = 0;
 
@@ -321,7 +321,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       /* i.e. set v_l */
       /* use new seps and do global min across hc to determine which one to fire */
       (start<end) ? (col=fo[start]) : (col=INT_MAX);
-      giop_hc(&col,&work,1,op2,dim); 
+      PCTFS_giop_hc(&col,&work,1,op2,dim); 
 
       /* shouldn't need this */
       if (col==INT_MAX)
@@ -368,7 +368,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
 
       /* uu = X^T.u_l (comm portion) */
-      ssgl_radd  (uu, w, dim, stages);
+      PCTFS_ssgl_radd  (uu, w, dim, stages);
 
       /* z = X.uu */
       rvec_zero(z,n);
@@ -398,7 +398,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       dlen = PetscBLASIntCast(n);
       alpha = BLASdot_(&dlen,u,&i1,v,&i1);
       /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
-      grop_hc(&alpha, &alpha_w, 1, op, dim);
+      PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
 
       alpha = (PetscScalar) PetscSqrtReal((PetscReal)alpha);
 
@@ -531,7 +531,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) {ssgl_radd(uu_ptr, solve_w, level, stages);}
+  if (level) {PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);}
 
   rvec_zero(uc,n);
 
@@ -554,7 +554,7 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   if (!xxt_handle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D\n",xxt_handle);
 
   vals[0]=vals[1]=xxt_handle->id;
-  giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
   if ((vals[0]!=vals[1])||(xxt_handle->id<=0)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D\n",vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }
@@ -603,7 +603,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
       if (lhs[i]!=0.0)
 	{rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i];}
     }
-  grop_hc(rsum,rw,2,op,level);
+  PCTFS_grop_hc(rsum,rw,2,op,level);
   rsum[0]+=0.1;
   rsum[1]+=0.1;
 
@@ -616,7 +616,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   /* determine separator sets top down */
   if (shared)
     {
-      for (iptr=fo+n,id=my_id,mask=num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
+      for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
@@ -671,8 +671,8 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	  /* go for load balance - choose half with most unmarked dofs, bias LHS */
 	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
 	  (id<mask) ? (rsum[2]=ct) : (rsum[3]=ct);
-	  giop_hc(sum,w,4,op,edge);
-	  grop_hc(rsum,rw,4,op,edge);
+	  PCTFS_giop_hc(sum,w,4,op,edge);
+	  PCTFS_grop_hc(rsum,rw,4,op,edge);
 	  rsum[0]+=0.1; rsum[1]+=0.1; rsum[2]+=0.1; rsum[3]+=0.1;
 
 	  if (id<mask)
@@ -729,7 +729,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
     }
   else
     {
-      for (iptr=fo+n,id=my_id,mask=num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
+      for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
@@ -755,7 +755,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 
 	  /* go for load balance - choose half with most unmarked dofs, bias LHS */
 	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
-	  giop_hc(sum,w,4,op,edge);
+	  PCTFS_giop_hc(sum,w,4,op,edge);
 
 	  /* lhs hc wins */
 	  if (sum[2]>=sum[3])
@@ -854,7 +854,7 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *ma
   mvi->grid_data=grid_data;
 
   /* set xxt communication handle to perform restricted matvec */
-  mvi->gs_handle = gs_init(local2global, m, num_nodes);
+  mvi->gs_handle = gs_init(local2global, m, PCTFS_num_nodes);
 
   return(mvi);
 }

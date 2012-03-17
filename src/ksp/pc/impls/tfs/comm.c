@@ -17,10 +17,10 @@ Last Modification:
 
 
 /* global program control variables - explicitly exported */
-PetscMPIInt my_id            = 0;
-PetscMPIInt num_nodes        = 1;
-PetscMPIInt floor_num_nodes  = 0;
-PetscMPIInt i_log2_num_nodes = 0;
+PetscMPIInt PCTFS_my_id            = 0;
+PetscMPIInt PCTFS_num_nodes        = 1;
+PetscMPIInt PCTFS_floor_num_nodes  = 0;
+PetscMPIInt PCTFS_i_log2_num_nodes = 0;
 
 /* global program control variables */
 static PetscInt p_init = 0;
@@ -30,35 +30,35 @@ static PetscInt edge_not_pow_2;
 static PetscInt edge_node[sizeof(PetscInt)*32];
 
 /***********************************comm.c*************************************/
-PetscErrorCode comm_init (void)
+PetscErrorCode PCTFS_comm_init (void)
 {
 
   if (p_init++)   PetscFunctionReturn(0);
 
-  MPI_Comm_size(MPI_COMM_WORLD,&num_nodes);
-  MPI_Comm_rank(MPI_COMM_WORLD,&my_id);
+  MPI_Comm_size(MPI_COMM_WORLD,&PCTFS_num_nodes);
+  MPI_Comm_rank(MPI_COMM_WORLD,&PCTFS_my_id);
 
-  if (num_nodes> (INT_MAX >> 1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");
+  if (PCTFS_num_nodes> (INT_MAX >> 1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");
 
   ivec_zero((PetscInt*)edge_node,sizeof(PetscInt)*32);
 
-  floor_num_nodes = 1;
-  i_log2_num_nodes = modfl_num_nodes = 0;
-  while (floor_num_nodes <= num_nodes)
+  PCTFS_floor_num_nodes = 1;
+  PCTFS_i_log2_num_nodes = modfl_num_nodes = 0;
+  while (PCTFS_floor_num_nodes <= PCTFS_num_nodes)
     {
-      edge_node[i_log2_num_nodes] = my_id ^ floor_num_nodes;
-      floor_num_nodes <<= 1; 
-      i_log2_num_nodes++;
+      edge_node[PCTFS_i_log2_num_nodes] = PCTFS_my_id ^ PCTFS_floor_num_nodes;
+      PCTFS_floor_num_nodes <<= 1; 
+      PCTFS_i_log2_num_nodes++;
     }
 
-  i_log2_num_nodes--;  
-  floor_num_nodes >>= 1;
-  modfl_num_nodes = (num_nodes - floor_num_nodes);
+  PCTFS_i_log2_num_nodes--;  
+  PCTFS_floor_num_nodes >>= 1;
+  modfl_num_nodes = (PCTFS_num_nodes - PCTFS_floor_num_nodes);
 
-  if ((my_id > 0) && (my_id <= modfl_num_nodes))
-    {edge_not_pow_2=((my_id|floor_num_nodes)-1);}
-  else if (my_id >= floor_num_nodes)
-    {edge_not_pow_2=((my_id^floor_num_nodes)+1);
+  if ((PCTFS_my_id > 0) && (PCTFS_my_id <= modfl_num_nodes))
+    {edge_not_pow_2=((PCTFS_my_id|PCTFS_floor_num_nodes)-1);}
+  else if (PCTFS_my_id >= PCTFS_floor_num_nodes)
+    {edge_not_pow_2=((PCTFS_my_id^PCTFS_floor_num_nodes)+1);
     }
   else
     {edge_not_pow_2 = 0;}
@@ -66,7 +66,7 @@ PetscErrorCode comm_init (void)
 }
 
 /***********************************comm.c*************************************/
-PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
+PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 {
   PetscInt   mask, edge;
   PetscInt    type, dest;
@@ -76,24 +76,24 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: non_uniform and n=0,1?");
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
   /* if there's nothing to do return */
-  if ((num_nodes<2)||(!n))
+  if ((PCTFS_num_nodes<2)||(!n))
     {
         PetscFunctionReturn(0);
     }
 
 
   /* a negative number if items to send ==> fatal */
-  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: n=%D<0?",n);
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: n=%D<0?",n);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -101,7 +101,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 
   /* major league hack */
   if (!(fp = (vfp) ivec_fct_addr(type))) {
-    ierr = PetscInfo(0,"giop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_giop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
 
@@ -109,8 +109,8 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
     {
-      if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      if (PCTFS_my_id >= PCTFS_floor_num_nodes)
+	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG0+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else 
 	{
 	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
@@ -119,13 +119,13 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
     }
 
   /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
+  if (PCTFS_my_id<PCTFS_floor_num_nodes)
     {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
+      for (mask=1,edge=0; edge<PCTFS_i_log2_num_nodes; edge++,mask<<=1)
 	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	  dest = PCTFS_my_id^mask;
+	  if (PCTFS_my_id > dest)
+	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
@@ -133,15 +133,15 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 	    }
 	}
 
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
+      mask=PCTFS_floor_num_nodes>>1;
+      for (edge=0; edge<PCTFS_i_log2_num_nodes; edge++,mask>>=1)
 	{
-	  if (my_id%mask)
+	  if (PCTFS_my_id%mask)
 	    {continue;}
       
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	  dest = PCTFS_my_id^mask;
+	  if (PCTFS_my_id < dest)
+	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
@@ -152,18 +152,18 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
   /* if not a hypercube must expand to partial dim */
   if (edge_not_pow_2)
     {
-      if (my_id >= floor_num_nodes)
+      if (PCTFS_my_id >= PCTFS_floor_num_nodes)
 	{
 	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
       else
-	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG5+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
         PetscFunctionReturn(0);
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs)
+PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs)
 {
   PetscInt       mask, edge;
   PetscInt       type, dest;
@@ -173,17 +173,17 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: non_uniform and n=0,1?");
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
   /* if there's nothing to do return */
-  if ((num_nodes<2)||(!n))
+  if ((PCTFS_num_nodes<2)||(!n))
     {        PetscFunctionReturn(0);}
 
   /* a negative number of items to send ==> fatal */
@@ -194,7 +194,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    ierr = PetscInfo(0,"grop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_grop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
 
@@ -202,8 +202,8 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
     {
-      if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      if (PCTFS_my_id >= PCTFS_floor_num_nodes)
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else 
 	{
 	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
@@ -212,13 +212,13 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
     }
 
   /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
+  if (PCTFS_my_id<PCTFS_floor_num_nodes)
     {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
+      for (mask=1,edge=0; edge<PCTFS_i_log2_num_nodes; edge++,mask<<=1)
 	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	  dest = PCTFS_my_id^mask;
+	  if (PCTFS_my_id > dest)
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
@@ -226,15 +226,15 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
 	    }
 	}
 
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
+      mask=PCTFS_floor_num_nodes>>1;
+      for (edge=0; edge<PCTFS_i_log2_num_nodes; edge++,mask>>=1)
 	{
-	  if (my_id%mask)
+	  if (PCTFS_my_id%mask)
 	    {continue;}
       
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	  dest = PCTFS_my_id^mask;
+	  if (PCTFS_my_id < dest)
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
@@ -245,18 +245,18 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
   /* if not a hypercube must expand to partial dim */
   if (edge_not_pow_2)
     {
-      if (my_id >= floor_num_nodes)
+      if (PCTFS_my_id >= PCTFS_floor_num_nodes)
 	{
 	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
       else
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
         PetscFunctionReturn(0);
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
+PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
   PetscInt       mask, edge;
   PetscInt       type, dest;
@@ -266,42 +266,42 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: non_uniform and n=0,1?");
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
   /* if there's nothing to do return */
-  if ((num_nodes<2)||(!n)||(dim<=0))
+  if ((PCTFS_num_nodes<2)||(!n)||(dim<=0))
     {PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
-  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: num_nodes not a power of 2!?!");
+  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: PCTFS_num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
-  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: n=%D<0?",n);
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: n=%D<0?",n);
 
   /* can't do more dimensions then exist */
-  dim = PetscMin(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,PCTFS_i_log2_num_nodes);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    ierr = PetscInfo(0,"grop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_grop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
     {
-      dest = my_id^mask;
-      if (my_id > dest)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      dest = PCTFS_my_id^mask;
+      if (PCTFS_my_id > dest)
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
 	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
@@ -316,12 +316,12 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 
   for (edge=0; edge<dim; edge++,mask>>=1)
     {
-      if (my_id%mask)
+      if (PCTFS_my_id%mask)
 	{continue;}
       
-      dest = my_id^mask;
-      if (my_id < dest)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      dest = PCTFS_my_id^mask;
+      if (PCTFS_my_id < dest)
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
 	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 }  
 
 /******************************************************************************/
-PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
+PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
   PetscInt       edge, type, dest, mask;
   PetscInt       stage_n;
@@ -341,7 +341,7 @@ PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level
    PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
 
   /* all msgs are *NOT* the same length */
@@ -349,15 +349,15 @@ PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level
   for (mask=0, edge=0; edge<level; edge++, mask++)
     {
       stage_n = (segs[level] - segs[edge]);
-      if (stage_n && !(my_id & mask))
+      if (stage_n && !(PCTFS_my_id & mask))
 	{
 	  dest = edge_node[edge];
-	  type = MSGTAG3 + my_id + (num_nodes*edge);
-	  if (my_id>dest)
+	  type = MSGTAG3 + PCTFS_my_id + (PCTFS_num_nodes*edge);
+	  if (PCTFS_my_id>dest)
           {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      type =  type - my_id + dest;
+	      type =  type - PCTFS_my_id + dest;
               ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
@@ -368,15 +368,15 @@ PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level
   for (edge=0; edge<level; edge++)
     {
       stage_n = (segs[level] - segs[level-1-edge]);
-      if (stage_n && !(my_id & mask))
+      if (stage_n && !(PCTFS_my_id & mask))
 	{
 	  dest = edge_node[level-edge-1];
-	  type = MSGTAG6 + my_id + (num_nodes*edge);
-	  if (my_id<dest)
+	  type = MSGTAG6 + PCTFS_my_id + (PCTFS_num_nodes*edge);
+	  if (PCTFS_my_id<dest)
             {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      type =  type - my_id + dest;
+	      type =  type - PCTFS_my_id + dest;
               ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	    }
 	}
@@ -396,22 +396,22 @@ PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt l
    PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
   for (mask=0, edge=0; edge<level; edge++, mask++)
     {
       stage_n = (segs[level] - segs[edge]);
-      if (stage_n && !(my_id & mask))
+      if (stage_n && !(PCTFS_my_id & mask))
 	{
 	  dest = edge_node[edge];
-	  type = MSGTAG3 + my_id + (num_nodes*edge);
-	  if (my_id>dest)
+	  type = MSGTAG3 + PCTFS_my_id + (PCTFS_num_nodes*edge);
+	  if (PCTFS_my_id>dest)
           {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      type =  type - my_id + dest;
+	      type =  type - PCTFS_my_id + dest;
               ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type, MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
@@ -422,15 +422,15 @@ PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt l
   for (edge=0; edge<level; edge++)
     {
       stage_n = (segs[level] - segs[level-1-edge]);
-      if (stage_n && !(my_id & mask))
+      if (stage_n && !(PCTFS_my_id & mask))
 	{
 	  dest = edge_node[level-edge-1];
-	  type = MSGTAG6 + my_id + (num_nodes*edge);
-	  if (my_id<dest)
+	  type = MSGTAG6 + PCTFS_my_id + (PCTFS_num_nodes*edge);
+	  if (PCTFS_my_id<dest)
             {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      type =  type - my_id + dest;
+	      type =  type - PCTFS_my_id + dest;
               ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	    }
 	}
@@ -440,7 +440,7 @@ PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt l
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
+PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
   PetscInt            mask, edge;
   PetscInt            type, dest;
@@ -450,42 +450,42 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: non_uniform and n=0,1?");
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
-    {comm_init();}
+    {PCTFS_comm_init();}
 
   /* if there's nothing to do return */
-  if ((num_nodes<2)||(!n)||(dim<=0))
+  if ((PCTFS_num_nodes<2)||(!n)||(dim<=0))
     {  PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
-  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: num_nodes not a power of 2!?!");
+  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: PCTFS_num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
-  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: n=%D<0?",n);
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: n=%D<0?",n);
 
   /* can't do more dimensions then exist */
-  dim = PetscMin(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,PCTFS_i_log2_num_nodes);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
   if (!(fp = (vfp) ivec_fct_addr(type))){
-    ierr = PetscInfo(0,"giop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_giop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
     {
-      dest = my_id^mask;
-      if (my_id > dest)
-	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      dest = PCTFS_my_id^mask;
+      if (PCTFS_my_id > dest)
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
 	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
@@ -500,12 +500,12 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
 
   for (edge=0; edge<dim; edge++,mask>>=1)
     {
-      if (my_id%mask)
+      if (PCTFS_my_id%mask)
 	{continue;}
       
-      dest = my_id^mask;
-      if (my_id < dest)
-	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
+      dest = PCTFS_my_id^mask;
+      if (PCTFS_my_id < dest)
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
 	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
