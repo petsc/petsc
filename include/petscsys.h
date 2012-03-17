@@ -1540,7 +1540,6 @@ extern PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary);
 extern PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscBool  *);
 extern PetscErrorCode  PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibrary *);
 extern PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary);
-extern PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*
   PetscShell support.  Needs to be better documented.  

@@ -122,7 +122,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    ierr = PetscDLLibraryCCAAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
