@@ -25,27 +25,27 @@
 
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal*ynorm,PetscReal*gnorm,PetscBool  *flag)
+static PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal*ynorm,PetscReal*gnorm,PetscBool  *flag)
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(SNES*,void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,Vec*,Vec*,PetscReal*,PetscReal*,PetscBool *,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[6]))(&snes,ctx,&x,&f,&y,&fnorm,&xnorm,&g,&w,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
-PetscErrorCode OurSNESLineSearchPostCheck(SNES snes,Vec x,Vec y,Vec z,void *checkCtx,PetscBool  *flag1,PetscBool  *flag2)
+static PetscErrorCode OurSNESLineSearchPostCheck(SNES snes,Vec x,Vec y,Vec z,void *checkCtx,PetscBool  *flag1,PetscBool  *flag2)
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(SNES*,Vec*,Vec*,Vec*,void*,PetscBool *,PetscBool *,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[7]))(&snes,&x,&y,&z,checkCtx,flag1,flag2,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
-PetscErrorCode OurSNESLineSearchPreCheck(SNES snes,Vec x,Vec y,void *checkCtx,PetscBool  *flag1)
+static PetscErrorCode OurSNESLineSearchPreCheck(SNES snes,Vec x,Vec y,void *checkCtx,PetscBool  *flag1)
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(SNES*,Vec*,Vec*,void*,PetscBool *,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[8]))(&snes,&x,&y,checkCtx,flag1,&ierr);CHKERRQ(ierr);
   return 0;
 }
-PetscErrorCode OurSNESSetUpdate(SNES snes,PetscInt b)
+static PetscErrorCode OurSNESSetUpdate(SNES snes,PetscInt b)
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[9]))(&snes,&b,&ierr);CHKERRQ(ierr);

@@ -7,7 +7,7 @@
 
 /*  Noise estimation routine, written by Jorge More'.  Details are below. */
 
-/* Subroutine */ PetscErrorCode dnest_(PetscInt *nf, double *fval,double *h__,double *fnoise, double *fder2, double *hopt, PetscInt *info, double *eps)
+/* Subroutine */ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval,double *h__,double *fnoise, double *fder2, double *hopt, PetscInt *info, double *eps)
 {
     /* Initialized data */
 

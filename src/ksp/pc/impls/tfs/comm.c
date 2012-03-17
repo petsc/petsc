@@ -40,7 +40,7 @@ PetscErrorCode PCTFS_comm_init (void)
 
   if (PCTFS_num_nodes> (INT_MAX >> 1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");
 
-  ivec_zero((PetscInt*)edge_node,sizeof(PetscInt)*32);
+  PCTFS_ivec_zero((PetscInt*)edge_node,sizeof(PetscInt)*32);
 
   PCTFS_floor_num_nodes = 1;
   PCTFS_i_log2_num_nodes = modfl_num_nodes = 0;
@@ -100,7 +100,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
     {oprs++;}
 
   /* major league hack */
-  if (!(fp = (vfp) ivec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) {
     ierr = PetscInfo(0,"PCTFS_giop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
@@ -193,7 +193,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if (!(fp = (vfp) rvec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) {
     ierr = PetscInfo(0,"PCTFS_grop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
@@ -292,7 +292,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if (!(fp = (vfp) rvec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) {
     ierr = PetscInfo(0,"PCTFS_grop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }
@@ -359,7 +359,7 @@ PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt
 	    {
 	      type =  type - PCTFS_my_id + dest;
               ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
-	      rvec_add(vals+segs[edge], work, stage_n); 
+	      PCTFS_rvec_add(vals+segs[edge], work, stage_n); 
 	    }
 	}
       mask <<= 1;
@@ -383,61 +383,7 @@ PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt
       mask >>= 1;
     }
   PetscFunctionReturn(0);
-}  
-
-/******************************************************************************/
-PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
-{
-  PetscInt            edge, type, dest, mask;
-  PetscInt            stage_n;
-  MPI_Status     status;
-  PetscErrorCode ierr;
-
-   PetscFunctionBegin;
-  /* check to make sure comm package has been initialized */
-  if (!p_init)
-    {PCTFS_comm_init();}
-
-  /* all msgs are *NOT* the same length */
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=0, edge=0; edge<level; edge++, mask++)
-    {
-      stage_n = (segs[level] - segs[edge]);
-      if (stage_n && !(PCTFS_my_id & mask))
-	{
-	  dest = edge_node[edge];
-	  type = MSGTAG3 + PCTFS_my_id + (PCTFS_num_nodes*edge);
-	  if (PCTFS_my_id>dest)
-          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, MPI_COMM_WORLD);CHKERRQ(ierr);}
-	  else
-	    {
-	      type =  type - PCTFS_my_id + dest;
-              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type, MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
-	      rvec_add(vals+segs[edge], work, stage_n); 
-	    }
-	}
-      mask <<= 1;
-    }
-  mask>>=1;
-  for (edge=0; edge<level; edge++)
-    {
-      stage_n = (segs[level] - segs[level-1-edge]);
-      if (stage_n && !(PCTFS_my_id & mask))
-	{
-	  dest = edge_node[level-edge-1];
-	  type = MSGTAG6 + PCTFS_my_id + (PCTFS_num_nodes*edge);
-	  if (PCTFS_my_id<dest)
-            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRQ(ierr);}
-	  else
-	    {
-	      type =  type - PCTFS_my_id + dest;
-              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
-	    }
-	}
-      mask >>= 1;
-    }
-  PetscFunctionReturn(0);
-}  
+}
 
 /***********************************comm.c*************************************/
 PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
@@ -476,7 +422,7 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if (!(fp = (vfp) ivec_fct_addr(type))){
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))){
     ierr = PetscInfo(0,"PCTFS_giop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
     fp = (vfp) oprs;
   }

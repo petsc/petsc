@@ -35,7 +35,7 @@ typedef struct xxt_solver_info {
 typedef struct matvec_info {
   PetscInt n, m, n_global, m_global;
   PetscInt *local2global;
-  gs_ADT gs_handle;
+  PCTFS_gs_ADT PCTFS_gs_handle;
   PetscErrorCode (*matvec)(struct matvec_info*,PetscScalar*,PetscScalar*);
   void *grid_data;
 } mv_info;
@@ -114,7 +114,7 @@ PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 
   /* need to copy b into x? */
   if (b)
-    {rvec_copy(x,b,xxt_handle->mvi->n);}
+    {PCTFS_rvec_copy(x,b,xxt_handle->mvi->n);}
   do_xxt_solve(xxt_handle,x);
 
   return(0);
@@ -140,7 +140,7 @@ PetscInt XXT_free(xxt_ADT xxt_handle)
   free(xxt_handle->info->col_indices);
   free(xxt_handle->info);
   free(xxt_handle->mvi->local2global);
-   gs_free(xxt_handle->mvi->gs_handle);
+   PCTFS_gs_free(xxt_handle->mvi->PCTFS_gs_handle);
   free(xxt_handle->mvi);
   free(xxt_handle);
 
@@ -209,7 +209,7 @@ is a row dist. nxm matrix w/ n<m.
    o local2global holds global number of column i (i=0,...,m-1)
    o local2global holds global number of row    i (i=0,...,n-1)
    o mylocmatvec performs A_local . vec_local (note that gs is performed using 
-   gs_init/gop).
+   PCTFS_gs_init/gop).
 
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
@@ -232,7 +232,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   PetscInt *iptr, flag;
   PetscInt start=0, end, work;
   PetscInt op2[] = {GL_MIN,0};
-  gs_ADT gs_handle;
+  PCTFS_gs_ADT PCTFS_gs_handle;
   PetscInt *nsep, *lnsep, *fo;
   PetscInt a_n=xxt_handle->mvi->n;
   PetscInt a_m=xxt_handle->mvi->m;
@@ -255,7 +255,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   fo=xxt_handle->info->fo;
   end=lnsep[0];
   level=xxt_handle->level;
-  gs_handle=xxt_handle->mvi->gs_handle;
+  PCTFS_gs_handle=xxt_handle->mvi->PCTFS_gs_handle;
 
   /* is there a null space? */
   /* LATER add in ability to detect null space by checking alpha */
@@ -282,8 +282,8 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   /* this looks like nsep[]=segments */
   stages = (PetscInt*) malloc((level+1)*sizeof(PetscInt));
   segs   = (PetscInt*) malloc((level+1)*sizeof(PetscInt));
-  ivec_zero(stages,level+1);
-  ivec_copy(segs,nsep,level+1);
+  PCTFS_ivec_zero(stages,level+1);
+  PCTFS_ivec_copy(segs,nsep,level+1);
   for (i=0; i<level; i++)
     {segs[i+1] += segs[i];}
   stages[0] = segs[0];
@@ -331,30 +331,30 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	}
 
       /* do I own it? I should */
-      rvec_zero(v ,a_m);
+      PCTFS_rvec_zero(v ,a_m);
       if (col==fo[start])
 	{
 	  start++;
-	  idex=ivec_linear_search(col, a_local2global, a_n);
+	  idex=PCTFS_ivec_linear_search(col, a_local2global, a_n);
 	  if (idex!=-1){
             v[idex] = 1.0; j++;
           } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");
 	}
       else
 	{
-	  idex=ivec_linear_search(col, a_local2global, a_m);
+	  idex=PCTFS_ivec_linear_search(col, a_local2global, a_m);
 	  if (idex!=-1)
 	    {v[idex] = 1.0;}
 	}
 
       /* perform u = A.v_l */
-      rvec_zero(u,n);
+      PCTFS_rvec_zero(u,n);
       do_matvec(xxt_handle->mvi,v,u);
 
       /* uu =  X^T.u_l (local portion) */
       /* technically only need to zero out first i entries */
       /* later turn this into an XXT_solve call ? */
-      rvec_zero(uu,m);
+      PCTFS_rvec_zero(uu,m);
       x_ptr=x;
       iptr = col_indices;
       for (k=0; k<i; k++)
@@ -371,7 +371,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       PCTFS_ssgl_radd  (uu, w, dim, stages);
 
       /* z = X.uu */
-      rvec_zero(z,n);
+      PCTFS_rvec_zero(z,n);
       x_ptr=x;
       iptr = col_indices;
       for (k=0; k<i; k++)
@@ -384,14 +384,14 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	}
 
       /* compute v_l = v_l - z */
-      rvec_zero(v+a_n,a_m-a_n);
+      PCTFS_rvec_zero(v+a_n,a_m-a_n);
       dlen = PetscBLASIntCast(n);
       BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1);
 
       /* compute u_l = A.v_l */
       if (a_n!=a_m)
-	{gs_gop_hc(gs_handle,v,"+\0",dim);}
-      rvec_zero(u,n);
+	{PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);}
+      PCTFS_rvec_zero(u,n);
       do_matvec(xxt_handle->mvi,v,u);
 
       /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
@@ -407,7 +407,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       if (fabs(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
 
       /* compute v_l = v_l/sqrt(alpha) */
-      rvec_scale(v,1.0/alpha,n);
+      PCTFS_rvec_scale(v,1.0/alpha,n);
 
       /* add newly generated column, v_l, to X */
       flag = 1;
@@ -431,13 +431,13 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
 	      xxt_max_nnz *= 2;
 	      x_ptr = (PetscScalar *) malloc(xxt_max_nnz*sizeof(PetscScalar));
-	      rvec_copy(x_ptr,x,xxt_nnz);
+	      PCTFS_rvec_copy(x_ptr,x,xxt_nnz);
 	      free(x);
 	      x = x_ptr;
 	      x_ptr+=xxt_nnz;
 	    }
 	  xxt_nnz += len;      
-	  rvec_copy(x_ptr,v+off,len);
+	  PCTFS_rvec_copy(x_ptr,v+off,len);
 
           /* keep track of number of zeros */
 	  if (dim)
@@ -518,7 +518,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 
   PetscFunctionBegin;
   uu_ptr=solve_uu;
-  rvec_zero(uu_ptr,m);
+  PCTFS_rvec_zero(uu_ptr,m);
 
   /* x  = X.Y^T.b */
   /* uu = Y^T.b */
@@ -533,7 +533,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   uu_ptr=solve_uu;
   if (level) {PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);}
 
-  rvec_zero(uc,n);
+  PCTFS_rvec_zero(uc,n);
 
   /* x = X.uu */
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len)
@@ -570,7 +570,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   PetscInt op[] = {GL_ADD,0};
   PetscScalar *lhs, *rhs;
   PetscInt *nsep, *lnsep, *fo, nfo=0;
-  gs_ADT gs_handle=xxt_handle->mvi->gs_handle;
+  PCTFS_gs_ADT PCTFS_gs_handle=xxt_handle->mvi->PCTFS_gs_handle;
   PetscInt *local2global=xxt_handle->mvi->local2global;
   PetscInt  n=xxt_handle->mvi->n;
   PetscInt  m=xxt_handle->mvi->m;
@@ -584,20 +584,20 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   fo   = (PetscInt*)malloc(sizeof(PetscInt)*(n+1));
   used = (PetscInt*)malloc(sizeof(PetscInt)*n);
 
-  ivec_zero(dir  ,level+1);
-  ivec_zero(nsep ,level+1);
-  ivec_zero(lnsep,level+1);
-  ivec_set (fo   ,-1,n+1);
-  ivec_zero(used,n);
+  PCTFS_ivec_zero(dir  ,level+1);
+  PCTFS_ivec_zero(nsep ,level+1);
+  PCTFS_ivec_zero(lnsep,level+1);
+  PCTFS_ivec_set (fo   ,-1,n+1);
+  PCTFS_ivec_zero(used,n);
 
   lhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
   rhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
 
   /* determine the # of unique dof */
-  rvec_zero(lhs,m);
-  rvec_set(lhs,1.0,n);
-  gs_gop_hc(gs_handle,lhs,"+\0",level);
-  rvec_zero(rsum,2);
+  PCTFS_rvec_zero(lhs,m);
+  PCTFS_rvec_set(lhs,1.0,n);
+  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",level);
+  PCTFS_rvec_zero(rsum,2);
   for (ct=i=0;i<n;i++)
     {
       if (lhs[i]!=0.0)
@@ -619,12 +619,12 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
       for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
-	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
-	  gs_gop_hc(gs_handle,lhs,"+\0",edge);
+	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
+	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
 	  
 	  /* set lsh of hc, fire, and collect rhs responses */
-	  (id<mask) ? rvec_set(rhs,1.0,m) : rvec_zero(rhs,m);
-	  gs_gop_hc(gs_handle,rhs,"+\0",edge);
+	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
+	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
 	  
 	  for (i=0;i<n;i++)
 	    {
@@ -641,13 +641,13 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	    }
 
 	  if (id< mask)
-	    {gs_gop_hc(gs_handle,lhs,"+\0",edge-1);}
+	    {PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge-1);}
 	  else
-	    {gs_gop_hc(gs_handle,rhs,"+\0",edge-1);}
+	    {PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge-1);}
 
 	  /* count number of dofs I own that have signal and not in sep set */
-	  rvec_zero(rsum,4);
-	  for (ivec_zero(sum,4),ct=i=0;i<n;i++)
+	  PCTFS_rvec_zero(rsum,4);
+	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
 	      if (!used[i]) 
 		{
@@ -690,7 +690,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		      used[i]=edge;
 		    }
 		}
-	      if (ct>1) {ivec_sort(iptr,ct);}
+	      if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 
 	      lnsep[edge]=ct;
 	      nsep[edge]=(PetscInt) rsum[0];
@@ -712,7 +712,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		      used[i]=edge;
 		    }
 		}
-	      if (ct>1) {ivec_sort(iptr,ct);}
+	      if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 
 	      lnsep[edge]=ct;
 	      nsep[edge]= (PetscInt) rsum[1];
@@ -732,15 +732,15 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
       for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
-	  (id<mask) ? rvec_zero(lhs,m) : rvec_set(lhs,1.0,m);
-	  gs_gop_hc(gs_handle,lhs,"+\0",edge);
+	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
+	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
 
 	  /* set lsh of hc, fire, and collect rhs responses */
-	  (id<mask) ? rvec_set(rhs,1.0,m) : rvec_zero(rhs,m);
-	  gs_gop_hc(gs_handle,rhs,"+\0",edge);
+	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
+	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
 
 	  /* count number of dofs I own that have signal and not in sep set */
-	  for (ivec_zero(sum,4),ct=i=0;i<n;i++)
+	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
 	      if (!used[i]) 
 		{
@@ -772,7 +772,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 			  used[i]=edge;
 			}
 		    }
-		  if (ct>1) {ivec_sort(iptr,ct);}
+		  if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 		  lnsep[edge]=ct;
 		}
 	      nsep[edge]=sum[0];
@@ -793,7 +793,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 			  used[i]=edge;
 			}
 		    }
-		  if (ct>1) {ivec_sort(iptr,ct);}
+		  if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 		  lnsep[edge]=ct;
 		}
 	      nsep[edge]=sum[1];
@@ -819,7 +819,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	  used[i]=edge;
 	}
     }
-  if (ct>1) {ivec_sort(iptr,ct);}
+  if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
   lnsep[edge]=ct;
   nsep [edge]=ct;
   dir  [edge]=LEFT;
@@ -848,13 +848,13 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *ma
   mvi->n_global=-1;
   mvi->m_global=-1;
   mvi->local2global=(PetscInt*)malloc((m+1)*sizeof(PetscInt));
-  ivec_copy(mvi->local2global,local2global,m);
+  PCTFS_ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
   mvi->matvec=(PetscErrorCode (*)(mv_info*,PetscScalar*,PetscScalar*))matvec;
   mvi->grid_data=grid_data;
 
   /* set xxt communication handle to perform restricted matvec */
-  mvi->gs_handle = gs_init(local2global, m, PCTFS_num_nodes);
+  mvi->PCTFS_gs_handle = PCTFS_gs_init(local2global, m, PCTFS_num_nodes);
 
   return(mvi);
 }

@@ -17,7 +17,7 @@ Last Modification:
 
 
 /*********************************bit_mask.c***********************************/
-PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
+PetscErrorCode PCTFS_bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
    PetscInt i, tmp;
 
@@ -52,7 +52,7 @@ PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 }
 
 /*********************************bit_mask.c***********************************/
-PetscInt ct_bits( char *ptr, PetscInt n)
+PetscInt PCTFS_ct_bits( char *ptr, PetscInt n)
 {
    PetscInt i, tmp=0;
 
@@ -75,11 +75,11 @@ PetscInt ct_bits( char *ptr, PetscInt n)
 
 /*********************************bit_mask.c***********************************/ 
 PetscInt
-div_ceil( PetscInt numer,  PetscInt denom)
+PCTFS_div_ceil( PetscInt numer,  PetscInt denom)
 {
    PetscInt rt_val;
 
-  if ((numer<0)||(denom<=0)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);
+  if ((numer<0)||(denom<=0)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
@@ -91,11 +91,11 @@ div_ceil( PetscInt numer,  PetscInt denom)
 
 /*********************************bit_mask.c***********************************/ 
 PetscInt
-len_bit_mask( PetscInt num_items)
+PCTFS_len_bit_mask( PetscInt num_items)
 {
    PetscInt rt_val, tmp;
 
-  if (num_items<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To len_bit_mask() Must be >= 0!");
+  if (num_items<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To PCTFS_len_bit_mask() Must be >= 0!");
 
   /* mod BYTE ceiling function */
   rt_val = num_items/BYTE;
@@ -110,13 +110,13 @@ len_bit_mask( PetscInt num_items)
 }
 
 /*********************************bit_mask.c***********************************/
-PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
+PetscErrorCode PCTFS_set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
    PetscInt i, offset;
    char mask = 1;
    char *cptr;
 
-  if (len_bit_mask(val)>len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
+  if (PCTFS_len_bit_mask(val)>len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
 
   cptr = (char *) bm;
 
@@ -134,7 +134,7 @@ PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 }
 
 /*********************************bit_mask.c***********************************/
-PetscInt len_buf(PetscInt item_size, PetscInt num_items)
+PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items)
 {
    PetscInt rt_val, tmp;
 
