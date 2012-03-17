@@ -4128,7 +4128,6 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       PetscInt  firstFace = numCells+numVertices, numFaces = 0, face, f, firstEdge, numEdges = 0, edge, e;
 
       SETERRQ(comm, PETSC_ERR_SUP, "Interpolation is not yet implemented in 3D");
-#if 0
       /* TODO: Rewrite algorithm here to do all meets with neighboring cells and return counts */
       /* Count faces using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
@@ -4212,7 +4211,6 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       }
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = imesh;
-#endif
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {
@@ -4373,7 +4371,6 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
       PetscInt  firstEdge = numCells+numVertices, numEdges, edge, e;
 
       SETERRQ(comm, PETSC_ERR_SUP, "Interpolation is not yet implemented in 3D");
-#if 0
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
       if (off) {
@@ -4452,7 +4449,6 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
       }
       ierr = DMDestroy(dmRefined);CHKERRQ(ierr);
       *dmRefined  = imesh;
-#endif
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {

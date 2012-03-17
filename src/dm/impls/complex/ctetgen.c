@@ -282,8 +282,8 @@ static int locverpivot[4][6][2] = {{{2, 3}, {2, 3}, {1, 3}, {1, 3}, {1, 2}, {1, 
                                    {{0, 1}, {0, 1}, {0, 2}, {0, 2}, {1, 2}, {1, 2}}};
 
 // For enumerating three edges of a triangle.
-static int plus1mod3[3]  = {1, 2, 0};
-static int minus1mod3[3] = {2, 0, 1};
+/* static int plus1mod3[3]  = {1, 2, 0}; */
+/* static int minus1mod3[3] = {2, 0, 1}; */
 
 // A 'triface' represents a face of a tetrahedron and an oriented edge of    //
 // the face simultaneously.  It has a pointer 'tet' to a tetrahedron, an     //
@@ -504,12 +504,12 @@ typedef struct {
 /*================================= End Converted TetGen Objects =================================*/
 
 /* Forward Declarations */
-extern PetscErrorCode MemoryPoolCreate(int, int, wordtype, int, MemoryPool **);
-extern PetscErrorCode MemoryPoolAlloc(MemoryPool *, void **);
-extern PetscErrorCode MemoryPoolDealloc(MemoryPool *, void *);
-extern PetscErrorCode MemoryPoolDestroy(MemoryPool **);
-extern PetscErrorCode ArrayPoolDestroy(ArrayPool **);
-extern PetscErrorCode ListDestroy(List **);
+static PetscErrorCode MemoryPoolCreate(int, int, wordtype, int, MemoryPool **);
+static PetscErrorCode MemoryPoolAlloc(MemoryPool *, void **);
+static PetscErrorCode MemoryPoolDealloc(MemoryPool *, void *);
+static PetscErrorCode MemoryPoolDestroy(MemoryPool **);
+static PetscErrorCode ArrayPoolDestroy(ArrayPool **);
+static PetscErrorCode ListDestroy(List **);
 extern PetscErrorCode TetGenMeshPointTraverse(TetGenMesh *, point *);
 extern PetscErrorCode TetGenMeshShellFaceTraverse(TetGenMesh *, MemoryPool *, shellface **);
 extern PetscErrorCode TetGenMeshTetrahedronTraverse(TetGenMesh *, tetrahedron **);
@@ -1197,12 +1197,14 @@ PETSC_STATIC_INLINE void stpivot(TetGenMesh *m, face *s, triface *t) {
 }
 
 // tsbond() bond a tetrahedron to a subface.
-PETSC_STATIC_INLINE void tsbond(TetGenMesh *m, triface *t, face *s) {
+PETSC_STATIC_INLINE PetscErrorCode tsbond(TetGenMesh *m, triface *t, face *s) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   if (!(t)->tet[9]) {
     int i;
-    PetscErrorCode ierr;
     // Allocate space for this tet.
-    ierr = MemoryPoolAlloc(m->tet2subpool, (void **) &(t)->tet[9]);
+    ierr = MemoryPoolAlloc(m->tet2subpool, (void **) &(t)->tet[9]);CHKERRQ(ierr);
     // NULL all fields in this space.
     for(i = 0; i < 4; i++) {
       ((shellface *) (t)->tet[9])[i] = (shellface) m->dummysh;
@@ -1212,6 +1214,7 @@ PETSC_STATIC_INLINE void tsbond(TetGenMesh *m, triface *t, face *s) {
   ((shellface *) (t)->tet[9])[(t)->loc] = sencode(s);
   //t.tet[8 + t.loc] = (tetrahedron) sencode(s);
   s->sh[6 + EdgeRing(s->shver)] = (shellface) encode(t);
+  PetscFunctionReturn(0);
 }
 
 // tsdissolve() dissolve a bond (from the tetrahedron side).
@@ -1258,13 +1261,15 @@ PETSC_STATIC_INLINE void tsspivot1(TetGenMesh *m, triface *t, face *s)
 }
 
 // Only bond/dissolve at tet's side, but not vice versa.
-PETSC_STATIC_INLINE void tssbond1(TetGenMesh *m, triface *t, face *s)
+PETSC_STATIC_INLINE PetscErrorCode tssbond1(TetGenMesh *m, triface *t, face *s)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   if (!(t)->tet[8]) {
     int i;
-    PetscErrorCode ierr;
     // Allocate space for this tet.
-    ierr = MemoryPoolAlloc(m->tet2segpool, (void **) &(t)->tet[8]);
+    ierr = MemoryPoolAlloc(m->tet2segpool, (void **) &(t)->tet[8]);CHKERRQ(ierr);
     // NULL all fields in this space.
     for(i = 0; i < 6; i++) {
       ((shellface *) (t)->tet[8])[i] = (shellface) m->dummysh;
@@ -1272,6 +1277,7 @@ PETSC_STATIC_INLINE void tssbond1(TetGenMesh *m, triface *t, face *s)
   }
   // Bond the segment.
   ((shellface *) (t)->tet[8])[locver2edge[(t)->loc][(t)->ver]] = sencode((s));
+  PetscFunctionReturn(0);
 }
 
 PETSC_STATIC_INLINE void tssdissolve1(TetGenMesh *m, triface *t)
@@ -1522,15 +1528,15 @@ PetscErrorCode TetGenMeshDestroy(TetGenMesh **mesh)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "lu_decmp"
-// lu_decmp()    Compute the LU decomposition of a matrix.                   //
+#define __FUNCT__ "TetGenLUDecomp"
+// TetGenLUDecomp()    Compute the LU decomposition of a matrix.             //
 //                                                                           //
 // Compute the LU decomposition of a (non-singular) square matrix A using    //
 // partial pivoting and implicit row exchanges.  The result is:              //
 //     A = P * L * U,                                                        //
 // where P is a permutation matrix, L is unit lower triangular, and U is     //
 // upper triangular.  The factored form of A is used in combination with     //
-// 'lu_solve()' to solve linear equations: Ax = b, or invert a matrix.       //
+// 'TetGenLUSolve()' to solve linear equations: Ax = b, or invert a matrix.       //
 //                                                                           //
 // The inputs are a square matrix 'lu[N..n+N-1][N..n+N-1]', it's size is 'n'.//
 // On output, 'lu' is replaced by the LU decomposition of a rowwise permuta- //
@@ -1542,7 +1548,7 @@ PetscErrorCode TetGenMeshDestroy(TetGenMesh **mesh)
 //                                                                           //
 // Return true if the LU decomposition is successfully computed, otherwise,  //
 // return false in case that A is a singular matrix.                         //
-PetscBool lu_decmp(PetscReal lu[4][4], int n, int* ps, PetscReal *d, int N)
+PetscBool TetGenLUDecomp(PetscReal lu[4][4], int n, int* ps, PetscReal *d, int N)
 {
   PetscReal scales[4];
   PetscReal pivot, biggest, mult, tempf;
@@ -1601,18 +1607,18 @@ PetscBool lu_decmp(PetscReal lu[4][4], int n, int* ps, PetscReal *d, int N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "lu_solve"
-// lu_solve()    Solves the linear equation:  Ax = b,  after the matrix A    //
+#define __FUNCT__ "TetGenLUSolve"
+// TetGenLUSolve()    Solves the linear equation:  Ax = b,  after the matrix A    //
 //               has been decomposed into the lower and upper triangular     //
 //               matrices L and U, where A = LU.                             //
 //                                                                           //
 // 'lu[N..n+N-1][N..n+N-1]' is input, not as the matrix 'A' but rather as    //
-// its LU decomposition, computed by the routine 'lu_decmp'; 'ps[N..n+N-1]'  //
-// is input as the permutation vector returned by 'lu_decmp';  'b[N..n+N-1]' //
+// its LU decomposition, computed by the routine 'TetGenLUDecomp'; 'ps[N..n+N-1]'  //
+// is input as the permutation vector returned by 'TetGenLUDecomp';  'b[N..n+N-1]' //
 // is input as the right-hand side vector, and returns with the solution     //
 // vector. 'lu', 'n', and 'ps' are not modified by this routine and can be   //
 // left in place for successive calls with different right-hand sides 'b'.   //
-void lu_solve(PetscReal lu[4][4], int n, int *ps, PetscReal *b, int N)
+void TetGenLUSolve(PetscReal lu[4][4], int n, int *ps, PetscReal *b, int N)
 {
   int i, j;
   PetscReal X[4], dot;
@@ -1648,7 +1654,7 @@ void lu_solve(PetscReal lu[4][4], int n, int *ps, PetscReal *b, int N)
 // the position of p1 and p2 will get the complement angle of the other one. //
 // i.e., interiorangle(o, p1, p2) = 2 * PI - interiorangle(o, p2, p1).  Set  //
 // 'n' be NULL if you only want the interior angle between 0 - PI.           //
-PetscReal interiorangle(PetscReal* o, PetscReal* p1, PetscReal* p2, PetscReal* n)
+static PetscReal interiorangle(PetscReal* o, PetscReal* p1, PetscReal* p2, PetscReal* n)
 {
   PetscReal v1[3], v2[3], np[3];
   PetscReal theta, costheta, lenlen;
@@ -1892,7 +1898,7 @@ PetscErrorCode PLCDestroy(PLC **p)
 // set the expand size in case the list is full, and set the linear order    //
 // function if it is provided (default is NULL).                             //
 /* tetgenmesh::list::list() and tetgenmesh::list::listinit() */
-PetscErrorCode ListCreate(int itbytes, compfunc pcomp, int mitems, int exsize, List **newl)
+static PetscErrorCode ListCreate(int itbytes, compfunc pcomp, int mitems, int exsize, List **newl)
 {
   List          *l;
   PetscErrorCode ierr;
@@ -1918,7 +1924,7 @@ PetscErrorCode ListCreate(int itbytes, compfunc pcomp, int mitems, int exsize, L
 // 'appitem' is not NULL, the contents of this pointer will be copied to the //
 // new allocated space.  Returns the pointer to the new allocated space.     //
 /* tetgenmesh::list::append() */
-PetscErrorCode ListAppend(List *l, void *appitem, void **newspace)
+static PetscErrorCode ListAppend(List *l, void *appitem, void **newspace)
 {
   PetscErrorCode ierr;
 
@@ -1950,7 +1956,7 @@ PetscErrorCode ListAppend(List *l, void *appitem, void **newspace)
 // If 'insitem' is not NULL, its contents will be copied into the new        //
 // inserted space. Return a pointer to the new inserted space.               //
 /* tetgenmesh::list::insert() */
-PetscErrorCode ListInsert(List *l, int pos, void *insitem, void **newspace)
+static PetscErrorCode ListInsert(List *l, int pos, void *insitem, void **newspace)
 {
   PetscErrorCode ierr;
 
@@ -1988,7 +1994,7 @@ PetscErrorCode ListInsert(List *l, int pos, void *insitem, void **newspace)
 // after pos will be moved one space upwords. If 'order' is 0, the last item //
 // of the list will be moved up to pos.                                      //
 /* tetgenmesh::list::del() */
-PetscErrorCode ListDelete(List *l, int pos, int order)
+static PetscErrorCode ListDelete(List *l, int pos, int order)
 {
   PetscErrorCode ierr;
 
@@ -2017,7 +2023,7 @@ PetscErrorCode ListDelete(List *l, int pos, int order)
 // through the entire list, compares each item to 'checkitem'. If it exists, //
 // return its position (between 0 to items - 1), otherwise, return -1.       //
 /* tetgenmesh::list::hasitem() */
-PetscErrorCode ListHasItem(List *l, void *checkitem, int *idx)
+static PetscErrorCode ListHasItem(List *l, void *checkitem, int *idx)
 {
   int i, id = -1;
 
@@ -2037,7 +2043,7 @@ PetscErrorCode ListHasItem(List *l, void *checkitem, int *idx)
 #undef __FUNCT__
 #define __FUNCT__ "ListLength"
 /* tetgenmesh::list::len() */
-PetscErrorCode ListLength(List *l, int *len)
+static PetscErrorCode ListLength(List *l, int *len)
 {
   PetscFunctionBegin;
   *len = l->items;
@@ -2047,7 +2053,7 @@ PetscErrorCode ListLength(List *l, int *len)
 #undef __FUNCT__
 #define __FUNCT__ "ListItem"
 /* tetgenmesh::list::operator[]() */
-PetscErrorCode ListItem(List *l, int i, void **item)
+static PetscErrorCode ListItem(List *l, int i, void **item)
 {
   PetscErrorCode ierr;
 
@@ -2060,7 +2066,7 @@ PetscErrorCode ListItem(List *l, int i, void **item)
 #undef __FUNCT__
 #define __FUNCT__ "ListSetItem"
 /* tetgenmesh::list::operator[]() */
-PetscErrorCode ListSetItem(List *l, int i, void *item)
+static PetscErrorCode ListSetItem(List *l, int i, void *item)
 {
   PetscErrorCode ierr;
 
@@ -2072,7 +2078,7 @@ PetscErrorCode ListSetItem(List *l, int i, void *item)
 #undef __FUNCT__
 #define __FUNCT__ "ListClear"
 /* tetgenmesh::list::clear() */
-PetscErrorCode ListClear(List *l)
+static PetscErrorCode ListClear(List *l)
 {
   PetscFunctionBegin;
   l->items = 0;
@@ -2082,7 +2088,7 @@ PetscErrorCode ListClear(List *l)
 #undef __FUNCT__
 #define __FUNCT__ "ListDestroy"
 /* tetgenmesh::list::~list() */
-PetscErrorCode ListDestroy(List **l)
+static PetscErrorCode ListDestroy(List **l)
 {
   PetscErrorCode ierr;
 
@@ -2097,7 +2103,7 @@ PetscErrorCode ListDestroy(List **l)
 #undef __FUNCT__
 #define __FUNCT__ "QueueCreate"
 /* tetgenmesh::queue::queue() */
-PetscErrorCode QueueCreate(int bytecount, int itemcount, Queue **newq)
+static PetscErrorCode QueueCreate(int bytecount, int itemcount, Queue **newq)
 {
   Queue         *q;
   PetscErrorCode ierr;
@@ -2118,7 +2124,7 @@ PetscErrorCode QueueCreate(int bytecount, int itemcount, Queue **newq)
 #undef __FUNCT__
 #define __FUNCT__ "QueueLength"
 /* tetgenmesh::queue::len() */
-PetscErrorCode QueueLength(Queue *q, int *len)
+static PetscErrorCode QueueLength(Queue *q, int *len)
 {
   PetscFunctionBegin;
   if (len) {*len = q->linkitems;}
@@ -2128,7 +2134,7 @@ PetscErrorCode QueueLength(Queue *q, int *len)
 #undef __FUNCT__
 #define __FUNCT__ "QueuePush"
 /* tetgenmesh::queue::push() */
-PetscErrorCode QueuePush(Queue *q, void *newitem, void **next)
+static PetscErrorCode QueuePush(Queue *q, void *newitem, void **next)
 {
   void **newnode = q->tail;
   PetscErrorCode ierr;
@@ -2148,7 +2154,7 @@ PetscErrorCode QueuePush(Queue *q, void *newitem, void **next)
 #undef __FUNCT__
 #define __FUNCT__ "QueuePop"
 /* tetgenmesh::queue::pop() */
-PetscErrorCode QueuePop(Queue *q, void **next)
+static PetscErrorCode QueuePop(Queue *q, void **next)
 {
   PetscErrorCode ierr;
 
@@ -2168,7 +2174,7 @@ PetscErrorCode QueuePop(Queue *q, void **next)
 #undef __FUNCT__
 #define __FUNCT__ "QueueDestroy"
 /* tetgenmesh::queue::~queue() */
-PetscErrorCode QueueDestroy(Queue **q)
+static PetscErrorCode QueueDestroy(Queue **q)
 {
   PetscErrorCode ierr;
 
@@ -2183,7 +2189,7 @@ PetscErrorCode QueueDestroy(Queue **q)
 #undef __FUNCT__
 #define __FUNCT__ "MemoryPoolAlloc"
 /* tetgenmesh::memorypool::alloc() */
-PetscErrorCode MemoryPoolAlloc(MemoryPool *m, void **item)
+static PetscErrorCode MemoryPoolAlloc(MemoryPool *m, void **item)
 {
   void           *newitem;
   void          **newblock;
@@ -2240,7 +2246,7 @@ PetscErrorCode MemoryPoolAlloc(MemoryPool *m, void **item)
 #undef __FUNCT__
 #define __FUNCT__ "MemoryPoolDealloc"
 /* tetgenmesh::memorypool::dealloc() */
-PetscErrorCode MemoryPoolDealloc(MemoryPool *m, void *dyingitem)
+static PetscErrorCode MemoryPoolDealloc(MemoryPool *m, void *dyingitem)
 {
   PetscFunctionBegin;
   // Push freshly killed item onto stack.
@@ -2256,7 +2262,7 @@ PetscErrorCode MemoryPoolDealloc(MemoryPool *m, void *dyingitem)
 //                                                                           //
 // This routine is used in conjunction with traverse().                      //
 /* tetgenmesh::memorypool::traversalinit() */
-PetscErrorCode MemoryPoolTraversalInit(MemoryPool *m)
+static PetscErrorCode MemoryPoolTraversalInit(MemoryPool *m)
 {
   PETSC_UINTPTR_T alignptr;
 
@@ -2282,7 +2288,7 @@ PetscErrorCode MemoryPoolTraversalInit(MemoryPool *m)
 // ones are actually dead.  It can usually be done more space-efficiently by //
 // a routine that knows something about the structure of the item.           //
 /* tetgenmesh::memorypool::traverse() */
-PetscErrorCode MemoryPoolTraverse(MemoryPool *m, void **next)
+static PetscErrorCode MemoryPoolTraverse(MemoryPool *m, void **next)
 {
   void           *newitem;
   PETSC_UINTPTR_T alignptr;
@@ -2319,7 +2325,7 @@ PetscErrorCode MemoryPoolTraverse(MemoryPool *m, void **next)
 #undef __FUNCT__
 #define __FUNCT__ "MemoryPoolRestart"
 /* tetgenmesh::memorypool::restart() */
-PetscErrorCode MemoryPoolRestart(MemoryPool *m)
+static PetscErrorCode MemoryPoolRestart(MemoryPool *m)
 {
   PETSC_UINTPTR_T alignptr;
 
@@ -2357,7 +2363,7 @@ PetscErrorCode MemoryPoolRestart(MemoryPool *m)
 // `alignment' is normally used to create a few unused bits at the bottom of //
 // each item's pointer, in which information may be stored.                  //
 /* tetgenmesh::memorypool::memorypool() and tetgenmesh::memorypool::poolinit() */
-PetscErrorCode MemoryPoolCreate(int bytecount, int itemcount, wordtype wtype, int alignment, MemoryPool **mp)
+static PetscErrorCode MemoryPoolCreate(int bytecount, int itemcount, wordtype wtype, int alignment, MemoryPool **mp)
 {
   MemoryPool    *m;
   int            wordsize;
@@ -2399,7 +2405,7 @@ PetscErrorCode MemoryPoolCreate(int bytecount, int itemcount, wordtype wtype, in
 #undef __FUNCT__
 #define __FUNCT__ "MemoryPoolDestroy"
 /* tetgenmesh::memorypool::~memorypool() */
-PetscErrorCode MemoryPoolDestroy(MemoryPool **m)
+static PetscErrorCode MemoryPoolDestroy(MemoryPool **m)
 {
   PetscErrorCode ierr;
 
@@ -2423,7 +2429,7 @@ PetscErrorCode MemoryPoolDestroy(MemoryPool **m)
 // that no memory is freed to the operating system.  Rather, the previously  //
 // allocated blocks are ready to be used.                                    //
 /* tetgenmesh::arraypool::restart() */
-PetscErrorCode ArrayPoolRestart(ArrayPool *a)
+static PetscErrorCode ArrayPoolRestart(ArrayPool *a)
 {
   PetscFunctionBegin;
   a->objects = 0l;
@@ -2437,7 +2443,7 @@ PetscErrorCode ArrayPoolRestart(ArrayPool *a)
 // Before the pool may be used, it must be initialized by this procedure.    //
 // After initialization, memory can be allocated and freed in this pool.     //
 /* tetgenmesh::arraypool::arraypool() and tetgenmesh::arraypool::poolinit() */
-PetscErrorCode ArrayPoolCreate(int sizeofobject, int log2objperblk, ArrayPool **ap)
+static PetscErrorCode ArrayPoolCreate(int sizeofobject, int log2objperblk, ArrayPool **ap)
 {
   ArrayPool     *a;
   PetscErrorCode ierr;
@@ -2470,7 +2476,7 @@ PetscErrorCode ArrayPoolCreate(int sizeofobject, int log2objperblk, ArrayPool **
 //                                                                           //
 // Return a pointer to the beginning of the block (NOT the object).          //
 /* tetgenmesh::arraypool::getblock() */
-PetscErrorCode ArrayPoolGetBlock(ArrayPool *a, int objectindex, char **blk)
+static PetscErrorCode ArrayPoolGetBlock(ArrayPool *a, int objectindex, char **blk)
 {
   char **newarray;
   char *block;
@@ -2531,7 +2537,7 @@ PetscErrorCode ArrayPoolGetBlock(ArrayPool *a, int objectindex, char **blk)
 #define __FUNCT__ "ArrayPoolNewIndex"
 // newindex()    Allocate space for a fresh object from the pool.            //
 /* tetgenmesh::arraypool::newindex() */
-PetscErrorCode ArrayPoolNewIndex(ArrayPool *a, void **newptr, int *idx)
+static PetscErrorCode ArrayPoolNewIndex(ArrayPool *a, void **newptr, int *idx)
 {
   char          *block;
   void          *newobject;
@@ -2553,7 +2559,7 @@ PetscErrorCode ArrayPoolNewIndex(ArrayPool *a, void **newptr, int *idx)
 #undef __FUNCT__
 #define __FUNCT__ "ArrayPoolDestroy"
 /* tetgenmesh::arraypool::~arraypool() */
-PetscErrorCode ArrayPoolDestroy(ArrayPool **a)
+static PetscErrorCode ArrayPoolDestroy(ArrayPool **a)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -2924,17 +2930,17 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showP
 
   PetscFunctionBegin;
   if (showPointer) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra x%lx with loc(%i) and ver(%i):", (PETSC_UINTPTR_T) tface->tet, tface->loc, tface->ver);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra x%lx with loc(%i) and ver(%i):", (PETSC_UINTPTR_T) tface->tet, tface->loc, tface->ver);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra with loc(%i) and ver(%i):", tface->loc, tface->ver);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "Tetra with loc(%i) and ver(%i):", tface->loc, tface->ver);CHKERRQ(ierr);
   }
   if (infected(m, tface)) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");
+    ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");CHKERRQ(ierr);
   }
   if (marktested(m, tface)) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, " (marked)");
+    ierr = PetscPrintf(PETSC_COMM_SELF, " (marked)");CHKERRQ(ierr);
   }
-  ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
 
   tmpface = *tface;
   facecount = 0;
@@ -2942,20 +2948,20 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showP
     tmpface.loc = facecount;
     sym(&tmpface, &prtface);
     if (prtface.tet == m->dummytet) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] Outer space.\n", facecount);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] Outer space.\n", facecount);CHKERRQ(ierr);
     } else {
       if (!isdead_triface(&prtface)) {
         if (showPointer) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] x%lx  loc(%i).", facecount, (PETSC_UINTPTR_T) prtface.tet, prtface.loc);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] x%lx  loc(%i).", facecount, (PETSC_UINTPTR_T) prtface.tet, prtface.loc);CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] loc(%i).", facecount, prtface.loc);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] loc(%i).", facecount, prtface.loc);CHKERRQ(ierr);
         }
         if (infected(m, &prtface)) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");
+          ierr = PetscPrintf(PETSC_COMM_SELF, " (infected)");CHKERRQ(ierr);
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] NULL\n", facecount);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [%i] NULL\n", facecount);CHKERRQ(ierr);
       }
     }
     facecount ++;
@@ -2963,31 +2969,31 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showP
 
   tmppt = org(tface);
   if (!tmppt) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] NULL\n", locver2org[tface->loc][tface->ver]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] NULL\n", locver2org[tface->loc][tface->ver]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%i] (%.12g,%.12g,%.12g) %d\n",
-                       locver2org[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+                       locver2org[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));CHKERRQ(ierr);
   }
   tmppt = dest(tface);
   if(tmppt == (point) NULL) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] NULL\n", locver2dest[tface->loc][tface->ver]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] NULL\n", locver2dest[tface->loc][tface->ver]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%i] (%.12g,%.12g,%.12g) %d\n",
-                       locver2dest[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+                       locver2dest[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));CHKERRQ(ierr);
   }
   tmppt = apex(tface);
   if (!tmppt) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] NULL\n", locver2apex[tface->loc][tface->ver]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] NULL\n", locver2apex[tface->loc][tface->ver]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%i] (%.12g,%.12g,%.12g) %d\n",
-                       locver2apex[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+                       locver2apex[tface->loc][tface->ver], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));CHKERRQ(ierr);
   }
   tmppt = oppo(tface);
   if (!tmppt) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] NULL\n", loc2oppo[tface->loc]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] NULL\n", loc2oppo[tface->loc]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Oppo[%i] (%.12g,%.12g,%.12g) %d\n",
-                       loc2oppo[tface->loc], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));
+                       loc2oppo[tface->loc], tmppt[0], tmppt[1], tmppt[2], pointmark(m, tmppt));CHKERRQ(ierr);
   }
 
   if (b->useshelles) {
@@ -2997,17 +3003,17 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showP
         sdecode(shells[facecount], &checksh);
         if (checksh.sh != m->dummysh) {
           if (showPointer) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);CHKERRQ(ierr);
           } else {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);CHKERRQ(ierr);
           }
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);CHKERRQ(ierr);
         }
         if (locver2edge[tface->loc][tface->ver] == facecount) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " (*)");  // It is the current edge.
+          ierr = PetscPrintf(PETSC_COMM_SELF, " (*)");CHKERRQ(ierr);  // It is the current edge.
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
       }
     }
     if (tface->tet[9]) {
@@ -3016,17 +3022,17 @@ PetscErrorCode TetGenMeshPrintTet(TetGenMesh *m, triface *tface, PetscBool showP
         sdecode(shells[facecount], &checksh);
         if (checksh.sh != m->dummysh) {
           if (showPointer) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] x%lx %d.", facecount, (PETSC_UINTPTR_T) checksh.sh, checksh.shver);CHKERRQ(ierr);
           } else {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] %d.", facecount, checksh.shver);CHKERRQ(ierr);
           }
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "      [%d] NULL.", facecount);CHKERRQ(ierr);
         }
         if (tface->loc == facecount) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " (*)");  // It is the current face.
+          ierr = PetscPrintf(PETSC_COMM_SELF, " (*)");CHKERRQ(ierr);  // It is the current face.
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
       }
     }
   }
@@ -4056,12 +4062,12 @@ PetscErrorCode TetGenMeshCircumsphere(TetGenMesh *m, PetscReal* pa, PetscReal* p
 
   // Solve the 3 by 3 equations use LU decomposition with partial pivoting
   //   and backward and forward substitute..
-  if (!lu_decmp(A, 3, indx, &D, 0)) {
+  if (!TetGenLUDecomp(A, 3, indx, &D, 0)) {
     if (radius) {*radius = 0.0;}
     if (notDegenerate) {*notDegenerate = PETSC_FALSE;}
     PetscFunctionReturn(0);
   }
-  lu_solve(A, 3, indx, rhs, 0);
+  TetGenLUSolve(A, 3, indx, rhs, 0);
   if (cent) {
     cent[0] = pa[0] + rhs[0];
     cent[1] = pa[1] + rhs[1];
@@ -4201,8 +4207,8 @@ PetscErrorCode TetGenMeshProjPt2Face(TetGenMesh *m, PetscReal* p, PetscReal* f1,
 PetscErrorCode TetGenMeshTriEdge2D(TetGenMesh *m, point A, point B, point C, point P, point Q, point R, int level, int *types, int *pos, int *isIntersect)
 {
   TetGenOpts    *b = m->b;
-  point U[3], V[3];  // The permuted vectors of points.
-  int pu[3], pv[3];  // The original positions of points.
+  point U[3] = {PETSC_NULL, PETSC_NULL, PETSC_NULL}, V[3] = {PETSC_NULL, PETSC_NULL, PETSC_NULL};  // The permuted vectors of points.
+  int pu[3] = {0, 0, 0}, pv[3] = {0, 0, 0};  // The original positions of points.
   PetscReal sA, sB, sC;
   PetscReal s1, s2, s3, s4;
   int z1;
@@ -5292,7 +5298,7 @@ PetscErrorCode TetGenMeshTetAllNormal(TetGenMesh *m, point pa, point pb, point p
   for(i = 0; i < 3; i++) A[1][i] = pb[i] - pd[i];  // d->b vec
   for(i = 0; i < 3; i++) A[2][i] = pc[i] - pd[i];  // d->c vec
   // Compute the inverse of matrix A, to get 3 normals of the 4 faces.
-  lu_decmp(A, 3, indx, &D, 0);     // Decompose the matrix just once.
+  TetGenLUDecomp(A, 3, indx, &D, 0);     // Decompose the matrix just once.
   if (volume) {
     // Get the volume of the tet.
     *volume = fabs((A[indx[0]][0] * A[indx[1]][1] * A[indx[2]][2])) / 6.0;
@@ -5300,7 +5306,7 @@ PetscErrorCode TetGenMeshTetAllNormal(TetGenMesh *m, point pa, point pb, point p
   for(j = 0; j < 3; j++) {
     for(i = 0; i < 3; i++) rhs[i] = 0.0;
     rhs[j] = 1.0;  // Positive means the inside direction
-    lu_solve(A, 3, indx, rhs, 0);
+    TetGenLUSolve(A, 3, indx, rhs, 0);
     for (i = 0; i < 3; i++) N[j][i] = rhs[i];
   }
   // Get the fourth normal by summing up the first three.
@@ -5320,7 +5326,7 @@ PetscErrorCode TetGenMeshTetAllNormal(TetGenMesh *m, point pa, point pb, point p
 PetscErrorCode TetGenMeshTetAllDihedral(TetGenMesh *m, point pa, point pb, point pc, point pd, PetscReal *cosdd, PetscReal *cosmaxd, PetscReal *cosmind)
 {
   PetscReal N[4][3], vol, cosd, len;
-  int f1, f2, i, j;
+  int f1 = 0, f2 = 0, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5434,7 +5440,7 @@ PetscErrorCode TetGenMeshTetAspectRatio(TetGenMesh *m, point pa, point pb, point
   for(i = 0; i < 3; i++) A[1][i] = vdb[i] = pb[i] - pd[i];
   for(i = 0; i < 3; i++) A[2][i] = vdc[i] = pc[i] - pd[i];
   // Lu-decompose the matrix A.
-  lu_decmp(A, 3, indx, &D, 0);
+  TetGenLUDecomp(A, 3, indx, &D, 0);
   // Get the volume of abcd.
   volume = (A[indx[0]][0] * A[indx[1]][1] * A[indx[2]][2]) / 6.0;
   // Check if it is zero.
@@ -5447,7 +5453,7 @@ PetscErrorCode TetGenMeshTetAspectRatio(TetGenMesh *m, point pa, point pb, point
   rhs[0] = 0.5 * dot(vda, vda);
   rhs[1] = 0.5 * dot(vdb, vdb);
   rhs[2] = 0.5 * dot(vdc, vdc);
-  lu_solve(A, 3, indx, rhs, 0);
+  TetGenLUSolve(A, 3, indx, rhs, 0);
   // Get the circumcenter.
   // for (i = 0; i < 3; i++) circumcent[i] = pd[i] + rhs[i];
   // Get the square of the circumradius.
@@ -5457,7 +5463,7 @@ PetscErrorCode TetGenMeshTetAspectRatio(TetGenMesh *m, point pa, point pb, point
   for(j = 0; j < 3; j++) {
     for(i = 0; i < 3; i++) rhs[i] = 0.0;
     rhs[j] = 1.0;  // Positive means the inside direction
-    lu_solve(A, 3, indx, rhs, 0);
+    TetGenLUSolve(A, 3, indx, rhs, 0);
     for(i = 0; i < 3; i++) N[j][i] = rhs[i];
   }
   // Get the fourth normal by summing up the first three.
@@ -10869,7 +10875,7 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
   triface        newtet = {PETSC_NULL, 0, 0}, searchtet = {PETSC_NULL, 0, 0};
   point          swappt, lastpt;
   locateresult   loc;
-  PetscReal      det, attrib, volume;
+  PetscReal      det = 0.0, attrib, volume;
   int            i, j;
   PetscErrorCode ierr;
 
@@ -11102,7 +11108,7 @@ PetscErrorCode TetGenMeshSInsertVertex(TetGenMesh *m, point insertpt, face *spli
   point pa, pb, pc, *ppt;
   locateresult loc;
   PetscReal sign, ori, area;
-  int n, s, i, j;
+  int n = 0, s, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -13450,7 +13456,7 @@ PetscErrorCode TetGenMeshFindDirection3(TetGenMesh *m, triface *searchtet, point
   point startpt, pa, pb, pc;
   interresult dir;
   int types[2], poss[4];
-  int pos, i, j;
+  int pos = 0, i, j;
   int isIntersect;
   PetscErrorCode ierr;
 
@@ -16990,7 +16996,7 @@ PetscErrorCode TetGenMeshDecideFeaturePointSizes(TetGenMesh *m)
   face shloop = {PETSC_NULL, 0};
   face checkseg = {PETSC_NULL, 0}, prevseg = {PETSC_NULL, 0}, nextseg = {PETSC_NULL, 0}, testseg = {PETSC_NULL, 0};
   point ploop, adjpt, e1, e2;
-  PetscReal lfs_0, len, vol, maxlen, varlen;
+  PetscReal lfs_0, len, vol, maxlen = 0.0, varlen;
   PetscBool isfeature;
   int *idx2seglist;
   int featurecount;
@@ -17625,8 +17631,8 @@ PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *m, face *testsub, point t
   rhs[2] = 0.0;
   // Solve the 3 by 3 equations use LU decomposition with partial pivoting
   //   and backward and forward substitute..
-  if (lu_decmp(A, 3, indx, &D, 0)) {
-    lu_solve(A, 3, indx, rhs, 0);
+  if (TetGenLUDecomp(A, 3, indx, &D, 0)) {
+    TetGenLUSolve(A, 3, indx, rhs, 0);
     cent[0] = pa[0] + rhs[0];
     cent[1] = pa[1] + rhs[1];
     cent[2] = pa[2] + rhs[2];
@@ -17717,7 +17723,7 @@ PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *m, triface *testtet, Petsc
   for(i = 0; i < 3; i++) vca[i] = pa[i] - pc[i];
 
   // Lu-decompose the matrix A.
-  lu_decmp(A, 3, indx, &D, 0);
+  TetGenLUDecomp(A, 3, indx, &D, 0);
   // Get the volume of abcd.
   volume = (A[indx[0]][0] * A[indx[1]][1] * A[indx[2]][2]) / 6.0;
   if (volume < 0.0) volume = -volume;
@@ -17725,7 +17731,7 @@ PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *m, triface *testtet, Petsc
   rhs[0] = 0.5 * dot(vda, vda);
   rhs[1] = 0.5 * dot(vdb, vdb);
   rhs[2] = 0.5 * dot(vdc, vdc);
-  lu_solve(A, 3, indx, rhs, 0);
+  TetGenLUSolve(A, 3, indx, rhs, 0);
   // Get the circumcenter.
   for(i = 0; i < 3; i++) circumcent[i] = pd[i] + rhs[i];
   // Get the square of the circumradius.
@@ -17754,7 +17760,7 @@ PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *m, triface *testtet, Petsc
       for(j = 0; j < 3; j++) {
         for(i = 0; i < 3; i++) rhs[i] = 0.0;
         rhs[j] = 1.0;  // Positive means the inside direction
-        lu_solve(A, 3, indx, rhs, 0);
+        TetGenLUSolve(A, 3, indx, rhs, 0);
         for(i = 0; i < 3; i++) N[j][i] = rhs[i];
       }
       // Get the fourth normal by summing up the first three.
@@ -19085,7 +19091,7 @@ PetscErrorCode TetGenMeshCheckTet4Opt(TetGenMesh *m, triface *testtet, PetscBool
   badface *newbadtet;
   point pa, pb, pc, pd;
   PetscReal N[4][3], len;
-  PetscReal cosd;
+  PetscReal cosd = 0.0;
   int count;
   int i, j;
   PetscErrorCode ierr;
@@ -19376,7 +19382,7 @@ PetscErrorCode TetGenMeshSmoothPoint(TetGenMesh *m, point smthpt, point e1, poin
   point pa, pb, pc;
   PetscReal fcent[3], startpt[3], nextpt[3], bestpt[3];
   PetscReal iniTmax, oldTmax, newTmax;
-  PetscReal ori, aspT, aspTmax, imprate;
+  PetscReal ori, aspT, aspTmax = 0.0, imprate;
   PetscReal cosd, maxcosd;
   PetscBool segflag, randflag;
   int numdirs;
