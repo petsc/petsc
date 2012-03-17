@@ -490,25 +490,25 @@ runex10:
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_2:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type bicg \
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_type bicg \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_2.tmp
 runex10_3:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type bicg -pc_type asm \
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_type bicg -pc_type asm \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_3.tmp
 runex10_4:
-	-@${MPIEXEC} -n 1 ./ex10 -options_left no -ksp_type bicg -pc_type lu \
+	-@${MPIEXEC} -n 1 ./ex10 -ksp_type bicg -pc_type lu \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (${DIFF} output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_4.tmp
 runex10_5:
-	-@${MPIEXEC} -n 1 ./ex10 -options_left no -ksp_type bicg \
+	-@${MPIEXEC} -n 1 ./ex10 -ksp_type bicg \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (${DIFF} output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_5, diffs above \n========================================="; fi; \
@@ -543,7 +543,7 @@ runex10_7:
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_8:
 	-@${MPIEXEC} -n 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix \
-	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -options_left no -mat_no_inode > ex10_8.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always  -mat_no_inode > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_8, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_8.tmp
@@ -571,47 +571,47 @@ runex10_9:
 	-@${RM} -f ex10_9.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_10:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -ksp_type fgmres -pc_type ksp \
+	-@${MPIEXEC} -n 2 ./ex10  -ksp_type fgmres -pc_type ksp \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short> ex10_10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_10, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_10.tmp
 runex10_11:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz > ex10_11.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz > ex10_11.tmp 2>&1;\
 	   if (${DIFF} output/ex10_11.out ex10_11.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_11, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIEXEC} -n 1 ./ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex10 -mat_aij_matlab -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_12, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_12.tmp
 runex10_13:
-	-@${MPIEXEC} -n 1 ./ex10 -options_left no -mat_type lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_13.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex10 -mat_type lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_13.tmp 2>&1;\
 	   if (${DIFF} output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_13, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_13.tmp
 runex10_14:
-	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type spai -f0 ${DATAFILESPATH}/matrices/medium > ex10_14.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex10 -pc_type spai -f0 ${DATAFILESPATH}/matrices/medium > ex10_14.tmp 2>&1; \
 	  ${DIFF} output/ex10_14.out ex10_14.tmp || echo ${PWD} "\nPossible problem with with ex10_14, diffs above \n========================================="; \
 	  ${RM} -f ex10_14.tmp
 runex10_15:
-	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type hypre -pc_hypre_type pilut -f0 ${DATAFILESPATH}/matrices/medium > ex10_15.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type pilut -f0 ${DATAFILESPATH}/matrices/medium > ex10_15.tmp 2>&1;\
 	   if (${DIFF} output/ex10_15.out ex10_15.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_15, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_15.tmp
 runex10_16:
-	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type hypre -pc_hypre_type parasails -f0 ${DATAFILESPATH}/matrices/medium > ex10_16.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type parasails -f0 ${DATAFILESPATH}/matrices/medium > ex10_16.tmp 2>&1;\
 	   if (${DIFF} output/ex10_16.out ex10_16.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_16, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_16.tmp
 runex10_17:
-	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type hypre -pc_hypre_type boomeramg -f0 ${DATAFILESPATH}/matrices/medium > ex10_17.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type boomeramg -f0 ${DATAFILESPATH}/matrices/medium > ex10_17.tmp 2>&1;\
 	   if (${DIFF} output/ex10_17.out ex10_17.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_17, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_17.tmp
 runex10_18:
-	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type hypre -pc_hypre_type euclid -f0 ${DATAFILESPATH}/matrices/medium > ex10_18.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type euclid -f0 ${DATAFILESPATH}/matrices/medium > ex10_18.tmp 2>&1;\
 	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_18, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_18.tmp
@@ -633,18 +633,18 @@ runex10_19:
 # spwan a parallel solver on 2 procs.
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_22:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
 	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_22, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_22.tmp
 runex10_23:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
 	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_23, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_23.tmp
 
 runex10_24:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
 	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_24, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_24.tmp
@@ -655,7 +655,7 @@ runex10_24:
 # nodes, MPI within the nodes]
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_25:
-	-@${MPIEXEC} -n 8 ./ex10 -options_left no -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
+	-@${MPIEXEC} -n 8 ./ex10 -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
 	   if (${DIFF} output/ex10_25.out ex10_25.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_25, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_25.tmp
@@ -984,7 +984,7 @@ runex43_2:
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view -options_left no > ex43_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || echo ${PWD} "\nPossible problem with with ex43_3, diffs above \n========================================="; \
 	   ${RM} -f ex43_3.tmp
 
@@ -1081,15 +1081,15 @@ runex56:
         ${RM} -f ex56.tmp
 
 runex58:
-	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij -options_left no > ex58.tmp 2>&1;         \
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
         ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58, diffs above \n========================================="; \
         ${RM} -f ex58.tmp
 runex58_baij:
-	-@${MPIEXEC} -n 1 ./ex58 -mat_type baij -options_left no > ex58.tmp 2>&1;         \
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type baij > ex58.tmp 2>&1;         \
         ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_baij, diffs above \n========================================="; \
         ${RM} -f ex58.tmp
 runex58_sbaij:
-	-@${MPIEXEC} -n 1 ./ex58 -mat_type sbaij -options_left no > ex58.tmp 2>&1;         \
+	-@${MPIEXEC} -n 1 ./ex58 -mat_type sbaij > ex58.tmp 2>&1;         \
         ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_sbaij, diffs above \n========================================="; \
         ${RM} -f ex58.tmp
 

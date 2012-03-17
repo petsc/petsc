@@ -40,62 +40,62 @@ runp2:
 	   ${RM} -f p2_1.tmp
 
 runmp:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -snes_monitor_short -options_left no > mp_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -snes_monitor_short > mp_1.tmp 2>&1;   \
 	   if (${DIFF} output/mp_1.out mp_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_1, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_1.tmp
 
 runmp_2:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator -snes_monitor_short -options_left no > mp_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator -snes_monitor_short > mp_2.tmp 2>&1;   \
 	   if (${DIFF} output/mp_2.out mp_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_2, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_2.tmp
 
 runmp_3:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator -dmcomposite_dense_jacobian -options_left no > mp_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator -dmcomposite_dense_jacobian > mp_3.tmp 2>&1;   \
 	   if (${DIFF} output/mp_3.out mp_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_3, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_3.tmp
 
 # this should have the same SNES convergence as _2 since they both are using the correct Jacobian
 runmp_4:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_monitor_short -options_left no > mp_4.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_monitor_short > mp_4.tmp 2>&1;   \
 	   if (${DIFF} output/mp_4.out mp_4.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_4, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_4.tmp
 
 runmp_5:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_converged_reason -pc_type fieldsplit -options_left no > mp_5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_converged_reason -pc_type fieldsplit > mp_5.tmp 2>&1;   \
 	   if (${DIFF} output/mp_5.out mp_5.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_5, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_5.tmp
 
 runmp_6:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -pc_type fieldsplit -snes_mf_operator -options_left no > mp_6.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -pc_type fieldsplit -snes_mf_operator > mp_6.tmp 2>&1;   \
 	   if (${DIFF} output/mp_6.out mp_6.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_6, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_6.tmp
 
 runmp_7:
-	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple -pc_type fieldsplit -options_left no > mp_7.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple -pc_type fieldsplit > mp_7.tmp 2>&1;   \
 	   if (${DIFF} output/mp_7.out mp_7.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_7, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_7.tmp
 
 runmp_8:
-	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple  -pc_type fieldsplit -snes_mf_operator -{snes,ksp}_converged_reason -options_left no > mp_8.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple  -pc_type fieldsplit -snes_mf_operator -{snes,ksp}_converged_reason > mp_8.tmp 2>&1;   \
 	   if (${DIFF} output/mp_8.out mp_8.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_8, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_8.tmp
 
 runmp_9:
-	-@${MPIEXEC} -n 1 ./mp -couple -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -pc_fieldsplit_schur_precondition diag -{snes,ksp}_converged_reason -options_left no > mp_9.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -pc_fieldsplit_schur_precondition diag -{snes,ksp}_converged_reason > mp_9.tmp 2>&1;   \
 	   if (${DIFF} output/mp_9.out mp_9.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_9, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_9.tmp
 
 runmp_10:
-	-@${MPIEXEC} -n 1 ./mp -couple -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -pc_fieldsplit_schur_precondition self -options_left no > mp_10.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -pc_fieldsplit_schur_precondition self > mp_10.tmp 2>&1;   \
 	   if (${DIFF} output/mp_10.out mp_10.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with mp_10, diffs above \n========================================="; fi; \
 	   ${RM} -f mp_10.tmp
