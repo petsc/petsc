@@ -1,6 +1,6 @@
 #include <../src/sys/draw/utils/axisimpl.h>
 
-PetscClassId DRAWAXIS_CLASSID = 0;
+PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawAxisCreate" 
@@ -34,7 +34,7 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_CLASSID,0,"PetscDrawAxis","Draw Axis","Draw",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ad,_p_PetscDrawAxis,int,PETSC_DRAWAXIS_CLASSID,0,"PetscDrawAxis","Draw Axis","Draw",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;

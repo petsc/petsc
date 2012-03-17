@@ -28,7 +28,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     ierr = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpx,lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscRe
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
@@ -139,7 +139,7 @@ PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
   (lg)->ymin = y_min; 

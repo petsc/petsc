@@ -371,21 +371,21 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   switch (report.xbutton.button) {
     case Button1:
       if (report.xbutton.state & ShiftMask)
-        *button = BUTTON_LEFT_SHIFT;
+        *button = PETSC_BUTTON_LEFT_SHIFT;
       else
-        *button = BUTTON_LEFT;
+        *button = PETSC_BUTTON_LEFT;
       break;
     case Button2:
       if (report.xbutton.state & ShiftMask)
-        *button = BUTTON_CENTER_SHIFT;
+        *button = PETSC_BUTTON_CENTER_SHIFT;
       else
-        *button = BUTTON_CENTER;
+        *button = PETSC_BUTTON_CENTER;
       break;
     case Button3:
       if (report.xbutton.state & ShiftMask)
-        *button = BUTTON_RIGHT_SHIFT;
+        *button = PETSC_BUTTON_RIGHT_SHIFT;
       else
-        *button = BUTTON_RIGHT;
+        *button = PETSC_BUTTON_RIGHT;
       break;
   }
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
@@ -415,7 +415,7 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
     ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
-      if (button == BUTTON_CENTER) draw->pause = 0;
+      if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
     }
     ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   }

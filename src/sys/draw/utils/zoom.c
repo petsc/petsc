@@ -48,12 +48,12 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   w    = xr - xl; xmin = xl; ymin = yl; xmax = xr; ymax = yr;
   h    = yr - yl;
 
-  if (button != BUTTON_NONE) {
-    while (button != BUTTON_RIGHT) {
+  if (button != PETSC_BUTTON_NONE) {
+    while (button != PETSC_BUTTON_RIGHT) {
 
       ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-      if (button == BUTTON_LEFT)        scale = .5;
-      else if (button == BUTTON_CENTER) scale = 2.;
+      if (button == PETSC_BUTTON_LEFT)        scale = .5;
+      else if (button == PETSC_BUTTON_CENTER) scale = 2.;
       xl = scale*(xl + w - xc) + xc - w*scale;
       xr = scale*(xr - w - xc) + xc + w*scale;
       yl = scale*(yl + h - yc) + yc - h*scale;

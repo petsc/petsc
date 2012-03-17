@@ -131,7 +131,7 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 #define PETSC_DRAW_PLUM            32
 
 extern PetscErrorCode  PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
-extern PetscErrorCode  PetscDrawOpenPS(MPI_Comm,char *,PetscDraw *);
+
 #define PETSC_DRAW_FULL_SIZE    -3
 #define PETSC_DRAW_HALF_SIZE    -4
 #define PETSC_DRAW_THIRD_SIZE   -5
@@ -201,7 +201,7 @@ extern PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
 .seealso: PetscDrawGetMouseButton(), PetscDrawSynchronizedGetMouseButton()
 E*/
-typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT,BUTTON_LEFT_SHIFT,BUTTON_CENTER_SHIFT,BUTTON_RIGHT_SHIFT} PetscDrawButton;
+typedef enum {PETSC_BUTTON_NONE,PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,PETSC_BUTTON_LEFT_SHIFT,PETSC_BUTTON_CENTER_SHIFT,PETSC_BUTTON_RIGHT_SHIFT} PetscDrawButton;
 
 extern PetscErrorCode  PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 extern PetscErrorCode  PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
@@ -239,9 +239,9 @@ extern PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
 
 .seealso:  PetscDrawAxisCreate(), PetscDrawAxisSetLimits(), PetscDrawAxisSetColors(), PetscDrawAxisSetLabels()
 S*/
-typedef struct _p_DrawAxis* PetscDrawAxis;
+typedef struct _p_PetscDrawAxis* PetscDrawAxis;
 
-extern PetscClassId DRAWAXIS_CLASSID;
+extern PetscClassId PETSC_DRAWAXIS_CLASSID;
 
 extern PetscErrorCode  PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 extern PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis*);
@@ -262,7 +262,7 @@ extern PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const c
 S*/
 typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
-extern PetscClassId DRAWLG_CLASSID;
+extern PetscClassId PETSC_DRAWLG_CLASSID;
 
 extern PetscErrorCode  PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 extern PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG*);
@@ -288,9 +288,9 @@ extern PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG,const int*);
 
 .seealso:  PetscDrawSPCreate()
 S*/
-typedef struct _p_DrawSP*   PetscDrawSP;
+typedef struct _p_PetscDrawSP*   PetscDrawSP;
 
-extern PetscClassId DRAWSP_CLASSID;
+extern PetscClassId PETSC_DRAWSP_CLASSID;
 
 extern PetscErrorCode  PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 extern PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP*);
@@ -313,9 +313,9 @@ extern PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
 
 .seealso:  PetscDrawHGCreate()
 S*/
-typedef struct _p_DrawHG*   PetscDrawHG;
+typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
-extern PetscClassId DRAWHG_CLASSID;
+extern PetscClassId PETSC_DRAWHG_CLASSID;
 
 extern PetscErrorCode  PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 extern PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG*);

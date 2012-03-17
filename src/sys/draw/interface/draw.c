@@ -53,10 +53,10 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
   PetscDrawPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Draw",&PETSC_DRAW_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Axis",&DRAWAXIS_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Line Graph",&DRAWLG_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Histogram",&DRAWHG_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Scatter Plot",&DRAWSP_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Axis",&PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Line Graph",&PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */

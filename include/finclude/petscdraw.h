@@ -71,18 +71,18 @@
       parameter (PETSC_DRAW_LAVENDERBLUSH =31)
       parameter (PETSC_DRAW_PLUM = 32)
 
-      PetscEnum BUTTON_NONE
-      PetscEnum BUTTON_LEFT
-      PetscEnum BUTTON_CENTER
-      PetscEnum BUTTON_RIGHT
-      PetscEnum BUTTON_LEFT_SHIFT
-      PetscEnum BUTTON_CENTER_SHIFT
-      PetscEnum BUTTON_RIGHT_SHIFT
+      PetscEnum PETSC_BUTTON_NONE
+      PetscEnum PETSC_BUTTON_LEFT
+      PetscEnum PETSC_BUTTON_CENTER
+      PetscEnum PETSC_BUTTON_RIGHT
+      PetscEnum PETSC_BUTTON_LEFT_SHIFT
+      PetscEnum PETSC_BUTTON_CENTER_SHIFT
+      PetscEnum PETSC_BUTTON_RIGHT_SHIFT
 
-      parameter (BUTTON_NONE = 0,BUTTON_LEFT = 1) 
-      parameter (BUTTON_CENTER = 2,BUTTON_RIGHT = 3)
-      parameter (BUTTON_LEFT_SHIFT = 4, BUTTON_CENTER_SHIFT = 5)
-      parameter (BUTTON_RIGHT_SHIFT = 6)
+      parameter (PETSC_BUTTON_NONE = 0,PETSC_BUTTON_LEFT = 1) 
+      parameter (PETSC_BUTTON_CENTER = 2,PETSC_BUTTON_RIGHT = 3)
+      parameter (PETSC_BUTTON_LEFT_SHIFT = 4, PETSC_BUTTON_CENTER_SHIFT = 5)
+      parameter (PETSC_BUTTON_RIGHT_SHIFT = 6)
 
 !
 !  End of Fortran include file for the PetscDraw package in PETSc

@@ -957,13 +957,13 @@ LRESULT  CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     }
     break;
   case WM_LBUTTONUP:
-    MouseRecord_Win32(hWnd,BUTTON_LEFT);
+    MouseRecord_Win32(hWnd,PETSC_BUTTON_LEFT);
     break;
   case WM_RBUTTONUP:
-    MouseRecord_Win32(hWnd,BUTTON_RIGHT);
+    MouseRecord_Win32(hWnd,PETSC_BUTTON_RIGHT);
     break;
   case WM_MBUTTONUP:
-    MouseRecord_Win32(hWnd,BUTTON_CENTER);
+    MouseRecord_Win32(hWnd,PETSC_BUTTON_CENTER);
     break; 
   default:
     PetscFunctionReturn(DefWindowProc(hWnd, message, wParam, lParam));

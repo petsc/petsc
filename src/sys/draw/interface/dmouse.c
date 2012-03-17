@@ -16,7 +16,7 @@
 .   draw - the window to be used
 
     Output Parameters:
-+   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
++   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
 .   x_user, y_user - user coordinates of location (user may pass in 0).
 -   x_phys, y_phys - window coordinates (user may pass in 0).
 
@@ -34,7 +34,7 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  *button = BUTTON_NONE;
+  *button = PETSC_BUTTON_NONE;
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
@@ -54,7 +54,7 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
 .   draw - the window to be used
 
     Output Parameters:
-+   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
++   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
 .   x_user, y_user - user coordinates of location (user may pass in 0).
 -   x_phys, y_phys - window coordinates (user may pass in 0).
 

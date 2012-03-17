@@ -1,7 +1,7 @@
 
 #include <petscsys.h>              /*I "petscsys.h" I*/
 
-struct _p_DrawAxis {
+struct _p_PetscDrawAxis {
   PETSCHEADER(int);
     PetscReal      xlow,ylow,xhigh,yhigh;     /* User - coord limits */
     PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **);/* routines to generate labels */ 

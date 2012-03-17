@@ -7,9 +7,9 @@
 
 #include <petscsys.h>         /*I "petscsys.h" I*/
 
-PetscClassId DRAWSP_CLASSID = 0;
+PetscClassId PETSC_DRAWSP_CLASSID = 0;
 
-struct _p_DrawSP {
+struct _p_PetscDrawSP {
   PETSCHEADER(int);
   PetscErrorCode (*destroy)(PetscDrawSP);
   PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
@@ -57,7 +57,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)drawsp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_CLASSID,0,"PetscDrawSP","Scatter plot","Draw",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_PetscDrawSP,int,PETSC_DRAWSP_CLASSID,0,"PetscDrawSP","Scatter plot","Draw",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;
@@ -99,7 +99,7 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
   ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
   sp->xmax  = -1.e20;
@@ -198,7 +198,7 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     ierr = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpx,sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
@@ -251,7 +251,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
@@ -310,7 +310,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
@@ -353,7 +353,7 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
 {
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin = x_min; 
   sp->xmax = x_max; 
   sp->ymin = y_min; 
@@ -387,7 +387,7 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
     *axis = 0;
     PetscFunctionReturn(0);
   }
-  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,1);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   *axis = sp->axis;
   PetscFunctionReturn(0);
 }
