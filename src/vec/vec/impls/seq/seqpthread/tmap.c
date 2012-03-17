@@ -160,6 +160,7 @@ PetscErrorCode PetscThreadsLayoutSetLocalSizes(PetscThreadsLayout tmap,PetscInt 
 
   PetscFunctionBegin;
   if(!tmap->nthreads) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Number of threads not set yet");
+  if (tmap->trstarts) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already set local sizes");
   ierr = PetscMalloc((tmap->nthreads+1)*sizeof(PetscInt),&tmap->trstarts);CHKERRQ(ierr);
   tmap->trstarts[0] = 0;
   for(i=1;i < tmap->nthreads+1;i++) tmap->trstarts[i] += n[i-1];

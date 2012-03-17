@@ -480,6 +480,7 @@ PetscErrorCode MatSetThreadAffinities(Mat A,const PetscInt affinities[])
   if(affinities == PETSC_NULL) {
     PetscInt *thread_affinities;
     ierr = PetscMalloc(nmax*sizeof(PetscInt),&thread_affinities);CHKERRQ(ierr);
+    ierr = PetscMemzero(thread_affinities,nmax*sizeof(PetscInt));CHKERRQ(ierr);
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-mat_thread_affinities","Set CPU affinity for each thread","MatSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
@@ -487,11 +488,11 @@ PetscErrorCode MatSetThreadAffinities(Mat A,const PetscInt affinities[])
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, matrix A Threads = %D, CPU affinities set = %D",tmap->nthreads-PetscMainThreadShareWork,nmax);
       }
       ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,thread_affinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
-      ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
     } else {
       /* Reuse the core affinities set for first s->nthreads */
       ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,ThreadCoreAffinity,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
     }
+    ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
   } else {
     /* Set user provided affinities */
     ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,affinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
