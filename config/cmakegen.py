@@ -1,5 +1,19 @@
 #!/usr/bin/env python
 
+# This file generates $PETSC_DIR/CMakeLists.txt by parsing the makefiles
+# throughout the source tree, reading their constraints and included
+# sources, and encoding the rules through CMake conditionals. When CMake
+# runs, it will use the conditionals written to
+#
+#     $PETSC_DIR/$PETSC_ARCH/conf/PETScConfig.cmake
+#
+# by BuildSystem after a successful configure.
+#
+# The generated CMakeLists.txt is independent of PETSC_ARCH.
+#
+# This script supports one option:
+#   --verbose : Show mismatches between makefiles and the filesystem
+
 from __future__ import with_statement  # For python-2.5
 
 import os

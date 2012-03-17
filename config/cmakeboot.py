@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+# This file initializes a CMake build in $PETSC_DIR/$PETSC_ARCH using
+# the compilers and flags determined by BuildSystem. It is imported and
+# called by Configure.py during configures in which CMake was detected,
+# but it can also be run as a stand-alone program. The library paths and
+# flags should have been written to
+#
+#     $PETSC_DIR/$PETSC_ARCH/conf/PETScConfig.cmake
+#
+# by configure before running this script.
+
 from __future__ import with_statement  # For python-2.5
 
 import os,sys,string
