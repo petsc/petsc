@@ -1,18 +1,6 @@
 #include <private/linesearchimpl.h>
 #include <private/snesimpl.h>
 
-/*MC
-
-PetscLineSearchShell - Provides context for a user-provided line search routine.
-
-The user routine has one argument, the PetscLineSearch context.  The user uses the interface to
-extract line search parameters and set them accordingly when the computation is finished.
-
-Any of the other line searches may serve as a guide to how this is to be done.
-
-Level: advanced
-
- M*/
 
 typedef struct {
   PetscLineSearchUserFunc func;
@@ -32,7 +20,6 @@ typedef struct {
 
    .seealso: PetscLineSearchShellGetUserFunc()
 @*/
-
 PetscErrorCode PetscLineSearchShellSetUserFunc(PetscLineSearch linesearch, PetscLineSearchUserFunc func, void *ctx) {
 
   PetscErrorCode   ierr;
@@ -82,7 +69,7 @@ PetscErrorCode PetscLineSearchShellGetUserFunc(PetscLineSearch linesearch, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchApply_Shell"
-PetscErrorCode  PetscLineSearchApply_Shell(PetscLineSearch linesearch)
+static PetscErrorCode  PetscLineSearchApply_Shell(PetscLineSearch linesearch)
 {
   PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscErrorCode   ierr;
@@ -100,7 +87,7 @@ PetscErrorCode  PetscLineSearchApply_Shell(PetscLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchDestroy_Shell"
-PetscErrorCode  PetscLineSearchDestroy_Shell(PetscLineSearch linesearch)
+static PetscErrorCode  PetscLineSearchDestroy_Shell(PetscLineSearch linesearch)
 {
   PetscLineSearch_Shell *shell = (PetscLineSearch_Shell *)linesearch->data;
   PetscErrorCode   ierr;
@@ -110,10 +97,21 @@ PetscErrorCode  PetscLineSearchDestroy_Shell(PetscLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchCreate_Shell"
-PetscErrorCode PetscLineSearchCreate_Shell(PetscLineSearch linesearch)
+/*MC
+
+PETSCLINESEARCHSHELL - Provides context for a user-provided line search routine.
+
+The user routine has one argument, the PetscLineSearch context.  The user uses the interface to
+extract line search parameters and set them accordingly when the computation is finished.
+
+Any of the other line searches may serve as a guide to how this is to be done.
+
+Level: advanced
+
+M*/
+PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_Shell(PetscLineSearch linesearch)
 {
 
   PetscLineSearch_Shell     *shell;
@@ -132,4 +130,3 @@ PetscErrorCode PetscLineSearchCreate_Shell(PetscLineSearch linesearch)
   linesearch->data = (void*) shell;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

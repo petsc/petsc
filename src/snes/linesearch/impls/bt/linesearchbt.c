@@ -8,23 +8,9 @@ typedef struct {
   PetscLineSearchBTOrder order;
 } PetscLineSearch_BT;
 
-/*MC
-   PetscLineSearchBT - Backtracking line searches.
-
-   These linesearches try a polynomial fit for the L2 norm of the error
-   using the gradient.  Failing that, they step back and try again.
-
-   Level: advanced
-
-.keywords: SNES, PetscLineSearch, damping
-
-.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
-M*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchApply_BT"
-
-PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
+static PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
@@ -289,7 +275,7 @@ PetscErrorCode  PetscLineSearchApply_BT(PetscLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchDestroy_BT"
-PetscErrorCode PetscLineSearchDestroy_BT(PetscLineSearch linesearch)
+static PetscErrorCode PetscLineSearchDestroy_BT(PetscLineSearch linesearch)
 {
   PetscErrorCode ierr;
 
@@ -330,10 +316,21 @@ static PetscErrorCode PetscLineSearchSetFromOptions_BT(PetscLineSearch linesearc
 }
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchCreate_BT"
-PetscErrorCode PetscLineSearchCreate_BT(PetscLineSearch linesearch)
+/*MC
+   PETSCLINESEARCHBT - Backtracking line searches.
+
+   These linesearches try a polynomial fit for the L2 norm of the error
+   using the gradient.  Failing that, they step back and try again.
+
+   Level: advanced
+
+.keywords: SNES, PetscLineSearch, damping
+
+.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
+M*/
+PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_BT(PetscLineSearch linesearch)
 {
 
   PetscLineSearch_BT  *bt;
@@ -355,4 +352,3 @@ PetscErrorCode PetscLineSearchCreate_BT(PetscLineSearch linesearch)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

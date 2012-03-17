@@ -3,43 +3,8 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchApply_CP"
-
-/*@C
-   LineSearchCP - This routine is not a line search at all;
-   it simply uses the full step.  Thus, this routine is intended
-   to serve as a template and is not recommended for general use.
-
-   Logically Collective on SNES and Vec
-
-   Input Parameters:
-+  snes - nonlinear context
-.  lsctx - optional context for line search (not used here)
-.  x - current iterate
-.  f - residual evaluated at x
-.  y - search direction
-.  fnorm - 2-norm of f
--  xnorm - norm of x if known, otherwise 0
-
-   Output Parameters:
-+  g - residual evaluated at new iterate y
-.  w - new iterate
-.  gnorm - 2-norm of g
-.  ynorm - 2-norm of search length
--  flag - PETSC_TRUE on success, PETSC_FALSE on failure
-
-   Options Database Key:
-.  -snes_ls basic - Activates SNESLineSearchNo()
-
-   Level: advanced
-
-.keywords: SNES, nonlinear, line search, cubic
-
-.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-          SNESLineSearchSet(), SNESLineSearchNoNorms()
-@*/
-PetscErrorCode  PetscLineSearchApply_CP(PetscLineSearch linesearch)
+static PetscErrorCode PetscLineSearchApply_CP(PetscLineSearch linesearch)
 {
-
   PetscBool      changed_y, changed_w, domainerror;
   PetscErrorCode ierr;
   Vec             X, Y, F, W;
@@ -138,10 +103,18 @@ PetscErrorCode  PetscLineSearchApply_CP(PetscLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchCreate_CP"
-PetscErrorCode PetscLineSearchCreate_CP(PetscLineSearch linesearch)
+/*MC
+   PETSCLINESEARCHCP - Critical point line search
+
+   Level: advanced
+
+.keywords: SNES, PetscLineSearch, damping
+
+.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
+M*/
+PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_CP(PetscLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = PetscLineSearchApply_CP;
@@ -152,4 +125,3 @@ PetscErrorCode PetscLineSearchCreate_CP(PetscLineSearch linesearch)
   linesearch->ops->setup          = PETSC_NULL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

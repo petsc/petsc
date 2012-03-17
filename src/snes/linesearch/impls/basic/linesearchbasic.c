@@ -1,22 +1,9 @@
 #include <private/linesearchimpl.h>
 #include <private/snesimpl.h>
 
-/*MC
-   PetscLineSearchBasic - This routine is not a line search at all;
-   it simply uses the full step.  Thus, this routine is intended
-   to serve as a template and is not recommended for general use.
-
-   Level: advanced
-
-.keywords: SNES, PetscLineSearch, damping
-
-.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
-M*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchApply_Basic"
-
-PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
+static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
@@ -75,10 +62,20 @@ PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscLineSearchCreate_Basic"
-PetscErrorCode PetscLineSearchCreate_Basic(PetscLineSearch linesearch)
+/*MC
+   PETSCLINESEARCHBASIC - This routine is not a line search at all;
+   it simply uses the full step.  Thus, this routine is intended
+   to serve as a template and is not recommended for general use.
+
+   Level: advanced
+
+.keywords: SNES, PetscLineSearch, damping
+
+.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
+M*/
+PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_Basic(PetscLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = PetscLineSearchApply_Basic;
@@ -89,4 +86,3 @@ PetscErrorCode PetscLineSearchCreate_Basic(PetscLineSearch linesearch)
   linesearch->ops->setup          = PETSC_NULL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
