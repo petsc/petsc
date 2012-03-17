@@ -395,8 +395,10 @@ PetscErrorCode MatDestroy_SeqAIJPThread(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetNThreads"
-/*
+/*@
    MatSetNThreads - Set the number of threads to be used for matrix operations.
+
+   Not Collective, but it is usually desirable to use the same number of threads per process
 
    Input Parameters
 +  A - the matrix
@@ -407,7 +409,7 @@ PetscErrorCode MatDestroy_SeqAIJPThread(Mat A)
    Concepts: matrix^setting number of threads
 
 .seealso: MatCreateSeqAIJPThread()
-*/
+@*/
 PetscErrorCode MatSetNThreads(Mat A,PetscInt nthreads)
 {
   PetscErrorCode     ierr;
@@ -436,6 +438,36 @@ PetscErrorCode MatSetNThreads(Mat A,PetscInt nthreads)
     tmap->nthreads = nthreads + PetscMainThreadShareWork;
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetNThreads"
+/*@
+   MatGetNThreads - Get the number of threads used for matrix operations.
+
+   Not Collective
+
+   Input Parameter
+.  A - the matrix
+
+   Output Parameter:
+.  nthreads - number of threads
+
+   Level: intermediate
+
+   Concepts: matrix^getting number of threads
+
+.seealso: MatCreateSeqAIJPThread(), MatSetNThreads()
+@*/
+PetscErrorCode MatGetNThreads(Mat A,PetscInt *nthreads)
+{
+  PetscThreadsLayout tmap=A->rmap->tmap;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (tmap) *nthreads = tmap->nthreads - PetscMainThreadShareWork;
+  else *nthreads = 1;
   PetscFunctionReturn(0);
 }
 

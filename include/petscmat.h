@@ -458,7 +458,8 @@ extern PetscErrorCode  MatRestoreArray(Mat,PetscScalar *[]);
 extern PetscErrorCode  MatGetBlockSize(Mat,PetscInt *);
 PetscPolymorphicFunction(MatGetBlockSize,(Mat mat),(mat,&a),PetscInt,a)
 extern PetscErrorCode  MatSetBlockSize(Mat,PetscInt);
-
+extern PetscErrorCode MatSetNThreads(Mat,PetscInt);
+extern PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
 extern PetscErrorCode  MatMult(Mat,Vec,Vec);
 extern PetscErrorCode  MatMultDiagonalBlock(Mat,Vec,Vec);
