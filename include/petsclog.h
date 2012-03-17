@@ -30,7 +30,7 @@ typedef int PetscLogStage;
 extern PetscLogEvent PETSC_LARGEST_EVENT;
 
 /* Global flop counter */
-extern PetscLogDouble  _TotalFlops;
+extern PetscLogDouble  petsc_TotalFlops;
 extern PetscLogDouble petsc_tmp_flops;
 
 /* General logging of information; different from event logging */
@@ -159,7 +159,7 @@ typedef struct _PetscStageInfo {
 } PetscStageInfo;
 
 typedef struct _n_PetscStageLog *PetscStageLog;
-extern  PetscStageLog _stageLog;
+extern  PetscStageLog petsc_stageLog;
 struct _n_PetscStageLog {
   int              numStages;   /* The number of registered stages */
   int              maxStages;   /* The maximum number of stages */
@@ -192,11 +192,11 @@ struct _n_PetscStageLog {
 #endif
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*((PetscLogDouble)n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (_TotalFlops += petsc_tmp_flops,0)))
-#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
+#define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*((PetscLogDouble)n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (petsc_TotalFlops += petsc_tmp_flops,0)))
+#define PetscLogFlopsNoError(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
 #else
-#define PetscLogFlops(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n),0)
-#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
+#define PetscLogFlops(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n),0)
+#define PetscLogFlopsNoError(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
 #endif
 
 #if defined (PETSC_HAVE_MPE)
@@ -205,12 +205,12 @@ extern PetscErrorCode         PetscLogMPEBegin(void);
 extern PetscErrorCode         PetscLogMPEDump(const char[]);
 extern PetscBool  UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
-  ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,NULL) : 0)
+  ((UseMPE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+   MPE_Log_event(petsc_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,NULL) : 0)
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
-  ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,NULL) : 0)
+  ((UseMPE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+   MPE_Log_event(petsc_stageLog->eventLog->eventInfo[e].mpe_id_end,0,NULL) : 0)
 
 #else 
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) 0 
@@ -284,19 +284,19 @@ extern  PetscLogDouble petsc_wait_all_ct;
 extern  PetscLogDouble petsc_sum_of_waits_ct;
 
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active &&  _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+  (((_PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active &&  petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
     (PetscLogEventBegin((e),o1,o2,o3,o4) || MPI_Barrier(cm) || PetscLogEventEnd((e),o1,o2,o3,o4)) : 0 ) || \
    PetscLogEventBegin((e)+1,o1,o2,o3,o4))
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) \
-  (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+  (((_PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
   PETSC_LOG_EVENT_MPE_BEGIN(e))
 
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  (((_PetscLogPLE && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+  (((_PetscLogPLE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
   PETSC_LOG_EVENT_MPE_END(e))
 
@@ -498,11 +498,11 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(PetscStageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
-  if (!_stageLog) {
+  if (!petsc_stageLog) {
     fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
     MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
   }
-  *stageLog = _stageLog;
+  *stageLog = petsc_stageLog;
   PetscFunctionReturn(0);
 }
 

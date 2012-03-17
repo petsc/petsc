@@ -34,19 +34,19 @@ typedef struct _Object {
 } Object;
 
 /* Action and object logging variables */
-extern Action    *actions;
-extern Object    *objects;
-extern PetscBool  logActions;
-extern PetscBool  logObjects;
-extern int        numActions, maxActions;
-extern int        numObjects, maxObjects;
-extern int        numObjectsDestroyed;
+extern Action    *petsc_actions;
+extern Object    *petsc_objects;
+extern PetscBool  petsc_logActions;
+extern PetscBool  petsc_logObjects;
+extern int        petsc_numActions, petsc_maxActions;
+extern int        petsc_numObjects, petsc_maxObjects;
+extern int        petsc_numObjectsDestroyed;
 
-extern FILE          *tracefile;
-extern int            tracelevel;
-extern const char    *traceblanks;
-extern char           tracespace[128];
-extern PetscLogDouble tracetime;
+extern FILE          *petsc_tracefile;
+extern int            petsc_tracelevel;
+extern const char    *petsc_traceblanks;
+extern char           petsc_tracespace[128];
+extern PetscLogDouble petsc_tracetime;
 
 #ifdef PETSC_USE_LOG
 

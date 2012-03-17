@@ -310,49 +310,49 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   ierr = PetscClassRegLogGetClass(classRegLog, obj->classid, &oclass);CHKERRQ(ierr);
   classPerfLog->classInfo[oclass].creations++;
   /* Dynamically enlarge logging structures */
-  if (numActions >= maxActions) {
+  if (petsc_numActions >= petsc_maxActions) {
     PetscTime(start);
-    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));CHKERRQ(ierr);
-    ierr = PetscFree(actions);CHKERRQ(ierr);
-    actions     = tmpAction;
-    maxActions *= 2;
+    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
+    petsc_actions     = tmpAction;
+    petsc_maxActions *= 2;
     PetscTime(end);
-    BaseTime += (end - start);
+    petsc_BaseTime += (end - start);
   }
 
-  numObjects = obj->id;
+  petsc_numObjects = obj->id;
   /* Record the creation action */
-  if (logActions) {
-    PetscTime(actions[numActions].time);
-    actions[numActions].time  -= BaseTime;
-    actions[numActions].action = CREATE;
-    actions[numActions].classid = obj->classid;
-    actions[numActions].id1    = numObjects;
-    actions[numActions].id2    = -1;
-    actions[numActions].id3    = -1;
-    actions[numActions].flops  = _TotalFlops;
-    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
-    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
-    numActions++;
+  if (petsc_logActions) {
+    PetscTime(petsc_actions[petsc_numActions].time);
+    petsc_actions[petsc_numActions].time  -= petsc_BaseTime;
+    petsc_actions[petsc_numActions].action = CREATE;
+    petsc_actions[petsc_numActions].classid = obj->classid;
+    petsc_actions[petsc_numActions].id1    = petsc_numObjects;
+    petsc_actions[petsc_numActions].id2    = -1;
+    petsc_actions[petsc_numActions].id3    = -1;
+    petsc_actions[petsc_numActions].flops  = petsc_TotalFlops;
+    ierr = PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem);CHKERRQ(ierr);
+    petsc_numActions++;
   }
   /* Record the object */
-  if (logObjects) {
-    objects[numObjects].parent = -1;
-    objects[numObjects].obj    = obj;
-    ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
-    ierr = PetscMemzero(objects[numObjects].info, 64 * sizeof(char));CHKERRQ(ierr);
+  if (petsc_logObjects) {
+    petsc_objects[petsc_numObjects].parent = -1;
+    petsc_objects[petsc_numObjects].obj    = obj;
+    ierr = PetscMemzero(petsc_objects[petsc_numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
+    ierr = PetscMemzero(petsc_objects[petsc_numObjects].info, 64 * sizeof(char));CHKERRQ(ierr);
 
   /* Dynamically enlarge logging structures */
-    if (numObjects >= maxObjects) {
+    if (petsc_numObjects >= petsc_maxObjects) {
       PetscTime(start);
-      ierr = PetscMalloc(maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tmpObjects, objects, maxObjects * sizeof(Object));CHKERRQ(ierr);
-      ierr = PetscFree(objects);CHKERRQ(ierr);
-      objects     = tmpObjects;
-      maxObjects *= 2;
+      ierr = PetscMalloc(petsc_maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmpObjects, petsc_objects, petsc_maxObjects * sizeof(Object));CHKERRQ(ierr);
+      ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
+      petsc_objects     = tmpObjects;
+      petsc_maxObjects *= 2;
       PetscTime(end);
-      BaseTime += (end - start);
+      petsc_BaseTime += (end - start);
     }
   }
   PetscFunctionReturn(0);
@@ -385,38 +385,38 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     classPerfLog->classInfo[oclass].mem += obj->mem;
   }
   /* Cannot Credit all ancestors with your memory because they may have already been destroyed*/
-  numObjectsDestroyed++;
+  petsc_numObjectsDestroyed++;
   /* Dynamically enlarge logging structures */
-  if (numActions >= maxActions) {
+  if (petsc_numActions >= petsc_maxActions) {
     PetscTime(start);
-    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));CHKERRQ(ierr);
-    ierr = PetscFree(actions);CHKERRQ(ierr);
-    actions     = tmpAction;
-    maxActions *= 2;
+    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
+    petsc_actions     = tmpAction;
+    petsc_maxActions *= 2;
     PetscTime(end);
-    BaseTime += (end - start);
+    petsc_BaseTime += (end - start);
   }
   /* Record the destruction action */
-  if (logActions) {
-    PetscTime(actions[numActions].time);
-    actions[numActions].time  -= BaseTime;
-    actions[numActions].action = DESTROY;
-    actions[numActions].classid = obj->classid;
-    actions[numActions].id1    = obj->id;
-    actions[numActions].id2    = -1;
-    actions[numActions].id3    = -1;
-    actions[numActions].flops  = _TotalFlops;
-    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
-    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
-    numActions++;
+  if (petsc_logActions) {
+    PetscTime(petsc_actions[petsc_numActions].time);
+    petsc_actions[petsc_numActions].time  -= petsc_BaseTime;
+    petsc_actions[petsc_numActions].action = DESTROY;
+    petsc_actions[petsc_numActions].classid = obj->classid;
+    petsc_actions[petsc_numActions].id1    = obj->id;
+    petsc_actions[petsc_numActions].id2    = -1;
+    petsc_actions[petsc_numActions].id3    = -1;
+    petsc_actions[petsc_numActions].flops  = petsc_TotalFlops;
+    ierr = PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem);CHKERRQ(ierr);
+    petsc_numActions++;
   }
-  if (logObjects) {
+  if (petsc_logObjects) {
     if (obj->name) {
-      ierr = PetscStrncpy(objects[obj->id].name, obj->name, 64);CHKERRQ(ierr);
+      ierr = PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64);CHKERRQ(ierr);
     }
-    objects[obj->id].obj      = PETSC_NULL;
-    objects[obj->id].mem      = obj->mem;
+    petsc_objects[obj->id].obj      = PETSC_NULL;
+    petsc_objects[obj->id].mem      = obj->mem;
   }
   PetscFunctionReturn(0);
 }

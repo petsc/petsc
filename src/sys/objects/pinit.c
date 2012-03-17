@@ -943,7 +943,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-get_total_flops",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
     PetscLogDouble flops = 0;
-    ierr = MPI_Reduce(&_TotalFlops,&flops,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&petsc_TotalFlops,&flops,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Total flops over all processors %g\n",flops);CHKERRQ(ierr);
   }
 #endif

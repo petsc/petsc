@@ -18,7 +18,7 @@ EXTERN_C_END
 #endif
 
 /* Global counters */
-extern PetscLogDouble  BaseTime;
+extern PetscLogDouble  petsc_BaseTime;
 
 /*
    PetscTime - Returns the current time of day in seconds.  
