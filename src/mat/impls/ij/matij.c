@@ -34,7 +34,9 @@
           Using the above map interpretation of MATIJ, the indices within the local ownership range and  nonempty 
           images constitute the local support of the Mat -- an array of size m0 <= m.  The indices that belong to any of
           the images of the locally-supported indices constitute the local image of size n0 <= N.
- M*/
+
+  Level: advanced
+M*/
 
 typedef struct {
   PetscBool multivalued;  /* Whether the underlying pseudograph is not a graph. */
@@ -595,6 +597,8 @@ PetscErrorCode MatRestoreRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt
 +  A           -  pseudograph
 -  multivalued -  whether the matrix encodes a multivalued (pseudo)graph.
 
+   Level: advanced
+
 .seealso: MatIJGetMultivalued(), MatIJSetEdges(), MatIJGetEdges(), MatIJGetSupport(), MatIJGetImage() 
  @*/
 #undef  __FUNCT__
@@ -624,6 +628,8 @@ PetscErrorCode MatIJSetMultivalued(Mat A, PetscBool multivalued)
 
    Output arguments:
 .  multivalued -  whether the matrix encodes a multivalued (pseudo)graph.
+
+   Level: advanced
 
 .seealso: MatIJSetMultivalued(), MatIJSetEdges(), MatIJGetEdges(), MatIJGetSupport(), MatIJGetImage() 
  @*/
@@ -1711,6 +1717,8 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
    Output arguments:
 .  B           - renumbering pseudograph
 
+   Level:    advanced
+
    Notes: observe that each local support index might be mapped to the same global index multiple times,
           if it happens to have the same number within different bins. In order to decide which color
           each of the new numbers refers to, it is useful to use the result B in conjunction with
@@ -1718,9 +1726,8 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
           By construction, B is compatible to A in the sense of MatIJBinMap().
 
 .keywords: pseudograph, coloring, binning, numbering
-.level:    advanced
 .seealso:  MatIJBinMap()
- @*/
+@*/
 #undef  __FUNCT__
 #define __FUNCT__ "MatIJBinRenumber"
 PetscErrorCode MatIJBinRenumber(Mat A, Mat *B) 

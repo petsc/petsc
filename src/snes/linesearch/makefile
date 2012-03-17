@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/private/linesearchimpl.h ../../include/petsclinesearch.h
+SOURCEH  = ../../../include/private/linesearchimpl.h
 DIRS     = interface impls
 LOCDIR   = src/snes/linesearch/
 MANSEC   = LineSearch

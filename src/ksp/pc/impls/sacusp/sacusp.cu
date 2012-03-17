@@ -207,6 +207,8 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 
     http://research.nvidia.com/sites/default/files/publications/nvr-2011-002.pdf
 
+   Level: advanced
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 
 M*/

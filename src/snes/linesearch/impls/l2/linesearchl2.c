@@ -194,7 +194,7 @@ static PetscErrorCode  PetscLineSearchApply_L2(PetscLineSearch linesearch)
 
 .seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
           SNESLineSearchSet(), SNESLineSearchNoNorms()
-@*/
+M*/
 PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_L2(PetscLineSearch linesearch)
 {
   PetscFunctionBegin;

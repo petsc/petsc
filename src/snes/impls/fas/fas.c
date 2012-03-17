@@ -3,15 +3,6 @@
 
 const char *SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","SNESFASType","SNES_FAS",0};
 
-/*MC
-
-SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
-
-The nonlinear problem is solved via the repeated application of nonlinear preconditioners and coarse-grid corrections
-
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
-M*/
-
 extern PetscErrorCode SNESDestroy_FAS(SNES snes);
 extern PetscErrorCode SNESSetUp_FAS(SNES snes);
 extern PetscErrorCode SNESSetFromOptions_FAS(SNES snes);
@@ -20,11 +11,20 @@ extern PetscErrorCode SNESSolve_FAS(SNES snes);
 extern PetscErrorCode SNESReset_FAS(SNES snes);
 extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES, Vec, Vec, void *);
 
-EXTERN_C_BEGIN
+/*MC
+
+SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
+
+The nonlinear problem is solved via the repeated application of nonlinear preconditioners and coarse-grid corrections
+
+Level: advanced
+
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_FAS"
-PetscErrorCode SNESCreate_FAS(SNES snes)
+PETSC_EXTERN_C PetscErrorCode SNESCreate_FAS(SNES snes)
 {
   SNES_FAS * fas;
   PetscErrorCode ierr;
@@ -64,7 +64,6 @@ PetscErrorCode SNESCreate_FAS(SNES snes)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGetLevels"
@@ -273,9 +272,14 @@ PetscErrorCode SNESFASGetSNES(SNES snes,PetscInt level,SNES *lsnes) {
 #define __FUNCT__ "SNESFASSetType"
 /*@
 SNESFASSetType - Sets the update and correction type used for FAS.
-e
 
+Logically Collective
 
+Input Arguments:
+snes - nonlinear solver
+fastype - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+
+.seealso: PCMGSetType()
 @*/
 PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
 {

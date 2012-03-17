@@ -382,6 +382,8 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 + indis   -  IS of the indices found on the IS list
 - coloris -  IS of colors
 
+  Level: advanced
+
   Notes:
   The global colors assigned to the ISs of the local input list might not correspond to the
   local numbers of the ISs on that list, but the two *orderings* are the same: the global 
@@ -466,6 +468,8 @@ PetscErrorCode ISListToColoring(MPI_Comm comm, PetscInt listlen, IS islist[], IS
   Note: 
 + indis and coloris must be of the same length and have congruent communicators.  
 - The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToColoring()).
+
+  Level: advanced
 
 .seealso ISListToColoring()
  @*/

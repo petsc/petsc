@@ -321,6 +321,8 @@ static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
 
    http://docs.cusp-library.googlecode.com/hg/classcusp_1_1precond_1_1bridson__ainv.html
 
+   Level: advanced
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 
 M*/

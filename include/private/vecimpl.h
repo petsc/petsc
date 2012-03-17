@@ -299,7 +299,8 @@ typedef struct {
    PETSC_CUSP_GPU - GPU has valid vector/matrix entries
    PETSC_CUSP_CPU - CPU has valid vector/matrix entries
    PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
- 
+
+   Level: developer
 E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif

@@ -5275,7 +5275,7 @@ PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Ma
   Level: intermediate
 
 .seealso DMComplexVecSetClosure(), DMComplexMatSetClosure()
-*/
+@*/
 PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar *values[]) {
   PetscScalar    *array, *vArray;
   PetscInt       *points = PETSC_NULL;
