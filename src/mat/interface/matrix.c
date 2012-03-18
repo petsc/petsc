@@ -749,13 +749,6 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mat,viewer,"Matrix Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-      {
-        PetscInt nthreads;
-        ierr = MatGetNThreads(mat,&nthreads);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"nthreads=%D\n",nthreads);CHKERRQ(ierr);
-      }
-#endif
       ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
       if (mat->factortype) {
         const MatSolverPackage solver;

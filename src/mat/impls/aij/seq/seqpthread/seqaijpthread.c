@@ -372,6 +372,27 @@ PetscErrorCode MatSetUp_SeqAIJPThread(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatView_SeqAIJPThread"
+static PetscErrorCode MatView_SeqAIJPThread(Mat A,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool iascii;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (iascii && (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO)) {
+    PetscInt nthreads;
+    ierr = MatGetNThreads(A,&nthreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"nthreads=%D\n",nthreads);CHKERRQ(ierr);
+  }
+  ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJPThread"
 PetscErrorCode MatDestroy_SeqAIJPThread(Mat A)
 {
@@ -590,6 +611,7 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   B->ops->getdiagonal = MatGetDiagonal_SeqAIJPThread;
   B->ops->realpart = MatRealPart_SeqAIJPThread;
   B->ops->imaginarypart = MatImaginaryPart_SeqAIJPThread;
+  B->ops->view = MatView_SeqAIJPThread;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","MatSeqAIJPThreadSetPreallocation_SeqAIJPThread",MatSeqAIJPThreadSetPreallocation_SeqAIJPThread);CHKERRQ(ierr);
