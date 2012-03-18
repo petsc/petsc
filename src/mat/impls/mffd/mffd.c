@@ -309,7 +309,7 @@ PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
   ierr      = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   j->vshift = 0.0;
   j->vscale = 1.0;
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -379,16 +379,8 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
   }
 
-  /* compute func(U) as base for differencing; only needed first time in */
-  /* Do this even if F = func(U) was provided by user: the reason is that this F 
-     might have come from SNES and was evaluated at the end of the previous iteration;
-     if the Jacobian changes discontinuously (e.g., the residual changes based on the 
-     U computed by the previous SNES iteration; Cf. mechanical contact), this is a bad 
-     base for differencing.
-     I'm not sure how to fix this problem without requiring an across the board 
-     re-evaluation of F, even when it may be safe to proceed without it.
-  */
-  if (ctx->ncurrenth == 1) {
+  /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
+  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) {
     ierr = (*ctx->func)(ctx->funcctx,U,F);CHKERRQ(ierr);
   }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
