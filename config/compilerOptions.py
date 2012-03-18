@@ -22,6 +22,8 @@ class CompilerOptions(config.base.Configure):
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
+        flags.append('-fno-inline')
+        flags.append('-O0')
       elif bopt == 'O':
         flags.append('-O')
     else:
