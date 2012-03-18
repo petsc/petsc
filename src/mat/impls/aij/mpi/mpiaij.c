@@ -338,6 +338,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
   PetscInt       n = aij->B->cmap->n,i;
 
   PetscFunctionBegin;
+  if (!aij->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
 #if defined (PETSC_USE_CTABLE)
   ierr = PetscTableCreate(n,mat->cmap->N+1,&aij->colmap);CHKERRQ(ierr); 
   for (i=0; i<n; i++){

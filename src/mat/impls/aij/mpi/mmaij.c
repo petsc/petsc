@@ -176,8 +176,8 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
-  ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr); aij->lvec = 0;
-  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
+  ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr); 
+  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr); 
   if (aij->colmap) {
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
