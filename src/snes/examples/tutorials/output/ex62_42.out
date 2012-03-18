@@ -5,7 +5,6 @@
   1 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
   type: ls
-    line search variant: CUBIC
     alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
     damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
@@ -134,6 +133,7 @@ SNES Object: 1 MPI processes
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 513 nodes, limit used is 5
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+  line search variant: bt
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
 L_2 Error: 7.27e-10
