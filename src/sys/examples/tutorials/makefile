@@ -61,7 +61,7 @@ ex7: ex7.o   chkopts
 #
 # ------------------------------------------------------------------------
 #
-runex1:
+runex1
 	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1; \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
