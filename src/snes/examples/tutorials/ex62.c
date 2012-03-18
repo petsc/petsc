@@ -360,6 +360,8 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     }
     ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
     ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
