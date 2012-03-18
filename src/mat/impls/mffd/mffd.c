@@ -272,21 +272,36 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
-  PetscBool      iascii;
+  PetscBool      iascii, viewbase, viewfunction;
+  const char*    prefix;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-     ierr = PetscViewerASCIIPrintf(viewer,"  matrix-free approximation:\n");CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"    err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     if (!((PetscObject)ctx)->type_name) {
-       ierr = PetscViewerASCIIPrintf(viewer,"    The compute h routine has not yet been set\n");CHKERRQ(ierr);
-     } else {
-       ierr = PetscViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",((PetscObject)ctx)->type_name);CHKERRQ(ierr);
-     }
-     if (ctx->ops->view) {
-       ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
-     }
+    ierr = PetscViewerASCIIPrintf(viewer,"Matrix-free approximation:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+    if (!((PetscObject)ctx)->type_name) {
+      ierr = PetscViewerASCIIPrintf(viewer,"The compute h routine has not yet been set\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"Using %s compute h routine\n",((PetscObject)ctx)->type_name);CHKERRQ(ierr);
+    }
+    if (ctx->ops->view) {
+      ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)J, &prefix); CHKERRQ(ierr);
+    
+    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_base", &viewbase); CHKERRQ(ierr);
+    if(viewbase) {
+      ierr = PetscViewerASCIIPrintf(viewer, "Base:\n");     CHKERRQ(ierr);
+      ierr = VecView(ctx->current_u, viewer);                 CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_function", &viewfunction); CHKERRQ(ierr);
+    if(viewfunction) {
+      ierr = PetscViewerASCIIPrintf(viewer, "Function:\n"); CHKERRQ(ierr);
+      ierr = VecView(ctx->current_f, viewer);                 CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for matrix-free matrix",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
@@ -309,7 +324,7 @@ PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
   ierr      = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   j->vshift = 0.0;
   j->vscale = 1.0;
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -379,16 +394,8 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
   }
 
-  /* compute func(U) as base for differencing; only needed first time in */
-  /* Do this even if F = func(U) was provided by user: the reason is that this F 
-     might have come from SNES and was evaluated at the end of the previous iteration;
-     if the Jacobian changes discontinuously (e.g., the residual changes based on the 
-     U computed by the previous SNES iteration; Cf. mechanical contact), this is a bad 
-     base for differencing.
-     I'm not sure how to fix this problem without requiring an across the board 
-     re-evaluation of F, even when it may be safe to proceed without it.
-  */
-  if (ctx->ncurrenth == 1) {
+  /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
+  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) {
     ierr = (*ctx->func)(ctx->funcctx,U,F);CHKERRQ(ierr);
   }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
