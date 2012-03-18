@@ -335,7 +335,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 {
   PetscScalar   *newVals;
   PetscInt      *newCols;
-  PetscInt       rStart, rEnd, r, colMax = 0;
+  PetscInt       rStart, rEnd, numRows, maxRows, r, colMax = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -347,19 +347,23 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
     ierr = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   }
+  numRows = rEnd - rStart;
+  ierr = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
-  for(r = rStart; r < rEnd; ++r) {
+  for(r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
     PetscInt           ncols, c;
 
-    ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-    for(c = 0; c < ncols; ++c) {
-      newCols[c] = cols[c];
-      newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+    if (r < rEnd) {
+      ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+      for(c = 0; c < ncols; ++c) {
+        newCols[c] = cols[c];
+        newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+      }
+      ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-    ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
