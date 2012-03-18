@@ -63,14 +63,18 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   PetscErrorCode ierr;
   MatMFFD        j = (MatMFFD)J->data;
   SNES           snes = (SNES)j->funcctx;
-  Vec            u,f;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
 
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&j->current_u);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  j->current_f_allocated = PETSC_FALSE;
+  if (!j->w) {
+    ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
