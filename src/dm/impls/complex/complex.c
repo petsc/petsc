@@ -3421,7 +3421,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
     if (interpolate) {
       DM        imesh;
       PetscInt *off;
-      PetscInt  firstEdge = numCells+numVertices, numEdges=-1, edge, e;
+      PetscInt  firstEdge = numCells+numVertices, numEdges = 0, edge, e;
 
       /* Count edges using algorithm from CreateNeighborCSR */
       ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
