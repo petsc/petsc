@@ -36,6 +36,16 @@
 #define SNESMS          'ms'
 
 !
+! SNESLineSearchType
+!
+
+#define SNES_LINESEARCH_BASIC 'basic'
+#define SNES_LINESEARCH_BT    'bt'
+#define SNES_LINESEARCH_L2    'l2'
+#define SNES_LINESEARCH_CP    'cp'
+#define SNES_LINESEARCH_SHELL 'shell'
+
+!
 !  SNESMSType
 !
 #define SNESMSEULER     'euler'

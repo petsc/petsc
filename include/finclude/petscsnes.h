@@ -39,25 +39,6 @@
       parameter (SNES_CONVERGED_ITERATING         =  0)
 
 !
-! SNES Line search types
-!
-      PetscEnum SNES_LS_BASIC
-      PetscEnum SNES_LS_BASIC_NONORMS
-      PetscEnum SNES_LS_QUADRATIC
-      PetscEnum SNES_LS_CUBIC
-      PetscEnum SNES_LS_EXACT
-      PetscEnum SNES_LS_TEST
-      PetscEnum SNES_LS_SECANT
-
-      parameter (SNES_LS_BASIC                   =  0)
-      parameter (SNES_LS_BASIC_NONORMS           =  1)
-      parameter (SNES_LS_QUADRATIC               =  2)
-      parameter (SNES_LS_CUBIC                   =  3)
-      parameter (SNES_LS_EXACT                   =  4)
-      parameter (SNES_LS_TEST                    =  5)
-      parameter (SNES_LS_SECANT                  =  6)
-
-!
 !  Some PETSc fortran functions that the user might pass as arguments
 !
       external SNESDEFAULTCOMPUTEJACOBIAN
@@ -70,11 +51,6 @@
 
       external SNESDEFAULTCONVERGED
       external SNESSKIPCONVERGED
-
-      external SNESLINESEARCHCUBIC
-      external SNESLINESEARCHQUADRATIC
-      external SNESLINESEARCHNO
-      external SNESLINESEARCHNONORMS
 
       external SNESDMDACOMPUTEFUNCTION
       external SNESDMDACOMPUTEJACOBIANWITHADIFOR
