@@ -25,7 +25,6 @@ static PetscErrorCode DMCoarsenHook_SNESDM(DM dm,DM dmc,void *ctx)
 
   PetscFunctionBegin;
   ierr = DMSNESCopyContext(dm,dmc);CHKERRQ(ierr);
-  ierr = DMCoarsenHookAdd(dmc,DMCoarsenHook_SNESDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,6 +144,7 @@ PetscErrorCode DMSNESCopyContext(DM dmsrc,DM dmdest)
   ierr = PetscObjectQuery((PetscObject)dmsrc,"SNESDM",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
     ierr = PetscObjectCompose((PetscObject)dmdest,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_SNESDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
