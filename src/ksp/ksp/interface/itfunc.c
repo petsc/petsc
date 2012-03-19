@@ -2029,7 +2029,7 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetComputeOperators"
-/*@
+/*@C
    KSPSetComputeOperators - set routine to compute the linear operators
 
    Logically Collective
@@ -2066,8 +2066,8 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetComputeRHS"
-/*@
-   KSPSetComputeOperators - set routine to compute the right hand side of the linear system
+/*@C
+   KSPSetComputeRHS - set routine to compute the right hand side of the linear system
 
    Logically Collective
 
