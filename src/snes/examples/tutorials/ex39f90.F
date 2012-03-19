@@ -167,7 +167,7 @@
 !
 !
       SNES                snes
-      PetscLineSearch     linesearch
+      SNESLineSearch     linesearch
       Vec                 x,r
       Mat                 J
       integer             its,matrix_free,flg,ierr
@@ -306,18 +306,18 @@
       test_check      = PETSC_FALSE
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-test_check',
      &                          test_check,PETSC_NULL_INTEGER,ierr)
-      call SNESGetPetscLineSearch(snes, linesearch, ierr)
+      call SNESGetSNESLineSearch(snes, linesearch, ierr)
       if (test_check.eqv.PETSC_TRUE) then
-         call PetscLineSearchSetPreCheck(linesearch,FormPreCheck,user,  &
+         call SNESLineSearchSetPreCheck(linesearch,FormPreCheck,user,   &
      &    ierr)
-         call PetscLineSearchSetPostCheck(linesearch,FormPostCheck,user,&
+         call SNESLineSearchSetPostCheck(linesearch,FormPostCheck,user, &
      &    ierr)
       else
          call PetscOptionsGetBool(PETSC_NULL_CHARACTER,
      &       '-test_linesearch',test_linesearch,PETSC_NULL_INTEGER,ierr)
          if (test_linesearch.eqv.PETSC_TRUE) then
-            call PetscLineSearchSetType(linesearch,"shell", ierr)
-            call PetscLineSearchShellSetUserFunc(linesearch,              &
+            call SNESLineSearchSetType(linesearch,"shell", ierr)
+            call SNESLineSearchShellSetUserFunc(linesearch,              &
      &           FormLineSearch, user, ierr)
         end if
       end if
@@ -382,14 +382,14 @@
 
 	write(*,*)"Inside FormLineSearch, user%xm=",user%xm
       mone = -1.0d0
-      call PetscLineSearchGetSNES(linesearch, snes, ierr)
-      call PetscLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
+      call SNESLineSearchGetSNES(linesearch, snes, ierr)
+      call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)
       call VecAXPY(x,mone,y,ierr)
       call SNESComputeFunction(snes,x,f,ierr)
       call VecNorm(f,NORM_2,gnorm,ierr)
       call VecNorm(x,NORM_2,xnorm,ierr)
-      call PetscLineSearchSetNorms(linesearch,xnorm,gnorm,ynorm,ierr)
+      call SNESLineSearchSetNorms(linesearch,xnorm,gnorm,ynorm,ierr)
       return 
       end
 

@@ -80,7 +80,7 @@ struct _n_PreCheck {
 };
 PetscErrorCode PreCheckCreate(MPI_Comm,PreCheck*);
 PetscErrorCode PreCheckDestroy(PreCheck*);
-PetscErrorCode PreCheckFunction(PetscLineSearch,Vec,Vec,PetscBool*,void*);
+PetscErrorCode PreCheckFunction(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 PetscErrorCode PreCheckSetFromOptions(PreCheck);
 
 #undef __FUNCT__
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   PetscInt               use_precheck;   /* 0=none, 1=version in this file, 2=SNES-provided version */
   PetscReal              precheck_angle; /* When manually setting the SNES-provided precheck function */
   PetscErrorCode         ierr;
-  PetscLineSearch        linesearch;
+  SNESLineSearch        linesearch;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -187,14 +187,14 @@ int main(int argc,char **argv)
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
   /* Set up the precheck context if requested */
   if (use_precheck == 1) {      /* Use the precheck routines in this file */
     ierr = PreCheckCreate(PETSC_COMM_WORLD,&precheck);CHKERRQ(ierr);
     ierr = PreCheckSetFromOptions(precheck);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetPreCheck(linesearch,PreCheckFunction,precheck);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(linesearch,PreCheckFunction,precheck);CHKERRQ(ierr);
   } else if (use_precheck == 2) { /* Use the version provided by the library */
-    ierr = PetscLineSearchSetPreCheck(linesearch,PetscLineSearchPreCheckPicard,&precheck_angle);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(linesearch,SNESLineSearchPreCheckPicard,&precheck_angle);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -585,7 +585,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
 /*
   Compare the direction of the current and previous step, modify the current step accordingly
 */
-PetscErrorCode PreCheckFunction(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool *changed, void *ctx)
+PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed, void *ctx)
 {
   PetscErrorCode ierr;
   PreCheck       precheck;
@@ -596,7 +596,7 @@ PetscErrorCode PreCheckFunction(PetscLineSearch linesearch,Vec X,Vec Y,PetscBool
   SNES           snes;
 
   PetscFunctionBegin;
-  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   precheck = (PreCheck)ctx;
   if (!precheck->Ylast) {ierr = VecDuplicate(Y,&precheck->Ylast);CHKERRQ(ierr);}
   Ylast = precheck->Ylast;
