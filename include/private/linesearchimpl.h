@@ -53,6 +53,7 @@ struct _p_LineSearch {
   PetscReal     atol;
   PetscReal     ltol;
 
+  PetscReal     precheck_picard_angle;
 
   void *        precheckctx;
   void *        postcheckctx;
