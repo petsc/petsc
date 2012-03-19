@@ -1017,8 +1017,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
       ierr = PetscMalloc5(sf->multi->nroots,PetscInt,&inranks,sf->multi->nroots,PetscInt,&newoffset,sf->nleaves,PetscInt,&outranks,sf->nleaves,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) outranks[i] = rank;
-      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPIU_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
       for (i=0; i<sf->nroots; i++) {
         PetscInt j;
