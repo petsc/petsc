@@ -393,102 +393,102 @@ extern PetscErrorCode  SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
 
 /* --------- Routines specifically for line search methods --------------- */
 
-typedef struct _p_LineSearch* PetscLineSearch;
+typedef struct _p_LineSearch* SNESLineSearch;
 
 /*
  User interface for Line Searches
 */
 
-#define PetscLineSearchType char*
-#define PETSCLINESEARCHBT                 "bt"
-#define PETSCLINESEARCHBASIC              "basic"
-#define PETSCLINESEARCHL2                 "l2"
-#define PETSCLINESEARCHCP                 "cp"
-#define PETSCLINESEARCHSHELL              "shell"
+#define SNESLineSearchType char*
+#define SNES_LINESEARCH_BT                 "bt"
+#define SNES_LINESEARCH_BASIC              "basic"
+#define SNES_LINESEARCH_L2                 "l2"
+#define SNES_LINESEARCH_CP                 "cp"
+#define SNES_LINESEARCH_SHELL              "shell"
 
-extern PetscClassId  PETSCLINESEARCH_CLASSID;
-extern PetscBool     PetscLineSearchRegisterAllCalled;
-extern PetscFList    PetscLineSearchList;
-extern PetscLogEvent PetscLineSearch_Apply;
+extern PetscClassId  SNESLINESEARCH_CLASSID;
+extern PetscBool     SNESLineSearchRegisterAllCalled;
+extern PetscFList    SNESLineSearchList;
+extern PetscLogEvent SNESLineSearch_Apply;
 
-typedef PetscErrorCode (*PetscLineSearchPreCheckFunc)(PetscLineSearch,Vec,Vec,PetscBool*,void*);
-typedef PetscErrorCode (*PetscLineSearchVIProjectFunc)(SNES,Vec);
-typedef PetscErrorCode (*PetscLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
-typedef PetscErrorCode (*PetscLineSearchPostCheckFunc)(PetscLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
-typedef PetscErrorCode (*PetscLineSearchApplyFunc)(PetscLineSearch);
-typedef PetscErrorCode (*PetscLineSearchUserFunc)(PetscLineSearch, void *);
+typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
+typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
+typedef PetscErrorCode (*SNESLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
+typedef PetscErrorCode (*SNESLineSearchPostCheckFunc)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
+typedef PetscErrorCode (*SNESLineSearchApplyFunc)(SNESLineSearch);
+typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
 
-extern PetscErrorCode PetscLineSearchCreate(MPI_Comm, PetscLineSearch*);
-extern PetscErrorCode PetscLineSearchReset(PetscLineSearch);
-extern PetscErrorCode PetscLineSearchView(PetscLineSearch);
-extern PetscErrorCode PetscLineSearchDestroy(PetscLineSearch *);
-extern PetscErrorCode PetscLineSearchSetType(PetscLineSearch, const PetscLineSearchType);
-extern PetscErrorCode PetscLineSearchSetFromOptions(PetscLineSearch);
-extern PetscErrorCode PetscLineSearchSetUp(PetscLineSearch);
-extern PetscErrorCode PetscLineSearchApply(PetscLineSearch, Vec, Vec, PetscReal *, Vec);
-extern PetscErrorCode PetscLineSearchPreCheck(PetscLineSearch, PetscBool *);
-extern PetscErrorCode PetscLineSearchPostCheck(PetscLineSearch, PetscBool *, PetscBool *);
-extern PetscErrorCode PetscLineSearchGetWork(PetscLineSearch, PetscInt);
+extern PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
+extern PetscErrorCode SNESLineSearchReset(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchView(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
+extern PetscErrorCode SNESLineSearchSetType(SNESLineSearch, const SNESLineSearchType);
+extern PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchSetUp(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchApply(SNESLineSearch, Vec, Vec, PetscReal *, Vec);
+extern PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch, PetscBool *);
+extern PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch, PetscBool *, PetscBool *);
+extern PetscErrorCode SNESLineSearchGetWork(SNESLineSearch, PetscInt);
 
 /* set the functions for precheck and postcheck */
 
-extern PetscErrorCode PetscLineSearchSetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc, void *ctx);
-extern PetscErrorCode PetscLineSearchSetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc, void *ctx);
+extern PetscErrorCode SNESLineSearchSetPreCheck(SNESLineSearch, SNESLineSearchPreCheckFunc, void *ctx);
+extern PetscErrorCode SNESLineSearchSetPostCheck(SNESLineSearch, SNESLineSearchPostCheckFunc, void *ctx);
 
-extern PetscErrorCode PetscLineSearchGetPreCheck(PetscLineSearch, PetscLineSearchPreCheckFunc*, void **ctx);
-extern PetscErrorCode PetscLineSearchGetPostCheck(PetscLineSearch, PetscLineSearchPostCheckFunc*, void **ctx);
+extern PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch, SNESLineSearchPreCheckFunc*, void **ctx);
+extern PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch, SNESLineSearchPostCheckFunc*, void **ctx);
 
 /* set the functions for VI-specific line search operations */
 
-extern PetscErrorCode PetscLineSearchSetVIFunctions(PetscLineSearch, PetscLineSearchVIProjectFunc, PetscLineSearchVINormFunc);
-extern PetscErrorCode PetscLineSearchGetVIFunctions(PetscLineSearch, PetscLineSearchVIProjectFunc*, PetscLineSearchVINormFunc*);
+extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFunc, SNESLineSearchVINormFunc);
+extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFunc*, SNESLineSearchVINormFunc*);
 
 /* pointers to the associated SNES in order to be able to get the function evaluation out */
-extern PetscErrorCode  PetscLineSearchSetSNES(PetscLineSearch,SNES);
-extern PetscErrorCode  PetscLineSearchGetSNES(PetscLineSearch,SNES*);
+extern PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch,SNES);
+extern PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch,SNES*);
 
 /* set and get the parameters and vectors */
-extern PetscErrorCode  PetscLineSearchGetTolerances(PetscLineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
-extern PetscErrorCode  PetscLineSearchSetTolerances(PetscLineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
+extern PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscInt);
 
-extern PetscErrorCode PetscLineSearchPreCheckPicard(PetscLineSearch,Vec,Vec,PetscBool*,void*);
+extern PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 
-extern PetscErrorCode  PetscLineSearchGetLambda(PetscLineSearch,PetscReal*);
-extern PetscErrorCode  PetscLineSearchSetLambda(PetscLineSearch,PetscReal);
+extern PetscErrorCode  SNESLineSearchGetLambda(SNESLineSearch,PetscReal*);
+extern PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch,PetscReal);
 
-extern PetscErrorCode  PetscLineSearchGetDamping(PetscLineSearch,PetscReal*);
-extern PetscErrorCode  PetscLineSearchSetDamping(PetscLineSearch,PetscReal);
+extern PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch,PetscReal*);
+extern PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 
-extern PetscErrorCode  PetscLineSearchGetSuccess(PetscLineSearch, PetscBool*);
-extern PetscErrorCode  PetscLineSearchSetSuccess(PetscLineSearch, PetscBool);
+extern PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
+extern PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
 
-extern PetscErrorCode PetscLineSearchGetVecs(PetscLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
-extern PetscErrorCode PetscLineSearchSetVecs(PetscLineSearch,Vec,Vec,Vec,Vec,Vec);
+extern PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
+extern PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch,Vec,Vec,Vec,Vec,Vec);
 
-extern PetscErrorCode PetscLineSearchGetNorms(PetscLineSearch, PetscReal *, PetscReal *, PetscReal *);
-extern PetscErrorCode PetscLineSearchSetNorms(PetscLineSearch, PetscReal, PetscReal, PetscReal);
-extern PetscErrorCode PetscLineSearchComputeNorms(PetscLineSearch);
+extern PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch, PetscReal *, PetscReal *, PetscReal *);
+extern PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch, PetscReal, PetscReal, PetscReal);
+extern PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch);
 
-extern PetscErrorCode  PetscLineSearchSetMonitor(PetscLineSearch, PetscBool);
-extern PetscErrorCode  PetscLineSearchGetMonitor(PetscLineSearch, PetscViewer*);
+extern PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch, PetscBool);
+extern PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch, PetscViewer*);
 
-extern PetscErrorCode  PetscLineSearchAppendOptionsPrefix(PetscLineSearch, const char prefix[]);
-extern PetscErrorCode  PetscLineSearchGetOptionsPrefix(PetscLineSearch, const char *prefix[]);
+extern PetscErrorCode  SNESLineSearchAppendOptionsPrefix(SNESLineSearch, const char prefix[]);
+extern PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char *prefix[]);
 
 
 /* Shell interface functions */
-extern PetscErrorCode PetscLineSearchShellSetUserFunc(PetscLineSearch,PetscLineSearchUserFunc,void*);
-extern PetscErrorCode PetscLineSearchShellGetUserFunc(PetscLineSearch,PetscLineSearchUserFunc*,void**);
+extern PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch,SNESLineSearchUserFunc,void*);
+extern PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch,SNESLineSearchUserFunc*,void**);
 
 /*register line search types */
-extern PetscErrorCode PetscLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscLineSearch));
-extern PetscErrorCode PetscLineSearchRegisterAll(const char path[]);
-extern PetscErrorCode PetscLineSearchRegisterDestroy(void);
+extern PetscErrorCode SNESLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
+extern PetscErrorCode SNESLineSearchRegisterAll(const char path[]);
+extern PetscErrorCode SNESLineSearchRegisterDestroy(void);
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscLineSearchRegisterDynamic(a,b,c,d) PetscLineSearchRegister(a,b,c,0)
+#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,0)
 #else
-#define PetscLineSearchRegisterDynamic(a,b,c,d) PetscLineSearchRegister(a,b,c,d)
+#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,d)
 #endif
 
 /* Routines for VI solver */
@@ -510,8 +510,8 @@ extern PetscErrorCode SNESSetDM(SNES,DM);
 extern PetscErrorCode SNESGetDM(SNES,DM*);
 extern PetscErrorCode SNESSetPC(SNES,SNES);
 extern PetscErrorCode SNESGetPC(SNES,SNES*);
-extern PetscErrorCode SNESSetPetscLineSearch(SNES,PetscLineSearch);
-extern PetscErrorCode SNESGetPetscLineSearch(SNES,PetscLineSearch*);
+extern PetscErrorCode SNESSetSNESLineSearch(SNES,SNESLineSearch);
+extern PetscErrorCode SNESGetSNESLineSearch(SNES,SNESLineSearch*);
 extern PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 extern PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
 

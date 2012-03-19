@@ -348,9 +348,9 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
   F		= snes->vec_func;	/* residual vector */
   Y		= snes->work[0];	/* work vectors */
 
-  ierr = PetscLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetVecs(snes->linesearch, X, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetUp(snes->linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetVecs(snes->linesearch, X, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetUp(snes->linesearch);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -583,8 +583,8 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
-    ierr = PetscLineSearchApply(snes->linesearch, X, F, &gnorm, Y);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes->linesearch, X, F, &gnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -592,7 +592,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
       ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
 
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
@@ -724,7 +724,7 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   SNES_VIRS       *vi = (SNES_VIRS*) snes->data;
   PetscInt        *indices;
   PetscInt        i,n,rstart,rend;
-  PetscLineSearch linesearch;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
@@ -740,8 +740,8 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
 
   /* set the line search functions */
   if (!snes->linesearch) {
-    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHBT);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_BT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

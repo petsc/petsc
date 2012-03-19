@@ -233,22 +233,22 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ynorm = 1; gnorm = fnorm;
     ierr = VecCopy(D, Dold);CHKERRQ(ierr);
     ierr = VecCopy(X, Xold);CHKERRQ(ierr);
-    ierr = PetscLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
       }
-    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
       }
     }
-    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     if (qn->scalingtype == SNES_QN_LSSCALE) {
-      ierr = PetscLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
     }
 
     /* convergence monitoring */
@@ -430,7 +430,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   PetscInt   indx = 0;
   PetscBool  flg;
   PetscBool  monflg = PETSC_FALSE;
-  PetscLineSearch linesearch;
+  SNESLineSearch linesearch;
   PetscFunctionBegin;
 
   qn = (SNES_QN*)snes->data;
@@ -466,11 +466,11 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
-    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
     if (!snes->pc || qn->compositiontype == SNES_QN_SEQUENTIAL) {
-      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHCP);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_CP);CHKERRQ(ierr);
     } else {
-      ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
     }
   }
   if (monflg) {

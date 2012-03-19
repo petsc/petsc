@@ -61,13 +61,13 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
-  PetscLineSearch linesearch;
+  SNESLineSearch linesearch;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
-    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHL2);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -166,9 +166,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     } else {
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
     }
-    ierr = PetscLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lsSuccess);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

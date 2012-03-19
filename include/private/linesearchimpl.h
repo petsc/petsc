@@ -6,16 +6,16 @@
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
-  PetscErrorCode (*view)          (PetscLineSearch);
-  PetscLineSearchApplyFunc        apply;
-  PetscLineSearchPreCheckFunc     precheckstep;
-  PetscLineSearchVIProjectFunc    viproject;
-  PetscLineSearchVINormFunc       vinorm;
-  PetscLineSearchPostCheckFunc    postcheckstep;
-  PetscErrorCode (*setfromoptions)(PetscLineSearch);
-  PetscErrorCode (*reset)         (PetscLineSearch);
-  PetscErrorCode (*destroy)       (PetscLineSearch);
-  PetscErrorCode (*setup)         (PetscLineSearch);
+  PetscErrorCode (*view)          (SNESLineSearch);
+  SNESLineSearchApplyFunc        apply;
+  SNESLineSearchPreCheckFunc     precheckstep;
+  SNESLineSearchVIProjectFunc    viproject;
+  SNESLineSearchVINormFunc       vinorm;
+  SNESLineSearchPostCheckFunc    postcheckstep;
+  PetscErrorCode (*setfromoptions)(SNESLineSearch);
+  PetscErrorCode (*reset)         (SNESLineSearch);
+  PetscErrorCode (*destroy)       (SNESLineSearch);
+  PetscErrorCode (*setup)         (SNESLineSearch);
 };
 
 struct _p_LineSearch {

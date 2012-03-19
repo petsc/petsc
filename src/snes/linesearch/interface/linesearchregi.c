@@ -1,65 +1,65 @@
 #include <private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  PetscLineSearchCreate_Basic(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_L2(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_CP(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_BT(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_Shell(PetscLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_Basic(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_L2(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_CP(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_BT(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_Shell(SNESLineSearch);
 EXTERN_C_END
 
 /*
-extern PetscErrorCode  PetscLineSearchCreate_Cubic(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_Quadratic(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_BasicNoNorms(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_QuadraticSecant(PetscLineSearch);
-extern PetscErrorCode  PetscLineSearchCreate_CriticalSecant(PetscLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_Cubic(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_Quadratic(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_BasicNoNorms(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_QuadraticSecant(SNESLineSearch);
+extern PetscErrorCode  SNESLineSearchCreate_CriticalSecant(SNESLineSearch);
  */
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLineSearchRegisterAll"
+#define __FUNCT__ "SNESLineSearchRegisterAll"
 /*@C
-   PetscLineSearchRegisterAll - Registers all of the nonlinear solver methods in the PetscLineSearch package.
+   SNESLineSearchRegisterAll - Registers all of the nonlinear solver methods in the SNESLineSearch package.
 
    Not Collective
 
    Level: advanced
 
-.keywords: PetscLineSearch, register, all
+.keywords: SNESLineSearch, register, all
 
-.seealso:  PetscLineSearchRegisterDestroy()
+.seealso:  SNESLineSearchRegisterDestroy()
 @*/
-PetscErrorCode PetscLineSearchRegisterAll(const char path[])
+PetscErrorCode SNESLineSearchRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscLineSearchRegisterAllCalled = PETSC_TRUE;
+  SNESLineSearchRegisterAllCalled = PETSC_TRUE;
   /*
-  ierr = PetscLineSearchRegisterDynamic(LINESEARCHCUBIC,             path,"PetscLineSearchCreate_Cubic",             PetscLineSearchCreate_Cubic);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(LINESEARCHCUBIC,             path,"SNESLineSearchCreate_Cubic",             SNESLineSearchCreate_Cubic);CHKERRQ(ierr);
 
-  ierr = PetscLineSearchRegisterDynamic(LINESEARCHQUADRATIC,         path,"PetscLineSearchCreate_Quadratic",         PetscLineSearchCreate_Quadratic);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"PetscLineSearchCreate_CriticalSecant",    PetscLineSearchCreate_CriticalSecant);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(LINESEARCHQUADRATIC,         path,"SNESLineSearchCreate_Quadratic",         SNESLineSearchCreate_Quadratic);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"SNESLineSearchCreate_CriticalSecant",    SNESLineSearchCreate_CriticalSecant);CHKERRQ(ierr);
 
    */
-  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHSHELL,             path,"PetscLineSearchCreate_Shell",             PetscLineSearchCreate_Shell);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHBASIC,             path,"PetscLineSearchCreate_Basic",             PetscLineSearchCreate_Basic);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHL2,                path,"PetscLineSearchCreate_L2",                PetscLineSearchCreate_L2);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHBT,                path,"PetscLineSearchCreate_BT",                PetscLineSearchCreate_BT);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterDynamic(PETSCLINESEARCHCP,                path,"PetscLineSearchCreate_CP",                PetscLineSearchCreate_CP);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_SHELL,             path,"SNESLineSearchCreate_Shell",             SNESLineSearchCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_BASIC,             path,"SNESLineSearchCreate_Basic",             SNESLineSearchCreate_Basic);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_L2,                path,"SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_BT,                path,"SNESLineSearchCreate_BT",                SNESLineSearchCreate_BT);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_CP,                path,"SNESLineSearchCreate_CP",                SNESLineSearchCreate_CP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLineSearchRegisterDestroy"
-PetscErrorCode  PetscLineSearchRegisterDestroy(void)
+#define __FUNCT__ "SNESLineSearchRegisterDestroy"
+PetscErrorCode  SNESLineSearchRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&PetscLineSearchList);CHKERRQ(ierr);
-  PetscLineSearchRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
+  SNESLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

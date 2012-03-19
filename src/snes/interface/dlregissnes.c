@@ -21,7 +21,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
   SNESList               = PETSC_NULL;
-  PetscLineSearchList    = PETSC_NULL;
+  SNESLineSearchList     = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -54,10 +54,10 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = SNESMSInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("PetscLineSearch",&PETSCLINESEARCH_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
-  ierr = PetscLineSearchRegisterAll(path);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("SNESSolve",        SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",   SNES_CLASSID,&SNES_LineSearch);CHKERRQ(ierr);

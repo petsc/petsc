@@ -2,8 +2,8 @@
 #include <private/snesimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLineSearchApply_Basic"
-static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
+#define __FUNCT__ "SNESLineSearchApply_Basic"
+static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
@@ -14,14 +14,14 @@ static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
 
   PetscFunctionBegin;
 
-  ierr = PetscLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = PetscLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = PetscLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
 
   /* precheck */
-  ierr = PetscLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
+  ierr = SNESLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
 
   /* update */
   ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
   }
 
   /* postcheck */
-  ierr = PetscLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
+  ierr = SNESLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {
@@ -40,7 +40,7 @@ static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
   ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
-    ierr = PetscLineSearchSetSuccess(linesearch, PETSC_FALSE);
+    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);
     PetscFunctionReturn(0);
   }
 
@@ -54,7 +54,7 @@ static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
   }
 
   /*
-  ierr = PetscLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
    */
 
   /* copy the solution over */
@@ -63,22 +63,22 @@ static PetscErrorCode  PetscLineSearchApply_Basic(PetscLineSearch linesearch)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLineSearchCreate_Basic"
+#define __FUNCT__ "SNESLineSearchCreate_Basic"
 /*MC
-   PETSCLINESEARCHBASIC - This routine is not a line search at all;
+   SNES_LINESEARCH_BASIC - This routine is not a line search at all;
    it simply uses the full step.  Thus, this routine is intended
    to serve as a template and is not recommended for general use.
 
    Level: advanced
 
-.keywords: SNES, PetscLineSearch, damping
+.keywords: SNES, SNESLineSearch, damping
 
-.seealso: PetscLineSearchCreate(), PetscLineSearchSetType()
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
-PETSC_EXTERN_C PetscErrorCode PetscLineSearchCreate_Basic(PetscLineSearch linesearch)
+PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = PetscLineSearchApply_Basic;
+  linesearch->ops->apply          = SNESLineSearchApply_Basic;
   linesearch->ops->destroy        = PETSC_NULL;
   linesearch->ops->setfromoptions = PETSC_NULL;
   linesearch->ops->reset          = PETSC_NULL;

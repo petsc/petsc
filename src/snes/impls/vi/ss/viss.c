@@ -340,8 +340,8 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
     /* ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr); */
-    ierr = PetscLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
-    ierr = PetscLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -349,7 +349,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
       sdm->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
-    ierr = PetscLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscBool ismin;
@@ -448,7 +448,7 @@ PetscErrorCode SNESReset_VISS(SNES snes)
 static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
 {
   PetscErrorCode     ierr;
-  PetscLineSearch    linesearch;
+  SNESLineSearch    linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
@@ -456,8 +456,8 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set up the default line search */
   if (!snes->linesearch) {
-    ierr = SNESGetPetscLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = PetscLineSearchSetType(linesearch, PETSCLINESEARCHBT);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_BT);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

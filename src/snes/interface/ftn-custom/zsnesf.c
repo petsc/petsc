@@ -30,7 +30,7 @@
 #define snesmonitorlg_                   SNESMONITORLG
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
-#define snesgetpetsclinesearch           SNESGETPETSCLINESEARCH
+#define snesgetsneslinesearch            SNESGETSNESLINESEARCH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
@@ -60,7 +60,7 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
-#define snesgetpetsclinesearch           snesgetpetsclinesearch
+#define snesgetsneslinesearch            snesgetsneslinesearch
 #endif
 
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
@@ -381,8 +381,8 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   }
 }
 
-void PETSC_STDCALL  snesgetpetsclinesearch_(SNES *snes,PetscLineSearch *linesearch, int *__ierr ){
-*__ierr = SNESGetPetscLineSearch(*snes, linesearch);
+void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr ){
+*__ierr = SNESGetSNESLineSearch(*snes, linesearch);
 }
 
 EXTERN_C_END

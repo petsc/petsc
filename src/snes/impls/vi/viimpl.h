@@ -10,11 +10,6 @@ extern PetscErrorCode SNESSetUp_VI(SNES);
 extern PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 extern PetscErrorCode SNESSolve_VISS(SNES);
 
-/* line search headers */
-EXTERN_C_BEGIN
-extern PetscErrorCode PetscLineSearchCreate_VIBasic(PetscLineSearch);
-EXTERN_C_END
-
 /* composed functions */
 EXTERN_C_BEGIN
 extern PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
