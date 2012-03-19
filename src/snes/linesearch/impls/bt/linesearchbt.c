@@ -300,8 +300,8 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
   bt = (SNESLineSearch_BT*)linesearch->data;
 
   ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-linesearch_bt_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-linesearch_bt_order",  "Order of approximation",   "SNESLineSearchBT", orders,2,"quadratic",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_linesearch_order",  "Order of approximation",   "SNESLineSearchBT", orders,2,"quadratic",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0: bt->order = SNES_LINESEARCH_BT_QUADRATIC;
