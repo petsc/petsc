@@ -17,7 +17,6 @@ EXTERN_C_END
 
 /* composed functions */
 EXTERN_C_BEGIN
-extern PetscErrorCode SNESLineSearchSetType_VI(SNES,SNESLineSearchType);
 extern PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
 extern PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 EXTERN_C_END

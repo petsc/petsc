@@ -807,8 +807,6 @@ PetscErrorCode  SNESCreate_VIRS(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VI);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -455,7 +455,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool               flg,set,mf,mf_operator,pcset;
+  PetscBool               flg,mf,mf_operator,pcset;
   PetscInt                i,indx,lag,mf_version,grids;
   MatStructure            matflag;
   const char              *deft = SNESLS;
@@ -597,30 +597,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
     /* GS Options */
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
-
-    /* line search options */
-    ierr = PetscOptionsReal("-snes_ls_alpha","Constant function norm must decrease by","None",snes->ls_alpha,&snes->ls_alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",snes->maxstep,&snes->maxstep,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_steptol","Minimum lambda allowed","None",snes->steptol,&snes->steptol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",snes->damping,&snes->damping,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-snes_ls_it"      ,"Line search iterations","SNES",snes->ls_its,&snes->ls_its,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",snes->ls_monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-    if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
-    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)snes->ls_type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = SNESLineSearchSetType(snes,(SNESLineSearchType)indx);CHKERRQ(ierr);
-    }
-    flg = snes->ops->precheckstep == SNESLineSearchPreCheckPicard ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsBool("-snes_ls_precheck_picard","Use a correction that sometimes improves convergence of Picard iteration","SNESLineSearchPreCheckPicard",flg,&flg,&set);CHKERRQ(ierr);
-    if (set) {
-      if (flg) {
-        snes->precheck_picard_angle = 10.; /* correction only active if angle is less than 10 degrees */
-        ierr = PetscOptionsReal("-snes_ls_precheck_picard_angle","Maximum angle at which to activate the correction","none",snes->precheck_picard_angle,&snes->precheck_picard_angle,PETSC_NULL);CHKERRQ(ierr);
-        ierr = SNESLineSearchSetPreCheck(snes,SNESLineSearchPreCheckPicard,&snes->precheck_picard_angle);CHKERRQ(ierr);
-      } else {
-        ierr = SNESLineSearchSetPreCheck(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      }
-    }
 
     for(i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
@@ -1288,16 +1264,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->conv_hist_reset   = PETSC_TRUE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->gssweeps          = 1;
-
-  /* initialize the line search options */
-  snes->linesearch        = PETSC_NULL;
-  snes->ls_type           = SNES_LS_BASIC;
-  snes->ls_its            = 1;
-  snes->damping           = 1.0;
-  snes->maxstep           = 1e8;
-  snes->steptol           = 1e-12;
-  snes->ls_alpha          = 1e-4;
-  snes->ls_monitor        = PETSC_NULL;
 
   snes->ops->linesearch   = PETSC_NULL;
   snes->precheck          = PETSC_NULL;

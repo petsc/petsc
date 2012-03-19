@@ -387,41 +387,11 @@ extern PetscErrorCode  SNESSetGSSweeps(SNES,PetscInt);
 extern PetscErrorCode  SNESGetGSSweeps(SNES,PetscInt *);
 extern PetscErrorCode  SNESComputeGS(SNES,Vec,Vec);
 
-/* --------- Routines specifically for line search methods --------------- */
-/*E
-    SNESLineSearchType - type of line search used in Newton's method as well as VI solvers and Richardson solvers
-
-    Level: beginner
-
-.seealso: SNESSetFromOptions(), SNESLineSearchSet()
-E*/
-typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_CUBIC, SNES_LS_EXACT, SNES_LS_TEST, SNES_LS_CRITICAL, SNES_LS_USER_DEFINED} SNESLineSearchType;
-extern const char *const SNESLineSearchTypes[];
-extern const char *SNESLineSearchTypeName(SNESLineSearchType); /* Does bounds checking, use this for viewing */
-
-extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *),void*);
-extern PetscErrorCode  SNESLineSearchSetType(SNES,SNESLineSearchType);
-extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchCriticalSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchQuadraticSecant(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-
-extern PetscErrorCode  SNESLineSearchApply(SNES,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchPreCheckApply(SNES,Vec,Vec,PetscBool*);
-extern PetscErrorCode  SNESLineSearchPostCheckApply(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*);
-
-extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
-extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
-extern PetscErrorCode  SNESLineSearchPreCheckPicard(SNES,Vec,Vec,void*,PetscBool*);
-extern PetscErrorCode  SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
-extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
-
 extern PetscErrorCode  SNESShellGetContext(SNES,void**);
 extern PetscErrorCode  SNESShellSetContext(SNES,void*);
 extern PetscErrorCode  SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
+
+/* --------- Routines specifically for line search methods --------------- */
 
 typedef struct _p_LineSearch* PetscLineSearch;
 

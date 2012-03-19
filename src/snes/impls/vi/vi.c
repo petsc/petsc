@@ -1006,36 +1006,6 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetType_VI"
-PetscErrorCode  SNESLineSearchSetType_VI(SNES snes, SNESLineSearchType type)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-
-  switch (type) {
-  case SNES_LS_BASIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchNo_VI,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_BASIC_NONORMS:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_VI,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_QUADRATIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_VI,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  case SNES_LS_CUBIC:
-    ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_VI,PETSC_NULL);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"Unknown line search type");
-    break;
-  }
-  snes->ls_type = type;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions_VI"
 PetscErrorCode SNESSetFromOptions_VI(SNES snes)

@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zsnesf.c zsneslsf.c
+SOURCEC  = zsnesf.c
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =

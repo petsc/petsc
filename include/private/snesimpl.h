@@ -105,7 +105,6 @@ struct _p_SNES {
 
   /* ------------------------ Line Search Parameters ---------------------- */
 
-  SNESLineSearchType ls_type;     /* the present line search type */
   PetscReal   damping;            /* line search damping */
   PetscReal   maxstep;            /* line search maximum step size */
   PetscReal   steptol;            /* step convergence tolerance */
@@ -209,7 +208,6 @@ extern PetscErrorCode SNESSetFromOptions_VI(SNES);
 extern PetscErrorCode SNESSetUp_VI(SNES);
 typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 EXTERN_C_BEGIN
-extern PetscErrorCode SNESLineSearchSetType_VI(SNES,SNESLineSearchType);
 extern PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
 extern PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 EXTERN_C_END
