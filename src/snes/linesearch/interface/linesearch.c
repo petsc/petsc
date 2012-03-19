@@ -311,8 +311,8 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * cha
 .  linesearch - The linesearch instance.
 
    Output Parameters:
-+  changed_Y - Indicator if the solution has been changed.
--  changed_W - Indicator if the direction has been changed.
++  changed_Y - Indicator if the direction has been changed.
+-  changed_W - Indicator if the solution has been changed.
 
    Level: Intermediate
 
