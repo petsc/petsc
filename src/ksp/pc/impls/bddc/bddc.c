@@ -1057,7 +1057,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   PetscInt          n_R=0;
   PetscInt          n_D=0;
   PetscInt          n_B=0;
-  PetscMPIInt       totprocs;
   PetscScalar       zero=0.0;
   PetscScalar       one=1.0;
   PetscScalar       m_one=-1.0;
