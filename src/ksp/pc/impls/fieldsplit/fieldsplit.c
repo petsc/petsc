@@ -1481,10 +1481,10 @@ $              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
      option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc. The
      factorization type is set using -pc_fieldsplit_schur_factorization_type <diag, lower, upper, full>. The full is shown above,
-     but diag gives
+     diag gives
 $              ( inv(A00)     0   )
 $              (   0      -ksp(S) )
-     so that the preconditioner is positive definite. The lower factorization is the inverse of
+     note that slightly counter intuitively there is a negative in front of the ksp(S) so that the preconditioner is positive definite. The lower factorization is the inverse of
 $              (  A00   0 )
 $              (  A10   S )
      where the inverses of A00 and S are applied using KSPs. The upper factorization is the inverse of
