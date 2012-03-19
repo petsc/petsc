@@ -59,11 +59,11 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("SNESSolve",        SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESLineSearch",   SNES_CLASSID,&SNES_LineSearch);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESFunctionEval", SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESGSEval",       SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESJacobianEval", SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESGSEval",           SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESLineSearch_Apply", SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
