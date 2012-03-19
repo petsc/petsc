@@ -2015,6 +2015,7 @@ static PetscErrorCode ListDelete(List *l, int pos, int order)
   PetscFunctionReturn(0);
 }
 
+#if 0 /* Currently unused */
 #undef __FUNCT__
 #define __FUNCT__ "ListHasItem"
 /*  hasitem()    Search in this list to find if 'checkitem' exists.            */
@@ -2039,6 +2040,7 @@ static PetscErrorCode ListHasItem(List *l, void *checkitem, int *idx)
   *idx = id;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "ListLength"
@@ -10047,7 +10049,7 @@ PetscErrorCode TetGenMeshBTreeSort(TetGenMesh *m, point *vertexarray, int arrays
     /*  Allocate space for the left array (use the first entry to save */
     /*    the length of this array). */
     ierr = PetscMalloc((i + 1) * sizeof(point), &leftarray);CHKERRQ(ierr);
-    leftarray[0] = (point) i; /*  The array length. */
+    leftarray[0] = (point) (PETSC_UINTPTR_T) i; /*  The array length. */
     /*  Put all points in this array. */
     for(k = 0; k < i; k++) {
       leftarray[k + 1] = vertexarray[k];
@@ -10067,7 +10069,7 @@ PetscErrorCode TetGenMeshBTreeSort(TetGenMesh *m, point *vertexarray, int arrays
     /*  Allocate space for the right array (use the first entry to save */
     /*    the length of this array). */
     ierr = PetscMalloc((j + 1) * sizeof(point), &rightarray);CHKERRQ(ierr);
-    rightarray[0] = (point) j; /*  The array length. */
+    rightarray[0] = (point) (PETSC_UINTPTR_T) j; /*  The array length. */
     /*  Put all points in this array. */
     for (k = 0; k < j; k++) {
       rightarray[k + 1] = vertexarray[i + k];
@@ -13150,7 +13152,7 @@ PetscErrorCode TetGenMeshFindDirection2(TetGenMesh *m, triface* searchtet, point
   triface neightet = {PETSC_NULL, 0, 0};
   point pa, pb, pc, pd, pn;
   enum {HMOVE, RMOVE, LMOVE} nextmove;
-  enum {HCOPLANE, RCOPLANE, LCOPLANE, NCOPLANE} cop;
+  /* enum {HCOPLANE, RCOPLANE, LCOPLANE, NCOPLANE} cop; */
   PetscReal hori, rori, lori;
   PetscReal dmin, dist;
 
@@ -13346,7 +13348,7 @@ PetscErrorCode TetGenMeshFindDirection2(TetGenMesh *m, triface* searchtet, point
             /*  pa->'endpt' crosses the edge pb->pc. */
             /*  enextself(*searchtet); */
             /*  return INTEREDGE; */
-            cop = HCOPLANE;
+            /* cop = HCOPLANE; */
             break;
           }
           if (rori == 0) {
@@ -13359,16 +13361,16 @@ PetscErrorCode TetGenMeshFindDirection2(TetGenMesh *m, triface* searchtet, point
               PetscFunctionReturn(0);
             }
             /*  pa->'endpt' crosses the edge pb->pd. */
-            cop = RCOPLANE;
+            /* cop = RCOPLANE; */
             break;
           }
           if (lori == 0) {
             /*  pa->'endpt' crosses the edge pc->pd. */
-            cop = LCOPLANE;
+            /* cop = LCOPLANE; */
             break;
           }
           /*  pa->'endpt' crosses the face bcd. */
-          cop = NCOPLANE;
+          /* cop = NCOPLANE; */
           break;
         }
       }
@@ -15195,15 +15197,14 @@ PetscErrorCode TetGenMeshConstrainedFacets(TetGenMesh *m)
             /*  Restore old tets and delete new tets. */
             ierr = TetGenMeshRestoreCavity(m, crosstets, topnewtets, botnewtets);CHKERRQ(ierr);
           }
+          if (!delaunayflag) {
+            PetscInfo(b->in, "TetGen had some debugging code here");
+          }
           m->hullsize = bakhullsize;
           m->checksubsegs = m->checksubfaces = 1;
         } else if (dir == INTERFACE) {
           /*  Recover subfaces by flipping edges in surface mesh. */
-#if 1
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
-#else
-          recoversubfacebyflips(&ssub, &searchtet, facfaces);
-#endif
+          ierr = TetGenMeshRecoverSubfaceByFlips(m, &ssub, &searchtet, facfaces);CHKERRQ(ierr);
           success = PETSC_TRUE;
         } else { /*  dir == TOUCHFACE */
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
@@ -15492,6 +15493,9 @@ PetscErrorCode TetGenMeshConstrainedFacets2(TetGenMesh *m)
           if (!success) {
             /*  Restore old tets and delete new tets. */
             ierr = TetGenMeshRestoreCavity(m, crosstets, topnewtets, botnewtets);CHKERRQ(ierr);
+          }
+          if (!delaunayflag) {
+            PetscInfo(b->in, "TetGen had some debugging code here");
           }
           m->hullsize = bakhullsize;
           m->checksubsegs = m->checksubfaces = 1;
@@ -18614,7 +18618,7 @@ PetscErrorCode TetGenMeshRepairEncSubs(TetGenMesh *m, PetscBool chkbadtet)
   locateresult loc;
   PetscReal normal[3], len;
   PetscBool reject;
-  long oldptnum, oldencsegnum;
+  long oldencsegnum;
   int quenumber, n, i;
   PetscErrorCode ierr;
 
@@ -18717,7 +18721,7 @@ PetscErrorCode TetGenMeshRepairEncSubs(TetGenMesh *m, PetscBool chkbadtet)
           /*  Are there queued encroached subsegments. */
           if (m->badsubsegs->items > 0) {
             /*  Repair enc-subsegments. */
-            oldptnum = m->points->items;
+            /* oldptnum = m->points->items; */
             ierr = TetGenMeshRepairEncSegs(m, PETSC_TRUE, chkbadtet);CHKERRQ(ierr);
           }
         }
@@ -19731,7 +19735,7 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
   PetscReal      cosdd[6];
   List          *splittetlist, *tetlist, *ceillist;
   badface       *remtet, *newbadtet;
-  PetscReal      maxdihed, objdihed, cosobjdihed;
+  PetscReal      objdihed, cosobjdihed;
   long           oldflipcount = 0, newflipcount = 0, oldpointcount, slivercount, optpasscount = 0;
   int            iter, len, i;
   PetscErrorCode ierr;
@@ -19753,12 +19757,12 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
       m->cosmaxdihed = cos(179.0 * PETSC_PI / 180.0);
       m->cosmindihed = cos(1.0 * PETSC_PI / 180.0);
       /*  The radian of the maximum dihedral angle. */
-      maxdihed = 179.0 / 180.0 * PETSC_PI;
+      /* maxdihed = 179.0 / 180.0 * PETSC_PI; */
     } else {
       m->cosmaxdihed = cos(b->maxdihedral * PETSC_PI / 180.0);
       m->cosmindihed = cos(b->mindihedral * PETSC_PI / 180.0);
       /*  The radian of the maximum dihedral angle. */
-      maxdihed = b->maxdihedral / 180.0 * PETSC_PI;
+      /* maxdihed = b->maxdihedral / 180.0 * PETSC_PI; */
       /*  A sliver has an angle large than 'objdihed' will be split. */
       objdihed = b->maxdihedral + 5.0;
       if (objdihed < 175.0) objdihed = 175.0;
