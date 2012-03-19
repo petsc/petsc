@@ -1021,6 +1021,11 @@ runex50:
         ${DIFF} output/ex50.out ex50.tmp || echo ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; \
         ${RM} -f ex50.tmp
 
+runex50_2:
+	-@${MPIEXEC} -n 2 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_sub_pc_factor_shift_type nonzero -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view > ex50_2.tmp 2>&1;         \
+        ${DIFF} output/ex50_2.out ex50_2.tmp || echo ${PWD} "\nPossible problem with with ex50_2, diffs above \n========================================="; \
+        ${RM} -f ex50_2.tmp
+
 runex52_mumps:
 	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || echo ${PWD} "\nPossible problem with with ex52_mumps, diffs above \n========================================="; \
