@@ -177,6 +177,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJPThread(Mat A,Vec v)
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 void* MatZeroEntries_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
@@ -360,6 +361,279 @@ PetscErrorCode MatMultAdd_SeqAIJPThread(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+void* MatMarkDiagonal_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
+  PetscInt          *adiag=(PetscInt*)data->adiag;
+  PetscInt           nrows=(PetscInt)data->nrows;
+  PetscInt           i,j,row;
+  PetscInt           rstart=(PetscInt)data->rstart;
+
+  DoCoreAffinity();
+  for(i=0;i < nrows;i++) {
+    row = rstart+i;
+    for(j=ai[i]; j < ai[i+1];j++) {
+      if(aj[j] == row) { 
+	adiag[i] = j;
+	break;
+      }
+    }
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMarkDiagonal_SeqAIJPThread"
+PetscErrorCode MatMarkDiagonal_SeqAIJPThread(Mat A)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts=tmap->trstarts;
+  PetscInt           *ai=a->i,*aj=a->j;
+  PetscInt           i,m=A->rmap->n;
+
+  PetscFunctionBegin;
+
+  if(!a->diag) {
+    ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,m*sizeof(PetscInt));CHKERRQ(ierr);
+  } 
+
+  for(i=0;i < tmap->nthreads; i++) {
+    mat_kerneldatap[i].nrows  = trstarts[i+1] - trstarts[i];
+    mat_kerneldatap[i].adiag  = a->diag + trstarts[i];
+    mat_kerneldatap[i].ai     = ai + trstarts[i];
+    mat_kerneldatap[i].aj     = aj;
+    mat_kerneldatap[i].rstart = trstarts[i];
+    mat_pdata[i]              = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatMarkDiagonal_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+void* MatFindZeroDiagonalCount_Kernel(void* arg)
+{
+  Mat_KernelData     *data=(Mat_KernelData*)arg;
+  const PetscInt     *aj = (const PetscInt*)data->aj;
+  const MatScalar    *aa = (const MatScalar*)data->aa;
+  const PetscInt     *adiag = (const PetscInt*)data->adiag;
+  PetscInt           nrows = (PetscInt)data->nrows;
+  PetscInt           i,row;
+  PetscInt           rstart = (PetscInt)data->rstart;
+
+  DoCoreAffinity();
+  for(i=0;i < nrows; i++) {
+    row = rstart+i;
+    if((aj[adiag[i]] != row) || (aa[adiag[i]] == 0.0)) data->nzerodiags++;
+  }
+  return(0);
+}
+
+void* MatFindZeroDiagonals_Kernel(void* arg)
+{
+  Mat_KernelData     *data=(Mat_KernelData*)arg;
+  const PetscInt     *aj = (const PetscInt*)data->aj;
+  const MatScalar    *aa = (const MatScalar*)data->aa;
+  const PetscInt     *adiag = (const PetscInt*)data->adiag;
+  PetscInt           nrows = (PetscInt)data->nrows;
+  PetscInt           i,row;
+  PetscInt           rstart = (PetscInt)data->rstart,cnt=0;;
+
+  DoCoreAffinity();
+  for(i=0;i < nrows; i++) {
+    row = rstart+i;
+    if((aj[adiag[i]] != row) || (aa[adiag[i]] == 0.0)) data->zerodiags[cnt++] = row;
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJPThread"
+PetscErrorCode MatFindZeroDiagonals_SeqAIJPThread(Mat A,IS *zrows)
+{
+  Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout  tmap=A->rmap->tmap;
+  PetscInt            *trstarts = tmap->trstarts;
+  PetscInt            i,cnt,*rows,ctr=0;
+  PetscInt            *aj = a->j,*diag;
+  MatScalar           *aa = a->a;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMarkDiagonal_SeqAIJPThread(A);CHKERRQ(ierr);
+  diag = a->diag;
+
+  /* Find zero diagonals count */
+  for(i=0;i < tmap->nthreads;i++) {
+    mat_kerneldatap[i].aj      = aj;
+    mat_kerneldatap[i].nrows   = trstarts[i+1]-trstarts[i];
+    mat_kerneldatap[i].aa      = aa;
+    mat_kerneldatap[i].rstart  = trstarts[i];
+    mat_kerneldatap[i].nzerodiags = 0;
+    mat_kerneldatap[i].adiag   = diag + trstarts[i];
+    mat_pdata[i]               = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatFindZeroDiagonalCount_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+  for(i=0;i < tmap->nthreads;i++) cnt += mat_kerneldatap[i].nzerodiags;
+  ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+
+  /* Get zero diagonals */
+  for(i=0;i < tmap->nthreads;i++) {
+    mat_kerneldatap[i].aj      = aj;
+    mat_kerneldatap[i].nrows   = trstarts[i+1]-trstarts[i];
+    mat_kerneldatap[i].aa      = aa;
+    mat_kerneldatap[i].rstart  = trstarts[i];
+    mat_kerneldatap[i].zerodiags = rows + ctr;
+    mat_kerneldatap[i].adiag   = diag + trstarts[i];
+    mat_pdata[i]               = &mat_kerneldatap[i];
+    ctr += mat_kerneldatap[i].nzerodiags;
+  }
+  ierr = PetscThreadsRunKernel(MatFindZeroDiagonals_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(((PetscObject)A)->comm,cnt,rows,PETSC_OWN_POINTER,zrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+  
+void* MatMissingDiagonal_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *aj = (const PetscInt*)data->aj;
+  PetscInt          *adiag=(PetscInt*)data->adiag;
+  PetscInt           nrows=(PetscInt)data->nrows;
+  PetscInt           i,row;
+  PetscInt           rstart=(PetscInt)data->rstart;
+
+  DoCoreAffinity();
+  data->missing_diag = PETSC_FALSE;
+  for(i=0; i < nrows; i++) {
+    row = rstart + i;
+    if(aj[adiag[i]] != row) {
+      data->missing_diag = PETSC_TRUE;
+      if(data->find_d) data->d =  row;
+    }
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_SeqAIJPThread"
+PetscErrorCode MatMissingDiagonal_SeqAIJPThread(Mat A, PetscBool *missing,PetscInt *d)
+{
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode     ierr;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts=tmap->trstarts;
+  PetscInt           *aj=a->j,*diag,i;
+
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  if(A->rmap->n > 0 && !aj) {
+    *missing = PETSC_TRUE;
+    if (d) *d = 0;
+    PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
+  } else {
+    diag = a->diag;
+    for(i=0; i < tmap->nthreads; i++) {
+      mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+      mat_kerneldatap[i].adiag = diag + trstarts[i];
+      mat_kerneldatap[i].aj    = aj;
+      mat_kerneldatap[i].rstart = trstarts[i];
+      mat_kerneldatap[i].missing_diag = PETSC_FALSE;
+      mat_kerneldatap[i].find_d = PETSC_FALSE;;
+      if(d) mat_kerneldatap[i].find_d = PETSC_TRUE;
+      mat_pdata[i]  = &mat_kerneldatap[i];
+    }
+    ierr = PetscThreadsRunKernel(MatMissingDiagonal_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+    for(i=0;i < tmap->nthreads;i++) {
+      if(mat_kerneldatap[i].missing_diag) {
+	*missing = PETSC_TRUE;
+	if(d) *d = mat_kerneldatap[i].d;
+	PetscInfo1(A,"Matrix is missing diagonal number %D",mat_kerneldatap[i].d);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+void* MatDiagonalScale_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
+  MatScalar         *aa = (MatScalar*)data->aa;
+  const PetscScalar *ll = (const PetscScalar*)data->x; 
+  const PetscScalar *rr = (const PetscScalar*)data->y;
+  PetscInt           nrows = data->nrows;
+  PetscInt           i,j;
+
+  if(ll) {
+    for(i=0; i < nrows; i++) {
+      for(j=ai[i]; j < ai[i+1]; j++) aa[j] *= ll[i];
+    }
+  }
+
+  if(rr) {
+    for(i=0; i < nrows; i++) {
+      for(j=ai[i]; j < ai[i+1]; j++) aa[j] *= rr[aj[j]];
+    }
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDiagonalScale_SeqAIJPThread"
+PetscErrorCode MatDiagonalScale_SeqAIJPThread(Mat A,Vec ll,Vec rr)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           *trstarts=tmap->trstarts;
+  PetscScalar        *l,*r;
+  MatScalar          *aa=a->a;
+  PetscInt           *ai=a->i,*aj=a->j;
+  PetscInt           i,m = A->rmap->n, n = A->cmap->n,nz = a->nz;
+
+  PetscFunctionBegin;
+  if(ll) {
+    ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
+    if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+  }
+  if(rr) {
+    ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
+    if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+  }
+
+  for(i=0;i< tmap->nthreads;i++) {
+    mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+    mat_kerneldatap[i].ai    = ai + trstarts[i];
+    mat_kerneldatap[i].aj    = aj;
+    mat_kerneldatap[i].aa    = aa;
+    if(ll) mat_kerneldatap[i].x = l + trstarts[i];
+    else mat_kerneldatap[i].x = PETSC_NULL;
+    if(rr) mat_kerneldatap[i].y = r;
+    else mat_kerneldatap[i].y = PETSC_NULL;
+    mat_pdata[i] = &mat_kerneldatap[i];
+  }
+  ierr = PetscThreadsRunKernel(MatDiagonalScale_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+  if(ll) {
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = PetscLogFlops(nz);CHKERRQ(ierr);
+  }
+  if(rr) {
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    ierr = PetscLogFlops(nz);CHKERRQ(ierr);
+  }
+  a->idiagvalid = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+  
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp_SeqAIJPThread"
 PetscErrorCode MatSetUp_SeqAIJPThread(Mat A)
@@ -603,14 +877,17 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
     ierr = MatSetThreadAffinities(B,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  B->ops->mult    = MatMult_SeqAIJPThread;
-  B->ops->destroy = MatDestroy_SeqAIJPThread;
-  B->ops->multadd = MatMultAdd_SeqAIJPThread;
-  B->ops->setup   = MatSetUp_SeqAIJPThread;
-  B->ops->zeroentries = MatZeroEntries_SeqAIJPThread;
-  B->ops->getdiagonal = MatGetDiagonal_SeqAIJPThread;
-  B->ops->realpart = MatRealPart_SeqAIJPThread;
-  B->ops->imaginarypart = MatImaginaryPart_SeqAIJPThread;
+  B->ops->destroy         = MatDestroy_SeqAIJPThread;
+  B->ops->mult            = MatMult_SeqAIJPThread;
+  B->ops->multadd         = MatMultAdd_SeqAIJPThread;
+  B->ops->setup           = MatSetUp_SeqAIJPThread;
+  B->ops->zeroentries     = MatZeroEntries_SeqAIJPThread;
+  B->ops->realpart        = MatRealPart_SeqAIJPThread;
+  B->ops->imaginarypart   = MatImaginaryPart_SeqAIJPThread;
+  B->ops->getdiagonal     = MatGetDiagonal_SeqAIJPThread;
+  B->ops->missingdiagonal = MatMissingDiagonal_SeqAIJPThread;
+  B->ops->findzerodiagonals = MatFindZeroDiagonals_SeqAIJPThread;
+  B->ops->diagonalscale     = MatDiagonalScale_SeqAIJPThread;
   B->ops->view = MatView_SeqAIJPThread;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);

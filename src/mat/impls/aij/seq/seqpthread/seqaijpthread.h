@@ -12,6 +12,10 @@ typedef struct {
   PetscScalar *x,*y,*z;
   PetscInt   nrows;
   PetscInt   nonzerorow;
+  PetscBool  missing_diag,find_d;
+  PetscInt   d;
+  PetscInt   nzerodiags;
+  PetscInt   *zerodiags;
 }Mat_KernelData;
 
 Mat_KernelData *mat_kerneldatap;
