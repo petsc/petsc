@@ -1346,7 +1346,9 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
    Calling sequence of func:
 $    func (SNES snes,Vec x,Vec f,void *ctx);
 
-.  f - function vector
++  snes - the SNES context
+.  x - state at which to evaluate residual
+.  f - vector to put residual
 -  ctx - optional user-defined function context 
 
    Notes:
