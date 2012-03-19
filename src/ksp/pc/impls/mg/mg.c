@@ -513,9 +513,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
+      KSPDM kdm;
       ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
+      ierr = DMKSPGetContextWrite(dms[i],&kdm);CHKERRQ(ierr);
+      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set */
+      kdm->computerhs = PETSC_NULL;
+      kdm->rhsctx = PETSC_NULL;
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {

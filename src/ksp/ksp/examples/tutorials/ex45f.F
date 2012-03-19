@@ -22,8 +22,9 @@
      &    PETSC_DECIDE,1,1, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER,       &
      &    dm, ierr)
        call DMSetInitialGuess(dm,ComputeInitialGuess,ierr)
-       call DMSetFunction(dm,ComputeRHS,ierr)
-       call DMSetJacobian(dm,ComputeMatrix,ierr)
+       call KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL_OBJECT,ierr)
+       call KSPSetComputeOperators(ksp,ComputeMatrix,                   &
+     &      PETSC_NULL_OBJECT,ierr)
        call KSPSetDM(ksp,dm,ierr)
        call DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,             &
      &                     PETSC_NULL_INTEGER,ierr)
@@ -47,26 +48,28 @@
        call VecSet(b,h,ierr)
        end subroutine 
 
-       subroutine ComputeRHS(dm,x,b,ierr)
+       subroutine ComputeRHS(ksp,b,dummy,ierr)
        implicit none
        PetscErrorCode  ierr
-       DM dm
-       Vec x,b
+       KSP ksp
+       Vec b
+       integer dummy(*)
        PetscScalar  h
        h=1.0
        call VecSet(b,h,ierr)
        end subroutine 
 
-       subroutine ComputeMatrix(dm,x,A,B,str,ierr)
+       subroutine ComputeMatrix(ksp,A,B,str,dummy,ierr)
        implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
        PetscErrorCode  ierr
-       DM dm
-       Vec x
+       KSP ksp
        Mat A,B
        MatStructure str
+       integer dummy(*)
+       DM dm
 
       PetscInt    i,j,mx,my,xm
       PetscInt    ym,xs,ys,i1,i5
@@ -76,6 +79,7 @@
 
       i1 = 1
       i5 = 5
+      call KSPGetDM(ksp,dm,ierr)
       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &

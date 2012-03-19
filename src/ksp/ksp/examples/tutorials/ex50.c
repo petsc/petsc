@@ -26,8 +26,8 @@ static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 #include <petscsys.h>
 #include <petscvec.h>
 
-extern PetscErrorCode ComputeJacobian(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeTrueSolution(DM, Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 
@@ -59,8 +59,9 @@ int main(int argc,char **argv)
   bc   = (PetscInt)NEUMANN; // Use Neumann Boundary Conditions
   user.bcType = (BCType)bc;
 
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeJacobian);CHKERRQ(ierr);
+  
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeJacobian,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -72,16 +73,17 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS" 
-PetscErrorCode ComputeRHS(DM da, Vec x,Vec b)
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
   PetscScalar    Hx, Hy, pi, uu, tt;
   PetscScalar    **array;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
   pi = 4*atan(1.0); 
@@ -114,16 +116,17 @@ PetscErrorCode ComputeRHS(DM da, Vec x,Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian" 
-PetscErrorCode ComputeJacobian(DM da, Vec x,Mat J, Mat jac,MatStructure*str)
+PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm, ym, xs, ys, num, numi, numj;
   PetscScalar    v[5], Hx, Hy, HydHx, HxdHy;
   MatStencil     row, col[5];
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);

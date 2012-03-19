@@ -6,8 +6,8 @@ static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 #include <petscksp.h>
 
 
-extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeInitialSolution(DM,Vec);
 
 #undef __FUNCT__
@@ -24,9 +24,9 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);  
-  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -67,17 +67,19 @@ PetscErrorCode ComputeInitialSolution(DM da,Vec x)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-    
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DM da,Vec dummy,Vec b)
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       mx;
   PetscScalar    h;
   Vec            x;
+  DM             da;
 
   PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&x);CHKERRQ(ierr);
   h    = 2.0*PETSC_PI/((mx));
@@ -88,14 +90,17 @@ PetscErrorCode ComputeRHS(DM da,Vec dummy,Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM da,Vec x,Mat J,Mat jac,MatStructure *str)
+PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;
   PetscScalar    v[7],Hx;
   MatStencil     row,col[7];
   PetscScalar    lambda;
+  DM             da;
 
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = PetscMemzero(col,7*sizeof(MatStencil));CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
@@ -116,8 +121,6 @@ PetscErrorCode ComputeMatrix(DM da,Vec x,Mat J,Mat jac,MatStructure *str)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  MatView(jac,PETSC_VIEWER_BINARY_(PETSC_COMM_SELF));
-  return 0;
+  ierr = MatView(jac,PETSC_VIEWER_BINARY_(PETSC_COMM_SELF));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
-

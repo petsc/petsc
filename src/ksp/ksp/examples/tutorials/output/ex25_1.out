@@ -130,3 +130,4 @@ PC Object: 1 MPI processes
     total: nonzeros=25, allocated nonzeros=27
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
+Residual norm 4.44089e-16

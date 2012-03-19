@@ -175,11 +175,9 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 PetscErrorCode  KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscBool      ir = PETSC_FALSE,ig = PETSC_FALSE;
-  Mat            A;
+  PetscBool      ig = PETSC_FALSE;
+  Mat            A,B;
   MatStructure   stflg = SAME_NONZERO_PATTERN;
-
-  /* PetscBool      im = PETSC_FALSE; */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -202,21 +200,27 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   }
 
   if (ksp->dmActive) {
+    KSPDM kdm;
+    ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
+
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir) {
-      ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
+    if (kdm->computerhs) {
+      ierr = (*kdm->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
-      ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr); 
+      ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+      if (kdm->computeoperators) {
+        ierr = (*kdm->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
+      } else {
+        ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,B,&stflg);CHKERRQ(ierr);
+      }
+      ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr); 
     }
   }
 
@@ -2020,5 +2024,77 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(fix,2);
   *fix = ksp->dscalefix;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeOperators"
+/*@
+   KSPSetComputeOperators - set routine to compute the linear operators
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the operators
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
+
++  ksp - the KSP context
+.  A - the linear operator
+.  B - preconditioning matrix
+.  mstruct - flag indicating structure, same as in KSPSetOperators(), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSetOperators()
+@*/
+PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeOperators(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeRHS"
+/*@
+   KSPSetComputeOperators - set routine to compute the right hand side of the linear system
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the right hand side
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Vec b,void *ctx)
+
++  ksp - the KSP context
+.  b - right hand side of linear system
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSolve()
+@*/
+PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeRHS(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

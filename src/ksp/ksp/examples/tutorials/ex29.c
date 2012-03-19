@@ -30,8 +30,8 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include <petscksp.h>
 #include <petscpcmg.h>
 
-extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -58,7 +58,6 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
     user.rho    = 1.0;
@@ -70,8 +69,8 @@ int main(int argc,char **argv)
     user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
 
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -90,16 +89,17 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DM da,Vec x, Vec b)
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
   PetscScalar    Hx,Hy;
   PetscScalar    **array;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
@@ -142,17 +142,18 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM da, Vec x,Mat J,Mat jac,MatStructure *str)
+PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscScalar    centerRho;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num;
   PetscScalar    v[5],Hx,Hy,HydHx,HxdHy,rho;
   MatStencil     row, col[5];
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   centerRho = user->rho;
   ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx-1);

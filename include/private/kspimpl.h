@@ -126,6 +126,30 @@ extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 extern PetscErrorCode KSPSetUpNorms_Private(KSP);
 
+/* Context for resolution-dependent KSP callback information */
+typedef struct _n_KSPDM *KSPDM;
+struct _n_KSPDM {
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computerhs)(KSP,Vec,void*);
+  void *operatorsctx;
+  void *rhsctx;
+
+  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
+  PetscErrorCode (*destroy)(KSPDM);
+  void *data;
+
+  /* This is NOT reference counted. The KSP that originally created this context is cached here to implement copy-on-write.
+   * Fields in the KSPDM should only be written if the KSP matches originalksp.
+   */
+  DM originaldm;
+
+  void (*fortran_func_pointers[2])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
+};
+extern PetscErrorCode DMKSPGetContext(DM,KSPDM*);
+extern PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);
+extern PetscErrorCode DMKSPCopyContext(DM,DM);
+extern PetscErrorCode DMKSPDuplicateContext(DM,DM);
+
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
 */

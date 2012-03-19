@@ -6,6 +6,7 @@
    files) 
  */
 #include <private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petscdmshell.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetResidualNorm"
@@ -948,7 +949,20 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
-  ierr = DMDestroy(&ksp->dm);CHKERRQ(ierr);
+  if (ksp->dm) {                /* Move the SNESDM context over to the new DM unless the new DM already has one */
+    PetscContainer oldcontainer,container;
+    KSPDM          kdm;
+    ierr = PetscObjectQuery((PetscObject)ksp->dm,"KSPDM",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)dm,"KSPDM",(PetscObject*)&container);CHKERRQ(ierr);
+    if (oldcontainer && !container) {
+      ierr = DMKSPCopyContext(ksp->dm,dm);CHKERRQ(ierr);
+      ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
+      if (kdm->originaldm == ksp->dm) { /* Grant write privileges to the replacement DM */
+        kdm->originaldm = dm;
+      }
+    }
+    ierr = DMDestroy(&ksp->dm);CHKERRQ(ierr);
+  }
   ksp->dm = dm;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,dm);CHKERRQ(ierr);
@@ -1003,8 +1017,13 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool  flg)
 @*/
 PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp->dm) {
+    ierr = DMShellCreate(((PetscObject)ksp)->comm,&ksp->dm);CHKERRQ(ierr);
+  }
   *dm = ksp->dm;
   PetscFunctionReturn(0);
 }

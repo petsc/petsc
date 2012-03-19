@@ -26,8 +26,8 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include <petscksp.h>
 #include <petscpcmg.h>
 
-extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -59,8 +59,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);  
 
-  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   bc          = (PetscInt)NEUMANN;
@@ -68,8 +67,8 @@ int main(int argc,char **argv)
   user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
   
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
@@ -119,16 +118,17 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DM da,Vec x, Vec b)
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    Hx,Hy,Hz;
   PetscScalar    ***array;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
@@ -165,16 +165,17 @@ PetscErrorCode ComputeRHS(DM da,Vec x, Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM da, Vec x,Mat J,Mat jac, MatStructure *str)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx)
 {
-  UserContext    *user;
+  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,num, numi, numj, numk;
   PetscScalar    v[7],Hx,Hy,Hz,HyHzdHx,HxHzdHy,HxHydHz;
   MatStencil     row, col[7];
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx);
   Hy    = 1.0 / (PetscReal)(my);

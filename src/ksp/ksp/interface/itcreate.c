@@ -502,7 +502,7 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
    Not collective, though the results on all processes should be the same
 
    Input Parameter:
-.  pc - the preconditioner context
+.  pc - the KSP context
 
    Output Parameters:
 +  mat - the matrix associated with the linear system was set

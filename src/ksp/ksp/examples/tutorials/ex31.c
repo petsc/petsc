@@ -61,8 +61,8 @@ typedef struct {
 extern PetscErrorCode CreateStructures(DM,UserContext*);
 extern PetscErrorCode DestroyStructures(DM,UserContext*);
 extern PetscErrorCode ComputePredictor(DM,UserContext*);
-extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeCorrector(DM,Vec,Vec);
 
 #undef __FUNCT__
@@ -92,10 +92,9 @@ int main(int argc,char **argv)
   ierr = CreateStructures(da, &user);CHKERRQ(ierr);
   ierr = ComputePredictor(da, &user);CHKERRQ(ierr);
 
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = KSPGetSolution(ksp, &x);CHKERRQ(ierr);
@@ -351,6 +350,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -480,6 +480,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -651,18 +652,19 @@ PetscErrorCode ComputePredictor(DM da, UserContext *user)
       |       \   |
   (i,   j)----(i+1, j)
 */
-PetscErrorCode ComputeRHS(DM da, Vec x, Vec b)
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
 {
-  UserContext   *user;
+  UserContext   *user = (UserContext*)ctx;
   PetscScalar    phi  = user->phi;
   PetscScalar   *array;
   PetscInt       ne,nc,i;
   const PetscInt *e;
   PetscErrorCode ierr;
   Vec            blocal;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da, &user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   /* access a local vector with room for the ghost points */
   ierr = DMGetLocalVector(da,&blocal);CHKERRQ(ierr);
   ierr = VecGetArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
@@ -715,9 +717,9 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeMatrix(DM da, Vec x, Mat J, Mat jac, MatStructure *flag)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *ctx)
 {
-  UserContext   *user;
+  UserContext   *user = (UserContext*)ctx;
   /* not being used!
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
                                 0.08333333333, 0.16666666667, 0.08333333333,
@@ -730,9 +732,10 @@ PetscErrorCode ComputeMatrix(DM da, Vec x, Mat J, Mat jac, MatStructure *flag)
   PetscInt       ne,nc;
   const PetscInt *e;
   PetscErrorCode ierr;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(da, &user);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   hx   = 1.0 / (mx-1);

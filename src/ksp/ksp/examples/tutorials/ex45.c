@@ -21,8 +21,8 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include <petscksp.h>
 #include <petscdmda.h>
 
-extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeInitialGuess(DM,Vec);
 
 #undef __FUNCT__
@@ -41,14 +41,13 @@ int main(int argc,char **argv)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMSetInitialGuess(da,ComputeInitialGuess);CHKERRQ(ierr);
-  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  /*  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);*/
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
@@ -69,7 +68,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
@@ -77,37 +76,16 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   PetscScalar    ***xx,***bb;
   PetscInt       i,j,k,xm,ym,zm,xs,ys,zs;
   PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  DM             dm;
 
   PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
-
-  if (x) {
-    ierr = DMDAVecGetArray(dm,x,&xx);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dm,b,&bb);CHKERRQ(ierr);
-
-  ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
-  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
-  HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
-	if (!(i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1)){
-          bb[k][j][i] -= +HxHydHz*xx[k-1][j][i] + HxHzdHy*xx[k][j-1][i] + HyHzdHx*xx[k][j][i-1] + HyHzdHx*xx[k][j][i+1] + HxHzdHy*xx[k][j+1][i] + HxHydHz*xx[k+1][j][i];
-        }
-        bb[k][j][i] += 2.0*(HxHydHz + HxHzdHy + HyHzdHx)*xx[k][j][i];
-      }
-    }
-  }
-    ierr = DMDAVecRestoreArray(dm,x,&xx);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dm,b,&bb);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
-    
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeInitialGuess"
 PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
@@ -121,14 +99,16 @@ PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
+PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx)
 {
-  DM             da = dm;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
@@ -157,7 +137,5 @@ PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *stflg = SAME_NONZERO_PATTERN;
-  return 0;
+  PetscFunctionReturn(0);
 }
-
-

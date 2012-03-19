@@ -614,6 +614,12 @@ extern PetscErrorCode  KSPSetDMActive(KSP,PetscBool );
 extern PetscErrorCode  KSPGetDM(KSP,DM*);
 extern PetscErrorCode  KSPSetApplicationContext(KSP,void*);
 extern PetscErrorCode  KSPGetApplicationContext(KSP,void*);
+extern PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+extern PetscErrorCode KSPSetComputeRHS(KSP,PetscErrorCode(*)(KSP,Vec,void*),void*);
+extern PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+extern PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,MatStructure*,void*),void*);
+extern PetscErrorCode DMKSPSetComputeRHS(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
+extern PetscErrorCode DMKSPGetComputeRHS(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 
 PETSC_EXTERN_CXX_END
 #endif
