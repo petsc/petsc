@@ -20,11 +20,6 @@ struct _SNESOps {
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES,void**);
   PetscErrorCode (*userdestroy)(void**);
-  /* the line search to use */
-  PetscErrorCode (*linesearch)         (SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
-  /* optional functions for pre and postcheck on a linesearch */
-  PetscErrorCode (*precheckstep)       (SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine */
-  PetscErrorCode (*postcheckstep)      (SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *);  /* step-checking routine */
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -62,10 +57,6 @@ struct _p_SNES {
   Vec  scaling;                  /* scaling vector */
   void *scaP;                    /* scaling context */
 
-  void *precheck;                /* user-defined step-checking context (optional) */
-  void *postcheck;               /* user-defined step-checking context (optional) */
-  void *lsP;                     /* user-defined line-search context (optional)   */
-
   PetscReal precheck_picard_angle; /* For use with SNESLineSearchPreCheckPicard */
 
   /* ------------------------Time stepping hooks-----------------------------------*/
@@ -102,16 +93,6 @@ struct _p_SNES {
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
   PetscInt    gssweeps;           /* number of GS sweeps */
-
-  /* ------------------------ Line Search Parameters ---------------------- */
-
-  PetscReal   damping;            /* line search damping */
-  PetscReal   maxstep;            /* line search maximum step size */
-  PetscReal   steptol;            /* step convergence tolerance */
-  PetscReal   ls_alpha;           /* line search sufficient reduction */
-  PetscViewer ls_monitor;         /* monitor for the line search */
-  PetscInt    ls_its;             /* number of iterates taken for iterative line searches */
-
 
   /* ------------------------ Default work-area management ---------------------- */
 

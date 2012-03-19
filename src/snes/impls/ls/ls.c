@@ -203,11 +203,6 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
-    if (snes->ops->precheckstep) {
-      PetscBool  changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
-    }
-
     if (PetscLogPrintInfo){
       ierr = SNESLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
@@ -334,8 +329,6 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%14.12e, maxstep=%14.12e, minlambda=%14.12e\n",(double)snes->ls_alpha,(double)snes->maxstep,(double)snes->steptol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  damping factor=%14.12e\n",(double)snes->damping);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

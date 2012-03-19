@@ -1265,12 +1265,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->gssweeps          = 1;
 
-  snes->ops->linesearch   = PETSC_NULL;
-  snes->precheck          = PETSC_NULL;
-  snes->ops->precheckstep = PETSC_NULL;
-  snes->postcheck         = PETSC_NULL;
-  snes->ops->postcheckstep= PETSC_NULL;
-
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
 
@@ -2269,7 +2263,6 @@ PetscErrorCode  SNESDestroy(SNES *snes)
     ierr = PetscFree((*snes)->conv_hist);CHKERRQ(ierr);
     ierr = PetscFree((*snes)->conv_hist_its);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&(*snes)->ls_monitor);CHKERRQ(ierr);
   ierr = SNESMonitorCancel((*snes));CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
  PetscFunctionReturn(0);

@@ -800,9 +800,6 @@ PetscErrorCode  SNESCreate_VIRS(SNES snes)
 
   ierr                       = PetscNewLog(snes,SNES_VIRS,&vi);CHKERRQ(ierr);
   snes->data                 = (void*)vi;
-  snes->ls_alpha             = 1.e-4;
-  snes->maxstep              = 1.e8;
-  snes->steptol              = 1.e-12;
   vi->checkredundancy        = PETSC_NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
