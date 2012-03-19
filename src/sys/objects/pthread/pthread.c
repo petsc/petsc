@@ -5,12 +5,12 @@
 PetscBool   PetscThreadGo = PETSC_TRUE;
 PetscMPIInt PetscMaxThreads = -1;
 pthread_t*  PetscThreadPoint=NULL;
-PetscInt*   ThreadCoreAffinity=NULL;
+PetscInt*   PetscThreadsCoreAffinities=NULL;
 PetscInt    PetscMainThreadShareWork = 1;
-PetscInt    MainThreadCoreAffinity = 0;
+PetscInt    PetscMainThreadCoreAffinity = 0;
 PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
-pthread_key_t rankkey;
-PetscInt*   threadranks=NULL;
+pthread_key_t PetscThreadsRankKey;
+PetscInt*   PetscThreadsRank=NULL;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
@@ -18,18 +18,17 @@ PetscErrorCode (*PetscThreadsSynchronizationFinalize)(void) = NULL;
 void*          (*PetscThreadsWait)(void*) = NULL;
 PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
 
-const char *const ThreadSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","ThreadSynchronizationType","THREADSYNC_",0};
-const char *const ThreadAffinityPolicyTypes[] = {"ALL","ONECORE","NONE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
+static const char *const PetscThreadsSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","PetscThreadsSynchronizationType","THREADSYNC_",0};
+static const char *const PetscThreadsAffinityPolicyTypes[] = {"ALL","ONECORE","NONE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
 
-static ThreadAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
+static PetscThreadsAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONECORE;
 
 static PetscInt     N_CORES;
 
-void* FuncFinish(void* arg) {
+void* PetscThreadsFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetThreadRank"
@@ -46,7 +45,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetThreadRank(PetscInt* rankp)
   PetscInt trank;
 
   PetscFunctionBegin;
-  trank = *(PetscInt*)pthread_getspecific(rankkey);
+  trank = *(PetscInt*)pthread_getspecific(PetscThreadsRankKey);
   *rankp = trank;
   PetscFunctionReturn(0);
 }
@@ -62,7 +61,7 @@ void PetscSetMainThreadAffinity(PetscInt icorr)
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 }
 
-void DoCoreAffinity(void)
+void PetscThreadsDoCoreAffinity(void)
 {
   PetscInt  i,icorr=0; 
   cpu_set_t mset;
@@ -72,8 +71,8 @@ void DoCoreAffinity(void)
 
   switch(thread_aff_policy) {
   case THREADAFFINITYPOLICY_ONECORE:
-    if(myrank == 0) icorr = MainThreadCoreAffinity;
-    else icorr = ThreadCoreAffinity[myrank-1];
+    if(myrank == 0) icorr = PetscMainThreadCoreAffinity;
+    else icorr = PetscThreadsCoreAffinities[myrank-1];
     CPU_ZERO(&mset);
     CPU_SET(icorr%N_CORES,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
@@ -114,25 +113,25 @@ PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
   if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
 
   /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
-  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&ThreadCoreAffinity);CHKERRQ(ierr);
+  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&PetscThreadsCoreAffinities);CHKERRQ(ierr);
   
   strcpy(tstr,"-thread");
   for(i=0;i<PetscMaxThreads;i++) {
-    ThreadCoreAffinity[i] = i+PetscMainThreadShareWork;
+    PetscThreadsCoreAffinities[i] = i+PetscMainThreadShareWork;
     sprintf(tbuf,"%d",i);
     strcat(tstr,tbuf);
     ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
     if(flg1) {
-      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
-      ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
+      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&PetscThreadsCoreAffinities[i],PETSC_NULL);CHKERRQ(ierr);
+      PetscThreadsCoreAffinities[i] = PetscThreadsCoreAffinities[i]%N_CORES; /* check on the user */
     }
     tstr[7] = '\0';
   }
 
   /* Create key to store the thread rank */
-  ierr = pthread_key_create(&rankkey,NULL);CHKERRQ(ierr);
+  ierr = pthread_key_create(&PetscThreadsRankKey,NULL);CHKERRQ(ierr);
   /* Create array to store thread ranks */
-  ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&threadranks);CHKERRQ(ierr);
+  ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&PetscThreadsRank);CHKERRQ(ierr);
   if(PetscThreadsSynchronizationInitialize) {
     ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
   }
@@ -161,9 +160,9 @@ PetscErrorCode PetscThreadsFinalize(void)
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
 
-  ierr = pthread_key_delete(rankkey);CHKERRQ(ierr);
-  ierr = PetscFree(ThreadCoreAffinity);CHKERRQ(ierr);
-  ierr = PetscFree(threadranks);CHKERRQ(ierr);
+  ierr = pthread_key_delete(PetscThreadsRankKey);CHKERRQ(ierr);
+  ierr = PetscFree(PetscThreadsCoreAffinities);CHKERRQ(ierr);
+  ierr = PetscFree(PetscThreadsRank);CHKERRQ(ierr);
   PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -253,7 +252,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 {
   PetscErrorCode                 ierr;
   PetscBool                      flg1=PETSC_FALSE;
-  ThreadSynchronizationType      thread_sync_type=THREADSYNC_LOCKFREE;
+  PetscThreadsSynchronizationType      thread_sync_type=THREADSYNC_LOCKFREE;
 
   PetscFunctionBegin;
 
@@ -268,17 +267,17 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&MainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&PetscMainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-    PetscSetMainThreadAffinity(MainThreadCoreAffinity);
+    PetscSetMainThreadAffinity(PetscMainThreadCoreAffinity);
 #endif
   }
  
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread Options","Sys");CHKERRQ(ierr);
   /* Get thread affinity policy */
-  ierr = PetscOptionsEnum("-thread_aff_policy","Type of thread affinity policy"," ",ThreadAffinityPolicyTypes,(PetscEnum)thread_aff_policy,(PetscEnum*)&thread_aff_policy,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-thread_aff_policy","Type of thread affinity policy"," ",PetscThreadsAffinityPolicyTypes,(PetscEnum)thread_aff_policy,(PetscEnum*)&thread_aff_policy,&flg1);CHKERRQ(ierr);
   /* Get thread synchronization scheme */
-  ierr = PetscOptionsEnum("-thread_sync_type","Type of thread synchronization algorithm"," ",ThreadSynchronizationTypes,(PetscEnum)thread_sync_type,(PetscEnum*)&thread_sync_type,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-thread_sync_type","Type of thread synchronization algorithm"," ",PetscThreadsSynchronizationTypes,(PetscEnum)thread_sync_type,(PetscEnum*)&thread_sync_type,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   
   switch(thread_sync_type) {

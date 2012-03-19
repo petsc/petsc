@@ -36,14 +36,14 @@
 extern PetscBool      PetscThreadGo;                /* Flag to keep the threads spinning in a loop */
 extern PetscMPIInt    PetscMaxThreads;              /* Max. threads created */
 extern pthread_t*     PetscThreadPoint;             /* Pointer to thread ids */
-extern PetscInt*      ThreadCoreAffinity;           /* Core affinity of each thread */
+extern PetscInt*      PetscThreadsCoreAffinities;           /* Core affinity of each thread */
 extern PetscInt       PetscMainThreadShareWork;     /* Is the main thread also a worker? 1 = Yes */
-extern PetscInt       MainThreadCoreAffinity;       /* Core affinity of the main thread */
+extern PetscInt       PetscMainThreadCoreAffinity;       /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
-extern pthread_key_t  rankkey;
-extern PetscInt*      threadranks;                  /* Array to hold thread ranks */
+extern pthread_key_t  PetscThreadsRankKey;
+extern PetscInt*      PetscThreadsRank;                  /* Array to hold thread ranks */
 /*
-  ThreadSynchronizationType - Type of thread synchronization for pthreads
+  PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 
 $ THREADSYNC_NOPOOL   - threads created and destroyed as and when required.
   The following synchronization scheme uses a thread pool mechanism and uses 
@@ -58,19 +58,17 @@ $ THREADSYNC_LOCKFREE -  A lock-free variant of the MAINPOOL model.
 
   Level: developer
 */
-typedef enum {THREADSYNC_NOPOOL,THREADSYNC_MAINPOOL,THREADSYNC_TRUEPOOL,THREADSYNC_CHAINPOOL,THREADSYNC_TREEPOOL,THREADSYNC_LOCKFREE} ThreadSynchronizationType;
-extern const char *const ThreadSynchronizationTypes[];
+typedef enum {THREADSYNC_NOPOOL,THREADSYNC_MAINPOOL,THREADSYNC_TRUEPOOL,THREADSYNC_CHAINPOOL,THREADSYNC_TREEPOOL,THREADSYNC_LOCKFREE} PetscThreadsSynchronizationType;
 
 /*
-  ThreadAffinityPolicyType - Core affinity policy for pthreads
+  PetscThreadsAffinityPolicyType - Core affinity policy for pthreads
 
 $ THREADAFFINITYPOLICY_ALL - threads can run on any core.
 $ THREADAFFINITYPOLICY_ONECORE - threads can run on only one core
 $ THREADAFFINITYPOLICY_NONE - No affinity policy
    Level: developer
 */
-typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE,THREADAFFINITYPOLICY_NONE} ThreadAffinityPolicyType;
-extern const char *const ThreadAffinityPolicyTypes[];
+typedef enum {THREADAFFINITYPOLICY_ALL,THREADAFFINITYPOLICY_ONECORE,THREADAFFINITYPOLICY_NONE} PetscThreadsAffinityPolicyType;
 
 /* Base function pointers */
 extern void*          (*PetscThreadFunc)(void*);
@@ -80,11 +78,11 @@ extern void*          (*PetscThreadsWait)(void*);
 extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-extern void DoCoreAffinity(void);
+extern void PetscThreadsDoCoreAffinity(void);
 #else
-#define DoCoreAffinity()
+#define PetscThreadsDoCoreAffinity()
 #endif
-extern void* FuncFinish(void*);
+extern void* PetscThreadsFinish(void*);
 
 extern PetscErrorCode PetscThreadsInitialize(PetscInt);
 extern PetscErrorCode PetscThreadsFinalize(void);

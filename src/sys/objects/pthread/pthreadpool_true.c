@@ -2,7 +2,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-PetscInt*           pVal_true;
+static PetscInt*           pVal_true;
 
 #define CACHE_LINE_SIZE 64
 
@@ -21,7 +21,7 @@ typedef struct {
   PetscBool startJob;
 } sjob_true;
 
-sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,0,0,PETSC_FALSE};
+static sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,0,0,PETSC_FALSE};
 #endif
 
 static pthread_cond_t main_cond_true = PTHREAD_COND_INITIALIZER; 
@@ -37,9 +37,9 @@ void* PetscThreadFunc_True(void* arg)
   PetscInt* pId      = (PetscInt*)arg;
   PetscInt  ThreadId = *pId; 
 
-  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  DoCoreAffinity();
+  PetscThreadsDoCoreAffinity();
 #endif
   pthread_mutex_lock(&job_true.mutex);
   job_true.iNumReadyThreads++;
@@ -48,7 +48,7 @@ void* PetscThreadFunc_True(void* arg)
   }
   /*the while loop needs to have an exit
     the 'main' thread can terminate all the threads by performing a broadcast
-   and calling FuncFinish */
+   and calling PetscThreadsFinish */
   while(PetscThreadGo) {
     /*need to check the condition to ensure we don't have to wait
       waiting when you don't have to causes problems
@@ -101,11 +101,11 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
   /* Initialize the barrier */
   ierr = pthread_barrier_init(&pbarr,NULL,PetscMaxThreads);CHKERRQ(ierr);
 
-  threadranks[0] = 0;
-  pthread_setspecific(rankkey,&threadranks[0]);
+  PetscThreadsRank[0] = 0;
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
   for(i=0; i<N; i++) {
     pVal_true[i] = i;
-    threadranks[i+1] = i+1;
+    PetscThreadsRank[i+1] = i+1;
     job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_True() {
 
   PetscFunctionBegin;
 
-  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(PetscThreadsFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
@@ -158,13 +158,13 @@ PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,Pets
   PetscFunctionBegin;
   PetscThreadsWait(NULL);
   for(i=0; i<PetscMaxThreads; i++) {
-    if(pFunc == FuncFinish) {
+    if(pFunc == PetscThreadsFinish) {
       job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
       job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     } else {
       issetaffinity=0;
       for(j=PetscMainThreadShareWork;j < n;j++) {
-	if(cpu_affinity[j] == ThreadCoreAffinity[i]) {
+	if(cpu_affinity[j] == PetscThreadsCoreAffinities[i]) {
 	  job_true.funcArr[i+PetscMainThreadShareWork] = pFunc;
 	  job_true.pdata[i+PetscMainThreadShareWork] = data[j];
 	  issetaffinity=1;
@@ -182,7 +182,7 @@ PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,Pets
   job_true.startJob = PETSC_TRUE;
   /* Tell the threads to go to work */
   ierr = pthread_cond_broadcast(&job_true.cond);CHKERRQ(ierr);
-  if(pFunc!=FuncFinish) {
+  if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
       job_true.funcArr[0] = pFunc;
       job_true.pdata[0] = data[0];

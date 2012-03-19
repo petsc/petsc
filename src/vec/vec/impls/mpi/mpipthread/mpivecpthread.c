@@ -7,8 +7,8 @@
 #include <petscblaslapack.h>
 
 extern PetscInt     vecs_created;
-extern Kernel_Data  *kerneldatap;
-extern Kernel_Data  **pdata;
+extern Vec_KernelData  *vec_kerneldatap;
+extern Vec_KernelData  **vec_pdata;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPIPThread"
@@ -206,8 +206,8 @@ PetscErrorCode VecDestroy_MPIPThread(Vec v)
   vecs_created--;
   /* Free the kernel data structure on the destruction of the last vector */
   if(vecs_created == 0) {
-    ierr = PetscFree(kerneldatap);CHKERRQ(ierr);
-    ierr = PetscFree(pdata);CHKERRQ(ierr);
+    ierr = PetscFree(vec_kerneldatap);CHKERRQ(ierr);
+    ierr = PetscFree(vec_pdata);CHKERRQ(ierr);
   }
 
   /* Destroy the stashes: note the order - so that the tags are freed properly */
@@ -329,8 +329,8 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   }
 
   if(!vecs_created) {
-    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
-    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Vec_KernelData),&vec_kerneldatap);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(Vec_KernelData*),&vec_pdata);CHKERRQ(ierr);
   }
   vecs_created++;
 

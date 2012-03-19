@@ -1,7 +1,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-PetscInt *pVal_none;
+static PetscInt *pVal_none;
 
 typedef void* (*pfunc)(void*);
 typedef struct {
@@ -11,7 +11,7 @@ typedef struct {
   pthread_t* ThreadId;
 }sjob_none;
 
-sjob_none job_none;
+static sjob_none job_none;
 
 /* 
    -----------------------------
@@ -23,15 +23,15 @@ void* PetscThreadFunc_None(void* arg)
   PetscInt iVal;
 
   iVal = *(PetscInt*)arg;
-  pthread_setspecific(rankkey,&threadranks[iVal+1]);
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[iVal+1]);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  DoCoreAffinity();
+  PetscThreadsDoCoreAffinity();
 #endif
 
   job_none.funcArr[iVal+PetscMainThreadShareWork](job_none.pdata[iVal+PetscMainThreadShareWork]);
 
-  pthread_setspecific(rankkey,NULL);
+  pthread_setspecific(PetscThreadsRankKey,NULL);
   return NULL;
 }
   
@@ -62,12 +62,12 @@ PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,Pets
   ierr = PetscMalloc(n*sizeof(pfunc),&(job_none.funcArr));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(void*),&(job_none.pdata));CHKERRQ(ierr);
 
-  threadranks[0] = 0;
-  pthread_setspecific(rankkey,&threadranks[0]);
+  PetscThreadsRank[0] = 0;
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
   for(i=0;i< Nnew_threads;i++) {
     pVal_none[i] = i;
-    threadranks[i+1] = i+1;
-    ThreadCoreAffinity[i] = cpu_affinity[i+PetscMainThreadShareWork];
+    PetscThreadsRank[i+1] = i+1;
+    PetscThreadsCoreAffinities[i] = cpu_affinity[i+PetscMainThreadShareWork];
     job_none.funcArr[i+PetscMainThreadShareWork] = pFunc;
     job_none.pdata[i+PetscMainThreadShareWork]  = data[i+PetscMainThreadShareWork];
     pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc_None,&pVal_none[i]);

@@ -3,17 +3,17 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
-PetscInt*           pVal_lockfree;
+static PetscInt*           pVal_lockfree;
 
 typedef void* (*pfunc)(void*);
-
 /* lock-free data structure */
 typedef struct {
   pfunc *funcArr;
   void** pdata;
   PetscInt *my_job_status;
 } sjob_lockfree;
-sjob_lockfree job_lockfree = {NULL,NULL,0};
+
+static sjob_lockfree job_lockfree = {NULL,NULL,0};
 
 /* This struct holds information for PetscThreadsWait_LockFree */
 static struct {
@@ -23,7 +23,7 @@ static struct {
 
 #define PetscAtomicCompareandSwap(ptr, oldval, newval) (__sync_bool_compare_and_swap(ptr,oldval,newval))
 
-void* FuncFinish_LockFree(void* arg) {
+static void* PetscThreadsFinish_LockFree(void* arg) {
   PetscAtomicCompareandSwap(&PetscThreadGo,PETSC_TRUE,PETSC_FALSE);
   return(0);
 }
@@ -38,10 +38,10 @@ void* PetscThreadFunc_LockFree(void* arg)
   PetscInt iVal;
 
   iVal = *(PetscInt*)arg;
-  pthread_setspecific(rankkey,&threadranks[iVal+1]);
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[iVal+1]);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  DoCoreAffinity();
+  PetscThreadsDoCoreAffinity();
 #endif
 
   /* Spin loop */
@@ -55,7 +55,7 @@ void* PetscThreadFunc_LockFree(void* arg)
   }
   __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
 
-  pthread_setspecific(rankkey,NULL);
+  pthread_setspecific(PetscThreadsRankKey,NULL);
   return NULL;
 }
 
@@ -74,12 +74,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   ierr = PetscMalloc(N*sizeof(PetscInt),&(job_lockfree.my_job_status));CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscInt),&(busy_threads.list));CHKERRQ(ierr);
 
-  threadranks[0] = 0; /* rank of main thread */
-  pthread_setspecific(rankkey,&threadranks[0]);
+  PetscThreadsRank[0] = 0; /* rank of main thread */
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
   /* Create threads */
   for(i=0; i<N; i++) {
     pVal_lockfree[i] = i;
-    threadranks[i+1] = i+1;
+    PetscThreadsRank[i+1] = i+1;
     job_lockfree.my_job_status[i] = 1;
     job_lockfree.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
@@ -99,14 +99,14 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree()
   PetscFunctionBegin;
 
   /* Signal all threads to finish */
-  PetscThreadsRunKernel(FuncFinish_LockFree,NULL,PetscMaxThreads,PETSC_NULL);
+  PetscThreadsRunKernel(PetscThreadsFinish_LockFree,NULL,PetscMaxThreads,PETSC_NULL);
 
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
 
-  ierr = pthread_setspecific(rankkey,PETSC_NULL);CHKERRQ(ierr);
+  ierr = pthread_setspecific(PetscThreadsRankKey,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(pVal_lockfree);CHKERRQ(ierr);
   ierr = PetscFree(PetscThreadPoint);CHKERRQ(ierr);
@@ -144,13 +144,13 @@ PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void** data,
   busy_threads.nthreads = n-PetscMainThreadShareWork;
   PetscFunctionBegin;
   for(i=0;i<PetscMaxThreads;i++) {
-    if(pFunc == FuncFinish_LockFree) {
+    if(pFunc == PetscThreadsFinish_LockFree) {
       job_lockfree.funcArr[i+PetscMainThreadShareWork] = pFunc;
       job_lockfree.pdata[i+PetscMainThreadShareWork] = NULL;
       PetscAtomicCompareandSwap(&(job_lockfree.my_job_status[i]),1,0);
     } else {
       for(j=PetscMainThreadShareWork;j < n;j++) {
-	if(cpu_affinity[j] == ThreadCoreAffinity[i]) {
+	if(cpu_affinity[j] == PetscThreadsCoreAffinities[i]) {
 	  job_lockfree.funcArr[i+PetscMainThreadShareWork] = pFunc;
 	  job_lockfree.pdata[i+PetscMainThreadShareWork] = data[j];
 	  busy_threads.list[k++] = i;
@@ -161,7 +161,7 @@ PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void** data,
     }
   }
   
-  if(pFunc != FuncFinish_LockFree) {
+  if(pFunc != PetscThreadsFinish_LockFree) {
     /* If the MainThreadShareWork flag is on then have the main thread also do the work */
     if(PetscMainThreadShareWork) {
       job_lockfree.funcArr[0] = pFunc;

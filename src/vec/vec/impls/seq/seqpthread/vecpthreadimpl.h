@@ -24,7 +24,10 @@ typedef struct {
   PetscRandom   rand;
   const PetscScalar*  amult;   /* multipliers */
   PetscInt      istart;
-} Kernel_Data;
+} Vec_KernelData;
+
+Vec_KernelData *vec_kerneldatap;
+Vec_KernelData **vec_pdata;
 
 extern PetscErrorCode VecNorm_SeqPThread(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecDot_SeqPThread(Vec,Vec,PetscScalar*);

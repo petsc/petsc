@@ -17,7 +17,8 @@ typedef struct {
   void** pdata;
   PetscBool** arrThreadReady;
 } sjob_main;
-sjob_main job_main;
+
+static sjob_main job_main;
 
 static char* arrmutex;
 static char* arrcond1;
@@ -34,9 +35,9 @@ static char* arrready;
   PetscInt* pId = (PetscInt*)arg;
   PetscInt ThreadId = *pId;
 
-  pthread_setspecific(rankkey,&threadranks[ThreadId+1]);
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  DoCoreAffinity();
+  PetscThreadsDoCoreAffinity();
 #endif
 
   pthread_mutex_lock(job_main.mutexarray[ThreadId]);
@@ -47,7 +48,7 @@ static char* arrready;
 
   /* the while loop needs to have an exit
      the 'main' thread can terminate all the threads by performing a broadcast
-     and calling FuncFinish */
+     and calling PetscThreadsFinish */
   while(PetscThreadGo) {
     /* need to check the condition to ensure we don't have to wait
        waiting when you don't have to causes problems
@@ -123,12 +124,12 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
 
-  threadranks[0] = 0; /* rank of main thread */
-  pthread_setspecific(rankkey,&threadranks[0]);
+  PetscThreadsRank[0] = 0; /* rank of main thread */
+  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_main[i] = i;
-    threadranks[i+1] = i+1;
+    PetscThreadsRank[i+1] = i+1;
     job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);CHKERRQ(ierr);
@@ -145,7 +146,7 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_Main() {
 
   PetscFunctionBegin;
 
-  PetscThreadsRunKernel(FuncFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
+  PetscThreadsRunKernel(PetscThreadsFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
     ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);CHKERRQ(ierr);
@@ -198,13 +199,13 @@ PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,Pets
   }
   /* tell the threads to go to work */
   for(i=0; i<PetscMaxThreads; i++) {
-    if(pFunc == FuncFinish) {
+    if(pFunc == PetscThreadsFinish) {
       job_main.funcArr[i+PetscMainThreadShareWork] = pFunc;
       job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     } else {
       issetaffinity=0;
       for(j=PetscMainThreadShareWork; j < n; j++) {
-	if(cpu_affinity[j] == ThreadCoreAffinity[i]) {
+	if(cpu_affinity[j] == PetscThreadsCoreAffinities[i]) {
 	  job_main.funcArr[i+PetscMainThreadShareWork] = pFunc;
 	  job_main.pdata[i+PetscMainThreadShareWork] = data[j];
 	  issetaffinity=1;
@@ -218,7 +219,7 @@ PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,Pets
 
     ierr = pthread_cond_signal(job_main.cond2array[i]);CHKERRQ(ierr);
   }
-  if(pFunc!=FuncFinish) {
+  if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
       job_main.funcArr[0] = pFunc;
       job_main.pdata[0] = data[0];
