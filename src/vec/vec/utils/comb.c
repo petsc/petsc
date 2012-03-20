@@ -21,8 +21,7 @@
 
 #include <private/vecimpl.h>                              /*I   "petscvec.h"   I*/
 
-#define STATE_BEGIN 0
-#define STATE_END   1
+typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
 #define REDUCE_SUM  0
 #define REDUCE_MAX  1
@@ -36,7 +35,7 @@ typedef struct {
   PetscScalar  *gvalues;    /* values after call to MPI_Allreduce() */
   void         **invecs;    /* for debugging only, vector/memory used with each op */
   PetscInt     *reducetype; /* is particular value to be summed or maxed? */
-  PetscInt     state;       /* are we calling xxxBegin() or xxxEnd()? */
+  SRState      state;       /* are we calling xxxBegin() or xxxEnd()? */
   PetscInt     maxops;      /* total amount of space we have for requests */
   PetscInt     numopsbegin; /* number of requests that have been queued in */
   PetscInt     numopsend;   /* number of requests that have been gotten by user */
@@ -206,7 +205,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
         ierr = MPIX_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request);CHKERRQ(ierr);
       }
     }
-    sr->state     = STATE_END;
+    sr->state     = STATE_PENDING;
     sr->numopsend = 0;
     ierr = PetscLogEventEnd(VEC_ReduceBegin,0,0,0,0);CHKERRQ(ierr);
   } else {
@@ -225,12 +224,20 @@ static PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sr->state != STATE_END) { /* We are doing synchronous communication and this is the first call to VecXxxEnd() so do the communication */
+  switch (sr->state) {
+  case STATE_BEGIN: /* We are doing synchronous communication and this is the first call to VecXxxEnd() so do the communication */
     ierr = PetscSplitReductionApply(sr);CHKERRQ(ierr);
-  } else if (sr->request != MPI_REQUEST_NULL) { /* We are doing asynchronous-mode communication and this is the first VecXxxEnd() so wait for comm to complete */
+    break;
+  case STATE_PENDING:
+    /* We are doing asynchronous-mode communication and this is the first VecXxxEnd() so wait for comm to complete */
     ierr = PetscLogEventBegin(VEC_ReduceEnd,0,0,0,0);CHKERRQ(ierr);
-    ierr = MPI_Wait(&sr->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    if (sr->request != MPI_REQUEST_NULL) {
+      ierr = MPI_Wait(&sr->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    }
+    sr->state = STATE_END;
     ierr = PetscLogEventEnd(VEC_ReduceEnd,0,0,0,0);CHKERRQ(ierr);
+    break;
+  default: break;            /* everything is already done */
   }
   PetscFunctionReturn(0);
 }
@@ -437,7 +444,7 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
-  if (sr->state == STATE_END) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
+  if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   if (sr->numopsbegin >= sr->maxops) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
@@ -524,7 +531,7 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
-  if (sr->state == STATE_END) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
+  if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   if (sr->numopsbegin >= sr->maxops) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
@@ -597,7 +604,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
-  if (sr->state == STATE_END) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
+  if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
@@ -709,7 +716,7 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
-  if (sr->state == STATE_END) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
+  if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   for (i=0;i<nv;i++) {
     if (sr->numopsbegin+i >= sr->maxops) {
       ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
@@ -807,7 +814,7 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
-  if (sr->state == STATE_END) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
+  if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   for (i=0;i<nv;i++) {
     if (sr->numopsbegin+i >= sr->maxops) {
       ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
