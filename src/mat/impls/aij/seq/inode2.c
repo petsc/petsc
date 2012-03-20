@@ -124,33 +124,7 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool  flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqAIJ_Inode"
-PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
-{
-  Mat            B=*C;
-  Mat_SeqAIJ     *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       m=A->rmap->n;
 
-  PetscFunctionBegin;
-
-  c->inode.use          = a->inode.use;
-  c->inode.limit        = a->inode.limit;
-  c->inode.max_limit    = a->inode.max_limit;
-  if (a->inode.size){
-    ierr                = PetscMalloc((m+1)*sizeof(PetscInt),&c->inode.size);CHKERRQ(ierr);
-    c->inode.node_count = a->inode.node_count;
-    ierr                = PetscMemcpy(c->inode.size,a->inode.size,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  } else {
-    c->inode.size       = 0;
-    c->inode.node_count = 0;
-  }
-  c->inode.ibdiagvalid = PETSC_FALSE;
-  c->inode.ibdiag      = 0;
-  c->inode.bdiag       = 0;
-  PetscFunctionReturn(0);
-}
 
 
 
