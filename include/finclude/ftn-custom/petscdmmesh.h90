@@ -58,7 +58,7 @@
       Interface
         Subroutine DMMeshGetConeF90(m,p,array,ierr)
           USE_DMMESH_HIDE
-          PetscInt, pointer :: array(:,:)
+          PetscInt, pointer :: array(:)
           PetscInt p
           PetscErrorCode ierr
           DM_HIDE m
@@ -68,7 +68,7 @@
       Interface
         Subroutine DMMeshRestoreConeF90(m,p,array,ierr)
           USE_DMMESH_HIDE
-          PetscInt, pointer :: array(:,:)
+          PetscInt, pointer :: array(:)
           PetscInt p
           PetscErrorCode ierr
           DM_HIDE m

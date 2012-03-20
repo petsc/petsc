@@ -7,11 +7,15 @@
 #define dmmeshrestorecoordinatesf90_ DMMESHRESTORECOORDINATESF90
 #define dmmeshgetelementsf90_        DMMESHGETELEMENTSF90
 #define dmmeshrestoreelementsf90_    DMMESHRESTOREELEMENTSF90
+#define dmmeshgetconef90_            DMMESHGETCONEF90
+#define dmmeshrestoreconef90_        DMMESHRESTORECONEF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmeshgetcoordinatesf90_     dmmeshgetcoordinatesf90
 #define dmmeshrestorecoordinatesf90_ dmmeshrestorecoordinatesf90
 #define dmmeshgetelementsf90_        dmmeshgetelementsf90
 #define dmmeshrestoreelementsf90_    dmmeshrestoreelementsf90
+#define dmmeshgetconef90_            dmmeshgetconef90
+#define dmmeshrestoreconef90_        dmmeshrestoreconef90
 #endif
 
 EXTERN_C_BEGIN
@@ -52,7 +56,7 @@ void PETSC_STDCALL dmmeshgetconef90_(DM *dm,PetscInt *p,F90Array1d *ptr,int *__i
   *__ierr = DMMeshGetCone(*dm,*p,&v); if (*__ierr) return;
   *__ierr = F90Array1dCreate((void *)v,PETSC_INT,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-void PETSC_STDCALL dmmeshrestoreconef90_(DM *dm,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL dmmeshrestoreconef90_(DM *dm,PetscInt *p,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *__ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
