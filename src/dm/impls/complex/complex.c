@@ -5890,10 +5890,10 @@ PetscErrorCode DMComplexComputeTetrahedronGeometry_private(DM dm, PetscInt e, Pe
         J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
-    /* The minus sign is here since I orient the first face to get the outward normal */
-    *detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-              J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-              J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+    /* ??? This does not work with CTetGen: The minus sign is here since I orient the first face to get the outward normal */
+    *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+             J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+             J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
     PetscLogFlops(18.0 + 12.0);
   }
   if (invJ) {
