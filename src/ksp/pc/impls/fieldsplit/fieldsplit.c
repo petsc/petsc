@@ -1349,9 +1349,11 @@ $   (C   D)    (C*Ainv  1) (0   S) (0     1  )
 
     where S = D - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D, and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
 
-    If applied exactly, FULL factorization is a direct solver. The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so KSPGMRES converges in 2 iterations.
-
-    If the iteration count is very low, consider using KSPFGMRES or KSPGCR which can use one less preconditioner application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice. With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so KSPGMRES converges in at most 4 iterations.
+    If applied exactly, FULL factorization is a direct solver. The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and
+    minimal polynomial of degree 2, so KSPGMRES converges in 2 iterations. If the iteration count is very low, consider using KSPFGMRES or KSPGCR
+    which can use one less preconditioner application in this case. Note that the preconditioned operator may be highly non-normal, so such fast
+    convergence may not be observed in practice. With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial
+    of degree at most 4, so KSPGMRES converges in at most 4 iterations.
 
     For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with KSPMINRES. Note that a flexible method like KSPFGMRES or KSPGCR must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used inside a split).
 
