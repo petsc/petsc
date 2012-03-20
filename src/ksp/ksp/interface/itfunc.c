@@ -217,7 +217,8 @@ PetscErrorCode  KSPSetUp(KSP ksp)
       ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
       if (kdm->computeoperators) {
         ierr = (*kdm->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
-      } else {
+      } else {                  /* Eventually remove this code path */
+        if (0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_USER,"Must call KSPSetComputeOperators()");
         ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,B,&stflg);CHKERRQ(ierr);
       }
       ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr); 

@@ -142,6 +142,10 @@ struct _n_SNESDM {
   void *gsctx;
   void *jacobianctx;
 
+  /* The solution defines state that may be needed by multi-resolution callbacks, e.g. from a KSP running on a coarse level. */
+  Vec vec_sol;
+  PetscBool dmloopref;          /* Indicates that the DM is under-referenced to break the reference counting loop. */
+
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(SNESDM);
   void *data;
@@ -156,6 +160,8 @@ extern PetscErrorCode DMSNESGetContextWrite(DM,SNESDM*);
 extern PetscErrorCode DMSNESCopyContext(DM,DM);
 extern PetscErrorCode DMSNESDuplicateContext(DM,DM);
 extern PetscErrorCode DMSNESSetUpLegacy(DM);
+extern PetscErrorCode DMSNESGetSolution(DM,Vec*);
+extern PetscErrorCode DMSNESSetSolution(DM,Vec);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
