@@ -74,6 +74,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPIX_IALLREDUCE)
+  (*sr)->async = PETSC_TRUE;    /* Enable by default */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
