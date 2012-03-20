@@ -14201,7 +14201,7 @@ PetscErrorCode TetGenMeshScoutCrossTet(TetGenMesh *m, face *pssub, triface *sear
       }
     }
     if(crossface.tet == PETSC_NULL) {
-      if (!crossface.tet); {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");}
+      if (!crossface.tet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");}
     }
     *searchtet = crossface;
     m->dummypoint[0] = m->dummypoint[1] = m->dummypoint[2] = 0;
