@@ -192,22 +192,6 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   if (num_node_sets > 0) {
     ierr = PetscFree3(ns_ids,num_nodes_in_set,node_list);CHKERRQ(ierr);
   }
-
-  //cellBlocks->view("Cell Blocks");
-  //vertexSets->view("Vertex Sets");
-
-  // Get coords and print in F90
-  // Get connectivity and print in F90
-  // Calculate cost function
-  // Do in parallel
-  //   Read in parallel
-  //   Distribute
-  //   Print out local meshes
-  //   Do Blaise's assembly loop in parallel
-  // Assemble function into Section
-  // Assemble jacobian into Mat
-  // Assemble in parallel
-  // Convert Section to Vec
   PetscFunctionReturn(0);
 }
 
@@ -297,13 +281,14 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
   Collective on comm
 
   Input Parameters:
-+ comm - The MPI communicator
-- filename - The ExodusII filename
++ comm  - The MPI communicator
+- exoid - The ExodusII id associated with a exodus file and obtained using ex_open
 
   Output Parameter:
-. dm  - The DM object representing the body
+. dm  - The DM object representing the mesh
 
   ExodusII side sets are ignored
+
 
   Interpolated meshes are not supported.
 
@@ -312,19 +297,15 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
 .keywords: mesh,ExodusII
 .seealso: MeshCreate() MeshCreateExodus()
 @*/
-PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmBody)
+PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
 {
 #if defined(PETSC_HAVE_EXODUSII)
   PetscBool               debug = PETSC_FALSE;
-  PetscMPIInt             numproc,rank;
+  PetscMPIInt             num_proc,rank;
   PetscErrorCode          ierr;
 
-  int                     exoid;
-  int                     CPU_word_size = 0;
-  int                     IO_word_size  = 0;
   int                     num_dim,num_vertices = 0,num_cell = 0;
   int                     num_cs = 0,num_vs = 0,num_fs = 0;
-  float                   version;
   char                    title[PETSC_MAX_PATH_LEN+1];
   char                    buffer[PETSC_MAX_PATH_LEN+1];
 
@@ -338,65 +319,60 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
   float                  *x,*y,*z;
   PetscReal              *coords;
 
-  PetscInt                my_num_cells,my_num_vertices;
-  PetscInt                *local_points;
-  ISLocalToGlobalMapping  point_mapping;
-
-
-  DM                      dmBodySeq;
-  PetscInt                f,v,c,f_loc,v_loc,c_loc,fs,vs,cs;
+  PetscInt                v,c,v_loc,c_loc,vs,cs;
 
   typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
   typedef PETSC_MESH_TYPE::sieve_type     sieve_type;
-  ALE::Obj<PETSC_MESH_TYPE>               meshBody,meshBodySeq;
-  ALE::Obj<FlexMesh::sieve_type>          sBody;
-  ALE::Obj<FlexMesh>                      mBody;
-  ALE::Obj<PETSC_MESH_TYPE::sieve_type>   sieveBody;
-  std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumberingBody;
+  ALE::Obj<PETSC_MESH_TYPE>               mesh;
+  ALE::Obj<FlexMesh::sieve_type>          flexmesh_sieve;
+  ALE::Obj<FlexMesh>                      flexmesh;
+  ALE::Obj<PETSC_MESH_TYPE::sieve_type>   sieve;
+  std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_EXODUSII)
   ierr = MPI_Comm_rank(comm,&rank);
-  ierr = MPI_Comm_size(comm,&numproc);
+  ierr = MPI_Comm_size(comm,&num_proc);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-debug",&debug,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMMeshCreate(comm,&dmBodySeq);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject) dmBodySeq,&comm);CHKERRQ(ierr);
-  if (numproc == 1) {
-    *dmBody = dmBodySeq;
-  } else {
-    ierr = DMMeshCreate(comm,dmBody);CHKERRQ(ierr);
-  }
-  meshBodySeq = new PETSC_MESH_TYPE(comm,-1,debug);
-  ierr = DMMeshSetMesh(dmBodySeq,meshBodySeq);CHKERRQ(ierr);
+  ierr = DMMeshCreate(comm,dm);CHKERRQ(ierr);
+  /*
+    I _really don't understand how this is needed
+  */
+  ierr = PetscObjectGetComm((PetscObject) *dm,&comm);CHKERRQ(ierr);
 
-  sieveBody = new PETSC_MESH_TYPE::sieve_type(meshBodySeq->comm(),meshBodySeq->debug());
-  sBody = new FlexMesh::sieve_type(meshBodySeq->comm(),meshBodySeq->debug());
+
+  mesh = new PETSC_MESH_TYPE(comm,-1,debug);
+  ierr = DMMeshSetMesh(*dm,mesh);CHKERRQ(ierr);
+
+  sieve = new PETSC_MESH_TYPE::sieve_type(mesh->comm(),mesh->debug());
+  flexmesh_sieve = new FlexMesh::sieve_type(mesh->comm(),mesh->debug());
 
   /*
     Open EXODUS II file and read basic informations on rank 0,
     then broadcast to all processors
   */
   if (rank == 0) {
-    exoid = ex_open(filename,EX_READ,&CPU_word_size,&IO_word_size,&version);CHKERRQ(!exoid);
     ierr = ex_get_init(exoid,title,&num_dim,&num_vertices,&num_cell,&num_cs,&num_vs,&num_fs);CHKERRQ(ierr);
     if (num_cs == 0) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
     }
   }
 
-  ierr = MPI_Bcast(&num_dim,1,MPI_INT,0,comm);
-  ierr = MPI_Bcast(&num_cs,1,MPI_INT,0,comm);
-  ierr = MPI_Bcast(&num_vs,1,MPI_INT,0,comm);
-  ierr = MPI_Bcast(&num_fs,1,MPI_INT,0,comm);
+  ierr = MPI_Bcast(&num_dim,1,MPIU_INT,0,comm);
+  ierr = MPI_Bcast(&num_cs,1,MPIU_INT,0,comm);
+  ierr = MPI_Bcast(&num_vs,1,MPIU_INT,0,comm);
+  ierr = MPI_Bcast(&num_fs,1,MPIU_INT,0,comm);
+  ierr = MPI_Bcast(title,PETSC_MAX_PATH_LEN+1,MPI_CHAR,0,comm);
 
-  meshBodySeq->setDimension(num_dim);
+  ierr = PetscObjectSetName((PetscObject)*dm,title);CHKERRQ(ierr);
+  mesh->setDimension(num_dim);
 
   /*
     Read cell sets information then broadcast them
   */
-  const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = meshBodySeq->createLabel("Cell Sets");
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = mesh->createLabel("Cell Sets");
   if (rank == 0) {
     /*
       Get cell sets IDs
@@ -411,7 +387,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
     */
     for (c=0,cs = 0; cs < num_cs; cs++) {
       if (debug) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Building cell set %i\n",cs);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Building cell set %i\n",cs);CHKERRQ(ierr);
       }
       ierr = ex_get_elem_block(exoid,cs_id[cs],buffer,&num_cell_in_set,&num_vertex_per_cell,&num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc(num_vertex_per_cell*num_cell_in_set*sizeof(int),&cs_connect);CHKERRQ(ierr);
@@ -425,11 +401,11 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
             ierr = PetscPrintf(PETSC_COMM_SELF,"[%i]:\tinserting vertex \t%i in cell \t%i local vertex number \t%i\n",
                                rank,cs_connect[v]+num_cell-1,c,v_loc);CHKERRQ(ierr);
           }
-          sBody->addArrow(sieve_type::point_type(cs_connect[v]+num_cell-1),
+          flexmesh_sieve->addArrow(sieve_type::point_type(cs_connect[v]+num_cell-1),
                           sieve_type::point_type(c),
                           v_loc);
         }
-        meshBodySeq->setValue(cellSets,c,cs_id[cs]);
+        mesh->setValue(cellSets,c,cs_id[cs]);
       }
       ierr = PetscFree(cs_connect);CHKERRQ(ierr);
     }
@@ -438,16 +414,16 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
     We do not interpolate and know that the numbering is compact (this is required in exo)
     so no need to renumber (renumber = false)
   */
-  ALE::ISieveConverter::convertSieve(*sBody,*sieveBody,renumberingBody,false);
-  meshBodySeq->setSieve(sieveBody);
-  meshBodySeq->stratify();
-  mBody = new FlexMesh(meshBodySeq->comm(),meshBodySeq->debug());
-  ALE::ISieveConverter::convertOrientation(*sBody,*sieveBody,renumberingBody,mBody->getArrowSection("orientation").ptr());
+  ALE::ISieveConverter::convertSieve(*flexmesh_sieve,*sieve,renumbering,false);
+  mesh->setSieve(sieve);
+  mesh->stratify();
+  flexmesh = new FlexMesh(mesh->comm(),mesh->debug());
+  ALE::ISieveConverter::convertOrientation(*flexmesh_sieve,*sieve,renumbering,flexmesh->getArrowSection("orientation").ptr());
 
   /*
     Create Vertex set label
   */
-  const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = meshBodySeq->createLabel("Vertex Sets");
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = mesh->createLabel("Vertex Sets");
   if (num_vs >0) {
     if (rank == 0) {
       /*
@@ -460,7 +436,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
         ierr = PetscMalloc(num_vertex_in_set * sizeof(int),&vs_vertex_list);CHKERRQ(ierr);
         ierr = ex_get_node_set(exoid,vs_id[vs],vs_vertex_list);
         for (v = 0; v < num_vertex_in_set; v++) {
-          meshBodySeq->addValue(vertexSets,vs_vertex_list[v]+num_cell-1,vs_id[vs]);
+          mesh->addValue(vertexSets,vs_vertex_list[v]+num_cell-1,vs_id[vs]);
         }
         ierr = PetscFree(vs_vertex_list);
       }
@@ -481,43 +457,16 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, const char filename[],DM *dmB
     if (num_dim > 1) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+1] = y[v];}}
     if (num_dim > 2) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+2] = z[v];}}
   }
-  ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(meshBodySeq,num_dim,coords);
+  ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh,num_dim,coords);
   if (rank == 0) {
     ierr = PetscFree4(x,y,z,coords);CHKERRQ(ierr);
   }
 
-  if (debug) {
-    meshBodySeq->view("meshBodySeq");
-    cellSets->view("Cell Sets");
-    vertexSets->view("Vertex Sets");
-  }
-
   /*
-    Distribute
-  */
-  if (numproc>1) {
-    ierr = DMMeshCreate(comm,dmBody);CHKERRQ(ierr);
-    ierr = DMMeshDistribute(dmBodySeq,PETSC_NULL,dmBody);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmBodySeq);CHKERRQ(ierr);
-  }
-  ierr = DMMeshGetMesh(*dmBody,meshBody);CHKERRQ(ierr);
-  my_num_cells     = meshBody->heightStratum(0)->size();
-  my_num_vertices = meshBody->depthStratum(0)->size();
-  if (debug) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%i]:\t my_num_cells: %i my_num_vertices: %i\n",rank,my_num_cells,my_num_vertices);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  }
-  if(debug) {
-    const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = meshBody->getLabel("Cell Sets");
-    const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = meshBody->getLabel("Vertex Sets");
-    meshBody->view("meshBody");
-    cellSets->view("Cell sets");
-    vertexSets->view("Vertex sets");
-  }
-
   if (rank == 0) {
     ierr = ex_close(exoid);CHKERRQ(ierr);
   }
+  */
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
 #endif
