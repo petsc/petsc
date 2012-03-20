@@ -513,6 +513,7 @@ void* MatMissingDiagonal_Kernel(void* arg)
     if(aj[adiag[i]] != row) {
       data->missing_diag = PETSC_TRUE;
       if(data->find_d) data->d =  row;
+      break;
     }
   }
   return(0);
@@ -553,6 +554,7 @@ PetscErrorCode MatMissingDiagonal_SeqAIJPThread(Mat A, PetscBool *missing,PetscI
 	*missing = PETSC_TRUE;
 	if(d) *d = mat_kerneldatap[i].d;
 	PetscInfo1(A,"Matrix is missing diagonal number %D",mat_kerneldatap[i].d);
+	break;
       }
     }
   }
@@ -633,7 +635,69 @@ PetscErrorCode MatDiagonalScale_SeqAIJPThread(Mat A,Vec ll,Vec rr)
   a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+ 
+void* MatDiagonalSet_Kernel(void* arg)
+{
+  Mat_KernelData    *data=(Mat_KernelData*)arg;
+  MatScalar         *aa = (MatScalar*)data->aa;
+  const PetscInt    *adiag = (const PetscInt*)data->adiag;
+  PetscInt          nrows = data->nrows;
+  PetscInt          i;
+  PetscScalar       *x = (PetscScalar*)data->x;
+  InsertMode        is = data->is;
   
+  if(is == INSERT_VALUES) {
+    for(i=0; i < nrows; i++) {
+      aa[adiag[i]] = x[i];
+    }
+  } else {
+    for(i=0;i < nrows; i++) {
+      aa[adiag[i]] += x[i];
+    }
+  }
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_SeqAIJPThread"
+PetscErrorCode MatDiagonalSet_SeqAIJPThread(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *aij = (Mat_SeqAIJ*)Y->data;
+  PetscThreadsLayout tmap=Y->rmap->tmap;
+  PetscInt           *trstarts=tmap->trstarts;
+  MatScalar          *aa = aij->a;
+  PetscInt           *diag;
+  PetscInt           i;
+  PetscBool          missing;
+  PetscScalar        *v;
+
+  PetscFunctionBegin;
+  if(Y->assembled) {
+    ierr = MatMissingDiagonal_SeqAIJPThread(Y,&missing,PETSC_NULL);CHKERRQ(ierr);
+    if(!missing) {
+      diag = aij->diag;
+      ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+      for(i=0; i < tmap->nthreads;i++) {
+	mat_kerneldatap[i].nrows = trstarts[i+1] - trstarts[i];
+	mat_kerneldatap[i].aa    = aa;
+	mat_kerneldatap[i].adiag = diag + trstarts[i];
+	mat_kerneldatap[i].x     = v + trstarts[i];
+	mat_kerneldatap[i].is    = is;
+	mat_pdata[i]             = &mat_kerneldatap[i];
+      }
+      ierr = PetscThreadsRunKernel(MatDiagonalSet_Kernel,(void**)mat_pdata,tmap->nthreads,tmap->affinity);CHKERRQ(ierr);
+
+      ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    aij->idiagvalid = PETSC_FALSE;
+    aij->ibdiagvalid = PETSC_FALSE;
+  }
+  ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp_SeqAIJPThread"
 PetscErrorCode MatSetUp_SeqAIJPThread(Mat A)
@@ -888,6 +952,7 @@ PetscErrorCode MatCreate_SeqAIJPThread(Mat B)
   B->ops->missingdiagonal = MatMissingDiagonal_SeqAIJPThread;
   B->ops->findzerodiagonals = MatFindZeroDiagonals_SeqAIJPThread;
   B->ops->diagonalscale     = MatDiagonalScale_SeqAIJPThread;
+  B->ops->diagonalset       = MatDiagonalSet_SeqAIJPThread;
   B->ops->view = MatView_SeqAIJPThread;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
