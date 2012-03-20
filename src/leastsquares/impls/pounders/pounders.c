@@ -79,24 +79,6 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
       } else {
 	ierr = VecCopy(mfqP->subpdel,mfqP->subxu); CHKERRQ(ierr);
 	ierr = VecCopy(mfqP->subndel,mfqP->subxl); CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"upper bound < lower bound in subproblem");
-	}
-	/* Make sure xu > tao->solution > xl */
-	ierr = VecCopy(xl,pdel); CHKERRQ(ierr);
-	ierr = VecAXPY(pdel,-1.0,x);  CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"initial guess < lower bound in subproblem");
-	}
-
-	ierr = VecCopy(x,pdel); CHKERRQ(ierr);
-	ierr = VecAXPY(pdel,-1.0,xu);  CHKERRQ(ierr);
-	ierr = VecMax(pdel,PETSC_NULL,&maxval); CHKERRQ(ierr);
-	if (maxval > 1e-10) {
-	  SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
-	}
       }
       /* Make sure xu > xl */
       ierr = VecCopy(mfqP->subxl,mfqP->subpdel); CHKERRQ(ierr);
