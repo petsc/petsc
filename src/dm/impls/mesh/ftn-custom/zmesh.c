@@ -4,7 +4,6 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmeshcreatepcice_          DMMESHCREATEPCICE
 #define dmmeshcreateexodus_         DMMESHCREATEEXODUS
-#define dmmeshcreateexodusng_       DMMESHCREATEEXODUSNG
 #define dmmeshdistribute_           DMMESHDISTRIBUTE
 #define dmmeshgetvertexsectionreal_ DMMESHGETVERTEXSECTIONREAL
 #define dmmeshgetcellsectionreal_   DMMESHGETCELLSECTIONREAL
@@ -29,7 +28,6 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmmeshcreatepcice_           dmmeshcreatepcice
 #define dmmeshcreateexodus_          dmmeshcreateexodus
-#define dmmeshcreateexodusng_        dmmeshcreateexodusng
 #define dmmeshdistribute_            dmmeshdistribute
 #define dmmeshgetvertexsectionreal_  dmmeshgetvertexsectionreal
 #define dmmeshgetcellsectionreal_    dmmeshgetcellsectionreal
@@ -72,13 +70,6 @@ void PETSC_STDCALL  dmmeshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIX
   char *cF;
   FIXCHAR(filename,len,cF);
   *ierr = DMMeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,dm);
-  FREECHAR(filename,cF);
-}
-void PETSC_STDCALL  dmmeshcreateexodusng_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), DM *dm, PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  char *cF;
-  FIXCHAR(filename,len,cF);
-  *ierr = DMMeshCreateExodusNG(MPI_Comm_f2c( *(comm) ),cF,dm);
   FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  dmmeshdistribute_(DM *serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))

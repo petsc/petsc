@@ -275,7 +275,7 @@ PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateExodusNG"
-/*@C
+/*@
   DMMeshCreateExodusNG - Create a Mesh from an ExodusII file.
 
   Collective on comm
@@ -470,6 +470,207 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshViewExodusSplit"
+/*@
+  DMMeshViewExodusSplit - Write a dmMesh geometry and topology into several ExodusII files.
+
+  Collective on comm
+
+  Input Parameters:
++ comm - The MPI communicator
+- filename - The ExodusII filename. Must be different on each processor 
+             (suggest using prefix-<rank>.gen or prefix-<rank>.exo)
+. dm  - The DM object representing the body
+
+  Face Sets (Side Sets in Exodus terminology) are ignored
+  
+  Interpolated meshes are not supported.
+  
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: MeshCreate()
+@*/
+PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
+{
+  PetscBool               debug = PETSC_FALSE;
+  MPI_Comm                comm;
+  PetscErrorCode          ierr;
+  
+  int                     num_dim,num_vertices = 0,num_cells = 0;
+  int                     num_cs = 0,num_vs = 0;
+  int                     num_cs_global = 0,num_vs_global = 0;
+  const char             *title;
+  IS                      csIS,vsIS;
+  IS                      csIS_global,vsIS_global;
+  const PetscInt         *csID,*vsID,*labels;
+  
+  PetscReal              *coord;
+  
+  PetscInt                c,v,c_offset;
+
+  PetscInt                set,num_cell_in_set,num_vertex_per_cell;
+  const PetscInt         *cells;
+  IS                      cellsIS;
+  const char             *cell_type;
+  int                    *elem_map,*cs_connect,num_cs_attr=0;
+  const PetscInt         *elem_connect;
+  
+  PetscInt                num_vertex_in_set,num_vs_attr=0;
+  PetscInt               *vertices;
+  IS                      verticesIS;
+  
+  PetscFunctionBegin;
+  /*
+    Extract mesh global properties from the DM
+  */
+  ierr = PetscObjectGetName((PetscObject)dm,&title);CHKERRQ(ierr);
+  ierr = DMMeshGetDimension(dm,&num_dim);CHKERRQ(ierr);
+  ierr = DMMeshGetStratumSize(dm,"height",0,&num_cells);CHKERRQ(ierr);
+  ierr = DMMeshGetStratumSize(dm,"depth",0,&num_vertices);CHKERRQ(ierr);
+
+  /*
+    Get the local and  global number of sets
+  */
+  ierr = PetscObjectGetComm((PetscObject) dm,&comm);CHKERRQ(ierr);
+  ierr = DMMeshGetLabelSize(dm,"Cell Sets",&num_cs);CHKERRQ(ierr);
+  ierr = DMMeshGetLabelIdIS(dm,"Cell Sets",&csIS);CHKERRQ(ierr);
+  ierr = ISGetTotalIndices(csIS,&labels);CHKERRQ(ierr);
+  ierr = ISGetSize(csIS,&num_cs_global);CHKERRQ(ierr);
+  if (num_cs_global > 0) { 
+    ierr = PetscSortRemoveDupsInt(&num_cs_global,(PetscInt*)labels);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,num_cs_global,labels,PETSC_COPY_VALUES,&csIS_global);CHKERRQ(ierr);
+    ierr = ISRestoreTotalIndices(csIS,&labels);CHKERRQ(ierr);
+  }  
+  
+  ierr = DMMeshGetLabelSize(dm,"Vertex Sets",&num_vs);CHKERRQ(ierr);
+  ierr = DMMeshGetLabelIdIS(dm,"Vertex Sets",&vsIS);CHKERRQ(ierr);
+  ierr = ISGetTotalIndices(vsIS,&labels);CHKERRQ(ierr);
+  ierr = ISGetSize(vsIS,&num_vs_global);CHKERRQ(ierr);
+  if (num_vs_global > 0) {
+    ierr = PetscSortRemoveDupsInt(&num_vs_global,(PetscInt*)labels);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,num_vs_global,labels,PETSC_COPY_VALUES,&vsIS_global);CHKERRQ(ierr);
+    ierr = ISRestoreTotalIndices(vsIS,&labels);CHKERRQ(ierr);
+  }
+  ierr = ex_put_init(exoid,title,num_dim,num_vertices,num_cells,num_cs_global,num_vs_global,0);
+  
+  /*
+    Write coordinates
+  */
+  ierr = DMMeshGetCoordinates(dm,PETSC_TRUE,&num_vertices,&num_dim,&coord);CHKERRQ(ierr);
+  if (debug) {
+    for (c = 0; c < num_dim; c++) {
+      ierr = PetscPrintf(comm,"Coordinate %i:\n",c);CHKERRQ(ierr);
+      ierr = PetscRealView(num_vertices,&coord[c*num_vertices],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+  }
+  ierr = ex_put_coord(exoid,coord,&coord[num_vertices],&coord[2*num_vertices]);
+  
+  /*
+    Write cell set connectivity table and parameters
+    Compute the element number map 
+    The element number map is not needed as long as the cell sets are of the type
+    0    .. n1
+    n1+1 .. n2
+    n2+1 ..n3 
+    which is the case when a mesh is read from an exo file then distributed, but one never knows
+  */
+  
+  /*
+    The following loop should be based on csIS and csIS_global, but EXO has no
+    way to write the block id's other than ex_put_elem_block
+    and ensight is bothered if all cell set ID's are not on all files...
+    Not a huge deal
+  */
+    
+  ierr = PetscMalloc(num_cells*sizeof(int),&elem_map);CHKERRQ(ierr);
+  ierr = ISGetIndices(csIS_global,&csID);CHKERRQ(ierr);
+  for (c_offset = 0,set = 0; set < num_cs_global; set++) {
+    ierr = DMMeshGetStratumSize(dm,"Cell Sets",csID[set],&num_cell_in_set);CHKERRQ(ierr);
+    ierr = DMMeshGetStratumIS(dm,"Cell Sets",csID[set],&cellsIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(cellsIS,&cells);CHKERRQ(ierr);
+    if (debug) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Cell set %i: %i cells\n",csID[set],num_cell_in_set);CHKERRQ(ierr);
+      ierr = PetscIntView(num_cell_in_set,cells,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    /* 
+      Add current block indices to elem_map. EXO uses fortran numbering
+    */
+    for (c = 0; c < num_cell_in_set; c++,c_offset++) {
+      elem_map[c_offset] = cells[c]+1;
+    }
+    /*
+      We make an educated guess as to the type of cell. This misses out quads in 
+      a three-dimensional mesh.
+      This most likely needs to be fixed by calling again ex_put_elem_block with
+      the proper parameters
+    */
+    if (num_cell_in_set > 0) {
+      ierr = DMMeshGetConeSize(dm,cells[0],&num_vertex_per_cell);CHKERRQ(ierr);
+      if (num_vertex_per_cell == 2) {
+        cell_type = "BAR";
+      } else if (num_vertex_per_cell == 3) {
+        cell_type = "TRI";
+      } else if (num_vertex_per_cell == 8) {
+        cell_type = "HEX";
+      } else if (num_vertex_per_cell == 4 && num_dim == 2) {
+          cell_type = "QUAD";
+      } else if (num_vertex_per_cell == 4 && num_dim == 3) {
+          cell_type = "TET";
+      } else {
+        cell_type = "UNKNOWN";
+      }
+    }  
+    ierr = ex_put_elem_block (exoid,csID[set],cell_type,num_cell_in_set,num_vertex_per_cell,num_cs_attr);
+    /* 
+      Build connectivity table of the current block
+    */
+    ierr = PetscMalloc(num_cell_in_set*num_vertex_per_cell*sizeof(int),&cs_connect);CHKERRQ(ierr);
+    for (c = 0; c < num_cell_in_set; c++) {
+      ierr = DMMeshGetCone(dm,cells[c],&elem_connect);
+      for (v = 0; v < num_vertex_per_cell; v++) {
+        cs_connect[c*num_vertex_per_cell+v] = elem_connect[v]-num_cells+1;
+      }
+    }
+    if (num_cell_in_set > 0) {
+      ierr = ex_put_elem_conn(exoid,csID[set],cs_connect);
+    }
+    ierr = PetscFree(cs_connect);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(cellsIS,&cells);CHKERRQ(ierr);  
+    ierr = ISDestroy(&cellsIS);CHKERRQ(ierr); 
+  }
+  ierr = ISRestoreIndices(csIS_global,&csID);CHKERRQ(ierr);
+  ierr = ex_put_elem_num_map(exoid,elem_map);
+  ierr = PetscFree(elem_map);CHKERRQ(ierr);
+  
+  /*
+    Writing vertex sets 
+  */  
+  if (num_vs_global > 0) {
+    ierr = ISGetIndices(vsIS_global,&vsID);CHKERRQ(ierr);
+    for (set = 0; set < num_vs_global; set++) {
+      ierr = DMMeshGetStratumSize(dm,"Vertex Sets",vsID[set],&num_vertex_in_set);CHKERRQ(ierr);
+      ierr = ex_put_node_set_param(exoid,vsID[set],num_vertex_in_set,num_vs_attr);
+      
+      ierr = DMMeshGetStratumIS(dm,"Vertex Sets",vsID[set],&verticesIS);CHKERRQ(ierr);
+      ierr = ISGetIndices(verticesIS,(const PetscInt**)&vertices);CHKERRQ(ierr);
+      
+      for (v = 0; v < num_vertex_in_set; v++) {
+        vertices[v] -= num_cells-1;
+      }
+      
+      if (num_vertex_in_set > 0) {
+        ierr = ex_put_node_set(exoid,vsID[set],vertices);
+      }
+      ierr = ISRestoreIndices(verticesIS,(const PetscInt**)&vertices);CHKERRQ(ierr);
+      ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(vsIS_global,&vsID);CHKERRQ(ierr);
+  }  
   PetscFunctionReturn(0);
 }
 
