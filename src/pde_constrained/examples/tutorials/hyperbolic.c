@@ -78,7 +78,6 @@ typedef struct {
   PetscInt block_index;
 
   TAO_LCL *lcl;
-  PetscReal tau[4];
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 
@@ -154,14 +153,6 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,&flag); CHKERRQ(ierr);
 
 
-  user.tau[0] = 1e-4;
-  ierr = PetscOptionsReal("-tola","Tolerance for first forward solve","",user.tau[0],&user.tau[0],&flag); CHKERRQ(ierr);
-  user.tau[1] = 1e-4;
-  ierr = PetscOptionsReal("-tolb","Tolerance for first adjoint solve","",user.tau[1],&user.tau[1],&flag); CHKERRQ(ierr);
-  user.tau[2] = 1e-4;
-  ierr = PetscOptionsReal("-tolc","Tolerance for second forward solve","",user.tau[2],&user.tau[2],&flag); CHKERRQ(ierr);
-  user.tau[3] = 1e-4;
-  ierr = PetscOptionsReal("-told","Tolerance for second adjoint solve","",user.tau[3],&user.tau[3],&flag); CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.nt; /*  number of constraints */
   user.n = user.mx*user.mx*3*user.nt; /*  number of variables */
@@ -638,9 +629,9 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
 PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
-  PetscReal tau;
   void *ptr;
   AppCtx *user;
+  PetscReal tau;
   PetscInt its,i;
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
@@ -649,7 +640,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   if (Y == user->ytrue) {
     KSPSetTolerances(user->solver,1e-4,1e-20,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   } else if (user->lcl) {
-    tau = user->tau[user->lcl->solve_type];
+    tau = user->lcl->tau[user->lcl->solve_type];
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
     
@@ -696,7 +687,7 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   user = (AppCtx*)ptr;
 
   if (user->lcl) {
-    tau = user->tau[user->lcl->solve_type];
+    tau = user->lcl->tau[user->lcl->solve_type];
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt); CHKERRQ(ierr);

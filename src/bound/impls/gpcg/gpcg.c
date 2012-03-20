@@ -133,7 +133,6 @@ static PetscErrorCode TaoSetup_GPCG(TaoSolver tao) {
   ierr=VecDuplicate(tao->solution,&gpcg->DXFree); CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->R); CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->PG); CHKERRQ(ierr);
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPNASH); CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
@@ -176,6 +175,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
   
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU); CHKERRQ(ierr);
   
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
   ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre,&structure); CHKERRQ(ierr);

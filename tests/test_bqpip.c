@@ -14,8 +14,8 @@ PetscErrorCode formh(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  Vec        x,xl,xu;       
-  PetscInt   testnumber=3;
+  Vec        x,xl,xu,xl2;
+  PetscInt   testnumber=4;
   PetscReal h1[]={7.0041870379596727e+05,
 		-8.3224463710973843e+05,
 		-5.2666356047707784e+05,
@@ -43,15 +43,22 @@ int main(int argc,char **argv)
 		  -4.7143914245777630e+05,
 		  8.6368774543820019e+05,
 		  7.7510985588455945e+05};
+  PetscReal h4[]={-1.44339e+04,
+		  1.54854e+04,
+		  1.54854e+04,
+		  -1.60218e+04};
   PetscReal b1[]={-33535.5,40755.2,19244.7};
   PetscReal b2[]={-50344.8,78886.6,3994.66};
   PetscReal b3[]={-24323.8,40608.4,24496.6};
+  PetscReal b4[]={-471668.0,235620.0};
   PetscReal u1 = 0.015;
   PetscReal u2 = 0.05;
   PetscReal u3 = 0.025;
+  PetscReal u4= 0.4;
   PetscReal l1 = -1e20;
   PetscReal l2 = -0.05;
   PetscReal l3 = -0.025;
+  PetscReal l4 = -0.4;
   TaoSolver  tao;     
   KSP ksp;
   PC pc;
@@ -60,8 +67,13 @@ int main(int argc,char **argv)
   /* Initialize TAO and PETSc */
   TaoInitialize(&argc,&argv,(char*)0,(char*)0);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-test",&testnumber,PETSC_NULL);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,3,&x); CHKERRQ(ierr);
+  if (testnumber == 4) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,2,&x); CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,3,&x); CHKERRQ(ierr);
+  }
   ierr = VecDuplicate(x,&xl); CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&xl2); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu); CHKERRQ(ierr);
   ierr = VecSet(x,0); CHKERRQ(ierr);
 
@@ -87,7 +99,16 @@ int main(int argc,char **argv)
     CHKERRQ(ierr);
     ierr = VecSet(xl,l3); CHKERRQ(ierr);
     ierr = VecSet(xu,u3); CHKERRQ(ierr);
-  }    
+  } else if (testnumber == 4) {
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,2,b4,&user.b);
+    CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,2,2,h4,&user.H);
+    CHKERRQ(ierr);
+    ierr = VecSet(xl,l4); CHKERRQ(ierr);
+    ierr = VecSet(xu,u4); CHKERRQ(ierr);
+  }
+
+  
   ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
   ierr = TaoSetType(tao,"tao_bqpip"); CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
@@ -96,15 +117,27 @@ int main(int argc,char **argv)
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,formh,&user); CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp); CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+  if (ksp) {
+    ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+  }
   ierr = TaoSolve(tao); CHKERRQ(ierr);
   ierr = VecView(x,0); CHKERRQ(ierr);
+
+
+  /* solve 2nd time */
+  ierr = VecCopy(xl,xl2); CHKERRQ(ierr);
+  ierr = VecDestroy(&xl); CHKERRQ(ierr);
+  ierr = TaoResetStatistics(tao); CHKERRQ(ierr);
+  ierr = VecSet(x,0); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetVariableBounds(tao,xl2,xu); CHKERRQ(ierr);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
 
   ierr = MatDestroy(&user.H); CHKERRQ(ierr);
   ierr = VecDestroy(&user.b); CHKERRQ(ierr);
   ierr = VecDestroy(&x); CHKERRQ(ierr);
-  ierr = VecDestroy(&xl); CHKERRQ(ierr);
+  ierr = VecDestroy(&xl2); CHKERRQ(ierr);
   ierr = VecDestroy(&xu); CHKERRQ(ierr);
   ierr = TaoDestroy(&tao); CHKERRQ(ierr);
   TaoFinalize();

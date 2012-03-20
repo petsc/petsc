@@ -1,0 +1,108 @@
+iter =   0, Function value 4575.71, Residual: 1815.3 
+iter =   1, Function value 4575.71, Residual: 4838.21 
+iter =   2, Function value 4575.71, Residual: 1404.45 
+iter =   3, Function value 3627.39, Residual: 11279.7 
+iter =   4, Function value 3333.19, Residual: 693.63 
+iter =   5, Function value 2748.7, Residual: 1266.47 
+iter =   6, Function value 2472.04, Residual: 54.9879 
+iter =   7, Function value 2429.45, Residual: 175.111 
+iter =   8, Function value 2424.7, Residual: 9.33286 
+iter =   9, Function value 2424.47, Residual: 1.92785 
+iter =  10, Function value 2423.92, Residual: 3.0949 
+iter =  11, Function value 2423.82, Residual: 1.59881 
+iter =  12, Function value 2423.78, Residual: 0.145223 
+iter =  13, Function value 2423.74, Residual: 2.72705 
+iter =  14, Function value 2423.74, Residual: 0.207979 
+iter =  15, Function value 2423.64, Residual: 0.629955 
+iter =  16, Function value 2423.3, Residual: 0.688864 
+iter =  17, Function value 2423.15, Residual: 52.5411 
+iter =  18, Function value 2419.69, Residual: 116.07 
+iter =  19, Function value 2410.57, Residual: 3899.06 
+iter =  20, Function value 2410.57, Residual: 1175.72 
+iter =  21, Function value 2407.71, Residual: 221.714 
+iter =  22, Function value 2402, Residual: 820.826 
+iter =  23, Function value 2401.52, Residual: 84.4069 
+iter =  24, Function value 2397.59, Residual: 439.413 
+iter =  25, Function value 2396.86, Residual: 8807.48 
+iter =  26, Function value 2392.58, Residual: 1031.11 
+iter =  27, Function value 2392.58, Residual: 203.439 
+iter =  28, Function value 2388.9, Residual: 11.8779 
+iter =  29, Function value 2388.9, Residual: 2.59019 
+iter =  30, Function value 2386.92, Residual: 12.0483 
+iter =  31, Function value 2386.43, Residual: 4.20477 
+iter =  32, Function value 2385.58, Residual: 91.1708 
+iter =  33, Function value 2384.83, Residual: 4.09694 
+iter =  34, Function value 2384.75, Residual: 87.0155 
+iter =  35, Function value 2384.59, Residual: 20.0607 
+iter =  36, Function value 2384.55, Residual: 4.24113 
+iter =  37, Function value 2384.5, Residual: 2.04641 
+iter =  38, Function value 2384.48, Residual: 0.0493895 
+iter =  39, Function value 2384.48, Residual: 0.0315908 
+iter =  40, Function value 2384.48, Residual: 0.00105658 
+iter =  41, Function value 2384.48, Residual: 0.000296998 
+iter =  42, Function value 2384.48, Residual: 4.3777e-05 
+iter =  43, Function value 2384.48, Residual: 5.60743e-05 
+iter =  44, Function value 2384.48, Residual: 5.27582e-05 
+iter =  45, Function value 2384.48, Residual: 0.000186766 
+iter =  46, Function value 2384.48, Residual: 0.00138434 
+iter =  47, Function value 2384.48, Residual: 0.000128351 
+iter =  48, Function value 2384.48, Residual: 3.22946e-06 
+   4575.70851756087        1815.29855165991     
+   4575.70851756087        4838.20836666060     
+   4575.70851756087        1404.45093728302     
+   3627.39275831264        11279.7153464227     
+   3333.18712010002        693.630025891199     
+   2748.70413139926        1266.47170140141     
+   2472.04141825013        54.9878931494564     
+   2429.44730654602        175.110543157579     
+   2424.70040646788        9.33285774822178     
+   2424.47111287934        1.92784930991047     
+   2423.92398969246        3.09489889968898     
+   2423.81993788722        1.59881200011742     
+   2423.78226203795       0.145222520470920     
+   2423.74194649677        2.72705428609671     
+   2423.74194649677       0.207978983497470     
+   2423.64058893543       0.629954568357413     
+   2423.29779844978       0.688864261184883     
+   2423.14596544029        52.5410573874104     
+   2419.69176593099        116.070206540586     
+   2410.57315478007        3899.05874248749     
+   2410.57315478007        1175.71507525612     
+   2407.71213612779        221.714172963369     
+   2401.99795180686        820.825671169692     
+   2401.52124904725        84.4068871597575     
+   2397.59345700405        439.412609759661     
+   2396.86313949761        8807.47998617084     
+   2392.57778387545        1031.10782091801     
+   2392.57778387545        203.439200591814     
+   2388.90357528766        11.8779211884853     
+   2388.90357528766        2.59019167625273     
+   2386.92139945505        12.0483480899882     
+   2386.42597214618        4.20477031983580     
+   2385.57545208139        91.1707767853697     
+   2384.82721638518        4.09693849584555     
+   2384.74559072945        87.0154574729432     
+   2384.59213921614        20.0607092259300     
+   2384.54918044489        4.24112963491572     
+   2384.49782352903        2.04641444106856     
+   2384.47700312766       4.938950516379118E-002
+   2384.47700312766       3.159080140119071E-002
+   2384.47700312766       1.056583794372465E-003
+   2384.47700312766       2.969980730230708E-004
+   2384.47700254574       4.377700308051055E-005
+   2384.47699890322       5.607434806194326E-005
+   2384.47699621756       5.275818076248871E-005
+   2384.47699569057       1.867655960360442E-004
+   2384.47699351282       1.384344324936092E-003
+   2384.47699351282       1.283513894285667E-004
+   2384.47699337168       3.229461091628498E-006
+TaoSolver: 1 MPI processes
+  type: tao_pounders
+      Subproblem solver: bqpip
+  convergence tolerances: fatol=0,   frtol=0
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  Residual in Function/Gradient:=3.22946e-06
+  Objective value=2384.48
+  total number of iterations=48,                          (max: 2000)
+  total number of function evaluations=52,                  max: 4000
+  Solution converged:    ||g(X)||/|f(X)| <= grtol
