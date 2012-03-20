@@ -242,7 +242,7 @@ extern PetscErrorCode  PCShellSetDestroy(PC,PetscErrorCode (*)(PC));
 extern PetscErrorCode  PCShellGetContext(PC,void**);
 extern PetscErrorCode  PCShellSetContext(PC,void*);
 extern PetscErrorCode  PCShellSetName(PC,const char[]);
-extern PetscErrorCode  PCShellGetName(PC,char*[]);
+extern PetscErrorCode  PCShellGetName(PC,const char*[]);
 
 extern PetscErrorCode  PCFactorSetZeroPivot(PC,PetscReal);
 

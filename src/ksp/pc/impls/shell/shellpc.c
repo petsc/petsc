@@ -370,7 +370,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellGetName_Shell"
-PetscErrorCode  PCShellGetName_Shell(PC pc,char *name[])
+PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -742,14 +742,14 @@ PetscErrorCode  PCShellSetName(PC pc,const char name[])
 
 .seealso: PCShellSetName()
 @*/
-PetscErrorCode  PCShellGetName(PC pc,char *name[])
+PetscErrorCode  PCShellGetName(PC pc,const char *name[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  ierr = PetscUseMethod(pc,"PCShellGetName_C",(PC,char *[]),(pc,name));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCShellGetName_C",(PC,const char *[]),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

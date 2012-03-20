@@ -111,7 +111,7 @@ void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscE
 
 void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *c;
+  const char *c;
 
   *ierr = PCShellGetName(*pc,&c);if (*ierr) return;
   *ierr = PetscStrncpy(name,c,len);
