@@ -324,6 +324,11 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
    These linesearches try a polynomial fit for the L2 norm of the error
    using the gradient.  Failing that, they step back and try again.
 
+   Options Database Keys:
++  -snes_linesearch_alpha<1e-4> - slope descent parameter
+.  -snes_linesearch_damping<1.0> - full steplength
+-  -snes_linesearch_order<cubic, quadratic> - order of the approximation
+
    Level: advanced
 
 .keywords: SNES, SNESLineSearch, damping

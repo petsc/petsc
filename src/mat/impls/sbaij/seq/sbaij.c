@@ -26,13 +26,19 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscBool  *missing,PetscInt *d
 
   PetscFunctionBegin;
   ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
-  diag = a->diag;
   *missing = PETSC_FALSE;
-  for (i=0; i<a->mbs; i++) {
-    if (jj[diag[i]] != i) {
-      *missing    = PETSC_TRUE;
-      if (dd) *dd = i;
-      break;
+  if(A->rmap->n > 0 && !jj) {
+    *missing = PETSC_TRUE;
+    if (dd) *dd = 0;
+    PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
+  } else {
+    diag = a->diag;
+    for (i=0; i<a->mbs; i++) {
+      if (jj[diag[i]] != i) {
+	*missing    = PETSC_TRUE;
+	if (dd) *dd = i;
+	break;
+      }
     }
   }
   PetscFunctionReturn(0);
