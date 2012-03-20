@@ -14,6 +14,34 @@ typedef struct {
 
    Not Collective
 
+   Input Parameters:
++  linesearch - SNESLineSearch context
+.  func - function implementing the linesearch shell.
+-  ctx - context for func
+
+   Calling sequence of func:
++  linesearch - the linesearch instance
+-  ctx - the above mentioned context
+
+   Usage:
+
+$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx) {
+$     Vec X, Y, F;
+$     PetscFunctionBegin;
+$     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+$     ierr = SNESLineSearchGetVecs(linesearch, X, Y, F);CHKERRQ(ierr);
+$     .. determine lambda ..
+$     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr)
+$     ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+$     PetscFunctionReturn(0);
+$  }
+$
+$  ...
+$
+$  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+$  ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_SHELL);CHKERRQ(ierr);
+$  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, PETSC_NULL);CHKERRQ(ierr);
+
    Level: advanced
 
    .keywords: SNESLineSearch, SNESLineSearchShell, Shell
@@ -106,7 +134,8 @@ SNES_LINESEARCH_SHELL - Provides context for a user-provided line search routine
 The user routine has one argument, the SNESLineSearch context.  The user uses the interface to
 extract line search parameters and set them accordingly when the computation is finished.
 
-Any of the other line searches may serve as a guide to how this is to be done.
+Any of the other line searches may serve as a guide to how this is to be done.  There is also a basic
+template in the documentation for SNESLineSearchShellSetUserFunc().
 
 Level: advanced
 

@@ -16,6 +16,7 @@ typedef struct {
   PetscInt   d;
   PetscInt   nzerodiags;
   PetscInt   *zerodiags;
+  InsertMode is;
 }Mat_KernelData;
 
 Mat_KernelData *mat_kerneldatap;

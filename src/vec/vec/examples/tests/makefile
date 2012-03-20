@@ -7,7 +7,7 @@ LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
                 ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c \
-                ex36.c ex37.c ex38.c ex39.c ex40.c
+                ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
@@ -336,6 +336,8 @@ runex26:
 	   ${RM} -f ex26_1.tmp
 runex28:
 	-@${MPIEXEC} -n 3 ./ex28
+runex28_2:
+	-@${MPIEXEC} -n 3 ./ex28 -splitreduction_async
 runex29:
 	-@${MPIEXEC} -n 3 ./ex29 -n 126 > ex29_1.tmp 2>&1;\
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
@@ -399,7 +401,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
                               ex37.PETSc runex37 runex37_2 ex37.rm ex38.PETSc runex38 ex38.rm
 TESTEXAMPLES_C_X11	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
-                              ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
+                              ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
                               runex30f ex30f.rm 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm

@@ -7866,6 +7866,157 @@ PetscErrorCode TetGenMeshLawson(TetGenMesh *m, Queue *flipqueue, long *numFlips)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRemoveEdgeByFlip32"
+/* removeedgebyflip32()    Remove an edge by a 3-to-2 flip.                  */
+/*                                                                           */
+/* 'abtetlist' contains 3 tets sharing ab. Imaging that ab is perpendicular  */
+/* to the screen, where a lies in front of and b lies behind it. The 3 tets  */
+/* of the list are: [0]abce, [1]abdc, and [2]abed, respectively.             */
+/* Comment: the edge ab is in CW edge ring of the three faces: abc, abd, and */
+/* abe. (2009-06-29)                                                         */
+/*                                                                           */
+/* This routine forms two new tets that ab is not an edge of them. Save them */
+/* in 'newtetlist', [0]dcea, [1]cdeb. Note that the new tets may not valid   */
+/* if one of them get inverted. return false if so.                          */
+/*                                                                           */
+/* If 'key' != NULL.  The old tets are replaced by the new tets only if the  */
+/* local mesh quality is improved. Current 'key' = cos(\theta), where \theta */
+/* is the maximum dihedral angle in the old tets.                            */
+/*                                                                           */
+/* If the edge is flipped, 'newtetlist' returns the two new tets. The three  */
+/* tets in 'abtetlist' are NOT deleted.  The caller has the right to either  */
+/* delete them or reverse the operation.                                     */
+/* tetgenmesh::removeedgebyflip32() */
+PetscErrorCode TetGenMeshRemoveEdgeByFlip32(TetGenMesh *m, PetscReal *key, triface *abtetlist, triface *newtetlist, Queue *flipque, PetscBool *isFlipped)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  triface dcea = {PETSC_NULL, 0, 0}, cdeb = {PETSC_NULL, 0, 0}; // new configuration.
+  triface newfront = {PETSC_NULL, 0, 0}, oldfront = {PETSC_NULL, 0, 0}, adjfront = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  point pa, pb, pc, pd, pe;
+  PetscReal ori, cosmaxd, d1, d2;
+  PetscReal attrib, volume;
+  PetscBool doflip;
+  int i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  pa = org(&abtetlist[0]);
+  pb = dest(&abtetlist[0]);
+  pc = apex(&abtetlist[0]);
+  pd = apex(&abtetlist[1]);
+  pe = apex(&abtetlist[2]);
+
+  ori = TetGenOrient3D(pd, pc, pe, pa);
+  if (ori < 0.0) {
+    ori = TetGenOrient3D(pc, pd, pe, pb);
+  }
+  doflip = (ori < 0.0) ? PETSC_TRUE : PETSC_FALSE; /* Can ab be flipped away? */
+
+  /* Does the caller ensure a valid configuration? */
+  if (doflip && key) {
+    if (*key > -1.0) {
+      /* Test if the new tets reduce the maximal dihedral angle. */
+      ierr = TetGenMeshTetAllDihedral(m, pd, pc, pe, pa, PETSC_NULL, &d1, PETSC_NULL);CHKERRQ(ierr);
+      ierr = TetGenMeshTetAllDihedral(m, pc, pd, pe, pb, PETSC_NULL, &d2, PETSC_NULL);CHKERRQ(ierr);
+      cosmaxd = d1 < d2 ? d1 : d2; /* Choose the bigger angle. */
+      doflip = (*key < cosmaxd) ? PETSC_TRUE : PETSC_FALSE; /* Can local quality be improved? */
+      /* Return the key */
+      *key = cosmaxd;
+    }
+  }
+
+  /* Comment: This edge must not be fixed. It has been checked before.*/
+  if (doflip && m->elemfliplist) {
+#if 1
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
+#else
+    /* Regist this flip. */
+    ierr = TetGenMeshRegisterElemFlip(m, T32, pa, pb, dummypoint, pc, pd, pe, &isFlipped);CHKERRQ(ierr);
+    if (!isFlipped) {
+      /* Detected a potential flip loop. Don't do it. */
+      if (isFlipped) {*isFlipped = PETSC_FALSE;}
+      PetscFunctionReturn(0);
+    }
+#endif
+  }
+
+  if (doflip) {
+    /* Create the new tets. */
+    ierr = TetGenMeshMakeTetrahedron(m, &dcea);CHKERRQ(ierr);
+    setorg(&dcea, pd);
+    setdest(&dcea, pc);
+    setapex(&dcea, pe);
+    setoppo(&dcea, pa);
+    ierr = TetGenMeshMakeTetrahedron(m, &cdeb);CHKERRQ(ierr);
+    setorg(&cdeb, pc);
+    setdest(&cdeb, pd);
+    setapex(&cdeb, pe);
+    setoppo(&cdeb, pb);
+    /* Transfer the element attributes. */
+    for(i = 0; i < in->numberoftetrahedronattributes; i++) {
+      attrib = elemattribute(m, abtetlist[0].tet, i);
+      setelemattribute(m, dcea.tet, i, attrib);
+      setelemattribute(m, cdeb.tet, i, attrib);
+    }
+    /* Transfer the volume constraints. */
+    if (b->varvolume && !b->refine) {
+      volume = volumebound(m, abtetlist[0].tet);
+      setvolumebound(m, dcea.tet, volume);
+      setvolumebound(m, cdeb.tet, volume);
+    }
+    /* Return two new tets. */
+    newtetlist[0] = dcea;
+    newtetlist[1] = cdeb;
+    /* Glue the two new tets. */
+    bond(m, &dcea, &cdeb);
+    /* Substitute the two new tets into the old three-tets cavity. */
+    for(i = 0; i < 3; i++) {
+      fnext(m, &dcea, &newfront); /* face dca, cea, eda. */
+      esym(&abtetlist[(i + 1) % 3], &oldfront);
+      enextfnextself(m, &oldfront);
+      /* Get the adjacent tet at the face (may be a dummytet). */
+      sym(&oldfront, &adjfront);
+      bond(m, &newfront, &adjfront);
+      if (m->checksubfaces) {
+        tspivot(m, &oldfront, &checksh);
+        if (checksh.sh != m->dummysh) {
+          tsbond(m, &newfront, &checksh);
+        }
+      }
+      if (flipque) {
+        ierr = TetGenMeshEnqueueFlipFace(m, &newfront, flipque);CHKERRQ(ierr);
+      }
+      enext2self(&dcea);
+    }
+    for(i = 0; i < 3; i++) {
+      fnext(m, &cdeb, &newfront); /* face cdb, deb, ecb. */
+      esym(&abtetlist[(i + 1) % 3], &oldfront);
+      enext2fnextself(m, &oldfront);
+      /* Get the adjacent tet at the face (may be a dummytet). */
+      sym(&oldfront, &adjfront);
+      bond(m, &newfront, &adjfront);
+      if (m->checksubfaces) {
+        tspivot(m, &oldfront, &checksh);
+        if (checksh.sh != m->dummysh) {
+          tsbond(m, &newfront, &checksh);
+        }
+      }
+      if (flipque) {
+        ierr = TetGenMeshEnqueueFlipFace(m, &newfront, flipque);CHKERRQ(ierr);
+      }
+      enextself(&cdeb);
+    }
+    if (isFlipped) {*isFlipped = PETSC_TRUE;}
+    PetscFunctionReturn(0);
+  } /* if (doflip) */
+
+  if (isFlipped) {*isFlipped = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TetGenMeshSplitSubEdge_queue"
 /*  splitsubedge()    Insert a point on an edge of the surface mesh.           */
 /*                                                                             */
@@ -13844,7 +13995,7 @@ PetscErrorCode TetGenMeshDelaunizeSegments2(TetGenMesh *m)
         /*  Create the new point. */
         ierr = TetGenMeshMakePoint(m, &newpt);CHKERRQ(ierr);
 #if 1
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
 #else
         getsegmentsplitpoint3(&sseg, refpt, newpt);
 #endif
@@ -14201,7 +14352,7 @@ PetscErrorCode TetGenMeshScoutCrossTet(TetGenMesh *m, face *pssub, triface *sear
       }
     }
     if(crossface.tet == PETSC_NULL) {
-      if (!crossface.tet); {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");}
+      if (!crossface.tet) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");}
     }
     *searchtet = crossface;
     m->dummypoint[0] = m->dummypoint[1] = m->dummypoint[2] = 0;
@@ -19225,7 +19376,7 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
       if (abdcasing.tet == m->dummytet) {
         /*  Strip the tet from the mesh -> ab is removed as well. */
 #if 1
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
 #else
         if (removetetbypeeloff(&abcd, newtetlist)) {
           PetscInfo(b->in, "    Stripped tet from the mesh.\n");
@@ -19293,15 +19444,11 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
   /*  2 < n < 20. */
   if (n == 3) {
     /*  There are three tets at ab. Try to do a flip32 at ab. */
-#if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
-#else
-    remflag = removeedgebyflip32(&key, abtetlist, newtetlist, PETSC_NULL);
-#endif
+    ierr = TetGenMeshRemoveEdgeByFlip32(m, &key, abtetlist, newtetlist, PETSC_NULL, &remflag);CHKERRQ(ierr);
   } else if ((n > 3) && (n <= b->maxflipedgelinksize)) {
     /*  Four tets case. Try to do edge transformation. */
 #if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
 #else
     remflag = removeedgebytranNM(&key,n,abtetlist,newtetlist,PETSC_NULL,PETSC_NULL,PETSC_NULL);
 #endif
@@ -19328,7 +19475,7 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
     /*  Try to do a combination of flips. */
     n1 = 0;
 #if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put code in");
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
 #else
     remflag = removeedgebycombNM(&key, n, abtetlist, &n1, bftetlist, newtetlist, PETSC_NULL);
 #endif

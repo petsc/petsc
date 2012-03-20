@@ -581,6 +581,19 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,rscale);CHKERRQ(ierr);
     }
   }
+  if (!mg->galerkin && pc->dm) {
+    for (i=n-2;i>=0; i--) {
+      DM dmfine,dmcoarse;
+      Mat Restrict,Inject;
+      Vec rscale;
+      ierr = KSPGetDM(mglevels[i+1]->smoothd,&dmfine);CHKERRQ(ierr);
+      ierr = KSPGetDM(mglevels[i]->smoothd,&dmcoarse);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i+1,&Restrict);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
+      Inject = PETSC_NULL;      /* Callback should create it if it needs Injection */
+      ierr = DMRestrict(dmfine,Restrict,rscale,Inject,dmcoarse);CHKERRQ(ierr);
+    }
+  }
 
   if (!pc->setupcalled) {
     for (i=0; i<n; i++) {

@@ -13,6 +13,8 @@ PetscLogEvent  SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 #define __FUNCT__ "SNESDMComputeJacobian"
 /*
     Translates from a SNES call to a DM call in computing a Jacobian
+
+    This is a legacy calling sequence, should transition to dispatching through the SNESDM.
 */
 PetscErrorCode SNESDMComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
@@ -330,6 +332,20 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPComputeOperators_SNES"
+static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
+{
+  SNES snes = (SNES)ctx;
+  PetscErrorCode ierr;
+  Mat Asave = A,Bsave = B;
+
+  PetscFunctionBegin;
+  ierr = SNESComputeJacobian(snes,snes->vec_sol,&A,&B,mstruct);CHKERRQ(ierr);
+  if (A != Asave || B != Bsave) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for changing matrices at this time");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUpMatrices"
 /*@
    SNESSetUpMatrices - ensures that matrices are available for SNES, to be called by SNESSetUp_XXX()
@@ -352,7 +368,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computejacobian && snes->dm) {
+  if (!sdm->computejacobian) {
     Mat J,B;
     ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
     if (snes->mf_operator) {
@@ -375,7 +391,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,functx);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  } else if (snes->dm && snes->mf_operator && !snes->jacobian_pre && !snes->jacobian) {
+  } else if (snes->mf_operator && !snes->jacobian_pre && !snes->jacobian) {
     Mat J,B;
     void *functx;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
@@ -386,12 +402,21 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,functx);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
-  } else if (snes->dm && !snes->jacobian_pre) {
+  } else if (!snes->jacobian_pre) {
     Mat J,B;
     J = snes->jacobian;
     ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J?J:B,B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
+  {
+    PetscBool flg = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_kspcompute",&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {                  /* Plan to transition to this model */
+      KSP ksp;
+      ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetComputeOperators(ksp,KSPComputeOperators_SNES,snes);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -3192,6 +3217,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   PetscViewer    viewer;
   PetscInt       grid;
   Vec            xcreated = PETSC_NULL;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -3200,8 +3226,9 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
 
-  if (!x && snes->dm) {
-    ierr = DMCreateGlobalVector(snes->dm,&xcreated);CHKERRQ(ierr);
+  if (!x) {
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dm,&xcreated);CHKERRQ(ierr);
     x    = xcreated;
   }
 
@@ -3212,7 +3239,10 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     if (!grid) {ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);}
     ierr = VecDestroy(&snes->vec_sol);CHKERRQ(ierr);
     snes->vec_sol = x;
-    /* set afine vector if provided */
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMSNESSetSolution(snes->dm,snes->vec_sol);CHKERRQ(ierr); /* Post the solution vector so that it can be restricted to coarse levels for KSP */
+
+    /* set affine vector if provided */
     if (b) { ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr); }
     ierr = VecDestroy(&snes->vec_rhs);CHKERRQ(ierr);
     snes->vec_rhs = b;
@@ -3242,6 +3272,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       snes->domainerror = PETSC_FALSE;
     }
     if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+    ierr = DMSNESSetSolution(snes->dm,PETSC_NULL);CHKERRQ(ierr); /* Un-post solution because inner contexts are done using it */
 
     ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg && !PetscPreLoadingOn) {

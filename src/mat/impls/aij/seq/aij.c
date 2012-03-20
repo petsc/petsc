@@ -1271,7 +1271,7 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   if (A->rmap->n > 0 && !jj) {
     *missing  = PETSC_TRUE;
     if (d) *d = 0;
-    PetscInfo(A,"Matrix has no entries therefor is missing diagonal");
+    PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
   } else {
     diag = a->diag;
     for (i=0; i<A->rmap->n; i++) {
@@ -1279,6 +1279,7 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 	*missing = PETSC_TRUE;
 	if (d) *d = i;
 	PetscInfo1(A,"Matrix is missing diagonal number %D",i);
+	break;
       }
     }
   }

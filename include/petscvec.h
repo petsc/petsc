@@ -483,6 +483,7 @@ extern PetscErrorCode  VecMDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
 extern PetscErrorCode  VecMDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 extern PetscErrorCode  VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
 extern PetscErrorCode  VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
+extern PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 
 #if defined(PETSC_USE_DEBUG)

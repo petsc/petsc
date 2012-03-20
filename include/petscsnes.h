@@ -398,9 +398,23 @@ extern PetscErrorCode  SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
 
 typedef struct _p_LineSearch* SNESLineSearch;
 
-/*
- User interface for Line Searches
-*/
+/*S
+     SNESLineSearch - Abstract PETSc object that manages line-search operations
+
+   Level: beginner
+
+  Concepts: nonlinear solvers, line search
+
+.seealso:  SNESLineSearchCreate(), SNESLineSearchSetType(), SNES
+S*/
+
+/*J
+    SNESLineSearchType - String with the name of a PETSc line search method
+
+   Level: beginner
+
+.seealso: SNESLineSearchSetType(), SNES
+J*/
 
 #define SNESLineSearchType char*
 #define SNES_LINESEARCH_BT                 "bt"
