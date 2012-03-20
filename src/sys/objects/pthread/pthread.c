@@ -88,6 +88,40 @@ void PetscThreadsDoCoreAffinity(void)
 }
 #endif
 
+/* Sets the CPU affinities for threads */
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadsSetAffinities"
+PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
+{
+  PetscErrorCode ierr;
+  PetscInt       nmax=PetscMaxThreads;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+
+  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&PetscThreadsCoreAffinities);CHKERRQ(ierr);
+
+  if(affinities == PETSC_NULL) {
+    /* PETSc decides affinities */
+    /* Check if the run-time option is set */
+    ierr = PetscOptionsIntArray("-thread_affinities","Set CPU affinities of threads","PetscThreadsSetAffinities",PetscThreadsCoreAffinities,&nmax,&flg);CHKERRQ(ierr);
+    if(flg) {
+      if(nmax != PetscMaxThreads) {
+	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, CPU affinities set = %D",PetscMaxThreads,nmax);
+      }
+    } else {
+      /* PETSc default affinities */
+      PetscInt i;
+      for(i=0; i< PetscMaxThreads; i++) PetscThreadsCoreAffinities[i] = (i+PetscMainThreadShareWork)%N_CORES;
+    }
+  } else {
+    /* Set user provided affinities */
+    ierr = PetscMemcpy(PetscThreadsCoreAffinities,affinities,PetscMaxThreads*sizeof(PetscInt));
+  }
+    PetscFunctionReturn(0);
+  }
+      
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsInitialize"
 /*
@@ -104,34 +138,18 @@ void PetscThreadsDoCoreAffinity(void)
 PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
 {
   PetscErrorCode ierr;
-  char           tstr[9];
-  char           tbuf[2];
-  PetscInt       i;
-  PetscBool      flg1;
+
 
   PetscFunctionBegin;
   if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
 
-  /* Set default affinities for threads: each thread has an affinity to one core unless the PetscMaxThreads > N_CORES */
-  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&PetscThreadsCoreAffinities);CHKERRQ(ierr);
-  
-  strcpy(tstr,"-thread");
-  for(i=0;i<PetscMaxThreads;i++) {
-    PetscThreadsCoreAffinities[i] = i+PetscMainThreadShareWork;
-    sprintf(tbuf,"%d",i);
-    strcat(tstr,tbuf);
-    ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
-    if(flg1) {
-      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&PetscThreadsCoreAffinities[i],PETSC_NULL);CHKERRQ(ierr);
-      PetscThreadsCoreAffinities[i] = PetscThreadsCoreAffinities[i]%N_CORES; /* check on the user */
-    }
-    tstr[7] = '\0';
-  }
-
+  /* Set thread affinities */
+  ierr = PetscThreadsSetAffinities(PETSC_NULL);CHKERRQ(ierr);
   /* Create key to store the thread rank */
   ierr = pthread_key_create(&PetscThreadsRankKey,NULL);CHKERRQ(ierr);
   /* Create array to store thread ranks */
   ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&PetscThreadsRank);CHKERRQ(ierr);
+  /* Initialize thread pool */
   if(PetscThreadsSynchronizationInitialize) {
     ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
   }
