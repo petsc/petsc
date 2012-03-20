@@ -9,19 +9,19 @@ PetscLogEvent  SNESLineSearch_Apply;
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate"
 /*@
-   SNESLineSearchCreate - Creates the line search.
+   SNESLineSearchCreate - Creates the line search context.
 
-   Collective on LineSearch
+   Logically Collective on Comm
 
    Input Parameters:
-.  comm - MPI communicator for the line search
+.  comm - MPI communicator for the line search (typically from the associated SNES context).
 
    Output Parameters:
 .  outlinesearch - the line search instance.
 
    Level: Beginner
 
-   .keywords: LineSearch, Create
+   .keywords: LineSearch, create, context
 
    .seealso: LineSearchDestroy()
 @*/
@@ -70,10 +70,18 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 /*@
    SNESLineSearchSetUp - Prepares the line search for being applied.
 
-   Collective on LineSearch
+   Collective on SNESLineSearch
 
    Input Parameters:
 .  linesearch - The LineSearch instance.
+
+   Notes:
+   For most cases, this needn't be called outside of SNESLineSearchApply().
+   The only current case where this is called outside of this is for the VI
+   solvers, which modifies the solution and work vectors before the first call
+   of SNESLineSearchApply, requiring the SNESLineSearch work vectors to be
+   allocated upfront.
+
 
    Level: Intermediate
 
@@ -108,7 +116,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch) {
 #define __FUNCT__ "SNESLineSearchReset"
 
 /*@
-   SNESLineSearchReset - Tears down the structures required for application
+   SNESLineSearchReset - Tears down the structures required for application of the SNESLineSearch
 
    Collective on SNESLineSearch
 
@@ -117,7 +125,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch) {
 
    Level: Intermediate
 
-   .keywords: SNESLineSearch, Create
+   .keywords: SNESLineSearch, Reset
 
    .seealso: SNESLineSearchSetUp()
 @*/
@@ -156,7 +164,7 @@ $    func (SNESLineSearch snes,Vec x,Vec y, PetscBool *changed);
 
 +  x - solution vector
 .  y - search direction vector
--  changed - flag to indicate the precheck changed something.
+-  changed - flag to indicate the precheck changed x or y.
 
    Level: intermediate
 
@@ -177,7 +185,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, SNESLineSea
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetPreCheck"
 /*@C
-   SNESLineSearchSetPreCheck - Sets a pre-check function for the line search routine.
+   SNESLineSearchSetPreCheck - Gets the pre-check function for the line search routine.
 
    Input Parameters:
 .  linesearch - the SNESLineSearch context
@@ -275,7 +283,7 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, SNESLineSe
 /*@
    SNESLineSearchPreCheck - Prepares the line search for being applied.
 
-   Collective on SNESLineSearch
+   Logically Collective on SNESLineSearch
 
    Input Parameters:
 .  linesearch - The linesearch instance.
@@ -305,7 +313,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * cha
 /*@
    SNESLineSearchPostCheck - Prepares the line search for being applied.
 
-   Collective on SNESLineSearch
+   Logically Collective on SNESLineSearch
 
    Input Parameters:
 .  linesearch - The linesearch instance.
@@ -338,7 +346,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, PetscBool * ch
 /*@C
    SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
 
-   Logically Collective
+   Logically Collective on SNESLineSearch
 
    Input Arguments:
 +  linesearch - linesearch context
@@ -350,8 +358,8 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, PetscBool * ch
 -  changed - flag indicating that Y was modified
 
    Options Database Key:
-+  -snes_ls_precheck_picard - activate this routine
--  -snes_ls_precheck_picard_angle - angle
++  -snes_linesearch_precheck_picard - activate this routine
+-  -snes_linesearch_precheck_picard_angle - angle
 
    Level: advanced
 
@@ -419,7 +427,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply"
 /*@
-   SNESLineSearchApply - Computes the line-search update
+   SNESLineSearchApply - Computes the line-search update.
 
    Collective on SNESLineSearch
 
@@ -435,11 +443,27 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 .  F - The new function.
 -  fnorm - The new function norm.
 
+   Options Database Keys:
++ -snes_linesearch_type - The Line search method
+. -snes_linesearch_monitor - Print progress of line searches
+. -snes_linesearch_damping - The linesearch damping parameter.
+. -snes_linesearch_norms   - Turn on/off the linesearch norms
+. -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
+- -snes_linesearch_max_it - The number of iterations for iterative line searches.
+
+   Notes:
+   This is typically called from within a SNESSolve() implementation in order to
+   help with convergence of the nonlinear method.  Various SNES types use line searches
+   in different ways, but the overarching theme is that a line search is used to determine
+   an optimal damping parameter of a step at each iteration of the method.  Each
+   application of the line search may invoke SNESComputeFunction several times, and
+   therefore may be fairly expensive.
+
    Level: Intermediate
 
    .keywords: SNESLineSearch, Create
 
-   .seealso: SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck()
+   .seealso: SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck(), SNESSolve(), SNESComputeFunction()
 @*/
 PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, PetscReal * fnorm, Vec Y) {
   PetscErrorCode ierr;
@@ -493,7 +517,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 
    .keywords: SNESLineSearch, Create
 
-   .seealso: SNESLineSearchCreate(), SNESLineSearchReset()
+   .seealso: SNESLineSearchCreate(), SNESLineSearchReset(), SNESDestroy()
 @*/
 PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch) {
   PetscErrorCode ierr;
@@ -514,7 +538,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch) {
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetMonitor"
 /*@
-   SNESLineSearchSetMonitor - Turns on/off printing useful things about the line search.
+   SNESLineSearchSetMonitor - Turns on/off printing useful information and debugging output about the line search.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -523,12 +547,12 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch) {
    Logically Collective on SNES
 
    Options Database:
-.   -linesearch_monitor - enables the monitor.
+.   -snes_linesearch_monitor - enables the monitor.
 
    Level: intermediate
 
 
-.seealso: SNESLineSearchGetMonitor()
+.seealso: SNESLineSearchGetMonitor(), PetscViewer
 @*/
 PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch linesearch, PetscBool flg)
 {
@@ -546,7 +570,7 @@ PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch linesearch, PetscBool fl
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetMonitor"
 /*@
-   SNESLineSearchGetMonitor - Gets the monitor instance for the line search
+   SNESLineSearchGetMonitor - Gets the PetscViewer instance for the line search monitor.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -558,12 +582,12 @@ PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch linesearch, PetscBool fl
 
 
    Options Database Keys:
-.   -linesearch_monitor - enables the monitor.
+.   -snes_linesearch_monitor - enables the monitor.
 
    Level: intermediate
 
 
-.seealso: SNESLineSearchSetMonitor()
+.seealso: SNESLineSearchSetMonitor(), PetscViewer
 @*/
 PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer *monitor)
 {
@@ -586,12 +610,12 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 .  linesearch - linesearch context.
 
    Options Database Keys:
-+ -linesearch_type - The Line search method
-. -linesearch_monitor - Print progress of line searches
-. -linesearch_damping - The linesearch damping parameter.
-. -linesearch_norms   - Turn on/off the linesearch norms
-. -linesearch_keeplambda - Keep the previous search length as the initial guess.
-- -linesearch_max_it - The number of iterations for iterative line searches.
++ -snes_linesearch_type - The Line search method
+. -snes_linesearch_monitor - Print progress of line searches
+. -snes_linesearch_damping - The linesearch damping parameter.
+. -snes_linesearch_norms   - Turn on/off the linesearch norms
+. -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
+- -snes_linesearch_max_it - The number of iterations for iterative line searches.
 
    Logically Collective on SNESLineSearch
 
@@ -652,7 +676,8 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchView"
 /*@
-   SNESLineSearchView - Views useful information for the line search.
+   SNESLineSearchView - Prints useful information about the line search not
+   related to an individual call.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -660,7 +685,6 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
    Logically Collective on SNESLineSearch
 
    Level: intermediate
-
 
 .seealso: SNESLineSearchCreate()
 @*/
@@ -678,6 +702,13 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch) {
    Input Parameters:
 +  linesearch - linesearch context.
 -  type - The type of line search to be used
+
+   Available Types:
++  basic - Simple damping line search.
+.  bt - Backtracking line search over the L2 norm of the function.
+.  l2 - Secant line search over the L2 norm of the function.
+.  cp - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x).
+-  shell - User provided SNESLineSearch implementation.
 
    Logically Collective on SNESLineSearch
 
@@ -734,7 +765,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, const SNESLineSe
    Level: intermediate
 
 
-.seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs()
+.seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
 @*/
 PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
   PetscFunctionBegin;
@@ -757,7 +788,7 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs()
+.seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
 @*/
 PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes){
   PetscFunctionBegin;
@@ -776,11 +807,11 @@ PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes){
 .  linesearch - linesearch context.
 
    Output Parameters:
-.  lambda - The last steplength.
+.  lambda - The last steplength computed during SNESLineSearchApply()
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs()
+.seealso: SNESLineSearchSetLambda(), SNESLineSearchGetDamping(), SNESLineSearchApply()
 @*/
 PetscErrorCode  SNESLineSearchGetLambda(SNESLineSearch linesearch,PetscReal *lambda)
 {
@@ -799,6 +830,12 @@ PetscErrorCode  SNESLineSearchGetLambda(SNESLineSearch linesearch,PetscReal *lam
    Input Parameters:
 +  linesearch - linesearch context.
 -  lambda - The last steplength.
+
+   Notes:
+   This routine is typically used within implementations of SNESLineSearchApply
+   to set the final steplength.  This routine (and SNESLineSearchGetLambda()) were
+   added in order to facilitate Quasi-Newton methods that use the previous steplength
+   as an inner scaling parameter.
 
    Level: intermediate
 
@@ -826,7 +863,6 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 .  atol    - The absolute tolerance for iterative line searches
 .  ltol    - The change in lambda tolerance for iterative line searches
 -  max_it  - The maximum number of iterations of the line search
-
 
    Level: advanced
 
@@ -931,6 +967,13 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
 
    Level: intermediate
 
+   Notes:
+   The basic line search merely takes the update step scaled by the damping parameter.
+   The use of the damping parameter in the l2 and cp line searches is much more subtle;
+   it is used as a starting point in calculating the secant step; however, the eventual
+   step may be of greater length than the damping parameter.  In the bt line search it is
+   used as the maximum possible step length, as the bt line search only backtracks.
+
 .seealso: SNESLineSearchGetDamping()
 @*/
 PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal damping)
@@ -953,6 +996,9 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
 +  xnorm - The norm of the current solution
 .  fnorm - The norm of the current function
 -  ynorm - The norm of the current update
+
+   Notes:
+   This function is mainly called from SNES implementations.
 
    Level: intermediate
 
@@ -1008,7 +1054,7 @@ PetscErrorCode  SNESLineSearchSetNorms(SNESLineSearch linesearch, PetscReal xnor
 .  linesearch - linesearch context.
 
    Options Database Keys:
-.   -linesearch_norms - turn norm computation on or off.
+.   -snes_linesearch_norms - turn norm computation on or off.
 
    Level: intermediate
 
@@ -1133,7 +1179,7 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch,Vec X,Vec F,Vec Y
    SNESLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
    SNES options in the database.
 
-   Logically Collective on SNES
+   Logically Collective on SNESLineSearch
 
    Input Parameters:
 +  snes - the SNES context
@@ -1168,7 +1214,7 @@ PetscErrorCode  SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch,cons
    Not Collective
 
    Input Parameter:
-.  snes - the SNES context
+.  linesearch - the SNESLineSearch context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
@@ -1203,6 +1249,9 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 
    Level: developer
 
+   Notes:
+   This is typically called at the beginning of a SNESLineSearch or SNESLineSearchShell implementation.
+
 .keywords: SNESLineSearch, work, vector
 
 .seealso: SNESDefaultGetWork()
@@ -1231,6 +1280,10 @@ PetscErrorCode  SNESLineSearchGetWork(SNESLineSearch linesearch, PetscInt nwork)
    Output Parameters:
 .  success - The success or failure status.
 
+   Notes:
+   This is typically called after SNESLineSearchApply in order to determine if the line-search failed
+   (and set the SNES convergence accordingly).
+
    Level: intermediate
 
 .seealso: SNESLineSearchSetSuccess()
@@ -1254,6 +1307,10 @@ PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch linesearch, PetscBool *s
    Input Parameters:
 +  linesearch - linesearch context.
 -  success - The success or failure status.
+
+   Notes:
+   This is typically called in a SNESLineSearchApply() or SNESLineSearchShell implementation to set
+   the success or failure of the line search method.
 
    Level: intermediate
 
@@ -1288,7 +1345,7 @@ PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch linesearch, PetscBool su
 +   snes - nonlinear context
 -   X - current solution
 
-    Output parameters for func:
+    Output parameters for projectfunc:
 .   X - Projected solution
 
    Calling sequence of normfunc:
@@ -1296,14 +1353,19 @@ PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch linesearch, PetscBool su
    projectfunc (SNES snes, Vec X, Vec F, PetscScalar * fnorm)
 .ve
 
-    Input parameters for projectfunc:
+    Input parameters for normfunc:
 +   snes - nonlinear context
 .   X - current solution
 -   F - current residual
 
-    Output parameters for func:
+    Output parameters for normfunc:
 .   fnorm - VI-specific norm of the function
 
+    Notes:
+    The VI solvers require projection of the solution to the feasible set.  projectfunc should implement this.
+
+    The VI solvers require special evaluation of the function norm such that the norm is only calculated
+    on the inactive set.  This should be implemented by normfunc.
 
     Level: developer
 

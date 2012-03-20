@@ -65,9 +65,18 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_Basic"
 /*MC
-   SNES_LINESEARCH_BASIC - This routine is not a line search at all;
-   it simply uses the full step.  Thus, this routine is intended
-   to serve as a template and is not recommended for general use.
+   SNES_LINESEARCH_BASIC - This line search implementation is not a line
+   search at all; it simply uses the full step.  Thus, this routine is intended
+   for methods with well-scaled updates; i.e. Newton's method (SNESLS), in on
+   well-behaved problems.
+
+   Options Database Keys:
+   -snes_linesearch_damping (1.0) damping parameter.
+
+   Notes:
+   For methods with ill-scaled updates (SNESNRICHARDSON, SNESNCG), a small
+   damping parameter may yield satisfactory but slow convergence despite
+   the simplicity of the line search.
 
    Level: advanced
 

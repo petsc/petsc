@@ -106,7 +106,15 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_CP"
 /*MC
-   SNES_LINESEARCH_CP - Critical point line search
+   SNES_LINESEARCH_CP - Critical point line search. This line search assumes that there exists some
+   artificial G(x) for which the SNESFunction F(x) = grad G(x).  Therefore, this line search seeks
+   to find roots of f^ty via a secant method.
+
+   Options Database Keys:
+.  -snes_linesearch_damping - initial trial step length
+
+   Notes:
+   This method is the preferred line search for SNESQN and SNESNCG.
 
    Level: advanced
 
