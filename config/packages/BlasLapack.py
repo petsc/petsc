@@ -268,6 +268,7 @@ class Configure(config.package.Package):
     yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a', 1)
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
+    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a', 2)
     # Portland group compiler blas and lapack
     if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC):
       dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
