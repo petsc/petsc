@@ -456,7 +456,7 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJPThread(Mat A,IS *zrows)
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
   PetscThreadsLayout  tmap=A->rmap->tmap;
   PetscInt            *trstarts = tmap->trstarts;
-  PetscInt            i,cnt,*rows,ctr=0;
+  PetscInt            i,cnt=0,*rows,ctr=0;
   PetscInt            *aj = a->j,*diag;
   MatScalar           *aa = a->a;
   PetscErrorCode      ierr;
