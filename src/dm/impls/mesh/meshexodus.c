@@ -273,7 +273,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
   int                    *vs_id;
   int                     num_vertex_in_set;
   int                    *vs_vertex_list;
-  float                  *x,*y,*z;
+  PetscReal              *x,*y,*z;
   PetscReal              *coords;
 
   PetscInt                v,c,v_loc,c_loc,vs,cs;
@@ -404,9 +404,9 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
   /*
     Read coordinates
   */
-    ierr = PetscMalloc4(num_vertices,float,&x,
-                        num_vertices,float,&y,
-                        num_vertices,float,&z,
+    ierr = PetscMalloc4(num_vertices,PetscReal,&x,
+                        num_vertices,PetscReal,&y,
+                        num_vertices,PetscReal,&z,
                         num_dim*num_vertices,PetscReal,&coords);CHKERRQ(ierr);
   if (rank == 0) {
     ierr = ex_get_coord(exoid,x,y,z);CHKERRQ(ierr);
