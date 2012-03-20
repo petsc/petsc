@@ -8,6 +8,7 @@
 #define pcshellsetsetup_           PCSHELLSETSETUP
 #define pcshellsetdestroy_         PCSHELLSETDESTROY
 #define pcshellsetname_            PCSHELLSETNAME
+#define pcshellgetname_            PCSHELLGETNAME
 #define pcshellsetcontext_         PCSHELLSETCONTEXT
 #define pcshellgetcontext_         PCSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -17,6 +18,7 @@
 #define pcshellsetsetup_           pcshellsetsetup
 #define pcshellsetdestroy_         pcshellsetdestroy
 #define pcshellsetname_            pcshellsetname
+#define pcshellgetname_            pcshellgetname
 #define pcshellsetcontext_         pcshellsetcontext
 #define pcshellgetcontext_         pcshellgetcontext
 #endif
@@ -105,6 +107,14 @@ void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscE
   FIXCHAR(name,len,c);
   *ierr = PCShellSetName(*pc,c);
   FREECHAR(name,c);
+}
+
+void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *c;
+
+  *ierr = PCShellGetName(*pc,&c);if (*ierr) return;
+  *ierr = PetscStrncpy(name,c,len);
 }
 
 /* -----------------------------------------------------------------*/
