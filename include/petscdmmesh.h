@@ -242,6 +242,7 @@ extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, Secti
 PetscPolymorphicSubroutine(DMMeshGetCellSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
 PetscPolymorphicSubroutine(DMMeshGetCellSectionInt,(DM dm, PetscInt fiberDim, SectionInt *section),(dm,"default",fiberDim,section))
+extern PetscErrorCode DMMeshCreateSectionRealIS(DM,IS,const char [],PetscInt,SectionReal *);
 
 /* Scatter for simple distributions */
 extern PetscErrorCode DMMeshCreateScatterToZeroVertex(DM,VecScatter *);

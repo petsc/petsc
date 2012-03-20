@@ -676,10 +676,10 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateScatterToZeroVertex"
-/*@  
-  DMMeshCreateScatterToZeroVertex: Creates the scatter required to scatter local (ghosted) 
-    Vecs associated with a field defined at the vertices of a mesh to a Vec on cpu 0. 
-    
+/*@
+  DMMeshCreateScatterToZeroVertex - Creates the scatter required to scatter local (ghosted)
+    Vecs associated with a field defined at the vertices of a mesh to a Vec on cpu 0.
+
   Input parameters:
 . dm - the DMMesh representing the mesh
 
@@ -689,7 +689,7 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroCellSet
 @*/
-extern PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
+PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
 {
   PetscErrorCode          ierr;
   PetscInt                i;
@@ -773,19 +773,19 @@ extern PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateScatterToZeroVertexSet"
 /*@
-  DMMeshCreateScatterToZeroVertexSet: Creates the scatter required to scatter local (ghosted) 
-    Vecs associated with a field defined at the a vertex set of a mesh to a Vec on cpu 0. 
-    
+  DMMeshCreateScatterToZeroVertexSet - Creates the scatter required to scatter local (ghosted)
+    Vecs associated with a field defined at the a vertex set of a mesh to a Vec on cpu 0.
+
   Input parameters:
 . dm - the DMMesh representing the mesh
 
   Output parameters:
-. scatter: the scatter
+. scatter - the scatter
 
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertex DMMeshCreateScatterToZeroCellSet
 @*/
-extern PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,VecScatter *scatter)
+PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,VecScatter *scatter)
 {
   PetscErrorCode          ierr;
   const PetscInt         *setvertices_local;
@@ -899,19 +899,19 @@ extern PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateScatterToZeroCell"
 /*@
-  DMMeshCreateScatterToZeroCell: Creates the scatter required to scatter local (ghosted) 
-    Vecs associated with a field defined at the cells of a mesh to a Vec on cpu 0. 
-    
+  DMMeshCreateScatterToZeroCell - Creates the scatter required to scatter local (ghosted)
+    Vecs associated with a field defined at the cells of a mesh to a Vec on cpu 0.
+
   Input parameters:
 . dm - the DMMesh representing the mesh
 
   Output parameters:
-. scatter: the scatter
+. scatter - the scatter
 
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroVertex DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroCellSet
 @*/
-extern PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
+PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
 {
   PetscErrorCode          ierr;
   PetscInt               *cells;
@@ -979,19 +979,19 @@ extern PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateScatterToZeroCellSet"
 /*@
-  DMMeshCreateScatterToZeroCellSet: Creates the scatter required to scatter local (ghosted) 
-    Vecs associated with a field defined at a cell set of a mesh to a Vec on cpu 0. 
-    
+  DMMeshCreateScatterToZeroCellSet - Creates the scatter required to scatter local (ghosted)
+    Vecs associated with a field defined at a cell set of a mesh to a Vec on cpu 0.
+
   Input parameters:
 . dm - the DMMesh representing the mesh
 
   Output parameters:
-. scatter: the scatter
+. scatter - the scatter
 
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroVertex
 @*/
-extern PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,VecScatter *scatter)
+PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,VecScatter *scatter)
 {
   PetscErrorCode          ierr;
   const PetscInt         *setcells_local;
@@ -1092,8 +1092,8 @@ extern PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_z
 #undef __FUNCT__
 #define __FUNCT__ "VecViewExodusVertex"
 /*@
-  
-  VecViewExodusVertex: Write a Vec representing nodal values of some field in an exodusII file.
+
+  VecViewExodusVertex - Write a Vec representing nodal values of some field in an exodusII file.
 
   Collective on comm
 
@@ -1119,7 +1119,7 @@ extern PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_z
           VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCellSet() VecLoadExodusCellSet()
           VecViewExodusCell() VecLoadExodusCell()
 @*/
-extern PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
@@ -1188,8 +1188,8 @@ extern PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exo
 #undef __FUNCT__
 #define __FUNCT__ "VecLoadExodusVertex"
 /*@
-  
-  VecLoadExodusVertex: Loads a Vec representing nodal values of some field from an exodusII file.
+
+  VecLoadExodusVertex - Loads a Vec representing nodal values of some field from an exodusII file.
 
   Collective on comm
 
@@ -1216,7 +1216,7 @@ extern PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exo
           VecViewExodusCell() VecLoadExodusCell()
 
 @*/
-extern PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
@@ -1285,8 +1285,8 @@ extern PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exo
 #undef __FUNCT__
 #define __FUNCT__ "VecViewExodusVertexSet"
 /*@
-  
-  VecViewExodusVertexSet: Write a Vec representing nodal values of some field at a vertex set in an exodusII file.
+
+  VecViewExodusVertexSet - Write a Vec representing nodal values of some field at a vertex set in an exodusII file.
 
   Collective on comm
 
@@ -1314,7 +1314,7 @@ extern PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exo
           VecViewExodusCell() VecLoadExodusCell()
 
 @*/
-extern PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
@@ -1399,8 +1399,8 @@ extern PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm 
 #undef __FUNCT__
 #define __FUNCT__ "VecLoadExodusVertexSet"
 /*@
-  
-  VecLoadExodusVertexSet: Write a Vec representing nodal values of some field at a vertex set in an exodusII file.
+
+  VecLoadExodusVertexSet - Write a Vec representing nodal values of some field at a vertex set in an exodusII file.
 
   Collective on comm
 
@@ -1426,7 +1426,7 @@ extern PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm 
 .seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecLoadExodusVertex()
 
 @*/
-extern PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
@@ -1511,16 +1511,16 @@ extern PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm 
 #undef __FUNCT__
 #define __FUNCT__ "VecViewExodusCell"
 /*@
-  
-  VecViewExodusCell: Write a Vec representing the values of a field at all cells to an exodusII file. 
+
+  VecViewExodusCell - Write a Vec representing the values of a field at all cells to an exodusII file.
 
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
          if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
-. comm - the communicator associated to the exo file  
+. comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
-  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file       
+  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
 - exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
 . exofield - the position in the exodus field of the first component
@@ -1533,9 +1533,9 @@ extern PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm 
 .seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecLoadExodusCell()
           VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCellSet() VecLoadExodusCellSet()
           VecViewExodusVertex() VecLoadExodusVertex()
-  
+
 @*/
-extern PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_in_set,num_cells_zero=0;
@@ -1681,16 +1681,16 @@ extern PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid
 #undef __FUNCT__
 #define __FUNCT__ "VecLoadExodusCell"
 /*@
-  
-  VecLoadExodusCell: Read a Vec representing the values of a field at all cells from an exodusII file. 
+
+  VecLoadExodusCell - Read a Vec representing the values of a field at all cells from an exodusII file.
 
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be read (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
          if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
-. comm - the communicator associated to the exo file  
+. comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
-  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file       
+  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
 - exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
 . exofield - the position in the exodus field of the first component
@@ -1703,9 +1703,9 @@ extern PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid
 .seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecViewExodusCell()
           VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCellSet() VecLoadExodusCellSet()
           VecViewExodusVertex() VecLoadExodusVertex()
-  
+
 @*/
-extern PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_in_set,num_cells_zero=0;
@@ -1844,17 +1844,17 @@ extern PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid
 #undef __FUNCT__
 #define __FUNCT__ "VecViewExodusCellSet"
 /*@
-  
-  VecViewExodusCellSet: Write a Vec representing the values of a field at a cell set to an exodusII file. 
+
+  VecViewExodusCellSet - Write a Vec representing the values of a field at a cell set to an exodusII file.
 
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
          if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
 . csID - the ID of the cell set
-. comm - the communicator associated to the exo file  
+. comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
-  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file       
+  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
 - exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
 . exofield - the position in the exodus field of the first component
@@ -1867,9 +1867,9 @@ extern PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid
 .seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecLoadExodusCellSet()
           VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCell() VecLoadExodusCell()
           VecViewExodusVertex() VecLoadExodusVertex()
-  
+
 @*/
-extern PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_zero=0;
@@ -1956,17 +1956,17 @@ extern PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm co
 #undef __FUNCT__
 #define __FUNCT__ "VecLoadExodusCellSet"
 /*@
-  
-  VecLoadExodusCellSet: Read a Vec representing the values of a field at a cell set from an exodusII file. 
+
+  VecLoadExodusCellSet - Read a Vec representing the values of a field at a cell set from an exodusII file.
 
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
          if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
 . csID - the ID of the cell set
-. comm - the communicator associated to the exo file  
+. comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
-  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file       
+  . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
 - exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
 . exofield - the position in the exodus field of the first component
@@ -1981,7 +1981,7 @@ extern PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm co
           VecViewExodusVertex() VecLoadExodusVertex()
 
 @*/
-extern PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_zero=0;

@@ -1051,6 +1051,7 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
 
   Input Parameters:
 + mesh - The DMMesh object
+. name - The name of the section
 - fiberDim - The number of degrees of freedom per vertex
 
   Output Parameter:
@@ -1089,7 +1090,8 @@ PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fib
 
   Input Parameters:
 + mesh - The DMMesh object
-- fiberDim - The section name
+. name - The name of the section
+- fiberDim - The number of degrees of freedom per cell
 
   Output Parameter:
 . section - The section
@@ -1097,7 +1099,7 @@ PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fib
   Level: intermediate
 
 .keywords: mesh, section, cell
-.seealso: DMMeshCreate(), SectionRealCreate()
+.seealso: DMMeshCreate(), SectionRealCreate(), DMMeshGetVertexSectionReal(), DMMeshCreateSectionRealIS()
 @*/
 PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiberDim, SectionReal *section)
 {
@@ -1117,6 +1119,57 @@ PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiber
   m->allocate(s);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateSectionRealIS"
+/*@C
+  DMMeshCreateSectionRealIS - Create a Section over the points specified in an IS.
+  
+  Collective on DMMesh
+  
+  Input Parameters:
+  + dm - the DMMesh object
+  . is - The IS describing the points associated with the degrees of freedom
+  . name - The name of the section
+  - fiberDim - The number of degrees of freedom per point of the IS
+  
+  Output Parameter:
+  . section - The section
+  
+  Level: intermediate
+
+.keywords: mesh, section, cell
+.seealso: DMMeshCreate(), SectionRealCreate(), DMMeshGetVertexSectionReal(), DMMeshGetCellSectionReal()
+
+@*/
+PetscErrorCode DMMeshCreateSectionRealIS(DM dm,IS is,const char name[],PetscInt fiberDim,SectionReal *section)
+{
+  MPI_Comm        comm;
+  PetscSection    s;
+  PetscInt        pStart,pEnd;
+  const PetscInt *points;
+  PetscInt        numpoints,p;
+  PetscErrorCode  ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm,&comm);CHKERRQ(ierr);
+  
+  ierr = PetscSectionCreate(comm,&s);CHKERRQ(ierr);
+  ierr = DMMeshGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);    
+  ierr = PetscSectionSetChart(s,pStart,pEnd);CHKERRQ(ierr);
+  
+  ierr = ISGetLocalSize(is,&numpoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&points);CHKERRQ(ierr);
+  for (p =0; p < numpoints; p++) {
+    ierr = PetscSectionSetDof(s,points[p],fiberDim);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(is,&points);CHKERRQ(ierr);
+  ierr = DMMeshSetSection(dm,name,s);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s);
+  ierr = DMMeshGetSectionReal(dm,name,section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateGlobalRealVector"

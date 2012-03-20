@@ -9,6 +9,7 @@
 #define dmmeshgetcellsectionreal_   DMMESHGETCELLSECTIONREAL
 #define dmmeshgetvertexsectionint_  DMMESHGETVERTEXSECTIONINT
 #define dmmeshgetcellsectionint_    DMMESHGETCELLSECTIONINT
+#define dmmeshcreatesectionrealis_  DMMESHCREATESECTIONREALIS
 #define vertexsectionrealcreate_    VERTEXSECTIONREALCREATE
 #define vertexsectionintcreate_     VERTEXSECTIONINTCREATE
 #define cellsectionrealcreate_      CELLSECTIONREALCREATE
@@ -26,29 +27,30 @@
 #define alestagepop_                ALESTAGEPOP
 #define alestageprintmemory_        ALESTAGEPRINTMEMORY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dmmeshcreatepcice_           dmmeshcreatepcice
-#define dmmeshcreateexodus_          dmmeshcreateexodus
-#define dmmeshdistribute_            dmmeshdistribute
-#define dmmeshgetvertexsectionreal_  dmmeshgetvertexsectionreal
-#define dmmeshgetcellsectionreal_    dmmeshgetcellsectionreal
-#define dmmeshgetvertexsectionint_   dmmeshgetvertexsectionint
-#define dmmeshgetcellsectionint_     dmmeshgetcellsectionint
-#define vertexsectionrealcreate_     vertexsectionrealcreate
-#define vertexsectionintcreate_      vertexsectionintcreate
-#define cellsectionrealcreate_       cellsectionrealcreate
-#define dmmeshgetlabelsize_          dmmeshgetlabelsize
-#define dmmeshgetlabelidis_          dmmeshgetlabelidis
-#define dmmeshgetstratumsize_        dmmeshgetstratumsize
-#define dmmeshgetstratumis_          dmmeshgetstratumis
-#define dmmeshgetsectionreal_        dmmeshgetsectionreal
-#define dmmeshgetsectionint_         dmmeshgetsectionint
-#define dmmeshsetsectionreal_        dmmeshsetsectionreal
-#define dmmeshcreatesection_         dmmeshcreatesection
-#define dmmeshsetsection_            dmmeshsetsection
-#define dmmeshcreatematrix_          dmmeshcreatematrix
-#define alestagepush_                alestagepush
-#define alestagepop_                 alestagepop
-#define alestageprintmemory_         alestageprintmemory
+#define dmmeshcreatepcice_          dmmeshcreatepcice
+#define dmmeshcreateexodus_         dmmeshcreateexodus
+#define dmmeshdistribute_           dmmeshdistribute
+#define dmmeshgetvertexsectionreal_ dmmeshgetvertexsectionreal
+#define dmmeshgetcellsectionreal_   dmmeshgetcellsectionreal
+#define dmmeshgetvertexsectionint_  dmmeshgetvertexsectionint
+#define dmmeshgetcellsectionint_    dmmeshgetcellsectionint
+#define dmmeshcreatesectionrealis_  dmmeshcreatesectionrealis
+#define vertexsectionrealcreate_    vertexsectionrealcreate
+#define vertexsectionintcreate_     vertexsectionintcreate
+#define cellsectionrealcreate_      cellsectionrealcreate
+#define dmmeshgetlabelsize_         dmmeshgetlabelsize
+#define dmmeshgetlabelidis_         dmmeshgetlabelidis
+#define dmmeshgetstratumsize_       dmmeshgetstratumsize
+#define dmmeshgetstratumis_         dmmeshgetstratumis
+#define dmmeshgetsectionreal_       dmmeshgetsectionreal
+#define dmmeshgetsectionint_        dmmeshgetsectionint
+#define dmmeshsetsectionreal_       dmmeshsetsectionreal
+#define dmmeshcreatesection_        dmmeshcreatesection
+#define dmmeshsetsection_           dmmeshsetsection
+#define dmmeshcreatematrix_         dmmeshcreatematrix
+#define alestagepush_               alestagepush
+#define alestagepop_                alestagepop
+#define alestageprintmemory_        alestageprintmemory
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -89,6 +91,12 @@ void PETSC_STDCALL  dmmeshgetcellsectionreal_(DM *mesh, CHAR name PETSC_MIXED_LE
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetCellSectionReal(*mesh, pN, *fiberDim, section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  dmmeshcreatesectionrealis_(DM *dm, IS *is, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshCreateSectionRealIS(*dm,*is,pN, *fiberDim, section);
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  dmmeshgetvertexsectionint_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
