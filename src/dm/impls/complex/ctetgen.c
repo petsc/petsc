@@ -7912,7 +7912,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByFlip32(TetGenMesh *m, PetscReal *key, trifa
   if (ori < 0.0) {
     ori = TetGenOrient3D(pc, pd, pe, pb);
   }
-  doflip = (ori < 0.0); /* Can ab be flipped away? */
+  doflip = (ori < 0.0) ? PETSC_TRUE : PETSC_FALSE; /* Can ab be flipped away? */
 
   /* Does the caller ensure a valid configuration? */
   if (doflip && key) {
@@ -7921,7 +7921,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByFlip32(TetGenMesh *m, PetscReal *key, trifa
       ierr = TetGenMeshTetAllDihedral(m, pd, pc, pe, pa, PETSC_NULL, &d1, PETSC_NULL);CHKERRQ(ierr);
       ierr = TetGenMeshTetAllDihedral(m, pc, pd, pe, pb, PETSC_NULL, &d2, PETSC_NULL);CHKERRQ(ierr);
       cosmaxd = d1 < d2 ? d1 : d2; /* Choose the bigger angle. */
-      doflip = (*key < cosmaxd); /* Can local quality be improved? */
+      doflip = (*key < cosmaxd) ? PETSC_TRUE : PETSC_FALSE; /* Can local quality be improved? */
       /* Return the key */
       *key = cosmaxd;
     }

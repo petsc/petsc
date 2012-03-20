@@ -13,6 +13,7 @@ PYLITH:
  - Consider taking in coordinates rather than J^{-T}/|J|
 
 MUST CHECK WITH:
+ - 3D elements
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
 #endif
