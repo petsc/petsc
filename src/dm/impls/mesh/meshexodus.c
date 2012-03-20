@@ -1090,6 +1090,199 @@ extern PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_z
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecViewExodusVertex"
+/*@
+  
+  VecViewExodusVertex: Write a Vec representing nodal values of some field in an exodusII file.
+
+  Collective on comm
+
+  The behavior differs depending on the size of comm:
+    if size(comm) == 1 each processor writes its local vector into a separate file
+    if size(comm) > 1, the values are sent to cpu0, and written in a single file
+
+
+  Input Parameters:
++ dm   - the DMMesh representing the mesh
+. v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+. exoid - the id of the exodusII file (obtained with ex_open or ex_create)
+. step  - the time step to write
+- exofield - the position in the exodus field of the first component
+
+  Interpolated meshes are not supported.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecLoadExodusVertex()
+          VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCellSet() VecLoadExodusCellSet()
+          VecViewExodusCell() VecLoadExodusCell()
+@*/
+extern PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+{
+  PetscInt                rank,num_proc;
+  PetscErrorCode          ierr;
+  PetscInt                c,num_vertices,num_vertices_zero,num_dof;
+  Vec                     vdof,vdof_zero;
+  PetscReal               *vdof_array;
+  VecScatter              scatter;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&num_proc);
+  ierr = MPI_Comm_rank(comm,&rank);
+  ierr = VecGetBlockSize(v,&num_dof);
+  
+  ierr = DMMeshGetStratumSize(dm,"depth",0,&num_vertices);CHKERRQ(ierr);
+
+  ierr = VecCreate(comm,&vdof);CHKERRQ(ierr);
+  ierr = VecSetSizes(vdof,num_vertices,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(vdof);CHKERRQ(ierr);
+
+  if (num_proc == 1) {
+    ierr = PetscMalloc(num_vertices*sizeof(PetscReal),&vdof_array);CHKERRQ(ierr);
+    for (c = 0; c < num_dof; c++) {
+      ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
+      ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array); 
+      ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
+      if (ierr != 0) {
+        SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_nodal_var returned %i",exoid,ierr);
+      }
+    }
+  } else {
+    /*
+      Build the scatter sending one dof towards cpu 0
+    */
+    ierr = DMMeshCreateScatterToZeroVertex(dm,&scatter);CHKERRQ(ierr);
+    /*
+      Another an ugly hack to get the total number of vertices in the mesh. This has got to stop...
+    */
+    num_vertices_zero = scatter->to_n;
+
+    ierr = VecCreate(comm,&vdof_zero);CHKERRQ(ierr);
+    ierr = VecSetSizes(vdof_zero,num_vertices_zero,PETSC_DECIDE);CHKERRQ(ierr);  
+    ierr = VecSetFromOptions(vdof_zero);CHKERRQ(ierr);
+
+    for (c = 0; c < num_dof; c++) {
+      ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
+      ierr = VecScatterEnd(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
+      if (rank == 0) {
+        ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
+        ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices_zero,vdof_array);
+        ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
+      }
+    } 
+    /*
+      Clean up
+    */
+    ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+    ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoadExodusVertex"
+/*@
+  
+  VecLoadExodusVertex: Loads a Vec representing nodal values of some field from an exodusII file.
+
+  Collective on comm
+
+  The behavior differs depending on the size of comm:
+    if size(comm) == 1 each processor reads its local vector from a separate file
+    if size(comm) > 1, the values are read by cpu 0 from a single file then scattered to each processor
+
+
+  Input Parameters:
++ dm   - the DMMesh representing the mesh
+. v    - the LOCAL vector of values to be read (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+. exoid - the id of the exodusII file (obtained with ex_open or ex_create)
+. step  - the time step to read
+- exofield - the position in the exodus field of the first component
+
+  Interpolated meshes are not supported.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: MeshCreate() MeshCreateExodus() SectionRealCreateLocalVector() VecViewExodusVertex()
+          VecViewExodusVertexSet() VecLoadExodusVertexSet() VecViewExodusCellSet() VecLoadExodusCellSet()
+          VecViewExodusCell() VecLoadExodusCell()
+
+@*/
+extern PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
+{
+  PetscInt                rank,num_proc;
+  PetscErrorCode          ierr;
+  PetscInt                c,num_vertices,num_vertices_global,num_dof;
+  Vec                     vdof,vzero;
+  PetscReal               *vdof_array;
+  VecScatter              scatter;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&num_proc);
+  ierr = MPI_Comm_rank(comm,&rank);
+  ierr = VecGetBlockSize(v,&num_dof);
+  
+  ierr = DMMeshGetStratumSize(dm,"depth",0,&num_vertices);CHKERRQ(ierr);
+
+  ierr = VecCreate(comm,&vdof);CHKERRQ(ierr);
+  ierr = VecSetSizes(vdof,num_vertices,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(vdof);CHKERRQ(ierr);
+
+  if (num_proc == 1) {
+    for (c = 0; c < num_dof; c++) {
+      ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
+      ierr = ex_get_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array); 
+      ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
+      if (ierr != 0) {
+        SETERRQ2(comm,PETSC_ERR_FILE_READ,"Unable to read file id %i. ex_put_nodal_var returned %i",exoid,ierr);
+      }
+      ierr = VecStrideScatter(vdof,c,v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  } else {
+    /*
+      Build the scatter sending one dof towards cpu 0
+    */
+    ierr = DMMeshCreateScatterToZeroVertex(dm,&scatter);CHKERRQ(ierr);
+    /*
+      Another an ugly hack to get the total number of vertices in the mesh. This has got to stop...
+    */
+    num_vertices_global = scatter->to_n;
+    ierr = MPI_Bcast(&num_vertices_global,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+
+    ierr = VecCreate(comm,&vzero);CHKERRQ(ierr);
+    ierr = VecSetSizes(vzero,num_vertices_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+    ierr = VecSetFromOptions(vzero);CHKERRQ(ierr);
+
+    for (c = 0; c < num_dof; c++) {
+      if (rank == 0) {
+        ierr = VecGetArray(vzero,&vdof_array);CHKERRQ(ierr);
+        ierr = ex_get_nodal_var(exoid,step,exofield+c,num_vertices_global,vdof_array);
+        ierr = VecRestoreArray(vzero,&vdof_array);CHKERRQ(ierr);
+      }
+      ierr = VecScatterBegin(scatter,vzero,vdof,INSERT_VALUES,SCATTER_REVERSE);
+      ierr = VecScatterEnd(scatter,vzero,vdof,INSERT_VALUES,SCATTER_REVERSE);
+      ierr = VecStrideScatter(vdof,c,v,INSERT_VALUES);CHKERRQ(ierr);
+    } 
+    /*
+      Clean up
+    */
+    ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+    ierr = VecDestroy(&vzero);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecViewExodusVertexSet"
 /*@
   

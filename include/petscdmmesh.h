@@ -254,6 +254,7 @@ extern PetscErrorCode DMMeshCreateExodus(MPI_Comm, const char [], DM *);
 extern PetscErrorCode DMMeshCreateExodusNG(MPI_Comm, PetscInt, DM *);
 extern PetscErrorCode DMMeshExodusGetInfo(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshViewExodusSplit(DM,PetscInt);
+
 extern PetscErrorCode VecViewExodusVertex(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode VecLoadExodusVertex(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode VecViewExodusVertexSet(DM,Vec,PetscInt,MPI_Comm,PetscInt,PetscInt,PetscInt);
