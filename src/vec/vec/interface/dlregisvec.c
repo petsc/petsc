@@ -157,7 +157,9 @@ PetscErrorCode  VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister("VecSetRandom",     VEC_CLASSID,&VEC_SetRandom);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecReduceArith",   VEC_CLASSID,&VEC_ReduceArithmetic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecReduceBarrier", VEC_CLASSID,&VEC_ReduceBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecReduceComm",    VEC_CLASSID,&VEC_ReduceCommunication);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecReduceComm",    VEC_CLASSID,&VEC_ReduceCommunication);CHKERRQ(ierr); /* must follow barrier */
+  ierr = PetscLogEventRegister("VecReduceBegin",   VEC_CLASSID,&VEC_ReduceBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecReduceEnd",     VEC_CLASSID,&VEC_ReduceEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecNormalize",     VEC_CLASSID,&VEC_Normalize);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   ierr = PetscLogEventRegister("VecCUSPCopyTo",     VEC_CLASSID,&VEC_CUSPCopyToGPU);CHKERRQ(ierr);

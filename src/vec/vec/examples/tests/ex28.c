@@ -34,6 +34,7 @@ int main(int argc,char **argv)
   ierr = VecDotBegin(y,x,&result2);CHKERRQ(ierr);
   ierr = VecNormBegin(y,NORM_2,&result3);CHKERRQ(ierr);
   ierr = VecNormBegin(x,NORM_1,&result4);CHKERRQ(ierr);
+  ierr = PetscCommSplitReductionBegin(((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = VecDotEnd(x,y,&result1);CHKERRQ(ierr);
   ierr = VecDotEnd(y,x,&result2);CHKERRQ(ierr);
   ierr = VecNormEnd(y,NORM_2,&result3);CHKERRQ(ierr);
