@@ -1884,10 +1884,7 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
     BE CAREFUL with this routine: it actually scales the matrix and right 
     hand side that define the system. After the system is solved the matrix
-    and right hand side remain scaled.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
+    and right hand side remain scaled unless you use KSPSetDiagonalScaleFix()
 
     This should NOT be used within the SNES solves if you are using a line
     search.
@@ -1928,10 +1925,7 @@ PetscErrorCode  KSPSetDiagonalScale(KSP ksp,PetscBool  scale)
    Notes:
     BE CAREFUL with this routine: it actually scales the matrix and right 
     hand side that define the system. After the system is solved the matrix
-    and right hand side remain scaled.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
+    and right hand side remain scaled  unless you use KSPSetDiagonalScaleFix()
 
    Level: intermediate
 
@@ -1968,9 +1962,6 @@ PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
      after each linear solve. This is intended mainly for testing to allow one
      to easily get back the original system to make sure the solution computed is
      accurate enough.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
 
    Level: intermediate
 
@@ -2009,9 +2000,6 @@ PetscErrorCode  KSPSetDiagonalScaleFix(KSP ksp,PetscBool  fix)
      after each linear solve. This is intended mainly for testing to allow one
      to easily get back the original system to make sure the solution computed is
      accurate enough.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
 
    Level: intermediate
 
