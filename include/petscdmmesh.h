@@ -243,10 +243,25 @@ PetscPolymorphicSubroutine(DMMeshGetCellSectionReal,(DM dm, PetscInt fiberDim, S
 extern PetscErrorCode DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
 PetscPolymorphicSubroutine(DMMeshGetCellSectionInt,(DM dm, PetscInt fiberDim, SectionInt *section),(dm,"default",fiberDim,section))
 
+/* Scatter for simple distributions */
+extern PetscErrorCode DMMeshCreateScatterToZeroVertex(DM,VecScatter *);
+extern PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM,IS,IS,VecScatter *);
+extern PetscErrorCode DMMeshCreateScatterToZeroCell(DM,VecScatter *);
+extern PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM,IS,IS,VecScatter *);
+
 /* Support for various mesh formats */
 extern PetscErrorCode DMMeshCreateExodus(MPI_Comm, const char [], DM *);
 extern PetscErrorCode DMMeshCreateExodusNG(MPI_Comm, const char [], DM *);
 extern PetscErrorCode DMMeshExodusGetInfo(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshViewExodusSplit(DM,PetscInt);
+extern PetscErrorCode VecViewExodusVertex(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecLoadExodusVertex(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecViewExodusVertexSet(DM,Vec,PetscInt,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecLoadExodusVertexSet(DM,Vec,PetscInt,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecViewExodusCell(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecLoadExodusCell(DM,Vec,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecViewExodusCellSet(DM,Vec,PetscInt,MPI_Comm,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode VecLoadExodusCellSet(DM,Vec,PetscInt,MPI_Comm,PetscInt,PetscInt,PetscInt);
 
 extern PetscErrorCode DMMeshCreatePCICE(MPI_Comm, const int, const char [], const char [], PetscBool , const char [], DM *);
 
@@ -261,13 +276,13 @@ extern PetscErrorCode DMWritePyLithVerticesLocal(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithElementsLocal(DM, SectionReal, PetscViewer);
 
 struct _DMMeshInterpolationInfo {
-  PetscInt   dim;    // The spatial dimension of points
-  PetscInt   nInput; // The number of input points
-  PetscReal *points; // The input point coordinates
-  PetscInt  *cells;  // The cell containing each point
-  PetscInt   n;      // The number of local points
-  Vec        coords; // The point coordinates
-  PetscInt   dof;    // The number of components to interpolate
+  PetscInt   dim;    /*1 The spatial dimension of points */
+  PetscInt   nInput; /* The number of input points */
+  PetscReal *points; /* The input point coordinates */
+  PetscInt  *cells;  /* The cell containing each point */
+  PetscInt   n;      /* The number of local points */
+  Vec        coords; /* The point coordinates */
+  PetscInt   dof;    /* The number of components to interpolate */
 };
 typedef struct _DMMeshInterpolationInfo *DMMeshInterpolationInfo;
 
