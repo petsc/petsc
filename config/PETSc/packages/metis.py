@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.0.2-p2.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.0.2-p3.tar.gz']
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a']]
@@ -38,7 +38,6 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
 
     cflags = self.setCompilers.getCompilerFlags()
-    cflags += ' -D__thread=\'\''
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 

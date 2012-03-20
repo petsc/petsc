@@ -4,7 +4,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.2-p1.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.2-p2.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
@@ -39,7 +39,6 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
 
     cflags = self.setCompilers.getCompilerFlags()
-    cflags += ' -D__thread=\'\''
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 
