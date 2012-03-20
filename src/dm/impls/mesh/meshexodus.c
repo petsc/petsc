@@ -1,12 +1,6 @@
 #include<petscdmmesh_formats.hh>   /*I "petscdmmesh.h" I*/
 
 #ifdef PETSC_HAVE_EXODUSII
-
-// This is what I needed in my petscvariables:
-//
-// EXODUSII_INCLUDE = -I/PETSc3/mesh/exodusii-4.71/cbind/include
-// EXODUSII_LIB = -L/PETSc3/mesh/exodusii-4.71/forbind/src -lexoIIv2for -L/PETSc3/mesh/exodusii-4.71/cbind/src -lexoIIv2c -lnetcdf
-
 #include<netcdf.h>
 #include<exodusII.h>
 
@@ -237,43 +231,6 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshExodusGetInfo"
-/*@
-  DMMeshExodusGetInfo - Get information about an ExodusII Mesh.
-
-  Not Collective
-
-  Input Parameter:
-. dm - The DMMesh object
-
-  Output Parameters:
-+ dim - The mesh dimension
-. numVertices - The number of vertices in the mesh
-. numCells - The number of cells in the mesh
-. numCellBlocks - The number of cell blocks in the mesh
-- numVertexSets - The number of vertex sets in the mesh
-
-  Level: beginner
-
-.keywords: mesh, ExodusII
-.seealso: DMMeshCreateExodus()
-@*/
-PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  *dim           = m->getDimension();
-  *numVertices   = m->depthStratum(0)->size();
-  *numCells      = m->heightStratum(0)->size();
-  *numCellBlocks = m->getLabel("CellBlocks")->getCapSize();
-  *numVertexSets = m->getLabel("VertexSets")->getCapSize();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateExodusNG"
 /*@
   DMMeshCreateExodusNG - Create a Mesh from an ExodusII file.
@@ -409,6 +366,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
       }
       ierr = PetscFree(cs_connect);CHKERRQ(ierr);
     }
+    ierr = PetscFree(cs_id);CHKERRQ(ierr);
   }
   /*
     We do not interpolate and know that the numbering is compact (this is required in exo)
@@ -541,17 +499,15 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   ierr = DMMeshGetLabelIdIS(dm,"Cell Sets",&csIS);CHKERRQ(ierr);
   ierr = ISGetTotalIndices(csIS,&labels);CHKERRQ(ierr);
   ierr = ISGetSize(csIS,&num_cs_global);CHKERRQ(ierr);
-  if (num_cs_global > 0) { 
-    ierr = PetscSortRemoveDupsInt(&num_cs_global,(PetscInt*)labels);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm,num_cs_global,labels,PETSC_COPY_VALUES,&csIS_global);CHKERRQ(ierr);
-    ierr = ISRestoreTotalIndices(csIS,&labels);CHKERRQ(ierr);
-  }  
-  
+  ierr = PetscSortRemoveDupsInt(&num_cs_global,(PetscInt*)labels);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,num_cs_global,labels,PETSC_COPY_VALUES,&csIS_global);CHKERRQ(ierr);
+  ierr = ISRestoreTotalIndices(csIS,&labels);CHKERRQ(ierr);
+
   ierr = DMMeshGetLabelSize(dm,"Vertex Sets",&num_vs);CHKERRQ(ierr);
   ierr = DMMeshGetLabelIdIS(dm,"Vertex Sets",&vsIS);CHKERRQ(ierr);
-  ierr = ISGetTotalIndices(vsIS,&labels);CHKERRQ(ierr);
   ierr = ISGetSize(vsIS,&num_vs_global);CHKERRQ(ierr);
   if (num_vs_global > 0) {
+    ierr = ISGetTotalIndices(vsIS,&labels);CHKERRQ(ierr);
     ierr = PetscSortRemoveDupsInt(&num_vs_global,(PetscInt*)labels);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,num_vs_global,labels,PETSC_COPY_VALUES,&vsIS_global);CHKERRQ(ierr);
     ierr = ISRestoreTotalIndices(vsIS,&labels);CHKERRQ(ierr);
@@ -581,7 +537,7 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   */
   
   /*
-    The following loop should be based on csIS and csIS_global, but EXO has no
+    The following loop should be based on csIS and not csIS_global, but EXO has no
     way to write the block id's other than ex_put_elem_block
     and ensight is bothered if all cell set ID's are not on all files...
     Not a huge deal
@@ -670,7 +626,10 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
       ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(vsIS_global,&vsID);CHKERRQ(ierr);
-  }  
+  }
+  ierr = ISDestroy(&csIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&vsIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&csIS_global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -716,7 +675,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
 
   my_num_cells_global = 0;
   my_num_vertices_global = 0;
-  ierr = PetscMalloc(num_vertices*sizeof(PetscInt),&vertices);
+  ierr = PetscMalloc(num_vertices*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
   /*
     Get the total number of cells and vertices from the mapping, and build array of global indices of the local vertices
     (TO array for the scatter) from the iterator
@@ -889,7 +848,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   ierr = ISCreateGeneral(comm,setsize_local,setvertices_localtozero,PETSC_OWN_POINTER,&is_localtozero);CHKERRQ(ierr);
   ierr = VecScatterCreate(v_local,PETSC_NULL,v_zero,is_localtozero,scatter);CHKERRQ(ierr);
 
-  ierr = PetscFree(setvertices_localtozero);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_localtozero);CHKERRQ(ierr);
   ierr = PetscFree(allvertices);CHKERRQ(ierr);
   ierr = VecDestroy(&v_local);CHKERRQ(ierr);
   ierr = VecDestroy(&v_zero);CHKERRQ(ierr);
@@ -1150,6 +1109,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
         SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_nodal_var returned %i",exoid,ierr);
       }
     }
+    ierr = PetscFree(vdof_array);CHKERRQ(ierr);
   } else {
     /*
       Build the scatter sending one dof towards cpu 0
@@ -1598,6 +1558,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ISDestroy(&setIS);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(csIS,&setsID);CHKERRQ(ierr);
+    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   } else {
     /*
       Get the number of blocks and the list of ID directly from  the file. This is easier
@@ -1665,7 +1626,13 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       istart += num_cells_zero;
       ierr = VecDestroy(&vdof_set_zero);CHKERRQ(ierr);
       ierr = VecDestroy(&vdof_set);CHKERRQ(ierr);
+      /*
+        Does this really need to be protected with this test?
+      */
       if (num_cells_in_set > 0) {
+        /*
+          Does this really need to be protected with this test?
+        */
         ierr = VecScatterDestroy(&setscatter);CHKERRQ(ierr);
       }
       ierr = VecScatterDestroy(&setscattertozero);CHKERRQ(ierr);
@@ -1764,6 +1731,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ISDestroy(&setIS);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(csIS,&setsID);CHKERRQ(ierr);
+    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   } else {
     /*
       Get the number of blocks and the list of ID directly from  the file. This is easier
@@ -1835,8 +1803,9 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ISDestroy(&setIS);CHKERRQ(ierr);
     }
     ierr = PetscFree(setsID_zero);CHKERRQ(ierr);
-  }  
-  
+    ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+  }
+
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1932,7 +1901,6 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = ISCreateStride(dmcomm,num_cells_zero,istart,1,&csIS_zero);
     ierr = DMMeshCreateScatterToZeroCellSet(dm,csIS,csIS_zero,&scatter);
     ierr = ISDestroy(&csIS_zero);CHKERRQ(ierr);
-    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_zero);CHKERRQ(ierr);
 
@@ -1949,6 +1917,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2045,7 +2014,6 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = ISCreateStride(dmcomm,num_cells_zero,istart,1,&csIS_zero);
     ierr = DMMeshCreateScatterToZeroCellSet(dm,csIS,csIS_zero,&scatter);
     ierr = ISDestroy(&csIS_zero);CHKERRQ(ierr);
-    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_zero);CHKERRQ(ierr);
     
@@ -2062,6 +2030,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
