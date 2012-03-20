@@ -98,3 +98,8 @@ hr {
   width: 13em;
   font-weight: bold;
 }
+
+#modified {
+  font-size: 1em;
+  float: right;
+}
