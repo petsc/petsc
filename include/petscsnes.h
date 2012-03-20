@@ -286,6 +286,9 @@ M*/
      SNES_CONVERGED_PNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
           solution and stol is the 4th argument to SNESSetTolerances()
 
+     Options Database Keys:
+      -snes_stol <stol> - the step tolerance
+
    Level: beginner
 
 .seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()

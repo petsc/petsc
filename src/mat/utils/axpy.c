@@ -187,9 +187,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-  if (vstart != start || vend != end) {
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
-  }
+  if (vstart != start || vend != end) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
   ierr = VecGetArray(D,&v);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
