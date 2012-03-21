@@ -885,47 +885,72 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 #define __FUNCT__ "DMMeshInterpolationSetUp"
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx) {
   Obj<PETSC_MESH_TYPE> m;
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscScalar   *a;
-  PetscInt       p, i;
+  PetscInt       p, q, i;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   if (ctx->dim < 0) {
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
+    SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
   }
   // Locate points
-  PetscInt N, found;
+  PetscLayout    layout;
+  PetscReal      *globalPoints;
+  const PetscInt *ranges;
+  PetscMPIInt    *counts, *displs;
+  PetscInt       *foundCells;
+  PetscInt        n = ctx->nInput, N, found;
 
-  ierr = MPI_Allreduce(&ctx->nInput, &N, 1, MPIU_INT, MPI_SUM, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(layout, n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
   // Communicate all points to all processes
   ctx->n = 0;
   ierr = PetscMalloc(N * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
+  for(p = 0; p < size; ++p) {
+    counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
+    displs[p] = ranges[p]*ctx->dim;
+  }
+  ierr = MPI_Allgatherv(ctx->points, n*ctx->dim, MPIU_REAL, globalPoints, counts, displs, MPIU_REAL, comm);CHKERRQ(ierr);
   for(p = 0; p < N; ++p) {
     ctx->cells[p] = m->locatePoint(&ctx->points[p*ctx->dim]);
     if (ctx->cells[p] >= 0) ctx->n++;
   }
   // Check that exactly this many points were found
-  ierr = MPI_Allreduce(&ctx->n, &found, 1, MPIU_INT, MPI_SUM, ((PetscObject) dm)->comm);CHKERRQ(ierr);
-  if (found != N) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of points located %d should be %d", found, N);}
+  ierr = MPI_Allreduce(&ctx->n, &found, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  if (found != N) {SETERRQ2(comm, PETSC_ERR_PLIB, "Invalid number of points located %d should be %d", found, N);}
+  ierr = PetscMalloc(ctx->n * sizeof(PetscInt), &foundCells);CHKERRQ(ierr);
   // Create coordinates vector
-  ierr = VecCreate(((PetscObject) dm)->comm, &ctx->coords);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &ctx->coords);CHKERRQ(ierr);
   ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
-  for(p = 0, i = 0; p < N; ++p) {
+  for(p = 0, q = 0, i = 0; p < N; ++p) {
     if (ctx->cells[p] >= 0) {
       PetscInt d;
 
       for(d = 0; d < ctx->dim; ++d, ++i) {
-        a[i] = ctx->points[p*ctx->dim+d];
+        a[i] = globalPoints[p*ctx->dim+d];
       }
+      foundCells[q++] = ctx->cells[p];
     }
   }
   ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);
+  ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->cells);CHKERRQ(ierr);
+  ctx->cells = foundCells;
   // Compress cells array
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
