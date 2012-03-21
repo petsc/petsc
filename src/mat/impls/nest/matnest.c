@@ -964,7 +964,8 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype)
   PetscFunctionBegin;
   ierr = PetscStrcmp(vtype,VECNEST,&flg);CHKERRQ(ierr);
   /* In reality, this only distinguishes VECNEST and "other" */
-  A->ops->getvecs       = flg ? MatGetVecs_Nest : (PetscErrorCode (*)(Mat,Vec*,Vec*))0;
+  if (flg) A->ops->getvecs = MatGetVecs_Nest;
+  else A->ops->getvecs = (PetscErrorCode (*)(Mat,Vec*,Vec*))0;
  PetscFunctionReturn(0);
 }
 EXTERN_C_END
