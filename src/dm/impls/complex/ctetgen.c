@@ -3057,13 +3057,13 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
   PetscFunctionBegin;
   if (sapex(sface)) {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "subface x%lx, ver %d, mark %d:", (uintptr_t) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "subface x%lx, ver %d, mark %d:", (PETSC_UINTPTR_T) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "subface ver %d, mark %d:", sface->shver, shellmark(m, sface));CHKERRQ(ierr);
     }
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Subsegment x%lx, ver %d, mark %d:", (uintptr_t) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Subsegment x%lx, ver %d, mark %d:", (PETSC_UINTPTR_T) (sface->sh), sface->shver, shellmark(m, sface));CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "Subsegment ver %d, mark %d:", sface->shver, shellmark(m, sface));CHKERRQ(ierr);
     }
@@ -3098,7 +3098,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
     ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = No shell\n");CHKERRQ(ierr);
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [0] = %d\n", prtsh.shver);CHKERRQ(ierr);
     }
@@ -3108,7 +3108,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
     ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] = No shell\n");CHKERRQ(ierr);
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] = x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [1] =  %d\n", prtsh.shver);CHKERRQ(ierr);
     }
@@ -3118,7 +3118,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
     ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] = No shell\n");CHKERRQ(ierr);
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] = x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [2] =  %d\n", prtsh.shver);CHKERRQ(ierr);
     }
@@ -3129,7 +3129,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = NULL\n", vo[sface->shver]);CHKERRQ(ierr);
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vo[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vo[sface->shver], (PETSC_UINTPTR_T)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "      Org [%d] = (%.12g,%.12g,%.12g) %d\n", vo[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
     }
@@ -3139,7 +3139,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
     ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = NULL\n", vd[sface->shver]);CHKERRQ(ierr);
   } else {
     if (showPointer) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vd[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", vd[sface->shver], (PETSC_UINTPTR_T)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF, "      Dest[%d] = (%.12g,%.12g,%.12g) %d\n", vd[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
     }
@@ -3151,7 +3151,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = NULL\n", va[sface->shver]);CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", va[sface->shver], (uintptr_t)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = x%lx  (%.12g,%.12g,%.12g) %d\n", va[sface->shver], (PETSC_UINTPTR_T)(printpoint), printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      Apex[%d] = (%.12g,%.12g,%.12g) %d\n", va[sface->shver], printpoint[0], printpoint[1], printpoint[2], pointmark(m, printpoint));CHKERRQ(ierr);
       }
@@ -3161,7 +3161,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = Outer space\n");CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = x%lx  %d\n", (uintptr_t)(prttet.tet), prttet.loc);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = x%lx  %d\n", (PETSC_UINTPTR_T)(prttet.tet), prttet.loc);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      [6] = %d\n", prttet.loc);CHKERRQ(ierr);
       }
@@ -3171,7 +3171,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = Outer space\n");CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = x%lx  %d\n", (uintptr_t)(prttet.tet), prttet.loc);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = x%lx  %d\n", (PETSC_UINTPTR_T)(prttet.tet), prttet.loc);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      [7] = %d\n", prttet.loc);CHKERRQ(ierr);
       }
@@ -3182,7 +3182,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = No subsegment\n");CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      [8] = %d\n", prtsh.shver);CHKERRQ(ierr);
       }
@@ -3192,7 +3192,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = No subsegment\n");CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      [9] = %d\n", prtsh.shver);CHKERRQ(ierr);
       }
@@ -3202,7 +3202,7 @@ PetscErrorCode TetGenMeshPrintSh(TetGenMesh *m, face *sface, PetscBool showPoint
       ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= No subsegment\n");CHKERRQ(ierr);
     } else {
       if (showPointer) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= x%lx  %d\n", (uintptr_t)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= x%lx  %d\n", (PETSC_UINTPTR_T)(prtsh.sh), prtsh.shver);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_SELF, "      [10]= %d\n", prtsh.shver);CHKERRQ(ierr);
       }

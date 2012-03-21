@@ -4058,6 +4058,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     for(f = fStart; f < fEnd; ++f) {
       const PetscInt idx    = f - fStart;
       PetscInt      *points = PETSC_NULL, numPoints, p, numVertices = 0, v;
+      polygon       *poly;
 
       in->facetlist[idx].numberofpolygons = 1;
       ierr = PetscMalloc(in->facetlist[idx].numberofpolygons * sizeof(polygon), &in->facetlist[idx].polygonlist);CHKERRQ(ierr);
@@ -4072,7 +4073,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
         }
       }
 
-      polygon *poly = in->facetlist[idx].polygonlist;
+      poly = in->facetlist[idx].polygonlist;
       poly->numberofvertices = numVertices;
       ierr = PetscMalloc(poly->numberofvertices * sizeof(int), &poly->vertexlist);CHKERRQ(ierr);
       for(v = 0; v < numVertices; ++v) {
