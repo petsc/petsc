@@ -465,9 +465,9 @@ int CalcSolnNorms(DMMG *dmmg, PetscReal norms[])
   Vec           x;
   int           ierr;                                                  
   x = DMMGGetx(dmmg);
-  ierr = VecNorm(x, NORM_1, &(norms[0]));
-  ierr = VecNorm(x, NORM_2, &(norms[1]));
-  ierr = VecNorm(x, NORM_INFINITY, &(norms[2]));
+  ierr = VecNorm(x, NORM_1, &(norms[0]));CHKERRQ(ierr);
+  ierr = VecNorm(x, NORM_2, &(norms[1]));CHKERRQ(ierr);
+  ierr = VecNorm(x, NORM_INFINITY, &(norms[2]));CHKERRQ(ierr);
   return 0;
 }
 
@@ -523,7 +523,7 @@ PetscBool  OptionsHasName(const char name[])
 {
   PetscBool  retval; 
   int ierr;
-  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);
+  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 

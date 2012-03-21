@@ -262,13 +262,12 @@ int Initialize(DMMG *dmmg)
   AppCtx    *user  = (AppCtx*)dmmg[0]->user;
   Parameter *param;
   DM        da;
-  PetscReal amp, sigma, xc, zc ;
+  PetscReal sigma, xc, zc ;
   PetscReal dx=user->grid->dx,dz=user->grid->dz;
   int       i,j,ierr,is,js,im,jm;
   Field     **x;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
   
-  amp = param->amp;
   sigma = param->sigma;
   xc = param->xctr; zc = param->zctr;
 
@@ -480,7 +479,7 @@ PetscBool  OptionsHasName(const char name[])
 {
   PetscBool  retval; 
   int ierr;
-  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);
+  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 

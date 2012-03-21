@@ -470,7 +470,7 @@ PetscBool  OptionsHasName(const char name[])
 {
   PetscBool  retval; 
   int ierr;
-  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);
+  ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 

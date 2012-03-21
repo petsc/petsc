@@ -379,6 +379,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(MPI_COMM_WORLD,&Jac);CHKERRQ(ierr);
   ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
+  ierr = MatSetUp(Jac);CHKERRQ(ierr);
 
   /* 
     The following routine allows us to set the matrix values in local ordering 

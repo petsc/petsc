@@ -55,6 +55,8 @@ int main(int argc,char **args)
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
+
     ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
     for( II=Istart; II<Iend; II++ ) { 
@@ -77,6 +79,7 @@ int main(int argc,char **args)
     ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
  
