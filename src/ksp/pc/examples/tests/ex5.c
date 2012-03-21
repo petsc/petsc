@@ -36,7 +36,7 @@ int main(int Argc,char **Args)
   Mat             cmat,mat[20],fmat;
   KSP             cksp,ksp[20],kspmg;
   PetscReal       e[3]; /* l_2 error,max error, residual */
-  char            *shellname;
+  const char      *shellname;
   Vec             x,solution,X[20],R[20],B[20];
   PC              pcmg,pc;
   PetscBool       flg;
