@@ -19,6 +19,9 @@
 #define PCFieldSplitSchurPreType PetscEnum
 #define PCPARMSGlobalType PetscEnum
 #define PCPARMSLocalType PetscEnum
+#define PCFieldSplitSchurFactorizationType PetscEnum
+#define CoarseProblemType PetscEnum
+#define PCGAMGType PetscEnum
 !
 !  Various preconditioners
 !
