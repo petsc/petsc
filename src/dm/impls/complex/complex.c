@@ -4044,7 +4044,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 
       ierr = PetscSectionGetOffset(bd->coordSection, v, &off);CHKERRQ(ierr);
       for(d = 0; d < dim; ++d) {
-        in->pointlist[idx*dim + d] = array[off+d];
+        in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
       ierr = DMComplexGetLabelValue(boundary, "marker", v, &in->pointmarkerlist[idx]);CHKERRQ(ierr);
     }
@@ -4297,7 +4297,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
       ierr = PetscSectionGetOffset(mesh->coordSection, v, &off);CHKERRQ(ierr);
       for(d = 0; d < dim; ++d) {
-        in->pointlist[idx*dim + d] = array[off+d];
+        in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
       ierr = DMComplexGetLabelValue(dm, "marker", v, &in->pointmarkerlist[idx]);CHKERRQ(ierr);
     }
