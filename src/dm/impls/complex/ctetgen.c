@@ -2541,7 +2541,7 @@ static PetscErrorCode ArrayPoolGetBlock(ArrayPool *a, int objectindex, char **bl
 /* tetgenmesh::arraypool::newindex() */
 static PetscErrorCode ArrayPoolNewIndex(ArrayPool *a, void **newptr, int *idx)
 {
-  char          *block;
+  char          *block = PETSC_NULL;
   void          *newobject;
   int            newindex;
   PetscErrorCode ierr;
@@ -14189,7 +14189,7 @@ PetscErrorCode TetGenMeshScoutCrossTet(TetGenMesh *m, face *pssub, triface *sear
   triface spintet = {PETSC_NULL, 0, 0}, crossface = {PETSC_NULL, 0, 0};
   point pa, pb, pc, pd, pe;
   PetscReal ori, ori1, len, n[3];
-  PetscReal r, dr, drmin;
+  PetscReal r, dr, drmin = 0.0;
   PetscBool cofacetflag;
   int hitbdry;
   int i;
