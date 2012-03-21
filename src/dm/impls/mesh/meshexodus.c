@@ -223,7 +223,7 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 #ifdef PETSC_HAVE_EXODUSII
   ierr = PetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
 #else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
   if (debug) {m->view("Mesh");}
   ierr = DMMeshSetMesh(*dm, m);CHKERRQ(ierr);
@@ -634,7 +634,7 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   ierr = ISDestroy(&vsIS);CHKERRQ(ierr);
   ierr = ISDestroy(&csIS_global);CHKERRQ(ierr);
 #else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
   PetscFunctionReturn(0);
 }
@@ -1086,18 +1086,21 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
 @*/
 PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
   PetscInt                c,num_vertices,num_vertices_zero,num_dof;
   Vec                     vdof,vdof_zero;
   PetscReal               *vdof_array;
   VecScatter              scatter;
-  
+#endif
+
   PetscFunctionBegin;
+#ifdef PETSC_HAVE_EXODUSII
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
   ierr = VecGetBlockSize(v,&num_dof);
-  
+
   ierr = DMMeshGetStratumSize(dm,"depth",0,&num_vertices);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&vdof);CHKERRQ(ierr);
@@ -1147,7 +1150,9 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
-  
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1184,18 +1189,21 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
 @*/
 PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
   PetscInt                c,num_vertices,num_vertices_global,num_dof;
   Vec                     vdof,vzero;
   PetscReal               *vdof_array;
   VecScatter              scatter;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
   ierr = VecGetBlockSize(v,&num_dof);
-  
+
   ierr = DMMeshGetStratumSize(dm,"depth",0,&num_vertices);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&vdof);CHKERRQ(ierr);
@@ -1244,7 +1252,9 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     ierr = VecDestroy(&vzero);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
-  
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1282,6 +1292,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
 @*/
 PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
   PetscInt                c,num_vertices_in_set=0,num_vertices_zero=0,num_cells_zero,num_dof;
@@ -1293,7 +1304,9 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
   IS                      vsIS,vsIS_zero;
   PetscInt               *vs_vertices_zero;
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -1359,6 +1372,9 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
     ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1394,6 +1410,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
 @*/
 PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscInt                rank,num_proc;
   PetscErrorCode          ierr;
   PetscInt                c,num_vertices_in_set=0,num_vertices_zero=0,num_cells_zero,num_dof;
@@ -1405,7 +1422,9 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
   IS                      vsIS,vsIS_zero;
   PetscInt               *vs_vertices_zero;
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -1471,6 +1490,9 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
     ierr = VecDestroy(&vdof_zero);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1503,6 +1525,7 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
 @*/
 PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_in_set,num_cells_zero=0;
   PetscInt                num_cs_zero,num_cs,set,c,istart;
@@ -1515,7 +1538,9 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   PetscInt                junk1,junk2,junk3,junk4,junk5;
   char                    junk[MAX_LINE_LENGTH+1];
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -1648,6 +1673,9 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   }  
   
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1680,6 +1708,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
 @*/
 PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_in_set,num_cells_zero=0;
   PetscInt                num_cs_zero,num_cs,set,c,istart;
@@ -1692,7 +1721,9 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   PetscInt                junk1,junk2,junk3,junk4,junk5;
   char                    junk[MAX_LINE_LENGTH+1];
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -1813,6 +1844,9 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   }
 
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1846,6 +1880,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
 @*/
 PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_zero=0;
   PetscInt                i,c;
@@ -1854,13 +1889,15 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   Vec                     vdof,vdof_zero;
   VecScatter              scatter;
   PetscInt                istart = 0;
-  
+
   PetscInt                junk1,junk2,junk3,junk4,junk5;
   char                    junk[MAX_LINE_LENGTH+1];
   PetscInt                num_cs_global;
   PetscInt               *csIDs;
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -1925,6 +1962,9 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   }
   ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1958,6 +1998,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
 @*/
 PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,PetscInt exoid,PetscInt step,PetscInt exofield)
 {
+#ifdef PETSC_HAVE_EXODUSII
   PetscErrorCode          ierr;
   PetscInt                rank,num_proc,num_dof,num_cells,num_cells_zero=0;
   PetscInt                i,c;
@@ -1972,7 +2013,9 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   PetscInt               *csIDs;
   char                    junk[MAX_LINE_LENGTH+1];
   MPI_Comm                dmcomm;
-  
+#endif
+
+#ifdef PETSC_HAVE_EXODUSII
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&num_proc);
   ierr = MPI_Comm_rank(comm,&rank);
@@ -2038,5 +2081,8 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   }
   ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
+#else
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
