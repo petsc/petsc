@@ -426,7 +426,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
   }
   */
 #else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
   PetscFunctionReturn(0);
 }
@@ -455,10 +455,11 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
 @*/
 PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
 {
+#if defined(PETSC_HAVE_EXODUSII)
   PetscBool               debug = PETSC_FALSE;
   MPI_Comm                comm;
   PetscErrorCode          ierr;
-  
+
   int                     num_dim,num_vertices = 0,num_cells = 0;
   int                     num_cs = 0,num_vs = 0;
   int                     num_cs_global = 0,num_vs_global = 0;
@@ -466,9 +467,9 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   IS                      csIS,vsIS;
   IS                      csIS_global,vsIS_global;
   const PetscInt         *csID,*vsID,*labels;
-  
+
   PetscReal              *coord;
-  
+
   PetscInt                c,v,c_offset;
 
   PetscInt                set,num_cell_in_set,num_vertex_per_cell;
@@ -477,12 +478,14 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   const char             *cell_type;
   int                    *elem_map,*cs_connect,num_cs_attr=0;
   const PetscInt         *elem_connect;
-  
+
   PetscInt                num_vertex_in_set,num_vs_attr=0;
   PetscInt               *vertices;
   IS                      verticesIS;
-  
+#endif
+
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_EXODUSII)
   /*
     Extract mesh global properties from the DM
   */
@@ -630,6 +633,9 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = ISDestroy(&vsIS);CHKERRQ(ierr);
   ierr = ISDestroy(&csIS_global);CHKERRQ(ierr);
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   PetscFunctionReturn(0);
 }
 
