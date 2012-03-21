@@ -4040,13 +4040,14 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     ierr = VecGetArray(bd->coordinates, &array);CHKERRQ(ierr);
     for(v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d;
+      PetscInt       off, d, m;
 
       ierr = PetscSectionGetOffset(bd->coordSection, v, &off);CHKERRQ(ierr);
       for(d = 0; d < dim; ++d) {
         in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMComplexGetLabelValue(boundary, "marker", v, &in->pointmarkerlist[idx]);CHKERRQ(ierr);
+      ierr = DMComplexGetLabelValue(boundary, "marker", v, &m);CHKERRQ(ierr);
+      in->pointmarkerlist[idx] = (int) m;
     }
     ierr = VecRestoreArray(bd->coordinates, &array);CHKERRQ(ierr);
   }
@@ -4057,7 +4058,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     ierr = PetscMalloc(in->numberoffacets * sizeof(int),   &in->facetmarkerlist);CHKERRQ(ierr);
     for(f = fStart; f < fEnd; ++f) {
       const PetscInt idx    = f - fStart;
-      PetscInt      *points = PETSC_NULL, numPoints, p, numVertices = 0, v;
+      PetscInt      *points = PETSC_NULL, numPoints, p, numVertices = 0, v, m;
 
       in->facetlist[idx].numberofpolygons = 1;
       ierr = PetscMalloc(in->facetlist[idx].numberofpolygons * sizeof(polygon), &in->facetlist[idx].polygonlist);CHKERRQ(ierr);
@@ -4079,7 +4080,8 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
       }
-      ierr = DMComplexGetLabelValue(boundary, "marker", f, &in->facetmarkerlist[idx]);CHKERRQ(ierr);
+      ierr = DMComplexGetLabelValue(boundary, "marker", f, &m);CHKERRQ(ierr);
+      in->facetmarkerlist[idx] = (int) m;
     }
   }
   if (!rank) {
@@ -4293,13 +4295,14 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
     ierr = VecGetArray(mesh->coordinates, &array);CHKERRQ(ierr);
     for(v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d;
+      PetscInt       off, d, m;
 
       ierr = PetscSectionGetOffset(mesh->coordSection, v, &off);CHKERRQ(ierr);
       for(d = 0; d < dim; ++d) {
         in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMComplexGetLabelValue(dm, "marker", v, &in->pointmarkerlist[idx]);CHKERRQ(ierr);
+      ierr = DMComplexGetLabelValue(dm, "marker", v, &m);CHKERRQ(ierr);
+      in->pointmarkerlist[idx] = (int) m;
     }
     ierr = VecRestoreArray(mesh->coordinates, &array);CHKERRQ(ierr);
   }
