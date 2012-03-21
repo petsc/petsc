@@ -434,6 +434,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Cray XT3
       lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
       lines = filter(lambda s: s.find('INFO: linux target') < 0, lines)
+      lines = filter(lambda s: s.find('Successful compile:') < 0, lines)
       # Lahey/Fujitsu
       lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
