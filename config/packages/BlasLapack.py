@@ -566,6 +566,7 @@ class Configure(config.package.Package):
       self.compilers.LIBS = oldLibs
       self.popLanguage()
     else:
+      self.framework.addBatchInclude('#include <math.h>')
       self.framework.addBatchLib(self.blasLibrary)
       self.framework.addBatchBody(['{',
                                    'typedef struct{double re; double im;} mycomplex;',
