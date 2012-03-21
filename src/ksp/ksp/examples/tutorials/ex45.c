@@ -73,9 +73,6 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
   PetscScalar    h;
-  PetscScalar    ***xx,***bb;
-  PetscInt       i,j,k,xm,ym,zm,xs,ys,zs;
-  PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   DM             dm;
 
   PetscFunctionBegin;
