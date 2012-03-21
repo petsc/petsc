@@ -3379,7 +3379,7 @@ I   & 0 \\
 \]
 Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$ 
 
-There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_factorization_type <diag,lower,upper,full>} or NOTE WE NEED TO ADD A FUNCTIONAL INTERFACE. Note that the \trl{diag} form uses the preconditioner
+There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>} or the function PCFieldSplitSetSchurFactType(). Note that the \trl{diag} form uses the preconditioner
 \[
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\

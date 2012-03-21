@@ -19,7 +19,7 @@
 #define PCFieldSplitSchurPreType PetscEnum
 #define PCPARMSGlobalType PetscEnum
 #define PCPARMSLocalType PetscEnum
-#define PCFieldSplitSchurFactorizationType PetscEnum
+#define PCFieldSplitSchurFactType PetscEnum
 #define CoarseProblemType PetscEnum
 #define PCGAMGType PetscEnum
 !

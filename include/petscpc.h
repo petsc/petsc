@@ -391,22 +391,22 @@ typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_DIAG,PC_FIELD
 extern const char *const PCFieldSplitSchurPreTypes[];
 
 /*E
-    PCFieldSplitSchurFactorizationType - determines which off-diagonal parts of the approximate block factorization to use
+    PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetSchurFactorizationType()
+.seealso: PCFieldSplitSetSchurFactType()
 E*/
 typedef enum {
-  PC_FIELDSPLIT_SCHUR_FACTORIZATION_DIAG,
-  PC_FIELDSPLIT_SCHUR_FACTORIZATION_LOWER,
-  PC_FIELDSPLIT_SCHUR_FACTORIZATION_UPPER,
-  PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL
-} PCFieldSplitSchurFactorizationType;
-extern const char *const PCFieldSplitSchurFactorizationTypes[];
+  PC_FIELDSPLIT_SCHUR_FACT_DIAG,
+  PC_FIELDSPLIT_SCHUR_FACT_LOWER,
+  PC_FIELDSPLIT_SCHUR_FACT_UPPER,
+  PC_FIELDSPLIT_SCHUR_FACT_FULL
+} PCFieldSplitSchurFactType;
+extern const char *const PCFieldSplitSchurFactTypes[];
 
 extern PetscErrorCode  PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
-extern PetscErrorCode  PCFieldSplitSetSchurFactorizationType(PC,PCFieldSplitSchurFactorizationType);
+extern PetscErrorCode  PCFieldSplitSetSchurFactType(PC,PCFieldSplitSchurFactType);
 extern PetscErrorCode  PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 
 extern PetscErrorCode  PCGalerkinSetRestriction(PC,Mat);

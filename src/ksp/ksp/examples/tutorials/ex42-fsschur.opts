@@ -2,7 +2,7 @@
 -stokes_ksp_rtol 1.0e-6
 -stokes_pc_type fieldsplit
   -stokes_pc_fieldsplit_type SCHUR
-  -stokes_pc_fieldsplit_schur_factorization_type UPPER
+  -stokes_pc_fieldsplit_schur_fact_type UPPER
   -stokes_fieldsplit_p_ksp_type preonly
   -stokes_fieldsplit_u_pc_type bjacobi
 -stokes_ksp_monitor_blocks

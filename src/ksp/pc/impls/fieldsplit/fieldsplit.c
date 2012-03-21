@@ -3,7 +3,7 @@
 #include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
-const char *const PCFieldSplitSchurFactorizationTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactorizationType","PC_FIELDSPLIT_SCHUR_FACTORIZATION_",0};
+const char *const PCFieldSplitSchurFactTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactType","PC_FIELDSPLIT_SCHUR_FACT_",0};
 
 typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
 struct _PC_FieldSplitLink {
@@ -35,7 +35,7 @@ typedef struct {
   Mat                                schur;        /* The Schur complement S = A11 - A10 A00^{-1} A01 */
   Mat                                schur_user;   /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType           schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
-  PCFieldSplitSchurFactorizationType schurfactorization;
+  PCFieldSplitSchurFactType schurfactorization;
   KSP                                kspschur;     /* The solver for S */
   PC_FieldSplitLink                  head;
   PetscBool                          reset;         /* indicates PCReset() has been last called on this object, hack */
@@ -117,7 +117,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, blocksize = %D, factorization %s\n",jac->bs,PCFieldSplitSchurFactorizationTypes[jac->schurfactorization]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, blocksize = %D, factorization %s\n",jac->bs,PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Split info:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
@@ -599,7 +599,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
   ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
 
   switch (jac->schurfactorization) {
-    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_DIAG:
+    case PC_FIELDSPLIT_SCHUR_FACT_DIAG:
       /* [A00 0; 0 -S], positive definite, suitable for MINRES */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -613,7 +613,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       break;
-    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_LOWER:
+    case PC_FIELDSPLIT_SCHUR_FACT_LOWER:
       /* [A00 0; A10 S], suitable for left preconditioning */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -628,7 +628,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       break;
-    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_UPPER:
+    case PC_FIELDSPLIT_SCHUR_FACT_UPPER:
       /* [A00 A01; 0 S], suitable for right preconditioning */
       ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -643,7 +643,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       break;
-    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL:
+    case PC_FIELDSPLIT_SCHUR_FACT_FULL:
       /* [1 0; A10 A00^{-1} 1] [A00 0; 0 S] [1 A00^{-1}A01; 0 1], an exact solve if applied exactly, needs one extra solve with A */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -870,7 +870,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetType_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetBlockSize_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSchurPrecondition_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactorizationType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -911,7 +911,9 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
   }
   if (jac->type == PC_COMPOSITE_SCHUR) {
-    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_factorization_type","Which off-diagonal parts of the block factorization to use","PCFieldSplitSetSchurFactorizationType",PCFieldSplitSchurFactorizationTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(((PetscObject)pc)->prefix,"-pc_fieldsplit_schur_factorization_type",PCFieldSplitSchurFactTypes,(PetscEnum*)&jac->schurfactorization,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscInfo(pc,"Deprecated use of -pc_fieldsplit_schur_factorization_type\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_fact_type","Which off-diagonal parts of the block factorization to use","PCFieldSplitSetSchurFactType",PCFieldSplitSchurFactTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);  
@@ -1325,18 +1327,18 @@ PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSplitSchur
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCFieldSplitSetSchurFactorizationType"
+#define __FUNCT__ "PCFieldSplitSetSchurFactType"
 /*@
-    PCFieldSplitSetSchurFactorizationType -  sets which blocks of the approximate block factorization to retain
+    PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain
 
     Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
--   ftype - which blocks of factorization to retain, PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL is default
+-   ftype - which blocks of factorization to retain, PC_FIELDSPLIT_SCHUR_FACT_FULL is default
 
     Options Database:
-.     -pc_fieldsplit_schur_factorization_type <diag,lower,upper,full> default is full
+.     -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> default is full
 
 
     Level: intermediate
@@ -1365,19 +1367,19 @@ $   (C   D)    (C*Ainv  1) (0   S) (0     1  )
 
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType
 @*/
-PetscErrorCode  PCFieldSplitSetSchurFactorizationType(PC pc,PCFieldSplitSchurFactorizationType ftype)
+PetscErrorCode  PCFieldSplitSetSchurFactType(PC pc,PCFieldSplitSchurFactType ftype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFieldSplitSetSchurFactorizationType_C",(PC,PCFieldSplitSchurFactorizationType),(pc,ftype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetSchurFactType_C",(PC,PCFieldSplitSchurFactType),(pc,ftype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCFieldSplitSetSchurFactorizationType_FieldSplit"
-PETSC_EXTERN_C PetscErrorCode PCFieldSplitSetSchurFactorizationType_FieldSplit(PC pc,PCFieldSplitSchurFactorizationType ftype)
+#define __FUNCT__ "PCFieldSplitSetSchurFactType_FieldSplit"
+PETSC_EXTERN_C PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc,PCFieldSplitSchurFactType ftype)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
@@ -1435,14 +1437,14 @@ PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
     pc->ops->view  = PCView_FieldSplit_Schur;
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitGetSubKSP_C","PCFieldSplitGetSubKSP_FieldSplit_Schur",PCFieldSplitGetSubKSP_FieldSplit_Schur);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSchurPrecondition_C","PCFieldSplitSchurPrecondition_FieldSplit",PCFieldSplitSchurPrecondition_FieldSplit);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactorizationType_C","PCFieldSplitSetSchurFactorizationType_FieldSplit",PCFieldSplitSetSchurFactorizationType_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactType_C","PCFieldSplitSetSchurFactType_FieldSplit",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
 
   } else {
     pc->ops->apply = PCApply_FieldSplit;
     pc->ops->view  = PCView_FieldSplit;
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitGetSubKSP_C","PCFieldSplitGetSubKSP_FieldSplit",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSchurPrecondition_C","",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactorizationType_C","",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetSchurFactType_C","",0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1539,7 +1541,7 @@ $              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
      it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
      option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc. The
-     factorization type is set using -pc_fieldsplit_schur_factorization_type <diag, lower, upper, full>. The full is shown above,
+     factorization type is set using -pc_fieldsplit_schur_fact_type <diag, lower, upper, full>. The full is shown above,
      diag gives
 $              ( inv(A00)     0   )
 $              (   0      -ksp(S) )
@@ -1581,7 +1583,7 @@ PetscErrorCode  PCCreate_FieldSplit(PC pc)
   jac->nsplits   = 0;
   jac->type      = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre  = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
-  jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL;
+  jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
 
   pc->data     = (void*)jac;
 

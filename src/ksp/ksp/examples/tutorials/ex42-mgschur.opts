@@ -24,7 +24,7 @@
 #
 -stokes_mg_levels_pc_fieldsplit_type SCHUR
 -stokes_mg_levels_pc_fieldsplit_schur_precondition USER
--stokes_mg_levels_pc_fieldsplit_schur_factorization_type UPPER
+-stokes_mg_levels_pc_fieldsplit_schur_fact_type UPPER
 #
 # Apply Q^{-1} only
 -stokes_mg_levels_fieldsplit_1_ksp_type preonly

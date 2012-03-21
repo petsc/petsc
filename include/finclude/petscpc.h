@@ -77,7 +77,7 @@
       parameter (PC_PARMS_LOCAL_ILUT=2)
       parameter (PC_PARMS_LOCAL_ARMS=3)
 !
-! PCFieldSplitSchurFactorizationType
+! PCFieldSplitSchurFactType
 !
       PetscEnum PC_FIELDSPLIT_SCHUR_FACT_DIAG
       PetscEnum PC_FIELDSPLIT_SCHUR_FACT_LOWER

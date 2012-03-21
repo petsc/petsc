@@ -274,7 +274,7 @@ runex11:
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
 	        -fc_pc_fieldsplit_type SCHUR \
-		-fc_pc_fieldsplit_schur_factorization_type UPPER \
+		-fc_pc_fieldsplit_schur_fact_type UPPER \
                 -fc_fieldsplit_velocity_ksp_type cg \
                 -fc_fieldsplit_velocity_pc_type cholesky \
                 -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd \
@@ -301,7 +301,7 @@ runex11_2:
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
                 -fc_pc_fieldsplit_type SCHUR \
-                -fc_pc_fieldsplit_schur_factorization_type UPPER \
+                -fc_pc_fieldsplit_schur_fact_type UPPER \
                 -fc_fieldsplit_velocity_ksp_type cg \
                 -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 \
                 -fc_fieldsplit_velocity_pc_type bjacobi \
