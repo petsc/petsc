@@ -27,7 +27,7 @@ PetscErrorCode SNESDMComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
 /*@
    SNESSetErrorIfNotConverged - Causes SNESSolve() to generate an error if the solver has not converged.
@@ -180,6 +180,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   SNESKSPEW           *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
+  SNESLineSearch      linesearch;
   PetscBool           iascii,isstring;
 
   PetscFunctionBegin;
@@ -238,7 +239,12 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer, "  line search variant: %s\n",((PetscObject)snes->linesearch)->type_name);CHKERRQ(ierr);
+  if (snes->linesearch) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

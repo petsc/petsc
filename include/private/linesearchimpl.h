@@ -6,7 +6,7 @@
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
-  PetscErrorCode (*view)          (SNESLineSearch);
+  PetscErrorCode (*view)          (SNESLineSearch, PetscViewer);
   SNESLineSearchApplyFunc        apply;
   SNESLineSearchPreCheckFunc     precheckstep;
   SNESLineSearchVIProjectFunc    viproject;

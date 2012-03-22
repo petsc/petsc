@@ -437,7 +437,7 @@ typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
 
 extern PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
 extern PetscErrorCode SNESLineSearchReset(SNESLineSearch);
-extern PetscErrorCode SNESLineSearchView(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchView(SNESLineSearch,PetscViewer);
 extern PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
 extern PetscErrorCode SNESLineSearchSetType(SNESLineSearch, const SNESLineSearchType);
 extern PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);

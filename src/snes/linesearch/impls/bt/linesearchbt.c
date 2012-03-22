@@ -274,6 +274,28 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchView_BT"
+PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscBool         iascii;
+  SNESLineSearch_BT *bt;
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  bt = (SNESLineSearch_BT*)linesearch->data;
+  if (iascii) {
+    if (bt->order == SNES_LINESEARCH_BT_CUBIC) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: cubic\n");CHKERRQ(ierr);
+    } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: quadratic\n");CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%G\n", bt->alpha);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchDestroy_BT"
 static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 {
@@ -346,7 +368,7 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   linesearch->ops->destroy        = SNESLineSearchDestroy_BT;
   linesearch->ops->setfromoptions = SNESLineSearchSetFromOptions_BT;
   linesearch->ops->reset          = PETSC_NULL;
-  linesearch->ops->view           = PETSC_NULL;
+  linesearch->ops->view           = SNESLineSearchView_BT;
   linesearch->ops->setup          = PETSC_NULL;
 
   ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);

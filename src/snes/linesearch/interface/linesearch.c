@@ -688,9 +688,39 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
 
 .seealso: SNESLineSearchCreate()
 @*/
-PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch) {
+PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer) {
+  PetscErrorCode ierr;
+  PetscBool      iascii;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)linesearch)->comm,&viewer);CHKERRQ(ierr);
+  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(linesearch,1,viewer,2);
 
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer,"SNESLineSearch Object");CHKERRQ(ierr);
+    if (linesearch->ops->view) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->view)(linesearch,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"  maxstep=%G, minlambda=%G\n", linesearch->maxstep,linesearch->steptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, lambda=%G\n", linesearch->rtol,linesearch->atol,linesearch->ltol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", linesearch->max_its);CHKERRQ(ierr);
+    if (linesearch->ops->precheckstep) {
+      if (linesearch->ops->precheckstep == SNESLineSearchPreCheckPicard) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  using precheck step to speed up Picard convergence\n", linesearch->max_its);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  using user-defined precheck step\n", linesearch->max_its);CHKERRQ(ierr);
+      }
+    }
+    if (linesearch->ops->postcheckstep) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n", linesearch->max_its);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
