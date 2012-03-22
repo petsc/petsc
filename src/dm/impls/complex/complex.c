@@ -4125,7 +4125,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     if (interpolate) {
       DM        imesh;
       PetscInt *off;
-      PetscInt  firstFace = numCells+numVertices, numFaces = 0, face, f, firstEdge, numEdges = 0, edge, e;
+      PetscInt  firstFace = numCells+numVertices, numFaces = 0, f, firstEdge, numEdges = 0, edge, e;
 
       SETERRQ(comm, PETSC_ERR_SUP, "Interpolation is not yet implemented in 3D");
       /* TODO: Rewrite algorithm here to do all meets with neighboring cells and return counts */
@@ -4152,7 +4152,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
         ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
       }
       ierr = DMSetUp(imesh);CHKERRQ(ierr);
-      for(c = 0, face = firstFace; c < numCells; ++c) {
+      for(c = 0; c < numCells; ++c) {
         const PetscInt *faces;
         PetscInt        numFaces, faceSize, f;
 
