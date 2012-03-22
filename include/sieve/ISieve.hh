@@ -5,6 +5,8 @@
 #include <sieve/ALE.hh>
 #endif
 
+#include <petscdmcomplex.h>
+
 #include <fstream>
 
 //#define IMESH_NEW_LABELS
@@ -2696,12 +2698,11 @@ namespace ALE {
         if (base->size() || cap->size()) {
           ++max;
         }
-        for(typename ISieve::point_type p = min; p < max; ++p) {
+        for(PetscInt p = min; p < max; ++p) {
           renumbering[p] = p;
         }
       }
       // Create the ISieve
-      ierr = DMComplexSetDimension(dm, );CHKERRXX(ierr);
       ierr = DMComplexSetChart(dm, min, max);CHKERRXX(ierr);
       // Set cone and support sizes
       size_t maxSize = 0;
@@ -2763,12 +2764,12 @@ namespace ALE {
     }
     template<typename Sieve, typename Renumbering, typename ArrowSection>
     static void convertOrientation(Sieve& sieve, DM dm, Renumbering& renumbering, ArrowSection *orientation) {
-      if (isieve.getMaxConeSize() < 0) return;
-      const Obj<typename Sieve::baseSequence>& base = sieve.base();
       PetscInt       maxConeSize;
       PetscErrorCode ierr;
 
       ierr = DMComplexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRXX(ierr);
+      if (maxConeSize < 0) return;
+      const Obj<typename Sieve::baseSequence>& base = sieve.base();
       int *orientations = new int[maxConeSize];
 
       for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -2806,8 +2807,8 @@ namespace ALE {
     template<typename Section, typename Renumbering>
     static void convertCoordinates(Section& coordinates, PetscSection coordSection, Vec coords, Renumbering& renumbering) {
       const typename Section::chart_type& chart = coordinates.getChart();
-      typename ISection::point_type       min   = *chart.begin();
-      typename ISection::point_type       max   = *chart.begin();
+      PetscInt                            min   = *chart.begin();
+      PetscInt                            max   = *chart.begin();
       PetscScalar                        *a;
       PetscInt                            n;
       PetscErrorCode                      ierr;
@@ -2850,8 +2851,8 @@ namespace ALE {
       PetscErrorCode ierr;
 
       for(typename Renumbering::const_iterator p = renumbering.begin(); p != renumbering.end(); ++p) {
-        if (oldLabel->getConeSize(p->first)) {
-          ierr = DMComplexSetLabelValue(dm, name, p->second, *oldLabel->cone(p->first)->begin());CHKERRXX(ierr);
+        if (label->getConeSize(p->first)) {
+          ierr = DMComplexSetLabelValue(dm, name, p->second, *label->cone(p->first)->begin());CHKERRXX(ierr);
         }
       }
     }
@@ -2884,10 +2885,13 @@ namespace ALE {
     }
     template<typename Mesh, typename Renumbering>
     static void convertMesh(Mesh& mesh, DM *dm, Renumbering& renumbering, bool renumber = true) {
+      PetscSection   coordSection;
+      Vec            coordinates;
       PetscErrorCode ierr;
 
-      ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+      ierr = DMCreate(mesh.comm(), dm);CHKERRQ(ierr);
       ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
+      ierr = DMComplexSetDimension(dm, mesh.getDimension());CHKERRXX(ierr);
       convertSieve(*mesh.getSieve(), *dm, renumbering, renumber);
       ierr = DMComplexStratify(*dm);CHKERRXX(ierr);
       convertOrientation(*mesh.getSieve(), *dm, renumbering, mesh.getArrowSection("orientation").ptr());
