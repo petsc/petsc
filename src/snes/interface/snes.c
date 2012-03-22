@@ -663,6 +663,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESSetOptionsPrefix(snes->pc, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+    /* default to 1 iteration */
+    ierr = SNESSetTolerances(snes->pc, snes->pc->abstol, snes->pc->rtol, snes->pc->stol, 1, snes->pc->max_funcs);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1266,6 +1268,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   snes->ops->converged    = SNESDefaultConverged;
   snes->usesksp           = PETSC_TRUE;
+  snes->tolerancesset     = PETSC_FALSE;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
@@ -2547,6 +2550,7 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
     if (maxf < 0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of function evaluations %D must be non-negative",maxf);
     snes->max_funcs = maxf;
   }
+  snes->tolerancesset = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

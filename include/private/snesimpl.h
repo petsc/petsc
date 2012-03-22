@@ -94,6 +94,8 @@ struct _p_SNES {
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
   PetscInt    gssweeps;           /* number of GS sweeps */
 
+  PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
+
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;
