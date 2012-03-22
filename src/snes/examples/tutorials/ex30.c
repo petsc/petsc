@@ -1334,7 +1334,7 @@ PetscBool  OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESConverged_Interactive"
-PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -1361,7 +1361,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }
   }
-  PetscFunctionReturn(SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,ctx));
+  PetscFunctionReturn(SNESDefaultConverged(snes,it,xnorm,snorm,fnorm,reason,ctx));
 }
 
 /* ------------------------------------------------------------------- */

@@ -8,7 +8,7 @@
 !
       PetscEnum SNES_CONVERGED_FNORM_ABS
       PetscEnum SNES_CONVERGED_FNORM_RELATIVE
-      PetscEnum SNES_CONVERGED_PNORM_RELATIVE
+      PetscEnum SNES_CONVERGED_SNORM_RELATIVE
       PetscEnum SNES_CONVERGED_ITS
       PetscEnum SNES_CONVERGED_TR_DELTA
 
@@ -24,7 +24,7 @@
    
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
       parameter (SNES_CONVERGED_FNORM_RELATIVE    =  3)
-      parameter (SNES_CONVERGED_PNORM_RELATIVE    =  4)
+      parameter (SNES_CONVERGED_SNORM_RELATIVE    =  4)
       parameter (SNES_CONVERGED_ITS               =  5)
       parameter (SNES_CONVERGED_TR_DELTA          =  7)
 

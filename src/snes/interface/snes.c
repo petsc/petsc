@@ -202,7 +202,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, maximum function evaluations=%D\n",snes->max_its,snes->max_funcs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, solution=%G\n",
-                 snes->rtol,snes->abstol,snes->xtol);CHKERRQ(ierr);
+                 snes->rtol,snes->abstol,snes->stol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",snes->nfuncs);CHKERRQ(ierr);
     if (snes->ksp_ewconv) {
@@ -512,7 +512,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     /* not used here, but called so will go into help messaage */
     ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-snes_stol","Stop if step length less than","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_stol","Stop if step length less than","SNESSetTolerances",snes->stol,&snes->stol,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_atol","Stop if function norm less than","SNESSetTolerances",snes->abstol,&snes->abstol,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less than","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
@@ -1272,7 +1272,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->rtol		  = 1.e-8;
   snes->ttol              = 0.0;
   snes->abstol		  = 1.e-50;
-  snes->xtol		  = 1.e-8;
+  snes->stol		  = 1.e-8;
   snes->deltatol	  = 1.e-12;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
@@ -2537,7 +2537,7 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
   }
   if (stol != PETSC_DEFAULT) {
     if (stol < 0.0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %G must be non-negative",stol);
-    snes->xtol = stol;
+    snes->stol = stol;
   }
   if (maxit != PETSC_DEFAULT) {
     if (maxit < 0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxit);
@@ -2581,7 +2581,7 @@ PetscErrorCode  SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pets
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (atol)  *atol  = snes->abstol;
   if (rtol)  *rtol  = snes->rtol;
-  if (stol)  *stol  = snes->xtol;
+  if (stol)  *stol  = snes->stol;
   if (maxit) *maxit = snes->max_its;
   if (maxf)  *maxf  = snes->max_funcs;
   PetscFunctionReturn(0);

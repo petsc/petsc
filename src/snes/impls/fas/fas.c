@@ -829,15 +829,15 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   }
 
   if (fas->upsmooth) {
-    ierr = SNESSetTolerances(fas->upsmooth, fas->upsmooth->abstol, fas->upsmooth->rtol, fas->upsmooth->xtol, 1, 1000);CHKERRQ(ierr);
+    ierr = SNESSetTolerances(fas->upsmooth, fas->upsmooth->abstol, fas->upsmooth->rtol, fas->upsmooth->stol, 1, 1000);CHKERRQ(ierr);
   }
 
   if (fas->downsmooth) {
-    ierr = SNESSetTolerances(fas->downsmooth, fas->downsmooth->abstol, fas->downsmooth->rtol, fas->downsmooth->xtol, 1, 1000);CHKERRQ(ierr);
+    ierr = SNESSetTolerances(fas->downsmooth, fas->downsmooth->abstol, fas->downsmooth->rtol, fas->downsmooth->stol, 1, 1000);CHKERRQ(ierr);
   }
 
   if (fas->level != fas->levels - 1) {
-    ierr = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->xtol, fas->n_cycles, 1000);CHKERRQ(ierr);
+    ierr = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->stol, fas->n_cycles, 1000);CHKERRQ(ierr);
   }
 
   /* control the simple Richardson smoother that is default if there's no upsmooth or downsmooth */
