@@ -2,8 +2,6 @@ function d = read(sreader,count,datatype)
 %
 %   O = read(sreader,count,datatype) - reads data from a socket opened with sreader(socketnumber)
 %
-count
-datatype
   switch (datatype)
   case 'int32'
     datatype = 0;
@@ -18,7 +16,6 @@ datatype
     return
   end
 d = sread(sreader.fd,count,datatype);
-d
 if datatype == 6
   d = d';
 end
