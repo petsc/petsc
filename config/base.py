@@ -571,7 +571,7 @@ class Configure(script.Script):
   def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
-      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
+      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable\n')
       return ('', 1)
     if self.framework.argDB['with-batch']:
       if defaultOutputArg:
