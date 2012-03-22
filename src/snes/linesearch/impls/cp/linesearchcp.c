@@ -50,7 +50,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     /* check for convergence */
     if (PetscAbsReal(delLambda) < steptol*lambda) break;
     if (PetscAbsScalar(fty) / PetscAbsScalar(fty_init) < rtol) break;
-    if (PetscAbsScalar(fty) < atol) break;
+    if (PetscAbsScalar(fty) < atol && i > 0) break;
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g], ftys = [%g, %g]\n",
