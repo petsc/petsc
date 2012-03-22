@@ -184,11 +184,13 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex57.h'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex57.h'}],
-                        'src/snes/examples/tutorials/ex62':   [{'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
+                        'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               # 2D serial P2 tests 4-5
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
 
@@ -252,10 +254,12 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
                                                                #  Full Schur complement \begin{pmatrix} A & B \\ B^T & S \end{pmatrix}
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               # 3D serial tests 43-
+                                                               # 3D serial P1 tests 43-45
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -show_initial -show_residual -show_jacobian'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
                                                                ],
 
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
