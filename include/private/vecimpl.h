@@ -116,7 +116,7 @@ struct _n_PetscUniformSection {
 };
 
 #if 0
-// Should I protect these for C++?
+/* Should I protect these for C++? */
 extern PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
 #endif
