@@ -55,6 +55,7 @@ struct _p_PetscDraw {
   int             x,y,h,w;
   char            *savefilename;
   PetscInt        savefilecount;
+  PetscBool       savefilemovie;
   void            *data;
 };
 

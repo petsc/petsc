@@ -328,22 +328,6 @@ void deflateInit2_(void) {;}
 void deflate(void) {;}
 void deflateEnd(void) {;}
 
-#elif defined(PETSC_HAVE_IMAGEMAGICK)
-#include <magick/MagickCore.h>
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSave_X" 
-PetscErrorCode PetscDrawSave_X(PetscDraw draw)
-{
-  PetscDraw_X  *drawx = (PetscDraw_X*)draw->data;
-  Image        *image;
-
-  PetscFunctionBegin;
-  if (!IsMagickInstantiated()) {
-    MagickCoreGenesis(0,0);
-  }
-  image = XGetWindowImage(drawx->disp, drawx->win, 0, 0);if (!image) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create ImageMagick");
-  PetscFunctionReturn(0);
-}
 #endif
 
 

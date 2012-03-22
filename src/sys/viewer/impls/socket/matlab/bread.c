@@ -100,8 +100,10 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   int  ntmp = n; 
   void *ptmp = p; 
 #endif
-
+#if defined(PETSC_FOO)
   FILE *myf;
+#endif
+
 #if defined(PETSC_FOO)
   myf = fopen("/Users/barrysmith/jeff","w");
   fprintf(myf,"%d n\n",n);fflush(myf);
@@ -120,9 +122,13 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
+#if defined(PETSC_FOO)
     fprintf(myf,"fd %d %d n\n",fd, n);fflush(myf);
+#endif
     err = read(fd,pp,wsize);
+#if defined(PETSC_FOO)
     fprintf(myf,"%d err %d wsize\n",err,wsize);fflush(myf);
+#endif
 #if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
 #endif
