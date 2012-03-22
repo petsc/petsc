@@ -59,7 +59,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   linesearch->ltol          = 1e-8;
   linesearch->precheckctx   = PETSC_NULL;
   linesearch->postcheckctx  = PETSC_NULL;
-  linesearch->max_its       = 3;
+  linesearch->max_its       = 1;
   linesearch->setupcalled   = PETSC_FALSE;
   *outlinesearch            = linesearch;
   PetscFunctionReturn(0);
@@ -615,7 +615,9 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 . -snes_linesearch_damping - The linesearch damping parameter.
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
+. -snes_linesearch_order - The polynomial order of approximation used in the linesearch
 - -snes_linesearch_max_it - The number of iterations for iterative line searches.
+
 
    Logically Collective on SNESLineSearch
 
@@ -626,6 +628,8 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   PetscErrorCode ierr;
+  const char       *orders[] = {"linear", "quadratic", "cubic"};
+  PetscInt         indx = 0;
   const char     *deft = SNES_LINESEARCH_BASIC;
   char           type[256];
   PetscBool      flg, set;
@@ -667,6 +671,18 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
       ierr = SNESLineSearchSetPreCheck(linesearch,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
   }
+  ierr = PetscOptionsEList("-snes_linesearch_order",  "Order of approximation", "SNESLineSearch", orders,3,orders[(PetscInt)linesearch->order],&indx,&flg);CHKERRQ(ierr);
+  if (flg) {
+    switch (indx) {
+    case 0: linesearch->order = SNES_LINESEARCH_LINEAR;
+      break;
+    case 1: linesearch->order = SNES_LINESEARCH_QUADRATIC;
+      break;
+    case 2: linesearch->order = SNES_LINESEARCH_CUBIC;
+      break;
+    }
+  }
+
 
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1011,6 +1027,56 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   linesearch->damping = damping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchGetOrder"
+/*@
+   SNESLineSearchGetOrder - Gets the line search approximation order.
+
+   Input Parameters:
+.  linesearch - linesearch context.
+
+   Output Parameters:
+.  order - The order.
+
+   Level: intermediate
+
+.seealso: SNESLineSearchSetOrder()
+@*/
+
+PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,SNESLineSearchOrder *order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  PetscValidPointer(order, 2);
+  *order = linesearch->order;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetOrder"
+/*@
+   SNESLineSearchSetOrder - Sets the line search damping paramter.
+
+   Input Parameters:
+.  linesearch - linesearch context.
+.  order - The damping parameter.
+
+   Level: intermediate
+
+   Notes:
+   Variable orders are supported by the following line searches:
+.  bt - cubic and quadratic
+
+.seealso: SNESLineSearchGetOrder()
+@*/
+PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,SNESLineSearchOrder order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  linesearch->order = order;
   PetscFunctionReturn(0);
 }
 
