@@ -1,9 +1,5 @@
 #include <private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
-#if !defined(PETSC_HAVE_MPI_WIN_CREATE)
-#define MPI_REPLACE ((MPI_Op)0)
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
@@ -5101,7 +5097,11 @@ PetscErrorCode  DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec 
   ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   switch(mode) {
   case INSERT_VALUES:
+#if defined(PETSC_HAVE_MPI_REPLACE)
     op = MPI_REPLACE; break;
+#else
+    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
+#endif
   case ADD_VALUES:
     op = MPI_SUM; break;
   default:
@@ -5129,7 +5129,11 @@ PetscErrorCode  DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g)
   ierr = DMComplexGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   switch(mode) {
   case INSERT_VALUES:
+#if defined(PETSC_HAVE_MPI_REPLACE)
     op = MPI_REPLACE; break;
+#else
+    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
+#endif
   case ADD_VALUES:
     op = MPI_SUM; break;
   default:
