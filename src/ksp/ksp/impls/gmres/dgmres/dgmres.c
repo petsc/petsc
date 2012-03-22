@@ -1038,8 +1038,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
     PetscBLASInt	nrhs = 1;
     PetscReal	alpha = 1.0;
     PetscInt	max_neig = dgmres->max_neig;
-    PetscBLASInt	br = PetscBLASIntCast (r);
-    PetscBLASInt	bmax = PetscBLASIntCast (max_neig);
+    PetscBLASInt	br,bmax;
     PetscInt	lambda = dgmres->lambdaN;
 #if !defined(PETSC_MISSING_LAPACK_GETRS) 
     PetscReal	berr, ferr;
@@ -1047,6 +1046,8 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
 #endif
 
     PetscFunctionBegin;
+    br = PetscBLASIntCast (r);
+    bmax = PetscBLASIntCast (max_neig);
     ierr=PetscLogEventBegin (KSP_DGMRESApplyDeflation, ksp, 0, 0, 0);    CHKERRQ (ierr);
     if (!r) {
         ierr=VecCopy (x,y);        CHKERRQ (ierr);

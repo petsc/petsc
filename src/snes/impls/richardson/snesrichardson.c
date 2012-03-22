@@ -240,8 +240,10 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   ierr = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
 
-  snes->max_funcs = 30000;
-  snes->max_its   = 10000;
+  if (!snes->tolerancesset) {
+    snes->max_funcs = 30000;
+    snes->max_its   = 10000;
+  }
 
   PetscFunctionReturn(0);
 }

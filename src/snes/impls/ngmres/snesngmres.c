@@ -547,8 +547,10 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data = (void*) ngmres;
   ngmres->msize = 30;
 
-  snes->max_funcs = 30000;
-  snes->max_its   = 10000;
+  if (!snes->tolerancesset) {
+    snes->max_funcs = 30000;
+    snes->max_its   = 10000;
+  }
 
   ngmres->additive   = PETSC_FALSE;
   ngmres->anderson   = PETSC_FALSE;

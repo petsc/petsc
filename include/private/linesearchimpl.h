@@ -6,7 +6,7 @@
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
-  PetscErrorCode (*view)          (SNESLineSearch);
+  PetscErrorCode (*view)          (SNESLineSearch, PetscViewer);
   SNESLineSearchApplyFunc        apply;
   SNESLineSearchPreCheckFunc     precheckstep;
   SNESLineSearchVIProjectFunc    viproject;
@@ -21,44 +21,45 @@ struct _LineSearchOps {
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
 
-  SNES          snes;     /* temporary -- so we can pull out the function evaluation */
+  SNES                snes;     /* temporary -- so we can pull out the function evaluation */
 
-  void          *data;
+  void                *data;
 
-  PetscBool     setupcalled;
+  PetscBool           setupcalled;
 
-  Vec           vec_sol;
-  Vec           vec_sol_new;
-  Vec           vec_func;
-  Vec           vec_func_new;
-  Vec           vec_update;
+  Vec                 vec_sol;
+  Vec                 vec_sol_new;
+  Vec                 vec_func;
+  Vec                 vec_func_new;
+  Vec                 vec_update;
 
-  PetscInt      nwork;
-  Vec           *work;
+  PetscInt            nwork;
+  Vec                 *work;
 
-  PetscReal     lambda;
+  PetscReal           lambda;
 
-  PetscBool     norms;
-  PetscReal     fnorm;
-  PetscReal     ynorm;
-  PetscReal     xnorm;
-  PetscBool     success;
-  PetscBool     keeplambda;
+  PetscBool           norms;
+  PetscReal           fnorm;
+  PetscReal           ynorm;
+  PetscReal           xnorm;
+  PetscBool           success;
+  PetscBool           keeplambda;
 
-  PetscReal     damping;
-  PetscReal     maxstep;
-  PetscReal     steptol;
-  PetscInt      max_its;
-  PetscReal     rtol;
-  PetscReal     atol;
-  PetscReal     ltol;
+  PetscReal           damping;
+  PetscReal           maxstep;
+  PetscReal           steptol;
+  PetscInt            max_its;
+  PetscReal           rtol;
+  PetscReal           atol;
+  PetscReal           ltol;
+  SNESLineSearchOrder order;
 
-  PetscReal     precheck_picard_angle;
+  PetscReal           precheck_picard_angle;
 
-  void *        precheckctx;
-  void *        postcheckctx;
+  void *              precheckctx;
+  void *              postcheckctx;
 
-  PetscViewer   monitor;
+  PetscViewer         monitor;
 
 };
 

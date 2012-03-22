@@ -359,14 +359,14 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
 +  snes - the SNES context
 .  it - the iteration (0 indicates before any Newton steps)
 .  xnorm - 2-norm of current iterate
-.  pnorm - 2-norm of current step 
+.  snorm - 2-norm of current step 
 .  fnorm - 2-norm of function at current iterate
 -  dummy - unused context
 
    Output Parameter:
 .   reason  - one of
 $  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
-$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
+$  SNES_CONVERGED_SNORM_RELATIVE  - (snorm < stol*xnorm),
 $  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
 $  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
 $  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
@@ -386,7 +386,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -415,9 +415,9 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     if (fnorm <= snes->ttol) {
       ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
-    } else if (pnorm < snes->xtol*xnorm) {
-      ierr = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)pnorm,(double)snes->xtol,(double)xnorm);CHKERRQ(ierr);
-      *reason = SNES_CONVERGED_PNORM_RELATIVE;
+    } else if (snorm < snes->stol*xnorm) {
+      ierr = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
+      *reason = SNES_CONVERGED_SNORM_RELATIVE;
     }
   }
   PetscFunctionReturn(0);
@@ -435,7 +435,7 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 +  snes - the SNES context
 .  it - the iteration (0 indicates before any Newton steps)
 .  xnorm - 2-norm of current iterate
-.  pnorm - 2-norm of current step 
+.  snorm - 2-norm of current step 
 .  fnorm - 2-norm of function at current iterate
 -  dummy - unused context
 
@@ -451,7 +451,7 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 

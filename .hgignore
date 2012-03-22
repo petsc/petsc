@@ -108,3 +108,7 @@ src/snes/examples/tutorials/ex52_inline\.h
 src/snes/examples/tutorials/ex56_inline\.h
 src/snes/examples/tutorials/ex56\.h
 phi[0-9]
+src/snes/examples/tutorials/ex57_inline\.h
+src/snes/examples/tutorials/ex57\.h
+src/snes/examples/tutorials/ex62_inline\.h
+src/snes/examples/tutorials/ex62\.h

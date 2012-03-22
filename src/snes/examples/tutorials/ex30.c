@@ -1176,7 +1176,7 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   GridInfo       *grid  = user->grid;
   Vec            localX;
   Field          **v, **x;
-  PassiveReal    eps, dx, dz, T, epsC, TC;
+  PassiveReal    eps, /* dx,*/ dz, T, epsC, TC;
   PetscInt       i,j,is,js,im,jm,ilim,jlim,ivt;
   PetscErrorCode ierr;
 
@@ -1191,7 +1191,7 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   ierr = DMDAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
 
   /* Parameters */
-  dx   = grid->dx;   dz   = grid->dz;
+  /* dx = grid->dx; */ dz   = grid->dz;
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
@@ -1323,7 +1323,7 @@ PetscBool  OptionsHasName(const char pre[],const char name[])
 {
   PetscBool      retval; 
   PetscErrorCode ierr;
-  ierr = PetscOptionsHasName(pre,name,&retval);
+  ierr = PetscOptionsHasName(pre,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 
@@ -1334,7 +1334,7 @@ PetscBool  OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESConverged_Interactive"
-PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -1361,7 +1361,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }
   }
-  PetscFunctionReturn(SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,ctx));
+  PetscFunctionReturn(SNESDefaultConverged(snes,it,xnorm,snorm,fnorm,reason,ctx));
 }
 
 /* ------------------------------------------------------------------- */
@@ -1401,7 +1401,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   GridInfo       *grid  = user->grid;
   PetscScalar    mag_w, mag_u;
   PetscInt       i,j,mx,mz,ilim,jlim;
-  PetscInt       is,ie,js,je,ivisc,ibound;
+  PetscInt       is,ie,js,je,ibound; /* ,ivisc */
 
   PetscFunctionBegin;
 
@@ -1412,7 +1412,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   js   = info->ys;     je   = info->ys+info->ym;
 
   /* Define geometric and numeric parameters */
-  ivisc = param->ivisc;       ibound = param->ibound;
+  /* ivisc = param->ivisc; */     ibound = param->ibound;
 
   for (j=js; j<je; j++) { 
     for (i=is; i<ie; i++) {

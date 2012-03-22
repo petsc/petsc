@@ -16673,6 +16673,8 @@ PetscErrorCode TetGenMeshReconstructMesh(TetGenMesh *m, long *numFaces)
         setpointtype(m, torg, FREESUBVERTEX);
         setpointtype(m, tdest, FREESUBVERTEX);
         setpointtype(m, tapex, FREESUBVERTEX);
+        /* Mark inserted subfaces with default boundary marker */
+        setshellmark(m, &subloop, 1);
         tsbond(m, &tetloop, &subloop);
         if (neightet.tet != m->dummytet) {
           sesymself(&subloop);

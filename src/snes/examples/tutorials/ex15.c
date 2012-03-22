@@ -19,9 +19,9 @@ The command line options include:\n\
 
     on $\Omega = (-1,1)^2$ with closure
 
-\begin{equation*}
-        \eta(\gamma) &= (\epsilon^2 + \gamma)^{(p-2)/2} & gamma &= \frac 1 2 |\nabla u|^2
-\end{equation*}
+\begin{align*}
+        \eta(\gamma) &= (\epsilon^2 + \gamma)^{(p-2)/2} & \gamma &= \frac 1 2 |\nabla u|^2
+\end{align*}
 
     and boundary conditions $u = 0$ for $(x,y) \in \partial \Omega$
 

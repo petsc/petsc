@@ -5,6 +5,8 @@
 #include <sieve/ALE.hh>
 #endif
 
+#include <petscdmcomplex.h>
+
 #include <fstream>
 
 //#define IMESH_NEW_LABELS
@@ -2633,6 +2635,114 @@ namespace ALE {
       }
       delete [] points;
     }
+    template<typename Sieve, typename Renumbering>
+    static void convertSieve(Sieve& sieve, DM dm, Renumbering& renumbering, bool renumber = true) {
+      // First construct a renumbering of the sieve points
+      const Obj<typename Sieve::baseSequence>& base = sieve.base();
+      const Obj<typename Sieve::capSequence>&  cap  = sieve.cap();
+      PetscInt                                 min  = 0;
+      PetscInt                                 max  = 0;
+      PetscErrorCode                           ierr;
+
+      if (renumber) {
+        /* Roots/Leaves from Sieve do not seem to work */
+
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (sieve.support(*b_iter)->size() == 0) {
+            renumbering[*b_iter] = max++;
+          }
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          if (sieve.cone(*c_iter)->size() == 0) {
+            renumbering[*c_iter] = max++;
+          }
+        }
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (sieve.support(*b_iter)->size() == 0) {
+            const typename Sieve::coneSequence::iterator coneBegin = sieve.coneBegin(*b_iter);
+            const typename Sieve::coneSequence::iterator coneEnd   = sieve.coneEnd(*b_iter);
+
+            for(typename Sieve::coneSequence::iterator c_iter = coneBegin; c_iter != coneEnd; ++c_iter) {
+              if (renumbering.find(*c_iter) == renumbering.end()) {
+                renumbering[*c_iter] = max++;
+              }
+            }
+          }
+        }
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (renumbering.find(*b_iter) == renumbering.end()) {
+            renumbering[*b_iter] = max++;
+          }
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          if (renumbering.find(*c_iter) == renumbering.end()) {
+            renumbering[*c_iter] = max++;
+          }
+        }
+      } else {
+        if (base->size()) {
+          min = *base->begin();
+          max = *base->begin();
+        } else if (cap->size()) {
+          min = *cap->begin();
+          max = *cap->begin();
+        }
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          min = std::min(min, *b_iter);
+          max = std::max(max, *b_iter);
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          min = std::min(min, *c_iter);
+          max = std::max(max, *c_iter);
+        }
+        if (base->size() || cap->size()) {
+          ++max;
+        }
+        for(PetscInt p = min; p < max; ++p) {
+          renumbering[p] = p;
+        }
+      }
+      // Create the ISieve
+      ierr = DMComplexSetChart(dm, min, max);CHKERRXX(ierr);
+      // Set cone and support sizes
+      size_t maxSize = 0;
+
+      for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        const Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
+
+        ierr = DMComplexSetConeSize(dm, renumbering[*b_iter], cone->size());CHKERRXX(ierr);
+        maxSize = std::max(maxSize, cone->size());
+      }
+      for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+        const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
+
+        ierr = DMComplexSetSupportSize(dm, renumbering[*c_iter], support->size());CHKERRXX(ierr);
+        maxSize = std::max(maxSize, support->size());
+      }
+      ierr = DMComplexSetUp(dm);CHKERRXX(ierr);
+      // Fill up cones and supports
+      typename Sieve::point_type *points = new typename Sieve::point_type[maxSize];
+
+      for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        const Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
+        int i = 0;
+
+        for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
+          points[i] = renumbering[*c_iter];
+        }
+        ierr = DMComplexSetCone(dm, renumbering[*b_iter], points);CHKERRXX(ierr);
+      }
+      for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+        const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
+        int i = 0;
+
+        for(typename Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
+          points[i] = renumbering[*s_iter];
+        }
+        ierr = DMComplexSetSupport(dm, renumbering[*c_iter], points);CHKERRXX(ierr);
+      }
+      delete [] points;
+    }
     template<typename Sieve, typename ISieve, typename Renumbering, typename ArrowSection>
     static void convertOrientation(Sieve& sieve, ISieve& isieve, Renumbering& renumbering, ArrowSection *orientation) {
       if (isieve.getMaxConeSize() < 0) return;
@@ -2649,6 +2759,29 @@ namespace ALE {
           orientations[i] = orientation->restrictPoint(arrow)[0];
         }
         isieve.setConeOrientation(orientations, renumbering[*b_iter]);
+      }
+      delete [] orientations;
+    }
+    template<typename Sieve, typename Renumbering, typename ArrowSection>
+    static void convertOrientation(Sieve& sieve, DM dm, Renumbering& renumbering, ArrowSection *orientation) {
+      PetscInt       maxConeSize;
+      PetscErrorCode ierr;
+
+      ierr = DMComplexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRXX(ierr);
+      if (maxConeSize < 0) return;
+      const Obj<typename Sieve::baseSequence>& base = sieve.base();
+      int *orientations = new int[maxConeSize];
+
+      for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        const Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
+        int i = 0;
+
+        for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
+          typename ArrowSection::point_type arrow(*c_iter, *b_iter);
+
+          orientations[i] = orientation->restrictPoint(arrow)[0];
+        }
+        ierr = DMComplexSetConeOrientation(dm, renumbering[*b_iter], orientations);
       }
       delete [] orientations;
     }
@@ -2671,11 +2804,55 @@ namespace ALE {
         icoordinates.updatePoint(renumbering[*p_iter], coordinates.restrictPoint(*p_iter));
       }
     }
+    template<typename Section, typename Renumbering>
+    static void convertCoordinates(Section& coordinates, PetscSection coordSection, Vec coords, Renumbering& renumbering) {
+      const typename Section::chart_type& chart = coordinates.getChart();
+      PetscInt                            min   = *chart.begin();
+      PetscInt                            max   = *chart.begin();
+      PetscScalar                        *a;
+      PetscInt                            n;
+      PetscErrorCode                      ierr;
+
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        min = std::min(min, renumbering[*p_iter]);
+        max = std::max(max, renumbering[*p_iter]);
+      }
+      ierr = PetscSectionSetChart(coordSection, min, max+1);CHKERRXX(ierr);
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        ierr = PetscSectionSetDof(coordSection, renumbering[*p_iter], coordinates.getFiberDimension(*p_iter));CHKERRXX(ierr);
+      }
+      ierr = PetscSectionSetUp(coordSection);CHKERRXX(ierr);
+      ierr = PetscSectionGetStorageSize(coordSection, &n);CHKERRXX(ierr);
+      ierr = VecSetSizes(coords, n, PETSC_DETERMINE);CHKERRXX(ierr);
+      ierr = VecSetFromOptions(coords);CHKERRXX(ierr);
+      ierr = VecGetArray(coords, &a);CHKERRXX(ierr);
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const typename Section::value_type *values = coordinates.restrictPoint(*p_iter);
+        PetscInt dof, off;
+
+        ierr = PetscSectionGetDof(coordSection, renumbering[*p_iter], &dof);CHKERRXX(ierr);
+        ierr = PetscSectionGetOff(coordSection, renumbering[*p_iter], &off);CHKERRXX(ierr);
+        for(int d = 0; d < dof; ++d) {
+          a[off+d] = values[d];
+        }
+      }
+      ierr = VecRestoreArray(coords, &a);CHKERRXX(ierr);
+    }
     template<typename Label, typename Renumbering>
     static void convertLabel(const Obj<Label>& newLabel, const Obj<Label>& oldLabel, Renumbering& renumbering) {
       for(typename Renumbering::const_iterator p = renumbering.begin(); p != renumbering.end(); ++p) {
         if (oldLabel->getConeSize(p->first)) {
           newLabel->setCone(*oldLabel->cone(p->first)->begin(), p->second);
+        }
+      }
+    }
+    template<typename Label, typename Renumbering>
+    static void convertLabel(DM dm, const char name[], const Obj<Label>& label, Renumbering& renumbering) {
+      PetscErrorCode ierr;
+
+      for(typename Renumbering::const_iterator p = renumbering.begin(); p != renumbering.end(); ++p) {
+        if (label->getConeSize(p->first)) {
+          ierr = DMComplexSetLabelValue(dm, name, p->second, *label->cone(p->first)->begin());CHKERRXX(ierr);
         }
       }
     }
@@ -2704,6 +2881,27 @@ namespace ALE {
           imesh.setLabel(l_iter->first, l_iter->second);
         }
 #endif
+      }
+    }
+    template<typename Mesh, typename Renumbering>
+    static void convertMesh(Mesh& mesh, DM *dm, Renumbering& renumbering, bool renumber = true) {
+      PetscSection   coordSection;
+      Vec            coordinates;
+      PetscErrorCode ierr;
+
+      ierr = DMCreate(mesh.comm(), dm);CHKERRQ(ierr);
+      ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
+      ierr = DMComplexSetDimension(dm, mesh.getDimension());CHKERRXX(ierr);
+      convertSieve(*mesh.getSieve(), *dm, renumbering, renumber);
+      ierr = DMComplexStratify(*dm);CHKERRXX(ierr);
+      convertOrientation(*mesh.getSieve(), *dm, renumbering, mesh.getArrowSection("orientation").ptr());
+      ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRXX(ierr);
+      ierr = DMComplexGetCoordinateVec(*dm, &coordinates);CHKERRXX(ierr);
+      convertCoordinates(*mesh.getRealSection("coordinates"), coordSection, coordinates, renumbering);
+      const typename Mesh::labels_type& labels = mesh.getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        convertLabel(dm, l_iter->first, l_iter->second, renumbering);
       }
     }
   };

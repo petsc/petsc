@@ -883,7 +883,7 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshInterpolationSetUp"
-PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx) {
+PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, PetscBool redundantPoints) {
   Obj<PETSC_MESH_TYPE> m;
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscScalar   *a;
@@ -906,23 +906,28 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx) {
   PetscInt       *foundCells;
   PetscInt        n = ctx->nInput, N, found;
 
-  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(layout, n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
-  // Communicate all points to all processes
-  ctx->n = 0;
-  ierr = PetscMalloc(N * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
-  ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
-  for(p = 0; p < size; ++p) {
-    counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
-    displs[p] = ranges[p]*ctx->dim;
+  if (!redundantPoints) {
+    ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(layout, n);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+    ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
+    /* Communicate all points to all processes */
+    ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
+    ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
+    for(p = 0; p < size; ++p) {
+      counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
+      displs[p] = ranges[p]*ctx->dim;
+    }
+    ierr = MPI_Allgatherv(ctx->points, n*ctx->dim, MPIU_REAL, globalPoints, counts, displs, MPIU_REAL, comm);CHKERRQ(ierr);
+  } else {
+    N = n;
+    globalPoints = ctx->points;
   }
-  ierr = MPI_Allgatherv(ctx->points, n*ctx->dim, MPIU_REAL, globalPoints, counts, displs, MPIU_REAL, comm);CHKERRQ(ierr);
+  ierr = PetscMalloc(N * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
+  ctx->n = 0;
   for(p = 0; p < N; ++p) {
-    ctx->cells[p] = m->locatePoint(&ctx->points[p*ctx->dim]);
+    ctx->cells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
     if (ctx->cells[p] >= 0) ctx->n++;
   }
   // Check that exactly this many points were found
@@ -942,15 +947,17 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx) {
       for(d = 0; d < ctx->dim; ++d, ++i) {
         a[i] = globalPoints[p*ctx->dim+d];
       }
+      /* Compress cells array */
       foundCells[q++] = ctx->cells[p];
     }
   }
   ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);
-  ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
+  if (!redundantPoints) {
+    ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+  }
   ierr = PetscFree(ctx->cells);CHKERRQ(ierr);
   ctx->cells = foundCells;
-  // Compress cells array
-  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

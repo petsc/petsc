@@ -472,6 +472,8 @@ class Configure(config.base.Configure):
       if self.cmakeboot_success:
         if self.framework.argDB['with-cuda']: # Our CMake build does not support CUDA at this time
           self.framework.logPrint('CMake configured successfully, but could not be used by default because --with-cuda was used\n')
+        elif hasattr(self.compilers, 'FC') and not self.setCompilers.fortranModuleOutputFlag:
+          self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
         else:
           self.framework.logPrint('CMake configured successfully, using as default build\n')
           self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)

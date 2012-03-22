@@ -4022,11 +4022,12 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
   DM_Complex    *bd   = (DM_Complex *) boundary->data;
   const PetscInt dim  = 3;
   PLC           *in, *out;
-  PetscInt       vStart, vEnd, v, fStart, fEnd, f;
+  PetscInt       verbose = 0, vStart, vEnd, v, fStart, fEnd, f;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(((PetscObject) boundary)->prefix, "-ctetgen_verbose", &verbose, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = PLCCreate(&in);CHKERRQ(ierr);
@@ -4095,7 +4096,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     t.edgesout  = 1;
     t.zeroindex = 1;
     t.quiet     = 1;
-    t.verbose   = 4; /* Change this */
+    t.verbose   = verbose;
     ierr = TetGenCheckOpts(&t);CHKERRQ(ierr);
     ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }
@@ -4276,11 +4277,12 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   const PetscInt dim  = 3;
   PLC           *in, *out;
-  PetscInt       vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
+  PetscInt       verbose = 0, vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(((PetscObject) dm)->prefix, "-ctetgen_verbose", &verbose, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
@@ -4336,7 +4338,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
     t.edgesout  = 1;
     t.zeroindex = 1;
     t.quiet     = 1;
-    t.verbose   = 4; /* Change this */
+    t.verbose   = verbose; /* Change this */
     ierr = TetGenCheckOpts(&t);CHKERRQ(ierr);
     ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }

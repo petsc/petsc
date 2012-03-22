@@ -533,8 +533,10 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   snes->usespc          = PETSC_TRUE;
   snes->usesksp         = PETSC_FALSE;
 
-  snes->max_funcs = 30000;
-  snes->max_its   = 10000;
+  if (!snes->tolerancesset) {
+    snes->max_funcs = 30000;
+    snes->max_its   = 10000;
+  }
 
   ierr = PetscNewLog(snes,SNES_QN,&qn);CHKERRQ(ierr);
   snes->data = (void *) qn;

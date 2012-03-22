@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     double         r,dt;
     int            n;
     unsigned long  i,myNumSim,totalNumSim,numdim;
-    double         payoff;
+    /* double         payoff; */
     double         *vol, *St0, x, totalx;
     int            np,myid;
     time_t         start,stop;
@@ -111,8 +111,8 @@ int main(int argc, char *argv[])
 
     ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     time(&stop);
-    payoff = exp(-r*dt*n)*(totalx/totalNumSim);
-    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
+    /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
      payoff,(int)(stop - start),"parallel",np,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
     
     free(vol);
@@ -129,8 +129,8 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
   PetscErrorCode ierr;
 
   for (i=0;i<size;i+=2){
-    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);
-    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);
+    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
     
     t = sqrt(-2*log(u1));
     eps[i] = t * cos(2*PI*u2);

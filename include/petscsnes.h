@@ -249,7 +249,7 @@ E*/
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
-              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol */
+              SNES_CONVERGED_SNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
@@ -283,7 +283,7 @@ M*/
 M*/
 
 /*MC
-     SNES_CONVERGED_PNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
+     SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
           solution and stol is the 4th argument to SNESSetTolerances()
 
      Options Database Keys:
@@ -428,6 +428,10 @@ extern PetscBool     SNESLineSearchRegisterAllCalled;
 extern PetscFList    SNESLineSearchList;
 extern PetscLogEvent SNESLineSearch_Apply;
 
+typedef enum {SNES_LINESEARCH_LINEAR,
+              SNES_LINESEARCH_CUBIC,
+              SNES_LINESEARCH_QUADRATIC} SNESLineSearchOrder;
+
 typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
 typedef PetscErrorCode (*SNESLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
@@ -437,7 +441,7 @@ typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
 
 extern PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
 extern PetscErrorCode SNESLineSearchReset(SNESLineSearch);
-extern PetscErrorCode SNESLineSearchView(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchView(SNESLineSearch,PetscViewer);
 extern PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
 extern PetscErrorCode SNESLineSearchSetType(SNESLineSearch, const SNESLineSearchType);
 extern PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
@@ -475,6 +479,9 @@ extern PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch,PetscReal);
 
 extern PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch,PetscReal*);
 extern PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
+
+extern PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch,SNESLineSearchOrder *order);
+extern PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch,SNESLineSearchOrder order);
 
 extern PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
 extern PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);

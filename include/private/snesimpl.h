@@ -86,13 +86,15 @@ struct _p_SNES {
   PetscReal   norm;               /* residual norm of current iterate */
   PetscReal   rtol;               /* relative tolerance */
   PetscReal   abstol;             /* absolute tolerance */
-  PetscReal   xtol;               /* relative tolerance in solution */
+  PetscReal   stol;               /* step length tolerance*/
   PetscReal   deltatol;           /* trust region convergence tolerance */
   PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
   PetscInt    gssweeps;           /* number of GS sweeps */
+
+  PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
 
   /* ------------------------ Default work-area management ---------------------- */
 
