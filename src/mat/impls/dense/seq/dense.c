@@ -429,7 +429,10 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *min
     ierr = PetscLogObjectMemory(A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
   }
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+
   if (info<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
   A->ops->solve             = MatSolve_SeqDense;
