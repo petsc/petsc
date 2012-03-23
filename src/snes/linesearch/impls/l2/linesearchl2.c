@@ -43,55 +43,55 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
   for (i = 0; i < max_its; i++) {
 
-  /* compute the norm at the midpoint */
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-  if (linesearch->ops->viproject) {
-    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
-  }
-  ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  if (linesearch->ops->vinorm) {
-    fnrm_mid = gnorm;
-    ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
-  } else {
-    ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
-  }
-  fnrm_mid = fnrm_mid*fnrm_mid;
+    /* compute the norm at the midpoint */
+    ierr = VecCopy(X, W);CHKERRQ(ierr);
+    ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
+    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+    if (linesearch->ops->vinorm) {
+      fnrm_mid = gnorm;
+      ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+    }
+    fnrm_mid = fnrm_mid*fnrm_mid;
 
-  /* compute the norm at lambda */
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
-  if (linesearch->ops->viproject) {
-    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
-  }
-  ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-  if (linesearch->ops->vinorm) {
-    fnrm = gnorm;
-    ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
-  } else {
-    ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
-  }
-  fnrm = fnrm*fnrm;
+    /* compute the norm at lambda */
+    ierr = VecCopy(X, W);CHKERRQ(ierr);
+    ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+    if (linesearch->ops->viproject) {
+      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    }
+    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+    if (linesearch->ops->vinorm) {
+      fnrm = gnorm;
+      ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+    }
+    fnrm = fnrm*fnrm;
 
-  /* this gives us the derivatives at the endpoints -- compute them from here
+    /* this gives us the derivatives at the endpoints -- compute them from here
 
-   a = x - a0
+     a = x - a0
 
-   p_0(x) = (x / dA - 1)(2x / dA - 1)
-   p_1(x) = 4(x / dA)(1 - x / dA)
-   p_2(x) = (x / dA)(2x / dA - 1)
+     p_0(x) = (x / dA - 1)(2x / dA - 1)
+     p_1(x) = 4(x / dA)(1 - x / dA)
+     p_2(x) = (x / dA)(2x / dA - 1)
 
-   dp_0[0] / dx = 3 / dA
-   dp_1[0] / dx = -4 / dA
-   dp_2[0] / dx = 1 / dA
+     dp_0[0] / dx = 3 / dA
+     dp_1[0] / dx = -4 / dA
+     dp_2[0] / dx = 1 / dA
 
-   dp_0[dA] / dx = -1 / dA
-   dp_1[dA] / dx = 4 / dA
-   dp_2[dA] / dx = -3 / dA
+     dp_0[dA] / dx = -1 / dA
+     dp_1[dA] / dx = 4 / dA
+     dp_2[dA] / dx = -3 / dA
 
-   d^2p_0[0] / dx^2 =  4 / dA^2
-   d^2p_1[0] / dx^2 = -8 / dA^2
-   d^2p_2[0] / dx^2 =  4 / dA^2
+     d^2p_0[0] / dx^2 =  4 / dA^2
+     d^2p_1[0] / dx^2 = -8 / dA^2
+     d^2p_2[0] / dx^2 =  4 / dA^2
      */
 
     delLambda    = lambda - lambda_old;
@@ -99,31 +99,6 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
     del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
 
-    /* check for positive curvature -- looking for that root wouldn't be a good thing. */
-
-    while ((del2Fnrm < 0.0) && (fabs(delLambda) > steptol)) {
-      fnrm_old = fnrm_mid;
-      lambda_old = lambda_mid;
-      lambda_mid = 0.5*(lambda_old + lambda);
-      ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-      if (linesearch->ops->viproject) {
-        ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
-      }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-      if (linesearch->ops->vinorm) {
-        fnrm_mid = gnorm;
-        ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
-      } else {
-        ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
-      }
-      fnrm_mid = fnrm_mid*fnrm_mid;
-      delLambda    = lambda - lambda_old;
-      delFnrm      = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
-      delFnrm_old  = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
-      del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
-    }
- 
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
@@ -131,9 +106,19 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
 
-    /* compute the search direction */
-    lambda_update = lambda - delFnrm*delLambda / (delFnrm - delFnrm_old);
+    /* compute the search direction -- always go downhill */
+    if (del2Fnrm > 0.) {
+      lambda_update = lambda - delFnrm / del2Fnrm;
+    } else {
+      lambda_update = lambda + delFnrm / del2Fnrm;
+    }
+
+    if (lambda_update < steptol) {
+      lambda_update = 0.5*(lambda + lambda_old);
+    }
+
     if (PetscIsInfOrNanScalar(lambda_update)) break;
+
     if (lambda_update > maxstep) {
       break;
     }
