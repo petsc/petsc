@@ -37,6 +37,17 @@
       parameter (SNES_DIVERGED_INNER              = -7)
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
+!
+! SNESLineSearchOrder
+!
+
+      PetscEnum SNES_LINESEARCH_LINEAR
+      PetscEnum SNES_LINESEARCH_CUBIC
+      PetscEnum SNES_LINESEARCH_QUADRATIC
+
+      parameter (SNES_LINESEARCH_LINEAR = 0)
+      parameter (SNES_LINESEARCH_CUBIC = 1)
+      parameter (SNES_LINESEARCH_QUADRATIC = 2)
 
 !
 !  Some PETSc fortran functions that the user might pass as arguments
