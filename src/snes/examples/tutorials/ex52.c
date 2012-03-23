@@ -550,22 +550,28 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
   for(e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[4/*1*dim*dim*/]; // Nq = 1
+    PetscScalar      f1[SPATIAL_DIM_0*SPATIAL_DIM_0/*1*/]; // Nq = 1
     PetscInt         q, b, comp, i;
 
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ:");CHKERRQ(ierr);
+      for(i = 0; i < dim*dim; ++i) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, " %g", invJ[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
     }
     for(q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar u[2/*dim*/]         = {0.0, 0.0};
-      PetscScalar gradU[4/*dim*dim*/] = {0.0, 0.0, 0.0, 0.0};
+      PetscScalar u[SPATIAL_DIM_0];
+      PetscScalar gradU[SPATIAL_DIM_0*SPATIAL_DIM_0];
 
+      for(i = 0; i < dim; ++i) {u[i] = 0.0;}
+      for(i = 0; i < dim*dim; ++i) {gradU[i] = 0.0;}
       for(b = 0; b < Nb; ++b) {
         for(comp = 0; comp < Ncomp; ++comp) {
           const PetscInt cidx = b*Ncomp+comp;
-          PetscScalar    realSpaceDer[dim];
+          PetscScalar    realSpaceDer[SPATIAL_DIM_0];
           PetscInt       d, f;
 
           u[comp] += coefficients[e*Nb*Ncomp+cidx]*basisTabulation[q*Nb*Ncomp+cidx];
@@ -586,7 +592,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
         PetscInt c, d;
         for(c = 0; c < Ncomp; ++c) {
           for(d = 0; d < dim; ++d) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d]_%c: %g f1[%d]_%c: %g\n", c, 'x'+d, gradU[c*dim+d], c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
           }
         }
       }
@@ -598,7 +604,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
 
         elemVec[e*Nb*Ncomp+cidx] = 0.0;
         for(q = 0; q < Nq; ++q) {
-          PetscScalar realSpaceDer[dim];
+          PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
           for(d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
