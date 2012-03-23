@@ -348,9 +348,9 @@ def petsc_configure(configure_options):
     if hasattr(framework, 'log'):
       try:
         framework.log.write('**** Configure header conftest.h ****\n')
-        self.outputHeader(framework.log)
+        framework.outputHeader(framework.log)
         framework.log.write('**** C specific Configure header conffix.h ****\n')
-        self.outputCHeader(framework.log)
+        framework.outputCHeader(framework.log)
       except Exception, e:
         framework.log.write('Problem writing headers to log: '+str(e))
       import traceback
