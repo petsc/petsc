@@ -63,8 +63,10 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr);
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");

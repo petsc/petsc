@@ -374,6 +374,8 @@ extern PetscErrorCode  PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
 extern PetscErrorCode   PetscSetFPTrap(PetscFPTrap);
+extern PetscErrorCode PetscFPTrapPush(PetscFPTrap);
+extern PetscErrorCode PetscFPTrapPop(void);
 
 /*
       Allows the code to build a stack frame as it runs

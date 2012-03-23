@@ -22,6 +22,65 @@
 #include <stdlib.h>
 #endif
 
+struct PetscFPTrapLink {
+  PetscFPTrap trapmode;
+  struct PetscFPTrapLink *next;
+};
+static PetscFPTrap _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode */
+static struct PetscFPTrapLink *_trapstack;        /* Any pushed states of _trapmode */
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFPTrapPush"
+/*@
+   PetscFPTrapPush - push a floating point trapping mode, to be restored using PetscFPTrapPop()
+
+   Not Collective
+
+   Input Arguments:
+. trap - PETSC_FP_TRAP_ON or PETSC_FP_TRAP_OFF
+
+   Level: advanced
+
+.seealso: PetscFPTrapPop(), PetscSetFPTrap()
+@*/
+PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
+{
+  PetscErrorCode ierr;
+  struct PetscFPTrapLink *link;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof *link,&link);CHKERRQ(ierr);
+  link->trapmode = _trapmode;
+  link->next = _trapstack;
+  _trapstack = link;
+  ierr = PetscSetFPTrap(trap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFPTrapPop"
+/*@
+   PetscFPTrapPop - push a floating point trapping mode, to be restored using PetscFPTrapPop()
+
+   Not Collective
+
+   Level: advanced
+
+.seealso: PetscFPTrapPush(), PetscSetFPTrap()
+@*/
+PetscErrorCode PetscFPTrapPop(void)
+{
+  PetscErrorCode ierr;
+  struct PetscFPTrapLink *link;
+
+  PetscFunctionBegin;
+  ierr = PetscSetFPTrap(_trapstack->trapmode);CHKERRQ(ierr);
+  link = _trapstack;
+  _trapstack = _trapstack->next;
+  ierr = PetscFree(link);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*--------------------------------------- ---------------------------------------------------*/
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
 #include <floatingpoint.h>
@@ -102,6 +161,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    Concepts: floating point exceptions^trapping
    Concepts: divide by zero
 
+.seealso: PetscFPTrapPush(), PetscFPTrapPop()
 @*/
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
@@ -123,6 +183,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
       (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
     }
   }
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -183,6 +244,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
     }
   }
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -228,6 +290,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   } else {
     handle_sigfpes(_OFF,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
   }
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 /*----------------------------------------------- --------------------------------------------*/
@@ -307,6 +370,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
     fp_disable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW);
     fp_trap(FP_TRAP_OFF);
   }
+  _trapmode = on;
   PetscFunctionReturn(0);
 }
 
@@ -401,6 +465,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     if (fesetenv(FE_DFL_ENV)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot disable floating point exceptions");
     if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler\n");
   }
+  _trapmode = on;
   PetscFunctionReturn(0);
 }
 
@@ -431,6 +496,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
       (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
     }
   }
+  _trapmode = on;
   PetscFunctionReturn(0);
 }
 #endif
