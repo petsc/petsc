@@ -1275,19 +1275,19 @@ PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->filename        = 0;
   vbinary->flowcontrol     = 256; /* seems a good number for Cray XT-5 */
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetFlowControl_Binary_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",
                                     "PetscViewerBinaryGetFlowControl_Binary",
                                      PetscViewerBinaryGetFlowControl_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetFlowControl_Binary_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetFlowControl_C",
                                     "PetscViewerBinarySetFlowControl_Binary",
                                      PetscViewerBinarySetFlowControl_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetSkipHeader_Binary_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",
                                     "PetscViewerBinarySetSkipHeader_Binary",
                                      PetscViewerBinarySetSkipHeader_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetSkipHeader_Binary_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",
                                     "PetscViewerBinaryGetSkipHeader_Binary",
                                      PetscViewerBinaryGetSkipHeader_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetInfoPointer_Binary_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C",
                                     "PetscViewerBinaryGetInfoPointer_Binary",
                                      PetscViewerBinaryGetInfoPointer_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C",
