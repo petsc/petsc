@@ -1,12 +1,16 @@
 #include <petscsys.h>
 #include <assert.h>
 
-__device__ float2 f1_laplacian(float u[], float2 gradU[], int comp) {
+#include "ex52_gpu.h"
+
+__device__ vecType f1_laplacian(float u[], vecType gradU[], int comp) {
   return gradU[comp];
 }
 
-__device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
-  float2 f1;
+#if (SPATIAL_DIM_0 == 2)
+
+__device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
+  vecType f1;
 
   switch(comp) {
   case 0:
@@ -19,6 +23,35 @@ __device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
   }
   return f1;
 }
+
+#elif (SPATIAL_DIM_0 == 3)
+
+__device__ float3 f1_elasticity(float u[], float3 gradU[], int comp) {
+  float3 f1;
+
+  switch(comp) {
+  case 0:
+    f1.x = 0.5*(gradU[0].x + gradU[0].x);
+    f1.y = 0.5*(gradU[0].y + gradU[1].x);
+    f1.z = 0.5*(gradU[0].z + gradU[2].x);
+    break;
+  case 1:
+    f1.x = 0.5*(gradU[1].x + gradU[0].y);
+    f1.y = 0.5*(gradU[1].y + gradU[1].y);
+    f1.z = 0.5*(gradU[1].z + gradU[2].y);
+  case 2:
+    f1.x = 0.5*(gradU[2].x + gradU[0].z);
+    f1.y = 0.5*(gradU[2].y + gradU[1].z);
+    f1.z = 0.5*(gradU[2].z + gradU[2].z);
+  }
+  return f1;
+}
+
+#else
+
+#error "Invalid spatial dimension"
+
+#endif
 
 // dim     Number of spatial dimensions:          2
 // N_b     Number of basis functions:             generated
@@ -36,8 +69,8 @@ __device__ float2 f1_elasticity(float u[], float2 gradU[], int comp) {
 // N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}
 
 __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
-  #include "ex52_inline.h"
-  const int        dim     = 2;
+  #include "ex52_gpu_inline.h"
+  const int        dim     = SPATIAL_DIM_0;
   const int        N_b     = numBasisFunctions_0;   // The number of basis functions
   const int        N_comp  = numBasisComponents_0;  // The number of basis function components
   const int        N_bt    = N_b*N_comp;            // The total number of scalar basis functions
@@ -63,7 +96,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
   /* Quadrature data */
   float             w;                      // $w_q$, Quadrature weight at $x_q$
 //  __shared__ float  phi_i[N_bt*N_q];      // $\phi_i(x_q)$, Value of the basis function $i$ at $x_q$
-  __shared__ float2 phiDer_i[N_bt*N_q];     // $\frac{\partial\phi_i(x_q)}{\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$
+  __shared__ vecType phiDer_i[N_bt*N_q];    // $\frac{\partial\phi_i(x_q)}{\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$
   /* Geometric data */
   __shared__ float  detJ[N_t];              // $|J(x_q)|$, Jacobian determinant at $x_q$
   __shared__ float  invJ[N_t*dim*dim];      // $J^{-1}(x_q)$, Jacobian inverse at $x_q$
@@ -71,7 +104,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
   __shared__ float  u_i[N_t*N_bt];          // Coefficients $u_i$ of the field $u|_{\mathcal{T}} = \sum_i u_i \phi_i$
   /* Intermediate calculations */
 // __shared__ float  f_0[N_t*N_sqc];        // $f_0(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
-  __shared__ float2 f_1[N_t*N_sqc];         // $f_1(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
+  __shared__ vecType f_1[N_t*N_sqc];        // $f_1(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
   /* Output data */
   float             e_i;                    // Coefficient $e_i$ of the residual
 
@@ -100,15 +133,18 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
     /* Map coefficients to values at quadrature points */
     for(int c = 0; c < N_sqc; ++c) {
       float     u[N_comp];     // $u(x_q)$, Value of the field at $x_q$
-      float2    gradU[N_comp]; // $\nabla u(x_q)$, Value of the field gradient at $x_q$
-   // float2    x             = {0.0, 0.0};           // Quadrature point $x_q$
+      vecType   gradU[N_comp]; // $\nabla u(x_q)$, Value of the field gradient at $x_q$
+   // vecType   x             = {0.0, 0.0};           // Quadrature point $x_q$
       const int cell          = c*N_bl*N_b + blqidx;
       const int fidx          = (cell*N_q + qidx)*N_comp + cidx;
 
       for(int comp = 0; comp < N_comp; ++comp) {
         //u[comp] = 0.0;
-        gradU[comp].x = 0.0;
-        gradU[comp].y = 0.0;
+#if SPATIAL_DIM_0 == 2
+        gradU[comp].x = 0.0; gradU[comp].y = 0.0;
+#elif  SPATIAL_DIM_0 == 3
+        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;
+#endif
       }
       /* Get field and derivatives at this quadrature point */
       for(int i = 0; i < N_b; ++i) {
@@ -116,19 +152,31 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
           const int b     = i*N_comp+comp;
           const int pidx  = qidx*N_bt + b;
           const int uidx  = cell*N_bt + b;
-          float2    realSpaceDer;
+          vecType    realSpaceDer;
 
        // u[comp] += u_i[uidx]*phi_i[qidx*N_bt+bbidx];
+#if SPATIAL_DIM_0 == 2
           realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;
           gradU[comp].x += u_i[uidx]*realSpaceDer.x;
           realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;
           gradU[comp].y += u_i[uidx]*realSpaceDer.y;
+#elif  SPATIAL_DIM_0 == 3
+          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;
+          gradU[comp].x += u_i[uidx]*realSpaceDer.x;
+          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;
+          gradU[comp].y += u_i[uidx]*realSpaceDer.y;
+          realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;
+          gradU[comp].z += u_i[uidx]*realSpaceDer.z;
+#endif
         }
       }
       /* Process values at quadrature points */
       f_1[fidx] = f1_func(u, gradU, cidx);
-      f_1[fidx].x *= detJ[cell]*w;
-      f_1[fidx].y *= detJ[cell]*w;
+#if SPATIAL_DIM_0 == 2
+      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;
+#elif  SPATIAL_DIM_0 == 3
+      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;
+#endif
     }
 
     /* ==== TRANSPOSE THREADS ==== */
@@ -142,13 +190,22 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
       for(int q = 0; q < N_q; ++q) {
         const int pidx = q*N_bt + bidx;
         const int fidx = (cell*N_q + q)*N_comp + cidx;
-        float2    realSpaceDer;
+        vecType realSpaceDer;
 
      // e_i += phi_i[pidx]*f_0[fidx];
+#if SPATIAL_DIM_0 == 2
         realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;
         e_i += realSpaceDer.x*f_1[fidx].x;
         realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;
         e_i += realSpaceDer.y*f_1[fidx].y;
+#elif  SPATIAL_DIM_0 == 3
+        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;
+        e_i += realSpaceDer.x*f_1[fidx].x;
+        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;
+        e_i += realSpaceDer.y*f_1[fidx].y;
+        realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;
+        e_i += realSpaceDer.z*f_1[fidx].z;
+#endif
       }
 #if 0
       // Check f_1
@@ -227,8 +284,8 @@ EXTERN_C_BEGIN
 PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                         PetscLogEvent event, PetscInt debug) {
-  #include "ex52_inline.h"
-  const int dim    = 2;
+  #include "ex52_gpu_inline.h"
+  const int dim    = SPATIAL_DIM_0;
   const int N_b    = numBasisFunctions_0;   // The number of basis functions
   const int N_comp = numBasisComponents_0;  // The number of basis function components
   const int N_bt   = N_b*N_comp;            // The total number of scalar basis functions
@@ -243,8 +300,8 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  assert(Nbl == N_bl);
-  assert(Nbc*N_comp == N_t);
+  if (Nbl != N_bl) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsisten block size %d should be %d", Nbl, N_bl);}
+  if (Nbc*N_comp != N_t) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);}
   if (!Ne) {
     PetscStageLog     stageLog;
     PetscEventPerfLog eventLog = PETSC_NULL;
