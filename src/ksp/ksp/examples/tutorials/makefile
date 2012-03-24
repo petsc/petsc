@@ -479,14 +479,11 @@ runex8g_debug:
 	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -print_error ${ARGS}
 
 
-#runex10_basic:
-#	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-${PETSC_SCALAR_TYPE}-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
-#	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-#	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
-#	   ${RM} -f ex10_1.tmp
-runex10:
-	-@${MPIEXEC} -n 1 ./ex10 -f ./binaryoutput -pc_type gamg -pc_gamg_verbose -ksp_monitor -ksp_view
-#valgrind --tool=memcheck --dsymutil=yes --leak-check=full --num-callers=20 
+runex10_basic:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-${PETSC_SCALAR_TYPE}-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
+	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex10_1.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_2:
