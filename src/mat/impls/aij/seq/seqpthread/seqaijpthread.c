@@ -1,5 +1,5 @@
 
-#include <private/vecimpl.h>
+#include <petsc-private/vecimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/mat/impls/aij/seq/seqpthread/seqaijpthread.h>

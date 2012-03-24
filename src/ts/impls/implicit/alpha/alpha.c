@@ -2,7 +2,7 @@
   Code for timestepping with implicit generalized-\alpha method
   for first order systems.
 */
-#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef PetscErrorCode (*TSAlphaAdaptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
 

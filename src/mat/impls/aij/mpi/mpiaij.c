@@ -98,7 +98,7 @@ PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
     }
     ok2:;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)M)->comm,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5653,7 +5653,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 /*
     Special version for direct calls from Fortran 
 */
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ

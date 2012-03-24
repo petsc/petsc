@@ -1,6 +1,6 @@
 
-#include <private/viewerimpl.h>   /* "petscsys.h" */
-#include <private/pcimpl.h>
+#include <petsc-private/viewerimpl.h>   /* "petscsys.h" */
+#include <petsc-private/pcimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <mathematica.h>
 

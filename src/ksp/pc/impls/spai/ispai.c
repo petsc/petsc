@@ -18,7 +18,7 @@
 
 */
 
-#include <private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
 #include "petscspai.h"
 
 /*

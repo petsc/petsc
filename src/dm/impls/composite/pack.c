@@ -732,6 +732,34 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fiel
   PetscFunctionReturn(0);
 }
 
+/* 
+ This could take over from DMCreateFieldIS(), as it is more general, 
+ making DMCreateFieldIS() a special case -- calling with dmlist == PETSC_NULL;
+ At this point it's probably best to be less intrusive, however.
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDecomposition_Composite"
+PetscErrorCode DMCreateDecomposition_Composite(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
+{
+  PetscInt       nDM;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreateFieldIS_Composite(dm, len, namelist, islist); CHKERRQ(ierr);
+  if(dmlist) {
+    ierr = DMCompositeGetNumberDM(dm, &nDM);    CHKERRQ(ierr);
+    ierr = PetscMalloc(nDM*sizeof(DM), dmlist); CHKERRQ(ierr);
+    ierr = DMCompositeGetEntriesArray(dm, *dmlist);CHKERRQ(ierr);
+    for (i=0; i<nDM; i++) {
+      ierr = PetscObjectReference((PetscObject)((*dmlist)[i])); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetLocalVectors"
@@ -904,6 +932,7 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  if (comm == MPI_COMM_NULL) comm = ((PetscObject)dmi)->comm;
   ierr = DMSetUp(dmi);CHKERRQ(ierr);
   next = com->next;
   ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
@@ -930,7 +959,7 @@ PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
   ierr = DMSetUp(dmi);CHKERRQ(ierr);
-  if (!comm) {
+  if (comm == MPI_COMM_NULL) {
     ierr = PetscObjectGetComm((PetscObject)dmi,&comm);CHKERRQ(ierr);
   }
   next = com->next;
@@ -1148,6 +1177,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->createfieldis                   = DMCreateFieldIS_Composite;
+  p->ops->createdecomposition             = DMCreateDecomposition_Composite;
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
   p->ops->createinterpolation                = DMCreateInterpolation_Composite;

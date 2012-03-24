@@ -3,8 +3,8 @@
    This is where the abstract matrix operations are defined
 */
 
-#include <private/matimpl.h>        /*I "petscmat.h" I*/
-#include <private/vecimpl.h>  
+#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc-private/vecimpl.h>  
 
 /* Logging support */
 PetscClassId  MAT_CLASSID;

@@ -1,5 +1,5 @@
 
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "SYMMETRIC",

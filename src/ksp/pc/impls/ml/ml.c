@@ -4,7 +4,7 @@
    Note: Something non-obvious breaks -pc_mg_type ADDITIVE for parallel runs
                                     Jed Brown, see [PETSC #18321, #18449]. 
 */
-#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -390,7 +390,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   shellctx->A         = *newmat;
   shellctx->mlmat     = mlmat;
   shellctx->work      = PETSC_NULL;
-  ierr = VecCreate(PETSC_COMM_WORLD,&shellctx->y);CHKERRQ(ierr);
+  ierr = VecCreate(MLcomm->USR_comm,&shellctx->y);CHKERRQ(ierr);
   ierr = VecSetSizes(shellctx->y,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(shellctx->y);CHKERRQ(ierr);
   (*newmat)->ops->destroy = MatDestroy_ML;

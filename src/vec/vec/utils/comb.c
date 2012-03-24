@@ -19,7 +19,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include <private/vecimpl.h>                              /*I   "petscvec.h"   I*/
+#include <petsc-private/vecimpl.h>                              /*I   "petscvec.h"   I*/
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 

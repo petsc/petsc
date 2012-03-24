@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <private/compleximpl.h>    /*I   "petscdmcomplex.h"   I*/
+#include <petsc-private/compleximpl.h>    /*I   "petscdmcomplex.h"   I*/
 #include <petscdmda.h>
 
 #undef __FUNCT__

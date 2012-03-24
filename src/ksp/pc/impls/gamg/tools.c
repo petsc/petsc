@@ -1,13 +1,13 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "private/matimpl.h"    /*I "petscmat.h" I*/
+#include "petsc-private/matimpl.h"    /*I "petscmat.h" I*/
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 /* -------------------------------------------------------------------------- */
 /*
-   createSimpleGraph - create simple scalar graph
+   PCGAMGCreateSimpleGraph - create simple scalar graph
  
  Input Parameter:
  . Amat - matrix
@@ -15,8 +15,8 @@
  . a_Gmaat - eoutput scalar graph (symmetric?)
  */
 #undef __FUNCT__
-#define __FUNCT__ "createSimpleGraph"
-PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
+#define __FUNCT__ "PCGAMGCreateSimpleGraph"
+PetscErrorCode PCGAMGCreateSimpleGraph( const Mat Amat, Mat *a_Gmat )
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,ncols,nloc,NN,MM,bs;
@@ -32,8 +32,8 @@ PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
   ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; 
  
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+  ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
   if( bs > 1 ) {
     const PetscScalar *vals;
@@ -77,8 +77,8 @@ PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
     ierr = MatDuplicate( Amat, MAT_COPY_VALUES, &Gmat ); CHKERRQ(ierr);
   }
 
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+  ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
 
   *a_Gmat = Gmat;
@@ -88,7 +88,7 @@ PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
 
 /* -------------------------------------------------------------------------- */
 /*
-   scaleFilterGraph
+   PCGAMGScaleFilterGraph
  
  Input Parameter:
  . vfilter - threshold paramter [0,1)
@@ -97,8 +97,8 @@ PetscErrorCode createSimpleGraph( const Mat Amat, Mat *a_Gmat )
  . a_Gmat - original graph
  */
 #undef __FUNCT__
-#define __FUNCT__ "scaleFilterGraph"
-PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const PetscBool symm, const PetscInt verbose )
+#define __FUNCT__ "PCGAMGScaleFilterGraph"
+PetscErrorCode PCGAMGScaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const PetscBool symm, const PetscInt verbose )
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
@@ -116,8 +116,8 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   ierr = MatGetOwnershipRange( Gmat, &Istart, &Iend ); CHKERRQ(ierr);
   nloc = Iend - Istart;
   ierr = MatGetSize( Gmat, &MM, &NN ); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+  ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* scale Gmat so filter works */
   ierr = MatGetVecs( Gmat, &diag, 0 );    CHKERRQ(ierr);
@@ -177,8 +177,8 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
   ierr = MatAssemblyBegin(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(gamg_setup_events[GRAPH],0,0,0,0);   CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+  ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);   CHKERRQ(ierr);
 #endif
 
   if( verbose ) {
@@ -203,7 +203,7 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
 
 /* -------------------------------------------------------------------------- */
 /*
-   getDataWithGhosts - hacks into Mat MPIAIJ so this must have > 1 pe
+   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have > 1 pe
 
    Input Parameter:
    . Gmat - MPIAIJ matrix for scattters
@@ -214,8 +214,8 @@ PetscErrorCode scaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pet
    . data_out[stride*data_sz] - output data with ghosts
 */
 #undef __FUNCT__
-#define __FUNCT__ "getDataWithGhosts"
-PetscErrorCode getDataWithGhosts( const Mat Gmat,
+#define __FUNCT__ "PCGAMGGetDataWithGhosts"
+PetscErrorCode PCGAMGGetDataWithGhosts( const Mat Gmat,
                                   const PetscInt data_sz,
                                   const PetscReal data_in[],
                                   PetscInt *a_stride,
@@ -272,3 +272,69 @@ PetscErrorCode getDataWithGhosts( const Mat Gmat,
   PetscFunctionReturn(0);
 }
 
+
+/* hash table stuff - simple, not dymanic, key >= 0, has table
+ *
+ *  GAMGTableCreate
+ */
+/* avoid overflow */
+#define GAMG_HASH(key) ((7*key)%a_tab->size)
+PetscErrorCode GAMGTableCreate( PetscInt a_size, GAMGHashTable *a_tab )
+{
+  PetscErrorCode ierr;
+  PetscInt kk;
+  a_tab->size = a_size;
+  ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->table );  CHKERRQ(ierr);
+  ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->data );  CHKERRQ(ierr);
+  for(kk=0;kk<a_size;kk++) a_tab->table[kk] = -1;
+  return 0;
+}
+
+PetscErrorCode GAMGTableDestroy( GAMGHashTable *a_tab )
+{
+  PetscErrorCode ierr;
+  ierr = PetscFree( a_tab->table );  CHKERRQ(ierr);
+  ierr = PetscFree( a_tab->data );  CHKERRQ(ierr);
+  return 0;
+}
+
+PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data )
+{
+  PetscInt kk,idx;
+  if(a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  for( kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
+    if( a_tab->table[idx] == a_key ) {
+      /* exists */
+      assert(0); /* not used this way now */
+      a_tab->data[idx] = a_data;
+      break;
+    }
+    else if( a_tab->table[idx] == -1 ) { 
+      /* add */
+      a_tab->table[idx] = a_key;
+      a_tab->data[idx] = a_data;
+      break;              
+    }
+  }
+  if(kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  return 0;
+}
+
+PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data )
+{
+  PetscInt kk,idx;
+  if(a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  for( kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
+    if( a_tab->table[idx] == a_key ) {
+      *a_data = a_tab->data[idx];
+      break;
+    }
+    else if( a_tab->table[idx] == -1 ) { 
+      /* not here */
+      *a_data = -1;
+      break;
+    }
+  }
+  if(kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  return 0;
+}

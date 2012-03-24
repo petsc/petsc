@@ -3529,7 +3529,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 EXTERN_C_END
 
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <private/petscaxpy.h>
+#include <petsc-private/petscaxpy.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -4236,7 +4236,7 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
 /*
     Special version for direct calls from Fortran 
 */
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

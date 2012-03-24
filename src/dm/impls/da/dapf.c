@@ -1,5 +1,5 @@
  
-#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 
 #undef __FUNCT__  

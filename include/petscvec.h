@@ -518,7 +518,7 @@ extern PetscErrorCode  VecSetOption(Vec,VecOption,PetscBool );
    call overhead on any 'native' Vecs.
 */
 
-#include "private/vecimpl.h"
+#include "petsc-private/vecimpl.h"
 
 extern PetscErrorCode  VecContourScale(Vec,PetscReal,PetscReal);
 

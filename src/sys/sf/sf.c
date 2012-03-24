@@ -1,4 +1,4 @@
-#include <private/sfimpl.h>
+#include <petsc-private/sfimpl.h>
 #include <petscctable.h>
 
 #if defined(PETSC_USE_DEBUG)

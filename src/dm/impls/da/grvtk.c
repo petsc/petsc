@@ -1,4 +1,4 @@
-#include <private/daimpl.h>
+#include <petsc-private/daimpl.h>
 #include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
 
 #if defined(PETSC_HAVE_STDINT_H) /* The VTK format requires a 32-bit integer */

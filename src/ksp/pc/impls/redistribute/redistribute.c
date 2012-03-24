@@ -2,7 +2,7 @@
 /*
   This file defines a "solve the problem redistributely on each subgroup of processor" preconditioner.
 */
-#include <private/pcimpl.h>     /*I "petscksp.h" I*/
+#include <petsc-private/pcimpl.h>     /*I "petscksp.h" I*/
 #include <petscksp.h>
 
 typedef struct {

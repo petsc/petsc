@@ -1,5 +1,5 @@
 
-#include <private/isimpl.h>     /*I  "petscis.h"  I*/
+#include <petsc-private/isimpl.h>     /*I  "petscis.h"  I*/
 EXTERN_C_BEGIN
 extern PetscErrorCode  ISCreate_General(IS);
 extern PetscErrorCode  ISCreate_Stride(IS);

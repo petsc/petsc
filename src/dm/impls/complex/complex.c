@@ -1,4 +1,4 @@
-#include <private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
@@ -4032,8 +4032,8 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
   if (in->numberofpoints > 0) {
     PetscScalar *array;
 
-    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(double), &in->pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),    &in->pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(PetscReal), &in->pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = VecGetArray(bd->coordinates, &array);CHKERRQ(ierr);
     for(v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4105,7 +4105,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
     int           *cells       = out->tetrahedronlist;
-    double        *meshCoords  = out->pointlist;
+    PetscReal     *meshCoords  = out->pointlist;
     PetscInt       coordSize, c;
     PetscScalar   *coords;
 
@@ -4267,7 +4267,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexRefine_CTetgen"
-PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
+PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   DM_Complex    *mesh = (DM_Complex *) dm->data;
@@ -4289,8 +4289,8 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
   if (in->numberofpoints > 0) {
     PetscScalar *array;
 
-    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(double), &in->pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),    &in->pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(PetscReal), &in->pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = VecGetArray(mesh->coordinates, &array);CHKERRQ(ierr);
     for(v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4308,7 +4308,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
   ierr  = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   in->numberofcorners       = 4;
   in->numberoftetrahedra    = cEnd - cStart;
-  in->tetrahedronvolumelist = (double *) maxVolumes;
+  in->tetrahedronvolumelist = maxVolumes;
   if (in->numberoftetrahedra > 0) {
     ierr = PetscMalloc(in->numberoftetrahedra*in->numberofcorners * sizeof(int), &in->tetrahedronlist);CHKERRQ(ierr);
     for(c = cStart; c < cEnd; ++c) {
@@ -4348,7 +4348,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, double *maxVolumes, DM *dmRefined)
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
     int           *cells       = out->tetrahedronlist;
-    double        *meshCoords  = out->pointlist;
+    PetscReal     *meshCoords  = out->pointlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
     PetscInt       coordSize, c, e;
     PetscScalar   *coords;
@@ -4604,7 +4604,6 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 #define __FUNCT__ "DMRefine_Complex"
 PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
-  double        *maxVolumes;
   PetscReal      refinementLimit;
   PetscInt       dim, cStart, cEnd, c;
   char           genname[1024], *name = PETSC_NULL;
@@ -4616,10 +4615,6 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   if (refinementLimit == 0.0) PetscFunctionReturn(0);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
-  for(c = 0; c < cEnd-cStart; ++c) {
-    maxVolumes[c] = refinementLimit;
-  }
   ierr = PetscOptionsGetString(((PetscObject) dm)->prefix, "-dm_complex_generator", genname, 1024, &flg);CHKERRQ(ierr);
   if (flg) {name = genname;}
   if (name) {
@@ -4631,6 +4626,12 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   case 2:
     if (!name || isTriangle) {
 #ifdef PETSC_HAVE_TRIANGLE
+      double *maxVolumes;
+
+      ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
+      for(c = 0; c < cEnd-cStart; ++c) {
+        maxVolumes[c] = refinementLimit;
+      }
       ierr = DMComplexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");
@@ -4641,12 +4642,24 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
     break;
   case 3:
     if (!name || isCTetgen) {
+      PetscReal *maxVolumes;
+
+      ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscReal), &maxVolumes);CHKERRQ(ierr);
+      for(c = 0; c < cEnd-cStart; ++c) {
+        maxVolumes[c] = refinementLimit;
+      }
       ierr = DMComplexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
     } else if (isTetgen) {
 #ifdef PETSC_HAVE_TETGEN
-    ierr = DMComplexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+      double *maxVolumes;
+
+      ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
+      for(c = 0; c < cEnd-cStart; ++c) {
+        maxVolumes[c] = refinementLimit;
+      }
+      ierr = DMComplexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
 #endif
     } else {
       SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unknown 3D mesh generation package %s", name);

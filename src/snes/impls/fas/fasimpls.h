@@ -1,9 +1,9 @@
 #ifndef _SNES_FASIMPLS
 #define _SNES_FASIMPLS
 
-#include <private/snesimpl.h>
-#include <private/linesearchimpl.h>
-#include <private/dmimpl.h>
+#include <petsc-private/snesimpl.h>
+#include <petsc-private/linesearchimpl.h>
+#include <petsc-private/dmimpl.h>
 #include <petscsnesfas.h>
 
 typedef struct {

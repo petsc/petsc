@@ -365,13 +365,32 @@ struct _p_MatCoarsen {
   Mat         graph;
   PetscInt    verbose;
   PetscInt    setupcalled;
-  void        *data;
-  /* optional data - could be in MIS data */
-  IS perm;
-  IS mis;
-  IS agg_llist;
+  void        *subctx;
+  /* */
   PetscBool strict_aggs;
+  IS perm;
+  PetscCoarsenData *agg_lists;
 };
+
+PetscErrorCode PetscCDCreate( PetscInt chsz, PetscCoarsenData **ail );
+PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail );
+PetscErrorCode LLNSetID( PetscCDIntNd *a_this, PetscInt a_gid );
+PetscInt LLNGetID( const PetscCDIntNd *a_this );
+PetscErrorCode PetscCDAppendID( PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_gid );
+PetscErrorCode PetscCDAppendRemove( PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx );
+PetscErrorCode PetscCDAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  PetscCDIntNd *a_n );
+PetscErrorCode PetscCDRemoveNextNode( PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_last );
+PetscErrorCode PetscCDRemoveAllAt( PetscCoarsenData *ail, PetscInt a_idx );
+PetscInt PetscCDSizeAt( const PetscCoarsenData *ail, PetscInt a_idx );
+PetscErrorCode PetscCDSetChuckSize( PetscCoarsenData *ail, PetscInt a_sz );
+PetscErrorCode PetscCDPrint( const PetscCoarsenData *ail, MPI_Comm comm  );
+PetscErrorCode PetscCDGetMIS( PetscCoarsenData *ail, IS * );
+PetscErrorCode PetscCDGetMat( const PetscCoarsenData *ail, Mat * );
+PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat );
+typedef PetscCDIntNd* PetscCDPos;
+const PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
+const PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos cpos);
+
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently

@@ -1579,7 +1579,7 @@ $     PetscBool  flag = PetscNot(a)
 /*
     Defines the base data structures for all PETSc objects
 */
-#include "private/petscimpl.h"
+#include "petsc-private/petscimpl.h"
 
 
 /*MC

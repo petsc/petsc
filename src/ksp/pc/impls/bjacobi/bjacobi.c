@@ -2,7 +2,7 @@
 /*
    Defines a block Jacobi preconditioner.
 */
-#include <private/pcimpl.h>              /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>              /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);

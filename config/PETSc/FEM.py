@@ -408,10 +408,9 @@ class QuadratureGenerator(script.Script):
         basisDerTabNew = numpy.zeros(newShape)
         for q in range(basisTab.shape[0]):
           for i in range(basisTab.shape[1]):
-            basisTabNew[q][i*2+0] = basisTab[q][i]
-            basisTabNew[q][i*2+1] = basisTab[q][i]
-            basisDerTabNew[q][i*2+0] = basisDerTab[q][i]
-            basisDerTabNew[q][i*2+1] = basisDerTab[q][i]
+            for c in range(numComp):
+              basisTabNew[q][i*numComp+c]    = basisTab[q][i]
+              basisDerTabNew[q][i*numComp+c] = basisDerTab[q][i]
         basisTab    = basisTabNew
         basisDerTab = basisDerTabNew
       code.extend([self.Cxx.getDecl(numFunctions), self.Cxx.getDecl(numComponents),
@@ -426,6 +425,21 @@ class QuadratureGenerator(script.Script):
     f1.identifier = 'f1_func'
     f1.replacementText = 'f1_'+operator
     return [f1]
+
+  def getComputationTypes(self, element, num):
+    '''Right now, this is used for GPU'''
+    from Cxx import Define, Declarator
+    dim = element.get_reference_element().get_spatial_dimension()
+    ext = '_'+str(num)
+    spatialDim = Define()
+    spatialDim.identifier = 'SPATIAL_DIM'+ext
+    spatialDim.replacementText = str(dim)
+
+    vecType = Declarator()
+    vecType.identifier = 'vecType'
+    vecType.type       = self.Cxx.typeMap['float'+str(dim)]
+    vecType.typedef    = True
+    return [spatialDim, self.Cxx.getDecl(vecType, 'Type for vectors')]
 
   def getComputationLayoutStructs(self, numBlocks):
     '''Right now, this is used for GPU data layout'''
@@ -879,7 +893,7 @@ class QuadratureGenerator(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, elements, numBlocks = 1, operator = None, inline = False, tensor = 0):
+  def getElementSource(self, elements, numBlocks = 1, operator = None, sourceType = 'CPU', tensor = 0):
     from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module', debugSection = 'codegen')
@@ -891,22 +905,25 @@ class QuadratureGenerator(script.Script):
         name       = ''
         shape      = element.get_reference_element()
         order      = element.order
-        if self.quadDegree < 0:
-          quadrature = self.createQuadrature(shape, order)
-        else:
-          quadrature = self.createQuadrature(shape, self.quadDegree)
-        if inline:
+        if sourceType != 'GPU':
+          if self.quadDegree < 0:
+            quadrature = self.createQuadrature(shape, order)
+          else:
+            quadrature = self.createQuadrature(shape, self.quadDegree)
+        if sourceType == 'GPU_inline':
           defns.extend(self.getQuadratureStructsInline(2*len(quadrature.pts)-1, quadrature, n, tensor))
           defns.extend(self.getBasisStructsInline(name, element, quadrature, n, tensor))
           defns.extend(self.getPhysicsRoutines(operator))
           defns.extend(self.getComputationLayoutStructs(numBlocks))
-        else:
+        elif sourceType == 'CPU':
           defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n, tensor))
           defns.extend(self.getBasisStructs(name, element, quadrature, n, tensor))
           #defns.extend(self.getIntegratorPoints(n, element))
           #defns.extend(self.getIntegratorSetup(n, element))
           #defns.extend(self.getIntegratorSetup(n, element, True))
           #defns.extend(self.getSectionSetup(n, element))
+        else:
+          defns.extend(self.getComputationTypes(element, n))
         if len(element.value_shape()) > 0:
           n += element.value_shape()[0]
         else:
@@ -947,14 +964,16 @@ class QuadratureGenerator(script.Script):
       elements =[lagrange(default_simplex(2), order)]
       self.logPrint('Making a P'+str(order)+' Lagrange element on a triangle')
     self.outputElementSource(self.getElementSource(elements), filename)
-    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU'), os.path.splitext(filename)[0]+'_gpu'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU_inline'), os.path.splitext(filename)[0]+'_gpu_inline'+os.path.splitext(filename)[1])
     return
 
   def runTensorProduct(self, dim, elements, numBlocks, operator, filename = ''):
     # Nothing is finished here
     import os
     self.outputElementSource(self.getElementSource(elements, tensor = dim), filename)
-    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, inline = True, tensor = dim), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU', tensor = dim), os.path.splitext(filename)[0]+'_gpu'+os.path.splitext(filename)[1])
+    self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU_inline', tensor = dim), os.path.splitext(filename)[0]+'_gpu_inline'+os.path.splitext(filename)[1])
     return
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@
 #define MatMFFD PetscFortranAddr
 #define MatMFFDType PetscFortranAddr
 #define SNESLineSearch PetscFortranAddr
+#define SNESLineSearchOrder PetscEnum
 !
 !  SNESType
 !

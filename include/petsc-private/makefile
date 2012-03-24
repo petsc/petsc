@@ -8,7 +8,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
-LOCDIR   = include/private/
+LOCDIR   = include/petsc-private/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/conf/variables

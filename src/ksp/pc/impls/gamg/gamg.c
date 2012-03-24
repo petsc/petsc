@@ -1,17 +1,28 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "private/matimpl.h"
+#include "petsc-private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
-#if defined PETSC_USE_LOG 
-PetscLogEvent gamg_setup_events[NUM_SET];
+#if defined PETSC_GAMG_USE_LOG 
+PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
+
+#if defined PETSC_USE_LOG
+PetscLogEvent PC_GAMGGgraph_AGG;
+PetscLogEvent PC_GAMGGgraph_GEO;
+PetscLogEvent PC_GAMGCoarsen_AGG;
+PetscLogEvent PC_GAMGCoarsen_GEO;
+PetscLogEvent PC_GAMGProlongator_AGG;
+PetscLogEvent PC_GAMGProlongator_GEO;
+PetscLogEvent PC_GAMGOptprol_AGG;
+#endif
+
 #define GAMG_MAXLEVELS 30
 
 /* #define GAMG_STAGES */
-#if (defined PETSC_USE_LOG && defined GAMG_STAGES)
+#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
 static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 #endif
 
@@ -53,7 +64,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "createLevel"
-PetscErrorCode createLevel( const PC pc,
+static PetscErrorCode createLevel( const PC pc,
                             const Mat Amat_fine,
                             const PetscInt cbs,
                             const PetscBool isLast,
@@ -113,8 +124,8 @@ PetscErrorCode createLevel( const PC pc,
     IS              isscat;
 
     ierr = PetscMalloc( npe*sizeof(PetscInt), &counts ); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-      ierr = PetscLogEventBegin(gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+      ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
     if( repart ) {
       /* create sub communicator  */
@@ -169,7 +180,7 @@ PetscErrorCode createLevel( const PC pc,
 	
 	if( llev++ == -1 ) {
 	  PetscViewer viewer; char fname[32];
-	  sprintf(fname,"part_mat_%d.mat",llev);
+	  ierr = PetscSNPrintf(fname,sizeof fname,"part_mat_%D.mat",llev);CHKERRQ(ierr);
 	  PetscViewerBinaryOpen(wcomm,fname,FILE_MODE_WRITE,&viewer);
 	  ierr = MatView( tMat, viewer ); CHKERRQ(ierr);
 	  ierr = PetscViewerDestroy( &viewer );
@@ -270,8 +281,8 @@ PetscErrorCode createLevel( const PC pc,
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype]/cbs;
     strideNew = ncrs_new*ndata_rows;
-#if defined PETSC_USE_LOG
-      ierr = PetscLogEventEnd(gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+      ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);   CHKERRQ(ierr);
 #endif
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate( wcomm, &dest_crd );
@@ -335,8 +346,8 @@ PetscErrorCode createLevel( const PC pc,
     }
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
     ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
 #endif
     /*
       Invert for MatGetSubMatrix
@@ -344,9 +355,9 @@ PetscErrorCode createLevel( const PC pc,
     ierr = ISInvertPermutation( isnum, ncrs_new*cbs, &new_indices ); CHKERRQ(ierr);
     ierr = ISSort( new_indices ); CHKERRQ(ierr); /* is this needed? */
     ierr = ISDestroy( &isnum ); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* A_crs output */
     ierr = MatGetSubMatrix( Cmat, new_indices, new_indices, MAT_INITIAL_MATRIX, a_Amat_crs );
@@ -355,15 +366,15 @@ PetscErrorCode createLevel( const PC pc,
     ierr = MatDestroy( &Cmat ); CHKERRQ(ierr);
     Cmat = *a_Amat_crs; /* output */
     ierr = MatSetBlockSize( Cmat, cbs );      CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* prolongator */
     ierr = MatGetOwnershipRange( Pold, &Istart, &Iend );    CHKERRQ(ierr);
     {
       IS findices;
-#if defined PETSC_USE_LOG
-      ierr = PetscLogEventBegin(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+      ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
 #endif
       ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
 #ifdef USE_R
@@ -373,8 +384,8 @@ PetscErrorCode createLevel( const PC pc,
 #endif
       CHKERRQ(ierr);
       ierr = ISDestroy( &findices ); CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-      ierr = PetscLogEventEnd(gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+      ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
 #endif
     }
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
@@ -503,19 +514,19 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit); /* && (npe==1 || nactivepe>1); */
         level++ ){
     level1 = level + 1;
-#if (defined PETSC_USE_LOG && defined GAMG_STAGES)
+#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePush(gamg_stages[level]); CHKERRQ( ierr );
 #endif
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET1],0,0,0,0); CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET1],0,0,0,0); CHKERRQ(ierr);
 #endif
     { /* construct prolongator */
       Mat Gmat;
-      IS selected, llist;
-      
+      PetscCoarsenData *agg_lists;
+
       ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
-      ierr = pc_gamg->coarsen( pc, &Gmat, &selected, &llist ); CHKERRQ(ierr);
-      ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, selected, llist, &Parr[level1] );
+      ierr = pc_gamg->coarsen( pc, &Gmat, &agg_lists ); CHKERRQ(ierr);
+      ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, agg_lists, &Parr[level1] );
       CHKERRQ(ierr);
 
       if( Parr[level1] ){
@@ -526,18 +537,17 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           CHKERRQ( ierr ); assert(flag);
         }
       }
-      
+
       if( pc_gamg->optprol && Parr[level1] ){
         /* smooth */
         ierr = pc_gamg->optprol( pc, Aarr[level], &Parr[level1] ); CHKERRQ(ierr);
       }
-      
-      ierr = MatDestroy( &Gmat );  CHKERRQ(ierr); 
-      ierr = ISDestroy( &selected );  CHKERRQ(ierr); 
-      ierr = ISDestroy( &llist );  CHKERRQ(ierr); 
+
+      ierr = MatDestroy( &Gmat );      CHKERRQ(ierr); 
+      ierr = PetscCDDestroy( agg_lists );  CHKERRQ(ierr);
     }
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* cache eigen estimate */
     if( pc_gamg->emax_id != -1 ){
@@ -552,23 +562,31 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
       break;
     }
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventBegin(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
     ierr = createLevel( pc, Aarr[level], bs,
                         (PetscBool)(level==pc_gamg->Nlevels-2),
                         &Parr[level1], &nactivepe, &Aarr[level1] );
     CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-    ierr = PetscLogEventEnd(gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
     ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
     if (pc_gamg->verbose){
-      ierr = MatGetInfo( Aarr[level1], MAT_GLOBAL_SUM, &info ); CHKERRQ(ierr);
+      PetscInt NN = M;
+      if(pc_gamg->verbose==1) {
+        ierr = MatGetInfo(Aarr[level1],MAT_LOCAL,&info); 
+        ierr = MatGetLocalSize( Aarr[level1], &NN, &N );CHKERRQ(ierr);
+      }
+      else ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); 
+      CHKERRQ(ierr);
+      nnztot += info.nz_used;
       PetscPrintf(wcomm,"\t\t[%d]%s %d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
                   mype,__FUNCT__,(int)level1,N,pc_gamg->data_cell_cols,
-                  (int)(info.nz_used/(PetscReal)N),nactivepe);
-    } 
+                  (int)(info.nz_used/(PetscReal)NN), nactivepe );
+      CHKERRQ(ierr);
+    }
     /* stop if one node */
     if( M/pc_gamg->data_cell_cols < 2 ) {
       level++;
@@ -594,15 +612,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     /* ierr = MatAssemblyBegin(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
     /* ierr = MatAssemblyEnd(Aarr[level1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
     
-#if (defined PETSC_USE_LOG && defined GAMG_STAGES)
+#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePop(); CHKERRQ( ierr );
 #endif
-    if(pc_gamg->verbose){
-      if(pc_gamg->verbose==1) ierr =  MatGetInfo(Aarr[level1],MAT_LOCAL,&info); 
-      else ierr =  MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); 
-      CHKERRQ(ierr);
-      nnztot += info.nz_used;
-    }
   } /* levels */
   
   if( pc_gamg->data ) {
@@ -610,7 +622,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     pc_gamg->data = 0;
   }
   
-  if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels, grid compexity = %g\n",0,__FUNCT__,level+1,nnztot/nnz0);
+  if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels, grid complexity = %g\n",0,__FUNCT__,level+1,nnztot/nnz0);
   pc_gamg->Nlevels = level + 1;
   fine_level = level;
   ierr = PCMGSetLevels(pc,pc_gamg->Nlevels,PETSC_NULL);CHKERRQ(ierr);
@@ -750,12 +762,14 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
       ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
     }
+
+    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
+    
     {
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
       ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);
     }
-    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
   }
   else {
     KSP smoother;
@@ -1165,9 +1179,8 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   PetscErrorCode  ierr;
   PC_GAMG         *pc_gamg;
   PC_MG           *mg;
-  PetscClassId     cookie;
 
-#if defined PETSC_USE_LOG
+#if defined PETSC_GAMG_USE_LOG
   static long count = 0;
 #endif
 
@@ -1249,30 +1262,30 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
-#if defined PETSC_USE_LOG
+  /* private events */
+#if defined PETSC_GAMG_USE_LOG
   if( count++ == 0 ) {
-    PetscClassIdRegister("GAMG Setup",&cookie);
-    PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_events[SET1]);
-    PetscLogEventRegister("  Graph", cookie, &gamg_setup_events[GRAPH]);
-    /* PetscLogEventRegister("    G.Mat", cookie, &gamg_setup_events[GRAPH_MAT]); */
-    /* PetscLogEventRegister("    G.Filter", cookie, &gamg_setup_events[GRAPH_FILTER]); */
-    /* PetscLogEventRegister("    G.Square", cookie, &gamg_setup_events[GRAPH_SQR]); */
-    PetscLogEventRegister("  MIS/Agg", cookie, &gamg_setup_events[SET4]);
-    PetscLogEventRegister("  geo: growSupp", cookie, &gamg_setup_events[SET5]);
-    PetscLogEventRegister("  geo: triangle", cookie, &gamg_setup_events[SET6]);
-    PetscLogEventRegister("    search&set", cookie, &gamg_setup_events[FIND_V]);
-    PetscLogEventRegister("  SA: colect data", cookie, &gamg_setup_events[SET7]);
-    PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_events[SET8]);
-    PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_events[SET9]);
-    PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_events[SET2]);
-    PetscLogEventRegister("  repartition", cookie, &gamg_setup_events[SET12]);
-    PetscLogEventRegister("  Invert-Sort", cookie, &gamg_setup_events[SET13]);
-    PetscLogEventRegister("  Move A", cookie, &gamg_setup_events[SET14]); 
-    PetscLogEventRegister("  Move P", cookie, &gamg_setup_events[SET15]); 
+    PetscLogEventRegister("GAMG: createProl", PC_CLASSID, &petsc_gamg_setup_events[SET1]);
+    PetscLogEventRegister("  Graph", PC_CLASSID, &petsc_gamg_setup_events[GRAPH]);
+    /* PetscLogEventRegister("    G.Mat", PC_CLASSID, &petsc_gamg_setup_events[GRAPH_MAT]); */
+    /* PetscLogEventRegister("    G.Filter", PC_CLASSID, &petsc_gamg_setup_events[GRAPH_FILTER]); */
+    /* PetscLogEventRegister("    G.Square", PC_CLASSID, &petsc_gamg_setup_events[GRAPH_SQR]); */
+    PetscLogEventRegister("  MIS/Agg", PC_CLASSID, &petsc_gamg_setup_events[SET4]);
+    PetscLogEventRegister("  geo: growSupp", PC_CLASSID, &petsc_gamg_setup_events[SET5]);
+    PetscLogEventRegister("  geo: triangle", PC_CLASSID, &petsc_gamg_setup_events[SET6]);
+    PetscLogEventRegister("    search&set", PC_CLASSID, &petsc_gamg_setup_events[FIND_V]);
+    PetscLogEventRegister("  SA: colect data", PC_CLASSID, &petsc_gamg_setup_events[SET7]);
+    PetscLogEventRegister("  SA: frmProl0", PC_CLASSID, &petsc_gamg_setup_events[SET8]);
+    PetscLogEventRegister("  SA: smooth", PC_CLASSID, &petsc_gamg_setup_events[SET9]);
+    PetscLogEventRegister("GAMG: partLevel", PC_CLASSID, &petsc_gamg_setup_events[SET2]);
+    PetscLogEventRegister("  repartition", PC_CLASSID, &petsc_gamg_setup_events[SET12]);
+    PetscLogEventRegister("  Invert-Sort", PC_CLASSID, &petsc_gamg_setup_events[SET13]);
+    PetscLogEventRegister("  Move A", PC_CLASSID, &petsc_gamg_setup_events[SET14]); 
+    PetscLogEventRegister("  Move P", PC_CLASSID, &petsc_gamg_setup_events[SET15]); 
 
-    /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_events[SET13]); */
-    /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_events[SET10]); */
-    /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_events[SET11]); */
+    /* PetscLogEventRegister(" PL move data", PC_CLASSID, &petsc_gamg_setup_events[SET13]); */
+    /* PetscLogEventRegister("GAMG: fix", PC_CLASSID, &petsc_gamg_setup_events[SET10]); */
+    /* PetscLogEventRegister("GAMG: set levels", PC_CLASSID, &petsc_gamg_setup_events[SET11]); */
     /* create timer stages */
 #if defined GAMG_STAGES
     {
@@ -1288,6 +1301,17 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
 #endif
   }
 #endif
+  /* general events */
+#if defined PETSC_USE_LOG
+  PetscLogEventRegister("PCGAMGgraph_AGG", PC_CLASSID, &PC_GAMGGgraph_AGG);
+  PetscLogEventRegister("PCGAMGgraph_GEO", PC_CLASSID, &PC_GAMGGgraph_GEO);
+  PetscLogEventRegister("PCGAMGcoarse_AGG", PC_CLASSID, &PC_GAMGCoarsen_AGG);
+  PetscLogEventRegister("PCGAMGcoarse_GEO", PC_CLASSID, &PC_GAMGCoarsen_GEO);
+  PetscLogEventRegister("PCGAMGProl_AGG", PC_CLASSID, &PC_GAMGProlongator_AGG);
+  PetscLogEventRegister("PCGAMGProl_GEO", PC_CLASSID, &PC_GAMGProlongator_GEO);
+  PetscLogEventRegister("PCGAMGProlOpt_AGG", PC_CLASSID, &PC_GAMGOptprol_AGG);
+#endif
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

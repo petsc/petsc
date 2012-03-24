@@ -1,4 +1,4 @@
-#include <private/kspimpl.h> /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>         /*I "petscdm.h"  I*/
 
 #undef __FUNCT__

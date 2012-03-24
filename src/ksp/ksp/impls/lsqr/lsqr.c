@@ -4,7 +4,7 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 
 typedef struct {
@@ -379,14 +379,18 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
-  if (lsqr->se) {
-    PetscReal rnorm;
-    ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
-    ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
-  }
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (lsqr->se) {
+      PetscReal rnorm;
+      ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
+      ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
+    }
+  } else SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LSQR",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 

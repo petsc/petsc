@@ -1,5 +1,5 @@
 
-#include <private/matimpl.h>               /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscClassId  MAT_COARSEN_CLASSID;
@@ -123,7 +123,7 @@ PetscErrorCode  MatCoarsenApply( MatCoarsen coarser )
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)coarser)->comm,&viewer);CHKERRQ(ierr);
     ierr = MatCoarsenView(coarser,viewer);CHKERRQ(ierr);
-    ierr = ISView(coarser->mis,viewer);CHKERRQ(ierr);
+    /* ierr = ISView(coarser->mis,viewer);CHKERRQ(ierr); */
   }
   PetscFunctionReturn(0);
 }
@@ -234,10 +234,10 @@ PetscErrorCode  MatCoarsenDestroy( MatCoarsen *agg )
     ierr = (*(*agg)->ops->destroy)((*agg));CHKERRQ(ierr);
   }
 
-  /* ierr = ISDestroy( &(*agg)->perm );        CHKERRQ(ierr); */
-  ierr = ISDestroy( &(*agg)->mis );         CHKERRQ(ierr);
-  ierr = ISDestroy( &(*agg)->agg_llist );   CHKERRQ(ierr);
-  
+  if( (*agg)->agg_lists ) {
+    ierr = PetscCDDestroy( (*agg)->agg_lists );  CHKERRQ(ierr); 
+  }
+
   ierr = PetscHeaderDestroy(agg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -377,7 +377,7 @@ PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, const MatCoarsenType type
   if (coarser->setupcalled) {
     ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
     coarser->ops->destroy = PETSC_NULL;
-    coarser->data        = 0;
+    coarser->subctx       = 0;
     coarser->setupcalled = 0;
   }
 
@@ -423,9 +423,9 @@ PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen coarser, const IS perm )
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenGetMISAggLists"
+#define __FUNCT__ "MatCoarsenGetData"
 /*@C
-   MatCoarsenGetMISAggLists - Sets the weights for vertices for a coarsen.
+   MatCoarsenGetData - Sets the weights for vertices for a coarsen.
 
    Logically Collective on Coarsen
 
@@ -442,21 +442,16 @@ PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen coarser, const IS perm )
 
 .seealso: MatCoarsenCreate(), MatCoarsenSetType()
 @*/
-PetscErrorCode MatCoarsenGetMISAggLists( MatCoarsen coarser, IS *mis, IS *llist )
+PetscErrorCode MatCoarsenGetData( MatCoarsen coarser, PetscCoarsenData **llist )
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
-  if( !coarser->mis ) {
-    SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No MIS, call ApplyCoarsen");
-  }
-  *mis =  coarser->mis;
-  coarser->mis = 0;  /* giving up ownership !!! */
 
-  if( !coarser->agg_llist ) {
+  if( !coarser->agg_lists ) {
     SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   }
-  *llist = coarser->agg_llist;
-  coarser->agg_llist = 0; /* giving up ownership !!! */
+  *llist = coarser->agg_lists;
+  coarser->agg_lists = 0; /* giving up ownership */
   
   PetscFunctionReturn(0);
 }

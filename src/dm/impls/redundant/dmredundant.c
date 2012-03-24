@@ -1,4 +1,4 @@
-#include <private/dmimpl.h>     /*I      "petscdm.h"          I*/
+#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"          I*/
 #include <petscdmredundant.h>   /*I      "petscdmredundant.h" I*/
 #include <petscmat.h>           /*I      "petscmat.h"         I*/
 
@@ -259,6 +259,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
   DM_Redundant *redc = (DM_Redundant*)dmc->data;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) comm = ((PetscObject)dmc)->comm;
   ierr = MPI_Comm_compare(((PetscObject)dmc)->comm,comm,&flag); CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(((PetscObject)dmc)->comm,PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redc->rank,redc->N,dmf);CHKERRQ(ierr);
@@ -274,6 +275,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
   DM_Redundant *redf = (DM_Redundant*)dmf->data;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) comm = ((PetscObject)dmf)->comm;
   ierr = MPI_Comm_compare(((PetscObject)dmf)->comm,comm,&flag); CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(((PetscObject)dmf)->comm,PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redf->rank,redf->N,dmc);CHKERRQ(ierr);

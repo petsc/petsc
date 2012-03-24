@@ -1,5 +1,5 @@
 
-#include <private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFlush" 

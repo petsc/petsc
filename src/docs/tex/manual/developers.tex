@@ -398,7 +398,7 @@ Each class has
 \item Its own, application public, include file \trl{include/petsc$<$class$>$.h} 
 \item Its own directory, \trl{src/$<$class$>$}
 \item A data structure defined in  the file
-      \trl{include/private/$<$class$>$impl.h}.
+      \trl{include/petsc-private/$<$class$>$impl.h}.
       This data structure is shared by all the different PETSc implementations of the 
       class. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
@@ -443,7 +443,7 @@ conventions are used to simplify code maintenance.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-(in \trl{include/private/petscimpl.h})
+(in \trl{include/petsc-private/petscimpl.h})
 
 \begin{tabbing}
 \\
@@ -794,13 +794,13 @@ class that is compatible with PETSc.
 
 \subsection{Preconditioners: PC}
 
-The base PETSc PC object is defined in the \trl{include/private/pcimpl.h} include file. 
+The base PETSc PC object is defined in the \trl{include/petsc-private/pcimpl.h} include file. 
 A carefully commented implementation of a PC object can be found in 
 \trl{src/ksp/pc/impls/jacobi/jacobi.c}. 
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \trl{include/private/kspimpl.h} include file. 
+The base PETSc KSP object is defined in the \trl{include/petsc-private/kspimpl.h} include file. 
 A carefully commented implementation of a KSP object can be found in 
 \trl{src/ksp/ksp/impls/cg/cg.c}. 
 

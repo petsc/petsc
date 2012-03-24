@@ -49,7 +49,7 @@
      adjacency_list.hpp
 */
 
-#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 
 /* 
    Private context (data structure) for the SupportGraph preconditioner.  

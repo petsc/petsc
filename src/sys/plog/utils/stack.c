@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <private/logimpl.h> /*I    "petscsys.h"   I*/
+#include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscIntStackDestroy"

@@ -1,6 +1,6 @@
 
-#include <private/snesimpl.h>
-#include <private/linesearchimpl.h>
+#include <petsc-private/snesimpl.h>
+#include <petsc-private/linesearchimpl.h>
 
 static PetscBool  SNESPackageInitialized = PETSC_FALSE;
 

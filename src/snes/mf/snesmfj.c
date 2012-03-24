@@ -1,7 +1,7 @@
 
-#include <private/snesimpl.h>  /*I  "petscsnes.h" I*/
+#include <petsc-private/snesimpl.h>  /*I  "petscsnes.h" I*/
 #include <../src/mat/impls/mffd/mffdimpl.h>
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDComputeJacobian"

@@ -874,6 +874,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     Bs = PetscBLASIntCast(max_n);
     Bt = PetscBLASIntCast(min_n);
     dummy_int = Bs;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,
                  &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr);
@@ -882,6 +883,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
                  &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr);
 #endif
     if ( lierr ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SVD Lapack routine %d",(int)lierr);
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
     /* Allocate optimal workspace */
     lwork = PetscBLASIntCast((PetscInt)PetscRealPart(temp_work));
@@ -978,6 +980,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       PetscInt min_n = temp_constraints;
       if(min_n > size_of_constraint) min_n = size_of_constraint;
       dummy_int = Bs;
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,
                    &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr);
@@ -986,6 +989,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
                    &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr);
 #endif
       if ( lierr ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       /* retain eigenvalues greater than tol: note that lapack SVD gives eigs in descending order */
       j=0;
       while( j < min_n && singular_vals[min_n-j-1] < tol) j++;

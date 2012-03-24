@@ -1,5 +1,5 @@
 #define PETSCMAT_DLL
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 #include <../src/mat/impls/ij/stashij.h>
 #include <../src/sys/utils/hash.h>
 

@@ -1,4 +1,4 @@
-#include <private/snesimpl.h>
+#include <petsc-private/snesimpl.h>
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 

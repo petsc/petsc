@@ -4,7 +4,7 @@
     Testing examples can be found in ~src/mat/examples/tests
 */
 
-#include <private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
 EXTERN_C_BEGIN 
 #include <cuda.h>
 #include <cuda_runtime.h>

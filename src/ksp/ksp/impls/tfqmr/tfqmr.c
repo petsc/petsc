@@ -1,5 +1,5 @@
 
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_TFQMR"

@@ -3,7 +3,7 @@
    binary read/writes can be called directly on it.
 */
 
-#include <private/viewerimpl.h>   /*I  "petscsys.h"  I*/
+#include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  I*/
 
 typedef struct {
   int           port;

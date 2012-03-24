@@ -4,8 +4,8 @@
 
 #ifndef __SNES_NCG_H
 #define __SNES_NCG_H
-#include <private/snesimpl.h>
-#include <private/linesearchimpl.h>
+#include <petsc-private/snesimpl.h>
+#include <petsc-private/linesearchimpl.h>
 
 typedef struct {
   PetscInt    betatype;     /* 0 = Fletcher-Reeves, 1 = Polak-Ribiere-Polyak, 2 = Hestenes-Steifel, 3 = Dai-Yuan, 4 = Conjugate Descent */

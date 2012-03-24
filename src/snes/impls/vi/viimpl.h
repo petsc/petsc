@@ -1,4 +1,4 @@
-#include <private/snesimpl.h>
+#include <petsc-private/snesimpl.h>
 
 extern PetscErrorCode SNESVIProjectOntoBounds(SNES,Vec);
 extern PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscReal,PetscBool*);

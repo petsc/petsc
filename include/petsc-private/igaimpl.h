@@ -3,7 +3,7 @@
 
 #include <petscdmiga.h> /*I      "petscdmmesh.h"    I*/
 #include <petscdmda.h>
-#include "private/dmimpl.h"
+#include "petsc-private/dmimpl.h"
 
 typedef struct {
   PetscScalar x,y,z,w;

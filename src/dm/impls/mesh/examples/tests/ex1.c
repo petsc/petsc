@@ -44,7 +44,7 @@ Proposed Solver API:
 
 I think we need a way to connect parts of the mesh to parts of the field defined over it. PetscSection is a map from
 mesh pieces (sieve points) to Vec pieces (size and offset). In addition, it handles multiple fields and constraints.
-The interface is here, http://petsc.cs.iit.edu/petsc/petsc-dev/annotate/eb9e8c4b5c78/include/private/vecimpl.h#l125.
+The interface is here, http://petsc.cs.iit.edu/petsc/petsc-dev/annotate/eb9e8c4b5c78/include/petsc-private/vecimpl.h#l125.
 
 Meshes Used:
 

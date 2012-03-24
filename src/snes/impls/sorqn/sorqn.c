@@ -1,5 +1,5 @@
 
-#include <private/snesimpl.h>
+#include <petsc-private/snesimpl.h>
 
 typedef struct {
   PetscBool jacobian_start; /* start with Bi = Jii */

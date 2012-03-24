@@ -1,4 +1,4 @@
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 #include <petscdmmesh.h>
 #include <../src/sys/f90-src/f90impl.h>
 

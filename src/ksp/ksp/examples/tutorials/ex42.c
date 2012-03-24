@@ -1998,7 +1998,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMCreateMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_Stokes,&f);CHKERRQ(ierr);
 
   /* assemble A11 */
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -2021,8 +2022,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     const PetscInt ufields[] = {0,1,2},pfields[] = {3};
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
     ierr = PCFieldSplitSetBlockSize(pc,4);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetFields(pc,"u",3,ufields);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetFields(pc,"p",1,pfields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"u",3,ufields,ufields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"p",1,pfields,pfields);CHKERRQ(ierr);
   }
 
   {
@@ -2052,7 +2053,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof filename,&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+      //ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,"ex42.vts",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
       ierr = VecView(X,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

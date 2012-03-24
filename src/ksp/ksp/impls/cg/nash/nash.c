@@ -1,5 +1,5 @@
 
-#include <private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/cg/nash/nashimpl.h>
 
 #define NASH_PRECONDITIONED_DIRECTION   0

@@ -10,7 +10,7 @@
   This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
 
 */
-#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 #include <../src/mat/blockinvert.h>
 

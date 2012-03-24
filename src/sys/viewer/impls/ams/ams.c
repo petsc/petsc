@@ -1,5 +1,5 @@
 
-#include <private/viewerimpl.h>
+#include <petsc-private/viewerimpl.h>
 #include <petscsys.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

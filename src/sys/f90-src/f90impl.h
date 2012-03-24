@@ -1,7 +1,7 @@
 
 #if !defined(__PETSCF90_H)
 #define __PETSCF90_H
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 PETSC_EXTERN_CXX_BEGIN
 
 /* PGI compilers pass in f90 pointers as 2 arguments */

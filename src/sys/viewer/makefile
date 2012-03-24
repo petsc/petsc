@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../../include/petscviewer.h ../../../include/private/viewerimpl.h
+SOURCEH  = ../../../include/petscviewer.h ../../../include/petsc-private/viewerimpl.h
 DIRS     = impls examples interface
 LOCDIR   = src/sys/viewer/
 MANSEC   = Viewer

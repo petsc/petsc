@@ -5,7 +5,7 @@
 
 /* Must use hypre 2.0.0 or more recent. */
 
-#include <private/pcimpl.h>          /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>          /*I "petscpc.h" I*/
 #include <../src/dm/impls/da/hypre/mhyp.h>
 
 /* 
@@ -1025,7 +1025,7 @@ EXTERN_C_END
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
 /* this include is needed ONLY to allow access to the private data inside the Mat object specific to hypre */
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 typedef struct {
   MPI_Comm            hcomm;       /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */

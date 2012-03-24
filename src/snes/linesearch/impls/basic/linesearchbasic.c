@@ -1,5 +1,5 @@
-#include <private/linesearchimpl.h>
-#include <private/snesimpl.h>
+#include <petsc-private/linesearchimpl.h>
+#include <petsc-private/snesimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply_Basic"

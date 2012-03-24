@@ -1,6 +1,6 @@
 #if !defined(__GAMG_IMPL)
 #define __GAMG_IMPL
-#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -23,8 +23,8 @@ typedef struct gamg_TAG{
   PetscInt       data_cell_cols;
   PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscErrorCode (*graph)( PC, const Mat, Mat * );
-  PetscErrorCode (*coarsen)( PC, Mat *, IS*, IS* );
-  PetscErrorCode (*prolongator)( PC, const Mat, const Mat, IS, IS, Mat* );
+  PetscErrorCode (*coarsen)( PC, Mat *, PetscCoarsenData** );
+  PetscErrorCode (*prolongator)( PC, const Mat, const Mat, PetscCoarsenData *, Mat* );
   PetscErrorCode (*optprol)( PC, const Mat, Mat* );
 
   PetscErrorCode (*createdefaultdata)( PC ); /* for data methods that have a default (SA) */
@@ -52,16 +52,36 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc );
 PetscErrorCode PCDestroy_GAMG(PC pc);
 
 /* helper methods */
-PetscErrorCode createSimpleGraph( const Mat, Mat * );
-PetscErrorCode scaleFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
-PetscErrorCode getDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
-                                  PetscInt *a_stride, PetscReal **a_data_out );
-PetscErrorCode maxIndSetAgg( const IS, const Mat, const PetscBool, const PetscInt, IS *a_selected, IS *a_locals_llist );
+PetscErrorCode PCGAMGCreateSimpleGraph( const Mat, Mat * );
+PetscErrorCode PCGAMGScaleFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
+PetscErrorCode PCGAMGGetDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
+                                       PetscInt *a_stride, PetscReal **a_data_out );
 
 #if defined PETSC_USE_LOG
+/* #define PETSC_GAMG_USE_LOG */
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
-extern PetscLogEvent gamg_setup_events[NUM_SET];
+#if defined PETSC_GAMG_USE_LOG
+extern PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
+extern PetscLogEvent PC_GAMGGgraph_AGG;
+extern PetscLogEvent PC_GAMGGgraph_GEO;
+extern PetscLogEvent PC_GAMGCoarsen_AGG;
+extern PetscLogEvent PC_GAMGCoarsen_GEO;
+extern PetscLogEvent PC_GAMGProlongator_AGG;
+extern PetscLogEvent PC_GAMGProlongator_GEO;
+extern PetscLogEvent PC_GAMGOptprol_AGG;
+#endif
+
+typedef struct _GAMGHashTable{
+  PetscInt  *table;
+  PetscInt  *data;
+  PetscInt   size;
+}GAMGHashTable;
+
+extern PetscErrorCode GAMGTableCreate( PetscInt a_size, GAMGHashTable *a_tab );
+extern PetscErrorCode GAMGTableDestroy( GAMGHashTable * );
+extern PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data );
+extern PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data );
 
 #endif
 

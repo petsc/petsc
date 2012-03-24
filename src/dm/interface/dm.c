@@ -1,5 +1,5 @@
 #include <petscsnes.h> 
-#include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
@@ -40,6 +40,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
+
 
   v->workSize     = 0;
   v->workArray    = PETSC_NULL;
@@ -708,6 +709,41 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDecompositionDM"
+/*@C
+  DMCreateDecompositionDM - creates a DM that defines a decomposition of the original DM.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - the DM object
+- name - the name of the decomposition
+
+  Output Parameter:
+. ddm  - the decomposition DM (PETSC_NULL, if no such decomposition is known)
+
+  Level: advanced
+
+.seealso DMDestroy(), DMCreate(), DMCreateDecomposition()
+@*/
+PetscErrorCode DMCreateDecompositionDM(DM dm, const char* name, DM *ddm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(ddm,3);
+  if(!dm->ops->createdecompositiondm) {
+    *ddm = PETSC_NULL;
+  }
+  else {
+    ierr = (*dm->ops->createdecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateFieldIS"
 /*@C
@@ -742,6 +778,56 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **f
   if (names) {PetscValidPointer(names,3);}
   if (fields) {PetscValidPointer(fields,4);}
   ierr = (*dm->ops->createfieldis)(dm, numFields, names, fields);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateDecomposition"
+/*@C
+  DMCreateDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems: 
+                          each IS contains the global indices of the dofs of the corresponding subproblem.
+                          The optional list of DMs define the DM for each subproblem.
+                          Generalizes DMCreateFieldIS().
+
+  Not collective
+
+  Input Parameter:
+. dm - the DM object
+
+  Output Parameters:
++ len       - The number of subproblems in the decomposition (or PETSC_NULL if not requested)
+. namelist  - The name for each subproblem (or PETSC_NULL if not requested)
+. islist    - The global indices for each subproblem (or PETSC_NULL if not requested)
+- dmlist    - The DMs for each subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
+
+  Level: intermediate
+
+  Notes:
+  The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
+  PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
+  and all of the arrays should be freed with PetscFree().
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+@*/
+PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (len) {PetscValidPointer(len,2);}
+  if (namelist) {PetscValidPointer(namelist,3);}
+  if (islist) {PetscValidPointer(islist,4);}
+  if (dmlist) {PetscValidPointer(dmlist,5);}
+  if(!dm->ops->createdecomposition) {
+    ierr = (*dm->ops->createfieldis)(dm, len, namelist, islist);CHKERRQ(ierr);
+    /* By default there are no DMs associated with subproblems. */
+    if(dmlist) *dmlist = PETSC_NULL;
+  }
+  else {
+    ierr = (*dm->ops->createdecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2167,3 +2253,4 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   }
   PetscFunctionReturn(0);
 }
+

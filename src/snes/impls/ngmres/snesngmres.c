@@ -288,6 +288,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ngmres->n = PetscBLASIntCast(l);
     ngmres->info = PetscBLASIntCast(0);
     ngmres->rcond = -1.;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #ifdef PETSC_USE_COMPLEX
     LAPACKgelss_(&ngmres->m,
                  &ngmres->n,
@@ -318,6 +319,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
                  &ngmres->lwork,
                  &ngmres->info);
 #endif
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (ngmres->info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
     if (ngmres->info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
 #endif

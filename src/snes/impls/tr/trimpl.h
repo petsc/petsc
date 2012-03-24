@@ -6,7 +6,7 @@
 
 #ifndef __SNES_TR_H
 #define __SNES_TR_H
-#include <private/snesimpl.h>
+#include <petsc-private/snesimpl.h>
 
 typedef struct {
   /* ---- Parameters used by the trust region method  ---- */

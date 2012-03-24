@@ -1,6 +1,6 @@
 ALL: lib
 
-SOURCEH	 = ../../../include/private/sfimpl.h ../../../include/petscsf.h
+SOURCEH	 = ../../../include/petsc-private/sfimpl.h ../../../include/petscsf.h
 SOURCEC  = dlregissf.c sf.c
 OBJSC	 = $(SOURCEC:.c=.o)
 OBJSF	 =

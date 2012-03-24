@@ -12,7 +12,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0;i<vs->nb;i++) {
-    if (!vs->v[i]) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
+    if (!vs->v[i]) SETERRQ(((PetscObject)v)->comm,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
     ierr = VecAssemblyBegin(vs->v[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1182,7 +1182,7 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->setup_called) PetscFunctionReturn(0);
 
   ctx->nb = nb;
-  if (ctx->nb < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
+  if (ctx->nb < 0) SETERRQ(((PetscObject)V)->comm,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
   ierr = PetscMalloc(ctx->nb*sizeof(Vec),&ctx->v);CHKERRQ(ierr);

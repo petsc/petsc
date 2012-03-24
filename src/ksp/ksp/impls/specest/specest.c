@@ -1,5 +1,5 @@
 
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 typedef struct {
   KSP kspest;                   /* KSP capable of estimating eigenvalues */
