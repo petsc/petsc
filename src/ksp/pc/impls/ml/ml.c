@@ -390,7 +390,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   shellctx->A         = *newmat;
   shellctx->mlmat     = mlmat;
   shellctx->work      = PETSC_NULL;
-  ierr = VecCreate(PETSC_COMM_WORLD,&shellctx->y);CHKERRQ(ierr);
+  ierr = VecCreate(MLcomm->USR_comm,&shellctx->y);CHKERRQ(ierr);
   ierr = VecSetSizes(shellctx->y,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(shellctx->y);CHKERRQ(ierr);
   (*newmat)->ops->destroy = MatDestroy_ML;
