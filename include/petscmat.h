@@ -1503,26 +1503,26 @@ J*/
 #define MATCOARSENHEM  "hem"
 
 /* linked list for aggregates */
-typedef struct _LLIntNode{
-  struct _LLIntNode *next;
+typedef struct _PetscCDIntNd{
+  struct _PetscCDIntNd *next;
   PetscInt   gid;
-}LLIntNode;
+}PetscCDIntNd;
 
 /* only used by node pool */
-typedef struct _LLArrNode{
-  struct _LLArrNode *next;
-  struct _LLIntNode *array; 
-}LLArrNode;
+typedef struct _PetscCDArrNd{
+  struct _PetscCDArrNd *next;
+  struct _PetscCDIntNd *array; 
+}PetscCDArrNd;
 
 typedef struct _PetscCoarsenData{
   /* node pool */
-  LLArrNode  pool_list;
-  LLIntNode *new_node;
+  PetscCDArrNd  pool_list;
+  PetscCDIntNd *new_node;
   PetscInt   new_left;
   PetscInt   chk_sz;
-  LLIntNode *extra_nodes;
+  PetscCDIntNd *extra_nodes;
   /* Array of lists */
-  LLIntNode **array;
+  PetscCDIntNd **array;
   PetscInt size;
   /* cache a Mat for communication data */
   Mat mat;

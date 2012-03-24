@@ -397,8 +397,8 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
   
   /* set lid_state */
   for( lid = 0 ; lid < nloc ; lid++ ) {
-    LLNPos pos;
-    if( (pos=AILGetHeadPos(aggs_2,lid)) ) {
+    PetscCDPos pos;
+    if( (pos=PetscCDGetHeadPos(aggs_2,lid)) ) {
       PetscInt gid1 = LLNGetID(pos); assert(gid1==lid+my0);
       lid_state[lid] = gid1;
     }
@@ -408,8 +408,8 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
   for(lid=kk=0;lid<nloc;lid++){
     NState state = lid_state[lid];
     if( IS_SELECTED(state) ){
-      LLNPos pos;
-      for( pos=AILGetHeadPos(aggs_2,lid) ; pos ; pos=AILGetNextPos(aggs_2,lid,pos)){
+      PetscCDPos pos;
+      for( pos=PetscCDGetHeadPos(aggs_2,lid) ; pos ; pos=PetscCDGetNextPos(aggs_2,lid,pos)){
         PetscInt gid1 = LLNGetID(pos);
         if( gid1 >= my0 && gid1 < Iend ){
           lid_parent_gid[gid1-my0] = (PetscScalar)(lid + my0);
@@ -470,14 +470,14 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
           lid_parent_gid[lidj] = (PetscScalar)(lid+my0); /* send this if sgid is not local */
           if( sgid >= my0 && sgid < Iend ){       /* I'm stealing this local from a local sgid */
             PetscInt hav=0,slid=sgid-my0,gidj=lidj+my0;
-            LLNPos pos,last=PETSC_NULL;
+            PetscCDPos pos,last=PETSC_NULL;
             /* looking for local from local so id_llist_2 works */
-            for( pos=AILGetHeadPos(aggs_2,slid) ; pos ; pos=AILGetNextPos(aggs_2,slid,pos)){
+            for( pos=PetscCDGetHeadPos(aggs_2,slid) ; pos ; pos=PetscCDGetNextPos(aggs_2,slid,pos)){
               PetscInt gid = LLNGetID(pos);
               if( gid == gidj ) {
                 assert(last);
-                ierr = AILRemoveNextNode( aggs_2, slid, last ); CHKERRQ(ierr);
-                ierr = AILAppendNode( aggs_2, lid, pos );       CHKERRQ(ierr);
+                ierr = PetscCDRemoveNextNode( aggs_2, slid, last ); CHKERRQ(ierr);
+                ierr = PetscCDAppendNode( aggs_2, lid, pos );       CHKERRQ(ierr);
                 hav = 1;
                 break;
               }
@@ -490,7 +490,7 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
           }
           else{            /* I'm stealing this local, owned by a ghost */
             assert(sgid==-1);
-            ierr = AILAppendID( aggs_2, lid, lidj+my0 );      CHKERRQ(ierr);
+            ierr = PetscCDAppendID( aggs_2, lid, lidj+my0 );      CHKERRQ(ierr);
           }
         }
       } /* local neighbors */
@@ -508,14 +508,14 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
             lid_parent_gid[lid] = (PetscScalar)statej; /* send who selected */
             if( sgidold>=my0 && sgidold<Iend ) { /* this was mine */
               PetscInt hav=0,oldslidj=sgidold-my0;
-              LLNPos pos,last=PETSC_NULL;
+              PetscCDPos pos,last=PETSC_NULL;
               /* remove from 'oldslidj' list */
-              for( pos=AILGetHeadPos(aggs_2,oldslidj) ; pos ; pos=AILGetNextPos(aggs_2,oldslidj,pos)){
+              for( pos=PetscCDGetHeadPos(aggs_2,oldslidj) ; pos ; pos=PetscCDGetNextPos(aggs_2,oldslidj,pos)){
                 PetscInt gid = LLNGetID(pos);
                 if( lid+my0 == gid ) {
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
                   assert(last);
-                  ierr = AILRemoveNextNode( aggs_2, oldslidj, last ); CHKERRQ(ierr);
+                  ierr = PetscCDRemoveNextNode( aggs_2, oldslidj, last ); CHKERRQ(ierr);
                   /* ghost (PetscScalar)statej will add this later */
                   hav = 1;
                   break;
@@ -592,16 +592,16 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
     for(lid=0;lid<nloc;lid++){
       NState state = lid_state[lid];
       if( IS_SELECTED(state) ){
-        LLNPos pos,last=PETSC_NULL;        
+        PetscCDPos pos,last=PETSC_NULL;        
         /* look for deleted ghosts and see if they moved */
-        for( pos=AILGetHeadPos(aggs_2,lid) ; pos ; pos=AILGetNextPos(aggs_2,lid,pos)){
+        for( pos=PetscCDGetHeadPos(aggs_2,lid) ; pos ; pos=PetscCDGetNextPos(aggs_2,lid,pos)){
           PetscInt gid = LLNGetID(pos);
           if( gid < my0 || gid >= Iend ) {
             ierr = GAMGTableFind( &gid_cpid, gid, &cpid ); CHKERRQ(ierr);
             if( cpid != -1 ) {
               /* a moved ghost - */
               /* id_llist_2[lastid] = id_llist_2[flid];    /\* remove 'flid' from list *\/ */
-              ierr = AILRemoveNextNode( aggs_2, lid, last ); CHKERRQ(ierr);
+              ierr = PetscCDRemoveNextNode( aggs_2, lid, last ); CHKERRQ(ierr);
             }
             else last = pos;
           }
@@ -617,15 +617,15 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
       if( sgid_new >= my0 && sgid_new < Iend ) { /* this is mine */
         PetscInt gid = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
         PetscInt slid_new=sgid_new-my0,hav=0;
-        LLNPos pos;
+        PetscCDPos pos;
         /* search for this gid to see if I have it */
-        for( pos=AILGetHeadPos(aggs_2,slid_new) ; pos ; pos=AILGetNextPos(aggs_2,slid_new,pos) ) {
+        for( pos=PetscCDGetHeadPos(aggs_2,slid_new) ; pos ; pos=PetscCDGetNextPos(aggs_2,slid_new,pos) ) {
           PetscInt gidj = LLNGetID(pos);
           if( gidj == gid ) { hav = 1; break; }
         }
         if( hav != 1 ){
           /* id_llist_2[flidj] = id_llist_2[slid_new]; id_llist_2[slid_new] = flidj; /\* insert 'flidj' into head of llist *\/ */
-          ierr = AILAppendID( aggs_2, slid_new, gid );      CHKERRQ(ierr);
+          ierr = PetscCDAppendID( aggs_2, slid_new, gid );      CHKERRQ(ierr);
         }
       }
     }
@@ -697,7 +697,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
   PetscMPIInt    mype, npe;
   PetscReal      *out_data;
-  LLNPos         pos;
+  PetscCDPos         pos;
   GAMGHashTable  fgid_flid;
 
 /* #define OUT_AGGS */
@@ -728,7 +728,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
   /* count selected -- same as number of cols of P */
   for(nSelected=mm=0;mm<nloc;mm++) {
-    if( AILSizeAt(agg_llists, mm) > 0 ) nSelected++;
+    if( PetscCDSizeAt(agg_llists, mm) > 0 ) nSelected++;
   }
   ierr = MatGetOwnershipRangeColumn( a_Prol, &ii, &jj ); CHKERRQ(ierr);
   assert((ii/nSAvec)==my0crs); assert(nSelected==(jj-ii)/nSAvec);
@@ -745,7 +745,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   minsz = 100;
   ndone = 0;
   for( mm = clid = 0 ; mm < nloc ; mm++ ){
-    if( (jj=AILSizeAt(agg_llists,mm)) > 0 ) {
+    if( (jj=PetscCDSizeAt(agg_llists,mm)) > 0 ) {
       const PetscInt lid = mm, cgid = my0crs + clid;
       PetscInt cids[100]; /* max bs */
       PetscBLASInt asz=jj,M=asz*bs,N=nSAvec,INFO;
@@ -764,9 +764,9 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
       ierr = PetscMalloc( M*sizeof(PetscInt), &fids ); CHKERRQ(ierr);
 
       aggID = 0;
-      for( pos=AILGetHeadPos(agg_llists,lid) ; 
+      for( pos=PetscCDGetHeadPos(agg_llists,lid) ; 
            pos ; 
-           pos=AILGetNextPos(agg_llists,lid,pos)) {
+           pos=PetscCDGetNextPos(agg_llists,lid,pos)) {
         PetscInt gid1 = LLNGetID(pos);
         if( gid1 >= my0 && gid1 < Iend ) flid = gid1 - my0;
         else {
@@ -1004,13 +1004,13 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
     ierr = smoothAggs( Gmat2, Gmat1, *agg_lists ); CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);
     *a_Gmat1 = Gmat2; /* output */
-    ierr = AILGetMat( llist, &mat );  CHKERRQ(ierr);
+    ierr = PetscCDGetMat( llist, &mat );  CHKERRQ(ierr);
     if(mat) SETERRQ(wcomm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
   }
   else {
     const PetscCoarsenData *llist = *agg_lists;
     /* see if we have a matrix that takes pecedence (returned from MatCoarsenAppply) */
-    ierr = AILGetMat( llist, &mat );   CHKERRQ(ierr);
+    ierr = PetscCDGetMat( llist, &mat );   CHKERRQ(ierr);
     if( mat ) {
       ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);
       *a_Gmat1 = mat; /* output */
@@ -1069,7 +1069,7 @@ PetscErrorCode PCGAMGProlongator_AGG( PC pc,
   /* get 'nLocalSelected' */
   for( ii=0, nLocalSelected = 0 ; ii < nloc ; ii++ ){
     /* filter out singletons 0 or 1? */
-    if( AILSizeAt(agg_lists, ii) > 0 ) nLocalSelected++;
+    if( PetscCDSizeAt(agg_lists, ii) > 0 ) nLocalSelected++;
   }
 
   /* create prolongator, create P matrix */

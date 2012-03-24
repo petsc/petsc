@@ -105,7 +105,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
   ierr = PetscMalloc( (nloc+1)*sizeof(PetscScalar), &lid_state ); CHKERRQ(ierr);
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
-  ierr = AILCreate( strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists ); CHKERRQ(ierr); 
+  ierr = PetscCDCreate( strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists ); CHKERRQ(ierr); 
   if(a_locals_llist) *a_locals_llist = agg_lists;
 
   /* need an inverse map - locals */
@@ -173,10 +173,10 @@ PetscErrorCode maxIndSetAgg( const IS perm,
           lid_state[lid] = (PetscScalar)(lid+my0); // needed????
           nselected++;
           if( strict_aggs ) {
-            ierr = AILAppendID( agg_lists, lid, lid+my0 ); CHKERRQ(ierr);
+            ierr = PetscCDAppendID( agg_lists, lid, lid+my0 ); CHKERRQ(ierr);
           }
           else {
-            ierr = AILAppendID( agg_lists, lid, lid ); CHKERRQ(ierr);
+            ierr = PetscCDAppendID( agg_lists, lid, lid ); CHKERRQ(ierr);
           }
           /* delete local adj */
           idx = matA->j + ii[lid];
@@ -187,10 +187,10 @@ PetscErrorCode maxIndSetAgg( const IS perm,
               nDone++;
               /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
               if( strict_aggs ) {
-                ierr = AILAppendID( agg_lists, lid, lidj+my0 ); CHKERRQ(ierr);
+                ierr = PetscCDAppendID( agg_lists, lid, lidj+my0 ); CHKERRQ(ierr);
               }
               else {
-                ierr = AILAppendID( agg_lists, lid, lidj ); CHKERRQ(ierr);
+                ierr = PetscCDAppendID( agg_lists, lid, lidj ); CHKERRQ(ierr);
               }
               lid_state[lidj] = (PetscScalar)(PetscReal)DELETED;  /* delete this */
             }
@@ -207,7 +207,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
                 if( statej == NOT_DONE ) {
                   /* cpcol_state[cpid] = (PetscScalar)DELETED; this should happen later ... */
                   /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
-                  ierr = AILAppendID( agg_lists, lid, nloc+cpid ); CHKERRQ(ierr);
+                  ierr = PetscCDAppendID( agg_lists, lid, nloc+cpid ); CHKERRQ(ierr);
                 }
               }
             }
@@ -247,7 +247,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
               if( !strict_aggs ) {
                 PetscInt lidj = nloc + cpid;
                 /* id_llist[lid] = id_llist[lidj]; id_llist[lidj] = lid; */ /* insert 'lid' into head of ghost llist */
-                ierr = AILAppendID( agg_lists, lidj, lid ); CHKERRQ(ierr);
+                ierr = PetscCDAppendID( agg_lists, lidj, lid ); CHKERRQ(ierr);
               }
               else {
                 PetscInt sgid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);  
@@ -306,7 +306,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
       if( sgid >= my0 && sgid < Iend ) { /* I own this deleted */
         PetscInt slid = sgid - my0;
         /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
-        ierr = AILAppendID( agg_lists, slid, gid ); CHKERRQ(ierr);
+        ierr = PetscCDAppendID( agg_lists, slid, gid ); CHKERRQ(ierr);
         assert(IS_SELECTED( (NState)PetscRealPart(lid_state[slid]) ));
       }
     }

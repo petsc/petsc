@@ -372,25 +372,24 @@ struct _p_MatCoarsen {
   PetscCoarsenData *agg_lists;
 };
 
-PetscErrorCode AILCreate( PetscInt chsz, PetscCoarsenData **ail );
-/* PetscErrorCode AILGetNewNode( PetscCoarsenData *ail, LLIntNode **a_out, PetscInt a_gid ); */
-PetscErrorCode AILDestroy( PetscCoarsenData *ail );
-PetscErrorCode LLNSetID( LLIntNode *a_this, PetscInt a_gid );
-PetscInt LLNGetID( const LLIntNode *a_this );
-PetscErrorCode AILAppendID( PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_gid );
-PetscErrorCode AILAppendRemove( PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx );
-PetscErrorCode AILAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  LLIntNode *a_n );
-PetscErrorCode AILRemoveNextNode( PetscCoarsenData *ail, PetscInt a_idx, LLIntNode *a_last );
-PetscErrorCode AILRemoveAllAt( PetscCoarsenData *ail, PetscInt a_idx );
-PetscInt AILSizeAt( const PetscCoarsenData *ail, PetscInt a_idx );
-PetscErrorCode AILSetChuckSize( PetscCoarsenData *ail, PetscInt a_sz );
-PetscErrorCode AILPrint( const PetscCoarsenData *ail, MPI_Comm comm  );
-PetscErrorCode AILGetMIS( PetscCoarsenData *ail, IS * );
-PetscErrorCode AILGetMat( const PetscCoarsenData *ail, Mat * );
-PetscErrorCode AILSetMat( PetscCoarsenData *ail, Mat );
-typedef LLIntNode* LLNPos;
-const LLNPos AILGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
-const LLNPos AILGetNextPos( const PetscCoarsenData *ail, PetscInt idx, LLNPos cpos);
+PetscErrorCode PetscCDCreate( PetscInt chsz, PetscCoarsenData **ail );
+PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail );
+PetscErrorCode LLNSetID( PetscCDIntNd *a_this, PetscInt a_gid );
+PetscInt LLNGetID( const PetscCDIntNd *a_this );
+PetscErrorCode PetscCDAppendID( PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_gid );
+PetscErrorCode PetscCDAppendRemove( PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx );
+PetscErrorCode PetscCDAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  PetscCDIntNd *a_n );
+PetscErrorCode PetscCDRemoveNextNode( PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_last );
+PetscErrorCode PetscCDRemoveAllAt( PetscCoarsenData *ail, PetscInt a_idx );
+PetscInt PetscCDSizeAt( const PetscCoarsenData *ail, PetscInt a_idx );
+PetscErrorCode PetscCDSetChuckSize( PetscCoarsenData *ail, PetscInt a_sz );
+PetscErrorCode PetscCDPrint( const PetscCoarsenData *ail, MPI_Comm comm  );
+PetscErrorCode PetscCDGetMIS( PetscCoarsenData *ail, IS * );
+PetscErrorCode PetscCDGetMat( const PetscCoarsenData *ail, Mat * );
+PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat );
+typedef PetscCDIntNd* PetscCDPos;
+const PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
+const PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos cpos);
 
 
 /*

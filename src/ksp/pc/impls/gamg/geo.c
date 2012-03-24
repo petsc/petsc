@@ -126,7 +126,8 @@ PetscErrorCode PCSetFromOptions_GEO( PC pc )
   ierr = PCSetFromOptions_GAMG( pc ); CHKERRQ(ierr);
 
   if( pc_gamg->verbose ) {
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done\n",0,__FUNCT__);
+    MPI_Comm  wcomm = ((PetscObject)pc)->comm;
+    PetscPrintf(wcomm,"[%d]%s done\n",0,__FUNCT__);
   }
 
   PetscFunctionReturn(0);
@@ -325,17 +326,17 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
 #define EPS 1.e-12
     /* find points and set prolongation */
     for( mm = clid = 0 ; mm < nFineLoc ; mm++ ){
-      if( (jj=AILSizeAt(agg_lists_1,mm)) > 0 ) {
+      if( (jj=PetscCDSizeAt(agg_lists_1,mm)) > 0 ) {
         const PetscInt lid = mm;
         //for(clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){
         //PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1);
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
-        LLNPos         pos;
+        PetscCDPos         pos;
 
-        for( pos=AILGetHeadPos(agg_lists_1,lid) ; 
+        for( pos=PetscCDGetHeadPos(agg_lists_1,lid) ; 
              pos ; 
-             pos=AILGetNextPos(agg_lists_1,lid,pos) ){
+             pos=PetscCDGetNextPos(agg_lists_1,lid,pos) ){
           PetscInt flid = LLNGetID(pos); 
           if( flid < nFineLoc ) {  /* could be a ghost */
             PetscInt bestTID = -1; PetscReal best_alpha = 1.e10;
@@ -757,7 +758,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
   nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
 
   /* get 'nLocalSelected' */
-  ierr = AILGetMIS( agg_lists, &selected_1 );        CHKERRQ(ierr);
+  ierr = PetscCDGetMIS( agg_lists, &selected_1 );        CHKERRQ(ierr);
   ierr = ISGetSize( selected_1, &jj );               CHKERRQ(ierr);
   ierr = PetscMalloc( jj*sizeof(PetscInt), &clid_flid ); CHKERRQ(ierr);
   ierr = ISGetIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
@@ -787,7 +788,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
   ierr =  MatGetSize( Prol, &kk, &jj ); CHKERRQ(ierr);
   if( jj==0 ) {
     if( verbose ) {
-      PetscPrintf(PETSC_COMM_WORLD,"[%d]%s ERROE: no selected points on coarse grid\n",mype,__FUNCT__);
+      PetscPrintf(wcomm,"[%d]%s ERROE: no selected points on coarse grid\n",mype,__FUNCT__);
     }
     ierr = PetscFree( clid_flid );  CHKERRQ(ierr);
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
@@ -843,14 +844,14 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
       ierr = MPI_Allreduce( &metric, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm );  CHKERRQ(ierr);
       if( tm > 1. ) { /* needs to be globalized - should not happen */
         if( verbose ) {
-          PetscPrintf(PETSC_COMM_WORLD,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,tm);
+          PetscPrintf(wcomm,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,tm);
         }
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
         Prol = PETSC_NULL;
       }
       else if( metric > .0 ) {
         if( verbose ) {
-          PetscPrintf(PETSC_COMM_WORLD,"[%d]%s worst metric for coarse grid = %e\n",mype,__FUNCT__,metric);
+          PetscPrintf(wcomm,"[%d]%s worst metric for coarse grid = %e\n",mype,__FUNCT__,metric);
         }
       }
     } else {

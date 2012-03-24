@@ -544,7 +544,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       }
 
       ierr = MatDestroy( &Gmat );      CHKERRQ(ierr); 
-      ierr = AILDestroy( agg_lists );  CHKERRQ(ierr);
+      ierr = PetscCDDestroy( agg_lists );  CHKERRQ(ierr);
     }
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
