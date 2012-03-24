@@ -888,12 +888,13 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscScalar   *a;
   PetscInt       p, q, i;
-  PetscMPIInt    size;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   if (ctx->dim < 0) {
     SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
@@ -904,6 +905,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   const PetscInt *ranges;
   PetscMPIInt    *counts, *displs;
   PetscInt       *foundCells;
+  PetscMPIInt    *foundProcs, *globalProcs;
   PetscInt        n = ctx->nInput, N, found;
 
   if (!redundantPoints) {
@@ -924,40 +926,48 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
     N = n;
     globalPoints = ctx->points;
   }
-  ierr = PetscMalloc(N * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
+  for(p = 0; p < N; ++p) {
+    foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
+    if (foundCells[p] >= 0) {
+      foundProcs[p] = rank;
+    } else {
+      foundProcs[p] = size;
+    }
+  }
+  /* Let the lowest rank process own each point */
+  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for(p = 0; p < N; ++p) {
-    ctx->cells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
-    if (ctx->cells[p] >= 0) ctx->n++;
+    if (globalProcs[p] == size) {
+      SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+0] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+0] : 0.0);
+    } else if (globalProcs[p] == rank) {
+      ctx->n++;
+    }
   }
-  // Check that exactly this many points were found
-  ierr = MPI_Allreduce(&ctx->n, &found, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  if (found != N) {SETERRQ2(comm, PETSC_ERR_PLIB, "Invalid number of points located %d should be %d", found, N);}
-  ierr = PetscMalloc(ctx->n * sizeof(PetscInt), &foundCells);CHKERRQ(ierr);
-  // Create coordinates vector
+  /* Create coordinates vector and array of owned cells */
+  ierr = PetscMalloc(ctx->n * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
   ierr = VecCreate(comm, &ctx->coords);CHKERRQ(ierr);
   ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
   for(p = 0, q = 0, i = 0; p < N; ++p) {
-    if (ctx->cells[p] >= 0) {
+    if (globalProcs[p] == rank) {
       PetscInt d;
 
       for(d = 0; d < ctx->dim; ++d, ++i) {
         a[i] = globalPoints[p*ctx->dim+d];
       }
-      /* Compress cells array */
-      foundCells[q++] = ctx->cells[p];
+      ctx->cells[q++] = foundCells[p];
     }
   }
   ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);
+  ierr = PetscFree3(foundCells,foundProcs,globalProcs);CHKERRQ(ierr);
   if (!redundantPoints) {
     ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ctx->cells);CHKERRQ(ierr);
-  ctx->cells = foundCells;
   PetscFunctionReturn(0);
 }
 
