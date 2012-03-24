@@ -3322,6 +3322,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       Mat interp;
 
       ierr = DMRefine(snes->dm,((PetscObject)snes)->comm,&fine);CHKERRQ(ierr);
+      if (!fine) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"DMRefine() did not perform any refinement, cannot continue grid sequencing");
       ierr = DMCreateInterpolation(snes->dm,fine,&interp,PETSC_NULL);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(fine,&xnew);CHKERRQ(ierr);
       ierr = MatInterpolate(interp,x,xnew);CHKERRQ(ierr);
