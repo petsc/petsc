@@ -39,7 +39,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
 
   ierr = DMSetFromOptions(daf);CHKERRQ(ierr);
 
-  ierr = DMCoarsen(daf,PETSC_NULL,&dac);CHKERRQ(ierr);
+  ierr = DMCoarsen(daf,MPI_COMM_NULL,&dac);CHKERRQ(ierr);
 
   ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);

@@ -514,7 +514,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       KSPDM kdm;
-      ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
+      ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMKSPGetContextWrite(dms[i],&kdm);CHKERRQ(ierr);

@@ -458,7 +458,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
   /* we use the DM grid information for that */
   if (asa_lev->dm) {
     /* coarsen DM and get the restriction matrix */
-    ierr = DMCoarsen(asa_lev->dm, PETSC_NULL, &(asa_lev->next->dm));CHKERRQ(ierr);
+    ierr = DMCoarsen(asa_lev->dm, MPI_COMM_NULL, &(asa_lev->next->dm));CHKERRQ(ierr);
     ierr = DMCreateAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
     ierr = MatGetSize(asa_lev->agg, &m, &n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(asa_lev->agg, &m_loc, &n_loc);CHKERRQ(ierr);

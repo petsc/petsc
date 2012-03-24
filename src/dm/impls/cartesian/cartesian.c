@@ -201,6 +201,7 @@ PetscErrorCode DMCoarsen_Cartesian(DM mesh, MPI_Comm comm, DM *coarseMesh)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) comm = ((PetscObject)mesh)->comm;
   ierr = DMCartesianGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = DMCartesianCreate(comm, coarseMesh);CHKERRQ(ierr);
 #if 0

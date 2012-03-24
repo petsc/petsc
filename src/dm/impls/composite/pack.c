@@ -904,6 +904,7 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  if (comm == MPI_COMM_NULL) comm = ((PetscObject)dmi)->comm;
   ierr = DMSetUp(dmi);CHKERRQ(ierr);
   next = com->next;
   ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
@@ -930,7 +931,7 @@ PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
   ierr = DMSetUp(dmi);CHKERRQ(ierr);
-  if (!comm) {
+  if (comm == MPI_COMM_NULL) {
     ierr = PetscObjectGetComm((PetscObject)dmi,&comm);CHKERRQ(ierr);
   }
   next = com->next;
