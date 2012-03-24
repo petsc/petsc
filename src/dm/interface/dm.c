@@ -835,21 +835,22 @@ PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
 /*@
-    DMRefine - Refines a DM object
+  DMRefine - Refines a DM object
 
-    Collective on DM
+  Collective on DM
 
-    Input Parameter:
-+   dm - the DM object
--   comm - the communicator to contain the new DM object (or PETSC_NULL)
+  Input Parameter:
++ dm   - the DM object
+- comm - the communicator to contain the new DM object (or PETSC_NULL)
 
-    Output Parameter:
-.   dmf - the refined DM
+  Output Parameter:
+. dmf - the refined DM, or PETSC_NULL
 
-    Level: developer
+  Note: If no refinement was done, the return value is PETSC_NULL
+
+  Level: developer
 
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
-
 @*/
 PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {

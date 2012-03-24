@@ -220,13 +220,13 @@ void PETSC_STDCALL  alestagepop_(PetscInt *debug, int *ierr){
   logger.stagePop();
 }
 
-void PETSC_STDCALL  alestageprintmemory_(CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  alestageprintmemory_(MPI_Fint * comm,CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN)){
   ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
   char *pN;
 
   FIXCHAR(name,lenN,pN);
-  *ierr = PetscPrintf(PETSC_COMM_WORLD, "%s %d allocations %d bytes\n", pN, logger.getNumAllocations(pN), logger.getAllocationTotal(pN));
-  *ierr = PetscPrintf(PETSC_COMM_WORLD, "%s %d deallocations %d bytes\n", pN, logger.getNumDeallocations(pN), logger.getDeallocationTotal(pN));
+  *ierr = PetscPrintf(MPI_Comm_f2c(*(comm)), "%s %d allocations %d bytes\n", pN, logger.getNumAllocations(pN), logger.getAllocationTotal(pN));
+  *ierr = PetscPrintf(MPI_Comm_f2c(*(comm)), "%s %d deallocations %d bytes\n", pN, logger.getNumDeallocations(pN), logger.getDeallocationTotal(pN));
   FREECHAR(name,pN);
 }
 

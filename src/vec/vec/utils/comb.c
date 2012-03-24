@@ -97,7 +97,7 @@ PETSC_EXTERN_C void  MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMP
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(MPI_COMM_SELF,1);
   }
 #if defined(PETSC_USE_COMPLEX)
   count = count/2;
@@ -112,7 +112,7 @@ PETSC_EXTERN_C void  MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMP
       xout[i] = PetscMin(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
     } else {
       (*PetscErrorPrintf)("Reduction type input is not REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN");
-      MPI_Abort(MPI_COMM_WORLD,1);
+      MPI_Abort(MPI_COMM_SELF,1);
     }
   }
   PetscFunctionReturnVoid();

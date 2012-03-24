@@ -2709,12 +2709,13 @@ PetscErrorCode DMComplexDistributeField(DM dm, PetscSF pointSF, PetscSection ori
 - partitioner - The partitioning package, or NULL for the default
 
   Output Parameter:
-. parallelMesh - The distributed DMComplex object
+. parallelMesh - The distributed DMComplex object, or PETSC_NULL
+
+  Note: If the mesh was not distributed, the return value is PETSC_NULL
 
   Level: intermediate
 
 .keywords: mesh, elements
-
 .seealso: DMComplexCreate(), DMComplexDistributeByFace()
 @*/
 PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParallel)

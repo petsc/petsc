@@ -4279,14 +4279,14 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
 
   PetscFunctionBegin;
   ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
+  SETERRQ(((PetscObject) mesh)->comm, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_Mesh"
 PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
+  SETERRQ(((PetscObject) dmCoarse)->comm, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
 }
 
 #undef __FUNCT__

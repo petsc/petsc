@@ -13,7 +13,7 @@ void FlipCellOrientation(pylith::int_array * const cells, const int numCells, co
     }
   }
 }
-      //Obj<PETSC_MESH_TYPE> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
+      //Obj<PETSC_MESH_TYPE> m = ALE::LaGriT::Builder::readMesh(comm, 3, options->baseFilename, options->interpolate, options->debug);'
       Obj<PETSC_MESH_TYPE>             m     = new PETSC_MESH_TYPE(comm, options->dim, options->debug);
       Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
       bool                 flipEndian = false;

@@ -101,7 +101,7 @@ void  MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *data
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(MPI_COMM_SELF,1);
   }
   if (xin[0] > xout[0]) {
     xout[0] = xin[0];
@@ -123,7 +123,7 @@ void  MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *data
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(MPI_COMM_SELF,1);
   }
   if (xin[0] < xout[0]) {
     xout[0] = xin[0];
