@@ -180,7 +180,7 @@ static PetscErrorCode createLevel( const PC pc,
 	
 	if( llev++ == -1 ) {
 	  PetscViewer viewer; char fname[32];
-	  sprintf(fname,"part_mat_%d.mat",llev);
+	  ierr = PetscSNPrintf(fname,sizeof fname,"part_mat_%D.mat",llev);CHKERRQ(ierr);
 	  PetscViewerBinaryOpen(wcomm,fname,FILE_MODE_WRITE,&viewer);
 	  ierr = MatView( tMat, viewer ); CHKERRQ(ierr);
 	  ierr = PetscViewerDestroy( &viewer );

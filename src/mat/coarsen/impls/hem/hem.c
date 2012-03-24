@@ -560,14 +560,14 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
 if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s look at [%d %d] w=%e.\n",mype,__FUNCT__,gid0,gid1,e->weight);
         nactive_edges++;
         /* skip if I have a bigger edge someplace (lid_max_ew gets updated) */
-        if( lid_max_ew[lid0] > e->weight + 1.e-12 ) {
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v0 skip match [%d %d] b/c has edge w %e < v0-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,lid_max_ew[lid0]);
+        if( PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12 ) {
+          if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v0 skip match [%d %d] b/c has edge w %e < v0-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,PetscRealPart(lid_max_ew[lid0]));
           continue;
         }
         
         if( cpid1 == -1 ) {
-          if( lid_max_ew[lid1] > e->weight + 1.e-12 ) {
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1 skip match [%d %d] b/c has edge w %e < v1-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,lid_max_ew[lid1]);
+          if( PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12 ) {
+            if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1 skip match [%d %d] b/c has edge w %e < v1-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,PetscRealPart(lid_max_ew[lid1]));
             continue;
           }
         }
@@ -597,7 +597,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1-g skip match [%d %d]
               if( cpcol_matched[lidj] ) continue;
               ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if( ew > max_e - 1.e-12 && ew > lid_max_ew[lid0] - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
+              if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
                   (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype )
               {
                 isOK = PETSC_FALSE;
@@ -617,7 +617,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t[%d]%s v0-b) skip match [%
                 if( cpcol_matched[lidj] ) continue;
                 ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if( ew > max_e - 1.e-12 && ew > lid_max_ew[lid1] - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
+                if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
                     (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype ) 
                 {
                   isOK = PETSC_FALSE;
@@ -707,7 +707,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         nSend2 = 0;
         while( 1 ){
 #define BF_SZ 10000
-          PetscInt flag,count;
+          PetscMPIInt flag,count;
           PetscInt rbuff[BF_SZ],*pt,*pt2,*pt3,count2,*sbuff,count3;
           MPI_Request *request;
           ierr = MPI_Iprobe( MPI_ANY_SOURCE, tag1, wcomm, &flag, &status ); CHKERRQ(ierr);
@@ -762,12 +762,12 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         
         /* recieve tag2 *[lid0, n, n*[gid] ] */
         for(kk=0;kk<nSend1;kk++){
-          PetscInt count;
+          PetscMPIInt count;
           MPI_Request *request, *pt, *pt2;
           request = rreqs2[kk]; /* no need to free -- buffer is in 'sbuffs1' */
           ierr = MPI_Wait( request, &status );  CHKERRQ(ierr);
           ierr = MPI_Get_count( &status, MPIU_INT, &count ); CHKERRQ(ierr);
-          pt = pt2 = (PetscInt*)(request+1);
+          pt = pt2 = request+1;
           while(pt-pt2 < count){
             PetscInt lid0 = *pt++, n = *pt++;           assert(lid0>=0 && lid0<nloc);
             while(n--){
@@ -858,7 +858,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         /* compute 'cpcol_max_pe' */
         for(kk=0,gid=my0;kk<nloc;kk++,gid++){
           PetscInt lid = kk;
-          PetscReal ew,v1_max_e,v0_max_e=lid_max_ew[lid];
+          PetscReal ew,v1_max_e,v0_max_e=PetscRealPart(lid_max_ew[lid]);
           PetscScalar vval;
           PetscMPIInt max_pe=mype,pe;
           if( lid_matched[lid] ) vval = (PetscScalar)mype;
