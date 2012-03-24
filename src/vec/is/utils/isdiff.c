@@ -547,7 +547,7 @@ PetscErrorCode ISColoringToList(IS indis, IS coloris, PetscInt *listlen, IS **is
       ierr = MPI_Allreduce(&color,&subsize,1,MPI_INT,MPI_SUM,comm); CHKERRQ(ierr);
       
       if(subsize == 1) subcomm = PETSC_COMM_SELF;
-      else if(subsize == size) subcomm = PETSC_COMM_WORLD;
+      else if(subsize == size) subcomm = comm;
       else {
         /* a proper communicator is necessary, so we create it. */
         ierr = MPI_Comm_split(comm, color, rank, &subcomm); CHKERRQ(ierr);

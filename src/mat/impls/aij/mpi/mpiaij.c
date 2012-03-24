@@ -98,7 +98,7 @@ PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
     }
     ok2:;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)M)->comm,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
