@@ -275,15 +275,17 @@ extern PetscErrorCode  PCASMSetSortIndices(PC,PetscBool );
 /*E
     PCASMType - Type of additive Schwarz method to use
 
-$  PC_ASM_BASIC - symmetric version where residuals from the ghost points are used
-$                 and computed values in ghost regions are added together. Classical
-$                 standard additive Schwarz
-$  PC_ASM_RESTRICT - residuals from ghost points are used but computed values in ghost
-$                    region are discarded. Default
-$  PC_ASM_INTERPOLATE - residuals from ghost points are not used, computed values in ghost
-$                       region are added back in
-$  PC_ASM_NONE - ghost point residuals are not used, computed ghost values are discarded
-$                not very good.                
+$  PC_ASM_BASIC        - Symmetric version where residuals from the ghost points are used
+$                        and computed values in ghost regions are added together. 
+$                        Classical standard additive Schwarz.
+$  PC_ASM_RESTRICT     - Residuals from ghost points are used but computed values in ghost
+$                        region are discarded. 
+$                        Default.
+$  PC_ASM_INTERPOLATE  - Residuals from ghost points are not used, computed values in ghost
+$                        region are added back in.
+$  PC_ASM_NONE         - Residuals from ghost points are not used, computed ghost values are 
+$                        discarded.
+$                        Not very good.
 
    Level: beginner
 
@@ -302,15 +304,17 @@ extern PetscErrorCode  PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 /*E
     PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per domain)
 
-$  PC_GASM_BASIC - symmetric version where residuals from the ghost points are used
-$                 and computed values in ghost regions are added together. Classical
-$                 standard additive Schwarz
-$  PC_GASM_RESTRICT - residuals from ghost points are used but computed values in ghost
-$                    region are discarded. Default
-$  PC_GASM_INTERPOLATE - residuals from ghost points are not used, computed values in ghost
-$                       region are added back in
-$  PC_GASM_NONE - ghost point residuals are not used, computed ghost values are discarded
-$                not very good.                
+$  PC_GASM_BASIC       - Symmetric version where residuals from the ghost points are used
+$                        and computed values in ghost regions are added together. 
+$                        Classical standard additive Schwarz.
+$  PC_GASM_RESTRICT    - Residuals from ghost points are used but computed values in ghost
+$                        region are discarded. 
+$                        Default.
+$  PC_GASM_INTERPOLATE - Residuals from ghost points are not used, computed values in ghost
+$                        region are added back in.
+$  PC_GASM_NONE        - Residuals from ghost points are not used, computed ghost values are 
+$                        discarded.
+$                        Not very good.
 
    Level: beginner
 
