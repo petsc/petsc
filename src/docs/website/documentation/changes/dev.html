@@ -156,6 +156,7 @@
           Renamed DMGetMatrix(), DMGetInterpolation(), DMGetInjection(), and
           DMGetColoring() to DMCreateMatrix(), etc for semantic consistency.
         </li>
+        <li>The communicator argument to DMRefine() and DMCoarsen() can be MPI_COMM_NULL, but not PETSC_NULL, because the latter may not be the correct type.</li>
       </ul>
 
       <h4>DMMG:</h4>

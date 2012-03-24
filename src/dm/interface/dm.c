@@ -841,7 +841,7 @@ PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS 
 
   Input Parameter:
 + dm   - the DM object
-- comm - the communicator to contain the new DM object (or PETSC_NULL)
+- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
   Output Parameter:
 . dmf - the refined DM, or PETSC_NULL
@@ -1063,7 +1063,7 @@ PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *s
 
     Input Parameter:
 +   dm - the DM object
--   comm - the communicator to contain the new DM object (or PETSC_NULL)
+-   comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
     Output Parameter:
 .   dmc - the coarsened DM
