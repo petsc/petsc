@@ -1,4 +1,4 @@
-#include <private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
+#include <petsc-private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
 #include <petscdmmesh_viewers.hh>
 
 /* Logging support */

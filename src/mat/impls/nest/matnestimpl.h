@@ -2,7 +2,7 @@
 #ifndef MatNest_impl_h
 #define MatNest_impl_h
 
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 struct MatNestISPair {
   IS *row,*col;

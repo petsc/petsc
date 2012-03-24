@@ -4,7 +4,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #include "petscbt.h"
 #include "../src/vec/vec/impls/dvecimpl.h"
-#include "private/vecimpl.h"
+#include "petsc-private/vecimpl.h"
 PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"

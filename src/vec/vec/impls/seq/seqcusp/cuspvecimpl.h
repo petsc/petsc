@@ -1,7 +1,7 @@
 #ifndef __CUSPVECIMPL
 #define __CUSPVECIMPL
 
-#include <private/vecimpl.h>
+#include <petsc-private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>

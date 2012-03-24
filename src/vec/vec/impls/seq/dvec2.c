@@ -4,7 +4,7 @@
   sequential and parallel vectors.
 */
 #include <../src/vec/vec/impls/dvecimpl.h>   
-#include <private/petscaxpy.h>
+#include <petsc-private/petscaxpy.h>
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>

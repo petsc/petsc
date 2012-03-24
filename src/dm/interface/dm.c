@@ -1,5 +1,5 @@
 #include <petscsnes.h> 
-#include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

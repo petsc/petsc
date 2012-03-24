@@ -1,4 +1,4 @@
-#include <private/igaimpl.h>    /*I   "petscdmiga.h"   I*/
+#include <petsc-private/igaimpl.h>    /*I   "petscdmiga.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_IGA"

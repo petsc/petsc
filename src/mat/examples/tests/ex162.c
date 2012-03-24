@@ -1,7 +1,7 @@
 static char help[] = "Test MatMatMult dual dispatch.\n\n";
 
 #include <petscmat.h>
-#include <private/matimpl.h>                  /* Need MatOpRegister for this test. */
+#include <petsc-private/matimpl.h>                  /* Need MatOpRegister for this test. */
 #include <../src/mat/impls/dense/seq/dense.h> /* Need MatMatMult_SeqAIJ_SeqDense for this test. */
 #undef __FUNCT__
 #define __FUNCT__ "main"

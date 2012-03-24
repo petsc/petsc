@@ -1,4 +1,4 @@
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petsc_viewer_stdout__      PETSC_VIEWER_STDOUT_BROKEN

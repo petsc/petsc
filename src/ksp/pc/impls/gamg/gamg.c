@@ -1,9 +1,9 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "private/matimpl.h"
+#include "petsc-private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 #if defined PETSC_USE_LOG 
 PetscLogEvent gamg_setup_events[NUM_SET];

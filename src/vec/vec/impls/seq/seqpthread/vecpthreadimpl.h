@@ -3,7 +3,7 @@
 #define __VECPTHREADIMPL
 
 #include <petscsys.h>
-#include <private/vecimpl.h>
+#include <petsc-private/vecimpl.h>
 
 /* Common data for all kernels */
 typedef struct {

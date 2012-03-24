@@ -1,4 +1,4 @@
-#include <private/snesimpl.h>             /*I   "petscsnes.h"   I*/
+#include <petsc-private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 
 typedef struct {
   PetscInt  sweeps;

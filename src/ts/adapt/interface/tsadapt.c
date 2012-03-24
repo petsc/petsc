@@ -1,5 +1,5 @@
 
-#include <private/tsimpl.h> /*I  "petscts.h" I*/
+#include <petsc-private/tsimpl.h> /*I  "petscts.h" I*/
 
 static PetscFList TSAdaptList;
 static PetscBool  TSAdaptPackageInitialized;

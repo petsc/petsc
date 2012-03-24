@@ -1,5 +1,5 @@
 
-#include <private/kspimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/cheby/chebychevimpl.h>
 
 #undef __FUNCT__  

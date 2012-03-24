@@ -14,7 +14,7 @@
 /*
         Defines the basic KSP object
 */
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 /*
     The field should remain the same since it is shared by the BiCG code

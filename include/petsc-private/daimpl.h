@@ -6,7 +6,7 @@
 #define _DAIMPL_H
 
 #include <petscdmda.h>
-#include "private/dmimpl.h"
+#include "petsc-private/dmimpl.h"
 
 typedef struct {
   PetscInt            M,N,P;                 /* array dimensions */

@@ -1,4 +1,4 @@
-#include <private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
 /*================================ Start Converted TetGen Objects ================================*/
 /*  Geometric predicates                                                       */

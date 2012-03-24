@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <private/meshimpl.h>    /*I   "petscdmmesh.h"   I*/
+#include <petsc-private/meshimpl.h>    /*I   "petscdmmesh.h"   I*/
 #include <petscdmda.h>
 
 #undef __FUNCT__

@@ -1,7 +1,7 @@
 #if !defined(__PETSCGL_H)
 #define __PETSCGL_H
 
-#include <private/tsimpl.h>
+#include <petsc-private/tsimpl.h>
 
 typedef enum {TSGLERROR_FORWARD,TSGLERROR_BACKWARD} TSGLErrorDirection;
 

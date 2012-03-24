@@ -2,7 +2,7 @@
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
-#include <private/isimpl.h>      /*I "petscis.h" I*/
+#include <petsc-private/isimpl.h>      /*I "petscis.h" I*/
 
 /* Logging support */
 PetscClassId  IS_CLASSID;

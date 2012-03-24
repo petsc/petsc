@@ -1,4 +1,4 @@
-#include <private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"

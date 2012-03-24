@@ -57,7 +57,7 @@ There are two compile-time options:
 
 #include <petscdmmg.h>
 #include <ctype.h>              /* toupper() */
-#include <private/daimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
+#include <petsc-private/daimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
 #  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */

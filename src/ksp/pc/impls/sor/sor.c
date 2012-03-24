@@ -2,7 +2,7 @@
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
-#include <private/pcimpl.h>               /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>               /*I "petscpc.h" I*/
 
 typedef struct {
   PetscInt    its;        /* inner iterations, number of sweeps */

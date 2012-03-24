@@ -3,7 +3,7 @@
 */
 #if !defined(__ASA_IMPL)
 #define __ASA_IMPL
-#include <private/pcimpl.h>
+#include <petsc-private/pcimpl.h>
 #include <petscpcasa.h>
 
 /*

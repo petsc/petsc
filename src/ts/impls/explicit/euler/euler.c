@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with explicit Euler.
 */
-#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;     /* work vector where new solution is formed  */

@@ -458,8 +458,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <private/dmimpl.h>
-#include <private/kspimpl.h>
+#include <petsc-private/dmimpl.h>
+#include <petsc-private/kspimpl.h>
 
 /*
     Calls setup for the KSP on each level

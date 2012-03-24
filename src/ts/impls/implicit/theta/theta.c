@@ -1,7 +1,7 @@
 /*
   Code for timestepping with implicit Theta method
 */
-#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnesfas.h>
 
 typedef struct {

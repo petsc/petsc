@@ -9,7 +9,7 @@
   where F represents the stiff part of the physics and G represents the non-stiff part.
 
 */
-#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 static const TSARKIMEXType TSARKIMEXDefault = TSARKIMEX3;
 static PetscBool TSARKIMEXRegisterAllCalled;

@@ -1,5 +1,5 @@
 
-#include <private/daimpl.h>    /*I "petscdmda.h"  I*/
+#include <petsc-private/daimpl.h>    /*I "petscdmda.h"  I*/
 
 extern PetscErrorCode  DMSetUp_DA_1D(DM);
 extern PetscErrorCode  DMSetUp_DA_2D(DM);

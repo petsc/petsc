@@ -1,5 +1,5 @@
 
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 /* Get new PetscMatStashSpace into the existing space */
 #undef __FUNCT__

@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include <private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__  

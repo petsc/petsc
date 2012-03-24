@@ -1,4 +1,4 @@
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 extern PetscErrorCode  KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 

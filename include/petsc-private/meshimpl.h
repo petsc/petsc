@@ -3,7 +3,7 @@
 
 #include <petscmat.h>    /*I      "petscmat.h"    I*/
 #include <petscdmmesh.h> /*I      "petscdmmesh.h"    I*/
-#include "private/dmimpl.h"
+#include "petsc-private/dmimpl.h"
 
 typedef struct Sieve_Label *SieveLabel;
 struct Sieve_Label {

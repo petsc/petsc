@@ -6,7 +6,7 @@
 #if !defined(__DGMRES)
 #define __DGMRES
 
-#include <private/kspimpl.h>        /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
 typedef struct {

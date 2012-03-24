@@ -2,7 +2,7 @@
 #if !defined(__pcis_h)
 #define __pcis_h
 
-#include <private/pcimpl.h>
+#include <petsc-private/pcimpl.h>
 #include <../src/mat/impls/is/matis.h>
 #include <petscksp.h>
 

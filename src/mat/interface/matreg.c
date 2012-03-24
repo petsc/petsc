@@ -2,7 +2,7 @@
 /*
      Mechanism for register PETSc matrix types
 */
-#include <private/matimpl.h>      /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
 #include <stdarg.h> /* Variable-length arg lists. */
 
 PetscBool  MatRegisterAllCalled = PETSC_FALSE;

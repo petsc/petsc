@@ -2,7 +2,7 @@
    This is the definition of the Mathematica viewer structure.
 */
 
-#include <private/viewerimpl.h>   /*I  "petscsys.h"  I*/
+#include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  I*/
 #ifdef PETSC_HAVE_MATHEMATICA
 #include <mathlink.h>
 #endif

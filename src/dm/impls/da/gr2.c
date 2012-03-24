@@ -3,8 +3,8 @@
    Plots vectors obtained with DMDACreate2d()
 */
 
-#include <private/daimpl.h>      /*I  "petscdmda.h"   I*/
-#include <private/vecimpl.h> 
+#include <petsc-private/daimpl.h>      /*I  "petscdmda.h"   I*/
+#include <petsc-private/vecimpl.h> 
 
 /*
         The data that is passed into the graphics callback

@@ -3,7 +3,7 @@
     ADIC matrix-free matrix implementation
 */
 
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 #include <petscdmda.h>          /*I   "petscdmda.h"    I*/
 #include <petscsnes.h>        /*I   "petscsnes.h"  I*/
 EXTERN_C_BEGIN

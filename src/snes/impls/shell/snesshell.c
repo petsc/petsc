@@ -1,4 +1,4 @@
-#include <private/snesimpl.h>             /*I   "petscsnes.h"   I*/
+#include <petsc-private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 
 typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 

@@ -1,4 +1,4 @@
-#include <private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
+#include <petsc-private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
 #include <CartesianSieve.hh>
 
 #undef __FUNCT__

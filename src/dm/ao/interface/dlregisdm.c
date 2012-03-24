@@ -1,8 +1,8 @@
 
 #include <../src/dm/ao/aoimpl.h>
-#include <private/daimpl.h>
+#include <petsc-private/daimpl.h>
 #ifdef PETSC_HAVE_SIEVE
-#include <private/meshimpl.h>
+#include <petsc-private/meshimpl.h>
 #endif
 
 static PetscBool  AOPackageInitialized = PETSC_FALSE;

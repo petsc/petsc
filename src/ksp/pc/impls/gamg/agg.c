@@ -3,7 +3,7 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 #include <assert.h>
 #include <petscblaslapack.h>

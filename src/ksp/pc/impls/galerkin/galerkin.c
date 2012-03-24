@@ -2,7 +2,7 @@
 /*
       Defines a preconditioner defined by R^T S R 
 */
-#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <petscksp.h>         /*I "petscksp.h" I*/
 
 typedef struct {

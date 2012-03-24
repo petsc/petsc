@@ -1,4 +1,4 @@
-#include <private/fortranimpl.h> 
+#include <petsc-private/fortranimpl.h> 
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscobjectsetoptionsprefix     PETSCOBJECTSETOPTIONSPREFIX

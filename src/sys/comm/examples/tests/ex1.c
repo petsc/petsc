@@ -1,5 +1,5 @@
 #include <petscsys.h>
-#include <private/vecimpl.h>
+#include <petsc-private/vecimpl.h>
 
 typedef struct _n_PetscOverlap *PetscOverlap;
 struct _n_PetscOverlap

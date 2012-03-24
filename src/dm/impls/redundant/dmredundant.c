@@ -1,4 +1,4 @@
-#include <private/dmimpl.h>     /*I      "petscdm.h"          I*/
+#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"          I*/
 #include <petscdmredundant.h>   /*I      "petscdmredundant.h" I*/
 #include <petscmat.h>           /*I      "petscmat.h"         I*/
 

@@ -26,7 +26,7 @@ def FixFile(filename):
   data = match.sub(r'',data)
 
   ff = open(filename, 'w')
-  ff.write('#include "petscsys.h"\n#include "petscfix.h"\n#include "private/fortranimpl.h"\n'+data)
+  ff.write('#include "petscsys.h"\n#include "petscfix.h"\n#include "petsc-private/fortranimpl.h"\n'+data)
   ff.close()
 
 def FindSource(filename):

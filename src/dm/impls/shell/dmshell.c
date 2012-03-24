@@ -1,6 +1,6 @@
 #include <petscdmshell.h>       /*I    "petscdmshell.h"  I*/
 #include <petscmat.h>           /*I    "petscmat.h"      I*/
-#include <private/dmimpl.h>     /*I    "petscdm.h"       I*/
+#include <petsc-private/dmimpl.h>     /*I    "petscdm.h"       I*/
 
 typedef struct  {
   Vec Xglobal;

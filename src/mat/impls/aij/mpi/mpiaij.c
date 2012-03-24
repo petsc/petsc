@@ -5653,7 +5653,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 /*
     Special version for direct calls from Fortran 
 */
-#include <private/fortranimpl.h>
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ

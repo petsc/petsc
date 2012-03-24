@@ -1,5 +1,5 @@
 
-#include <private/matimpl.h>     /*I       "petscmat.h"   I*/
+#include <petsc-private/matimpl.h>     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatGetOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);

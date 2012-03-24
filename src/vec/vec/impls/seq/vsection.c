@@ -2,7 +2,7 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #if 0
 /* Should I protect these for C++? */

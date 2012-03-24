@@ -1,6 +1,6 @@
 
 
-#include <private/vecimpl.h>
+#include <petsc-private/vecimpl.h>
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>  /*I   "petscvec.h"  I*/

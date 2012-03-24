@@ -1,5 +1,5 @@
 
-#include <private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
 typedef struct {

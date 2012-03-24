@@ -5,7 +5,7 @@
    Requires pARMS 3.2 or later.
 */
 
-#include "private/pcimpl.h"          /*I "petscpc.h" I*/
+#include "petsc-private/pcimpl.h"          /*I "petscpc.h" I*/
 
 #ifdef PETSC_USE_COMPLEX
 #define DBL_CMPLX

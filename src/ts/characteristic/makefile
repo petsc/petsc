@@ -2,7 +2,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../../include/private/characteristicimpl.h ../../../include/petsccharacteristic.h
+SOURCEH  = ../../../include/petsc-private/characteristicimpl.h ../../../include/petsccharacteristic.h
 DIRS     = interface impls examples
 LOCDIR   = src/ts/characteristic/
 MANSEC   = SemiLagrange

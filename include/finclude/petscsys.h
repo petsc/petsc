@@ -55,7 +55,7 @@
 
 !
 !     The numbers used below should match those in 
-!     private/fortranimpl.h
+!     petsc-private/fortranimpl.h
 !
       parameter (PETSC_VIEWER_DRAW_WORLD   = 4) 
       parameter (PETSC_VIEWER_DRAW_SELF    = 5)

@@ -3,7 +3,7 @@
 */
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
-#include <private/pcimpl.h>
+#include <petsc-private/pcimpl.h>
 #include <petscpcmg.h>
 #include <petscksp.h>
 

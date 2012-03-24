@@ -2,7 +2,7 @@
 /*
     Identity preconditioner, simply copies vector x to y.
 */
-#include <private/pcimpl.h>          /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>          /*I "petscpc.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_None"

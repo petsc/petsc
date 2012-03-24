@@ -1,7 +1,7 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
 #include <petscdmcomplex.h>
-#include <private/compleximpl.h>
+#include <petsc-private/compleximpl.h>
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */

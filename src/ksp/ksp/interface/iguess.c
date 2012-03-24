@@ -1,5 +1,5 @@
 
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 /* ---------------------------------------Method 1------------------------------------------------------------*/
 typedef struct {

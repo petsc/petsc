@@ -1,4 +1,4 @@
-#include <private/fortranimpl.h> 
+#include <petsc-private/fortranimpl.h> 
 
 void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
 

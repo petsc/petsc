@@ -1,6 +1,6 @@
 
-#include <private/daimpl.h>
-#include <private/fortranimpl.h>
+#include <petsc-private/daimpl.h>
+#include <petsc-private/fortranimpl.h>
 #include <petscmat.h>
 #include <petscdmda.h>
 

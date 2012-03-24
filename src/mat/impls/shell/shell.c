@@ -5,8 +5,8 @@
   much of anything.
 */
 
-#include <private/matimpl.h>        /*I "petscmat.h" I*/
-#include <private/vecimpl.h>  
+#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc-private/vecimpl.h>  
 
 typedef struct {
   PetscErrorCode (*destroy)(Mat);

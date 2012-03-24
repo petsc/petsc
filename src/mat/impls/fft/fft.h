@@ -2,7 +2,7 @@
 #if !defined(__FFT_H)
 #define __FFT_H
 
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 
 typedef struct {
   PetscInt       ndim;

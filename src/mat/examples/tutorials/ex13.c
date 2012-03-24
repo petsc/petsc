@@ -10,7 +10,7 @@ Each block is a matrix of (generally) any type.\n\n";
      petscis.h     - index sets            petscviewer.h - viewers               
 */
 #include <petscmat.h>
-#include <private/matimpl.h>
+#include <petsc-private/matimpl.h>
 extern PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat,Vec,Vec);
 
 #undef __FUNCT__

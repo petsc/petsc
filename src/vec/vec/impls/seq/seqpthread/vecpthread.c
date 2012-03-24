@@ -7,7 +7,7 @@
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <petscblaslapack.h>
-#include <private/petscaxpy.h>
+#include <petsc-private/petscaxpy.h>
 #include <unistd.h>
 
 PetscInt vecs_created=0;

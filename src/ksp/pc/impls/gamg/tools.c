@@ -1,9 +1,9 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "private/matimpl.h"    /*I "petscmat.h" I*/
+#include "petsc-private/matimpl.h"    /*I "petscmat.h" I*/
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <private/kspimpl.h>
+#include <petsc-private/kspimpl.h>
 
 /* -------------------------------------------------------------------------- */
 /*

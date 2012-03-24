@@ -1,8 +1,8 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <../include/private/kspimpl.h>
-#include <../include/private/matimpl.h>
-#include <../include/private/dmimpl.h>
+#include <../include/petsc-private/kspimpl.h>
+#include <../include/petsc-private/matimpl.h>
+#include <../include/petsc-private/dmimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInactiveSet"

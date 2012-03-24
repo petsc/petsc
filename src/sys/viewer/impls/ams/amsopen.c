@@ -1,5 +1,5 @@
 
-#include <private/viewerimpl.h>   /*I  "petsc.h"  */
+#include <petsc-private/viewerimpl.h>   /*I  "petsc.h"  */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerAMSOpen" 

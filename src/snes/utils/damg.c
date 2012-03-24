@@ -3,7 +3,7 @@
 #include <petscksp.h>           /*I "petscksp.h"  I*/
 #include <petscpcmg.h>            /*I "petscpcmg.h"   I*/
 #include <petscdmmg.h>          /*I "petscdmmg.h" I*/
-#include <private/pcimpl.h>     /*I "petscpc.h"   I*/
+#include <petsc-private/pcimpl.h>     /*I "petscpc.h"   I*/
 
 /*
    Code for almost fully managing multigrid/multi-level linear solvers for DM grids

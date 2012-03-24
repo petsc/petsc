@@ -2,7 +2,7 @@
 #define _STASHIJ_H
 
 /* Need PetscLayout */
-#include <private/vecimpl.h> /*I "petscvec.h" */
+#include <petsc-private/vecimpl.h> /*I "petscvec.h" */
 
 /* Need PetscHash */
 #include <../src/sys/utils/hash.h>
