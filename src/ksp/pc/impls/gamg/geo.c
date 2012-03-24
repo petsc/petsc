@@ -599,7 +599,7 @@ PetscErrorCode PCGAMGgraph_GEO( PC pc,
   ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
 
   ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
-  symm = !(set && flg);
+  symm = (PetscBool)!(set && flg);
 
   ierr  = PCGAMGCreateSimpleGraph( Amat, &Gmat ); CHKERRQ( ierr );
   ierr  = PCGAMGScaleFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );

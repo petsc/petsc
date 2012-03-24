@@ -811,7 +811,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         ierr = VecGetArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
         ierr = VecGetLocalSize( mpimat->lvec, &n ); CHKERRQ(ierr);
         for(kk=0;kk<n;kk++) {
-          cpcol_matched[kk] = (PetscRealPart(cpcol_max_ew[kk]) != 0.0);
+          cpcol_matched[kk] = (PetscBool)(PetscRealPart(cpcol_max_ew[kk]) != 0.0);
         }
         
         ierr = VecRestoreArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
