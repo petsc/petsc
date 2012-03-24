@@ -365,13 +365,33 @@ struct _p_MatCoarsen {
   Mat         graph;
   PetscInt    verbose;
   PetscInt    setupcalled;
-  void        *data;
-  /* optional data - could be in MIS data */
-  IS perm;
-  IS mis;
-  IS agg_llist;
+  void        *subctx;
+  /* */
   PetscBool strict_aggs;
+  IS perm;
+  PetscCoarsenData *agg_lists;
 };
+
+PetscErrorCode AILCreate( PetscInt chsz, PetscCoarsenData **ail );
+/* PetscErrorCode AILGetNewNode( PetscCoarsenData *ail, LLIntNode **a_out, PetscInt a_gid ); */
+PetscErrorCode AILDestroy( PetscCoarsenData *ail );
+PetscErrorCode LLNSetID( LLIntNode *a_this, PetscInt a_gid );
+PetscInt LLNGetID( const LLIntNode *a_this );
+PetscErrorCode AILAppendID( PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_gid );
+PetscErrorCode AILAppendRemove( PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx );
+PetscErrorCode AILAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  LLIntNode *a_n );
+PetscErrorCode AILRemoveNextNode( PetscCoarsenData *ail, PetscInt a_idx, LLIntNode *a_last );
+PetscErrorCode AILRemoveAllAt( PetscCoarsenData *ail, PetscInt a_idx );
+PetscInt AILSizeAt( const PetscCoarsenData *ail, PetscInt a_idx );
+PetscErrorCode AILSetChuckSize( PetscCoarsenData *ail, PetscInt a_sz );
+PetscErrorCode AILPrint( const PetscCoarsenData *ail, MPI_Comm comm  );
+PetscErrorCode AILGetMIS( PetscCoarsenData *ail, IS * );
+PetscErrorCode AILGetMat( const PetscCoarsenData *ail, Mat * );
+PetscErrorCode AILSetMat( PetscCoarsenData *ail, Mat );
+typedef LLIntNode* LLNPos;
+const LLNPos AILGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
+const LLNPos AILGetNextPos( const PetscCoarsenData *ail, PetscInt idx, LLNPos cpos);
+
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently

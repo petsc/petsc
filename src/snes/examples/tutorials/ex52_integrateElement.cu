@@ -26,8 +26,8 @@ __device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
 
 #elif (SPATIAL_DIM_0 == 3)
 
-__device__ float3 f1_elasticity(float u[], float3 gradU[], int comp) {
-  float3 f1;
+__device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
+  vecType f1;
 
   switch(comp) {
   case 0:
@@ -39,6 +39,7 @@ __device__ float3 f1_elasticity(float u[], float3 gradU[], int comp) {
     f1.x = 0.5*(gradU[1].x + gradU[0].y);
     f1.y = 0.5*(gradU[1].y + gradU[1].y);
     f1.z = 0.5*(gradU[1].z + gradU[2].y);
+    break;
   case 2:
     f1.x = 0.5*(gradU[2].x + gradU[0].z);
     f1.y = 0.5*(gradU[2].y + gradU[1].z);
@@ -218,6 +219,8 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
           e_i = f_1[(cell*N_q+q)*N_comp+cidx].x;break;
         case 1:
           e_i = f_1[(cell*N_q+q)*N_comp+cidx].y;break;
+        case 2:
+          e_i = f_1[(cell*N_q+q)*N_comp+cidx].z;break;
         default:
           e_i = 0.0;
         }

@@ -1502,13 +1502,39 @@ J*/
 #define MATCOARSENMIS  "mis"
 #define MATCOARSENHEM  "hem"
 
+/* linked list for aggregates */
+typedef struct _LLIntNode{
+  struct _LLIntNode *next;
+  PetscInt   gid;
+}LLIntNode;
+
+/* only used by node pool */
+typedef struct _LLArrNode{
+  struct _LLArrNode *next;
+  struct _LLIntNode *array; 
+}LLArrNode;
+
+typedef struct _PetscCoarsenData{
+  /* node pool */
+  LLArrNode  pool_list;
+  LLIntNode *new_node;
+  PetscInt   new_left;
+  PetscInt   chk_sz;
+  LLIntNode *extra_nodes;
+  /* Array of lists */
+  LLIntNode **array;
+  PetscInt size;
+  /* cache a Mat for communication data */
+  Mat mat;
+}PetscCoarsenData;
+
 extern PetscErrorCode  MatCoarsenCreate(MPI_Comm,MatCoarsen*);
 extern PetscErrorCode  MatCoarsenSetType(MatCoarsen,const MatCoarsenType);
 extern PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen,Mat);
 extern PetscErrorCode  MatCoarsenSetGreedyOrdering(MatCoarsen,const IS);
 extern PetscErrorCode  MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
 extern PetscErrorCode  MatCoarsenSetVerbose(MatCoarsen,PetscInt);
-extern PetscErrorCode  MatCoarsenGetMISAggLists( MatCoarsen, IS*, IS* );
+extern PetscErrorCode  MatCoarsenGetData( MatCoarsen, PetscCoarsenData ** );
 extern PetscErrorCode  MatCoarsenApply(MatCoarsen);
 extern PetscErrorCode  MatCoarsenDestroy(MatCoarsen*);
 
