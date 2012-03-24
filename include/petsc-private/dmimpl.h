@@ -42,6 +42,9 @@ struct _DMOps {
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
+  PetscErrorCode (*createdecompositiondm)(DM,const char*,DM*);
+  PetscErrorCode (*createdecomposition)(DM,PetscInt*,char***,IS**,DM**);
+
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;

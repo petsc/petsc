@@ -222,9 +222,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       PetscInt     numFields, f;
       char         **fieldNames;
       IS          *fields;
-      PetscBool    dmcomposite;
-
-      ierr = DMCreateFieldIS(pc->dm, &numFields, &fieldNames, &fields);CHKERRQ(ierr);
+      DM          *dms;
+      ierr = DMCreateDecomposition(pc->dm, &numFields, &fieldNames, &fields, &dms);    CHKERRQ(ierr);
       for(f = 0; f < numFields; ++f) {
         ierr = PCFieldSplitSetIS(pc, fieldNames[f], fields[f]);CHKERRQ(ierr);
         ierr = PetscFree(fieldNames[f]);CHKERRQ(ierr);
@@ -232,19 +231,12 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
       ierr = PetscFree(fieldNames);CHKERRQ(ierr);
       ierr = PetscFree(fields);CHKERRQ(ierr);
-
-      ierr = PetscTypeCompare((PetscObject) pc->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
-      if (dmcomposite) {
-        DM      *dms;
-        PetscInt nDM;
-
+      if(dms) {
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
-        ierr = DMCompositeGetNumberDM(pc->dm, &nDM);CHKERRQ(ierr);
-        ierr = PetscMalloc(nDM*sizeof(DM), &dms);CHKERRQ(ierr);
-        ierr = DMCompositeGetEntriesArray(pc->dm, dms);CHKERRQ(ierr);
         for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
+          ierr = DMDestroy(&dms[i]); CHKERRQ(ierr);
         }
         ierr = PetscFree(dms);CHKERRQ(ierr);
       }
@@ -883,9 +875,24 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   PetscBool       flg,stokes = PETSC_FALSE;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
+  DM              ddm;
+  char            ddm_name[1025];
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
+  if(pc->dm) {
+    /* Allow the user to request a decomposition DM by name */
+    ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_fieldsplit_decomposition_dm", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
+    if(flg) {
+      ierr = DMCreateDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+      if(!ddm) {
+        SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
+      }
+      ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
+      ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
+    }
+  }
   ierr = PetscOptionsBool("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -901,8 +908,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   ierr = PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&ctype,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFieldSplitSetType(pc,ctype);CHKERRQ(ierr);
-  }
-
+  }  
   /* Only setup fields once */
   if ((jac->bs > 0) && (jac->nsplits == 0)) {
     /* only allow user to set fields from command line if bs is already known.

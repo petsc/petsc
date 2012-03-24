@@ -160,6 +160,9 @@ extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeVariableBounds(DM,Vec,Vec);
 
+extern PetscErrorCode   DMCreateDecompositionDM(DM,const char*,DM*);
+extern PetscErrorCode   DMCreateDecomposition(DM,PetscInt*,char***,IS**,DM**);
+
 extern PetscErrorCode   DMGetRefineLevel(DM,PetscInt*);
 extern PetscErrorCode   DMGetCoarsenLevel(DM,PetscInt*);
 extern PetscErrorCode   DMFinalizePackage(void);
