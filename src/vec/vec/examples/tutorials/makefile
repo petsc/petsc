@@ -169,22 +169,22 @@ runex1_pthread_lockfree:
 	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_lockfree, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_pthread_lockfree.tmp
 runex1_pthread_main:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_main.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type MAINPOOL > ex1_pthread_main.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_pthread.out ex1_pthread_main.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_main, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_pthread_main.tmp
 runex1_pthread_chain:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_chain.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type CHAINPOOL > ex1_pthread_chain.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_pthread.out ex1_pthread_chain.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_chain, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_pthread_chain.tmp
 runex1_pthread_tree:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_tree.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type TREEPOOL > ex1_pthread_tree.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_pthread.out ex1_pthread_tree.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_tree, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_pthread_tree.tmp
 runex1_pthread_true:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_true.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type TRUEPOOL > ex1_pthread_true.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_pthread.out ex1_pthread_true.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_true, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_pthread_true.tmp
