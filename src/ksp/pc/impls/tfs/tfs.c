@@ -180,8 +180,11 @@ PetscErrorCode  PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;
+  PetscMPIInt    cmp;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_compare(PETSC_COMM_WORLD,((PetscObject)pc)->comm,&cmp);CHKERRQ(ierr);
+  if (cmp != MPI_IDENT && cmp != MPI_CONGRUENT) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
   ierr = PetscNewLog(pc,PC_TFS,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = 0;
