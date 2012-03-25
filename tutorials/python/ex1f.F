@@ -34,6 +34,7 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N,ierr)
       call MatSetType(A,'python',ierr)
       call MatPythonSetType(A,'example1.py:Laplace1D',ierr)
+      call MatSetUp(A,ierr)
 
       call MatGetVecs(A,x,b,ierr)
       call VecSet(b,one,ierr)

@@ -12,6 +12,7 @@ def RunTest():
     A.setSizes([N,N])
     A.setType(PETSc.Mat.Type.PYTHON)
     A.setPythonContext(example1.Laplace1D())
+    A.setUp()
 
     x, b = A.getVecs()
     b.set(1)

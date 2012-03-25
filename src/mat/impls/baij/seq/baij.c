@@ -3457,6 +3457,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
       c->i            = a->i;
       c->j            = a->j;
       c->parent       = A;
+      C->preallocated = PETSC_TRUE;
+      C->assembled    = PETSC_TRUE;
       ierr            = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); 
       ierr            = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
       ierr            = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
@@ -3474,6 +3476,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 	  ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
 	}
       }
+      C->preallocated = PETSC_TRUE;
+      C->assembled    = PETSC_TRUE;
     }
   }
 
@@ -3504,8 +3508,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   c->mult_work          = 0;
   c->free_a             = PETSC_TRUE;
   c->free_ij            = PETSC_TRUE;
-  C->preallocated       = PETSC_TRUE;
-  C->assembled          = PETSC_TRUE;
 
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;

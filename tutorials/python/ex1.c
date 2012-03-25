@@ -24,6 +24,7 @@ PetscErrorCode RunTest(void)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATPYTHON);CHKERRQ(ierr);
   ierr = MatPythonSetType(A,"example1.py:Laplace1D");CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecSet(b,1);CHKERRQ(ierr);
