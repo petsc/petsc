@@ -143,6 +143,7 @@ extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode   DMSetVecType(DM,const VecType);
+extern PetscErrorCode   DMSetMatType(DM,const MatType);
 extern PetscErrorCode   DMSetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 extern PetscErrorCode   DMGetApplicationContext(DM,void*);

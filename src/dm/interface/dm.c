@@ -84,6 +84,34 @@ PetscErrorCode  DMSetVecType(DM da,const VecType ctype)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMSetMatType"
+/*@C
+       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+
+   Logically Collective on DM
+
+   Input Parameter:
++  dm - the DM context
+.  ctype - the matrix type
+
+   Options Database:
+.   -dm_mat_type ctype
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType
+@*/
+PetscErrorCode  DMSetMatType(DM dm,const MatType ctype)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ctype,&dm->mattype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
    DMSetOptionsPrefix - Sets the prefix used for searching for all 
@@ -259,10 +287,9 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     if (flg) {
       ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(typeName,&dm->mattype);CHKERRQ(ierr);
+      ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
     if (dm->ops->setfromoptions) {
