@@ -172,6 +172,8 @@ EXTERN_C_BEGIN
 
    Notes: Only implemented for the MPIAIJ matrices
 
+          Only works on a solver object that lives on all of PETSC_COMM_WORLD!
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 PetscErrorCode  PCCreate_TFS(PC pc)
