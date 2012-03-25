@@ -5779,6 +5779,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS isco
   ierr = PetscMalloc3(bs2*ai[n]+1,PetscScalar,&b->a,ai[n]+1,PetscInt,&b->j,n+1,PetscInt,&b->i);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(fact,ai[n]*(bs2*sizeof(PetscScalar)+sizeof(PetscInt))+(n+1)*sizeof(PetscInt));CHKERRQ(ierr);
   b->singlemalloc    = PETSC_TRUE;
+  b->free_a          = PETSC_TRUE;
+  b->free_ij         = PETSC_TRUE;
   fact->preallocated = PETSC_TRUE;
   fact->assembled    = PETSC_TRUE;
   if (!b->diag){
