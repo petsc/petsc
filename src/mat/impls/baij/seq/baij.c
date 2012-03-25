@@ -3452,20 +3452,23 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
     if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
       ierr = PetscMalloc(bs2*nz*sizeof(PetscScalar),&c->a);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(C,a->i[mbs]*bs2*sizeof(PetscScalar));CHKERRQ(ierr);
-      c->singlemalloc = PETSC_FALSE;
-      c->free_ij      = PETSC_FALSE;
+      ierr = PetscMemzero(c->a,bs2*nz*sizeof(PetscScalar));CHKERRQ(ierr);
       c->i            = a->i;
       c->j            = a->j;
+      c->singlemalloc = PETSC_FALSE;
+      c->free_a       = PETSC_TRUE;
+      c->free_ij      = PETSC_FALSE;
       c->parent       = A;
       C->preallocated = PETSC_TRUE;
       C->assembled    = PETSC_TRUE;
-      ierr            = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); 
-      ierr            = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-      ierr            = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); 
+      ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc3(bs2*nz,PetscScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(C,a->i[mbs]*(bs2*sizeof(PetscScalar)+sizeof(PetscInt))+(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
       c->singlemalloc = PETSC_TRUE;
+      c->free_a       = PETSC_TRUE;
       c->free_ij      = PETSC_TRUE;
       ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
       if (mbs > 0) {
@@ -3506,8 +3509,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   c->maxnz              = a->nz; /* Since we allocate exactly the right amount */
   c->solve_work         = 0;
   c->mult_work          = 0;
-  c->free_a             = PETSC_TRUE;
-  c->free_ij            = PETSC_TRUE;
 
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;
