@@ -388,8 +388,8 @@ PetscErrorCode PetscCDGetMIS( PetscCoarsenData *ail, IS * );
 PetscErrorCode PetscCDGetMat( const PetscCoarsenData *ail, Mat * );
 PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat );
 typedef PetscCDIntNd* PetscCDPos;
-const PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
-const PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos cpos);
+PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx );
+PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos cpos);
 
 
 /*

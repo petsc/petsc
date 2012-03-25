@@ -108,14 +108,14 @@ PetscInt LLNGetID( const PetscCDIntNd *a_this )
 }
 /* PetscCDGetHeadPos
  */
-const PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx )
+PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx )
 {
   assert(a_idx<ail->size);
   return ail->array[a_idx];
 }
 /* PetscCDGetNextPos
  */
-const PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos pos )
+PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos pos )
 {
   return pos->next;
 }
