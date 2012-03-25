@@ -665,17 +665,19 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
           if( PetscCDGetHeadPos(deleted_list,proc) ) nSend1++;
         }
         ierr = PetscMalloc( nSend1*sizeof(PetscInt*), &sbuffs1 ); CHKERRQ(ierr);
+        /* ierr = PetscMalloc4( nSend1, PetscInt*, sbuffs1, nSend1, PetscInt*, rbuffs1, nSend1, MPI_Request*, sreqs1, nSend1, MPI_Request*, rreqs1 );  CHKERRQ(ierr); */
+        /* PetscFree4(sbuffs1,rbuffs1,sreqs1,rreqs1); */
         for(proc=0,nSend1=0;proc<npe;proc++){
           /* count ghosts */
-          for(n=0, pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)) n++;        
+          for(n=0, pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)) n++;
           if(n>0){
 #define CHUNCK_SIZE 100
             PetscInt *sbuff,*pt;
             MPI_Request *request;
-            
             assert(n%2==0);
             n /= 2;
             ierr = PetscMalloc( (2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2*sizeof(MPI_Request), &sbuff ); 
+            /* PetscMalloc4(2+2*n,PetscInt,sbuffs1[nSend1],n*CHUNCK_SIZE,PetscInt,rbuffs1[nSend1],1,MPI_Request,rreqs2[nSend1],1,MPI_Request,sreqs2[nSend1]); */
             CHKERRQ(ierr);
             /* save requests */
             sbuffs1[nSend1] = sbuff;
@@ -763,11 +765,12 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         /* recieve tag2 *[lid0, n, n*[gid] ] */
         for(kk=0;kk<nSend1;kk++){
           PetscMPIInt count;
-          MPI_Request *request, *pt, *pt2;
+          MPI_Request *request;
+          PetscInt *pt, *pt2;
           request = rreqs2[kk]; /* no need to free -- buffer is in 'sbuffs1' */
           ierr = MPI_Wait( request, &status );  CHKERRQ(ierr);
           ierr = MPI_Get_count( &status, MPIU_INT, &count ); CHKERRQ(ierr);
-          pt = pt2 = request+1;
+          pt = pt2 = (PetscInt*)(request+1);
           while(pt-pt2 < count){
             PetscInt lid0 = *pt++, n = *pt++;           assert(lid0>=0 && lid0<nloc);
             while(n--){
@@ -793,7 +796,6 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
           ierr = MPI_Wait( request, &status );  CHKERRQ(ierr);
           ierr = PetscFree( request );  CHKERRQ(ierr);
         }
-        ierr = PetscFree( sbuffs1 );  CHKERRQ(ierr);
        
         ierr = VecRestoreArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
         ierr = VecRestoreArray( ghostMaxPE, &cpcol_max_pe ); CHKERRQ(ierr);
