@@ -108,14 +108,14 @@ PetscInt LLNGetID( const PetscCDIntNd *a_this )
 }
 /* PetscCDGetHeadPos
  */
-const PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx )
+PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx )
 {
   assert(a_idx<ail->size);
   return ail->array[a_idx];
 }
 /* PetscCDGetNextPos
  */
-const PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos pos )
+PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos pos )
 {
   return pos->next;
 }
@@ -167,9 +167,10 @@ PetscErrorCode PetscCDAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  PetscC
  */
 PetscErrorCode PetscCDRemoveNextNode( PetscCoarsenData *ail, PetscInt a_idx,  PetscCDIntNd *a_last )
 {
+  PetscCDIntNd *del;
   if(a_idx>=ail->size)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
   assert(a_last->next);
-  PetscCDIntNd *del = a_last->next;
+  del = a_last->next;
   a_last->next = del->next;
   /* del->next = PETSC_NULL; -- this still used in a iterator so keep it intact -- need to fix this with a double linked list */
   /* could reuse n2 but PetscCDAppendNode sometimes uses it */
@@ -685,9 +686,10 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
             sbuff = pt = (PetscInt*)(request+1);
             *pt++ = n; *pt++ = mype;
             for(pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)){
+              PetscInt lid0;
               PetscInt cpid = LLNGetID(pos), gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]); /* not too kosher */
               pos = PetscCDGetNextPos(deleted_list,proc,pos);
-              PetscInt lid0 = LLNGetID(pos);
+              lid0 = LLNGetID(pos);
               *pt++ = gid; *pt++ = lid0;
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
