@@ -752,7 +752,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
       PetscBLASInt   Mdata=M+((N-M>0)?N-M:0),LDA=Mdata,LWORK=N*bs;
       PetscScalar    *qqc,*qqr,*TAU,*WORK;
       PetscInt       *fids;
-
+      PetscReal      *data;
       /* count agg */
       if( asz<minsz ) minsz = asz;
 
@@ -774,7 +774,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
           assert(flid>=0);
         }
         /* copy in B_i matrix - column oriented */
-        PetscReal *data = &data_in[flid*bs];
+        data = &data_in[flid*bs];
         for( kk = ii = 0; ii < bs ; ii++ ) {
           for( jj = 0; jj < N ; jj++ ) {
             PetscReal d = data[jj*data_stride + ii];
