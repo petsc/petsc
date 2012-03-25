@@ -158,7 +158,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
     if (marked[k] != 0.0) coarseindex[cnt++] = k + rstart;
   }
   ierr = VecRestoreArray(coarsemarked,&marked);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)coarsemarked)->comm,cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
 
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
   dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
@@ -366,7 +366,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -446,7 +446,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
         ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
 
-        ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(((PetscObject)snes)->comm,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
         ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
         ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
       }
@@ -455,11 +455,11 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
     /* remove later */
 
     /*
-  ierr = VecView(vi->xu,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-  ierr = VecView(vi->xl,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-  ierr = VecView(F,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-  ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = VecView(vi->xu,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xu))->comm));CHKERRQ(ierr);
+  ierr = VecView(vi->xl,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xl))->comm));CHKERRQ(ierr);
+  ierr = VecView(X,PETSC_VIEWER_BINARY_(((PetscObject)X)->comm));CHKERRQ(ierr);
+  ierr = VecView(F,PETSC_VIEWER_BINARY_(((PetscObject)F)->comm));CHKERRQ(ierr);
+  ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(((PetscObject)IS_inact)->comm));CHKERRQ(ierr);
      */
 
     /* Get sizes of active and inactive sets */

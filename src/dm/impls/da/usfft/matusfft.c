@@ -23,17 +23,18 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatApply_USFFT_Private"
-PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int direction, Vec x,Vec y)
+PetscErrorCode MatApply_USFFT_Private(A, fftw_plan *plan, int direction, Vec x,Vec y)
 {
 #if 0
   PetscErrorCode ierr;
   PetscScalar    *r_array, *y_array;
+  Mat_USFFT* = (Mat_USFFT*)(A->data);
 #endif
 
   PetscFunctionBegin;
 #if 0
   /* resample x to usfft->resample */
-  ierr = MatResample_USFFT_Private(Mat_USFFT *usfft, x); CHKERRQ(ierr);
+  ierr = MatResample_USFFT_Private(A, x); CHKERRQ(ierr);
 
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   ierr = VecGetArray(usfft->resample,&r_array);CHKERRQ(ierr);
@@ -41,9 +42,9 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
   if (!*plan){ /* create a plan then execute it*/
     if(usfft->dof == 1) {
 #ifdef PETSC_DEBUG_USFFT
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)A)->comm, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
       for(int ii = 0; ii < usfft->ndim; ++ii) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
+        ierr = PetscPrintf(((PetscObject)A)->comm, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
 #endif 
 
@@ -115,7 +116,7 @@ PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
-  ierr = MatApply_USFFT_Private(usfft, &usfft->p_forward, FFTW_FORWARD, x,y);CHKERRQ(ierr);
+  ierr = MatApply_USFFT_Private(A, &usfft->p_forward, FFTW_FORWARD, x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
