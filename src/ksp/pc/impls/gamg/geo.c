@@ -326,18 +326,25 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
 #define EPS 1.e-12
     /* find points and set prolongation */
     for( mm = clid = 0 ; mm < nFineLoc ; mm++ ){
-      if( (jj=PetscCDSizeAt(agg_lists_1,mm)) > 0 ) {
+      PetscBool ise;
+      ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise); CHKERRQ(ierr);
+      if( !ise ) {
         const PetscInt lid = mm;
         //for(clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){
         //PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1);
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;
+        /* for( pos=PetscCDGetHeadPos(agg_lists_1,lid) ;  */
+        /*      pos ;  */
+        /*      pos=PetscCDGetNextPos(agg_lists_1,lid,pos) ){ */
+        /*   PetscInt flid = LLNGetID(pos);  */
+        ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
+        while(pos){              
+          PetscInt flid; 
+          ierr = LLNGetID( pos, &flid ); CHKERRQ(ierr);
+          ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
 
-        for( pos=PetscCDGetHeadPos(agg_lists_1,lid) ; 
-             pos ; 
-             pos=PetscCDGetNextPos(agg_lists_1,lid,pos) ){
-          PetscInt flid = LLNGetID(pos); 
           if( flid < nFineLoc ) {  /* could be a ghost */
             PetscInt bestTID = -1; PetscReal best_alpha = 1.e10;
             const PetscInt fgid = flid + myFine0;

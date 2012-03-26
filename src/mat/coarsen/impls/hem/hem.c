@@ -102,22 +102,26 @@ PetscErrorCode LLNSetID( PetscCDIntNd *a_this, PetscInt a_id )
 }
 /* LLNGetID
  */
-PetscInt LLNGetID( const PetscCDIntNd *a_this )
+PetscErrorCode LLNGetID( const PetscCDIntNd *a_this, PetscInt *a_gid)
 {
-  return a_this->gid;
+  *a_gid = a_this->gid;
+  return 0;
 }
 /* PetscCDGetHeadPos
  */
-PetscCDPos PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx )
+PetscErrorCode PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt a_idx, PetscCDPos *pos )
 {
-  assert(a_idx<ail->size);
-  return ail->array[a_idx];
+  if(a_idx>=ail->size)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"a_idx >= ail->size: a_idx=%d.",a_idx);
+  *pos = ail->array[a_idx];
+  return 0;
 }
 /* PetscCDGetNextPos
  */
-PetscCDPos PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos pos )
+PetscErrorCode PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos *pos )
 {
-  return pos->next;
+  if(!(*pos))SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"NULL input position.");
+  *pos = (*pos)->next;
+  return 0;
 }
 
 /* PetscCDAppendID
@@ -242,7 +246,7 @@ PetscErrorCode PetscCDRemoveAll( PetscCoarsenData *ail, PetscInt a_idx )
 
 /* PetscCDSizeAt
  */
-PetscInt PetscCDSizeAt( const PetscCoarsenData *ail, PetscInt a_idx )
+PetscErrorCode PetscCDSizeAt( const PetscCoarsenData *ail, PetscInt a_idx, PetscInt *a_sz )
 {
   PetscCDIntNd *n1;
   PetscInt sz = 0;
@@ -252,7 +256,17 @@ PetscInt PetscCDSizeAt( const PetscCoarsenData *ail, PetscInt a_idx )
     n1 = n1->next;
     sz++;
   }
-  return sz;
+  *a_sz = sz;
+  return 0;
+}
+
+/* PetscCDEmptyAt
+ */
+PetscErrorCode PetscCDEmptyAt( const PetscCoarsenData *ail, PetscInt a_idx, PetscBool *a_e )
+{
+  if(a_idx>=ail->size)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
+  *a_e = (PetscBool)(ail->array[a_idx]==PETSC_NULL);
+  return 0;
 }
 
 /* PetscCDGetMIS
@@ -263,7 +277,7 @@ PetscErrorCode PetscCDGetMIS( PetscCoarsenData *ail, IS *a_mis )
   PetscCDIntNd *n;
   PetscInt ii,kk;
   PetscInt *permute;
-  
+
   for(ii=kk=0;ii<ail->size;ii++){
     n = ail->array[ii];
     if(n) kk++;
@@ -558,17 +572,15 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         if( cpid1 != -1 && cpcol_matched[cpid1] ) {
           continue;
         }
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s look at [%d %d] w=%e.\n",mype,__FUNCT__,gid0,gid1,e->weight);
+
         nactive_edges++;
         /* skip if I have a bigger edge someplace (lid_max_ew gets updated) */
         if( PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12 ) {
-          if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v0 skip match [%d %d] b/c has edge w %e < v0-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,PetscRealPart(lid_max_ew[lid0]));
           continue;
         }
         
         if( cpid1 == -1 ) {
           if( PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12 ) {
-            if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1 skip match [%d %d] b/c has edge w %e < v1-max %e\n",mype,__FUNCT__,gid0,gid1,e->weight,PetscRealPart(lid_max_ew[lid1]));
             continue;
           }
         }
@@ -576,12 +588,10 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s look at [%d %d] w=%e.\n",
           /* see if edge might get matched on other proc */
           PetscReal g_max_e = PetscRealPart(cpcol_max_ew[cpid1]);
           if( g_max_e > e->weight + 1.e-12 ) {
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1-g skip match [%d %d] b/c v1-max_e %e > w %e\n",mype,__FUNCT__,gid0,gid1,g_max_e,e->weight);           
             continue;
           }
           /* check for max_e == to this edge and larger processor that will deal with this */
           else if( e->weight > g_max_e - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) > mype ) {
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1-g skip match [%d %d] b/c w==v1-max-edge (%e,%e) & max_proc=%d\n",mype,__FUNCT__,gid0,gid1,g_max_e,e->weight,(PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) );
             continue;
           }
         }
@@ -598,11 +608,10 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s v1-g skip match [%d %d]
               if( cpcol_matched[lidj] ) continue;
               ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
+              if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 && 
                   (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype )
               {
                 isOK = PETSC_FALSE;
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t[%d]%s v0-b) skip match [%d %d] b/c ghost (%d) ew==max-edge (%e,%e) & max-proc=%d\n",mype,__FUNCT__,gid0,gid1,(PetscInt)PetscRealPart(cpcol_gid[lidj]),ew,max_e,(PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]));
               }
             }
           }
@@ -618,11 +627,9 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t[%d]%s v0-b) skip match [%
                 if( cpcol_matched[lidj] ) continue;
                 ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 && /* ew==g-max_e && ew==my-max_e && proc>mype */
-                    (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype ) 
-                {
+                if( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 && 
+                    (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype ) {
                   isOK = PETSC_FALSE;
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t[%d]%s v1-b) skip match [%d %d] b/c ghost (%d) has == max-edge %e & > proc (%d)\n",mype,__FUNCT__,gid0,gid1,(PetscInt)PetscRealPart(cpcol_gid[lidj]),max_e,(PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]));
                 }
               }
             }
@@ -631,7 +638,6 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t[%d]%s v1-b) skip match [%
 
         /* do it */
         if( isOK ){
-if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",mype,__FUNCT__,gid0,gid1);
           if( cpid1 == -1 ) {
             lid_matched[lid1] = PETSC_TRUE;  /* keep track of what we've done this round */
             ierr = PetscCDAppendRemove( agg_llists, lid0, lid1 ); CHKERRQ(ierr);
@@ -655,7 +661,7 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
 
       /* deal with deleted ghost on first pass */
       if(npe>1 && sub_it != n_sub_its-1 ){
-        PetscCDPos pos;
+        PetscCDPos pos;  PetscBool ise;
         PetscInt nSend1, **sbuffs1,nSend2;
 #define REQ_BF_SIZE 100
         MPI_Request *sreqs2[REQ_BF_SIZE],*rreqs2[REQ_BF_SIZE];
@@ -663,14 +669,15 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         
         /* send request */ 
         for(proc=0,nSend1=0;proc<npe;proc++){
-          if( PetscCDGetHeadPos(deleted_list,proc) ) nSend1++;
+          ierr = PetscCDEmptyAt(deleted_list,proc,&ise); CHKERRQ(ierr);
+          if( !ise ) nSend1++;
         }
         ierr = PetscMalloc( nSend1*sizeof(PetscInt*), &sbuffs1 ); CHKERRQ(ierr);
         /* ierr = PetscMalloc4( nSend1, PetscInt*, sbuffs1, nSend1, PetscInt*, rbuffs1, nSend1, MPI_Request*, sreqs1, nSend1, MPI_Request*, rreqs1 );  CHKERRQ(ierr); */
         /* PetscFree4(sbuffs1,rbuffs1,sreqs1,rreqs1); */
         for(proc=0,nSend1=0;proc<npe;proc++){
           /* count ghosts */
-          for(n=0, pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)) n++;
+          ierr = PetscCDSizeAt(deleted_list,proc,&n); CHKERRQ(ierr);
           if(n>0){
 #define CHUNCK_SIZE 100
             PetscInt *sbuff,*pt;
@@ -685,11 +692,16 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
             request = (MPI_Request*)sbuff;
             sbuff = pt = (PetscInt*)(request+1);
             *pt++ = n; *pt++ = mype;
-            for(pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)){
-              PetscInt lid0;
-              PetscInt cpid = LLNGetID(pos), gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]); /* not too kosher */
-              pos = PetscCDGetNextPos(deleted_list,proc,pos);
-              lid0 = LLNGetID(pos);
+
+            ierr = PetscCDGetHeadPos(deleted_list,proc,&pos); CHKERRQ(ierr);
+            /* for(pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)){ */
+            while(pos){              
+              PetscInt lid0, cpid, gid; 
+              ierr = LLNGetID( pos, &cpid ); CHKERRQ(ierr);
+              gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]); 
+              ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
+              ierr = LLNGetID( pos, &lid0 ); CHKERRQ(ierr);
+              ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
               *pt++ = gid; *pt++ = lid0;
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
@@ -707,7 +719,6 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
         /* recieve requests, send response, clear lists */
         kk = nactive_edges; 
         ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPIU_SUM,wcomm); /* not correct syncronization and global */
-
         nSend2 = 0;
         while( 1 ){
 #define BF_SZ 10000
@@ -727,12 +738,13 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
           while(n--){
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;  assert(lid1>=0 && lid1<nloc);
             if(lid_matched[lid1]){
-              PetscPrintf(PETSC_COMM_SELF,"\t *** [%d]%s %d) ERROR recieved deleted gid %d, deleted by (lid) %d from proc %d\n",mype,__FUNCT__,sub_it,gid1,kk,proc);
+              PetscPrintf(PETSC_COMM_SELF,"\t *** [%d]%s %d) ERROR recieved deleted gid %d, deleted by (lid) %d from proc %d\n",mype,__FUNCT__,sub_it,gid1,kk);
               PetscSleep(1);
             }
             assert(!lid_matched[lid1]);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
-            count2 += PetscCDSizeAt( agg_llists, lid1 ) + 2;          
+            ierr = PetscCDSizeAt( agg_llists, lid1, &kk ); CHKERRQ(ierr);
+            count2 += kk + 2;
             count3++; /* number of verts requested (n) */
           }
           assert(pt-rbuff==count);
@@ -751,8 +763,12 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
             /* write [lid0, n, n*[gid] ] */
             *pt2++ = lid0;
             pt3 = pt2++; /* save pointer for later */
-            for(pos=PetscCDGetHeadPos(agg_llists,lid1) ; pos ; pos=PetscCDGetNextPos(agg_llists,lid1,pos)){
-              PetscInt gid = LLNGetID(pos);
+            /* for(pos=PetscCDGetHeadPos(agg_llists,lid1) ; pos ; pos=PetscCDGetNextPos(agg_llists,lid1,pos)){ */
+            ierr = PetscCDGetHeadPos(agg_llists,lid1,&pos); CHKERRQ(ierr);
+            while(pos){
+              PetscInt gid;
+              ierr = LLNGetID( pos, &gid ); CHKERRQ(ierr);
+              ierr = PetscCDGetNextPos(agg_llists,lid1,&pos); CHKERRQ(ierr);
               *pt2++ = gid;
             }
             *pt3 = (pt2-pt3)-1;
@@ -955,8 +971,9 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
     PetscCDPos pos;
     PetscInt gid, NN, MM, jj, mxsz = 0;
     
-    for(kk=0;kk<nloc;kk++){
-      if( (jj=PetscCDSizeAt(agg_llists,kk)) > mxsz )  mxsz = jj;
+    for(kk=0;kk<nloc;kk++){      
+      ierr = PetscCDSizeAt( agg_llists, kk, &jj ); CHKERRQ(ierr);
+      if( jj > mxsz )  mxsz = jj;
     }
     ierr = MatGetSize( a_Gmat, &MM, &NN ); CHKERRQ(ierr);
     if( mxsz > MM-nloc ) mxsz = MM-nloc;
@@ -968,8 +985,13 @@ if(PETSC_FALSE)PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t\t[%d]%s Match [%d %d]\n",
 
     /* */
     for(kk=0,gid=my0;kk<nloc;kk++,gid++){
-      for(pos=PetscCDGetHeadPos(agg_llists,kk) ; pos ; pos=PetscCDGetNextPos(agg_llists,kk,pos)){
-        PetscInt gid1 = LLNGetID(pos);
+      /* for(pos=PetscCDGetHeadPos(agg_llists,kk) ; pos ; pos=PetscCDGetNextPos(agg_llists,kk,pos)){ */
+      ierr = PetscCDGetHeadPos(agg_llists,kk,&pos); CHKERRQ(ierr);
+      while(pos){              
+        PetscInt gid1; 
+        ierr = LLNGetID( pos, &gid1 ); CHKERRQ(ierr);
+        ierr = PetscCDGetNextPos(agg_llists,kk,&pos); CHKERRQ(ierr);
+
         if( gid1 < my0 || gid1 >= my0+nloc ) {
           ierr = MatSetValues(mat,1,&gid,1,&gid1,&one,ADD_VALUES); CHKERRQ(ierr);
         }
