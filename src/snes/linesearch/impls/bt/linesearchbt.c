@@ -6,6 +6,53 @@ typedef struct {
 } SNESLineSearch_BT;
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchBTSetAlpha"
+/*@
+   SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the BT linesearch variant.
+
+   Input Parameters:
++  linesearch - linesearch context
+-  alpha - The descent parameter
+
+   Level: intermediate
+
+.seealso: SNESLineSearchSetLambda(), SNESLineSearchGetTolerances() SNES_LINESEARCH_BT
+@*/
+PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
+{
+  SNESLineSearch_BT  *bt;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  bt = (SNESLineSearch_BT *)linesearch->data;
+  bt->alpha = alpha;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchBTGetAlpha"
+/*@
+   SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the BT linesearch variant.
+
+   Input Parameters:
+.  linesearch - linesearch context
+.  alpha - The descent parameter
+
+   Level: intermediate
+
+.seealso: SNESLineSearchGetLambda(), SNESLineSearchGetTolerances() SNES_LINESEARCH_BT
+@*/
+PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
+{
+  SNESLineSearch_BT  *bt;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  bt = (SNESLineSearch_BT *)linesearch->data;
+  *alpha = bt->alpha;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply_BT"
 static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 {

@@ -504,6 +504,10 @@ extern PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char
 extern PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch,SNESLineSearchUserFunc,void*);
 extern PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch,SNESLineSearchUserFunc*,void**);
 
+/* BT interface functions */
+extern PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch, PetscReal);
+extern PetscErrorCode SNESLineSEarchBTGetAlpha(SNESLineSearch, PetscReal*);
+
 /*register line search types */
 extern PetscErrorCode SNESLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
 extern PetscErrorCode SNESLineSearchRegisterAll(const char path[]);
