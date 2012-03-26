@@ -55,12 +55,22 @@ struct _DMCoarsenHookLink {
   DMCoarsenHookLink next;
 };
 
+typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
+typedef struct _DMNamedVecLink *DMNamedVecLink;
+struct _DMNamedVecLink {
+  Vec X;
+  char *name;
+  DMVecStatus status;
+  DMNamedVecLink next;
+};
+
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
   Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
   Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
+  DMNamedVecLink         namedglobal;
   PetscInt               workSize;
   PetscScalar            *workArray;
   void                   *ctx;    /* a user context */

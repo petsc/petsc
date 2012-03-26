@@ -338,16 +338,51 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRestrictHook_SNESVecSol"
+static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscale,Mat Inject,DM dmcoarse,void *ctx)
+{
+  SNES snes = (SNES)ctx;
+  PetscErrorCode ierr;
+  Vec Xfine,Xfine_named = PETSC_NULL,Xcoarse;
+
+  PetscFunctionBegin;
+  if (dmfine == snes->dm) Xfine = snes->vec_sol;
+  else {
+    ierr = DMGetNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);
+    Xfine = Xfine_named;
+  }
+  ierr = DMGetNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
+  ierr = MatRestrict(Restrict,Xfine,Xcoarse);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
+  ierr = DMRestoreNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
+  if (Xfine_named) {ierr = DMRestoreNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeOperators_SNES"
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
 {
   SNES snes = (SNES)ctx;
   PetscErrorCode ierr;
   Mat Asave = A,Bsave = B;
+  Vec X,Xnamed = PETSC_NULL;
+  DM dmsave;
 
   PetscFunctionBegin;
-  ierr = SNESComputeJacobian(snes,snes->vec_sol,&A,&B,mstruct);CHKERRQ(ierr);
+  dmsave = snes->dm;
+  ierr = KSPGetDM(ksp,&snes->dm);CHKERRQ(ierr);
+  if (dmsave == snes->dm) X = snes->vec_sol; /* We are on the finest level */
+  else {                                     /* We are on a coarser level, this vec was initialized using a DM restrict hook */
+    ierr = DMGetNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
+    X = Xnamed;
+  }
+  ierr = SNESComputeJacobian(snes,X,&A,&B,mstruct);CHKERRQ(ierr);
   if (A != Asave || B != Bsave) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for changing matrices at this time");
+  if (Xnamed) {
+    ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
+  }
+  snes->dm = dmsave;
   PetscFunctionReturn(0);
 }
 
@@ -422,6 +457,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
       KSP ksp;
       ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
       ierr = KSPSetComputeOperators(ksp,KSPComputeOperators_SNES,snes);CHKERRQ(ierr);
+      ierr = DMCoarsenHookAdd(snes->dm,PETSC_NULL,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -3250,7 +3286,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = VecDestroy(&snes->vec_sol);CHKERRQ(ierr);
     snes->vec_sol = x;
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-    ierr = DMSNESSetSolution(snes->dm,snes->vec_sol);CHKERRQ(ierr); /* Post the solution vector so that it can be restricted to coarse levels for KSP */
 
     /* set affine vector if provided */
     if (b) { ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr); }
@@ -3282,7 +3317,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       snes->domainerror = PETSC_FALSE;
     }
     if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
-    ierr = DMSNESSetSolution(snes->dm,PETSC_NULL);CHKERRQ(ierr); /* Un-post solution because inner contexts are done using it */
 
     ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg && !PetscPreLoadingOn) {

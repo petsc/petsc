@@ -115,6 +115,8 @@ extern PetscErrorCode   DMRestoreLocalVector(DM,Vec *);
 extern PetscErrorCode   DMGetGlobalVector(DM,Vec *);
 extern PetscErrorCode   DMRestoreGlobalVector(DM,Vec *);
 extern PetscErrorCode   DMClearGlobalVectors(DM);
+extern PetscErrorCode DMGetNamedGlobalVector(DM,const char*,Vec*);
+extern PetscErrorCode DMRestoreNamedGlobalVector(DM,const char*,Vec*);
 extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMCreateFieldIS(DM,PetscInt*,char***,IS**);

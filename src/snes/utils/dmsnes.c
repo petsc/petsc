@@ -9,12 +9,6 @@ static PetscErrorCode PetscContainerDestroy_SNESDM(void *ctx)
   SNESDM sdm = (SNESDM)ctx;
 
   PetscFunctionBegin;
-  if (sdm->dmloopref) {         /* Reconnect old loop before we drop our reference */
-    DM dminner;
-    ierr = PetscObjectQuery((PetscObject)sdm->vec_sol,"DM",(PetscObject*)&dminner);CHKERRQ(ierr);
-    if (dminner) {ierr = PetscObjectReference((PetscObject)dminner);CHKERRQ(ierr);}
-  }
-  ierr = VecDestroy(&sdm->vec_sol);CHKERRQ(ierr);
   if (sdm->destroy) {ierr = (*sdm->destroy)(sdm);CHKERRQ(ierr);}
   ierr = PetscFree(sdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -36,22 +30,12 @@ static PetscErrorCode DMCoarsenHook_SNESDM(DM dm,DM dmc,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRestrictHook_SNESDM"
-/* Restrict state vector from finest level
+/* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMRestrictHook_SNESDM(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
 {
-  PetscErrorCode ierr;
-  SNESDM sdm,sdmc;
-  Vec Xcoarse;
 
   PetscFunctionBegin;
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  ierr = DMSNESGetContextWrite(dmc,&sdmc);CHKERRQ(ierr);
-  if (sdm->vec_sol) {
-    ierr = DMSNESGetSolution(dmc,&Xcoarse);CHKERRQ(ierr);
-    ierr = MatRestrict(Restrict,sdm->vec_sol,Xcoarse);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(Xcoarse,Xcoarse,rscale);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -133,8 +117,6 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
     ierr = PetscNewLog(dm,struct _n_SNESDM,&sdm);CHKERRQ(ierr);
     ierr = PetscMemcpy(sdm,oldsdm,sizeof *sdm);CHKERRQ(ierr);
-    sdm->vec_sol = PETSC_NULL;
-    sdm->dmloopref = PETSC_FALSE;
     ierr = PetscContainerSetPointer(container,sdm);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
@@ -426,59 +408,5 @@ PetscErrorCode DMSNESSetUpLegacy(DM dm)
   if (!sdm->computefunction) {ierr = DMSNESSetFunction(dm,SNESDefaultComputeFunction_DMLegacy,PETSC_NULL);CHKERRQ(ierr);}
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computejacobian) {ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobian_DMLegacy,PETSC_NULL);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetSolution"
-PetscErrorCode DMSNESGetSolution(DM dm,Vec *vec_sol)
-{
-  PetscErrorCode ierr;
-  SNESDM sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->vec_sol) {
-    ierr = DMCreateGlobalVector(dm,&sdm->vec_sol);CHKERRQ(ierr);
-    /* This vector holds an extra reference to the DM, decrement the DM reference count so that it remains constant */
-    sdm->dmloopref = PETSC_TRUE;
-    ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
-  }
-  *vec_sol = sdm->vec_sol;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetSolution"
-PetscErrorCode DMSNESSetSolution(DM dm,Vec vec_sol)
-{
-  PetscErrorCode ierr;
-  DM dminner;
-  SNESDM sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  if (sdm->vec_sol == vec_sol) PetscFunctionReturn(0);
-  if (sdm->dmloopref) {         /* Reconnect old loop before we drop our reference */
-    ierr = PetscObjectQuery((PetscObject)sdm->vec_sol,"DM",(PetscObject*)&dminner);CHKERRQ(ierr);
-    if (dminner) {ierr = PetscObjectReference((PetscObject)dminner);CHKERRQ(ierr);}
-  }
-  sdm->dmloopref = PETSC_FALSE;
-
-  if (vec_sol) {ierr = PetscObjectReference((PetscObject)vec_sol);CHKERRQ(ierr);}
-  ierr = VecDestroy(&sdm->vec_sol);CHKERRQ(ierr);
-  sdm->vec_sol = vec_sol;
-
-  /* Break new loop if we just created one */
-  if (sdm->vec_sol) {
-    ierr = PetscObjectQuery((PetscObject)sdm->vec_sol,"DM",(PetscObject*)&dminner);CHKERRQ(ierr);
-    if (dminner == dm) {
-      sdm->dmloopref = PETSC_TRUE;
-      if (((PetscObject)dm)->refct <= 1) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONG,"The incoming Vec holds the last reference to the DM");
-      ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
-    }
-  }
   PetscFunctionReturn(0);
 }
