@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c
+SOURCEC  = dm.c dmregall.c dmget.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = dm.o dmregall.o
