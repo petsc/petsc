@@ -137,7 +137,6 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->idiag);CHKERRQ(ierr);
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
-  ierr = PetscFree(a->diag);CHKERRQ(ierr);
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->sor_work);CHKERRQ(ierr);
@@ -909,7 +908,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->idiagvalid = PETSC_FALSE;
 
   if (A->cmap->n < 65536 && A->cmap->bs == 1) {
-    if (a->jshort){ 
+    if (a->jshort && a->free_jshort){
       /* when matrix data structure is changed, previous jshort must be replaced */
       ierr = PetscFree(a->jshort);CHKERRQ(ierr);
     }
@@ -2179,7 +2178,10 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     ierr = PetscMalloc(bs2*nz*sizeof(MatScalar),&c->a);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(C,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    c->i            = a->i;
+    c->j            = a->j;
     c->singlemalloc = PETSC_FALSE;
+    c->free_a       = PETSC_TRUE;
     c->free_ij      = PETSC_FALSE;
     c->parent       = A;
     ierr            = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); 
@@ -2190,6 +2192,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt)));CHKERRQ(ierr);
     c->singlemalloc = PETSC_TRUE;
+    c->free_a       = PETSC_TRUE;
     c->free_ij      = PETSC_TRUE;
   }
   if (mbs > 0) {
@@ -2202,15 +2205,12 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
     }
     if (a->jshort) {
-      if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
-        c->jshort      = a->jshort;
-        c->free_jshort = PETSC_FALSE;
-      } else {
-        ierr = PetscMalloc(nz*sizeof(unsigned short),&c->jshort);CHKERRQ(ierr);
-        ierr = PetscLogObjectMemory(C,nz*sizeof(unsigned short));CHKERRQ(ierr);
-        ierr = PetscMemcpy(c->jshort,a->jshort,nz*sizeof(unsigned short));CHKERRQ(ierr);
-        c->free_jshort = PETSC_TRUE;
-      }
+      /* cannot share jshort, it is reallocated in MatAssemblyEnd_SeqSBAIJ() */
+      /* if the parent matrix is reassembled, this child matrix will never notice */
+      ierr = PetscMalloc(nz*sizeof(unsigned short),&c->jshort);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(C,nz*sizeof(unsigned short));CHKERRQ(ierr);
+      ierr = PetscMemcpy(c->jshort,a->jshort,nz*sizeof(unsigned short));CHKERRQ(ierr);
+      c->free_jshort = PETSC_TRUE;
     }
   }
 
@@ -2229,12 +2229,11 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       }
       c->free_diag = PETSC_TRUE;
     }
-  } else c->diag  = 0;
+  }
   c->nz           = a->nz;
   c->maxnz        = a->nz; /* Since we allocate exactly the right amount */
   c->solve_work   = 0;
   c->mult_work    = 0;
-  c->free_a       = PETSC_TRUE;
   *B = C;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
