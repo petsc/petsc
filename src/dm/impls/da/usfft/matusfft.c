@@ -23,7 +23,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatApply_USFFT_Private"
-PetscErrorCode MatApply_USFFT_Private(A, fftw_plan *plan, int direction, Vec x,Vec y)
+PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x,Vec y)
 {
 #if 0
   PetscErrorCode ierr;
