@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(seqaijmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
    
   /* Concatenate seqaij matrices into a single mpiaij matrix */
-  ierr = MatMerge(PETSC_COMM_WORLD,seqaijmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpiaijmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqaijmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpiaijmat);CHKERRQ(ierr);
 
   ierr = MatDestroy(&seqaijmat);CHKERRQ(ierr);
   ierr = MatDestroy(&mpiaijmat);CHKERRQ(ierr);

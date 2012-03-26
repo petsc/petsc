@@ -172,10 +172,10 @@ PetscErrorCode  MatInitializePackage(const char path[])
 
 
   /* these may be specific to MPIAIJ matrices */
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_CLASSID,&MAT_Seqstompinum);
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPISymbolic",MAT_CLASSID,&MAT_Seqstompisym);
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPI",MAT_CLASSID,&MAT_Seqstompi);
-  ierr = PetscLogEventRegister("MatMerge",MAT_CLASSID,&MAT_Merge);
+  ierr = PetscLogEventRegister("MatCreateMPIAIJSumSeqAIJNumeric",MAT_CLASSID,&MAT_Seqstompinum);
+  ierr = PetscLogEventRegister("MatCreateMPIAIJSumSeqAIJSymbolic",MAT_CLASSID,&MAT_Seqstompisym);
+  ierr = PetscLogEventRegister("MatCreateMPIAIJSumSeqAIJ",MAT_CLASSID,&MAT_Seqstompi);
+  ierr = PetscLogEventRegister("MatCreateMPIAIJConcatenateSeqAIJ",MAT_CLASSID,&MAT_Merge);
   ierr = PetscLogEventRegister("MatGetLocalMat",MAT_CLASSID,&MAT_Getlocalmat);
   ierr = PetscLogEventRegister("MatGetLocalMatCondensed",MAT_CLASSID,&MAT_Getlocalmatcondensed);
   ierr = PetscLogEventRegister("MatGetBrowsOfAcols",MAT_CLASSID,&MAT_GetBrowsOfAcols);

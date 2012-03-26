@@ -1207,7 +1207,7 @@ runex75:
 	-@touch ex75_1.tmp;\
 	for np in ${NPROCS}; do \
 	  for bs in ${MATBLOCKSIZE}; do \
-	   ${MPIEXEC} -n $$np  ./ex75 -bs  $$bs -mat_ignore_lower_triangular >> ex75_1.tmp 2>&1; \
+	   ${MPIEXEC} -n $$np ./ex75 -bs  $$bs -mat_ignore_lower_triangular >> ex75_1.tmp 2>&1; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex75_1.out ex75_1.tmp) then true; \
@@ -1217,7 +1217,7 @@ runex75:
 runex76:
 	-@touch ex76_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIEXEC} -n 1  ./ex76 -bs  $$bs >> ex76_1.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex76 -bs  $$bs >> ex76_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with with ex76, diffs above \n========================================="; fi; \
@@ -1225,14 +1225,14 @@ runex76:
 
 runex76_2:
 	-@touch ex76_1.tmp;\
-	${MPIEXEC} -n 1  ./ex76 -testaij -reorder 1 >> ex76_1.tmp 2>&1; \
+	${MPIEXEC} -n 1 ./ex76 -testaij -reorder 1 >> ex76_1.tmp 2>&1; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with with ex76_2, diffs above \n========================================="; fi; \
 	${RM} -f ex76_1.tmp
 
 runex76_3:
 	-@touch ex76_1.tmp;\
-	${MPIEXEC} -n 1  ./ex76 -testaij >> ex76_1.tmp 2>&1; \
+	${MPIEXEC} -n 1 ./ex76 -testaij >> ex76_1.tmp 2>&1; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with with ex76_3, diffs above \n========================================="; fi; \
 	${RM} -f ex76_1.tmp
@@ -1247,24 +1247,24 @@ runex76_3:
 #	${RM} -f ex77_1.tmp
 
 runex78:
-	-@${MPIEXEC} -n 1  ./ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \
+	-@${MPIEXEC} -n 1 ./ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \
 	   ~/matrices/indefinite/afiro_b.dat -uin ~/matrices/indefinite/afiro_u.dat > ex78_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex78_1.out ex78_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex78_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex78_1.tmp
 runex79f:
-	-@${MPIEXEC} -n 1  ./ex79f  > ex79f_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex79f  > ex79f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex79f_1.out ex79f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex79f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex79f_1.tmp
 runex85f:
-	-@${MPIEXEC} -n 1  ./ex85f  > ex85f_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex85f  > ex85f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex85f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex85f_1.tmp
 
 runex86:
-	-@${MPIEXEC} -n 3  ./ex86 > ex86_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex86 > ex86_1.tmp 2>&1;   \
 	   ${DIFF} output/ex86_1.out ex86_1.tmp || echo ${PWD} "\nPossible problem with with ex86_1, diffs above \n========================================="; \
 	   ${RM} -f ex86_1.tmp
 
@@ -1273,7 +1273,7 @@ runex88:
 	   ${DIFF} output/ex88_1.out ex88_1.tmp || echo ${PWD} "\nPossible problem with with ex88_1, diffs above \n========================================="; \
 	   ${RM} -f ex88_1.tmp
 runex91:
-	-@${MPIEXEC} -n 1  ./ex91 -ov 2 > ex91_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex91 -ov 2 > ex91_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex91_1.out ex91_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex91_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex91_1.tmp
