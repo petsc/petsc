@@ -27,10 +27,29 @@ def build(args):
   maker.cleanup()
   return 0
 
-def buildExample(args):
-  '''Build and link an example'''
+def buildSingleExample(maker, ex):
   import shutil
 
+  if isinstance(ex, list):
+    exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
+    exampleDir  = os.path.dirname(ex[0])
+  else:
+    exampleName = os.path.splitext(os.path.basename(ex))[0]
+    exampleDir  = os.path.dirname(ex)
+  objDir        = maker.getObjDir(exampleName)
+  if os.path.isdir(objDir): shutil.rmtree(objDir)
+  os.mkdir(objDir)
+  executable = os.path.join(objDir, exampleName)
+  objects    = maker.buildFile(ex, objDir)
+  if not len(objects):
+    print('EXAMPLE BUILD FAILED (check make.log for details)')
+    return 1
+  maker.link(executable, objects, maker.configInfo.languages.clanguage)
+  return 0
+
+def buildExample(args):
+  '''Build and link an example'''
+  ret   = 0
   maker = builder.PETScMaker()
   maker.setup()
   examples = []
@@ -40,30 +59,68 @@ def buildExample(args):
     else:
       examples.append(os.path.abspath(f))
   for ex in examples:
-    if isinstance(ex, list):
-      exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
-      exampleDir  = os.path.dirname(ex[0])
-    else:
-      exampleName = os.path.splitext(os.path.basename(ex))[0]
-      exampleDir  = os.path.dirname(ex)
-    objDir        = maker.getObjDir(exampleName)
-    if os.path.isdir(objDir): shutil.rmtree(objDir)
-    os.mkdir(objDir)
-    executable  = os.path.join(objDir, exampleName)
-    objects = maker.buildFile(ex, objDir)
-    if not len(objects):
-      print('EXAMPLE BUILD FAILED (check make.log for details)')
-      return 1
-    maker.link(executable, objects, maker.configInfo.languages.clanguage)
+    ret = buildSingleExample(maker, ex)
+    if ret: break
   maker.cleanup()
+  return ret
+
+def checkSingleRun(maker, ex, extraArgs = ''):
+  import shutil
+
+  if isinstance(ex, list):
+    exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
+    exampleDir  = os.path.dirname(ex[0])
+  else:
+    exampleName = os.path.splitext(os.path.basename(ex))[0]
+    exampleDir  = os.path.dirname(ex)
+  objDir        = maker.getObjDir(exampleName)
+  if os.path.isdir(objDir): shutil.rmtree(objDir)
+  os.mkdir(objDir)
+  executable  = os.path.join(objDir, exampleName)
+  paramKey    = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
+  if paramKey in builder.regressionRequirements:
+    if not builder.regressionRequirements[paramKey].issubset(packageNames):
+      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
+  params = builder.regressionParameters.get(paramKey, {})
+  if not params:
+    params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
+    print 'Makefile params',params
+  if not isinstance(params, list):
+    params = [params]
+  # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
+  rebuildTest = True
+  for testnum, param in enumerate(params):
+    if 'num' in param: testnum = param['num']
+    if not args.testnum is None and testnum != args.testnum: continue
+    if 'setup' in param:
+      print(param['setup'])
+      os.system('python '+param['setup'])
+      rebuildTest = True
+    if 'source' in param:
+      if not isinstance(ex, list):
+        ex = [ex]+param['source']
+      else:
+        ex = ex+param['source']
+    if rebuildTest:
+      objects = maker.buildFile(ex, objDir)
+      if not len(objects):
+        print('TEST BUILD FAILED (check make.log for details)')
+        return 1
+      maker.link(executable, objects, maker.configInfo.languages.clanguage)
+    if not 'args' in param: param['args'] = ''
+    param['args'] += extraArgs
+    if maker.runTest(exampleDir, executable, testnum, **param):
+      print('TEST RUN FAILED (check make.log for details)')
+      return 1
+    rebuildTest = False
+  if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
   return 0
 
 def check(args):
   '''Check that build is functional'''
-  import shutil
-
+  ret       = 0
   extraArgs = ' '+' '.join(args.args)
-  maker = builder.PETScMaker()
+  maker     = builder.PETScMaker()
   maker.setup()
   # C test
   if len(args.files):
@@ -85,52 +142,25 @@ def check(args):
       else:
         examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
-    if isinstance(ex, list):
-      exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
-      exampleDir  = os.path.dirname(ex[0])
-    else:
-      exampleName = os.path.splitext(os.path.basename(ex))[0]
-      exampleDir  = os.path.dirname(ex)
-    objDir        = maker.getObjDir(exampleName)
-    if os.path.isdir(objDir): shutil.rmtree(objDir)
-    os.mkdir(objDir)
-    executable  = os.path.join(objDir, exampleName)
-    paramKey    = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
-    if paramKey in builder.regressionRequirements:
-      if not builder.regressionRequirements[paramKey].issubset(packageNames):
-        raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
-    params = builder.regressionParameters.get(paramKey, {})
-    if not isinstance(params, list):
-      params = [params]
-    # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
-    rebuildTest = True
-    for testnum, param in enumerate(params):
-      if not args.testnum is None and testnum != args.testnum: continue
-      if 'setup' in param:
-        print(param['setup'])
-        os.system('python '+param['setup'])
-        rebuildTest = True
-      if 'source' in param:
-        if not isinstance(ex, list):
-          ex = [ex]+param['source']
-        else:
-          ex = ex+param['source']
-      if rebuildTest:
-        objects = maker.buildFile(ex, objDir)
-        if not len(objects):
-          print('TEST BUILD FAILED (check make.log for details)')
-          return 1
-        maker.link(executable, objects, maker.configInfo.languages.clanguage)
-      if not 'args' in param: param['args'] = ''
-      param['args'] += extraArgs
-      if maker.runTest(exampleDir, executable, testnum, **param):
-        print('TEST RUN FAILED (check make.log for details)')
-        return 1
-      rebuildTest = False
-    if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
-  print('All tests pass')
+    ret = checkSingleRun(maker, ex, extraArgs)
+    if ret: break
+  if not ret:
+    print('All tests pass')
   maker.cleanup()
-  return 0
+  return ret
+
+def regression(args):
+  '''Run complete regression suite'''
+  ret   = 0
+  maker = builder.PETScMaker()
+  maker.setup()
+  for ex in examples:
+    ret = checkSingleRun(maker, ex)
+    if ret: break
+  if not ret:
+    print('All regression tests pass')
+  maker.cleanup()
+  return ret
 
 def clean(args):
   '''Remove source database and all objects'''
@@ -186,6 +216,8 @@ if __name__ == '__main__':
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
   parser_check.add_argument('--testnum', type=int, help='The test number to execute')
   parser_check.set_defaults(func=check)
+  parser_regression = subparsers.add_parser('regression', help='Execute regression tests')
+  parser_regression.set_defaults(func=regression)
   parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
   parser_clean.set_defaults(func=clean)
   parser_purge = subparsers.add_parser('purge', help='Remove a set of files from the source database')

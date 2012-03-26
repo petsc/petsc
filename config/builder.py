@@ -291,6 +291,95 @@ def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return
 
+class MakeParser(object):
+  def __init__(self, maker):
+    self.maker = maker
+    return
+
+  def getTargets(self, text):
+    '''Extract all targets from a makefile
+    - Returns a dictionary of target names that map to a tuple of (dependencies, action)'''
+    import re
+    rulePat   = re.compile('^([\w]+):(.*)')
+    targets   = {}
+    foundRule = False
+    for line in text.split('\n'):
+      if foundRule:
+        if line.startswith('\t'):
+          l = line.strip()
+          if not l.startswith('#'): rule[2].append(l)
+          continue
+        else:
+          targets[rule[0]] = (rule[1], rule[2])
+          foundRule = False
+      m = rulePat.match(line)
+      if m:
+        target    = m.group(1)
+        deps      = [d for d in m.group(2).split(' ') if d and d.endswith('.o')]
+        rule      = (target, deps, [])
+        foundRule = True
+    return targets
+
+  def parseAction(self, lines):
+    '''Parses a PETSc action
+    - Return a dictionary for the portions of a run'''
+    import re
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+) (?P<args>[-.,\w ]+) >', lines[0])
+    if not m:
+      raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
+    m2 = re.search('\$\{DIFF\} output/%s_(?P<num>\w+)\.out' % m.group('ex'), lines[1])
+    if not m2:
+      raise RuntimeError('Could not parse comparison:\n'+lines[1]+'\n pattern: '+'\$\{DIFF\} output/%s_(?P<num>\w+).out' % m.group('ex'))
+    return {'numProcs': m.group('numProcs'), 'args': m.group('args'), 'num': m2.group('num')}
+
+  def parseTest(self, filename, testTarget):
+    '''Parse a PETSc test target
+    - Returns a dictionary compatible with builder2.py for regression tests'''
+    from distutils.sysconfig import parse_makefile
+    makevars = parse_makefile(filename)
+    with file(filename) as f:
+      maketext = f.read()
+    targets = self.getTargets(maketext)
+    srcDir  = os.path.dirname(filename)
+    regressionParameters = {}
+    testTargets = [r for r in makevars[testTarget].split(' ') if r]
+    examples    = [e for e in testTargets if e.endswith('.PETSc')]
+    for ex in examples:
+      base   = os.path.splitext(ex)[0]
+      source = base+'.c'
+      exc    = os.path.join(os.path.relpath(srcDir, self.maker.petscDir), base)
+      runs   = [e for e in testTargets if e.startswith('run'+base)]
+      regressionParameters[exc] = []
+      for r in runs:
+        if not r in targets:
+          raise RuntimeError('Could not find rule:',r)
+        else:
+          try:
+            run = self.parseAction(targets[r][1])
+            regressionParameters[exc].append(run)
+          except RuntimeError, e:
+            self.maker.logPrint('ERROR in '+str(r)+' for source '+source+'\n'+str(e))
+    return regressionParameters
+
+  def extractTests(self, filename):
+    '''Extract valid test targets in a PETSc makefile
+    - returns a list of test targets'''
+    from distutils.sysconfig import parse_makefile
+    makevars = parse_makefile(filename)
+    return [t for t in makevars.keys() if t.startswith('TESTEXAMPLES')]
+
+localRegressionParameters = {}
+
+def getRegressionParameters(maker, exampleDir):
+  if not exampleDir in localRegressionParameters:
+    filename = os.path.join(exampleDir, 'makefile')
+    if os.path.exists(filename):
+      # Should parse all compatible tests here
+      localRegressionParameters[exampleDir] = MakeParser(maker).parseTest(filename, 'TESTEXAMPLES_C')
+    else:
+      localRegressionParameters[exampleDir] = {}
+  return localRegressionParameters[exampleDir]
+
 class Future(logger.Logger):
   def __init__(self, argDB, log, pipe, cmd, errorMsg = '', func = None):
     logger.Logger.__init__(self, argDB = argDB, log = log)
@@ -1295,7 +1384,7 @@ class PETScMaker(script.Script):
      with file(outputName) as f:
        validOutput = f.read()
        if not validOutput == output:
-         self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
+         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)))
          for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
            self.logPrint(line)
          self.logPrintDivider()
