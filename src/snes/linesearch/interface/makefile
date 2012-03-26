@@ -11,7 +11,7 @@ OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 DIRS     =
-LOCDIR   = src/snes/linesearch/interface
+LOCDIR   = src/snes/linesearch/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

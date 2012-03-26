@@ -905,6 +905,7 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 
    Output Parameters:
 +  steptol - The minimum steplength
+.  maxstep - The maximum steplength
 .  rtol    - The relative tolerance for iterative line searches
 .  atol    - The absolute tolerance for iterative line searches
 .  ltol    - The change in lambda tolerance for iterative line searches
@@ -953,6 +954,7 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
    Input Parameters:
 +  linesearch - linesearch context.
 .  steptol - The minimum steplength
+.  maxstep - The maximum steplength
 .  rtol    - The relative tolerance for iterative line searches
 .  atol    - The absolute tolerance for iterative line searches
 .  ltol    - The change in lambda tolerance for iterative line searches
