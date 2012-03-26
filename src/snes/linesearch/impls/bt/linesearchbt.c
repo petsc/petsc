@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h>
+#include <petsc-private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
 #include <petsc-private/snesimpl.h>
 
 typedef struct {
