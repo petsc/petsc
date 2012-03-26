@@ -52,8 +52,8 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc );
 PetscErrorCode PCDestroy_GAMG(PC pc);
 
 /* helper methods */
-PetscErrorCode PCGAMGCreateSimpleGraph( const Mat, Mat * );
-PetscErrorCode PCGAMGScaleFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
+PetscErrorCode PCGAMGCreateGraph( const Mat, Mat * );
+PetscErrorCode PCGAMGFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
 PetscErrorCode PCGAMGGetDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
                                        PetscInt *a_stride, PetscReal **a_data_out );
 

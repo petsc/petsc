@@ -609,8 +609,8 @@ PetscErrorCode PCGAMGgraph_GEO( PC pc,
   ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
   symm = (PetscBool)!(set && flg);
 
-  ierr  = PCGAMGCreateSimpleGraph( Amat, &Gmat ); CHKERRQ( ierr );
-  ierr  = PCGAMGScaleFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
+  ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
+  ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
 
   *a_Gmat = Gmat;
 #if defined PETSC_USE_LOG

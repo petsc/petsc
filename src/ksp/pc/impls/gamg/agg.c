@@ -939,8 +939,8 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
   symm = (PetscBool)(pc_gamg_agg->sym_graph || !(set && flg));
 
-  ierr  = PCGAMGCreateSimpleGraph( Amat, &Gmat ); CHKERRQ( ierr );
-  ierr  = PCGAMGScaleFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
+  ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
+  ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
   
   *a_Gmat = Gmat;
 

@@ -7,7 +7,7 @@
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGCreateSimpleGraph - create simple scalar graph
+   PCGAMGCreateGraph - create simple scaled scalar graph from matrix
  
  Input Parameter:
  . Amat - matrix
@@ -15,8 +15,8 @@
  . a_Gmaat - eoutput scalar graph (symmetric?)
  */
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGCreateSimpleGraph"
-PetscErrorCode PCGAMGCreateSimpleGraph( const Mat Amat, Mat *a_Gmat )
+#define __FUNCT__ "PCGAMGCreateGraph"
+PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,ncols,nloc,NN,MM,bs;
@@ -88,7 +88,7 @@ PetscErrorCode PCGAMGCreateSimpleGraph( const Mat Amat, Mat *a_Gmat )
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGScaleFilterGraph
+   PCGAMGFilterGraph - filter graph and symetrize if needed
  
  Input Parameter:
  . vfilter - threshold paramter [0,1)
@@ -97,8 +97,8 @@ PetscErrorCode PCGAMGCreateSimpleGraph( const Mat Amat, Mat *a_Gmat )
  . a_Gmat - original graph
  */
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGScaleFilterGraph"
-PetscErrorCode PCGAMGScaleFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const PetscBool symm, const PetscInt verbose )
+#define __FUNCT__ "PCGAMGFilterGraph"
+PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const PetscBool symm, const PetscInt verbose )
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
