@@ -655,18 +655,18 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   X = snes->vec_sol;
   F = snes->vec_func;
 
+  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
   /*norm setup */
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
-  }
-  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
   if (isFine || fas->monitor) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
