@@ -472,7 +472,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
   for(e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[2/*1*dim*/]; // Nq = 1
+    PetscScalar      f1[SPATIAL_DIM_0/*1*/]; // Nq = 1
     PetscInt         q, b, d, f;
 
     if (debug > 1) {
@@ -481,11 +481,12 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
     }
     for(q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar u               = 0.0;
-      PetscScalar gradU[2/*dim*/] = {0.0, 0.0};
+      PetscScalar u = 0.0;
+      PetscScalar gradU[SPATIAL_DIM_0];
 
+      for(d = 0; d < dim; ++d) {gradU[d] = 0.0;}
       for(b = 0; b < Nb; ++b) {
-        PetscScalar realSpaceDer[dim];
+        PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
         u += coefficients[e*Nb+b]*basisTabulation[q*Nb+b];
         for(d = 0; d < dim; ++d) {
@@ -507,7 +508,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
     for(b = 0; b < Nb; ++b) {
       elemVec[e*Nb+b] = 0.0;
       for(q = 0; q < Nq; ++q) {
-        PetscScalar realSpaceDer[dim];
+        PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
         for(d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
@@ -726,7 +727,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, AppCtx *user)
+PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
@@ -810,7 +811,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, AppCtx *user)
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, AppCtx *user)
+PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
@@ -894,7 +895,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, AppCtx *user)
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, AppCtx *user)
+PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
@@ -1029,13 +1030,13 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
     if (user.batch) {
-      ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, void*)) FormJacobianLocalBatch);CHKERRQ(ierr);
+      ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalBatch);CHKERRQ(ierr);
     } else {
       switch(user.op) {
       case LAPLACIAN:
-        ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, void*)) FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
+        ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
       case ELASTICITY:
-        ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, void*)) FormJacobianLocalElasticity);CHKERRQ(ierr);break;
+        ierr = DMComplexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalElasticity);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
