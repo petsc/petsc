@@ -298,6 +298,52 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASSetMonitor"
+/*@
+   SNESFASSetMonitor - Sets the method-specific cycle monitoring
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes   - the FAS context
+-  flg    - monitor or not
+
+   Level: advanced
+
+.keywords: FAS, monitor
+
+.seealso: SNESFASSetCyclesOnLevel()
+@*/
+PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg) {
+  SNES_FAS       *fas = (SNES_FAS *)snes->data;
+  PetscErrorCode ierr;
+  PetscBool      isFine;
+  PetscInt       i, levels = fas->levels;
+  SNES           levelsnes;
+  PetscFunctionBegin;
+  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  if (isFine) {
+    for (i = 0; i < levels; i++) {
+      ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);
+      fas = (SNES_FAS *)levelsnes->data;
+      if (flg) {
+        fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)levelsnes)->comm);CHKERRQ(ierr);
+        /* set the monitors for the upsmoother and downsmoother */
+        ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
+        ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      } else {
+        /* unset the monitors on the coarse levels */
+        if (i != fas->levels - 1) {
+          ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASCycleCreateSmoother_Private"
 /*

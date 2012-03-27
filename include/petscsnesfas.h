@@ -27,6 +27,8 @@ extern PetscErrorCode SNESFASGetCycleSNES(SNES, PetscInt, SNES*);
 extern PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
 extern PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
 extern PetscErrorCode SNESFASSetCycles(SNES, PetscInt);
+extern PetscErrorCode SNESFASSetMonitor(SNES, PetscBool);
+
 
 extern PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
 extern PetscErrorCode SNESFASGetGalerkin(SNES, PetscBool*);

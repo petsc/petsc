@@ -263,25 +263,12 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     if (flg) {
       ierr = SNESFASSetNumberSmoothDown(snes,m);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESFASSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
+    if (monflg) ierr = SNESFASSetMonitor(snes, PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
-
-  if (monflg) {
-    fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
-    /* set the monitors for the upsmoother and downsmoother */
-    ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
-    ierr = SNESMonitorSet(snes,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-    if (fas->smoothu) ierr = SNESMonitorSet(fas->smoothu,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-    if (fas->smoothd) ierr = SNESMonitorSet(fas->smoothd,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  } else {
-    /* unset the monitors on the coarse levels */
-    if (!isFine) {
-      ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
-    }
-  }
 
   /* set up the default line search for coarse grid corrections */
   if (fas->fastype == SNES_FAS_ADDITIVE) {
