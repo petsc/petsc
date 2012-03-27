@@ -1615,6 +1615,18 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_SeqDense"
+PetscErrorCode MatSetBlockSize_SeqDense(Mat A,PetscInt bs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatConjugate_SeqDense"
 static PetscErrorCode MatConjugate_SeqDense(Mat A)
 {
@@ -1951,7 +1963,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*49*/ 0,
+/*49*/ MatSetBlockSize_SeqDense,
        0,
        0,
        0,
