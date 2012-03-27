@@ -172,8 +172,8 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
 void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr )
 {
   Vec B = *b,X = *x;
-  if (*b == PETSC_NULL_OBJECT_Fortran) B = PETSC_NULL;
-  if (*x == PETSC_NULL_OBJECT_Fortran) X = PETSC_NULL;
+  if (FORTRANNULLOBJECT(b)) B = PETSC_NULL;
+  if (FORTRANNULLOBJECT(x)) X = PETSC_NULL;
   *__ierr = SNESSolve(*snes,B,X);
 }
 

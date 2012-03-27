@@ -1,4 +1,4 @@
-static char help[] = "Testing MatMerge_SeqsToMPI().\n\n";
+static char help[] = "Testing MatCreateMPIAIJSumSeqAIJ().\n\n";
 
 #include <petscmat.h>
 
@@ -37,14 +37,14 @@ int main(int argc,char **argv)
     ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  /* Test MatMerge_SeqsToMPI */
-  ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  /* Test MatCreateMPIAIJSumSeqAIJ */
+  ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
   /* Test MAT_REUSE_MATRIX */
   alpha = 0.1;
   for (i=0; i<3; i++){
     ierr = MatScale(A,alpha);CHKERRQ(ierr);
-    ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   }
   ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

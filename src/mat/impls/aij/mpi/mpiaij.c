@@ -4268,8 +4268,8 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMergeSymbolic"
-PetscErrorCode  MatMergeSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
+#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJSymbolic"
+PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum;
@@ -4304,8 +4304,8 @@ PetscErrorCode  MatMergeSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMergeNumeric"
-PetscErrorCode  MatMergeNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
+#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJNumeric"
+PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
 {
   PetscErrorCode ierr;
   PetscInt       m,N,i,rstart,nnz,Ii;
@@ -4327,9 +4327,9 @@ PetscErrorCode  MatMergeNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMerge"
+#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJ"
 /*@
-      MatMerge - Creates a single large PETSc matrix by concatenating sequential
+      MatCreateMPIAIJConcatenateSeqAIJ - Creates a single large PETSc matrix by concatenating sequential
                  matrices from each processor
 
     Collective on MPI_Comm
@@ -4348,16 +4348,16 @@ PetscErrorCode  MatMergeNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
    Notes: The number of columns of the matrix in EACH processor MUST be the same.
 
 @*/
-PetscErrorCode  MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMergeSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJConcatenateSeqAIJSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
   } 
-  ierr = MatMergeNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJConcatenateSeqAIJNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4442,8 +4442,8 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 #include <petscbt.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMerge_SeqsToMPINumeric"
-PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
+#define __FUNCT__ "MatCreateMPIAIJSumSeqAIJNumeric"
+PetscErrorCode  MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
 {
   PetscErrorCode       ierr;
   MPI_Comm             comm=((PetscObject)mpimat)->comm;
@@ -4562,8 +4562,8 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 extern PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMerge_SeqsToMPISymbolic"
-PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat)
+#define __FUNCT__ "MatCreateMPIAIJSumSeqAIJSymbolic"
+PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat)
 {
   PetscErrorCode       ierr;
   Mat                  B_mpi;
@@ -4789,7 +4789,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetOption(B_mpi,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
-  /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
+  /* B_mpi is not ready for use - assembly will be done by MatCreateMPIAIJSumSeqAIJNumeric() */
   B_mpi->assembled     = PETSC_FALSE;
   B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI;
   merge->bi            = bi;
@@ -4814,9 +4814,9 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMerge_SeqsToMPI"
+#define __FUNCT__ "MatCreateMPIAIJSumSeqAIJ"
 /*@C
-      MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
+      MatCreateMPIAIJSumSeqAIJ - Creates a MPIAIJ matrix by adding sequential
                  matrices from each processor
 
     Collective on MPI_Comm
@@ -4838,7 +4838,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
-PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
+PetscErrorCode  MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;
   PetscMPIInt     size;
@@ -4857,9 +4857,9 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
   }
   ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJSumSeqAIJSymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
   }
-  ierr = MatMerge_SeqsToMPINumeric(seqmat,*mpimat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJSumSeqAIJNumeric(seqmat,*mpimat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

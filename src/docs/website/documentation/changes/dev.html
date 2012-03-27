@@ -116,6 +116,8 @@
         <li>You MUST now call MatXXXSetPreallocation() or MatSetUp() on any matrix you create directly (not using DMCreateMatrix()) before calling MatSetValues(), MatSetValuesBlocked() etc.</li>
         <li>MatSetUpPreallocation() and MatPreallocated() are removed, use MatSetUp()</li>
         <li>MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(), MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(), MatCreateSBAIJ(), MatCreateDense(). Note that on a single process they have always created the sequential version of the matrix so this naming is more accurate. </li>
+        <li>Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()</li>
+        <li>Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()</li>
       </ul>
 
       <h4>PC:</h4>

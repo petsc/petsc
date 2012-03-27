@@ -969,12 +969,43 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  linesearch->steptol = steptol;
-  linesearch->maxstep = maxstep;
-  linesearch->rtol = rtol;
-  linesearch->atol = atol;
+  PetscValidLogicalCollectiveReal(linesearch,steptol,2);
+  PetscValidLogicalCollectiveReal(linesearch,maxstep,3);
+  PetscValidLogicalCollectiveReal(linesearch,rtol,4);
+  PetscValidLogicalCollectiveReal(linesearch,atol,5);
+  PetscValidLogicalCollectiveReal(linesearch,ltol,6);
+  PetscValidLogicalCollectiveInt(linesearch,max_its,7);
+
+  if ( steptol!= PETSC_DEFAULT) {
+    if ( steptol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %G must be non-negative",steptol);
+    linesearch->steptol = steptol;
+  }
+
+  if ( maxstep!= PETSC_DEFAULT) {
+    if ( maxstep < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %G must be non-negative",maxstep);
+    linesearch->maxstep = maxstep;
+  }
+
+  if (rtol != PETSC_DEFAULT) {
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    linesearch->rtol = rtol;
+  }
+
+  if (atol != PETSC_DEFAULT) {
+    if (atol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",atol);
+    linesearch->atol = atol;
+  }
+
+  if (ltol != PETSC_DEFAULT) {
+    if (ltol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Labmda tolerance %G must be non-negative",ltol);
   linesearch->ltol = ltol;
-  linesearch->max_its = max_its;
+  }
+
+  if (max_its != PETSC_DEFAULT) {
+    if (max_its < 0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",max_its);
+    linesearch->max_its = max_its;
+  }
+
   PetscFunctionReturn(0);
 }
 
