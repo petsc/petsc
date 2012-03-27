@@ -1,4 +1,52 @@
-#include "../src/snes/impls/fas/fasimpls.h"
+#include "../src/snes/impls/fas/fasimpls.h" /*I  "petscsnesfas.h"  I*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASGetGalerkin"
+/*@
+   SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
+
+   Input Parameter:
+.  snes - the nonlinear solver context
+
+   Output parameter:
+.  flg - the status of the galerkin problem
+
+   Level: advanced
+
+.keywords: FAS, galerkin
+
+.seealso: SNESFASSetLevels(), SNESFASSetGalerkin()
+@*/
+PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
+  SNES_FAS * fas = (SNES_FAS *)snes->data;
+  PetscFunctionBegin;
+  *flg = fas->galerkin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASSetGalerkin"
+/*@
+   SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
+
+   Input Parameter:
+.  snes - the nonlinear solver context
+.  flg - the status of the galerkin problem
+
+   Level: advanced
+
+.keywords: FAS, galerkin
+
+.seealso: SNESFASSetLevels(), SNESFASGetGalerkin()
+@*/
+PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
+  SNES_FAS * fas = (SNES_FAS *)snes->data;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  fas->galerkin = flg;
+  if (fas->next) {ierr = SNESFASSetGalerkin(fas->next, flg);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGalerkinDefaultFunction"

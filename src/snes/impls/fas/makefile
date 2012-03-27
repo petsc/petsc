@@ -2,10 +2,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fas.c fasgalerkin.c
+SOURCEC  = fas.c fasgalerkin.c fasfunc.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = fas.o fasgalerkin.o
+OBJSC    = fas.o fasgalerkin.o fasfunc.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES

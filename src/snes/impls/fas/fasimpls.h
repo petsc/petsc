@@ -15,13 +15,12 @@ typedef struct {
   PetscViewer    monitor;                      /* debuggging output for FAS */
 
   /* smoothing objects */
-  SNES           upsmooth;                     /* the SNES for presmoothing */
-  SNES           downsmooth;                   /* the SNES for postsmoothing */
-
-  SNESLineSearch     linesearch_smooth;            /* the line search for default upsmoothing */
+  SNES           smoothu;                      /* the SNES for presmoothing */
+  SNES           smoothd;                      /* the SNES for postsmoothing */
 
   /* coarse grid correction objects */
   SNES           next;                         /* the SNES instance for the next coarser level in the hierarchy */
+  SNES           fine;                         /* the finest SNES instance; used as a reference for prefixes */
   SNES           previous;                     /* the SNES instance for the next finer level in the hierarchy */
   Mat            interpolate;                  /* interpolation */
   Mat            inject;                       /* injection operator (unscaled) */
