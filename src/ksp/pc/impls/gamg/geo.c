@@ -335,14 +335,10 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;
-        /* for( pos=PetscCDGetHeadPos(agg_lists_1,lid) ;  */
-        /*      pos ;  */
-        /*      pos=PetscCDGetNextPos(agg_lists_1,lid,pos) ){ */
-        /*   PetscInt flid = LLNGetID(pos);  */
         ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
         while(pos){              
           PetscInt flid; 
-          ierr = LLNGetID( pos, &flid ); CHKERRQ(ierr);
+          ierr = PetscLLNGetID( pos, &flid ); CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
 
           if( flid < nFineLoc ) {  /* could be a ghost */
@@ -806,7 +802,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
   {
     PetscReal *coords; 
     PetscInt nnodes;
-    PetscInt  *crsGID;
+    PetscInt  *crsGID = PETSC_NULL;
     Mat        Gmat2;
 
     assert(dim==data_cols); 

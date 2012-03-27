@@ -11,6 +11,7 @@ typedef struct gamg_TAG{
   PetscInt       Nlevels;
   PetscInt       setup_count;
   PetscBool      repart;
+  PetscBool      use_aggs_in_gasm;
   PetscInt       min_eq_proc;
   PetscInt       coarse_eq_limit;
   PetscReal      threshold; /* common quatity to many AMG methods so keep it up here */

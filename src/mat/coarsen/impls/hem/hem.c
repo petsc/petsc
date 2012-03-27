@@ -93,16 +93,16 @@ PetscErrorCode PetscCDGetNewNode( PetscCoarsenData *ail, PetscCDIntNd **a_out, P
   return 0;
 }
 
-/* LLNSetID
+/* PetscLLNSetID
  */
-PetscErrorCode LLNSetID( PetscCDIntNd *a_this, PetscInt a_id )
+PetscErrorCode PetscLLNSetID( PetscCDIntNd *a_this, PetscInt a_id )
 {
   a_this->gid = a_id;
   return 0;
 }
-/* LLNGetID
+/* PetscLLNGetID
  */
-PetscErrorCode LLNGetID( const PetscCDIntNd *a_this, PetscInt *a_gid)
+PetscErrorCode PetscLLNGetID( const PetscCDIntNd *a_this, PetscInt *a_gid)
 {
   *a_gid = a_this->gid;
   return 0;
@@ -308,6 +308,43 @@ PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat a_mat )
   return 0;
 }
 
+
+/* PetscCDSetMat
+ */
+PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt a_bs, PetscInt *a_sz, IS **a_local_is )
+{
+  PetscErrorCode ierr;
+  PetscCDIntNd *n;
+  PetscInt lsz,ii,kk,*idxs,jj;
+  IS *is_loc;
+  
+  for(ii=kk=0;ii<ail->size;ii++){
+    if(ail->array[ii]) kk++;
+  }
+  *a_sz = kk; /* out */
+
+  ierr = PetscMalloc( kk*sizeof(IS*), &is_loc ); CHKERRQ(ierr);
+  *a_local_is = is_loc; /* out */
+  
+  for(ii=kk=0;ii<ail->size;ii++){
+    for( lsz=0, n=ail->array[ii] ; n ; lsz++, n=n->next ) /* void */;
+    if( lsz ){
+      ierr = PetscMalloc( a_bs*lsz*sizeof(PetscInt), &idxs ); CHKERRQ(ierr);
+      for( lsz = 0, n=ail->array[ii] ; n ; n = n->next) {
+        PetscInt gid;
+        ierr = PetscLLNGetID( n, &gid ); CHKERRQ(ierr);
+        for(jj=0;jj<a_bs;lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
+      }
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++] );
+      CHKERRQ(ierr);
+    }
+  }
+  assert(*a_sz == kk);
+
+  return 0;
+}
+
+
 /* ********************************************************************** */
 /* edge for priority queue */
 typedef struct edge_tag{
@@ -345,7 +382,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   MPI_Comm       wcomm = ((PetscObject)a_Gmat)->comm;
   PetscInt       sub_it,kk,n,ix,*idx,*ii,iter,Iend,my0;
   PetscMPIInt    mype,npe;
-  const PetscInt nloc = a_Gmat->rmap->n,n_iter=5; /* need to figure out how to stop this */
+  const PetscInt nloc = a_Gmat->rmap->n,n_iter=4; /* need to figure out how to stop this */
   PetscInt      *lid_cprowID,*lid_gid;
   PetscBool     *lid_matched;
   Mat_SeqAIJ    *matA, *matB=0;
@@ -694,13 +731,12 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             *pt++ = n; *pt++ = mype;
 
             ierr = PetscCDGetHeadPos(deleted_list,proc,&pos); CHKERRQ(ierr);
-            /* for(pos=PetscCDGetHeadPos(deleted_list,proc) ; pos ; pos=PetscCDGetNextPos(deleted_list,proc,pos)){ */
             while(pos){              
               PetscInt lid0, cpid, gid; 
-              ierr = LLNGetID( pos, &cpid ); CHKERRQ(ierr);
+              ierr = PetscLLNGetID( pos, &cpid ); CHKERRQ(ierr);
               gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]); 
               ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
-              ierr = LLNGetID( pos, &lid0 ); CHKERRQ(ierr);
+              ierr = PetscLLNGetID( pos, &lid0 ); CHKERRQ(ierr);
               ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
               *pt++ = gid; *pt++ = lid0;
             }
@@ -767,7 +803,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             ierr = PetscCDGetHeadPos(agg_llists,lid1,&pos); CHKERRQ(ierr);
             while(pos){
               PetscInt gid;
-              ierr = LLNGetID( pos, &gid ); CHKERRQ(ierr);
+              ierr = PetscLLNGetID( pos, &gid ); CHKERRQ(ierr);
               ierr = PetscCDGetNextPos(agg_llists,lid1,&pos); CHKERRQ(ierr);
               *pt2++ = gid;
             }
@@ -989,7 +1025,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       ierr = PetscCDGetHeadPos(agg_llists,kk,&pos); CHKERRQ(ierr);
       while(pos){              
         PetscInt gid1; 
-        ierr = LLNGetID( pos, &gid1 ); CHKERRQ(ierr);
+        ierr = PetscLLNGetID( pos, &gid1 ); CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(agg_llists,kk,&pos); CHKERRQ(ierr);
 
         if( gid1 < my0 || gid1 >= my0+nloc ) {

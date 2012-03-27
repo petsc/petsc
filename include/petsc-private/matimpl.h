@@ -374,8 +374,8 @@ struct _p_MatCoarsen {
 
 PetscErrorCode PetscCDCreate( PetscInt chsz, PetscCoarsenData **ail );
 PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail );
-PetscErrorCode LLNSetID( PetscCDIntNd *a_this, PetscInt a_gid );
-PetscErrorCode LLNGetID( const PetscCDIntNd *a_this, PetscInt *a_gid );
+PetscErrorCode PetscLLNSetID( PetscCDIntNd *a_this, PetscInt a_gid );
+PetscErrorCode PetscLLNGetID( const PetscCDIntNd *a_this, PetscInt *a_gid );
 PetscErrorCode PetscCDAppendID( PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_gid );
 PetscErrorCode PetscCDAppendRemove( PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx );
 PetscErrorCode PetscCDAppendNode( PetscCoarsenData *ail, PetscInt a_idx,  PetscCDIntNd *a_n );
@@ -391,7 +391,7 @@ PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat );
 typedef PetscCDIntNd* PetscCDPos;
 PetscErrorCode PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos *cpos );
 PetscErrorCode PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos *cpos );
-
+PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt, PetscInt *, IS** );
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
