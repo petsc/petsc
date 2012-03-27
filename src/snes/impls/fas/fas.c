@@ -215,7 +215,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS *) snes->data;
   PetscInt       levels = 1;
-  PetscBool      flg, monflg, galerkinflg;
+  PetscBool      flg, upflg, downflg, monflg, galerkinflg;
   PetscErrorCode ierr;
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNESFASType    fastype;
@@ -255,20 +255,22 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
       ierr = SNESFASSetGalerkin(snes, galerkinflg);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = SNESFASSetNumberSmoothUp(snes,m);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = SNESFASSetNumberSmoothDown(snes,m);CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&m,&upflg);CHKERRQ(ierr);
+
+    ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&m,&downflg);CHKERRQ(ierr);
+
     ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESFASSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
     if (monflg) ierr = SNESFASSetMonitor(snes, PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
+  if (upflg) {
+    ierr = SNESFASSetNumberSmoothUp(snes,m);CHKERRQ(ierr);
+  }
+  if (downflg) {
+    ierr = SNESFASSetNumberSmoothDown(snes,m);CHKERRQ(ierr);
+  }
 
   /* set up the default line search for coarse grid corrections */
   if (fas->fastype == SNES_FAS_ADDITIVE) {
