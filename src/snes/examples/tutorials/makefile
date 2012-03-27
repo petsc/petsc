@@ -382,19 +382,19 @@ runex5_5_ls:
 	   ${RM} -f ex5_5_ls.tmp
 
 runex5_5_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_type ls -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_fas.tmp
 
 runex5_5_fas_additive:
-	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_smoother_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 > ex5_5_fas_additive.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_smoother_type ls -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 > ex5_5_fas_additive.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas_additive, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -snes_type ngmres -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -snes_type ngmres -npc_fas_coarse_snes_max_it 1 -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_fas, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_ngmres_fas.tmp

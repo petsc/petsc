@@ -221,7 +221,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   SNESFASType    fastype;
   const char     *optionsprefix;
   SNESLineSearch linesearch;
-  PetscInt       m;
+  PetscInt       m, n_up, n_down;
   SNES           next;
   PetscBool      isFine;
 
@@ -255,9 +255,9 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
       ierr = SNESFASSetGalerkin(snes, galerkinflg);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&m,&upflg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&m,&downflg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&n_down,&downflg);CHKERRQ(ierr);
 
     ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESFASSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
     if (monflg) ierr = SNESFASSetMonitor(snes, PETSC_TRUE);CHKERRQ(ierr);
@@ -266,10 +266,10 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
   if (upflg) {
-    ierr = SNESFASSetNumberSmoothUp(snes,m);CHKERRQ(ierr);
+    ierr = SNESFASSetNumberSmoothUp(snes,n_up);CHKERRQ(ierr);
   }
   if (downflg) {
-    ierr = SNESFASSetNumberSmoothDown(snes,m);CHKERRQ(ierr);
+    ierr = SNESFASSetNumberSmoothDown(snes,n_down);CHKERRQ(ierr);
   }
 
   /* set up the default line search for coarse grid corrections */
@@ -633,7 +633,6 @@ PetscErrorCode FASCycle_Multiplicative(SNES snes, Vec X) {
     ierr = FASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
     ierr = FASUpSmooth(snes, B, X, F);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -666,20 +665,22 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->norm = fnorm;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  if (isFine || fas->monitor) {
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->norm = fnorm;
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    SNESLogConvHistory(snes,fnorm,0);
+    ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
-  /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-  if (snes->reason) PetscFunctionReturn(0);
+    /* set parameter for default relative tolerance convergence test */
+    snes->ttol = fnorm*snes->rtol;
+    /* test convergence */
+    ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (snes->reason) PetscFunctionReturn(0);
+  }
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   for (ffas=fas; ffas->next; ffas=(SNES_FAS*)ffas->next->data) {
@@ -716,8 +717,10 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-    if (snes->reason) break;
+    if (isFine) {
+      ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+      if (snes->reason) break;
+    }
   }
   if (i == maxits) {
     ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
