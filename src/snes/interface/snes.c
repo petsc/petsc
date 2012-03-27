@@ -4275,6 +4275,7 @@ PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *linesearch)
     ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
     ierr = SNESLineSearchCreate(((PetscObject) snes)->comm, &snes->linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetSNES(snes->linesearch, snes);CHKERRQ(ierr);
+    ierr = SNESLineSearchAppendOptionsPrefix(snes->linesearch, optionsprefix);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject) snes->linesearch, (PetscObject) snes, 1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(snes, snes->linesearch);CHKERRQ(ierr);
   }
