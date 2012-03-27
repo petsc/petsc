@@ -1033,3 +1033,35 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth) {
   *smooth = fas->smoothu;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASGetCoarseSolve"
+/*@
+   SNESFASGetCoarseSolve - Gets the coarsest solver.
+
+   Input Parameters:
++  snes   - the multigrid context
+
+   Output Parameters:
+   solve  - the coarse-level solver
+
+   Level: advanced
+
+.keywords: FAS, MG, get, multigrid, solver, coarse
+
+.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+@*/
+PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth) {
+  SNES_FAS * fas;
+  PetscErrorCode ierr;
+  SNES levelsnes;
+  PetscFunctionBegin;
+  ierr = SNESFASGetCycleSNES(snes, 0, &levelsnes);CHKERRQ(ierr);
+  fas = (SNES_FAS *)levelsnes->data;
+  /* if the user chooses to differentiate smoothers, create them both at this point */
+  if (!fas->smoothd) {
+    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+  }
+  *smooth = fas->smoothd;
+  PetscFunctionReturn(0);
+}
