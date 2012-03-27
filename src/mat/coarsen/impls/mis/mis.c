@@ -170,7 +170,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
             }
           }
           /* SELECTED state encoded with global index */
-          lid_state[lid] = (PetscScalar)(lid+my0); // needed????
+          lid_state[lid] = (PetscScalar)(lid+my0); /* needed???? */
           nselected++;
           if( strict_aggs ) {
             ierr = PetscCDAppendID( agg_lists, lid, lid+my0 ); CHKERRQ(ierr);
