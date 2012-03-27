@@ -348,7 +348,7 @@ PetscErrorCode FASDownSmooth(SNES snes, Vec B, Vec X, Vec F){
   ierr = SNESSolve(smoothd, B, X);CHKERRQ(ierr);
   /* check convergence reason for the smoother */
   ierr = SNESGetConvergedReason(smoothd,&reason);CHKERRQ(ierr);
-  if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+  if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN)) {
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
@@ -627,12 +627,10 @@ PetscErrorCode FASCycle_Multiplicative(SNES snes, Vec X) {
   /* pre-smooth -- just update using the pre-smoother */
   ierr = FASDownSmooth(snes, B, X, F);CHKERRQ(ierr);
 
-  ierr = FASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
-
   if (fas->level != 0) {
+    ierr = FASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
     ierr = FASUpSmooth(snes, B, X, F);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -648,6 +646,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscReal      fnorm;
   SNES_FAS       *fas = (SNES_FAS *)snes->data,*ffas;
   DM             dm;
+  PetscBool      isFine;
 
   PetscFunctionBegin;
   maxits = snes->max_its;            /* maximum number of iterations */
@@ -672,6 +671,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -703,7 +703,9 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     if (snes->reason != SNES_CONVERGED_ITERATING) {
       PetscFunctionReturn(0);
     }
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    if (isFine || fas->monitor) {
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    }
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
