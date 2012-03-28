@@ -210,6 +210,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   Vec            x,y;
   PetscScalar    *gxarray, *gyarray;
   PetscInt       gfirst, glast;
+  DM             *domain_dm = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
@@ -222,10 +223,39 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     }
 
     if (osm->N == PETSC_DECIDE && osm->n < 1) { 
-      /* no subdomains given, use one per processor */
-      osm->nmax = osm->n = 1;
-      ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-      osm->N = size;
+      /* no subdomains given, try pc->dm */
+      if(pc->dm) {
+        char      ddm_name[1024];
+        DM        ddm;
+        PetscBool flg;
+        PetscInt     num_domains, d;
+        char         **domain_names;
+        IS           *domain_is;
+        /* Allow the user to request a decomposition DM by name */
+        ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
+        ierr = PetscOptionsString("-pc_asm_decomposition_dm", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
+        if(flg) {
+          ierr = DMCreateDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+          if(!ddm) {
+            SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
+          }
+          ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
+          ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
+        }
+        ierr = DMCreateDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
+        ierr = PCGASMSetLocalSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+        for(d = 0; d < num_domains; ++d) {
+          ierr = PetscFree(domain_names[d]); CHKERRQ(ierr);
+          ierr = ISDestroy(&domain_is[d]);   CHKERRQ(ierr);
+        }
+        ierr = PetscFree(domain_names);CHKERRQ(ierr);
+        ierr = PetscFree(domain_is);CHKERRQ(ierr);
+      }
+      else { /* no dm, use one per processor */
+        osm->nmax = osm->n = 1;
+        ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+        osm->N = size;
+      }
     } else if (osm->N == PETSC_DECIDE) {
       PetscInt inwork[2], outwork[2];
       /* determine global number of subdomains and the max number of local subdomains */

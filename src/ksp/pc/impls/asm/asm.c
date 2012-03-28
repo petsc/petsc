@@ -115,11 +115,13 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   for (i=0;i<osm->n_local_true;i++) {
     ierr = ISGetLocalSize(osm->is[i],&nidx);CHKERRQ(ierr);
     ierr = ISGetIndices(osm->is[i],&idx);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Subdomain with overlap\n"); CHKERRQ(ierr);
     for (j=0; j<nidx; j++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D ",idx[j]);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(osm->is[i],&idx);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Subdomain without overlap\n"); CHKERRQ(ierr);
     if (osm->is_local) {
       ierr = ISGetLocalSize(osm->is_local[i],&nidx);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
@@ -128,6 +130,9 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       }
       ierr = ISRestoreIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscViewerASCIIPrintf(viewer, "empty\n"); CHKERRQ(ierr);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
