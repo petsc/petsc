@@ -29,7 +29,7 @@
 .keywords: mesh,ExodusII
 .seealso: MeshCreate(), MeshCreateExodus()
 @*/
-PetscErrorCode DMComplexCreateExodusNG(MPI_Comm comm, PetscInt exoid, DM *dm)
+PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
 {
 #if defined(PETSC_HAVE_EXODUSII)
   DM_Complex    *mesh;

@@ -7065,7 +7065,7 @@ PetscErrorCode TetGenMeshFlip22(TetGenMesh *m, triface *flipface, Queue *flipque
   face adseg = {PETSC_NULL, 0}, dbseg = {PETSC_NULL, 0}, bcseg = {PETSC_NULL, 0}, caseg = {PETSC_NULL, 0};  /*  Coplanar segs. */
   face aeseg = {PETSC_NULL, 0}, deseg = {PETSC_NULL, 0}, beseg = {PETSC_NULL, 0}, ceseg = {PETSC_NULL, 0};  /*  Above segs. */
   face afseg = {PETSC_NULL, 0}, dfseg = {PETSC_NULL, 0}, bfseg = {PETSC_NULL, 0}, cfseg = {PETSC_NULL, 0};  /*  Below segs. */
-  point pa, pb, pc, pd, pe, pf;
+  point pa, pb, pc, pd, pe, pf = PETSC_NULL;
   int mirrorflag, i;
   PetscErrorCode ierr;
 

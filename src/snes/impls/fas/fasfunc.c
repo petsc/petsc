@@ -26,7 +26,7 @@ PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveEnum(snes,fastype,2);
   fas->fastype = fastype;
-  if (fas->next) ierr = SNESFASSetType(fas->next, fastype);CHKERRQ(ierr);
+  if (fas->next) {ierr = SNESFASSetType(fas->next, fastype);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

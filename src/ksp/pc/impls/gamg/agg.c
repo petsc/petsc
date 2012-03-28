@@ -725,7 +725,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
 #define OUT_AGGS
 #ifdef OUT_AGGS
-  static PetscInt llev = 0; char fname[32]; FILE *file; PetscInt pM;
+  static PetscInt llev = 0; char fname[32]; FILE *file = PETSC_NULL; PetscInt pM;
 #endif
 
   PetscFunctionBegin;
@@ -814,7 +814,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
           char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
           PetscInt MM,pi,pj;
           str[12] = col[(clid+17*mype)%6]; str[13] = sim[(clid+17*mype)%11];
-          MM = (PetscInt)(PetscSqrtScalar((PetscScalar)pM));
+          MM = (PetscInt)(PetscSqrtReal((PetscReal)pM));
           pj = gid1/MM; pi = gid1%MM;
           fprintf(file,str,(double)pi,(double)pj);
           /* fprintf(file,str,data[2*data_stride+1],-data[2*data_stride]); */

@@ -32,7 +32,9 @@ const char *const PetscSFSynchronizationTypes[] = {"FENCE","LOCK","ACTIVE","Pets
 #define MPI_Type_dup(datatype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #define MPI_Type_create_indexed_block(count,blocklength,displs,oldtype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #define MPI_Type_get_true_extent(type,lb,bytes) (*(lb)=0,*(bytes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#ifndef PETSC_HAVE_MPIUNI
 #define MPI_Type_get_extent(type,lb,bytes) (*(lb)=0,*(bytes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
+#endif
 #define MPI_COMBINER_DUP   0
 #define MPI_MODE_NOPUT     0
 #define MPI_MODE_NOPRECEDE 0
