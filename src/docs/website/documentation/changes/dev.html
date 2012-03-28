@@ -132,10 +132,29 @@
       </ul>
 
       <h4>SNES:</h4>
+      <ul>
+        <li>Added SNESGetSNESLineSearch</li>
+        <li>Changed default max_its and max_funcs for non-newton SNES solvers to 10000 and 30000 respectively</li>
+        <li>Changed options and command-line arguments for SNESFAS to be in line with PCMG</li>
+      </ul>
+
+      <h4>SNESLineSearch:</h4>
 
       <ul>
-        <li>Added SNESLineSearchSetType()</li>
-        <li>Removed newton solver specific SNESLineSearchCubic() and SNESLineSearchQuadratic() from petscsnes.h</li>
+        <li>SNESLineSearch object added</li>
+        <li>The default SNESLineSearch of a SNES may be gotten with SNESGetSNESLineSearch(SNES snes, SNESLineSearch *linesearch)</li>
+        <li>The linesearch type may be set with SNESLineSearchSetType() or -snes_linesearch_type</li>
+        <li>The line search (and pre and post checks) is applied using SNESLineSearchApply()</li>
+        <li>Pre/Post-check methods may be set with SNESLineSearchSetPre/PostCheck()</li>
+        <li>The previous steplength may be accessed through SNESLineSearchSetLambda()</li>
+        <li>The damping parameter may be set through SNESLineSearchSetDamping() or -snes_linesearch_damping</li>
+        <li>Success of the line search is determined using SNESLineSearchGetSuccess()</li>
+        <li>Custom linesearches may be built through SNES_LINESEARCH_SHELL,("shell") or by registering a new linesearch type with SNESLineSearchRegisterDynamic()</li>
+        <li>SNES_LINESEARCH_BT,("bt") replaces SNES_LS_CUBIC and SNES_LS_QUADRATIC, and order may be set with SNESLineSearchSetOrder() or -snes_linesearch_order<quadratic,cubic></li>
+        <li>SNES_LINESEARCH_BASIC,("basic") replaces SNES_LS_BASIC and SNES_LS_BASICNONORMS.  Norms may be turned off with SNESLineSearchSetComputeNorms() or -snes_linesearch_norms 0</li>
+        <li>SNESLineSearchSetTolerances() replaces SNESLSSetParams(), with the former alpha parameter set with SNESLineSearchBTSetAlpha() or -snes_linesearch_alpha</li>
+        <li>Added Line Search type SNES_LINESEARCH_L2,("l2") as the default for NRICHARDSON</li>
+        <li>SNES_LINESEARCH_CP,("cp") added as the default line search method for SNESNCG and SNESQN</li>
       </ul>
 
       <h4>TS:</h4>

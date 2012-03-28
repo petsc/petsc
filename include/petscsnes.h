@@ -492,6 +492,7 @@ extern PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch,Vec,Vec,Vec,Vec,Vec);
 extern PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch, PetscReal *, PetscReal *, PetscReal *);
 extern PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch, PetscReal, PetscReal, PetscReal);
 extern PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch);
+extern PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch, PetscBool);
 
 extern PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch, PetscBool);
 extern PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch, PetscViewer*);

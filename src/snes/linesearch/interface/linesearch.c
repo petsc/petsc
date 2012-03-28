@@ -1212,6 +1212,33 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetComputeNorms"
+/*@
+   SNESLineSearchSetComputeNorms - Turns on or off the computation of final norms in the line search.
+
+   Input Parameters:
++  linesearch  - linesearch context.
+-  flg  - indicates whether or not to compute norms.
+
+   Options Database Keys:
+.   -snes_linesearch_norms - turn norm computation on or off.
+
+   Notes:
+   This is most relevant to the SNES_LINESEARCH_BASIC line search type.
+
+   Level: intermediate
+
+.seealso: SNESLineSearchGetNorms(), SNESLineSearchSetNorms(), SNESLineSearchComputeNorms(), SNES_LINESEARCH_BASIC
+@*/
+PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBool flg)
+{
+  PetscFunctionBegin;
+  linesearch->norms = flg;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetVecs"
 /*@
