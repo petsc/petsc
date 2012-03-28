@@ -4,12 +4,21 @@
 #undef  __FUNCT__
 #define __FUNCT__ "<petsc4py.PETSc>"
 
+#if PETSC_VERSION_(3,2,0)
 #include "private/vecimpl.h"
 #include "private/matimpl.h"
 #include "private/kspimpl.h"
 #include "private/pcimpl.h"
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
+#else
+#include "petsc-private/vecimpl.h"
+#include "petsc-private/matimpl.h"
+#include "petsc-private/kspimpl.h"
+#include "petsc-private/pcimpl.h"
+#include "petsc-private/snesimpl.h"
+#include "petsc-private/tsimpl.h"
+#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -18,6 +27,10 @@
 #endif
 
 /* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,2,0)
+#define petsc_stageLog _stageLog
+#endif
 
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].classid)
@@ -35,7 +48,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(stageid,2);
   *stageid = -1;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(s = 0; s < stageLog->numStages; s++) {
     const char *sname = stageLog->stageInfo[s].name;
     ierr = PetscStrcasecmp(sname, name, &match);CHKERRQ(ierr);
@@ -57,7 +70,7 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(classid,2);
   *classid = -1;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(c = 0; c < stageLog->classLog->numClasses; c++) {
     const char *cname = stageLog->classLog->classInfo[c].name;
     PetscClassId id = PetscCLASSID(stageLog,c);
@@ -80,7 +93,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(eventid,2);
   *eventid = -1;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(e = 0; e < stageLog->eventLog->numEvents; e++) {
     const char *ename = stageLog->eventLog->eventInfo[e].name;
     ierr = PetscStrcasecmp(ename, name, &match);CHKERRQ(ierr);
@@ -99,7 +112,7 @@ PetscLogStageFindName(PetscLogStage stageid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   if (stageid >=0 && stageid < stageLog->numStages) {
     *name  = stageLog->stageInfo[stageid].name;
   }
@@ -117,7 +130,7 @@ PetscLogClassFindName(PetscClassId classid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(c = 0; c < stageLog->classLog->numClasses; c++) {
     if (classid == PetscCLASSID(stageLog,c)) {
       *name  = stageLog->classLog->classInfo[c].name;
@@ -137,7 +150,7 @@ PetscLogEventFindName(PetscLogEvent eventid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
     *name  = stageLog->eventLog->eventInfo[eventid].name;
   }
@@ -147,42 +160,15 @@ PetscLogEventFindName(PetscLogEvent eventid,
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "VecGetArrayC"
-PETSC_STATIC_INLINE PetscErrorCode
-VecGetArrayC(Vec v, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidType(v,1);
-  PetscValidPointer(a,2);
-  ierr = VecGetArray(v,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayC"
-PETSC_STATIC_INLINE PetscErrorCode
-VecRestoreArrayC(Vec v, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidType(v,1);
-  PetscValidPointer(a,2);
-  ierr = VecRestoreArray(v,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecStrideSum"
 PETSC_STATIC_INLINE PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 {
-  PetscInt       i,n,bs;
-  PetscScalar    *x,sum;
-  MPI_Comm       comm;
-  PetscErrorCode ierr;
+  PetscInt          i,n,bs;
+  const PetscScalar *x;
+  PetscScalar       sum;
+  MPI_Comm          comm;
+  PetscErrorCode    ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
@@ -194,10 +180,10 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
                             "Start of stride subvector (%D) is too large "
                             "for block size (%D)",start,bs);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   sum = (PetscScalar)0.0;
   for (i=start; i<n; i+=bs) sum += x[i];
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&sum,a,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

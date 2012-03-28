@@ -51,8 +51,6 @@ cdef extern from * nogil:
 
     int VecGetArray(PetscVec,PetscScalar*[])
     int VecRestoreArray(PetscVec,PetscScalar*[])
-    int VecGetArrayC(PetscVec,PetscScalar*[])
-    int VecRestoreArrayC(PetscVec,PetscScalar*[])
     int VecPlaceArray(PetscVec,PetscScalar[])
     int VecResetArray(PetscVec)
 

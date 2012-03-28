@@ -1,9 +1,18 @@
-#include <private/vecimpl.h>
-#include <private/matimpl.h>
-#include <private/pcimpl.h>
-#include <private/kspimpl.h>
-#include <private/snesimpl.h>
-#include <private/tsimpl.h>
+#if PETSC_VERSION_(3,2,0)
+#include "private/vecimpl.h"
+#include "private/matimpl.h"
+#include "private/pcimpl.h"
+#include "private/kspimpl.h"
+#include "private/snesimpl.h"
+#include "private/tsimpl.h"
+#else
+#include "petsc-private/vecimpl.h"
+#include "petsc-private/matimpl.h"
+#include "petsc-private/pcimpl.h"
+#include "petsc-private/kspimpl.h"
+#include "petsc-private/snesimpl.h"
+#include "petsc-private/tsimpl.h"
+#endif
 
 EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
