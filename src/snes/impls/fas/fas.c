@@ -170,9 +170,9 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (!isFine) snes->gridsequence = 0; /* no grid sequencing inside the multigrid hierarchy! */
 
   if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
-    ierr = SNESDefaultGetWork(snes, 4);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   } else {
-    ierr = SNESDefaultGetWork(snes, 4);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   }
 
   /* set up the smoothers if they haven't already been set up */
@@ -560,7 +560,7 @@ PetscErrorCode FASCycle_Additive(SNES snes, Vec X) {
   ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
   F = snes->vec_func;
   B = snes->vec_rhs;
-  Xhat = snes->work[3];
+  Xhat = snes->work[1];
   ierr = VecCopy(X, Xhat);CHKERRQ(ierr);
   /* recurse first */
   if (next) {
