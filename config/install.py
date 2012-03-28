@@ -218,6 +218,8 @@ for src, dst in copies:
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
       installName = re.sub(self.destDir, self.installDir, dst)
       self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
+    # preserve the original timestamps - so that the .a vs .so time order is preserved
+    shutil.copystat(src,dst)
     return
 
   def installLib(self):
