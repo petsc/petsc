@@ -2050,6 +2050,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMKSPSetComputeOperators(dm,func,ctx);CHKERRQ(ierr);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
   PetscFunctionReturn(0);
 }
 
