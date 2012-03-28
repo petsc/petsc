@@ -240,7 +240,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS *) snes->data;
   PetscInt       levels = 1;
-  PetscBool      flg, upflg, downflg, monflg, galerkinflg;
+  PetscBool      flg = PETSC_FALSE, upflg = PETSC_FALSE, downflg = PETSC_FALSE, monflg = PETSC_FALSE, galerkinflg = PETSC_FALSE;
   PetscErrorCode ierr;
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNESFASType    fastype;
