@@ -19,7 +19,7 @@ PetscLogEvent  SNESLineSearch_Apply;
    Output Parameters:
 .  outlinesearch - the line search instance.
 
-   Level: Beginner
+   Level: beginner
 
    .keywords: LineSearch, create, context
 
@@ -68,7 +68,8 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetUp"
 /*@
-   SNESLineSearchSetUp - Prepares the line search for being applied.
+   SNESLineSearchSetUp - Prepares the line search for being applied by allocating
+   any required vectors.
 
    Collective on SNESLineSearch
 
@@ -78,12 +79,12 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
    Notes:
    For most cases, this needn't be called outside of SNESLineSearchApply().
    The only current case where this is called outside of this is for the VI
-   solvers, which modifies the solution and work vectors before the first call
+   solvers, which modify the solution and work vectors before the first call
    of SNESLineSearchApply, requiring the SNESLineSearch work vectors to be
    allocated upfront.
 
 
-   Level: Intermediate
+   Level: advanced
 
    .keywords: SNESLineSearch, SetUp
 
@@ -116,14 +117,14 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch) {
 #define __FUNCT__ "SNESLineSearchReset"
 
 /*@
-   SNESLineSearchReset - Tears down the structures required for application of the SNESLineSearch
+   SNESLineSearchReset - Undoes the SetUp and deletes any Vecs or Mats allocated by the line search.
 
    Collective on SNESLineSearch
 
    Input Parameters:
 .  linesearch - The LineSearch instance.
 
-   Level: Intermediate
+   Level: intermediate
 
    .keywords: SNESLineSearch, Reset
 
@@ -289,7 +290,7 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, SNESLineSe
 .  linesearch - The linesearch instance.
 
    Output Parameters:
-.  changed - Indicator if the pre-check has changed anything.
+.  changed - Indicator that the precheck routine has changed anything.
 
    Level: Beginner
 
@@ -319,8 +320,8 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * cha
 .  linesearch - The linesearch instance.
 
    Output Parameters:
-+  changed_Y - Indicator if the direction has been changed.
--  changed_W - Indicator if the solution has been changed.
++  changed_Y - Indicator if the direction Y has been changed.
+-  changed_W - Indicator if the new candidate solution W has been changed.
 
    Level: Intermediate
 
@@ -515,7 +516,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 
    Level: Intermediate
 
-   .keywords: SNESLineSearch, Create
+   .keywords: SNESLineSearch, Destroy
 
    .seealso: SNESLineSearchCreate(), SNESLineSearchReset(), SNESDestroy()
 @*/
@@ -617,7 +618,6 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
 . -snes_linesearch_order - The polynomial order of approximation used in the linesearch
 - -snes_linesearch_max_it - The number of iterations for iterative line searches.
-
 
    Logically Collective on SNESLineSearch
 
@@ -802,13 +802,18 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, const SNESLineSe
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetSNES"
 /*@
-   SNESLineSearchSetSNES - Sets the SNES for the linesearch for function evaluation
+   SNESLineSearchSetSNES - Sets the SNES for the linesearch for function evaluation.
 
    Input Parameters:
 +  linesearch - linesearch context.
 -  snes - The snes instance
 
-   Level: intermediate
+   Level: developer
+
+   Notes:
+   This happens automatically when the line search is gotten/created with
+   SNESGetSNESLineSearch().  This routine is therefore mainly called within SNES
+   implementations.
 
 
 .seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
@@ -824,7 +829,7 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetSNES"
 /*@
-   SNESLineSearchGetSNES - Gets the SNES for the linesearch for function evaluation
+   SNESLineSearchGetSNES - Gets the SNES for the linesearch for function evaluation.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -832,7 +837,7 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
    Output Parameters:
 .  snes - The snes instance
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
 @*/
@@ -855,7 +860,13 @@ PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes){
    Output Parameters:
 .  lambda - The last steplength computed during SNESLineSearchApply()
 
-   Level: intermediate
+   Level: advanced
+
+   Notes: This is useful in methods where the solver is ill-scaled and
+   requires some adaptive notion of the difference in scale between the
+   solution and the function.  For instance, SNESQN may be scaled by the
+   line search lambda using the argument -snes_qn_scaling ls.
+
 
 .seealso: SNESLineSearchSetLambda(), SNESLineSearchGetDamping(), SNESLineSearchApply()
 @*/
@@ -883,7 +894,7 @@ PetscErrorCode  SNESLineSearchGetLambda(SNESLineSearch linesearch,PetscReal *lam
    added in order to facilitate Quasi-Newton methods that use the previous steplength
    as an inner scaling parameter.
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: SNESLineSearchGetLambda()
 @*/
@@ -898,7 +909,10 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 #undef  __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetTolerances"
 /*@
-   SNESLineSearchGetTolerances - Gets the tolerances for the method
+   SNESLineSearchGetTolerances - Gets the tolerances for the method.  These include
+   tolerances for the relative and absolute change in the function norm, the change
+   in lambda for iterative line searches, the minimum steplength, the maximum steplength,
+   and the maximum number of iterations the line search procedure may take.
 
    Input Parameters:
 .  linesearch - linesearch context.
@@ -911,7 +925,11 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 .  ltol    - The change in lambda tolerance for iterative line searches
 -  max_it  - The maximum number of iterations of the line search
 
-   Level: advanced
+   Level: intermediate
+
+   Notes:
+   Different line searches may implement these parameters slightly differently as
+   the method requires.
 
 .seealso: SNESLineSearchSetTolerances()
 @*/
@@ -949,7 +967,10 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
 #undef  __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetTolerances"
 /*@
-   SNESLineSearchSetTolerances - Sets the tolerances for the method
+   SNESLineSearchSetTolerances -  Gets the tolerances for the method.  These include
+   tolerances for the relative and absolute change in the function norm, the change
+   in lambda for iterative line searches, the minimum steplength, the maximum steplength,
+   and the maximum number of iterations the line search procedure may take.
 
    Input Parameters:
 +  linesearch - linesearch context.
@@ -960,8 +981,11 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
 .  ltol    - The change in lambda tolerance for iterative line searches
 -  max_it  - The maximum number of iterations of the line search
 
+   Notes:
+   The user may choose to not set any of the tolerances in the method using PETSC_DEFAULT in
+   place of an argument.
 
-   Level: advanced
+   Level: intermediate
 
 .seealso: SNESLineSearchGetTolerances()
 @*/
@@ -1021,9 +1045,9 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
    Output Parameters:
 .  damping - The damping parameter.
 
-   Level: intermediate
+   Level: advanced
 
-.seealso: SNESLineSearchGetStepTolerance()
+.seealso: SNESLineSearchGetStepTolerance(), SNESQN
 @*/
 
 PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *damping)
@@ -1041,15 +1065,15 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
    SNESLineSearchSetDamping - Sets the line search damping paramter.
 
    Input Parameters:
-.  linesearch - linesearch context.
-.  damping - The damping parameter.
+.  linesearch - linesearch context
+.  damping - The damping parameter
 
    Level: intermediate
 
    Notes:
    The basic line search merely takes the update step scaled by the damping parameter.
    The use of the damping parameter in the l2 and cp line searches is much more subtle;
-   it is used as a starting point in calculating the secant step; however, the eventual
+   it is used as a starting point in calculating the secant step. However, the eventual
    step may be of greater length than the damping parameter.  In the bt line search it is
    used as the maximum possible step length, as the bt line search only backtracks.
 
@@ -1069,10 +1093,15 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
    SNESLineSearchGetOrder - Gets the line search approximation order.
 
    Input Parameters:
-.  linesearch - linesearch context.
+.  linesearch - linesearch context
 
    Output Parameters:
 .  order - The order.
+
+   Possible Values for order:
++  SNES_LINESEARCH_LINEAR
+.  SNES_LINESEARCH_CUBIC
+-  SNES_LINESEARCH_QUADRATIC
 
    Level: intermediate
 
@@ -1094,14 +1123,20 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,SNESLineSearchO
    SNESLineSearchSetOrder - Sets the line search damping paramter.
 
    Input Parameters:
-.  linesearch - linesearch context.
-.  order - The damping parameter.
+.  linesearch - linesearch context
+.  order - The damping parameter
 
    Level: intermediate
 
+   Possible Values for order:
++  SNES_LINESEARCH_LINEAR
+.  SNES_LINESEARCH_CUBIC
+-  SNES_LINESEARCH_QUADRATIC
+
    Notes:
    Variable orders are supported by the following line searches:
-.  bt - cubic and quadratic
++  bt - cubic and quadratic
+-  cp - linear and quadratic
 
 .seealso: SNESLineSearchGetOrder()
 @*/
@@ -1119,7 +1154,7 @@ PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,SNESLineSearchO
    SNESLineSearchGetNorms - Gets the norms for for X, Y, and F.
 
    Input Parameters:
-.  linesearch - linesearch context.
+.  linesearch - linesearch context
 
    Output Parameters:
 +  xnorm - The norm of the current solution
@@ -1129,7 +1164,7 @@ PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,SNESLineSearchO
    Notes:
    This function is mainly called from SNES implementations.
 
-   Level: intermediate
+   Level: developer
 
 .seealso: SNESLineSearchSetNorms() SNESLineSearchGetVecs()
 @*/
@@ -1155,12 +1190,12 @@ PetscErrorCode  SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal * xn
    SNESLineSearchSetNorms - Gets the computed norms for for X, Y, and F.
 
    Input Parameters:
-+  linesearch - linesearch context.
++  linesearch - linesearch context
 .  xnorm - The norm of the current solution
 .  fnorm - The norm of the current function
 -  ynorm - The norm of the current update
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: SNESLineSearchGetNorms(), SNESLineSearchSetVecs()
 @*/
@@ -1180,14 +1215,14 @@ PetscErrorCode  SNESLineSearchSetNorms(SNESLineSearch linesearch, PetscReal xnor
    SNESLineSearchComputeNorms - Computes the norms of X, F, and Y.
 
    Input Parameters:
-.  linesearch - linesearch context.
+.  linesearch - linesearch context
 
    Options Database Keys:
 .   -snes_linesearch_norms - turn norm computation on or off.
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetNorms, SNESLineSearchSetNorms()
+.seealso: SNESLineSearchGetNorms, SNESLineSearchSetNorms(), SNESLineSearchSetComputeNorms()
 @*/
 PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
 {
@@ -1219,8 +1254,8 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
    SNESLineSearchSetComputeNorms - Turns on or off the computation of final norms in the line search.
 
    Input Parameters:
-+  linesearch  - linesearch context.
--  flg  - indicates whether or not to compute norms.
++  linesearch  - linesearch context
+-  flg  - indicates whether or not to compute norms
 
    Options Database Keys:
 .   -snes_linesearch_norms - turn norm computation on or off.
@@ -1245,7 +1280,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
    SNESLineSearchGetVecs - Gets the vectors from the SNESLineSearch context
 
    Input Parameters:
-.  linesearch - linesearch context.
+.  linesearch - linesearch context
 
    Output Parameters:
 +  X - The old solution
@@ -1254,7 +1289,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 .  W - The new solution
 -  G - The new function
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: SNESLineSearchGetNorms(), SNESLineSearchSetVecs()
 @*/
@@ -1291,14 +1326,14 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch,Vec *X,Vec *F, Ve
    SNESLineSearchSetVecs - Sets the vectors on the SNESLineSearch context
 
    Input Parameters:
-+  linesearch - linesearch context.
++  linesearch - linesearch context
 .  X - The old solution
 .  F - The old function
 .  Y - The search direction
 .  W - The new solution
 -  G - The new function
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: SNESLineSearchSetNorms(), SNESLineSearchGetVecs()
 @*/
@@ -1431,7 +1466,7 @@ PetscErrorCode  SNESLineSearchGetWork(SNESLineSearch linesearch, PetscInt nwork)
    SNESLineSearchGetSuccess - Gets the success/failure status of the last line search application
 
    Input Parameters:
-.  linesearch - linesearch context.
+.  linesearch - linesearch context
 
    Output Parameters:
 .  success - The success or failure status.
@@ -1461,14 +1496,14 @@ PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch linesearch, PetscBool *s
    SNESLineSearchSetSuccess - Sets the success/failure status of the last line search application
 
    Input Parameters:
-+  linesearch - linesearch context.
++  linesearch - linesearch context
 -  success - The success or failure status.
 
    Notes:
    This is typically called in a SNESLineSearchApply() or SNESLineSearchShell implementation to set
    the success or failure of the line search method.
 
-   Level: intermediate
+   Level: developer
 
 .seealso: SNESLineSearchGetSuccess()
 @*/
