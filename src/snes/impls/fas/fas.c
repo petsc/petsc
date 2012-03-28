@@ -533,7 +533,7 @@ PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FASCycle_Additive"
+#define __FUNCT__ "SNESFASCycle_Additive"
 /*
 
 The additive cycle looks like:
@@ -616,7 +616,7 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FASCycle_Multiplicative"
+#define __FUNCT__ "SNESFASCycle_Multiplicative"
 /*
 
 Defines the FAS cycle as:
