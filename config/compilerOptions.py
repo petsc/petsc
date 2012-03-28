@@ -21,7 +21,10 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        flags.append('-g3')
+        if self.framework.argDB['with-cuda']:
+          flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
+        else:
+          flags.append('-g3')
         flags.append('-fno-inline')
         flags.append('-O0')
       elif bopt == 'O':
