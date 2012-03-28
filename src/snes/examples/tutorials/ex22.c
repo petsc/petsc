@@ -43,7 +43,8 @@ typedef struct {
   PetscViewer  fu_lambda_viewer;
 } UserCtx;
 
-extern PetscErrorCode ComputeFunction(DM,Vec,Vec);
+extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
@@ -68,7 +69,6 @@ char  matrix_free_options[] = "-mat_mffd_compute_normu no \
                                -mat_mffd_type wp";
 
 extern PetscErrorCode DMCreateMatrix_MF(DM,const MatType,Mat*);
-extern PetscErrorCode DMComputeJacobian_MF(DM,Vec,Mat,Mat,MatStructure *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -93,17 +93,19 @@ int main(int argc,char **argv)
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(red,"red_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
-  ierr = DMSetFunction(packer,ComputeFunction);CHKERRQ(ierr);
-  ierr = DMSetJacobian(packer,DMComputeJacobian_MF);CHKERRQ(ierr);
+  ierr = DMSNESSetFunction(packer,ComputeFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobian(packer,ComputeJacobian_MF,PETSC_NULL);CHKERRQ(ierr);
   packer->ops->creatematrix = DMCreateMatrix_MF;
 
   /* create nonlinear multi-level solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,(DM)packer);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,packer);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   if (use_monitor) {
@@ -141,16 +143,17 @@ typedef struct {
    DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeGetAccess()).
 
 */
-PetscErrorCode ComputeFunction(DM packer,Vec U,Vec FU)
+PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       xs,xm,i,N;
   ULambda        *u_lambda,*fu_lambda;
   PetscScalar    d,h,*w,*fw;
   Vec            vw,vfw,vu_lambda,vfu_lambda;
-  DM             red,da;
+  DM             packer,red,da;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)U,"DM",(PetscObject*)&packer);CHKERRQ(ierr); /* Ugly way to get context */
   ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
   ierr = DMCompositeScatter(packer,U,vw,vu_lambda);CHKERRQ(ierr);
@@ -283,7 +286,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateMatrix_MF"
-PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A )
+PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A)
 {
   PetscErrorCode ierr;
   Vec            t;
@@ -294,24 +297,18 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A )
   ierr = VecGetLocalSize(t,&m);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(packer,&t);CHKERRQ(ierr);
   ierr = MatCreateMFFD(PETSC_COMM_WORLD,m,m,PETSC_DETERMINE,PETSC_DETERMINE,A);CHKERRQ(ierr);
-  ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*, Vec,Vec))DMComputeFunction,packer);CHKERRQ(ierr);
   ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMComputeJacobian_MF"
-PetscErrorCode DMComputeJacobian_MF(DM packer,Vec x,Mat A,Mat B,MatStructure *str )
+#define __FUNCT__ "ComputeJacobian_MF"
+PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMFFDSetBase(A,x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(*A,x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
