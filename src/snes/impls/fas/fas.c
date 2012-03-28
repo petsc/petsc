@@ -16,11 +16,32 @@ extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES *);
 
 SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
 
-The nonlinear problem is solved via the repeated application of nonlinear preconditioners and coarse-grid corrections
+   The nonlinear problem is solved by correction using coarse versions
+   of the nonlinear problem.  This problem is perturbed so that a projected
+   solution of the fine problem elicits no correction from the coarse problem.
+
+Options Database:
++   -snes_fas_levels -  The number of levels
+.   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
+.   -snes_fas_type<additive, multiplicative>  -  Additive or multiplicative cycle
+.   -snes_fas_galerkin<PETSC_FALSE> -  Form coarse problems by projection back upon the fine problem
+.   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
+.   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
+.   -snes_fas_monitor -  Monitor progress of all of the levels
+.   -fas_levels_snes_ -  SNES options for all smoothers
+.   -fas_levels_cycle_snes -  SNES options for all cycles
+.   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
+.   -fas_levels_i_cycle_snes - SNES options for the cycle on level i
+-   -fas_coarse_snes_ -  SNES options for the coarsest smoother
+
+Notes:
+   The organization of the FAS solver is slightly different from the organization of PCMG
+   As each level has smoother SNES instances(down and potentially up) and a cycle SNES instance.
+   The cycle SNES instance may be used for monitoring convergence on a particular level.
 
 Level: advanced
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
 #undef __FUNCT__
