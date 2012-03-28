@@ -9,7 +9,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateExodus"
 /*@
-  DMComplexCreateExodusNG - Create a DMComplex mesh from an ExodusII file.
+  DMComplexCreateExodus - Create a DMComplex mesh from an ExodusII file.
 
   Collective on comm
 

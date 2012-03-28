@@ -85,7 +85,7 @@ extern PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, co
 extern PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
 extern PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 
-extern PetscErrorCode DMComplexCreateExodusNG(MPI_Comm , PetscInt , DM *);
+extern PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
 
 
 #endif
