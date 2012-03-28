@@ -382,7 +382,7 @@ runex5_5_ls:
 	   ${RM} -f ex5_5_ls.tmp
 
 runex5_5_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_type ls -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_fas, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_fas.tmp

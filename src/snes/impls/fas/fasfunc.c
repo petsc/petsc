@@ -370,14 +370,12 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
     ierr = SNESAppendOptionsPrefix(nsmooth, tprefix);CHKERRQ(ierr);
     ierr = SNESSetType(nsmooth, SNESLS);CHKERRQ(ierr);
     ierr = SNESSetTolerances(nsmooth, nsmooth->abstol, nsmooth->rtol, nsmooth->stol, nsmooth->max_its, nsmooth->max_funcs);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(nsmooth);CHKERRQ(ierr);
   } else {
     sprintf(tprefix,"fas_levels_%d_",(int)fas->level);
     ierr = SNESAppendOptionsPrefix(nsmooth, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, tprefix);CHKERRQ(ierr);
     ierr = SNESSetType(nsmooth, SNESNRICHARDSON);CHKERRQ(ierr);
     ierr = SNESSetTolerances(nsmooth, 0.0, 0.0, 0.0, fas->max_down_it, nsmooth->max_funcs);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(nsmooth);CHKERRQ(ierr);
   }
   ierr = PetscObjectIncrementTabLevel((PetscObject)nsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
   *smooth = nsmooth;

@@ -195,6 +195,10 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (fas->smoothu && fas->level != fas->levels - 1) ierr = SNESSetFunction(fas->smoothu, PETSC_NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
   }
 
+  /* set the smoothers up here so that precedence is taken for instance-specific options over the whole-solver options */
+  if(fas->smoothu) ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
+  if(fas->smoothd) ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
+
   if (next) {
     /* gotta set up the solution vector for this to work */
     if (!next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_sol);CHKERRQ(ierr);}
