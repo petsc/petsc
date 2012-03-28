@@ -906,7 +906,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   PetscMPIInt    *counts, *displs;
   PetscInt       *foundCells;
   PetscMPIInt    *foundProcs, *globalProcs;
-  PetscInt        n = ctx->nInput, N, found;
+  PetscInt        n = ctx->nInput, N;
 
   if (!redundantPoints) {
     ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
