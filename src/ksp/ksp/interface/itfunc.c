@@ -751,14 +751,22 @@ PetscErrorCode  KSPReset(KSP ksp)
 PetscErrorCode  KSPDestroy(KSP *ksp)
 {
   PetscErrorCode ierr;
+  PC pc;
 
   PetscFunctionBegin;
   if (!*ksp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
-
+  
+  /* 
+   Avoid a cascading call to PCReset(ksp->pc) from the following call:
+   PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's 
+   refcount (and may be shared, e.g., by other ksps).
+   */
+  pc = (*ksp)->pc;
+  (*ksp)->pc = PETSC_NULL;
   ierr = KSPReset((*ksp));CHKERRQ(ierr);
-
+  (*ksp)->pc = pc;
   ierr = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
   if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
 
