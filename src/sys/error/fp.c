@@ -53,7 +53,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   link->trapmode = _trapmode;
   link->next = _trapstack;
   _trapstack = link;
-  ierr = PetscSetFPTrap(trap);CHKERRQ(ierr);
+  if (trap != _trapmode) {ierr = PetscSetFPTrap(trap);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +74,7 @@ PetscErrorCode PetscFPTrapPop(void)
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
-  ierr = PetscSetFPTrap(_trapstack->trapmode);CHKERRQ(ierr);
+  if (_trapstack->trapmode != _trapmode) {ierr = PetscSetFPTrap(_trapstack->trapmode);CHKERRQ(ierr);}
   link = _trapstack;
   _trapstack = _trapstack->next;
   ierr = PetscFree(link);CHKERRQ(ierr);
