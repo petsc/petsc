@@ -663,6 +663,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
       /* override defaults and command line args (!) */
       if ( pc_gamg->use_aggs_in_gasm ) {
+        PetscInt sz;
+        IS *is;
         if( PETSC_FALSE ){
           PetscInt ii;
           PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s Nblocks=%d\n",mype,__FUNCT__,nASMBlocksArr[level]); 
@@ -670,8 +672,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             ISView(ASMLocalIDsArr[level][ii],PETSC_VIEWER_STDOUT_SELF);
           }
         }
-        PetscInt sz = nASMBlocksArr[level];
-        IS *is = ASMLocalIDsArr[level];
+        sz = nASMBlocksArr[level];
+        is = ASMLocalIDsArr[level];
         ierr = PCSetType( subpc, PCGASM ); CHKERRQ(ierr);
         if(sz==0){
           IS is;
