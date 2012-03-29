@@ -4,8 +4,8 @@
 #undef __FUNCT__  
 #define __FUNCT__ "KSPInitialResidual"
 /*@
-   KSPInitialResidual - Computes the residual. Either b - A*C*x with right
-     preconditioning or C*b - C*A*x with left preconditioning; that later
+   KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
+     preconditioning or C*(b - A*x) with left preconditioning; that later
      residual is often called the "preconditioned residual".
 
    Collective on KSP
@@ -65,9 +65,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
       ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
-    }
+    } else SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
   PetscFunctionReturn(0);
 }
