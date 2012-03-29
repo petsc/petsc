@@ -563,7 +563,11 @@ static PetscErrorCode PCReset_GASM(PC pc)
   
   ierr = VecScatterDestroy(&osm->grestriction);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&osm->gprolongation);CHKERRQ(ierr);
-  if (osm->is) {ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr); osm->is = 0;}
+  if (osm->is) {
+    ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr); 
+    osm->is = 0;
+    osm->is_local = 0;
+  }
   ierr = ISDestroy(&osm->gis);CHKERRQ(ierr);
   ierr = ISDestroy(&osm->gis_local);CHKERRQ(ierr);
   PetscFunctionReturn(0);
