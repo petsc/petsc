@@ -761,8 +761,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           ierr = KSPSetOperators( eksp, Lmat, Lmat, SAME_NONZERO_PATTERN ); CHKERRQ( ierr );
           ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
 
-          /* set PC type to be same as smoother, inc ref count, may not work */
-          ierr = PetscObjectReference( (PetscObject)subpc );   CHKERRQ(ierr);
+          /* set PC type to be same as smoother */
           ierr = KSPSetPC( eksp, subpc ); CHKERRQ( ierr );
 
           /* solve - keep stuff out of logging */
