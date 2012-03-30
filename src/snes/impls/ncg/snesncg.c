@@ -183,13 +183,13 @@ PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeYtJtF_Private"
+#define __FUNCT__ "SNESNCGComputeYtJtF_Private"
 /*
 
  Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
 
  */
-PetscErrorCode ComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar * ytJtf) {
+PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar * ytJtf) {
   PetscErrorCode ierr;
   PetscScalar    ftf, ftg, fty, h;
   PetscFunctionBegin;
@@ -291,7 +291,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   ierr = VecDot(F, dX, &dXdotF);CHKERRQ(ierr);
   /*
   } else {
-    ierr = ComputeYtJtF_Private(snes, X, F, dX, W, G, &dXdotF);CHKERRQ(ierr);
+    ierr = SNESNCGComputeYtJtF_Private(snes, X, F, dX, W, G, &dXdotF);CHKERRQ(ierr);
   }
    */
   for(i = 1; i < maxits + 1; i++) {

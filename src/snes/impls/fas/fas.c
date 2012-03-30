@@ -479,7 +479,7 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FASCoarseCorrection"
+#define __FUNCT__ "SNESFASCoarseCorrection"
 /*
 
 Performs the FAS coarse correction as:
@@ -490,7 +490,7 @@ coarse problem: F^c(x) = b^c
 b^c = F^c(I^c_fx^f - I^c_fF(x))
 
  */
-PetscErrorCode FASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
+PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
   PetscErrorCode      ierr;
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;
@@ -644,7 +644,7 @@ PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X) {
   ierr = SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
 
   if (fas->level != 0) {
-    ierr = FASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
+    ierr = SNESFASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
     ierr = SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -25,8 +25,8 @@ typedef struct {
 } SNES_QN;
 
 #undef __FUNCT__
-#define __FUNCT__ "LBGFSApplyJinv_Private"
-PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
+#define __FUNCT__ "SNESQNApplyJinv_Private"
+PetscErrorCode SNESQNApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
 
   PetscErrorCode ierr;
 
@@ -228,7 +228,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   }
 
   for(i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
-    ierr = LBGFSApplyJinv_Private(snes, i_r, D, Y);CHKERRQ(ierr);
+    ierr = SNESQNApplyJinv_Private(snes, i_r, D, Y);CHKERRQ(ierr);
     /* line search for lambda */
     ynorm = 1; gnorm = fnorm;
     ierr = VecCopy(D, Dold);CHKERRQ(ierr);
