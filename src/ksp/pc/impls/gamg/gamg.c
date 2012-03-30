@@ -442,10 +442,11 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscMPIInt      mype,npe,nactivepe;
   Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];
   PetscReal        emaxs[GAMG_MAXLEVELS];
-  IS              *ASMLocalIDsArr[GAMG_MAXLEVELS];
+  IS              *ASMLocalIDsArr[GAMG_MAXLEVELS],removedEqs[GAMG_MAXLEVELS];
+  PetscInt         level_bs[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0,nnztot=0;
   MatInfo          info;
- 
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
@@ -524,8 +525,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     { /* construct prolongator */
       Mat Gmat;
       PetscCoarsenData *agg_lists;
-      PetscInt fine_bs = bs;
 
+      level_bs[level] = bs;
       ierr = pc_gamg->graph( pc, Aarr[level], &Gmat ); CHKERRQ(ierr);
       ierr = pc_gamg->coarsen( pc, &Gmat, &agg_lists ); CHKERRQ(ierr);
       ierr = pc_gamg->prolongator( pc, Aarr[level], Gmat, agg_lists, &Parr[level1] );
@@ -548,8 +549,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = MatDestroy( &Gmat );      CHKERRQ(ierr); 
       
       if ( pc_gamg->use_aggs_in_gasm ) {
-        ierr = PetscCDGetASMBlocks(agg_lists, fine_bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);  CHKERRQ(ierr);
+        ierr = PetscCDGetASMBlocks(agg_lists, level_bs[level], &nASMBlocksArr[level], &ASMLocalIDsArr[level]);  CHKERRQ(ierr);
       }
+
+      ierr = PetscCDGetRemovedIS( agg_lists, &removedEqs[level] );  CHKERRQ(ierr);
 
       ierr = PetscCDDestroy( agg_lists );  CHKERRQ(ierr);
     }
@@ -680,10 +683,15 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange( Aarr[level], &my0, &kk ); CHKERRQ(ierr);
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is ); CHKERRQ(ierr);
-          ierr = PCGASMSetLocalSubdomains( subpc, 1, PETSC_NULL, &is ); CHKERRQ(ierr);
+          ierr = PCGASMSetLocalSubdomains( subpc, 1, &is, PETSC_NULL ); CHKERRQ(ierr);
+          ierr = ISDestroy( &is ); CHKERRQ(ierr);
         }
         else {
-          ierr = PCGASMSetLocalSubdomains( subpc, sz, PETSC_NULL, is ); CHKERRQ(ierr);
+          PetscInt kk;
+          ierr = PCGASMSetLocalSubdomains( subpc, sz, is, PETSC_NULL ); CHKERRQ(ierr);
+          for(kk=0;kk<sz;kk++){
+            ierr = ISDestroy( &is[kk] ); CHKERRQ(ierr);
+          }
           ierr = PetscFree( is ); CHKERRQ(ierr);
         }
         ierr = PCGASMSetOverlap( subpc, 0 ); CHKERRQ(ierr);
@@ -751,11 +759,34 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
             ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
           }
+          if( removedEqs[level] ) {
+            PetscScalar *zeros; 
+            PetscInt ii,jj, *idx, *idx_bs, sz, bs=level_bs[level];
+            ierr = ISGetLocalSize( removedEqs[level], &sz ); CHKERRQ(ierr);
+            ierr = PetscMalloc( bs*sz*sizeof(PetscScalar), &zeros ); CHKERRQ(ierr);
+            for(ii=0;ii<bs*sz;ii++) zeros[ii] = 0.;
+            ierr = PetscMalloc( bs*sz*sizeof(PetscInt), &idx_bs ); CHKERRQ(ierr);
+            ierr = ISGetIndices( removedEqs[level], &idx); CHKERRQ(ierr);
+            for(ii=0;ii<sz;ii++) {
+              for(jj=0;jj<bs;jj++) {
+                idx_bs[ii] = bs*idx[ii]+jj;
+              }
+            }
+            ierr = ISRestoreIndices( removedEqs[level], &idx ); CHKERRQ(ierr);
+            if( sz > 0 ) {
+              ierr = VecSetValues( bb, sz, idx_bs, zeros, INSERT_VALUES );  CHKERRQ(ierr);
+            }
+            ierr = PetscFree( idx_bs );  CHKERRQ(ierr);
+            ierr = PetscFree( zeros );  CHKERRQ(ierr);            
+            ierr = VecAssemblyBegin(bb); CHKERRQ(ierr);
+            ierr = VecAssemblyEnd(bb); CHKERRQ(ierr);
+            ierr = ISDestroy( &removedEqs[level] );                    CHKERRQ(ierr);
+          }
           ierr = KSPCreate( wcomm, &eksp );CHKERRQ(ierr);
           ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
           CHKERRQ(ierr);
           ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
-          
+
           ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
           ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
 
@@ -777,11 +808,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           
           ierr = VecDestroy( &xx );       CHKERRQ(ierr);
           ierr = VecDestroy( &bb );       CHKERRQ(ierr);
-
           ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
           
           if( pc_gamg->verbose > 0 ) {
-            PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e on level %d\n",__FUNCT__,emax,emin,level);
+            PetscInt N1, tt;
+            ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
+            PetscPrintf(wcomm,"\t\t\t%s PC setup max eigen=%e min=%e on level %d (N=%d)\n",__FUNCT__,emax,emin,lidx,N1);
           }
         }
         { 
@@ -804,7 +836,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
     ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
     
-    {
+    if( PETSC_FALSE ){
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
       ierr = KSPSetType( smoother, KSPPREONLY ); CHKERRQ(ierr);

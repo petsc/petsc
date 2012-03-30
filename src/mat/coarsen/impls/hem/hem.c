@@ -25,6 +25,7 @@ PetscErrorCode PetscCDCreate( PetscInt a_size, PetscCoarsenData **a_out )
   for(ii=0;ii<a_size;ii++) ail->array[ii] = PETSC_NULL;
   ail->extra_nodes = PETSC_NULL;
   ail->mat = PETSC_NULL;
+  ail->removedIS = PETSC_NULL;
   return 0;
 }
 
@@ -43,6 +44,9 @@ PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail )
   }
   if( ail->pool_list.array ) {
     ierr = PetscFree( ail->pool_list.array );  CHKERRQ(ierr);
+  }
+  if( ail->removedIS ) {
+    ierr = ISDestroy( &ail->removedIS ); CHKERRQ(ierr);
   }
   /* delete this (+array) */
   ierr = PetscFree( ail->array );  CHKERRQ(ierr);
@@ -309,7 +313,7 @@ PetscErrorCode PetscCDSetMat( PetscCoarsenData *ail, Mat a_mat )
 }
 
 
-/* PetscCDSetMat
+/* PetscCDGetASMBlocks
  */
 PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt a_bs, PetscInt *a_sz, IS **a_local_is )
 {
@@ -344,6 +348,24 @@ PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt 
   return 0;
 }
 
+
+/* PetscCDSetRemovedIS
+ */
+PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm comm, const PetscInt a_sz, PetscInt a_ids[])
+{
+  PetscErrorCode ierr;
+  ierr = ISCreateGeneral( comm, a_sz, a_ids, PETSC_COPY_VALUES, &ail->removedIS ); CHKERRQ(ierr);
+  return 0;
+}
+
+/* PetscCDGetRemovedIS
+ */
+PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS *a_is )
+{
+  *a_is = ail->removedIS;
+  ail->removedIS = PETSC_NULL; /* hack to relinquish ownership */
+  return 0;
+}
 
 /* ********************************************************************** */
 /* edge for priority queue */
@@ -414,7 +436,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     lid_gid[kk] = kk + my0;
     ierr = PetscCDAppendID( agg_llists, kk, my0+kk ); CHKERRQ(ierr);
   }
-  
+
   /* make a copy of the graph, this gets destroyed in iterates */
   ierr = MatDuplicate(a_Gmat,MAT_COPY_VALUES,&cMat);  CHKERRQ(ierr);
   ierr = PetscTypeCompare( (PetscObject)a_Gmat, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
@@ -494,6 +516,25 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       for (ix=0; ix<matB->compressedrow.nrows; ix++) {
         lid_cprowID[matB->compressedrow.rindex[ix]] = ix;
       }
+    }
+
+    /* get removed IS, use '' */
+    if( iter==1 ) {
+      PetscInt *lid_rem,idx;
+      ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_rem ); CHKERRQ(ierr);
+      for(kk=idx=0;kk<nloc;kk++){
+        PetscInt nn,lid=kk;
+        ii = matA->i; nn = ii[lid+1] - ii[lid];
+        if( (ix=lid_cprowID[lid]) != -1 ) { /* if I have any ghost neighbors */
+          ii = matB->compressedrow.i; 
+          nn += ii[ix+1] - ii[ix];
+        }
+        if( nn < 2 ) {
+          lid_rem[idx++] = kk + my0;
+        }
+      }
+      ierr = PetscCDSetRemovedIS( agg_llists, wcomm, idx, lid_rem ); CHKERRQ(ierr);
+      ierr = PetscFree( lid_rem );  CHKERRQ(ierr);
     }
 
     /* compute 'locMaxEdge' & 'locMaxPE', and create list of edges, count edges' */
@@ -577,7 +618,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       if( nn > 1 ) n_nz_row++;
       else if( iter == 1 ){
         /* should select this because it is technically in the MIS but lets not */
-        ierr = PetscCDRemoveAll( agg_llists, lid ); CHKERRQ(ierr);
+        ierr = PetscCDRemoveAll( agg_llists, lid ); CHKERRQ(ierr);        
       }
     }
     ierr = ISRestoreIndices(perm,&perm_ix);     CHKERRQ(ierr);
