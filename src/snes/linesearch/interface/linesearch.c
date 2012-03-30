@@ -95,7 +95,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!((PetscObject)linesearch)->type_name) {
-    ierr = SNESLineSearchSetType(linesearch,SNES_LINESEARCH_BASIC);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
   }
   if (!linesearch->setupcalled) {
     if (!linesearch->vec_sol_new) {
@@ -630,7 +630,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   PetscErrorCode ierr;
   const char       *orders[] = {"linear", "quadratic", "cubic"};
   PetscInt         indx = 0;
-  const char     *deft = SNES_LINESEARCH_BASIC;
+  const char     *deft = SNESLINESEARCHBASIC;
   char           type[256];
   PetscBool      flg, set;
   PetscFunctionBegin;
@@ -1261,11 +1261,11 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
 .   -snes_linesearch_norms - turn norm computation on or off.
 
    Notes:
-   This is most relevant to the SNES_LINESEARCH_BASIC line search type.
+   This is most relevant to the SNESLINESEARCHBASIC line search type.
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetNorms(), SNESLineSearchSetNorms(), SNESLineSearchComputeNorms(), SNES_LINESEARCH_BASIC
+.seealso: SNESLineSearchGetNorms(), SNESLineSearchSetNorms(), SNESLineSearchComputeNorms(), SNESLINESEARCHBASIC
 @*/
 PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBool flg)
 {

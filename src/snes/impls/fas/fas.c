@@ -301,7 +301,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   if (fas->fastype == SNES_FAS_ADDITIVE) {
     if (!snes->linesearch) {
       ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }
 

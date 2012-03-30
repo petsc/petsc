@@ -741,7 +741,7 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   /* set the line search functions */
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_BT);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -40,11 +40,11 @@
 ! SNESLineSearchType
 !
 
-#define SNES_LINESEARCH_BASIC 'basic'
-#define SNES_LINESEARCH_BT    'bt'
-#define SNES_LINESEARCH_L2    'l2'
-#define SNES_LINESEARCH_CP    'cp'
-#define SNES_LINESEARCH_SHELL 'shell'
+#define SNESLINESEARCHBASIC 'basic'
+#define SNESLINESEARCHBT    'bt'
+#define SNESLINESEARCHL2    'l2'
+#define SNESLINESEARCHCP    'cp'
+#define SNESLINESEARCHSHELL 'shell'
 
 !
 !  SNESMSType

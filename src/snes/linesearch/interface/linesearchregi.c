@@ -43,11 +43,11 @@ PetscErrorCode SNESLineSearchRegisterAll(const char path[])
   ierr = SNESLineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"SNESLineSearchCreate_CriticalSecant",    SNESLineSearchCreate_CriticalSecant);CHKERRQ(ierr);
 
    */
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_SHELL,             path,"SNESLineSearchCreate_Shell",             SNESLineSearchCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_BASIC,             path,"SNESLineSearchCreate_Basic",             SNESLineSearchCreate_Basic);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_L2,                path,"SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_BT,                path,"SNESLineSearchCreate_BT",                SNESLineSearchCreate_BT);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_CP,                path,"SNESLineSearchCreate_CP",                SNESLineSearchCreate_CP);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHSHELL,             path,"SNESLineSearchCreate_Shell",             SNESLineSearchCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHBASIC,             path,"SNESLineSearchCreate_Basic",             SNESLineSearchCreate_Basic);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHL2,                path,"SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHBT,                path,"SNESLineSearchCreate_BT",                SNESLineSearchCreate_BT);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHCP,                path,"SNESLineSearchCreate_CP",                SNESLineSearchCreate_CP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

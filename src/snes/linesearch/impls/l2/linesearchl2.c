@@ -171,14 +171,13 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
-   SNES_LINESEARCH_L2 - Search in the L^2 norm of the residual.
+   SNESLINESEARCHL2 - Search in the L^2 norm of the residual.
 
    Level: advanced
 
-.keywords: SNES, nonlinear, line search, cubic
+.keywords: SNES, nonlinear, line search, norm
 
-.seealso: SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-          SNESLineSearchSet(), SNESLineSearchNoNorms()
+.seealso: SNESLineSearchBT, SNESLineSearchCP, SNESLineSearch
 M*/
 PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
 {

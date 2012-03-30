@@ -487,9 +487,9 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
     if (!snes->pc || qn->compositiontype == SNES_QN_SEQUENTIAL) {
-      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_CP);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
     } else {
-      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }
   if (monflg) {

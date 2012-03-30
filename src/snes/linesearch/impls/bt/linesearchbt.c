@@ -16,7 +16,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: SNESLineSearchSetLambda(), SNESLineSearchGetTolerances() SNES_LINESEARCH_BT
+.seealso: SNESLineSearchSetLambda(), SNESLineSearchGetTolerances() SNESLINESEARCHBT
 @*/
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
@@ -40,7 +40,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetLambda(), SNESLineSearchGetTolerances() SNES_LINESEARCH_BT
+.seealso: SNESLineSearchGetLambda(), SNESLineSearchGetTolerances() SNESLINESEARCHBT
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
@@ -375,7 +375,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_BT"
 /*MC
-   SNES_LINESEARCH_BT - Backtracking line searches.
+   SNESLINESEARCHBT - Backtracking line searches.
 
    These linesearches try a polynomial fit for the L2 norm of the error
    using the gradient.  Failing that, they step back and try again.

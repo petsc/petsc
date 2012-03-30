@@ -65,7 +65,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_Basic"
 /*MC
-   SNES_LINESEARCH_BASIC - This line search implementation is not a line
+   SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended
    for methods with well-scaled updates; i.e. Newton's method (SNESLS), in on
    well-behaved problems.

@@ -362,7 +362,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
   /* set the default line search type */
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_BT);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

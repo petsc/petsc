@@ -9,7 +9,7 @@ PetscErrorCode SNESReset_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#define SNES_LINESEARCH_NCGLINEAR "linear"
+#define SNESLINESEARCHNCGLINEAR "linear"
 
 /*
   SNESDestroy_NCG - Destroys the private SNES_NCG context that was created with SNESCreate_NCG().
@@ -54,7 +54,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   PetscFunctionBegin;
   ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNES_LINESEARCH_NCGLINEAR, PETSC_NULL,"SNESLineSearchCreate_NCGLinear", SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHNCGLINEAR, PETSC_NULL,"SNESLineSearchCreate_NCGLinear", SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -91,9 +91,9 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
     if (!snes->pc) {
-      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_CP);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
     } else {
-      ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

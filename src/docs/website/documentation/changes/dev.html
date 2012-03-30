@@ -149,12 +149,12 @@
         <li>The previous steplength may be accessed through SNESLineSearchSetLambda()</li>
         <li>The damping parameter may be set through SNESLineSearchSetDamping() or -snes_linesearch_damping</li>
         <li>Success of the line search is determined using SNESLineSearchGetSuccess()</li>
-        <li>Custom linesearches may be built through SNES_LINESEARCH_SHELL,("shell") or by registering a new linesearch type with SNESLineSearchRegisterDynamic()</li>
-        <li>SNES_LINESEARCH_BT,("bt") replaces SNES_LS_CUBIC and SNES_LS_QUADRATIC, and order may be set with SNESLineSearchSetOrder() or -snes_linesearch_order<quadratic,cubic></li>
-        <li>SNES_LINESEARCH_BASIC,("basic") replaces SNES_LS_BASIC and SNES_LS_BASICNONORMS.  Norms may be turned off with SNESLineSearchSetComputeNorms() or -snes_linesearch_norms 0</li>
+        <li>Custom linesearches may be built through SNESLINESEARCHSHELL,("shell") or by registering a new linesearch type with SNESLineSearchRegisterDynamic()</li>
+        <li>SNESLINESEARCHBT,("bt") replaces SNES_LS_CUBIC and SNES_LS_QUADRATIC, and order may be set with SNESLineSearchSetOrder() or -snes_linesearch_order<quadratic,cubic></li>
+        <li>SNESLINESEARCHBASIC,("basic") replaces SNES_LS_BASIC and SNES_LS_BASICNONORMS.  Norms may be turned off with SNESLineSearchSetComputeNorms() or -snes_linesearch_norms 0</li>
         <li>SNESLineSearchSetTolerances() replaces SNESLSSetParams(), with the former alpha parameter set with SNESLineSearchBTSetAlpha() or -snes_linesearch_alpha</li>
-        <li>Added Line Search type SNES_LINESEARCH_L2,("l2") as the default for NRICHARDSON</li>
-        <li>SNES_LINESEARCH_CP,("cp") added as the default line search method for SNESNCG and SNESQN</li>
+        <li>Added Line Search type SNESLINESEARCHL2,("l2") as the default for NRICHARDSON</li>
+        <li>SNESLINESEARCHCP,("cp") added as the default line search method for SNESNCG and SNESQN</li>
       </ul>
 
       <h4>TS:</h4>

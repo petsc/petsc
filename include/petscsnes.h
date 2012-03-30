@@ -419,11 +419,11 @@ S*/
 J*/
 
 #define SNESLineSearchType char*
-#define SNES_LINESEARCH_BT                 "bt"
-#define SNES_LINESEARCH_BASIC              "basic"
-#define SNES_LINESEARCH_L2                 "l2"
-#define SNES_LINESEARCH_CP                 "cp"
-#define SNES_LINESEARCH_SHELL              "shell"
+#define SNESLINESEARCHBT                 "bt"
+#define SNESLINESEARCHBASIC              "basic"
+#define SNESLINESEARCHL2                 "l2"
+#define SNESLINESEARCHCP                 "cp"
+#define SNESLINESEARCHSHELL              "shell"
 
 extern PetscClassId  SNESLINESEARCH_CLASSID;
 extern PetscBool     SNESLineSearchRegisterAllCalled;

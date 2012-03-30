@@ -148,7 +148,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_CP"
 /*MC
-   SNES_LINESEARCH_CP - Critical point line search. This line search assumes that there exists some
+   SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
    artificial G(x) for which the SNESFunction F(x) = grad G(x).  Therefore, this line search seeks
    to find roots of f^ty via a secant method.
 

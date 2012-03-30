@@ -79,7 +79,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   if (ngmres->additive) {
     ierr = SNESLineSearchCreate(((PetscObject)snes)->comm, &ngmres->additive_linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetSNES(ngmres->additive_linesearch, snes);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(ngmres->additive_linesearch, SNES_LINESEARCH_L2);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     ierr = SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "additive_");CHKERRQ(ierr);
     ierr = SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix);CHKERRQ(ierr);
     ierr = SNESLineSearchSetFromOptions(ngmres->additive_linesearch);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   /* set the default type of the line search if the user hasn't already. */
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_BASIC);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

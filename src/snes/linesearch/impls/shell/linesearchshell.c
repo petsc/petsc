@@ -42,14 +42,14 @@ $
 $  ...
 $
 $  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-$  ierr = SNESLineSearchSetType(linesearch, SNES_LINESEARCH_SHELL);CHKERRQ(ierr);
+$  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL);CHKERRQ(ierr);
 $  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, PETSC_NULL);CHKERRQ(ierr);
 
    Level: advanced
 
    .keywords: SNESLineSearch, Shell, user, function, set
 
-   .seealso: SNESLineSearchShellGetUserFunc(), SNES_LINESEARCH_SHELL
+   .seealso: SNESLineSearchShellGetUserFunc(), SNESLINESEARCHSHELL
 @*/
 PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx) {
 
@@ -58,7 +58,7 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  ierr = PetscTypeCompare((PetscObject)linesearch,SNES_LINESEARCH_SHELL,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
     shell->func = func;
@@ -89,7 +89,7 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) PetscValidPointer(func,2);
   if (ctx)  PetscValidPointer(ctx,3);
-  ierr = PetscTypeCompare((PetscObject)linesearch,SNES_LINESEARCH_SHELL,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     *ctx  = shell->ctx;
     *func = shell->func;
@@ -132,7 +132,7 @@ static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 #define __FUNCT__ "SNESLineSearchCreate_Shell"
 /*MC
 
-SNES_LINESEARCH_SHELL - Provides context for a user-provided line search routine.
+SNESLINESEARCHSHELL - Provides context for a user-provided line search routine.
 
 The user routine has one argument, the SNESLineSearch context.  The user uses the interface to
 extract line search parameters and set them accordingly when the computation is finished.
