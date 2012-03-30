@@ -155,19 +155,26 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-  if (domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
+  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+    if (domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
   }
-  ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
-  ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
-  ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (!snes->norm_init_set) {
+    ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+    ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

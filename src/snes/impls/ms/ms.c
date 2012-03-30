@@ -294,19 +294,27 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
   }
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
     ierr = SNESComputeJacobian(snes,snes->vec_sol,&snes->jacobian,&snes->jacobian_pre,&mstruct);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,mstruct);CHKERRQ(ierr);
   }
   if (ms->norms) {
-    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    if (!snes->norm_init_set) {
+      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+      if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    } else {
+      fnorm = snes->norm_init;
+      snes->norm_init_set = PETSC_FALSE;
+    }
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = 0;

@@ -198,17 +198,27 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* initialization */
 
   /* r = F(x) */
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
   }
 
-  /* nu = (r, r) */
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+  if (!snes->norm_init_set) {
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
+
   fminnorm = fnorm;
+  /* nu = (r, r) */
   nu = fnorm*fnorm;
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
 
   /* q_{00} = nu  */
   Q(0,0) = nu;
@@ -234,6 +244,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     /* Computation of x^M */
     if (snes->pc) {
       ierr = VecCopy(X, XM);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, XM);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {

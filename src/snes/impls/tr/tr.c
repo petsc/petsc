@@ -95,6 +95,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   PetscBool           conv = PETSC_FALSE,breakout = PETSC_FALSE;
+  PetscBool          domainerror;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -108,8 +109,25 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   snes->iter = 0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
-  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
+    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+    if (domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
+  }
+
+  if (!snes->norm_init_set) {
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
+
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

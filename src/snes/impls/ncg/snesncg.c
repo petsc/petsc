@@ -248,14 +248,23 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
   /* compute the initial function and preconditioned update dX */
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
   }
+  if (!snes->norm_init_set) {
   /* convergence test */
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

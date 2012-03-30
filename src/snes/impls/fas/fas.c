@@ -170,7 +170,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (!isFine) snes->gridsequence = 0; /* no grid sequencing inside the multigrid hierarchy! */
 
   if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
-    ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   } else {
     ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   }
@@ -373,6 +373,8 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   SNES                smoothd;
   PetscFunctionBegin;
   ierr = SNESFASCycleGetSmootherDown(snes, &smoothd);CHKERRQ(ierr);
+  ierr = SNESSetInitialFunction(smoothd, F);CHKERRQ(ierr);
+  ierr = SNESSetInitialFunctionNorm(smoothd, *fnorm);CHKERRQ(ierr);
   ierr = SNESSolve(smoothd, B, X);CHKERRQ(ierr);
   /* check convergence reason for the smoother */
   ierr = SNESGetConvergedReason(smoothd,&reason);CHKERRQ(ierr);
@@ -510,15 +512,16 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
     ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
     /* restrict the defect */
     ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
-
     /* solve the coarse problem corresponding to F^c(x^c) = b^c = F^c(Rx) - R(F(x) - b) */
     ierr = SNESComputeFunction(next, Xo_c, F_c);CHKERRQ(ierr);
+    ierr = VecCopy(B_c, X_c);CHKERRQ(ierr);
     ierr = VecCopy(F_c, B_c);CHKERRQ(ierr);
-
+    ierr = VecCopy(X_c, F_c);CHKERRQ(ierr);
     /* set initial guess of the coarse problem to the projected fine solution */
     ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
 
     /* recurse to the next level */
+    ierr = SNESSetInitialFunction(next, F_c);CHKERRQ(ierr);
     ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(next,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
@@ -567,7 +570,7 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X) {
     ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
     ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, Xhat, F);CHKERRQ(ierr);
-
+    ierr = VecNorm(F, &fnorm);CHKERRQ(ierr);
     X_c  = next->vec_sol;
     Xo_c = next->work[0];
     F_c  = next->vec_func;
@@ -579,11 +582,14 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X) {
 
     /* solve the coarse problem corresponding to F^c(x^c) = b^c = Rb + F^c(Rx) - RF(x) */
     ierr = SNESComputeFunction(next, Xo_c, F_c);CHKERRQ(ierr);
+    ierr = VecCopy(B_c, X_c);CHKERRQ(ierr);
     ierr = VecCopy(F_c, B_c);CHKERRQ(ierr);
+    ierr = VecCopy(X_c, F_c);CHKERRQ(ierr);
     /* set initial guess of the coarse problem to the projected fine solution */
     ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
 
     /* recurse */
+    ierr = SNESSetInitialFunction(next, F_c);CHKERRQ(ierr);
     ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
 
     /* smooth on this level */
@@ -642,7 +648,6 @@ PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X) {
   B = snes->vec_rhs;
   /* pre-smooth -- just update using the pre-smoother */
   ierr = SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
-
   if (fas->level != 0) {
     ierr = SNESFASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
     ierr = SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
@@ -675,26 +680,36 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  if (isFine || fas->monitor) {
+  if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
+  }
+
+  if (!snes->norm_init_set) {
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-    snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,fnorm,0);
-    ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
-
-    /* set parameter for default relative tolerance convergence test */
-    snes->ttol = fnorm*snes->rtol;
-    /* test convergence */
-    ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-    if (snes->reason) PetscFunctionReturn(0);
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
   }
+
+  snes->norm = fnorm;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  SNESLogConvHistory(snes,fnorm,0);
+  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
+  /* test convergence */
+  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
+
 
   if (isFine) {
     /* propagate scale-dependent data up the hierarchy */

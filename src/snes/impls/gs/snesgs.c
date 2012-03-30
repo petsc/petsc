@@ -73,26 +73,34 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   F = snes->vec_func;
   B = snes->vec_rhs;
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->iter = 0;
-  snes->norm = 0.;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  fnorm = 1.;
 
   snes->reason = SNES_CONVERGED_ITERATING;
   /* compute the initial function and preconditioned update delX */
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    snes->vec_func_init_set = PETSC_FALSE;
   }
+
   /* convergence test */
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if (!snes->norm_init_set) {
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  } else {
+    fnorm = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter = 0;
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  SNESLogConvHistory(snes,snes->norm,0);
+  ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;

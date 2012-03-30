@@ -96,6 +96,10 @@ struct _p_SNES {
 
   PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
 
+  PetscReal   norm_init;          /* the initial norm value */
+  PetscBool   norm_init_set;      /* the initial norm has been set */
+  PetscBool   vec_func_init_set;  /* the initial function has been set */
+
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;

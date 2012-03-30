@@ -381,6 +381,8 @@ extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStr
 extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 extern PetscErrorCode  SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJacobian,void*);
 extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,void**);
+extern PetscErrorCode  SNESSetInitialFunction(SNES,Vec);
+extern PetscErrorCode  SNESSetInitialFunctionNorm(SNES,PetscReal);
 
 extern PetscErrorCode  SNESSetGS(SNES,SNESGSFunction,void*);
 extern PetscErrorCode  SNESGetGS(SNES,SNESGSFunction*,void**);
