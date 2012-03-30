@@ -13,8 +13,10 @@ SNESFASSetType - Sets the update and correction type used for FAS.
 Logically Collective
 
 Input Parameters:
-snes  - FAS context
-fastype  - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
++ snes  - FAS context
+- fastype  - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+
+Level: intermediate
 
 .seealso: PCMGSetType()
 @*/
@@ -39,10 +41,12 @@ SNESFASGetType - Sets the update and correction type used for FAS.
 Logically Collective
 
 Input Parameters:
-.snes - FAS context
+. snes - FAS context
 
 Output Parameters:
-.fastype - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+. fastype - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+
+Level: intermediate
 
 .seealso: PCMGSetType()
 @*/

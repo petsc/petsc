@@ -651,6 +651,8 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
   Output parameters:
 . scatter: the scatter
 
+  Level: advanced
+
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroCellSet
 @*/
@@ -746,6 +748,8 @@ PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
 
   Output parameters:
 . scatter - the scatter
+
+  Level: advanced
 
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertex DMMeshCreateScatterToZeroCellSet
@@ -873,6 +877,8 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   Output parameters:
 . scatter - the scatter
 
+  Level: advanced
+
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroVertex DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroCellSet
 @*/
@@ -952,6 +958,8 @@ PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
 
   Output parameters:
 . scatter - the scatter
+
+  Level: advanced
 
 .keywords: mesh,ExodusII
 .seealso DMMeshCreateScatterToZeroCell DMMeshCreateScatterToZeroVertexSet DMMeshCreateScatterToZeroVertex
