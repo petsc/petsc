@@ -20,7 +20,7 @@ include ${PETSC_DIR}/conf/test
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
 	   echo "=========================================="; \
            echo "Building PETSc using CMake with ${MAKE_NP} build threads"; \
