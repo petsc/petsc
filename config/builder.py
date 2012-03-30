@@ -1393,7 +1393,7 @@ class PETScMaker(script.Script):
          self.logPrint(output, indent = 0)
          ret = -1
        else:
-         self.logPrint("TEST SUCCESS: Regression output for %s (test %d) matches" % (executable, testNum))
+         self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, str(testNum)))
    return ret
 
  def runTest(self, testDir, executable, testNum, **params):
