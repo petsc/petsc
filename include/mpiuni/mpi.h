@@ -509,7 +509,13 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
      newtype) MPI_SUCCESS
 #define MPI_Type_struct(count,array_of_blocklengths,\
      array_of_displacements,\
-     array_of_types, newtype) MPI_SUCCESS
+     array_of_types, newtype) \
+     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_blocklengths),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_displacements),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_types),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype),\
+      MPI_SUCCESS)
 #define MPI_Address(location,address) \
      (*(address) = (MPIUNI_INTPTR)(char *)(location),MPI_SUCCESS)
 #define MPI_Type_extent(datatype,extent) *(extent) = datatype
@@ -642,7 +648,10 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm2),\
      *(result)=MPI_IDENT,\
      MPI_SUCCESS)
-#define MPI_Comm_split(comm,color,key,newcomm) MPI_Comm_dup(comm,newcomm)
+#define MPI_Comm_split(comm,color,key,newcomm) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (color),\
+  MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (key),\
+   MPI_Comm_dup(comm,newcomm))
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_group(comm,group) MPI_SUCCESS
