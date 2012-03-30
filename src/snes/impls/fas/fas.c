@@ -570,7 +570,7 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X) {
     ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
     ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, Xhat, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, &fnorm);CHKERRQ(ierr);
+    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
     X_c  = next->vec_sol;
     Xo_c = next->work[0];
     F_c  = next->vec_func;
