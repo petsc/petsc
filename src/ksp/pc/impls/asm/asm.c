@@ -166,8 +166,10 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       if (symset && flg) { osm->type = PC_ASM_BASIC; }
     }
 
+    /* Note: if osm->n_local_true has been set, it is at least 1. */
     if (osm->n == PETSC_DECIDE && osm->n_local_true < 1) { 
-      /* no subdomains given, try pc->dm */
+      /* no subdomains given */
+      /* try pc->dm first */
       if(pc->dm) {
         char      ddm_name[1024];
         DM        ddm;
@@ -187,7 +189,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
           ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
         }
         ierr = DMCreateDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
-        ierr = PCASMSetLocalSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+        if(num_domains) {
+          ierr = PCASMSetLocalSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+        }
         for(d = 0; d < num_domains; ++d) {
           ierr = PetscFree(domain_names[d]); CHKERRQ(ierr);
           ierr = ISDestroy(&domain_is[d]);   CHKERRQ(ierr);
@@ -195,8 +199,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscFree(domain_names);CHKERRQ(ierr);
         ierr = PetscFree(domain_is);CHKERRQ(ierr);
       }
-      else {
-        /* no dm exists, use one subdomain per processor */
+      if (osm->n == PETSC_DECIDE && osm->n_local_true < 1) {
+        /* still no subdomains; use one subdomain per processor */
         osm->n_local = osm->n_local_true = 1;
         ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
         osm->n = size;
@@ -209,7 +213,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       osm->n_local = outwork[0];
       osm->n       = outwork[1];
     }
-
     if (!osm->is){ /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);
     }

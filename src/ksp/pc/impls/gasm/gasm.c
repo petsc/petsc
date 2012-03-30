@@ -222,8 +222,10 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       if (symset && flg) { osm->type = PC_GASM_BASIC; }
     }
 
+    /* Note: if osm->n has been set, it is at least 1. */
     if (osm->N == PETSC_DECIDE && osm->n < 1) { 
-      /* no subdomains given, try pc->dm */
+      /* no subdomains given */
+      /* try pc->dm first */
       if(pc->dm) {
         char      ddm_name[1024];
         DM        ddm;
@@ -243,7 +245,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
           ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
         }
         ierr = DMCreateDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
-        ierr = PCGASMSetLocalSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+        if(num_domains) {
+          ierr = PCGASMSetLocalSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+        }
         for(d = 0; d < num_domains; ++d) {
           ierr = PetscFree(domain_names[d]); CHKERRQ(ierr);
           ierr = ISDestroy(&domain_is[d]);   CHKERRQ(ierr);
@@ -251,7 +255,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         ierr = PetscFree(domain_names);CHKERRQ(ierr);
         ierr = PetscFree(domain_is);CHKERRQ(ierr);
       }
-      else { /* no dm, use one per processor */
+      if (osm->N == PETSC_DECIDE && osm->n < 1) { /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;
         ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
         osm->N = size;
@@ -634,7 +638,7 @@ PetscErrorCode  PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n,IS is[],IS is_loc
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
+  if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more subdomains, n = %D",n);
   if (pc->setupcalled && (n != osm->n || is)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetLocalSubdomains() should be called before calling PCSetUp().");
 
   if (!pc->setupcalled) {

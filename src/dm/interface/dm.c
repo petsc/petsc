@@ -811,10 +811,21 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **f
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (numFields) {PetscValidPointer(numFields,2);}
-  if (names) {PetscValidPointer(names,3);}
-  if (fields) {PetscValidPointer(fields,4);}
-  ierr = (*dm->ops->createfieldis)(dm, numFields, names, fields);CHKERRQ(ierr);
+  if (numFields) {
+    PetscValidPointer(numFields,2);
+    *numFields = 0;
+  }
+  if (names) {
+    PetscValidPointer(names,3);
+    *names = PETSC_NULL;
+  }
+  if (fields) {
+    PetscValidPointer(fields,4);
+    *fields = PETSC_NULL;
+  }
+  if(dm->ops->createfieldis) {
+    ierr = (*dm->ops->createfieldis)(dm, numFields, names, fields);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -858,7 +869,7 @@ PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS 
   if (islist) {PetscValidPointer(islist,4);}
   if (dmlist) {PetscValidPointer(dmlist,5);}
   if(!dm->ops->createdecomposition) {
-    ierr = (*dm->ops->createfieldis)(dm, len, namelist, islist);CHKERRQ(ierr);
+    ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
     /* By default there are no DMs associated with subproblems. */
     if(dmlist) *dmlist = PETSC_NULL;
   }
