@@ -20,7 +20,7 @@ include ${PETSC_DIR}/conf/test
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
 	   echo "=========================================="; \
            echo "Building PETSc using CMake with ${MAKE_NP} build threads"; \
@@ -254,7 +254,7 @@ SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bu
 
 
 # Builds all the documentation - should be done every night
-alldoc: alldoc1 alldoc2 alldoc3
+alldoc: alldoc1 alldoc2 alldoc3 docsetdate
 
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
@@ -289,6 +289,32 @@ alldoc3: chk_loc
           cd classes; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
           cd examples/tutorials; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
         fi
+
+# modify all generated html files and add in version number, date, canonical URL info.
+docsetdate: chkpetsc_dir
+	@echo "Updating generated html files with petsc version, date, canonical URL info";\
+        version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        if  [ $${version_release} = 0 ]; then \
+          petscversion=petsc-dev; \
+          export petscversion; \
+        elif [ $${version_release} = 1 ]; then \
+          petscversion=petsc-$${version_major}.$${version_minor}-p$${version_patch}; \
+          export petscversion; \
+        else \
+          echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
+          exit; \
+        fi; \
+        datestr=`hg tip --template "{date|isodate}"`; \
+        export datestr; \
+        find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
+          -type d -wholename arch-* -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
+          -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
+          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \
+          -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
+        echo "Done fixing version number, date, canonical URL info"
 
 alldocclean: deletemanualpages allcleanhtml
 
