@@ -31,9 +31,9 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
-static PetscErrorCode    GMRESGetNewVectors(KSP,PetscInt);
-static PetscErrorCode    GMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal*);
-static PetscErrorCode    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
+static PetscErrorCode    KSPGMRESGetNewVectors(KSP,PetscInt);
+static PetscErrorCode    KSPGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal*);
+static PetscErrorCode    KSPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GMRES"
@@ -115,8 +115,8 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
 #undef __FUNCT__  
-#define __FUNCT__ "GMREScycle"
-PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
+#define __FUNCT__ "KSPGMRESCycle"
+PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscReal      res_norm,res,hapbnd,tt;
@@ -151,7 +151,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     }
     gmres->it = (it - 1);
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
-      ierr = GMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
+      ierr = KSPGMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
     }
     ierr = KSP_PCApplyBAorAB(ksp,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
 
@@ -171,7 +171,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
       ierr = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %14.12e tt = %14.12e\n",(double)hapbnd,(double)tt);CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
-    ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
+    ierr = KSPGMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
 
     it++;
     gmres->it  = (it-1);  /* For converged */
@@ -203,7 +203,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  ierr = BuildGmresSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);CHKERRQ(ierr);
+  ierr = KSPGMRESBuildSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -228,7 +228,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
     ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
-    ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
+    ierr     = KSPGMRESCycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -293,7 +293,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 /*
-    BuildGmresSoln - create the solution from the starting vector and the
+    KSPGMRESBuildSoln - create the solution from the starting vector and the
     current iterates.
 
     Input parameters:
@@ -305,8 +305,8 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
      This is an internal routine that knows about the GMRES internals.
  */
 #undef __FUNCT__  
-#define __FUNCT__ "BuildGmresSoln"
-static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
+#define __FUNCT__ "KSPGMRESBuildSoln"
+static PetscErrorCode KSPGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
   PetscErrorCode ierr;
@@ -356,8 +356,8 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
    Do the scalar work for the orthogonalization.  Return new residual norm.
  */
 #undef __FUNCT__  
-#define __FUNCT__ "GMRESUpdateHessenberg"
-static PetscErrorCode GMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
+#define __FUNCT__ "KSPGMRESUpdateHessenberg"
+static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
   PetscScalar *hh,*cc,*ss,tt;
   PetscInt    j;
@@ -424,8 +424,8 @@ static PetscErrorCode GMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapen
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
 #undef __FUNCT__  
-#define __FUNCT__ "GMRESGetNewVectors" 
-static PetscErrorCode GMRESGetNewVectors(KSP ksp,PetscInt it)
+#define __FUNCT__ "KSPGMRESGetNewVectors" 
+static PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
   PetscErrorCode ierr;
@@ -472,7 +472,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
     ierr = PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = BuildGmresSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
+  ierr = KSPGMRESBuildSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
   if (result) *result = ptr;
   PetscFunctionReturn(0);
 }

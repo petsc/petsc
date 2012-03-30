@@ -47,7 +47,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     }
     ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
     ierr = VecSet(X,0.0);CHKERRQ(ierr);
-  }
+  } 
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
