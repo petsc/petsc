@@ -3,13 +3,13 @@
 
 #include "ex52_gpu.h"
 
-__device__ vecType f1_laplacian(float u[], vecType gradU[], int comp) {
+__device__ vecType f1_laplacian(realType u[], vecType gradU[], int comp) {
   return gradU[comp];
 }
 
 #if (SPATIAL_DIM_0 == 2)
 
-__device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
+__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
   vecType f1;
 
   switch(comp) {
@@ -26,7 +26,7 @@ __device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
 
 #elif (SPATIAL_DIM_0 == 3)
 
-__device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
+__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
   vecType f1;
 
   switch(comp) {
@@ -69,7 +69,7 @@ __device__ vecType f1_elasticity(float u[], vecType gradU[], int comp) {
 // N_{cb}  Number of serial cell batches:         input
 // N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}
 
-__global__ void integrateElementQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
+__global__ void integrateElementQuadrature(int N_cb, realType *coefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec) {
   #include "ex52_gpu_inline.h"
   const int        dim     = SPATIAL_DIM_0;
   const int        N_b     = numBasisFunctions_0;   // The number of basis functions
@@ -95,19 +95,19 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
   const int        Coffset = gidx*N_c*N_bt;
   const int        Eoffset = gidx*N_c*N_bt;
   /* Quadrature data */
-  float             w;                      // $w_q$, Quadrature weight at $x_q$
-//  __shared__ float  phi_i[N_bt*N_q];      // $\phi_i(x_q)$, Value of the basis function $i$ at $x_q$
-  __shared__ vecType phiDer_i[N_bt*N_q];    // $\frac{\partial\phi_i(x_q)}{\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$
+  realType             w;                   // $w_q$, Quadrature weight at $x_q$
+//__shared__ realType  phi_i[N_bt*N_q];     // $\phi_i(x_q)$, Value of the basis function $i$ at $x_q$
+  __shared__ vecType   phiDer_i[N_bt*N_q];  // $\frac{\partial\phi_i(x_q)}{\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$
   /* Geometric data */
-  __shared__ float  detJ[N_t];              // $|J(x_q)|$, Jacobian determinant at $x_q$
-  __shared__ float  invJ[N_t*dim*dim];      // $J^{-1}(x_q)$, Jacobian inverse at $x_q$
+  __shared__ realType  detJ[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$
+  __shared__ realType  invJ[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$
   /* FEM data */
-  __shared__ float  u_i[N_t*N_bt];          // Coefficients $u_i$ of the field $u|_{\mathcal{T}} = \sum_i u_i \phi_i$
+  __shared__ realType  u_i[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\mathcal{T}} = \sum_i u_i \phi_i$
   /* Intermediate calculations */
-// __shared__ float  f_0[N_t*N_sqc];        // $f_0(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
-  __shared__ vecType f_1[N_t*N_sqc];        // $f_1(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
+//__shared__ realType  f_0[N_t*N_sqc];      // $f_0(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
+  __shared__ vecType   f_1[N_t*N_sqc];      // $f_1(u(x_q), \nabla u(x_q)) |J(x_q)| w_q$
   /* Output data */
-  float             e_i;                    // Coefficient $e_i$ of the residual
+  realType             e_i;                 // Coefficient $e_i$ of the residual
 
   /* These should be generated inline */
   /* Load quadrature weights */
@@ -133,7 +133,7 @@ __global__ void integrateElementQuadrature(int N_cb, float *coefficients, float 
 
     /* Map coefficients to values at quadrature points */
     for(int c = 0; c < N_sqc; ++c) {
-      float     u[N_comp];     // $u(x_q)$, Value of the field at $x_q$
+      realType  u[N_comp];     // $u(x_q)$, Value of the field at $x_q$
       vecType   gradU[N_comp]; // $\nabla u(x_q)$, Value of the field gradient at $x_q$
    // vecType   x             = {0.0, 0.0};           // Quadrature point $x_q$
       const int cell          = c*N_bl*N_b + blqidx;
@@ -296,10 +296,10 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   const int N_bst  = N_bt*N_q;              // The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously
   const int N_t    = N_bst*N_bl;            // The number of threads, N_bst * N_bl
 
-  float *d_coefficients;
-  float *d_jacobianInverses;
-  float *d_jacobianDeterminants;
-  float *d_elemVec;
+  realType *d_coefficients;
+  realType *d_jacobianInverses;
+  realType *d_jacobianDeterminants;
+  realType *d_elemVec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -308,7 +308,7 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   if (!Ne) {
     PetscStageLog     stageLog;
     PetscEventPerfLog eventLog = PETSC_NULL;
-    int               stage;
+    PetscInt          stage;
 
     ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
     ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
@@ -320,15 +320,28 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
     PetscFunctionReturn(0);
   }
   // Marshalling
-  ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(float));CHKERRQ(ierr);
-  ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(float));CHKERRQ(ierr);
-  ierr = cudaMalloc((void**) &d_jacobianDeterminants, Ne * sizeof(float));CHKERRQ(ierr);
-  ierr = cudaMalloc((void**) &d_elemVec,              Ne*N_bt * sizeof(float));CHKERRQ(ierr);
-  ierr = cudaMemcpy(d_coefficients,         coefficients,         Ne*N_bt * sizeof(float), cudaMemcpyHostToDevice);CHKERRQ(ierr);
-  ierr = cudaMemcpy(d_jacobianInverses,     jacobianInverses,     Ne*dim*dim * sizeof(float), cudaMemcpyHostToDevice);CHKERRQ(ierr);
-  ierr = cudaMemcpy(d_jacobianDeterminants, jacobianDeterminants, Ne * sizeof(float), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+  ierr = cudaMalloc((void**) &d_coefficients,         Ne*N_bt * sizeof(realType));CHKERRQ(ierr);
+  ierr = cudaMalloc((void**) &d_jacobianInverses,     Ne*dim*dim * sizeof(realType));CHKERRQ(ierr);
+  ierr = cudaMalloc((void**) &d_jacobianDeterminants, Ne * sizeof(realType));CHKERRQ(ierr);
+  ierr = cudaMalloc((void**) &d_elemVec,              Ne*N_bt * sizeof(realType));CHKERRQ(ierr);
+  if (sizeof(PetscReal) == sizeof(realType)) {
+    ierr = cudaMemcpy(d_coefficients,         coefficients,         Ne*N_bt    * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+    ierr = cudaMemcpy(d_jacobianInverses,     jacobianInverses,     Ne*dim*dim * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+    ierr = cudaMemcpy(d_jacobianDeterminants, jacobianDeterminants, Ne         * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+  } else {
+    realType *c, *jI, *jD;
+    PetscInt  i;
+
+    ierr = PetscMalloc3(Ne*N_bt,realType,&c,Ne*dim*dim,realType,&jI,Ne,realType,&jD);CHKERRQ(ierr);
+    for(i = 0; i < Ne*N_bt;    ++i) {c[i]  = coefficients[i];}
+    for(i = 0; i < Ne*dim*dim; ++i) {jI[i] = jacobianInverses[i];}
+    for(i = 0; i < Ne;         ++i) {jD[i] = jacobianDeterminants[i];}
+    ierr = cudaMemcpy(d_coefficients,         c,  Ne*N_bt    * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+    ierr = cudaMemcpy(d_jacobianInverses,     jI, Ne*dim*dim * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+    ierr = cudaMemcpy(d_jacobianDeterminants, jD, Ne         * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
+    ierr = PetscFree3(c,jI,jD);CHKERRQ(ierr);
+  }
   // Kernel launch
-  //   This does not consider N_bl yet
   unsigned int x, y, z;
   ierr = calculateGrid(Ne, Ncb*Nbc, x, y, z);CHKERRQ(ierr);
   dim3 grid(x, y, z);
@@ -351,7 +364,17 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   ierr = cudaEventDestroy(start);CHKERRQ(ierr);
   ierr = cudaEventDestroy(stop);CHKERRQ(ierr);
   // Marshalling
-  ierr = cudaMemcpy(elemVec, d_elemVec, Ne*N_bt * sizeof(float), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  if (sizeof(PetscReal) == sizeof(realType)) {
+    ierr = cudaMemcpy(elemVec, d_elemVec, Ne*N_bt * sizeof(realType), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  } else {
+    realType *eV;
+    PetscInt  i;
+
+    ierr = PetscMalloc(Ne*N_bt * sizeof(realType), &eV);CHKERRQ(ierr);
+    ierr = cudaMemcpy(eV, d_elemVec, Ne*N_bt * sizeof(realType), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+    for(i = 0; i < Ne*N_bt; ++i) {elemVec[i] = eV[i];}
+    ierr = PetscFree(eV);CHKERRQ(ierr);
+  }
   ierr = cudaFree(d_coefficients);CHKERRQ(ierr);
   ierr = cudaFree(d_jacobianInverses);CHKERRQ(ierr);
   ierr = cudaFree(d_jacobianDeterminants);CHKERRQ(ierr);
@@ -359,7 +382,7 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   {
     PetscStageLog     stageLog;
     PetscEventPerfLog eventLog = PETSC_NULL;
-    int               stage;
+    PetscInt          stage;
 
     ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
     ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
