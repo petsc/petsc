@@ -2286,9 +2286,14 @@ for(stage = 0; stage < numStages; stage++) {
   ierr = PetscFPrintf(comm,fd,"\n# Event\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"# ------------------------------------------------------\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"class Stage(object):\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"    def __init__(self, name):\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"        self.name  = name\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"        self.event = {}\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"    def __init__(self, name, time, flops, numMessages, messageLength, numReductions):\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.name          = name\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.time          = time\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.flops         = flops\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.numMessages   = numMessages\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.messageLength = messageLength\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.numReductions = numReductions\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        self.event         = {}\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd, "class Dummy(object):\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd, "    pass\n");CHKERRQ(ierr);
   /* Problem: The stage name will not show up unless the stage executed on proc 1 */
@@ -2329,7 +2334,7 @@ for(stage = 0; stage < numStages; stage++) {
       }
     }
     if (!rank){
-      ierr = PetscFPrintf(comm, fd, "%s = Stage('%s')\n", stageName, stageName);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "%s = Stage('%s', %g, %g, %D, %D, %D)\n", stageName, stageName, stageTime, flops, mess, messLen, red);CHKERRQ(ierr);
     }
 
     if (localStageUsed[stage]) {
