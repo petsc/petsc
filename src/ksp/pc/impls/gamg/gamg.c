@@ -761,7 +761,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           }
           if( removedEqs[level] ) {
             PetscScalar *zeros; 
-            PetscInt ii,jj, *idx, *idx_bs, sz, bs=level_bs[level];
+            PetscInt ii,jj, *idx_bs, sz, bs=level_bs[level];
+            const PetscInt *idx;
             ierr = ISGetLocalSize( removedEqs[level], &sz ); CHKERRQ(ierr);
             ierr = PetscMalloc( bs*sz*sizeof(PetscScalar), &zeros ); CHKERRQ(ierr);
             for(ii=0;ii<bs*sz;ii++) zeros[ii] = 0.;
