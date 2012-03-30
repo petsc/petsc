@@ -70,8 +70,8 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "LocalMult_TFS"
-static PetscErrorCode LocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
+#define __FUNCT__ "PCTFSLocalMult_TFS"
+static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
 {
   PC_TFS        *tfs = (PC_TFS*)pc->data;
   Mat           A = pc->pmat;
@@ -132,11 +132,11 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
-    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(void*)PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt       = XYT_new();
-    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(void*)PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XYT;
   }
 
