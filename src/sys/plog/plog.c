@@ -2334,7 +2334,7 @@ for(stage = 0; stage < numStages; stage++) {
       }
     }
     if (!rank){
-      ierr = PetscFPrintf(comm, fd, "%s = Stage('%s', %g, %g, %D, %D, %D)\n", stageName, stageName, stageTime, flops, mess, messLen, red);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "%s = Stage('%s', %g, %g, %g, %g, %g)\n", stageName, stageName, stageTime, flops, mess, messLen, red);CHKERRQ(ierr);
     }
 
     if (localStageUsed[stage]) {
