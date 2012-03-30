@@ -2,7 +2,7 @@
 #include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h>
 
-static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius" 
@@ -203,7 +203,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          ierr = VecScale(X,scal);CHKERRQ(ierr);
        } else {
          /* Compute roots of quadratic */
-         ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+         ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
          ierr = VecDot(W,ASP,&cwtasp);CHKERRQ(ierr); wtasp = PetscRealPart(cwtasp);
          ierr = VecDot(BS,P,&cbstp);CHKERRQ(ierr);   bstp  = PetscRealPart(cbstp);
@@ -254,7 +254,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
            ierr = VecScale(X,scal);CHKERRQ(ierr);
          } else {
            /* Compute roots of quadratic */
-           ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+           ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
            ierr = VecCopy(W,X);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
            cstep1 = step1; ierr = VecAXPY(X,cstep1,P);CHKERRQ(ierr);
@@ -491,9 +491,9 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "QuadraticRoots_Private"
+#define __FUNCT__ "KSPQCGQuadraticRoots"
 /* 
-  QuadraticRoots_Private - Computes the roots of the quadratic,
+  KSPQCGQuadraticRoots - Computes the roots of the quadratic,
          ||s + step*p|| - delta = 0 
    such that step1 >= 0 >= step2.
    where
@@ -509,7 +509,7 @@ EXTERN_C_END
    C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
-static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
+static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
 { 
   PetscReal      dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;
