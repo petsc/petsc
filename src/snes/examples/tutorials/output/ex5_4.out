@@ -17,8 +17,6 @@
       4 SNES Function norm < 1.e-11
     SNES Object:     2 MPI processes
       type: ls
-        alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-        damping factor=1.000000000000e+00
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=4
@@ -90,7 +88,13 @@
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64
           total number of mallocs used during MatSetValues calls =0
-      line search variant: bt
+      SNESLineSearch Object:       2 MPI processes
+        type: bt
+          interpolation: cubic
+          alpha=0.0001
+        maxstep=1e+08, minlambda=1e-12
+        tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+        maximum iterations=40
     Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 4
     0 SNES Function norm 0.937398 
       0 KSP Residual norm 0.436616 
@@ -130,8 +134,6 @@
     5 SNES Function norm 8.954e-11 
   SNES Object:   2 MPI processes
     type: ls
-      alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-      damping factor=1.000000000000e+00
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=20
@@ -248,7 +250,13 @@
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
         total number of mallocs used during MatSetValues calls =0
-    line search variant: bt
+    SNESLineSearch Object:     2 MPI processes
+      type: bt
+        interpolation: cubic
+        alpha=0.0001
+      maxstep=1e+08, minlambda=1e-12
+      tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+      maximum iterations=40
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
   0 SNES Function norm 0.517003 
     0 KSP Residual norm 0.251451 
@@ -281,8 +289,6 @@
   4 SNES Function norm 9.968e-10 
 SNES Object: 2 MPI processes
   type: ls
-    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-    damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=16
@@ -449,5 +455,11 @@ SNES Object: 2 MPI processes
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
       total number of mallocs used during MatSetValues calls =0
-  line search variant: bt
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=0.0001
+    maxstep=1e+08, minlambda=1e-12
+    tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+    maximum iterations=40
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4

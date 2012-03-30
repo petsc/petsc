@@ -1,7 +1,5 @@
     SNES Object:     2 MPI processes
       type: ls
-        alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-        damping factor=1.000000000000e+00
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=4
@@ -65,10 +63,10 @@
             Matrix Object:             2 MPI processes
               type: mffd
               rows=16, cols=16
-                  matrix-free approximation:
-                    err=1.49012e-08 (relative error in function evaluation)
-                    Using wp compute h routine
-                    Does not compute normU
+                Matrix-free approximation:
+                  err=1.49012e-08 (relative error in function evaluation)
+                  Using wp compute h routine
+                      Does not compute normU
             Matrix Object:             2 MPI processes
               type: mpiaij
               rows=16, cols=16
@@ -78,21 +76,25 @@
         Matrix Object:         2 MPI processes
           type: mffd
           rows=16, cols=16
-              matrix-free approximation:
-                err=1.49012e-08 (relative error in function evaluation)
-                Using wp compute h routine
-                Does not compute normU
+            Matrix-free approximation:
+              err=1.49012e-08 (relative error in function evaluation)
+              Using wp compute h routine
+                  Does not compute normU
         Matrix Object:         2 MPI processes
           type: mpiaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64
           total number of mallocs used during MatSetValues calls =0
-      line search variant: bt
+      SNESLineSearch Object:       2 MPI processes
+        type: bt
+          interpolation: cubic
+          alpha=0.0001
+        maxstep=1e+08, minlambda=1e-12
+        tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+        maximum iterations=40
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
   SNES Object:   2 MPI processes
     type: ls
-      alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-      damping factor=1.000000000000e+00
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=20
@@ -200,10 +202,10 @@
           Matrix Object:           2 MPI processes
             type: mffd
             rows=49, cols=49
-                matrix-free approximation:
-                  err=1.49012e-08 (relative error in function evaluation)
-                  Using wp compute h routine
-                  Does not compute normU
+              Matrix-free approximation:
+                err=1.49012e-08 (relative error in function evaluation)
+                Using wp compute h routine
+                    Does not compute normU
           Matrix Object:           2 MPI processes
             type: mpiaij
             rows=49, cols=49
@@ -214,21 +216,25 @@
       Matrix Object:       2 MPI processes
         type: mffd
         rows=49, cols=49
-            matrix-free approximation:
-              err=1.49012e-08 (relative error in function evaluation)
-              Using wp compute h routine
-              Does not compute normU
+          Matrix-free approximation:
+            err=1.49012e-08 (relative error in function evaluation)
+            Using wp compute h routine
+                Does not compute normU
       Matrix Object:       2 MPI processes
         type: mpiaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
         total number of mallocs used during MatSetValues calls =0
-    line search variant: bt
+    SNESLineSearch Object:     2 MPI processes
+      type: bt
+        interpolation: cubic
+        alpha=0.0001
+      maxstep=1e+08, minlambda=1e-12
+      tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+      maximum iterations=40
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 SNES Object: 2 MPI processes
   type: ls
-    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-    damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=16
@@ -386,10 +392,10 @@ SNES Object: 2 MPI processes
         Matrix Object:         2 MPI processes
           type: mffd
           rows=169, cols=169
-              matrix-free approximation:
-                err=1.49012e-08 (relative error in function evaluation)
-                Using wp compute h routine
-                Does not compute normU
+            Matrix-free approximation:
+              err=1.49012e-08 (relative error in function evaluation)
+              Using wp compute h routine
+                  Does not compute normU
         Matrix Object:         2 MPI processes
           type: mpiaij
           rows=169, cols=169
@@ -400,14 +406,20 @@ SNES Object: 2 MPI processes
     Matrix Object:     2 MPI processes
       type: mffd
       rows=169, cols=169
-          matrix-free approximation:
-            err=1.49012e-08 (relative error in function evaluation)
-            Using wp compute h routine
-            Does not compute normU
+        Matrix-free approximation:
+          err=1.49012e-08 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
     Matrix Object:     2 MPI processes
       type: mpiaij
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
       total number of mallocs used during MatSetValues calls =0
-  line search variant: bt
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=0.0001
+    maxstep=1e+08, minlambda=1e-12
+    tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+    maximum iterations=40
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
