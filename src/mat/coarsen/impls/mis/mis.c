@@ -162,7 +162,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
             /* if I have any ghost adj then not a sing */
             ix = lid_cprowID[lid];
             if( ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0 ){
-              nremoved++; /* diagnostic */
+              nremoved++;
               lid_removed[lid] = PETSC_TRUE;
               /* should select this because it is technically in the MIS but lets not */
               /* lid_state[lid] = (PetscScalar)(lid+my0); */
@@ -316,6 +316,13 @@ PetscErrorCode maxIndSetAgg( const IS perm,
   else if( matB ) {
     ierr = VecRestoreArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr);
   }
+
+  /* cache IS of removed nodes, use 'lid_gid' */
+  for(kk=n=0,ix=my0;kk<nloc;kk++,ix++) {
+    if( lid_removed[kk] ) lid_gid[n++] = ix;
+  }
+  assert(n==nremoved);
+  ierr = PetscCDSetRemovedIS(agg_lists, wcomm, n, lid_gid ); CHKERRQ(ierr);
 
   ierr = PetscFree( lid_cprowID );  CHKERRQ(ierr);
   ierr = PetscFree( lid_gid );  CHKERRQ(ierr);

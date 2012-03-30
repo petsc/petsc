@@ -1526,6 +1526,8 @@ typedef struct _PetscCoarsenData{
   PetscInt size;
   /* cache a Mat for communication data */
   Mat mat;
+  /* cache IS of removed equations */
+  IS removedIS;
 }PetscCoarsenData;
 
 extern PetscErrorCode  MatCoarsenCreate(MPI_Comm,MatCoarsen*);

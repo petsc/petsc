@@ -392,6 +392,8 @@ typedef PetscCDIntNd* PetscCDPos;
 PetscErrorCode PetscCDGetHeadPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos *cpos );
 PetscErrorCode PetscCDGetNextPos( const PetscCoarsenData *ail, PetscInt idx, PetscCDPos *cpos );
 PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt, PetscInt *, IS** );
+PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm, const PetscInt, PetscInt[] );
+PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS * );
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
