@@ -208,6 +208,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* composed solve -- either sequential or composed */
   if (snes->pc) {
     if (qn->compositiontype == SNES_QN_SEQUENTIAL) {
+      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
@@ -220,6 +222,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = VecCopy(F, Y);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, B, Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
@@ -277,6 +281,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     if (snes->pc) {
       if (qn->compositiontype == SNES_QN_SEQUENTIAL) {
+        ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+        ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
         ierr = SNESSolve(snes->pc, B, X);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {
@@ -289,6 +295,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
         ierr = VecCopy(F, D);CHKERRQ(ierr);
       } else {
         ierr = VecCopy(X, D);CHKERRQ(ierr);
+        ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+        ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
         ierr = SNESSolve(snes->pc, B, D);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0 && (reason != SNES_DIVERGED_MAX_IT)) {

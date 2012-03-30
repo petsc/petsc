@@ -1453,6 +1453,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   ierr = PetscObjectReference((PetscObject)f);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecCopy(f, vec_func);CHKERRQ(ierr);
+  snes->vec_func_init_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
