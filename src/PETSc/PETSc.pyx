@@ -346,7 +346,12 @@ cdef extern from *:
     PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
 
+cdef bint registercalled = 0
+
 cdef int register(char path[]) except -1:
+    global registercalled
+    if registercalled: return 0
+    registercalled = True
     # make sure all PETSc packages are initialized
     CHKERR( PetscInitializePackageAll(NULL) )
     # register custom implementations
