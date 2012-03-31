@@ -735,50 +735,8 @@ M*/
   PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
   _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
   _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
-  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
+  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr); __start = 0; __end = __start; \
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
-  _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
-
-/*MC
-   MatPreallocateSymmetricInitialize - Begins the block of code that will count the number of nonzeros per
-       row in a matrix providing the data that one can use to correctly preallocate the matrix.
-
-   Synopsis:
-   PetscErrorCode MatPreallocateSymmetricInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - the communicator that will share the eventually allocated matrix
-.  nrows - the number of LOCAL rows in the matrix
--  ncols - the number of LOCAL columns in the matrix
-
-   Output Parameters:
-+  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
-
-
-   Level: intermediate
-
-   Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
-
-   Do not malloc or free dnz and onz, that is handled internally by these routines
-
-   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
-
-  Concepts: preallocation^Matrix
-
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal()
-M*/
-#define MatPreallocateSymmetricInitialize(comm,nrows,ncols,dnz,onz) 0; \
-{ \
-  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__end; \
-  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
-  _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
-  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
-  _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
 /*MC
@@ -976,7 +934,7 @@ M*/
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
+          MatPreallocateSymmetricSetLocal()
 M*/
 #define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0;if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,PETSC_NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}
 
@@ -1007,7 +965,7 @@ M*/
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
+          MatPreallocateSymmetricSetLocal()
 M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
 

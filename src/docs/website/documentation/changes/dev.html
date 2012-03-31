@@ -115,6 +115,7 @@
         <li>Preallocation routines now automatically set MAT_NEW_NONZERO_ALLOCATION_ERR, if you intentionally preallocate less than necessary then use MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE) to disable the error generation.</li>
         <li>You MUST now call MatXXXSetPreallocation() or MatSetUp() on any matrix you create directly (not using DMCreateMatrix()) before calling MatSetValues(), MatSetValuesBlocked() etc.</li>
         <li>MatSetUpPreallocation() and MatPreallocated() are removed, use MatSetUp()</li>
+        <li>MatPreallocateSymmetricInitialize() is removed, use MatPreallocateInitialize()</li>
         <li>MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(), MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(), MatCreateSBAIJ(), MatCreateDense(). Note that on a single process they have always created the sequential version of the matrix so this naming is more accurate. </li>
         <li>Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()</li>
         <li>Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()</li>
