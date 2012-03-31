@@ -1407,7 +1407,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateSymmetricInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1506,7 +1506,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateSymmetricInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
