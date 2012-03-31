@@ -63,10 +63,16 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectReference(PetscObject)
     ctypedef void (*PetscVoidFunction)()
     PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],char[],void (*ptr)())
+    PetscErrorCode PetscTypeCompare(PetscObject,char[],PetscBool*)
     PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
     PetscErrorCode PetscOptionsString(char[],char[],char[],char[],char[],size_t,PetscBool*)
     PetscErrorCode PetscOptionsGetString(char[],char[],char[],size_t,PetscBool*)
     PetscErrorCode PetscStrcmp(char[],char[],PetscBool*)
+
+    char *PETSCVIEWERASCII
+    char *PETSCVIEWERSTRING
+    PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,char[],...)
+    PetscErrorCode PetscViewerStringSPrintf(PetscViewer,char[],...)
 
 cdef inline object      toInt(PetscInt value):          return value
 cdef inline PetscInt    asInt(object value)  except?-1: return value
@@ -366,6 +372,19 @@ cdef createcontext(char name_p[]):
     mod = PyImport_Import(name)
     return mod
 
+cdef int viewcontext(_PyObj ctx, PetscViewer viewer) except -1:
+    cdef PetscBool isascii = PETSC_FALSE, isstring = PETSC_FALSE
+    CHKERR( PetscTypeCompare(<PetscObject>viewer, PETSCVIEWERASCII,  &isascii)  )
+    CHKERR( PetscTypeCompare(<PetscObject>viewer, PETSCVIEWERSTRING, &isstring) )
+    cdef char *name = ctx.getname()
+    if isascii:
+        if name == NULL: name = b"unknown/no yet set"
+        CHKERR( PetscViewerASCIIPrintf(viewer, b"  Python: %s\n", name) )
+    if isstring:
+        if name == NULL: name = b"<unknown>"
+        CHKERR( PetscViewerStringSPrintf(viewer,"%s", name) )
+    return 0
+
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
@@ -605,6 +624,7 @@ cdef PetscErrorCode MatView_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"MatView_Python")
+    viewcontext(PyMat(mat), vwr)
     cdef view = PyMat(mat).view
     if view is not None:
         view(Mat_(mat), Viewer_(vwr))
@@ -1248,6 +1268,7 @@ cdef PetscErrorCode PCView_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"PCView_Python")
+    viewcontext(PyPC(pc), vwr)
     cdef view = PyPC(pc).view
     if view is not None:
         view(PC_(pc), Viewer_(vwr))
@@ -1523,6 +1544,7 @@ cdef PetscErrorCode KSPView_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"KSPView_Python")
+    viewcontext(PyKSP(ksp), vwr)
     cdef view = PyKSP(ksp).view
     if view is not None:
         view(KSP_(ksp), Viewer_(vwr))
@@ -1861,6 +1883,7 @@ cdef PetscErrorCode SNESView_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"SNESView_Python")
+    viewcontext(PySNES(snes), vwr)
     cdef view = PySNES(snes).view
     if view is not None:
         view(SNES_(snes), Viewer_(vwr))
@@ -2202,6 +2225,7 @@ cdef PetscErrorCode TSView_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"TSView_Python")
+    viewcontext(PyTS(ts), vwr)
     cdef view = PyTS(ts).view
     if view is not None:
         view(TS_(ts), Viewer_(vwr))
@@ -2538,7 +2562,7 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
     CHKERR( KSPRegister ( KSPPYTHON,  path, b"KSPCreate_Python",  KSPCreate_Python  ) )
     CHKERR( SNESRegister( SNESPYTHON, path, b"SNESCreate_Python", SNESCreate_Python ) )
     CHKERR( TSRegister  ( TSPYTHON,   path, b"TSCreate_Python",   TSCreate_Python   ) )
-    
+
     # Python monitors
     global PetscPythonMonitorSet_C
     PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
