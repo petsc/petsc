@@ -335,11 +335,11 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc e
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
                             ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
-TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
+TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm ex37.PETSc runex37 ex37.rm
 TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm 

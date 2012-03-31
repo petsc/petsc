@@ -17,8 +17,8 @@ ex3: ex3.o   chkopts
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3
 
-TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_C_X11_MPIUNI = ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X_MPIUNI = ex3.PETSc runex3 ex3.rm
 
 include ${PETSC_DIR}/conf/test
 

@@ -8,9 +8,9 @@
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
-testexamples_C_X11: ${TESTEXAMPLES_C_X11}
+testexamples_C_X: ${TESTEXAMPLES_C_X}
 testexamples_Fortran: ${TESTEXAMPLES_FORTRAN}
-testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUNI}
+testexamples_C_X_MPIUni: ${TESTEXAMPLES_C_X_MPIUNI}
 testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX}
 testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX}
 testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH}
@@ -56,7 +56,7 @@ testexamples_CUSP: ${TESTEXAMPLES_CUSP}
 testexamples_PTHREAD: ${TESTEXAMPLES_PTHREAD}
 testexamples_PTHREADCLASSES: ${TESTEXAMPLES_PTHREADCLASSES}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
-testexamples_X11:
+testexamples_X:
 testexamples_MPE:
 testexamples_ESSL:
 testexamples_MPI:
@@ -72,12 +72,12 @@ buildexamples_BLASLAPACK:
 	-@${OMAKE} testexamples_BLASLAPACK TESTEXAMPLES_BLASLAPACK=`echo ${TESTEXAMPLES_BLASLAPACK} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_C: 
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_C_X11: 
-	-@${OMAKE} testexamples_C_X11 TESTEXAMPLES_C_X11=`echo ${TESTEXAMPLES_C_X11} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_X: 
+	-@${OMAKE} testexamples_C_X TESTEXAMPLES_C_X=`echo ${TESTEXAMPLES_C_X} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_Fortran:
 	-@${OMAKE} testexamples_Fortran TESTEXAMPLES_FORTRAN=`echo ${TESTEXAMPLES_FORTRAN} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_C_X11_MPIUni:
-	-@${OMAKE} testexamples_C_X11_MPIUni TESTEXAMPLES_C_X11_MPIUNI=`echo ${TESTEXAMPLES_C_X11_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_X_MPIUni:
+	-@${OMAKE} testexamples_C_X_MPIUni TESTEXAMPLES_C_X_MPIUNI=`echo ${TESTEXAMPLES_C_X_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_C_Complex:
 	-@${OMAKE} testexamples_C_Complex TESTEXAMPLES_C_COMPLEX=`echo ${TESTEXAMPLES_C_COMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_6:
@@ -110,8 +110,8 @@ buildexamples_ADIFOR:
 	-@${OMAKE} testexamples_ADIFOR TESTEXAMPLES_ADIFOR=`echo ${TESTEXAMPLES_ADIFOR} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ADIC:
 	-@${OMAKE} testexamples_ADIC TESTEXAMPLES_ADIC=`echo ${TESTEXAMPLES_ADIC} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_X11:
-	-@${OMAKE} testexamples_X11 TESTEXAMPLES_X11=`echo ${TESTEXAMPLES_X11} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_X:
+	-@${OMAKE} testexamples_X TESTEXAMPLES_X=`echo ${TESTEXAMPLES_X} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_MPE:
 	-@${OMAKE} testexamples_MPE TESTEXAMPLES_MPE=`echo ${TESTEXAMPLES_MPE} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ESSL:

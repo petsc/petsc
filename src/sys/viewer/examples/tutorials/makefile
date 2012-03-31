@@ -25,8 +25,8 @@ runex1f90:
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X_MPIUNI = 
 
 include ${PETSC_DIR}/conf/test
 

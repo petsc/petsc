@@ -400,13 +400,13 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
                               ex37.PETSc runex37 runex37_2 ex37.rm ex38.PETSc runex38 ex38.rm
-TESTEXAMPLES_C_X11	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
+TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
                               runex30f ex30f.rm 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm 
-TESTEXAMPLES_C_X11_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
+TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
 
 include ${PETSC_DIR}/conf/test

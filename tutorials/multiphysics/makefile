@@ -101,12 +101,12 @@ runmp_10:
 	   ${RM} -f mp_10.tmp
 
 TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 runmp_5 runmp_6 runmp_7 runmp_8 runmp_9 runmp_10 mp.rm
-TESTEXAMPLES_C_X11	       = 
+TESTEXAMPLES_C_X	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
 TESTEXAMPLES_FORTRAN_MPIUNI    = 
-TESTEXAMPLES_C_X11_MPIUNI      = 
+TESTEXAMPLES_C_X_MPIUNI      = 
                                  
 TESTEXAMPLES_F90	       = 
 TESTEXAMPLES_13		       = 

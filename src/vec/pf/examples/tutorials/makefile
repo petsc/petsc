@@ -17,9 +17,9 @@ ex1: ex1.o  chkopts
 #--------------------------------------------------------------------------
 
 TESTEXAMPLES_C		    = 
-TESTEXAMPLES_C_X11	    = 
+TESTEXAMPLES_C_X	    = 
 TESTEXAMPLES_FORTRAN	    = 
-TESTEXAMPLES_C_X11_MPIUNI   = 
+TESTEXAMPLES_C_X_MPIUNI   = 
 TESTEXAMPLES_FORTRAN_MPIUNI = 
 TESTEXAMPLES_F90	    = 
 TESTEXAMPLES_13		    = 

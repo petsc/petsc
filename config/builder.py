@@ -1429,7 +1429,7 @@ class PETScMaker(script.Script):
    if sourceMap['Objects']:
      packageNames = set([p.name for p in self.framework.packages])
      for obj in sourceMap['Objects']:
-       # TESTEXAMPLES_C_X11 = ex3.PETSc runex3 ex3.rm
+       # TESTEXAMPLES_C_X = ex3.PETSc runex3 ex3.rm
        # .PETSc: filters out messages from build
        # .rm: cleans up test
        executable = os.path.splitext(obj)[0]

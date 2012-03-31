@@ -217,9 +217,9 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1_euler_4 runex1_euler_5 \
                             runex4_7 ex4.rm 
 
 testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
-TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_C_X	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc ex1f.rm
-TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_C_X_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
 
 include ${PETSC_DIR}/conf/test

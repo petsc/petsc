@@ -798,11 +798,11 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm 
-TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
+TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm 
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm 
-TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \

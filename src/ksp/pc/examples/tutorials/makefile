@@ -25,7 +25,7 @@ runex1:
 	-@${RM} -f ex1.tmp
 
 TESTEXAMPLES_C	   = ex1.PETSc runex1 ex1.rm 
-TESTEXAMPLES_C_X11 = ex2.PETSc ex2.rm
+TESTEXAMPLES_C_X = ex2.PETSc ex2.rm
 
 include ${PETSC_DIR}/conf/test
 

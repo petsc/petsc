@@ -96,9 +96,9 @@ runex7:
 	   ${RM} -f ex7_1.tmp
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
                             ex4.PETSc runex4 runex4_2 ex4.rm  ex7.PETSc runex7 ex7.rm
-TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_C_X	  = 
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc runex4f runex4f_2 ex4f.rm
-TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_C_X_MPIUNI = 
 TESTEXAMPLES_C3		  = 
 
 include ${PETSC_DIR}/conf/test

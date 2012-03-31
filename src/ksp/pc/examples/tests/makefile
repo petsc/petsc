@@ -83,9 +83,9 @@ runex8f:
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc runex4 ex4.rm 
-TESTEXAMPLES_C_X11	  = ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN	  = ex8f.PETSc runex8f ex8f.rm
-TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
+TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
 
 include ${PETSC_DIR}/conf/test

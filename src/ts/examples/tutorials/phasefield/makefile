@@ -38,6 +38,6 @@ biharmonic3: biharmonic3.o  chkopts
 
 
 TESTEXAMPLES_C		  = potentials.PETSc potentials.rm  heat.PETSc heat.rm biharmonic.PETSc biharmonic.rm biharmonic2.PETSc biharmonic2.rm
-TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_C_X	  = 
 
 include ${PETSC_DIR}/conf/test

@@ -117,8 +117,8 @@ build:
 #
 test: 
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
-testx11: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx11_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx11.log
+testx: 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
@@ -127,11 +127,11 @@ test_build:
 	@if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
-testx11_build:
+testx_build:
 	-@echo "Running graphics test example to verify correct X11 installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx11ex19
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
@@ -162,7 +162,7 @@ testexamples_uni: info
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X11_MPIUni  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
 testfortran_uni: info 

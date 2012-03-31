@@ -1772,7 +1772,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex151.PETSc runex151 runex151_2 runex151_3 ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm  ex164.PETSc runex164 ex164.rm 
-TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
+TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
                                  ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
@@ -1788,7 +1788,7 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
                                  ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
-TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
+TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
                                  ex5.rm ex6.PETSc runex6 ex6.rm ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm \
                                  ex15.PETSc runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex35.PETSc \
                                  runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm \

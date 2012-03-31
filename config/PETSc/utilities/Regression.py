@@ -35,13 +35,13 @@ class Configure(config.base.Configure):
     rjobs = []    # Jobs can only be run with real numbers; i.e. NOT  complex
     ejobs = []    # Jobs that require an external package install (also cannot work with complex)
     if self.mpi.usingMPIUni:
-      jobs.append('C_X11_MPIUni')
+      jobs.append('C_X_MPIUni')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
       if self.x.found:
-        jobs.append('C_X11')
+        jobs.append('C_X')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
         if self.compilers.fortranIsF90:

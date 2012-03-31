@@ -40,8 +40,8 @@ distclean: clean
 
 .PHONY: distclean
 
-TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X_MPIUNI = 
 
 
 

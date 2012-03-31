@@ -725,7 +725,7 @@ testex19: ex19.PETSc
         ${RM} -f ex19_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 
-testx11ex19: ex19.PETSc
+testxex19: ex19.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
            echo "your systems batch system"; \
@@ -938,7 +938,7 @@ testex50: ex50.PETSc
         ${RM} -f ex50_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
 
-testx11ex50: ex50.PETSc
+testxex50: ex50.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex50 with" ; \
            echo "your systems batch system"; \
@@ -987,12 +987,12 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
                                  ex50.PETSc runex50_6 runex50_fas runex50_bjacobi ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
-TESTEXAMPLES_C_X11	       = 
+TESTEXAMPLES_C_X	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc \
+TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc \
                                  runex6 runex6_2 ex6.rm  ex14.PETSc ex14.rm 
 TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
 TESTEXAMPLES_13		       = 
@@ -1000,7 +1000,7 @@ TESTEXAMPLES_MATLAB_ENGINE     =
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm  \
-                                 ex50.PETSc runex50_3 runex50_4 runex50_fieldsplit_redundant ex50.rm 
+                                 ex50.PETSc runex50_3 runex50_4  ex50.rm 
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc  ex50.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex50.PETSc runex50_11 runex50_12 ex50.rm
