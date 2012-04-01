@@ -65,7 +65,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
-  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   ierr = PetscFree(nidx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);

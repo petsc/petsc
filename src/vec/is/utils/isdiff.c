@@ -88,7 +88,7 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
 
-  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -297,7 +297,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
 
-  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

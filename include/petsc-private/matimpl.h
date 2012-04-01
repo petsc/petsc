@@ -849,7 +849,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 /*
   Free memories used by the list
 */
-#define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
+#define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
 /* Routines below are used for incomplete matrix factorization */
 /* 
@@ -1120,7 +1120,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 /*
   Free memories used by the list
 */
-#define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
+#define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>
@@ -1266,7 +1266,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 
   PetscFunctionBegin;
   ierr = PetscFree(lnk);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(bt);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

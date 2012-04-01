@@ -665,7 +665,7 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
   if (rank < size-1) {
     ierr = MPI_Send(mask,PetscBTLength(n_vert),MPI_CHAR,rank+1,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
-  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&mask);CHKERRQ(ierr);
 
   gdata->localvert = localvert;
   gdata->nlocal    = nlocal;

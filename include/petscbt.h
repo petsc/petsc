@@ -8,8 +8,8 @@ PETSC_EXTERN_CXX_BEGIN
 
      Level: advanced
 
-     PetscBTCreate(m,bt)        - creates a bit array with enough room to hold m values
-     PetscBTDestroy(bt)         - destroys the bit array
+     PetscBTCreate(m,&bt)       - creates a bit array with enough room to hold m values
+     PetscBTDestroy(&bt)        - destroys the bit array
      PetscBTMemzero(m,bt)       - zeros the entire bit array (sets all values to false)
      PetscBTSet(bt,index)       - sets a particular entry as true
      PetscBTClear(bt,index)     - sets a particular entry as false
@@ -39,9 +39,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTMemzero(PetscInt m,PetscBT array)
   return PetscMemzero(array,sizeof(char)*((m)/PETSC_BITS_PER_BYTE+1));
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTDestroy(PetscBT array)
+PETSC_STATIC_INLINE PetscErrorCode PetscBTDestroy(PetscBT *array)
 {
-  return PetscFree(array);
+  return PetscFree(*array);
 }
 
 PETSC_STATIC_INLINE PetscInt PetscBTLookup(PetscBT array,PetscInt index) 
@@ -54,15 +54,15 @@ return  (_BT_idx        = (index)/PETSC_BITS_PER_BYTE,
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTView(PetscInt m,const PetscBT bt,PetscViewer viewer)
 {
-  PetscInt __i; PetscErrorCode _8_ierr; 
-  PetscViewer __viewer = viewer; 
+  PetscInt       i;
+  PetscErrorCode ierr; 
 
-  if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;
-  _8_ierr = PetscViewerASCIISynchronizedAllow(__viewer,PETSC_TRUE);CHKERRQ(_8_ierr);
-  for (__i=0; __i<m; __i++) { 
-    _8_ierr = PetscViewerASCIISynchronizedPrintf(__viewer,"%D %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);
-  }  _8_ierr = PetscViewerFlush(__viewer);CHKERRQ(_8_ierr);
-  _8_ierr = PetscViewerASCIISynchronizedAllow(__viewer,PETSC_FALSE);CHKERRQ(_8_ierr);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  for (i=0; i<m; i++) { 
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %d\n",i,PetscBTLookup(bt,i));CHKERRQ(ierr);
+  }  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   return 0;
 }
 
