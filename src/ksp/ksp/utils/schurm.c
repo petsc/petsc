@@ -271,24 +271,25 @@ PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,Ma
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
 
-  ierr      = MatDestroy(&Na->A);CHKERRQ(ierr);
-  ierr      = MatDestroy(&Na->Ap);CHKERRQ(ierr);
-  ierr      = MatDestroy(&Na->B);CHKERRQ(ierr);
-  ierr      = MatDestroy(&Na->C);CHKERRQ(ierr);
-  ierr      = MatDestroy(&Na->D);CHKERRQ(ierr);
-
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)Ap);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
-  Na->A     = A;
-  Na->Ap    = Ap;
-  Na->B     = B;
-  Na->C     = C;
-  Na->D     = D;
+  ierr   = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)Ap);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
   if (D) {
     ierr = PetscObjectReference((PetscObject)D);CHKERRQ(ierr);
   }
+
+  ierr   = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr   = MatDestroy(&Na->Ap);CHKERRQ(ierr);
+  ierr   = MatDestroy(&Na->B);CHKERRQ(ierr);
+  ierr   = MatDestroy(&Na->C);CHKERRQ(ierr);
+  ierr   = MatDestroy(&Na->D);CHKERRQ(ierr);
+
+  Na->A  = A;
+  Na->Ap = Ap;
+  Na->B  = B;
+  Na->C  = C;
+  Na->D  = D;
 
   ierr = KSPSetOperators(Na->ksp,A,Ap,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
