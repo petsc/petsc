@@ -28,6 +28,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm,SNESDM sdm,DM_DA_SNES **dmdasnes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *dmdasnes = PETSC_NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DM_DA_SNES,&sdm->data);CHKERRQ(ierr);
     sdm->destroy = SNESDMDestroy_DMDA;
