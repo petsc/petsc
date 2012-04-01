@@ -1746,7 +1746,7 @@ extern PetscErrorCode  PetscScalarView(PetscInt,const PetscScalar[],PetscViewer)
 #endif
 
 
-#if defined(PETSC_HAVE_XMMINTRIN_H)
+#if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
 #include <xmmintrin.h>
 #endif
 #if defined(PETSC_HAVE_STDINT_H)

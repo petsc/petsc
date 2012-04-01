@@ -485,7 +485,7 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
+    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      
