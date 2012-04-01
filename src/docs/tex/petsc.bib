@@ -2576,11 +2576,10 @@ Booktitle = "Supercomputing '95 Proceedings",
    note   = "See {\tt http://\-wwwmaths.anu.edu.au/\-\~{ }vecfem/}"
 }
 
-@misc {
-   atlas-web-page,
-   author = "R. Clint {Whaley et al.}",
-   title  = "{ATLAS Web Page}",
-   note   = "\url{http://math-atlas.sourceforge.net}"
+@misc{atlas-web-page,
+   author = {R. Clint {Whaley et al.}},
+   title  = {{ATLAS Web Page}},
+   howpublished = {\url{http://math-atlas.sourceforge.net}}
 }
 
 @misc {fenics-web-page,
@@ -6150,8 +6149,245 @@ keywords = "Parallelization"
 }
 
 @Article{Elemental2012,
-  author =       "Jack Poulson and Bryan Marker and Jeff R. Hammond and Nichols A. Romero and Robert {v}an~{d}e~{G}eijn",
-  title =        "Elemental: A New Framework for Distributed Memory Dense Matrix Computations",
-  journal =      "{ACM} Transactions on Mathematical Software",
-  note =         "submitted"
+  author  = {Jack Poulson and Bryan Marker and Jeff R. Hammond and Nichols A. Romero and Robert {v}an~{d}e~{G}eijn},
+  title   = {Elemental: A New Framework for Distributed Memory Dense Matrix Computations},
+  journal = {{ACM} Transactions on Mathematical Software},
+  note    = {submitted},
+  year    = {2012}
+}
+
+@misc{elemental-web-page,
+  author = {Jack Poulson},
+  title  = {Elemental: Distributed memory dense linear algebra},
+  howpublished = {\url{http://code.google.com/p/elemental/}},
+  url    = {http://code.google.com/p/elemental/},
+  year   = {2012}
+}
+
+@book{ScalesReport,
+  title     = {A Science-based Case for Large-scale Simulation},
+  editor    = {D. E. Keyes},
+  publisher = {U.S. Department of Energy},
+  year      = {2004},
+  url       = {http://www.pnl.gov/scales}
+}
+
+@InProceedings{Cilk95,
+address	= {Santa Barbara, California},
+author	= {Robert D. Blumofe and Christopher F. Joerg and Bradley C. Kuszmaul and Charles E. Leiserson and Keith H. Randall and Yuli Zhou},
+booktitle	= {Proceedings of the Fifth ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming (PPoPP)},
+day	 = {19--21},
+month	 = jul,
+pages	 = {207--216},
+title	 = {{Cilk}: An Efficient Multithreaded Runtime System},
+year	 = {1995}
+}
+
+@misc{valgrind-web-page,
+  author = {Julian Seward, et.al.},
+  title  = {Valgrind},
+  url    = {http://valgrind.org/},
+  hoepublished = {\url{http://valgrind.org/}},
+  year   = {2012}
+}
+
+@article{BLAS79,
+  author  = {C.~L. Lawson and R.~J. Hanson and D. Kincaid and F.~T. Krogh},
+  title   = {Basic linear algebra subprograms for Fortran usage},
+  journal = {ACM Transactions on Mathematical Software},
+  volume  = {5},
+  pages   = {308--323},
+  year    = {1979}
+}
+
+@techreport{LAPACK90,
+  author      = {E. Anderson and Z. Bai and C. Bischof and J. Demmel and J. Dongarra and J. Du~Croz and A. Greenbaum and S. Hammarling and A. McKenney and D. Sorensen},
+  title       = {{LAPACK}: A portable linear algebra library for high-performance computers},
+  institution = {Computer Science Dept., University of Tennessee},
+  number      = {CS-90-105},
+  month       = {May},
+  year        = {1990}
+}
+
+@techreport{NvidiaFermi,
+  author      = {NVIDIA},
+  title       = {{NVIDIA}'s Next Generation {CUDA} Compute Architecture: {F}ermi},
+  institution = {NVIDIA},
+  year        = {2009}
+}
+
+@misc{IntelMIC,
+  author       = {Many Core Group, Cambridge University},
+  title        = {Intel Many Integrated Core Architecture},
+  howpublished = {\url{http://www.many-core.group.cam.ac.uk/ukgpucc2/talks/Elgar.pdf}},
+  month        = {December},
+  year         = {2010}
+}
+
+@article{AbuSufahKuckLawrie81,
+  author = {W. Abu-Sufah and D.~J. Kuck and D.~H. Lawrie},
+  title  = {On the Performance Enhancement of Paging Systems Through Program Analysis and Transformations},
+  journal = {IEEE Trans. Comput.},
+  volume  = {30},
+  number  = {5},
+  pages   = {341--356},
+  year    = {1981}
+}
+
+@inproceedings{GuoBikshandiFraguelaGarzaranPadua08,
+ author = {Guo, Jia and Bikshandi, Ganesh and Fraguela, Basilio B. and Garzaran, Maria J. and Padua, David},
+ title = {Programming with tiles},
+ booktitle = {Proceedings of the 13th ACM SIGPLAN Symposium on Principles and practice of parallel programming},
+ series = {PPoPP '08},
+ year = {2008},
+ isbn = {978-1-59593-795-7},
+ location = {Salt Lake City, UT, USA},
+ pages = {111--122},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/1345206.1345225},
+ doi = {10.1145/1345206.1345225},
+ acmid = {1345225},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@article{Strout04,
+    Journal = {International Journal of High Performance Computing Applications},
+    Year = {2004},
+    Title = {Sparse Tiling for Stationary Iterative Methods},
+    Month = {February},
+    Publisher = {Sage Publications},
+    Pages = {95-114},
+    Volume = {18},
+    Number = {1},
+    Author = {Michelle Mills Strout and Larry Carter and Jeanne Ferrante and Barbara Kreaseck}
+}
+
+@misc{OpenCLStandard,
+   author       = {Khronos Group},
+   title        = {{OpenCL} 1.2 Specification},
+   howpublished = {\url{http://www.khronos.org/registry/cl/specs/opencl-1.2.pdf}},
+   url          = {http://www.khronos.org/registry/cl/specs/opencl-1.2.pdf},
+   year         = {2011}
+}
+
+@misc{STLGuide,
+   author       = {SGI},
+   title        = {Standard Template Library Programmer's Guide},
+   howpublished = {\url{http://www.sgi.com/tech/stl/}},
+   url          = {http://www.sgi.com/tech/stl/},
+   year         = {2011}
+}
+
+@book{Stepanov09,
+  author    = {Alexander Stepanov and Paul McJones},
+  title     = {Elements of Programming},
+  publisher = {Addison-Wesley},
+  isbn      = {978-0-321-63537-2},
+  year      = {2009}
+}
+
+@Article{BangerthHartmannKanschat2007,
+	  author = 	 {W. Bangerth and R. Hartmann and G. Kanschat},
+	  title = 	 {{deal.II} -- a General Purpose Object Oriented Finite Element Library},
+	  journal = 	 {ACM Trans. Math. Softw.},
+	  year = 	 2007,
+	  volume = 	 33,
+	  number = 	 4,
+	  pages = 	 {24/1--24/27}
+}
+
+@misc{dealii-web-page,
+   author       = {W. Bangerth and R. Hartmann and G. Kanschat},
+   title        = {{deal.II}},
+   howpublished = {\url{http://www.dealii.org/}},
+   url          = {http://www.dealii.org/},
+   year         = {2012}
+}
+
+@article{Siek2012,
+  author    = {Jeremy G. Siek},
+  title     = {The C++0x "Concepts" Effort},
+  journal   = {arXiv},
+  year      = {2012},
+  url       = {http://arxiv.org/abs/1201.0027},
+}
+
+@misc{sharpclaw,
+note = {\url{http://numerics.kaust.edu.sa/sharpclaw}},
+author = {Ketcheson, D. I. and Parsani, M.},
+keywords = {clawpack,finite volumes,godunov type methods,high order methods,hyperbolic PDEs,sharpclaw,software},
+mendeley-tags = {clawpack,finite volumes,godunov type methods,high order methods,hyperbolic PDEs,sharpclaw,software},
+title = {{SharpClaw software}},
+year = {2011}
+}
+
+@misc{clawpack45,
+note = {\url{http://www.clawpack.org}},
+author = {LeVeque, R. J. and Berger, M. J.},
+keywords = {clawpack,finite volumes,hyperbolic PDEs,software},
+mendeley-tags = {clawpack,finite volumes,hyperbolic PDEs,software},
+title = {{Clawpack Software version 4.5}},
+url = {www.clawpack.org},
+year = {2011}
+}
+
+@article{Nilsen2010,
+archivePrefix = {arXiv},
+arxivId = {arXiv:1002.0705v1},
+author = {Nilsen, J.K. and Cai, X. and H{\o}yland, Bj{\o} rn and Langtangen, H. P.},
+eprint = {arXiv:1002.0705v1},
+file = {:Users/ketch/Documents/Mendeley Desktop/Nilsen et al/2010 - Simplifying the parallelization of scientific codes by a function-centric approach in Python.pdf:pdf},
+journal = {Computational Science \& Discovery},
+keywords = {parallel,programming,python,software},
+mendeley-tags = {parallel,programming,python,software},
+pages = {015003},
+publisher = {IOP Publishing},
+title = {{Simplifying the parallelization of scientific codes by a function-centric approach in Python}},
+url = {http://iopscience.iop.org/1749-4699/3/1/015003},
+volume = {3},
+year = {2010}
+}
+
+@book{Langtangen09,
+  author    = {Hans Petter Langtangen},
+  title     = {Python Scripting for Computational Science},
+  publisher = {Springer},
+  series    = {Texts in Computational Science and Engineering},
+  pages     = {784},
+  isbn      = {3540739157},
+  year      = {2009}
+}
+
+@book{NumpyGuide,
+  author    = {Travis E. Oliphant},
+  title     = {Guide to Numpy},
+  publisher = {Trelgol},
+  year      = {2008}
+}
+
+@misc{PyCUDA,
+   author       = {Andreas Kl\"ockner},
+   title        = {{PyCUDA}},
+   howpublished = {\url{http://mathema.tician.de/software/pycuda}},
+   year         = {2011}
+}
+
+@misc{PyOpenCL,
+   author       = {Andreas Kl\"ockner},
+   title        = {{PyOpenCL}},
+   howpublished = {\url{http://mathema.tician.de/software/pyopencl}},
+   year         = {2011}
+}
+@article{Klockner2012,
+title = "PyCUDA and PyOpenCL: A scripting-based approach to GPU run-time code generation",
+journal = "Parallel Computing",
+volume = "38",
+number = "3",
+pages = "157 - 174",
+year = "2012",
+issn = "0167-8191",
+doi = "10.1016/j.parco.2011.09.001",
+url = "http://www.sciencedirect.com/science/article/pii/S0167819111001281",
+author = "Andreas Klöckner and Nicolas Pinto and Yunsup Lee and Bryan Catanzaro and Paul Ivanov and Ahmed Fasih",
 }
