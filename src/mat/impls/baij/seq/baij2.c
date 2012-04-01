@@ -23,7 +23,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
 
   if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
-  ierr = PetscBTCreate(m,table);CHKERRQ(ierr);
+  ierr = PetscBTCreate(m,&table);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
 

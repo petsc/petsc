@@ -446,7 +446,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
   mem_estimate = 3*((total_sz > max1 ? total_sz : max1)+1);
   ierr         = PetscMalloc(mem_estimate*sizeof(PetscInt),&xdata[0]);CHKERRQ(ierr);
   ++no_malloc;
-  ierr         = PetscBTCreate(m,xtable);CHKERRQ(ierr);
+  ierr         = PetscBTCreate(m,&xtable);CHKERRQ(ierr);
   ierr         = PetscMemzero(isz1,nrqr*sizeof(PetscInt));CHKERRQ(ierr);
   
   ct3 = 0;

@@ -605,7 +605,7 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
   /*
       Allocated space to store bit-array indicting vertices marked
   */
-  ierr = PetscBTCreate(n_vert,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(n_vert,&mask);CHKERRQ(ierr);
 
   /*
      All processors except last can have a maximum of n_vert/size vertices assigned

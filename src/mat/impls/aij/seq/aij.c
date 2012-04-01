@@ -2227,7 +2227,7 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
   if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"illegal negative overlap value used");
 
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(m,table);CHKERRQ(ierr);
+  ierr = PetscBTCreate(m,&table);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) {
     /* Initialize the two local arrays */

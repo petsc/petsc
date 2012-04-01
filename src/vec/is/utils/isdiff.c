@@ -57,7 +57,7 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
   } else {
     imin = imax = 0;
   }
-  ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;
@@ -275,7 +275,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   }
   ierr = PetscMalloc((n1+n2)*sizeof(PetscInt),&iout);CHKERRQ(ierr);
   nout = 0;
-  ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;

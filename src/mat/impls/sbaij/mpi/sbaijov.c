@@ -41,7 +41,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   } else { /* implementation using modified BAIJ routines */
     
   ierr = PetscMalloc((Mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(Mbs,table);CHKERRQ(ierr); /* for column search */
+  ierr = PetscBTCreate(Mbs,&table);CHKERRQ(ierr); /* for column search */
   ierr = PetscMalloc2(is_max+1,PetscBool,&allcolumns,is_max+1,PetscBool,&allrows);CHKERRQ(ierr);
 
   /* Create is_row */
@@ -341,7 +341,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   
   ierr = PetscMalloc((len+1)*sizeof(PetscInt),&odata1);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt**),&odata2_ptr);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(Mbs,otable);CHKERRQ(ierr);
+  ierr = PetscBTCreate(Mbs,&otable);CHKERRQ(ierr);
 
   len_max = ois_max*(Mbs+1);  /* max space storing all is[] for each receive */
   len_est = 2*len_max; /* estimated space of storing is[] for all receiving messages */
@@ -498,7 +498,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
   rstart = c->rstartbs;
   is_max = data[0];
 
-  ierr = PetscBTCreate(Mbs,table0);CHKERRQ(ierr);
+  ierr = PetscBTCreate(Mbs,&table0);CHKERRQ(ierr);
   
   nidx[0] = is_max; 
   idx_i   = data + is_max + 1; /* ptr to input is[0] array */

@@ -43,7 +43,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
+  ierr = PetscBTCreate(Nbs,&table);CHKERRQ(ierr);
 #endif
   for (i=0; i<imax; i++) {
     isz  = 0;

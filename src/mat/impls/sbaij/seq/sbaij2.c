@@ -21,10 +21,10 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   ai  = a->i;
   aj  = a->j;
   bs  = A->rmap->bs;
-  ierr = PetscBTCreate(mbs,table_out);CHKERRQ(ierr);
+  ierr = PetscBTCreate(mbs,&table_out);CHKERRQ(ierr);
   ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
-  ierr = PetscBTCreate(mbs,table_in);CHKERRQ(ierr);
+  ierr = PetscBTCreate(mbs,&table_in);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) { /* for each is */
     isz  = 0;
