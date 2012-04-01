@@ -665,15 +665,16 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          cnt;
+  PetscInt          cnt,bs;
 
   PetscFunctionBegin;
   CHKMEMQ;
-  ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
-
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
+      ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+      if (jac->bs > 0 && bs != jac->bs) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %D does not match fieldsplit blocksize %D",bs,jac->bs);
+      ierr = VecGetBlockSize(y,&bs);CHKERRQ(ierr);
+      if (jac->bs > 0 && bs != jac->bs) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %D does not match fieldsplit blocksize %D",bs,jac->bs);
       ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
       while (ilink) {
         ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
@@ -739,14 +740,16 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
+  PetscInt          bs;
 
   PetscFunctionBegin;
   CHKMEMQ;
-  ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
-
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
+      ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+      if (jac->bs > 0 && bs != jac->bs) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %D does not match fieldsplit blocksize %D",bs,jac->bs);
+      ierr = VecGetBlockSize(y,&bs);CHKERRQ(ierr);
+      if (jac->bs > 0 && bs != jac->bs) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %D does not match fieldsplit blocksize %D",bs,jac->bs);
       ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
       while (ilink) {
 	ierr = KSPSolveTranspose(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
