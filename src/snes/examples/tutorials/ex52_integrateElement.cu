@@ -219,15 +219,15 @@ __global__ void integrateElementQuadrature(int N_cb, realType *coefficients, rea
           e_i = f_1[(cell*N_q+q)*N_comp+cidx].x;break;
         case 1:
           e_i = f_1[(cell*N_q+q)*N_comp+cidx].y;break;
-        case 2:
-          e_i = f_1[(cell*N_q+q)*N_comp+cidx].z;break;
+        //case 2:
+          //e_i = f_1[(cell*N_q+q)*N_comp+cidx].z;break;
         default:
           e_i = 0.0;
         }
       }
       // Check that u_i is being used correctly
       //e_i = u_i[cell*N_bt+bidx];
-      //e_i = detJ[cell];
+      e_i = detJ[cell];
       //e_i = coefficients[Coffset+(batch*N_sbc+c)*N_t+tidx];
       //e_i = Coffset+(batch*N_sbc+c)*N_t+tidx;
       //e_i = cell*N_bt+bidx;
