@@ -1,4 +1,5 @@
 /* TODOLIST
+   DofSplitting and DM attached to pc.
    Exact solvers: Solve local saddle point directly for very hard problems
    Inexact solvers: global preconditioner application is ready, ask to developers (Jed?) on how to best implement Dohrmann's approach (PCSHELL?)
    change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
@@ -250,12 +251,12 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Destroy IS if already set */
+  /* Destroy ISs if they were already set */
   for(i=0;i<pcbddc->n_ISForDofs;i++) {
     ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
-    ierr = ISDuplicate(ISForDofs[i],&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
-    ierr = ISCopy(ISForDofs[i],pcbddc->ISForDofs[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
+
   /* allocate space then copy ISs */
   ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofs);CHKERRQ(ierr);
   for(i=0;i<n_is;i++) {
@@ -263,6 +264,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     ierr = ISCopy(ISForDofs[i],pcbddc->ISForDofs[i]);CHKERRQ(ierr);
   }
   pcbddc->n_ISForDofs=n_is;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
