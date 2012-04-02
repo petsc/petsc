@@ -66,10 +66,10 @@ PetscLogDouble  petsc_gather_ct       = 0.0; /* The number of gathers and gather
 PetscLogDouble  petsc_scatter_ct      = 0.0; /* The number of scatters and scattervs */
 
 /* Logging functions */
-PetscErrorCode  (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
-PetscErrorCode  (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
-PetscErrorCode  (*_PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-PetscErrorCode  (*_PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode  (*PetscLogPHC)(PetscObject) = PETSC_NULL;
+PetscErrorCode  (*PetscLogPHD)(PetscObject) = PETSC_NULL;
+PetscErrorCode  (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode  (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
 FILE          *petsc_tracefile       = PETSC_NULL;
@@ -138,8 +138,8 @@ PetscErrorCode  PetscLogDestroy(void)
   petsc_gather_ct       = 0.0; 
   petsc_scatter_ct      = 0.0; 
   PETSC_LARGEST_EVENT  = PETSC_EVENT;
-  _PetscLogPHC = PETSC_NULL;
-  _PetscLogPHD = PETSC_NULL;
+  PetscLogPHC = PETSC_NULL;
+  PetscLogPHD = PETSC_NULL;
   petsc_tracefile       = PETSC_NULL;
   petsc_tracelevel      = 0;
   petsc_traceblanks     = "                                                                                                    ";
@@ -171,8 +171,8 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
             PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
   PetscFunctionBegin;
-  _PetscLogPLB = b;
-  _PetscLogPLE = e;
+  PetscLogPLB = b;
+  PetscLogPLE = e;
   PetscFunctionReturn(0);
 }
 
@@ -211,8 +211,8 @@ PetscErrorCode  PetscLogBegin_Private(void)
   if (petsc_logObjects) {
     ierr = PetscMalloc(petsc_maxObjects * sizeof(Object), &petsc_objects);CHKERRQ(ierr);
   }
-  _PetscLogPHC = PetscLogObjCreateDefault;
-  _PetscLogPHD = PetscLogObjDestroyDefault;
+  PetscLogPHC = PetscLogObjCreateDefault;
+  PetscLogPHD = PetscLogObjDestroyDefault;
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);

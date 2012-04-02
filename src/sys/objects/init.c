@@ -67,14 +67,6 @@ MPI_Datatype   MPIU_2SCALAR = 0;
 MPI_Datatype   MPIU_2INT = 0;
 
 /*
-     These are needed by petscbt.h
-*/
-#include <petscbt.h>
-char      _BT_mask = ' ';
-char      _BT_c = ' ';
-PetscInt  _BT_idx  = 0;
-
-/*
        Function that is called to display all error messages
 */
 PetscErrorCode  (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
@@ -85,8 +77,9 @@ PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_
 PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 #endif
 /*
-  This is needed to turn on/off cusp synchronization */
-PetscBool   synchronizeCUSP = PETSC_FALSE;
+  This is needed to turn on/off cusp synchronization 
+*/
+PetscBool   PetscCUSPSynchronize = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -666,7 +659,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg3) flg1 = PETSC_TRUE;
   else flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cusp_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) synchronizeCUSP = PETSC_TRUE;
+  if (flg1) PetscCUSPSynchronize = PETSC_TRUE;
 #endif
 
   PetscFunctionReturn(0);

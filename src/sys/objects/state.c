@@ -75,7 +75,7 @@ PetscErrorCode  PetscObjectSetState(PetscObject obj,PetscInt state)
   PetscFunctionReturn(0);
 }
 
-PetscInt  globalmaxstate = 10;
+PetscInt  PetscObjectComposedDataMax = 10;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposedDataRegister"
@@ -99,7 +99,7 @@ PetscErrorCode  PetscObjectComposedDataRegister(PetscInt *id)
 
   PetscFunctionBegin;
   *id = globalcurrentstate++;
-  if (globalcurrentstate > globalmaxstate) globalmaxstate += 10;
+  if (globalcurrentstate > PetscObjectComposedDataMax) PetscObjectComposedDataMax += 10;
   PetscFunctionReturn(0);
 }
 
@@ -112,7 +112,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscInt*),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscInt*));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscReal),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscReal*),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscReal*));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscScalar),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  new_n = globalmaxstate;
+  new_n = PetscObjectComposedDataMax;
   ierr = PetscMalloc(new_n*sizeof(PetscScalar*),&new_ar);CHKERRQ(ierr);
   ierr = PetscMemzero(new_ar,new_n*sizeof(PetscScalar*));CHKERRQ(ierr);
   ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
