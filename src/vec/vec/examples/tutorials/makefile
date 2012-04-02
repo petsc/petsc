@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
-EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex15.c ex16.c ex17.c ex18.c ex19.c ex42.c ex42a.c
 EXAMPLESF	 = ex1f.F ex1f90.F ex2f.F ex3f.F ex4f.F ex4f90.F ex7f.F ex9f.F ex11f.F ex14f.F ex20f90.F90
 
@@ -15,10 +15,6 @@ include ${PETSC_DIR}/conf/rules
 ex1: ex1.o  chkopts 
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
-
-ex1e: ex1e.o  chkopts 
-	-${CLINKER} -o ex1e ex1e.o ${PETSC_VEC_LIB}
-	${RM} -f ex1e.o
 
 ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o ${PETSC_VEC_LIB}
@@ -153,16 +149,7 @@ runex1_2:
 	   if (${DIFF} output/ex1_1.out ex1_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1_2.tmp
-runex1e:
-	-@${MPIEXEC} -n 1 ./ex1e > ex1_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex1e.out ex1_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1e, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_1.tmp
-runex1e_2:
-	-@${MPIEXEC}  -n 2 ./ex1e > ex1_2.tmp 2>&1;\
-	   if (${DIFF} output/ex1e.out ex1_2.tmp) then true ;  \
-	   else echo ${PWD} ; echo "Possible problem with with ex1e_2, diffs above \n========================================="; fi ;\
-	   ${RM} -f ex1_2.tmp
+
 runex1_pthread_lockfree:
 	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_lockfree.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_pthread.out ex1_pthread_lockfree.tmp) then true; \
@@ -340,7 +327,7 @@ runex20f90:
 	   else echo ${PWD} ; echo "Possible problem with with ex20f90_1, diffs above \n========================================="; fi;\
 	   ${RM} -f ex20f90_1.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm ex1e.PETSc runex1e runex1e_2 ex1e.rm \
+TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm  \
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \
                               runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3 ex10.rm ex11.PETSc runex11 ex11.rm \
                               ex12.PETSc runex12 ex12.rm ex16.PETSc runex16 ex16.rm ex9.PETSc runex9 runex9_2 ex9.rm ex16.PETSc \

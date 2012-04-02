@@ -36,9 +36,6 @@ extern PetscErrorCode PetscCloseHistoryFile(FILE **);
 # include <../src/sys/objects/pthread/pthreadimpl.h>
 #endif
 
-/* this is used by the _, __, and ___ macros (see include/petscerror.h) */
-PetscErrorCode __gierr = 0;
-
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 
