@@ -99,7 +99,7 @@ class Installer(script.Script):
     if not self.installDir:
       print '********************************************************************'
       print 'PETSc is built without prefix option. So "make install" is not appropriate.'
-      print 'If you need a prefix install of PETsc - rerun configure with --prefix option.'
+      print 'If you need a prefix install of PETSc - rerun configure with --prefix option.'
       print '********************************************************************'
       sys.exit(1)
     return
