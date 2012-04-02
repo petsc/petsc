@@ -401,11 +401,11 @@ extern PetscErrorCode  SNESSetInitialFunctionNorm(SNES,PetscReal);
 E*/
 
 typedef enum {SNES_NORM_DEFAULT            = -1,
-              SNES_NORM_NONE               = 0,
-              SNES_NORM_FUNCTION           = 1,
-              SNES_NORM_INITIAL_ONLY       = 2,
-              SNES_NORM_FINAL_ONLY         = 3,
-              SNES_NORM_INITIAL_FINAL_ONLY = 4} SNESNormType;
+              SNES_NORM_NONE               =  0,
+              SNES_NORM_FUNCTION           =  1,
+              SNES_NORM_INITIAL_ONLY       =  2,
+              SNES_NORM_FINAL_ONLY         =  3,
+              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormType;
 extern const char *const*const SNESNormTypes;
 /*MC
     SNES_NORM_NONE - Don't compute function and its L2 norm.
