@@ -191,14 +191,8 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   PetscErrorCode ierr;
   PetscBool      sharedcolormap = PETSC_FALSE;
   XVisualInfo    vinfo;
-  int            gNumcolors;
 
   PetscFunctionBegin;
-  /* 
-     This is wrong; it needs to take the value from the visual 
-  */
-  gNumcolors = 1 << DefaultDepth(display,screen);
-
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap,PETSC_NULL);CHKERRQ(ierr);
   /*
         Need to determine if window supports allocating a private colormap,
