@@ -581,6 +581,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
     ierr = PetscOptionsBool("-snes_converged_reason","Print reason for converged or diverged","SNESSolve",snes->printreason,&snes->printreason,PETSC_NULL);CHKERRQ(ierr);
 
+    ierr = PetscOptionsEList("-snes_norm_type","SNES Norm type","SNESSetNormType",SNESNormTypes,5,"function",&indx,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = SNESSetNormType(snes,(SNESNormType)indx);CHKERRQ(ierr); }
+
     kctx = (SNESKSPEW *)snes->kspconvctx;
 
     ierr = PetscOptionsBool("-snes_ksp_ew","Use Eisentat-Walker linear system convergence test","SNESKSPSetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
@@ -1309,7 +1312,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->max_its           = 50;
   snes->max_funcs         = 10000;
   snes->norm              = 0.0;
-  snes->normtype          = SNES_NORM_DEFAULT;
+  snes->normtype          = SNES_NORM_FUNCTION;
   snes->rtol              = 1.e-8;
   snes->ttol              = 0.0;
   snes->abstol            = 1.e-50;
