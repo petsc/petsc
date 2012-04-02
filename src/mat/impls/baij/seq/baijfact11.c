@@ -141,9 +141,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
     /* invert diagonal block */
     w    = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
   }
 
@@ -159,9 +159,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
 
 /* MatLUFactorNumeric_SeqBAIJ_4 - 
      copied from MatLUFactorNumeric_SeqBAIJ_N_inplace() and manually re-implemented 
-       Kernel_A_gets_A_times_B()
-       Kernel_A_gets_A_minus_B_times_C()
-       Kernel_A_gets_inverse_A()
+       PetscKernel_A_gets_A_times_B()
+       PetscKernel_A_gets_A_minus_B_times_C()
+       PetscKernel_A_gets_inverse_A()
 */
 
 #undef __FUNCT__  
@@ -227,17 +227,17 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv = b->a + bs2*bdiag[row];      
-        /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
-        ierr = Kernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
+        /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
+        ierr = PetscKernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
   
         pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1); 
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
-          /* Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
+          /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
-          ierr = Kernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
           pv  += bs2;          
         }
         ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
@@ -257,7 +257,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    ierr = Kernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -407,9 +407,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
   }
 
@@ -483,17 +483,17 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv = b->a + bs2*bdiag[row];      
-        /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
-        ierr = Kernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
+        /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
+        ierr = PetscKernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
   
         pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1); 
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
-          /* Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
+          /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
-          ierr = Kernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
           pv  += bs2;          
         }
         ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
@@ -513,7 +513,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    ierr = Kernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -957,11 +957,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
-/*      ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
+/*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
     /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
 
@@ -1400,11 +1400,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
-/*      ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
+/*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
     /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
 
@@ -1844,11 +1844,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
-/*      ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
+/*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
     /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
 

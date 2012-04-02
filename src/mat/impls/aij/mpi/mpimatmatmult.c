@@ -357,8 +357,8 @@ typedef struct {
 } MPIAIJ_MPIDense;
 
 #undef __FUNCT__
-#define __FUNCT__ "MPIAIJ_MPIDenseDestroy"
-PetscErrorCode MPIAIJ_MPIDenseDestroy(void *ctx)
+#define __FUNCT__ "MatMPIAIJ_MPIDenseDestroy"
+PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 {
   MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense*) ctx;
   PetscErrorCode  ierr;
@@ -404,7 +404,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
 
   ierr = PetscContainerCreate(((PetscObject)A)->comm,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,contents);CHKERRQ(ierr);
-  ierr = PetscContainerSetUserDestroy(container,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,MatMPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   PetscFunctionReturn(0);

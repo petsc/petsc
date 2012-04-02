@@ -209,7 +209,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     d = ba+k*25;
     ierr = PetscMemcpy(d,dk,25*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_5(d,ipvt,work,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_5(d,ipvt,work,shift);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

@@ -5,7 +5,7 @@
       cleve moler, university of new mexico, argonne national lab.
 
       Computes the inverse of a matrix given its factors and pivots
-    calculated by LINPACKdgefa(). Performed in-place for an n by n
+    calculated by PetscLINPACKgefa(). Performed in-place for an n by n
     dense matrix.
 
        Used by the sparse factorization routines in 
@@ -16,8 +16,8 @@
 #include <petscsys.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "LINPACKdgedi"
-PetscErrorCode LINPACKdgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
+#define __FUNCT__ "PetscLINPACKgedi"
+PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
 {
     PetscInt   i__2,kb,kp1,nm1,i,j,k,l,ll,kn,knp1,jn1;
     MatScalar  *aa,*ax,*ay,tmp;

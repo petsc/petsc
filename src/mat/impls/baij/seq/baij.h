@@ -217,7 +217,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool );
 extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 
 /*
-  Kernel_A_gets_A_times_B_2: A = A * B with size bs=2
+  PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
@@ -227,7 +227,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A * B
 */
 
-#define Kernel_A_gets_A_times_B_2(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_2(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,4*sizeof(MatScalar));\
   A[0] = W[0]*B[0] + W[2]*B[1];\
@@ -237,7 +237,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_2: A = A - B * C with size bs=2
+  PetscKernel_A_gets_A_minus_B_times_C_2: A = A - B * C with size bs=2
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -246,7 +246,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_2(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_2(A,B,C) 0;\
 {\
   A[0] -= B[0]*C[0] + B[2]*C[1];\
   A[1] -= B[1]*C[0] + B[3]*C[1];\
@@ -255,7 +255,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_times_B_3: A = A * B with size bs=3
+  PetscKernel_A_gets_A_times_B_3: A = A * B with size bs=3
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
@@ -265,7 +265,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A * B
 */
 
-#define Kernel_A_gets_A_times_B_3(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_3(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,9*sizeof(MatScalar));\
   A[0] = W[0]*B[0] + W[3]*B[1] + W[6]*B[2];\
@@ -280,7 +280,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_3: A = A - B * C with size bs=3
+  PetscKernel_A_gets_A_minus_B_times_C_3: A = A - B * C with size bs=3
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -289,7 +289,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_3(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_3(A,B,C) 0;\
 {\
   A[0] -= B[0]*C[0] + B[3]*C[1] + B[6]*C[2];\
   A[1] -= B[1]*C[0] + B[4]*C[1] + B[7]*C[2];\
@@ -303,7 +303,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_times_B_4: A = A * B with size bs=4
+  PetscKernel_A_gets_A_times_B_4: A = A * B with size bs=4
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
@@ -313,7 +313,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A * B
 */
 
-#define Kernel_A_gets_A_times_B_4(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_4(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,16*sizeof(MatScalar));\
   A[0] =  W[0]*B[0]  + W[4]*B[1]  + W[8]*B[2]   + W[12]*B[3];\
@@ -335,7 +335,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_4: A = A - B * C with size bs=4
+  PetscKernel_A_gets_A_minus_B_times_C_4: A = A - B * C with size bs=4
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -344,7 +344,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_4(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_4(A,B,C) 0;\
 {\
   A[0] -=  B[0]*C[0]  + B[4]*C[1]  + B[8]*C[2]   + B[12]*C[3];\
   A[1] -=  B[1]*C[0]  + B[5]*C[1]  + B[9]*C[2]   + B[13]*C[3];\
@@ -364,7 +364,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
   A[15] -= B[3]*C[12] + B[7]*C[13] + B[11]*C[14] + B[15]*C[15];\
 }
 
-#define Kernel_A_gets_A_times_B_5(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_5(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,25*sizeof(MatScalar));\
   A[0] =  W[0]*B[0]  + W[5]*B[1]  + W[10]*B[2]   + W[15]*B[3] + W[20]*B[4];\
@@ -395,7 +395,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_5: A = A - B * C with size bs=5
+  PetscKernel_A_gets_A_minus_B_times_C_5: A = A - B * C with size bs=5
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -404,7 +404,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_5(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_5(A,B,C) 0;\
 {\
   A[0] -=  B[0]*C[0]  + B[5]*C[1]  + B[10]*C[2]   + B[15]*C[3] + B[20]*C[4];\
   A[1] -=  B[1]*C[0]  + B[6]*C[1]  + B[11]*C[2]   + B[16]*C[3] + B[21]*C[4];\
@@ -433,7 +433,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
   A[24] -=  B[4]*C[20]  + B[9]*C[21]  + B[14]*C[22]   + B[19]*C[23] + B[24]*C[24];\
 }
 
-#define Kernel_A_gets_A_times_B_6(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_6(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,36*sizeof(MatScalar));\
   A[0]  =  W[0]*B[0]   + W[6]*B[1]   + W[12]*B[2]   + W[18]*B[3]  + W[24]*B[4]  + W[30]*B[5];\
@@ -475,7 +475,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_6: A = A - B * C with size bs=6
+  PetscKernel_A_gets_A_minus_B_times_C_6: A = A - B * C with size bs=6
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -484,7 +484,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_6(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_6(A,B,C) 0;\
 {\
   A[0]  -=  B[0]*C[0]   + B[6]*C[1]   + B[12]*C[2]   + B[18]*C[3]  + B[24]*C[4]  + B[30]*C[5];\
   A[1]  -=  B[1]*C[0]   + B[7]*C[1]   + B[13]*C[2]   + B[19]*C[3]  + B[25]*C[4]  + B[31]*C[5];\
@@ -524,7 +524,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
   A[35] -=  B[5]*C[30]  + B[11]*C[31] + B[17]*C[32]  + B[23]*C[33] + B[29]*C[34] + B[35]*C[35];\
 }
 
-#define Kernel_A_gets_A_times_B_7(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_7(A,B,W) 0;\
 {\
   PetscMemcpy(W,A,49*sizeof(MatScalar));\
   A[0]  =  W[0]*B[0]   + W[7]*B[1]   + W[14]*B[2]   + W[21]*B[3]  + W[28]*B[4]  + W[35]*B[5]  + W[42]*B[6];\
@@ -579,7 +579,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_7: A = A - B * C with size bs=7
+  PetscKernel_A_gets_A_minus_B_times_C_7: A = A - B * C with size bs=7
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -588,7 +588,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_7(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_7(A,B,C) 0;\
 {\
   A[0]  -=  B[0]*C[0]   + B[7]*C[1]   + B[14]*C[2]   + B[21]*C[3]  + B[28]*C[4]  + B[35]*C[5]  + B[42]*C[6];\
   A[1]  -=  B[1]*C[0]   + B[8]*C[1]   + B[15]*C[2]   + B[22]*C[3]  + B[29]*C[4]  + B[36]*C[5]  + B[43]*C[6];\
@@ -641,7 +641,7 @@ extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
   A[48]  -=  B[6]*C[42]   + B[13]*C[43]   + B[20]*C[44]   + B[27]*C[45]  + B[34]*C[46] + B[41]*C[47]  + B[48]*C[48];\
 }
 
-#define Kernel_A_gets_A_times_B_15(A,B,W) 0;\
+#define PetscKernel_A_gets_A_times_B_15(A,B,W) 0;\
 {	\
 PetscMemcpy(W,A,225*sizeof(MatScalar)); \
 A[0] = W[0]*B[0] + W[15]*B[1] + W[30]*B[2] + W[45]*B[3] + W[60]*B[4] + W[75]*B[5] + W[90]*B[6] + W[105]*B[7] + W[120]*B[8] + W[135]*B[9] + W[150]*B[10] + W[165]*B[11] + W[180]*B[12] + W[195]*B[13] + W[210]*B[14]; \
@@ -872,7 +872,7 @@ A[224] = W[14]*B[210] + W[29]*B[211] + W[44]*B[212] + W[59]*B[213] + W[74]*B[214
 }
 
 /*
-  Kernel_A_gets_A_minus_B_times_C_15: A = A - B * C with size bs=15
+  PetscKernel_A_gets_A_minus_B_times_C_15: A = A - B * C with size bs=15
 
   Input Parameters:
 +  A,B,C - square bs by bs arrays stored in column major order
@@ -881,7 +881,7 @@ A[224] = W[14]*B[210] + W[29]*B[211] + W[44]*B[212] + W[59]*B[213] + W[74]*B[214
 .  A = A - B*C
 */
 
-#define Kernel_A_gets_A_minus_B_times_C_15(A,B,C) 0;\
+#define PetscKernel_A_gets_A_minus_B_times_C_15(A,B,C) 0;\
 {	\
 A[0] -= B[0]*C[0] + B[15]*C[1] + B[30]*C[2] + B[45]*C[3] + B[60]*C[4] + B[75]*C[5] + B[90]*C[6] + B[105]*C[7] + B[120]*C[8] + B[135]*C[9] + B[150]*C[10] + B[165]*C[11] + B[180]*C[12] + B[195]*C[13] + B[210]*C[14]; \
 A[1] -= B[1]*C[0] + B[16]*C[1] + B[31]*C[2] + B[46]*C[3] + B[61]*C[4] + B[76]*C[5] + B[91]*C[6] + B[106]*C[7] + B[121]*C[8] + B[136]*C[9] + B[151]*C[10] + B[166]*C[11] + B[181]*C[12] + B[196]*C[13] + B[211]*C[14]; \

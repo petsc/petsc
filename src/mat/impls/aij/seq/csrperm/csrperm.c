@@ -126,7 +126,7 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
   ierr = PetscMemcpy((*M)->spptr,aijperm,sizeof(Mat_SeqAIJPERM));CHKERRQ(ierr);
   /* Allocate space for, and copy the grouping and permutation info. 
    * I note that when the groups are initially determined in 
-   * SeqAIJPERM_create_perm, xgroup and nzgroup may be sized larger than 
+   * MatSeqAIJPERM_create_perm, xgroup and nzgroup may be sized larger than 
    * necessary.  But at this point, we know how large they need to be, and 
    * allocate only the necessary amount of memory.  So the duplicated matrix 
    * may actually use slightly less storage than the original! */
@@ -140,8 +140,8 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SeqAIJPERM_create_perm"
-PetscErrorCode SeqAIJPERM_create_perm(Mat A)
+#define __FUNCT__ "MatSeqAIJPERM_create_perm"
+PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
   PetscInt        m;  /* Number of rows in the matrix. */
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)(A)->data;
@@ -270,7 +270,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
   ierr = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
   /* Now calculate the permutation and grouping information. */
-  ierr = SeqAIJPERM_create_perm(A);CHKERRQ(ierr);
+  ierr = MatSeqAIJPERM_create_perm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -611,11 +611,10 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,const MatType type,MatReuse r
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
-    ierr = SeqAIJPERM_create_perm(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJPERM_create_perm(B);CHKERRQ(ierr);
   }
  
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",
-                                           "MatConvert_SeqAIJPERM_SeqAIJ",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaijperm_seqaij_C","MatConvert_SeqAIJPERM_SeqAIJ",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;

@@ -2152,7 +2152,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
     s = t + bs*i;
     ierr = PetscMemcpy(s,b+bs*(*r++),bs*sizeof(PetscScalar));CHKERRQ(ierr);
     while (nz--) {
-      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*(*vi++));
+      PetscKernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*(*vi++));
       v += bs2;
     }
   }
@@ -2164,10 +2164,10 @@ PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
     nz  = ai[i+1] - a->diag[i] - 1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     while (nz--) {
-      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*(*vi++));
+      PetscKernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*(*vi++));
       v += bs2;
     }
-    Kernel_w_gets_A_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
+    PetscKernel_w_gets_A_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
     ierr = PetscMemcpy(x + bs*(*c--),t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -2213,12 +2213,12 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
   ls = a->solve_work + A->cmap->n;
   for (i=0; i<n; i++){
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    Kernel_w_gets_transA_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
+    PetscKernel_w_gets_transA_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
     v   = aa + bs2*(a->diag[i] + 1);
     vi  = aj + a->diag[i] + 1;
     nz  = ai[i+1] - a->diag[i] - 1;
     while (nz--) {
-      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
+      PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
       v += bs2;
     }
   }
@@ -2229,7 +2229,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
     vi  = aj + ai[i];
     nz  = a->diag[i] - ai[i];
     while (nz--) {
-      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
+      PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
       v += bs2;
     }
   }
@@ -2284,12 +2284,12 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   ls = a->solve_work + A->cmap->n;
   for (i=0; i<n; i++){
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    Kernel_w_gets_transA_times_v(bs,ls,aa+bs2*diag[i],t+i*bs);
+    PetscKernel_w_gets_transA_times_v(bs,ls,aa+bs2*diag[i],t+i*bs);
     v   = aa + bs2*(diag[i] - 1);
     vi  = aj + diag[i] - 1;
     nz  = diag[i] - diag[i+1] - 1;
     for(j=0;j>-nz;j--){
-      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
+      PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
       v -= bs2;
     }
   }
@@ -2300,7 +2300,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     vi  = aj + ai[i];
     nz  = ai[i+1] - ai[i];
     for(j=0;j<nz;j++){
-      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
+      PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
       v += bs2;
     }
   }
@@ -5592,15 +5592,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv = b->a + bs2*bdiag[row];      
-	Kernel_A_gets_A_times_B(bs,pc,pv,mwork);
-	/*ierr = Kernel_A_gets_A_times_B_15(pc,pv,mwork);CHKERRQ(ierr);*/
+	PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork);
+	/*ierr = PetscKernel_A_gets_A_times_B_15(pc,pv,mwork);CHKERRQ(ierr);*/
 	pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1); 
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           vv   = rtmp + bs2*pj[j];
-          Kernel_A_gets_A_minus_B_times_C(bs,vv,pc,pv);
-	  /* ierr = Kernel_A_gets_A_minus_B_times_C_15(vv,pc,pv);CHKERRQ(ierr); */
+          PetscKernel_A_gets_A_minus_B_times_C(bs,vv,pc,pv);
+	  /* ierr = PetscKernel_A_gets_A_minus_B_times_C_15(vv,pc,pv);CHKERRQ(ierr); */
 	  pv  += bs2;          
         }
         ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
@@ -5620,8 +5620,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* Kernel_A_gets_inverse_A(bs,pv,pivots,work); */
-    ierr = Kernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftamount);CHKERRQ(ierr); 
+    /* PetscKernel_A_gets_inverse_A(bs,pv,pivots,work); */
+    ierr = PetscKernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftamount);CHKERRQ(ierr); 
        
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -5699,12 +5699,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv         = b->a + bs2*bdiag[row];      
-        Kernel_A_gets_A_times_B(bs,pc,pv,mwork); /* *pc = *pc * (*pv); */
+        PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); /* *pc = *pc * (*pv); */
         pj         = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv         = b->a + bs2*(bdiag[row+1]+1); 
         nz         = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
-          Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
+          PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
         ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
@@ -5724,7 +5724,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     pj  = b->j + bdiag[i];
     /* if (*pj != i)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"row %d != *pj %d",i,*pj); */
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr);
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);

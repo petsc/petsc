@@ -31,8 +31,8 @@ extern PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx);
 
 /*=========================================================*/ 
 #undef __FUNCT__
-#define __FUNCT__ "SeqBSTRM_convert_bstrm"
-PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
+#define __FUNCT__ "MatSeqBSTRM_convert_bstrm"
+PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *) A->data;
   Mat_SeqBSTRM   *bstrm = (Mat_SeqBSTRM*) A->spptr;
@@ -83,7 +83,7 @@ PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
 }
 
 /*=========================================================*/ 
-extern PetscErrorCode SeqBSTRM_create_bstrm(Mat);
+extern PetscErrorCode MatSeqBSTRM_create_bstrm(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqBSTRM"
@@ -95,7 +95,7 @@ PetscErrorCode MatAssemblyEnd_SeqBSTRM(Mat A, MatAssemblyType mode)
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   MatAssemblyEnd_SeqBAIJ(A, mode);
 
-  ierr = SeqBSTRM_create_bstrm(A);CHKERRQ(ierr);
+  ierr = MatSeqBSTRM_create_bstrm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*=========================================================*/ 
@@ -124,7 +124,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,const MatType type,MatReuse re
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
-      ierr = SeqBSTRM_create_bstrm(B);CHKERRQ(ierr);
+      ierr = MatSeqBSTRM_create_bstrm(B);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBSTRM);CHKERRQ(ierr);
   *newmat = B;
@@ -848,8 +848,8 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
 
 /*=========================================================*/ 
 #undef __FUNCT__
-#define __FUNCT__ "SeqBSTRM_create_bstrm"
-PetscErrorCode SeqBSTRM_create_bstrm(Mat A)
+#define __FUNCT__ "MatSeqBSTRM_create_bstrm"
+PetscErrorCode MatSeqBSTRM_create_bstrm(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *) A->data;
   Mat_SeqBSTRM   *bstrm = (Mat_SeqBSTRM*) A->spptr;
@@ -909,7 +909,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSeqBSTRMTransform(Mat A)
 {
   PetscFunctionBegin;
-    SeqBSTRM_convert_bstrm(A);
+    MatSeqBSTRM_convert_bstrm(A);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

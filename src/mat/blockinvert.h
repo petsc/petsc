@@ -19,12 +19,12 @@
    src/mat/impls/baij/seq
 */
 
-extern PetscErrorCode  LINPACKdgefa(MatScalar*,PetscInt,PetscInt*);
-extern PetscErrorCode  LINPACKdgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
-extern PetscErrorCode  Kernel_A_gets_inverse_A_2(MatScalar*,PetscReal);
-extern PetscErrorCode  Kernel_A_gets_inverse_A_3(MatScalar*,PetscReal);
+extern PetscErrorCode  PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*);
+extern PetscErrorCode  PetscLINPACKgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
+extern PetscErrorCode  PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal);
+extern PetscErrorCode  PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal);
 
-#define Kernel_A_gets_inverse_A_4_nopivot(mat) 0;\
+#define PetscKernel_A_gets_inverse_A_4_nopivot(mat) 0;\
 {\
   MatScalar d, di;\
 \
@@ -98,15 +98,15 @@ extern PetscErrorCode  Kernel_A_gets_inverse_A_3(MatScalar*,PetscReal);
   mat[10] += mat[11] * mat[14] * di;\
 }
 
-extern PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar *,PetscReal);
 # if defined(PETSC_HAVE_SSE)
-extern PetscErrorCode Kernel_A_gets_inverse_A_4_SSE(MatScalar *);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(MatScalar *);
 # endif
-extern PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *,PetscInt*,MatScalar*,PetscReal);
-extern PetscErrorCode Kernel_A_gets_inverse_A_6(MatScalar *,PetscReal);
-extern PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *,PetscReal);
-extern PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
-extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar*,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *,PetscInt*,MatScalar*,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar *,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
+extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar*,PetscReal);
 
 /*
     A = inv(A)    A_gets_inverse_A
@@ -115,7 +115,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    pivots - integer work array of length bs
    W      -  bs by 1 work array
 */
-#define Kernel_A_gets_inverse_A(bs,A,pivots,W) (LINPACKdgefa((A),(bs),(pivots)) || LINPACKdgedi((A),(bs),(pivots),(W)))
+#define PetscKernel_A_gets_inverse_A(bs,A,pivots,W) (PetscLINPACKgefa((A),(bs),(pivots)) || PetscLINPACKgedi((A),(bs),(pivots),(W)))
 
 /* -----------------------------------------------------------------------*/
 
@@ -130,7 +130,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    W    - square bs by bs work array
 
 */
-#define Kernel_A_gets_A_times_B(bs,A,B,W) \
+#define PetscKernel_A_gets_A_times_B(bs,A,B,W) \
 { \
   PetscBLASInt   _bbs;		 \
   PetscScalar    _one = 1.0,_zero = 0.0; \
@@ -146,7 +146,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 
    A, B, C - square bs by bs arrays stored in column major order
 */ 
-#define Kernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
+#define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
   PetscScalar  _mone = -1.0,_one = 1.0; \
   PetscBLASInt _bbs = PetscBLASIntCast(bs);	\
@@ -159,7 +159,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 
    A, B, C - square bs by bs arrays stored in column major order
 */ 
-#define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
+#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
 { \
   PetscScalar  _one = 1.0; \
   PetscBLASInt _bbs = PetscBLASIntCast(bs);	\
@@ -173,7 +173,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) \
 {  \
   PetscScalar  _one = 1.0; \
   PetscBLASInt _ione = 1, _bbs = PetscBLASIntCast(bs);			\
@@ -187,7 +187,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
 {  \
   PetscScalar  _mone = -1.0,_one = 1.0; \
   PetscBLASInt  _ione = 1,_bbs = PetscBLASIntCast(bs);			\
@@ -201,7 +201,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_minus_transA_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_minus_transA_times_w(bs,v,A,w) \
 {  \
   PetscScalar  _mone = -1.0,_one = 1.0; \
   PetscBLASInt  _ione = 1,_bbs = PetscBLASIntCast(bs);			\
@@ -215,7 +215,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
 {  \
   PetscScalar  _one = 1.0; \
   PetscBLASInt _ione = 1,_bbs = PetscBLASIntCast(bs);			\
@@ -229,7 +229,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) \
+#define  PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) \
 {  \
   PetscScalar  _one = 1.0; \
   PetscBLASInt _ione = 1,_bbs,_bncols; \
@@ -244,7 +244,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A(bs,ncols)
    w - array of length bs
 */
-#define  Kernel_w_gets_w_minus_Ar_times_v(bs,ncols,w,A,v) \
+#define  PetscKernel_w_gets_w_minus_Ar_times_v(bs,ncols,w,A,v) \
 {  \
   PetscScalar  _one = 1.0,_mone = -1.0;	       \
   PetscBLASInt _ione = 1,_bbs,_bncols; \
@@ -259,7 +259,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define Kernel_w_gets_A_times_v(bs,v,A,w) \
+#define PetscKernel_w_gets_A_times_v(bs,v,A,w) \
 {  \
   PetscScalar  _zero = 0.0,_one = 1.0; \
   PetscBLASInt _ione = 1,_bbs = PetscBLASIntCast(bs);			\
@@ -273,7 +273,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define Kernel_w_gets_transA_times_v(bs,v,A,w) \
+#define PetscKernel_w_gets_transA_times_v(bs,v,A,w) \
 {  \
   PetscScalar  _zero = 0.0,_one = 1.0; \
   PetscBLASInt _ione = 1,_bbs = PetscBLASIntCast(bs);			\
@@ -283,7 +283,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 /*
         z = A*x
 */
-#define Kernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
+#define PetscKernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
 { \
   PetscScalar _one = 1.0,_zero = 0.0; \
   PetscBLASInt _ione = 1,_bbs,_bncols; \
@@ -294,7 +294,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 /*
         z = trans(A)*x
 */
-#define Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
+#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
 { \
   PetscScalar  _one = 1.0; \
   PetscBLASInt _ione = 1,_bbs,_bncols;\
@@ -325,7 +325,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    W    - square bs by bs work array
 
 */
-#define Kernel_A_gets_A_times_B(bs,A,B,W) \
+#define PetscKernel_A_gets_A_times_B(bs,A,B,W) \
 { \
   PetscErrorCode _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   msgemmi_(&bs,A,B,W); \
@@ -337,7 +337,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 
    A, B, C - square bs by bs arrays stored in column major order
 */ 
-#define Kernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
+#define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
   msgemm_(&bs,A,B,C); \
 }
@@ -349,7 +349,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
 {  \
   msgemvm_(&bs,&bs,A,w,v); \
 }
@@ -361,7 +361,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
+#define  PetscKernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
 {  \
   msgemvp_(&bs,&bs,A,w,v);\
 }
@@ -373,7 +373,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define  Kernel_w_gets_w_plus_Ar_times_v(bs,ncol,v,A,w) \
+#define  PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncol,v,A,w) \
 {  \
   msgemvp_(&bs,&ncol,A,v,w);\
 }
@@ -385,7 +385,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    A - square bs by bs array
    w - array of length bs
 */
-#define Kernel_w_gets_A_times_v(bs,v,A,w) \
+#define PetscKernel_w_gets_A_times_v(bs,v,A,w) \
 {  \
   msgemv_(&bs,&bs,A,v,w);\
 }
@@ -393,7 +393,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 /*
         z = A*x
 */
-#define Kernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
+#define PetscKernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
 { \
   msgemv_(&bs,&ncols,A,x,z);\
 }
@@ -401,14 +401,14 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 /*
         z = trans(A)*x
 */
-#define Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
+#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
 { \
   msgemvt_(&bs,&ncols,A,x,z);\
 }
 
 /* These do not work yet */
-#define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) 
-#define Kernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) 
+#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) 
+#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) 
 
 
 #endif

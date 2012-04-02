@@ -12,8 +12,8 @@ extern PetscErrorCode MatSOR_SeqBSTRM_5(Mat,Vec,PetscReal,MatSORType,PetscReal,P
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MPIBSTRM_create_bstrm"
-PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
+#define __FUNCT__ "MatMPIBSTRM_create_bstrm"
+PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 {
   Mat_MPIBAIJ     *a = (Mat_MPIBAIJ *)A->data;
   Mat_SeqBAIJ     *Aij = (Mat_SeqBAIJ*)(a->A->data), *Bij = (Mat_SeqBAIJ*)(a->B->data);
@@ -114,7 +114,7 @@ PetscErrorCode MatAssemblyEnd_MPIBSTRM(Mat A, MatAssemblyType mode)
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Now calculate the permutation and grouping information. */
-  ierr = MPIBSTRM_create_bstrm(A);CHKERRQ(ierr);
+  ierr = MatMPIBSTRM_create_bstrm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,7 +189,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,const MatType type,MatReuse reu
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
-    ierr = MPIBSTRM_create_bstrm(B);CHKERRQ(ierr);
+    ierr = MatMPIBSTRM_create_bstrm(B);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPIBSTRM);CHKERRQ(ierr);

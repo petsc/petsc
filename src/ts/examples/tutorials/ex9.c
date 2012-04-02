@@ -1000,7 +1000,7 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
   X[1*2+0] = 1;
   X[1*2+1] = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1173,7 +1173,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
   X[1*2+0] = 1;
   X[1*2+1] = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

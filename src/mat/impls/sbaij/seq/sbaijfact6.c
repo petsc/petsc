@@ -181,9 +181,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorIn
     ierr = PetscMemcpy(diag,dk,16*sizeof(MatScalar));CHKERRQ(ierr);
 
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
     } else {
-      ierr = Kernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
     }
 
     jmin = bi[k]; jmax = bi[k+1];

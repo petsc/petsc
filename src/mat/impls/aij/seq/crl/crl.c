@@ -36,8 +36,8 @@ PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SeqAIJCRL_create_aijcrl"
-PetscErrorCode SeqAIJCRL_create_aijcrl(Mat A)
+#define __FUNCT__ "MatSeqAIJCRL_create_aijcrl"
+PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)(A)->data;
   Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
@@ -85,7 +85,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Now calculate the permutation and grouping information. */
-  ierr = SeqAIJCRL_create_aijcrl(A);CHKERRQ(ierr);
+  ierr = MatSeqAIJCRL_create_aijcrl(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +190,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat A,const MatType type,MatReuse re
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
-    ierr = SeqAIJCRL_create_aijcrl(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJCRL_create_aijcrl(B);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCRL);CHKERRQ(ierr);
   *newmat = B;

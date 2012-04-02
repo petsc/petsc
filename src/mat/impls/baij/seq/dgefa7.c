@@ -12,8 +12,8 @@
 #include <petscsys.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "Kernel_A_gets_inverse_A_7"
-PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *a,PetscReal shift)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_7"
+PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar *a,PetscReal shift)
 {
     PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[7],kb,k3;
     PetscInt   k4,j3;
