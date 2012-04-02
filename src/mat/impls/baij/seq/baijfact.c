@@ -1456,8 +1456,11 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "BlockAbs_privat"
-PetscErrorCode BlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar *blockarray,PetscReal *absarray)
+#define __FUNCT__ "MatBlockAbs_privat"
+/*
+    For each block in an block array saves the largest absolute value in the block into another array
+*/
+static PetscErrorCode MatBlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar *blockarray,PetscReal *absarray)
 {
   PetscErrorCode     ierr;
   PetscInt           i,j;
@@ -1607,7 +1610,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
       pc = rtmp + bs2*row;
       pv = ba + bs2*bdiag[row]; /* inv(diag) of the pivot row */
       Kernel_A_gets_A_times_B(bs,pc,pv,multiplier); /* pc= multiplier = pc*inv(diag[row]) */
-      ierr = BlockAbs_private(1,bs2,pc,vtmp_abs);CHKERRQ(ierr);
+      ierr = MatBlockAbs_private(1,bs2,pc,vtmp_abs);CHKERRQ(ierr);
       if (vtmp_abs[0] > dt){ /* apply tolerance dropping rule */
         pj         = bj + bdiag[row+1] + 1; /* point to 1st entry of U(row,:) */
         pv         = ba + bs2*(bdiag[row+1] + 1);
@@ -1639,7 +1642,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
       j++;
     }
 
-    ierr = BlockAbs_private(nzi,bs2,vtmp,vtmp_abs);CHKERRQ(ierr);
+    ierr = MatBlockAbs_private(nzi,bs2,vtmp,vtmp_abs);CHKERRQ(ierr);
     /*
     printf(" row %d, nzi %d, vtmp_abs\n",i,nzi);
     for (j1=0; j1<nzi; j1++) printf(" (%d %g),",jtmp[j1],vtmp_abs[j1]);

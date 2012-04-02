@@ -1334,13 +1334,13 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     for (i=1; i<size; i++) {
       ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
       rlen = range[i+1] - range[i];
-      ierr = MPILong_Recv(row_lengths,rlen,MPIU_INT,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPIULong_Recv(row_lengths,rlen,MPIU_INT,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,row_lengths,rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
-    ierr = MPILong_Send(row_lengths,mat->rmap->n,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPIULong_Send(row_lengths,mat->rmap->n,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
     ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(row_lengths);CHKERRQ(ierr);
@@ -1373,14 +1373,14 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
       ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(&rnz,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       if (rnz > nzmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Internal PETSc error: nz = %D nzmax = %D",nz,nzmax);
-      ierr = MPILong_Recv(column_indices,rnz,MPIU_INT,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPIULong_Recv(column_indices,rnz,MPIU_INT,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,column_indices,rnz,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
      ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
     ierr = MPI_Send(&nz,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
-    ierr = MPILong_Send(column_indices,nz,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPIULong_Send(column_indices,nz,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
     ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(column_indices);CHKERRQ(ierr);
@@ -1411,14 +1411,14 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
        ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(&rnz,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       if (rnz > nzmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Internal PETSc error: nz = %D nzmax = %D",nz,nzmax);
-      ierr = MPILong_Recv(column_values,rnz,MPIU_SCALAR,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPIULong_Recv(column_values,rnz,MPIU_SCALAR,i,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,column_values,rnz,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
     ierr = MPI_Send(&nz,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
-    ierr = MPILong_Send(column_values,nz,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPIULong_Send(column_values,nz,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
     ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(column_values);CHKERRQ(ierr);
@@ -3353,11 +3353,11 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
       for (j=0; j<rowners[i+1]-rowners[i]; j++) {
         procsnz[i] += rowlengths[j];
       }
-      ierr = MPILong_Send(rowlengths,rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPIULong_Send(rowlengths,rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else {
-    ierr = MPILong_Recv(ourlens,m,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
+    ierr = MPIULong_Recv(ourlens,m,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
   }
 
   if (!rank) {
@@ -3377,7 +3377,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     for (i=1; i<size; i++) {
       nz     = procsnz[i];
       ierr   = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      ierr   = MPILong_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr   = MPIULong_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {
@@ -3389,7 +3389,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
 
     /* receive message of column indices*/
-    ierr = MPILong_Recv(mycols,nz,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
+    ierr = MPIULong_Recv(mycols,nz,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
   }
 
   /* determine column ownership if matrix is not square */
@@ -3448,7 +3448,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     for (i=1; i<size; i++) {
       nz     = procsnz[i];
       ierr   = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr   = MPILong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
+      ierr   = MPIULong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
@@ -3456,7 +3456,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
-    ierr   = MPILong_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
+    ierr   = MPIULong_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
 
     /* insert into matrix */
     jj      = rstart;

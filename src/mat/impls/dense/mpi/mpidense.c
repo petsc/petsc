@@ -662,7 +662,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         for(k = 1; k < size; k++) {
           v    = vv;
           m    = mat->rmap->range[k+1] - mat->rmap->range[k];
-          ierr = MPILong_Recv(v,m*N,MPIU_SCALAR,k,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+          ierr = MPIULong_Recv(v,m*N,MPIU_SCALAR,k,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
 
           for(j = 0; j < N; j++) {
             for(i = 0; i < m; i++) {
@@ -674,7 +674,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         ierr = PetscFree(work);CHKERRQ(ierr);
         ierr = PetscFree(vv);CHKERRQ(ierr);
       } else {
-        ierr = MPILong_Send(a->v,mat->rmap->n*mat->cmap->N,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+        ierr = MPIULong_Send(a->v,mat->rmap->n*mat->cmap->N,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       }
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE)");
   }
@@ -1969,14 +1969,14 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
     for (i=1; i<size; i++) {
       nz   = (rowners[i+1] - rowners[i])*N;
       ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPILong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)(newmat))->tag,comm);CHKERRQ(ierr);
+      ierr = MPIULong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)(newmat))->tag,comm);CHKERRQ(ierr);
     }
   } else {
     /* receive numeric values */
     ierr = PetscMalloc(m*N*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
-    ierr = MPILong_Recv(vals,m*N,MPIU_SCALAR,0,((PetscObject)(newmat))->tag,comm);CHKERRQ(ierr);
+    ierr = MPIULong_Recv(vals,m*N,MPIU_SCALAR,0,((PetscObject)(newmat))->tag,comm);CHKERRQ(ierr);
 
     /* insert into matrix-by row (this is why cannot directly read into array */
     vals_ptr = vals;
