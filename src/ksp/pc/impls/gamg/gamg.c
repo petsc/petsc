@@ -1304,12 +1304,12 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   PetscErrorCode  ierr;
   PC_GAMG         *pc_gamg;
   PC_MG           *mg;
-
 #if defined PETSC_GAMG_USE_LOG
   static long count = 0;
 #endif
 
   PetscFunctionBegin;
+
   /* PCGAMG is an inherited class of PCMG. Initialize pc as PCMG */
   ierr = PCSetType( pc, PCMG );  CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
   ierr = PetscObjectChangeTypeName( (PetscObject)pc, PCGAMG ); CHKERRQ(ierr);
@@ -1383,17 +1383,6 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   pc_gamg->emax_id = -1;
   pc_gamg->col_bs_id = -1;
 
-  /* instantiate derived type */
-  ierr = PetscOptionsHead("GAMG options"); CHKERRQ(ierr);
-  {
-    char tname[256] = GAMGAGG;
-    ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",
-                            GAMGList, tname, tname, sizeof(tname), PETSC_NULL );
-    CHKERRQ(ierr);
-    ierr = PCGAMGSetType( pc, tname ); CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-
   /* private events */
 #if defined PETSC_GAMG_USE_LOG
   if( count++ == 0 ) {
@@ -1406,7 +1395,7 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
     PetscLogEventRegister("  geo: growSupp", PC_CLASSID, &petsc_gamg_setup_events[SET5]);
     PetscLogEventRegister("  geo: triangle", PC_CLASSID, &petsc_gamg_setup_events[SET6]);
     PetscLogEventRegister("    search&set", PC_CLASSID, &petsc_gamg_setup_events[FIND_V]);
-    PetscLogEventRegister("  SA: colect data", PC_CLASSID, &petsc_gamg_setup_events[SET7]);
+    PetscLogEventRegister("  SA: col data", PC_CLASSID, &petsc_gamg_setup_events[SET7]);
     PetscLogEventRegister("  SA: frmProl0", PC_CLASSID, &petsc_gamg_setup_events[SET8]);
     PetscLogEventRegister("  SA: smooth", PC_CLASSID, &petsc_gamg_setup_events[SET9]);
     PetscLogEventRegister("GAMG: partLevel", PC_CLASSID, &petsc_gamg_setup_events[SET2]);
@@ -1435,14 +1424,25 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
 #endif
   /* general events */
 #if defined PETSC_USE_LOG
-  PetscLogEventRegister("PCGAMGgraph_AGG", PC_CLASSID, &PC_GAMGGgraph_AGG);
+  PetscLogEventRegister("PCGAMGgraph_AGG", 0, &PC_GAMGGgraph_AGG);
   PetscLogEventRegister("PCGAMGgraph_GEO", PC_CLASSID, &PC_GAMGGgraph_GEO);
   PetscLogEventRegister("PCGAMGcoarse_AGG", PC_CLASSID, &PC_GAMGCoarsen_AGG);
   PetscLogEventRegister("PCGAMGcoarse_GEO", PC_CLASSID, &PC_GAMGCoarsen_GEO);
   PetscLogEventRegister("PCGAMGProl_AGG", PC_CLASSID, &PC_GAMGProlongator_AGG);
   PetscLogEventRegister("PCGAMGProl_GEO", PC_CLASSID, &PC_GAMGProlongator_GEO);
-  PetscLogEventRegister("PCGAMGProlOpt_AGG", PC_CLASSID, &PC_GAMGOptprol_AGG);
+  PetscLogEventRegister("PCGAMGPOpt_AGG", PC_CLASSID, &PC_GAMGOptprol_AGG);
 #endif
+
+  /* instantiate derived type */
+  ierr = PetscOptionsHead("GAMG options"); CHKERRQ(ierr);
+  {
+    char tname[256] = GAMGAGG;
+    ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",
+                            GAMGList, tname, tname, sizeof(tname), PETSC_NULL );
+    CHKERRQ(ierr);
+    ierr = PCGAMGSetType( pc, tname ); CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();   CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

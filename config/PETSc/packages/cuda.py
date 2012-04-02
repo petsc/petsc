@@ -35,13 +35,14 @@ class Configure(PETSc.package.NewPackage):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
     help.addArgument('CUDA', '-with-cuda-arch=<arch>', nargs.Arg(None, None, 'Target architecture for nvcc, e.g. sm_13'))
+    help.addArgument('CUDA', '-with-cuda-only=<bool>', nargs.ArgBool(None, 1, 'Allows CUDA compiles without Thrust and Cusp'))
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers',self)
     self.headers      = framework.require('config.headers',self)
-    self.scalartypes  = framework.require('PETSc.utilities.scalarTypes', self)        
+    self.scalartypes  = framework.require('PETSc.utilities.scalarTypes', self)
     self.languages    = framework.require('PETSc.utilities.languages',   self)
     self.cusp         = framework.require('config.packages.cusp',        self)
     self.thrust       = framework.require('config.packages.thrust',      self)
@@ -197,11 +198,12 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
     self.checkCUDAVersion()
-    self.checkThrustVersion()
-    self.checkCUSPVersion()
     self.checkNVCCDoubleAlign()
-    if not self.cusp.found or not self.thrust.found:
-      raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+    if not self.framework.argDB['with-cuda-only']:
+      if not self.cusp.found or not self.thrust.found:
+        raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+      self.checkThrustVersion()
+      self.checkCUSPVersion()
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')

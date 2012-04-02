@@ -401,25 +401,14 @@ extern PetscErrorCode  SNESSetInitialFunctionNorm(SNES,PetscReal);
 E*/
 
 typedef enum {SNES_NORM_DEFAULT            = -1,
-              SNES_NORM_INITIAL_ONLY       = 1,
-              SNES_NORM_FINAL_ONLY         = 2,
-              SNES_NORM_INITIAL_FINAL_ONLY = 3,
-              SNES_NORM_NONE               = 0} SNESNormType;
-
-
+              SNES_NORM_NONE               =  0,
+              SNES_NORM_FUNCTION           =  1,
+              SNES_NORM_INITIAL_ONLY       =  2,
+              SNES_NORM_FINAL_ONLY         =  3,
+              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormType;
+extern const char *const*const SNESNormTypes;
 /*MC
-    SNES_NORM_DEFAULT - Compute the function and its L2 norm at each iteration.
-
-   Level: advanced
-
-    Notes:
-    Most solvers will use this no matter what norm type is passed to them.
-
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_NONE
-M*/
-
-/*MC
-    SNES_NORM_DEFAULT - Don't compute function and its L2 norm.
+    SNES_NORM_NONE - Don't compute function and its L2 norm.
 
    Level: advanced
 
@@ -429,7 +418,16 @@ M*/
 .seealso: SNESNormType, SNESSetNormType(), SNES_NORM_DEFAULT
 M*/
 
+/*MC
+    SNES_NORM_FUNCTION - Compute the function and its L2 norm at each iteration.
 
+   Level: advanced
+
+    Notes:
+    Most solvers will use this no matter what norm type is passed to them.
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_NONE
+M*/
 
 /*MC
     SNES_NORM_INITIAL_ONLY - Compute the function and its L2 at iteration 0, but do not update it.

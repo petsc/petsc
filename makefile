@@ -307,7 +307,7 @@ docsetdate: chkpetsc_dir
           echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
           exit; \
         fi; \
-        datestr=`hg tip --template "{date|isodate}"`; \
+        datestr=`hg tip --template "{date|shortdate}"`; \
         export datestr; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
           -type d -wholename arch-* -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \

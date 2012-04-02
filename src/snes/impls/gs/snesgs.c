@@ -77,7 +77,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   snes->reason = SNES_CONVERGED_ITERATING;
 
   ierr = SNESGetNormType(snes, &normtype);CHKERRQ(ierr);
-  if (normtype == SNES_NORM_DEFAULT || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
+  if (normtype == SNES_NORM_FUNCTION || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   for (i = 0; i < snes->max_its; i++) {
     ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
     /* only compute norms if requested or about to exit due to maximum iterations */
-    if (normtype == SNES_NORM_DEFAULT || ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY))) {
+    if (normtype == SNES_NORM_FUNCTION || ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY))) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
       if (snes->domainerror) {
         snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -142,14 +142,14 @@ PetscErrorCode SNESSolve_GS(SNES snes)
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
-    if (normtype == SNES_NORM_DEFAULT) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (normtype == SNES_NORM_FUNCTION) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
   }
-  if (normtype == SNES_NORM_DEFAULT) {
+  if (normtype == SNES_NORM_FUNCTION) {
     if (i == snes->max_its) {
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
       if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;

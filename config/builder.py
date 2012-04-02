@@ -1396,12 +1396,13 @@ class PETScMaker(script.Script):
          self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, str(testNum)))
    return ret
 
- def runTest(self, testDir, executable, testNum, **params):
+ def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '') #+' -malloc_dump'
-   # TODO: Take this line out when configure is fixed
-   # mpiexec = self.mpi.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
-   cmd = ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   args     = params.get('args', '')
+   return ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+
+ def runTest(self, testDir, executable, testNum, **params):
+   cmd = self.getTestCommand(executable, **params)
    self.logPrint('Running test for '+executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)

@@ -429,17 +429,24 @@ class QuadratureGenerator(script.Script):
   def getComputationTypes(self, element, num):
     '''Right now, this is used for GPU'''
     from Cxx import Define, Declarator
-    dim = element.get_reference_element().get_spatial_dimension()
-    ext = '_'+str(num)
+    dim  = element.get_reference_element().get_spatial_dimension()
+    ext  = '_'+str(num)
+    real = 'float'
+
     spatialDim = Define()
     spatialDim.identifier = 'SPATIAL_DIM'+ext
     spatialDim.replacementText = str(dim)
 
+    realType = Declarator()
+    realType.identifier = 'realType'
+    realType.type       = self.Cxx.typeMap[real]
+    realType.typedef    = True
+
     vecType = Declarator()
     vecType.identifier = 'vecType'
-    vecType.type       = self.Cxx.typeMap['float'+str(dim)]
+    vecType.type       = self.Cxx.typeMap[real+str(dim)]
     vecType.typedef    = True
-    return [spatialDim, self.Cxx.getDecl(vecType, 'Type for vectors')]
+    return [spatialDim, self.Cxx.getDecl(realType, 'Type for scalars'), self.Cxx.getDecl(vecType, 'Type for vectors')]
 
   def getComputationLayoutStructs(self, numBlocks):
     '''Right now, this is used for GPU data layout'''
