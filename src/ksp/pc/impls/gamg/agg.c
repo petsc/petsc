@@ -723,7 +723,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   PetscCDPos         pos;
   GAMGHashTable  fgid_flid;
 
-#define OUT_AGGS
+/* #define OUT_AGGS */
 #ifdef OUT_AGGS
   static PetscInt llev = 0; char fname[32]; FILE *file = PETSC_NULL; PetscInt pM;
 #endif
