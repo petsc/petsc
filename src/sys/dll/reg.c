@@ -30,7 +30,7 @@ PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char
 /*
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
-PetscDLLibrary DLLibrariesLoaded = 0;
+PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
@@ -46,13 +46,13 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
   ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
   if (*found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc");CHKERRQ(ierr);
     ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
     if (*found) {
-      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -79,7 +79,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
@@ -121,7 +121,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
@@ -140,9 +140,9 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) { ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr); }
-  ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
-  DLLibrariesLoaded = 0;
+  if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
+  ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+  PetscDLLibrariesLoaded = 0;
   PetscFunctionReturn(0);
 }
 
@@ -361,7 +361,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
   */
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   if (path) {
-    ierr = PetscDLLibraryAppend(comm,&DLLibrariesLoaded,path);CHKERRQ(ierr);
+    ierr = PetscDLLibraryAppend(comm,&PetscDLLibrariesLoaded,path);CHKERRQ(ierr);
   }
 #endif
 
@@ -406,7 +406,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
       newpath = path;
       if (!path) newpath = entry->path;
-      ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
+      ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
         ierr = PetscFree(path);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   if (searchlibraries) {
     /* Function never registered; try for it anyway */
-    ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
+    ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
     ierr = PetscFree(path);CHKERRQ(ierr);
     if (*r) {
       ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
@@ -922,7 +922,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
     else {
       /* it is not yet in memory so load from dynamic library */
-      ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,entry->path,entry->name,(void **)r);CHKERRQ(ierr);
+      ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,entry->path,entry->name,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
       } 

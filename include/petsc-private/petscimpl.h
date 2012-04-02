@@ -445,7 +445,6 @@ extern PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject);
 extern PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject);
 extern PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject);
 extern PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-extern PetscInt        globalcurrentstate;
 extern PetscInt        globalmaxstate;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject

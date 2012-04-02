@@ -123,9 +123,9 @@ static void      (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
 
 
 #define PetscDLPyLibOpen(libname) \
-  PetscDLLibraryAppend(PETSC_COMM_SELF,&DLLibrariesLoaded,libname)
+  PetscDLLibraryAppend(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,libname)
 #define PetscDLPyLibSym(symbol, value) \
-  PetscDLLibrarySym(PETSC_COMM_SELF,&DLLibrariesLoaded,PETSC_NULL,symbol,(void**)value)
+  PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,PETSC_NULL,symbol,(void**)value)
 #define PetscDLPyLibClose(comm) \
   do { } while(0)
 

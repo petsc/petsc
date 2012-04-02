@@ -1532,7 +1532,7 @@ extern PetscErrorCode  PetscOpFListView(PetscOpFList,PetscViewer);
 .seealso:  PetscDLLibraryOpen()
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
-extern  PetscDLLibrary DLLibrariesLoaded;
+extern PetscDLLibrary  PetscDLLibrariesLoaded;
 extern PetscErrorCode  PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 extern PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm,PetscDLLibrary *,const char[]);
 extern PetscErrorCode  PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);

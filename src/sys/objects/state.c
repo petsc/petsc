@@ -75,7 +75,6 @@ PetscErrorCode  PetscObjectSetState(PetscObject obj,PetscInt state)
   PetscFunctionReturn(0);
 }
 
-PetscInt  globalcurrentstate = 0;
 PetscInt  globalmaxstate = 10;
 
 #undef __FUNCT__  
@@ -96,6 +95,8 @@ PetscInt  globalmaxstate = 10;
 @*/
 PetscErrorCode  PetscObjectComposedDataRegister(PetscInt *id)
 {
+  static PetscInt globalcurrentstate = 0;
+
   PetscFunctionBegin;
   *id = globalcurrentstate++;
   if (globalcurrentstate > globalmaxstate) globalmaxstate += 10;
