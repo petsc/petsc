@@ -37,7 +37,6 @@ PetscErrorCode SNESSetUp_GS(SNES snes)
 PetscErrorCode SNESSetFromOptions_GS(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_GS        *gs = (SNES_GS *)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
@@ -63,7 +62,6 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   PetscInt       i;
   PetscReal      fnorm;
   PetscErrorCode ierr;
-  SNES_GS        *gs = (SNES_GS *)snes->data;
   SNESNormType   normtype;
 
   PetscFunctionBegin;
