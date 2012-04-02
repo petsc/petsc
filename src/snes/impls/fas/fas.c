@@ -29,9 +29,9 @@ Options Database:
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
 .   -fas_levels_snes_ -  SNES options for all smoothers
-.   -fas_levels_cycle_snes -  SNES options for all cycles
+.   -fas_levels_cycle_snes_ -  SNES options for all cycles
 .   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
-.   -fas_levels_i_cycle_snes - SNES options for the cycle on level i
+.   -fas_levels_i_cycle_snes_ - SNES options for the cycle on level i
 -   -fas_coarse_snes_ -  SNES options for the coarsest smoother
 
 Notes:
@@ -39,7 +39,7 @@ Notes:
    As each level has smoother SNES instances(down and potentially up) and a cycle SNES instance.
    The cycle SNES instance may be used for monitoring convergence on a particular level.
 
-Level: advanced
+Level: beginner
 
 .seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
