@@ -64,19 +64,19 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,i
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor(win,c);
-        XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
+        PetscDrawXiSetColor(win,c);
+        XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,xx,y);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor(win,c);
-        XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
+        PetscDrawXiSetColor(win,c);
+        XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,xx,y);
       }
     } else {
       c = lc >> SHIFT_VAL;
-      XiSetColor(win,c);
-      XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
+      PetscDrawXiSetColor(win,c);
+      XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,lx,y);
     }
   }
 
@@ -111,19 +111,19 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,i
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor(win,c);
-        XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
+        PetscDrawXiSetColor(win,c);
+        XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,xx,y);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor(win,c);
-        XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
+        PetscDrawXiSetColor(win,c);
+        XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,xx,y);
       }
     } else {
       c = lc >> SHIFT_VAL;
-      XiSetColor(win,c);
-      XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
+      PetscDrawXiSetColor(win,c);
+      XDrawPoint(win->disp,PetscDrawXiDrawable(win),win->gc.set,lx,y);
     }
   }
   PetscFunctionReturn(0);

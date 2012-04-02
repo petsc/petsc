@@ -44,8 +44,8 @@ static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",
                                                  "lavenderblush",
                                                  "plum"};
 
-extern PetscErrorCode XiInitCmap(PetscDraw_X*);
-extern PetscErrorCode XiGetVisualClass(PetscDraw_X *);
+extern PetscErrorCode PetscDrawXiInitCmap(PetscDraw_X*);
+extern PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
@@ -66,8 +66,7 @@ extern PetscErrorCode XiGetVisualClass(PetscDraw_X *);
 
 */
 static Colormap  gColormap  = 0;
-static PixVal    gCmapping[256];
-       int       gNumcolors = 0;
+static PetscDrawXiPixVal    gCmapping[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetUpColormap_Shared" 
@@ -121,12 +120,12 @@ static int        cmap_base = 0;
 #define __FUNCT__ "PetscDrawSetUpColormap_Private" 
 PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  Colormap      defaultmap = DefaultColormap(display,screen); 
+  Colormap       defaultmap = DefaultColormap(display,screen); 
   PetscErrorCode ierr;
-  int           found,i,ncolors;
-  XColor        colordef;
-  unsigned char *red,*green,*blue;
-  PetscBool     fast = PETSC_FALSE;
+  int            found,i,ncolors;
+  XColor         colordef;
+  unsigned char  *red,*green,*blue;
+  PetscBool      fast = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -192,6 +191,7 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   PetscErrorCode ierr;
   PetscBool      sharedcolormap = PETSC_FALSE;
   XVisualInfo    vinfo;
+  int            gNumcolors;
 
   PetscFunctionBegin;
   /* 
@@ -241,7 +241,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
     ierr = PetscDrawSetUpColormap_X(display,screen,vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap = gColormap;
-  ierr = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PixVal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PetscDrawXiPixVal));CHKERRQ(ierr);
   XiWin->background = XiWin->cmapping[PETSC_DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[PETSC_DRAW_BLACK];
   PetscFunctionReturn(0);
@@ -267,8 +267,8 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
 	StaticGray
  */
 #undef __FUNCT__  
-#define __FUNCT__ "XiSetVisualClass" 
-PetscErrorCode XiSetVisualClass(PetscDraw_X* XiWin)
+#define __FUNCT__ "PetscDrawXiSetVisualClass" 
+PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X* XiWin)
 {
   XVisualInfo vinfo;
 
@@ -287,8 +287,8 @@ PetscErrorCode XiSetVisualClass(PetscDraw_X* XiWin)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "XiGetVisualClass" 
-PetscErrorCode XiGetVisualClass(PetscDraw_X* XiWin)
+#define __FUNCT__ "PetscDrawXiGetVisualClass" 
+PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
 #if defined(__cplusplus)
@@ -300,8 +300,8 @@ PetscErrorCode XiGetVisualClass(PetscDraw_X* XiWin)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "XiSetColormap" 
-PetscErrorCode XiSetColormap(PetscDraw_X* XiWin)
+#define __FUNCT__ "PetscDrawXiSetColormap" 
+PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
   XSetWindowColormap(XiWin->disp,XiWin->win,XiWin->cmap);
@@ -309,8 +309,8 @@ PetscErrorCode XiSetColormap(PetscDraw_X* XiWin)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "XiGetBaseColor" 
-PetscErrorCode XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
+#define __FUNCT__ "PetscDrawXiGetBaseColor" 
+PetscErrorCode PetscDrawXiGetBaseColor(PetscDraw_X* XiWin,PetscDrawXiPixVal* white_pix,PetscDrawXiPixVal* black_pix)
 {
   PetscFunctionBegin;
   *white_pix  = XiWin->cmapping[PETSC_DRAW_WHITE];
@@ -323,8 +323,8 @@ PetscErrorCode XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black
     Returns 0 on failure,<>0 otherwise.
  */
 #undef __FUNCT__  
-#define __FUNCT__ "XiFindColor" 
-PetscErrorCode XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
+#define __FUNCT__ "PetscDrawXiFindColor" 
+PetscErrorCode PetscDrawXiFindColor(PetscDraw_X *XiWin,char *name,PetscDrawXiPixVal *pixval)
 {
   XColor   colordef;
   int      st;
@@ -347,13 +347,13 @@ PetscErrorCode XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
     the "background" or "foreground" colors will be chosen
  */
 #undef __FUNCT__  
-#define __FUNCT__ "XiGetColor" 
-PixVal XiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
+#define __FUNCT__ "PetscDrawXiGetColor" 
+PetscDrawXiPixVal PetscDrawXiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
 {
-  PixVal pixval;
+  PetscDrawXiPixVal pixval;
 
   PetscFunctionBegin;
-  if (XiWin->numcolors == 2 || !XiFindColor(XiWin,name,&pixval)) {
+  if (XiWin->numcolors == 2 || !PetscDrawXiFindColor(XiWin,name,&pixval)) {
     pixval  = is_fore ? XiWin->cmapping[PETSC_DRAW_WHITE] : XiWin->cmapping[PETSC_DRAW_BLACK];
   }
   PetscFunctionReturn(pixval);
