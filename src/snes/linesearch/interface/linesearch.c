@@ -612,7 +612,7 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 
    Options Database Keys:
 + -snes_linesearch_type - The Line search method
-. -snes_linesearch_steptol - The minimum step length
+. -snes_linesearch_minlambda - The minimum step length
 . -snes_linesearch_maxstep - The maximum step size
 . -snes_linesearch_rtol - Relative tolerance for iterative line searches
 . -snes_linesearch_atol - Absolute tolerance for iterative line searches
@@ -662,7 +662,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   if (set) {ierr = SNESLineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
 
   /* tolerances */
-  ierr = PetscOptionsReal("-snes_linesearch_steptol","Minimum step length","SNESLineSearchSetTolerances",linesearch->steptol,&linesearch->steptol,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_linesearch_minlambda","Minimum step length","SNESLineSearchSetTolerances",linesearch->steptol,&linesearch->steptol,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_maxstep","Maximum step size","SNESLineSearchSetTolerances",linesearch->maxstep,&linesearch->maxstep,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_rtol","Relative tolerance for iterative line search","SNESLineSearchSetTolerances",linesearch->rtol,&linesearch->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_atol","Absolute tolerance for iterative line search","SNESLineSearchSetTolerances",linesearch->atol,&linesearch->atol,0);CHKERRQ(ierr);
