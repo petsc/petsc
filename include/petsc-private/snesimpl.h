@@ -100,6 +100,8 @@ struct _p_SNES {
   PetscBool   norm_init_set;      /* the initial norm has been set */
   PetscBool   vec_func_init_set;  /* the initial function has been set */
 
+  SNESNormType normtype;          /* Norm computation type for SNES instance */
+
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;

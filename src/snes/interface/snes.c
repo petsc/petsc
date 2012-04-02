@@ -701,6 +701,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
     /* default to 1 iteration */
     ierr = SNESSetTolerances(snes->pc, snes->pc->abstol, snes->pc->rtol, snes->pc->stol, 1, snes->pc->max_funcs);CHKERRQ(ierr);
+    ierr = SNESSetNormType(snes->pc, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1306,13 +1307,14 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->usesksp           = PETSC_TRUE;
   snes->tolerancesset     = PETSC_FALSE;
   snes->max_its           = 50;
-  snes->max_funcs	  = 10000;
-  snes->norm		  = 0.0;
-  snes->rtol		  = 1.e-8;
+  snes->max_funcs         = 10000;
+  snes->norm              = 0.0;
+  snes->normtype          = SNES_NORM_DEFAULT;
+  snes->rtol              = 1.e-8;
   snes->ttol              = 0.0;
-  snes->abstol		  = 1.e-50;
-  snes->stol		  = 1.e-8;
-  snes->deltatol	  = 1.e-12;
+  snes->abstol            = 1.e-50;
+  snes->stol              = 1.e-8;
+  snes->deltatol          = 1.e-12;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
@@ -1486,6 +1488,68 @@ PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   snes->norm_init = fnorm;
   snes->norm_init_set = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetNormType"
+/*@
+   SNESSetNormType - Sets the SNESNormType used in covergence and monitoring
+   of the SNES method.
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  normtype - the type of the norm used
+
+   Notes:
+   Only certain SNES methods support certain SNESNormTypes.  Most require evaluation
+   of the nonlinear function and the taking of its norm at every iteration to
+   even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
+   (SNESGS) and the like do not require the norm of the function to be computed, and therfore
+   may either be monitored for convergence or not.  As these are often used as nonlinear
+   preconditioners, monitoring the norm of their error is not a useful enterprise within
+   their solution.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+
+.seealso: SNESGetNormType(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormType
+@*/
+PetscErrorCode  SNESSetNormType(SNES snes, SNESNormType normtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->normtype = normtype;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetNormType"
+/*@
+   SNESGetNormType - Gets the SNESNormType used in covergence and monitoring
+   of the SNES method.
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  normtype - the type of the norm used
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, set, function, norm, type
+
+.seealso: SNESSetNormType(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormType
+@*/
+PetscErrorCode  SNESGetNormType(SNES snes, SNESNormType *normtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  *normtype = snes->normtype;
   PetscFunctionReturn(0);
 }
 

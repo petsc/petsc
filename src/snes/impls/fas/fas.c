@@ -96,13 +96,8 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   SNES_FAS * fas = (SNES_FAS *)snes->data;
 
   PetscFunctionBegin;
-  if (fas->smoothu != fas->smoothd) {
-    ierr = SNESDestroy(&fas->smoothu);CHKERRQ(ierr);
-    ierr = SNESDestroy(&fas->smoothd);CHKERRQ(ierr);
-  } else {
-    ierr = SNESDestroy(&fas->smoothd);CHKERRQ(ierr);
-    fas->smoothu = PETSC_NULL;
-  }
+  ierr = SNESDestroy(&fas->smoothu);CHKERRQ(ierr);
+  ierr = SNESDestroy(&fas->smoothd);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
@@ -179,6 +174,9 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
   }
+  if (!fas->smoothu && fas->level != fas->levels - 1) {
+    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+  }
 
   if (snes->dm) {
     /* set the smoother DMs properly */
@@ -208,7 +206,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
   }
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
-
   if (fas->galerkin) {
     if (next)
       ierr = SNESSetFunction(next, PETSC_NULL, SNESFASGalerkinDefaultFunction, next);CHKERRQ(ierr);
@@ -216,9 +213,25 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (fas->smoothu && fas->level != fas->levels - 1) ierr = SNESSetFunction(fas->smoothu, PETSC_NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
   }
 
-  /* set the smoothers up here so that precedence is taken for instance-specific options over the whole-solver options */
-  if(fas->smoothu) ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
-  if(fas->smoothd) ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
+  /* sets the down (pre) smoother's default norm and sets it from options */
+  if(fas->smoothd){
+    if (fas->level == 0) {
+      ierr = SNESSetNormType(fas->smoothd, SNES_NORM_NONE);CHKERRQ(ierr);
+     } else {
+      ierr = SNESSetNormType(fas->smoothd, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+    }
+    ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
+  }
+
+  /* sets the up (post) smoother's default norm and sets it from options */
+  if(fas->smoothu){
+    if (fas->level != fas->levels - 1) {
+      ierr = SNESSetNormType(fas->smoothu, SNES_NORM_NONE);CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetNormType(fas->smoothu, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+    }
+    ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
+  }
 
   if (next) {
     /* gotta set up the solution vector for this to work */
