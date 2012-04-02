@@ -276,8 +276,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
    they are sloppy.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "DisAssemble_MPISBAIJ"
-PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
+#define __FUNCT__ "MatDisAssemble_MPISBAIJ"
+PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)A->data;
   Mat            B = baij->B,Bnew;

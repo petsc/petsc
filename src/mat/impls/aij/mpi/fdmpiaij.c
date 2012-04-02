@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-extern PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
+extern PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
@@ -44,7 +44,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   /* Allow access to data structures of local part of matrix */
   if (!aij->colmap) {
-    ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+    ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
   ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 

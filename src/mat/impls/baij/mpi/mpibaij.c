@@ -3,7 +3,7 @@
 #include <petscblaslapack.h>
 
 extern PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
-extern PetscErrorCode DisAssemble_MPIBAIJ(Mat);
+extern PetscErrorCode MatDisAssemble_MPIBAIJ(Mat);
 extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
 extern PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
 extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
@@ -81,8 +81,8 @@ EXTERN_C_END
    length of colmap equals the global matrix length. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "CreateColmap_MPIBAIJ_Private"
-PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat mat)
+#define __FUNCT__ "MatCreateColmap_MPIBAIJ_Private"
+PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)baij->B->data;
@@ -232,7 +232,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(baij->colmap,in[j]/bs + 1,&col);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
             col = baij->colmap[in[j]/bs] - 1;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
+              ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
               B = baij->B;
@@ -333,7 +333,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
 #if defined(PETSC_USE_DEBUG)
@@ -353,7 +353,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
+              ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];              
             }
           }
@@ -598,7 +598,7 @@ PetscErrorCode MatGetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pet
           ierr = MatGetValues_SeqBAIJ(baij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
         } else {
           if (!baij->colmap) {
-            ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+            ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
@@ -918,7 +918,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew)  {
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,((PetscObject)mat)->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr);
+      ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr);
     }
   }
 
@@ -2265,7 +2265,7 @@ PetscErrorCode  MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts,const PetscInt *g
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
+extern PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIBAIJ"
@@ -2311,7 +2311,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 
   /* Allow access to data structures of local part of matrix */
   if (!baij->colmap) {
-    ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+    ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
   }
   ierr = MatGetColumnIJ(baij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatGetColumnIJ(baij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
@@ -3173,7 +3173,7 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse r
 
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
   ierr = MatDestroy(&b->B);CHKERRQ(ierr);
-  ierr = DisAssemble_MPIBAIJ(A);CHKERRQ(ierr);
+  ierr = MatDisAssemble_MPIBAIJ(A);CHKERRQ(ierr);
   ierr = MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
   ierr = MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -4061,7 +4061,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
 #if defined(PETSC_USE_DEBUG)
@@ -4081,7 +4081,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
+              ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];              
             }
           }

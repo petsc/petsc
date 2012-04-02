@@ -6,7 +6,7 @@
 
 extern PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat); 
 extern PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
-extern PetscErrorCode DisAssemble_MPISBAIJ(Mat);
+extern PetscErrorCode MatDisAssemble_MPISBAIJ(Mat);
 extern PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat,PetscInt,IS[],PetscInt);
 extern PetscErrorCode MatGetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
 extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
@@ -206,7 +206,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
         else {  /* off-diag entry (B) */
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(baij->colmap,in[j]/bs + 1,&col);CHKERRQ(ierr);
@@ -215,7 +215,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
             col = baij->colmap[in[j]/bs] - 1;
 #endif
             if (col < 0 && !((Mat_SeqSBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
+              ierr = MatDisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j]; 
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
               B = baij->B;
@@ -317,7 +317,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
 #if defined(PETSC_USE_DEBUG)
@@ -337,7 +337,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
+              ierr = MatDisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];              
             }
           }
@@ -382,7 +382,7 @@ PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pe
           ierr = MatGetValues_SeqSBAIJ(baij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
         } else {
           if (!baij->colmap) {
-            ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+            ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
@@ -583,7 +583,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew)  {
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,((PetscObject)mat)->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr);
+      ierr = MatDisAssemble_MPISBAIJ(mat);CHKERRQ(ierr);
     }
   }
 

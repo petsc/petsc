@@ -154,7 +154,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DisAssemble_MPIAIJ"
+#define __FUNCT__ "MatDisAssemble_MPIAIJ"
 /*
      Takes the local part of an already assembled MPIAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
@@ -164,7 +164,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
    Kind of slow! But that's what application programmers get when 
    they are sloppy.
 */
-PetscErrorCode DisAssemble_MPIAIJ(Mat A)
+PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
   Mat            B = aij->B,Bnew;

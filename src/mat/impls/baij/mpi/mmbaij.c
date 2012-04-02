@@ -141,8 +141,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
    they are sloppy.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "DisAssemble_MPIBAIJ"
-PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
+#define __FUNCT__ "MatDisAssemble_MPIBAIJ"
+PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)A->data;
   Mat            B = baij->B,Bnew;

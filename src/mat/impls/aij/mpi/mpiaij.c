@@ -330,8 +330,8 @@ a slightly higher hash table cost; without it it is not scalable (each processor
 has an order N integer array but is fast to acess.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "CreateColmap_MPIAIJ_Private"
-PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
+#define __FUNCT__ "MatCreateColmap_MPIAIJ_Private"
+PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode ierr;
@@ -512,7 +512,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         else {
           if (mat->was_assembled) {
             if (!aij->colmap) {
-              ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
@@ -521,7 +521,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
             col = aij->colmap[in[j]] - 1;
 #endif
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
-              ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
+              ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
               col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
               B = aij->B;
@@ -579,7 +579,7 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
         } else {
           if (!aij->colmap) {
-            ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+            ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(aij->colmap,idxn[j]+1,&col);CHKERRQ(ierr);
@@ -672,7 +672,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   if (!((Mat_SeqAIJ*)aij->B->data)->nonew)  {
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,((PetscObject)mat)->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
+      ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
     }
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
@@ -5748,7 +5748,7 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
         else {
           if (mat->was_assembled) {
             if (!aij->colmap) {
-              ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
@@ -5757,7 +5757,7 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
             col = aij->colmap[in[j]] - 1;
 #endif
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
-              ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
+              ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
               col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
               B = aij->B;
