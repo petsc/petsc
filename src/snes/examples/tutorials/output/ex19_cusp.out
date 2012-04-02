@@ -3,8 +3,3 @@ lid velocity = 0.0625, prandtl # = 1, grashof # = 1
   1 SNES Function norm 6.81338e-05 
   2 SNES Function norm 7.72466e-08 
 Number of SNES iterations = 2
-lid velocity = 0.0625, prandtl # = 1, grashof # = 1
-  0 SNES Function norm 0.239155 
-  1 SNES Function norm 6.81338e-05 
-  2 SNES Function norm 7.72466e-08 
-Number of SNES iterations = 2
