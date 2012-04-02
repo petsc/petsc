@@ -35,6 +35,127 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceGetVecs"
+/*@C
+   MatNullSpaceGetVecs - get vectors defining the null space
+
+   Not Collective
+
+   Input Arguments:
+.  sp - null space object
+
+   Output Arguments:
++  has_cnst - PETSC_TRUE if the null space contains the constant vector, otherwise PETSC_FALSE
+.  n - number of vectors (excluding constant vector) in null space
+-  vecs - orthonormal vectors that span the null space (excluding the constant vector)
+
+   Level: developer
+
+.seealso: MatNullSpaceCreate(), MatGetNullSpace(), MatGetNearNullSpace()
+@*/
+PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt *n,const Vec **vecs)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
+  if (has_const) *has_const = sp->has_cnst;
+  if (n) *n = sp->n;
+  if (vecs) *vecs = sp->vecs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceCreateRigidBody"
+/*@
+   MatNullSpaceCreateRigidBody - create rigid body modes from coordinates
+
+   Collective on Vec
+
+   Input Argument:
+.  coords - block of coordinates of each node, must have block size set
+
+   Output Argument:
+.  sp - the null space
+
+   Level: advanced
+
+.seealso: MatNullSpaceCreate()
+@*/
+PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
+{
+  PetscErrorCode ierr;
+  const PetscScalar *x;
+  PetscScalar *v[6],dots[3];
+  Vec vec[6];
+  PetscInt n,N,dim,nmodes,i,j;
+
+  PetscFunctionBegin;
+  ierr = VecGetBlockSize(coords,&dim);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
+  n /= dim;
+  N /= dim;
+  switch (dim) {
+  case 1:
+    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_TRUE,0,PETSC_NULL,sp);CHKERRQ(ierr);
+    break;
+  case 2:
+  case 3:
+    nmodes = (dim == 2) ? 3 : 6;
+    ierr = VecCreate(((PetscObject)coords)->comm,&vec[0]);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec[0],dim*n,dim*N);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(vec[0],dim);CHKERRQ(ierr);
+    ierr = VecSetUp(vec[0]);CHKERRQ(ierr);
+    for (i=1; i<nmodes; i++) {ierr = VecDuplicate(vec[0],&vec[i]);CHKERRQ(ierr);}
+    for (i=0; i<nmodes; i++) {ierr = VecGetArray(vec[i],&v[i]);CHKERRQ(ierr);}
+    ierr = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (dim == 2) {
+        v[0][i*2+0] = 1./N;
+        v[0][i*2+1] = 0.;
+        v[1][i*2+0] = 0.;
+        v[1][i*2+1] = 1./N;
+        /* Rotations */
+        v[2][i*2+0] = -x[i*2+1];
+        v[2][i*2+1] = x[i*2+0];
+      } else {
+        v[0][i*3+0] = 1./N;
+        v[0][i*3+1] = 0.;
+        v[0][i*3+2] = 0.;
+        v[1][i*3+0] = 0.;
+        v[1][i*3+1] = 1./N;
+        v[1][i*3+2] = 0.;
+        v[2][i*3+0] = 0.;
+        v[2][i*3+1] = 0.;
+        v[2][i*3+2] = 1./N;
+
+        v[3][i*3+0] = x[i*3+1];
+        v[3][i*3+1] = -x[i*3+0];
+        v[3][i*3+2] = 0.;
+        v[4][i*3+0] = 0.;
+        v[4][i*3+1] = -x[i*3+2];
+        v[4][i*3+2] = x[i*3+1];
+        v[5][i*3+0] = x[i*3+2];
+        v[5][i*3+1] = 0.;
+        v[5][i*3+2] = -x[i*3+0];
+      }
+    }
+    for (i=0; i<nmodes; i++) {ierr = VecRestoreArray(vec[i],&v[i]);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
+    for (i=dim; i<nmodes; i++) {
+      /* Orthonormalize vec[i] against vec[0:dim] */
+      ierr = VecMDot(vec[i],i,vec,dots);CHKERRQ(ierr);
+      for (j=0; j<i; j++) dots[j] *= -1.;
+      ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
+      ierr = VecNormalize(vec[i],PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_FALSE,nmodes,vec,sp);CHKERRQ(ierr);
+    for (i=0; i<nmodes; i++) {ierr = VecDestroy(&vec[i]);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceView"
 /*@C

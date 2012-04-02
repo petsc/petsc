@@ -1049,6 +1049,7 @@ PetscErrorCode  MatDestroy(Mat *A)
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
@@ -7515,7 +7516,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 +  mat - the matrix
 -  nullsp - the null space object
 
-   Level: developer
+   Level: advanced
 
    Notes:
       This null space is used by solvers. Overwrites any previous null space that may have been attached
@@ -7551,7 +7552,7 @@ PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 +  mat - the matrix
 -  nullsp - the null space object
 
-   Level: developer
+   Level: advanced
 
    Notes:
       Overwrites any previous near null space that may have been attached
@@ -7572,6 +7573,37 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
   mat->nearnullsp = nullsp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetNearNullSpace"
+/*@
+   MatGetNearNullSpace -Get null space attached with MatSetNearNullSpace()
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  nullsp - the null space object, PETSC_NULL if not set
+
+   Level: developer
+
+   Concepts: null space^attaching to matrix
+
+.seealso: MatSetNearNullSpace(), MatGetNullSpace()
+@*/
+PetscErrorCode MatGetNearNullSpace(Mat mat,MatNullSpace *nullsp)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(nullsp,2);
+  MatCheckPreallocated(mat,1);
+  *nullsp = mat->nearnullsp;
   PetscFunctionReturn(0);
 }
 
