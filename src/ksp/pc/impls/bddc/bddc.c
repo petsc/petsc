@@ -750,10 +750,11 @@ EXTERN_C_END
 /*  
    Create C matrix [I 0; 0 const] 
 */
-/* for testing only */
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-#define BDDC_USE_POD
+#ifdef BDDC_USE_POD
+#if !defined(PETSC_MISSING_LAPACK_GESVD)
 #define PETSC_MISSING_LAPACK_GESVD 1
+#define UNDEF_PETSC_MISSING_LAPACK_GESVD 1 
+#endif
 #endif
 
 #undef __FUNCT__  
@@ -779,21 +780,19 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   Vec            *localnearnullsp;
   PetscScalar    *work,*temp_basis,*array_vector,*correlation_mat;
   PetscReal      *rwork,*singular_vals;
-/* some conditional variables */
+  PetscBLASInt   Bone=1;
+/* some ugly conditional declarations */
 #if defined(PETSC_MISSING_LAPACK_GESVD)
-  PetscScalar dot_result;
-  PetscScalar  one=1.0,zero=0.0;
-  PetscInt ii;
+  PetscScalar    dot_result;
+  PetscScalar    one=1.0,zero=0.0;
+  PetscInt       ii;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar val1,val2;
-#else
-  PetscBLASInt Bone=1;
+  PetscScalar    val1,val2;
 #endif
 #else
-  PetscBLASInt dummy_int;
-  PetscScalar dummy_scalar;
+  PetscBLASInt   dummy_int;
+  PetscScalar    dummy_scalar;
 #endif
-
 
   PetscFunctionBegin;
   /* check if near null space is attached to global mat */
@@ -923,21 +922,30 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       total_counts++; 
     }
     for(k=0;k<nnsp_size;k++) {
-      temp_constraints++;
       ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
       for(j=0;j<size_of_constraint;j++) {
         temp_indices_to_constraint[temp_indices[total_counts]+j]=is_indices[j];
         temp_quadrature_constraint[temp_indices[total_counts]+j]=array_vector[is_indices[j]];
       }
       ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
-      temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
-      total_counts++;
+      quad_value = 1.0;
+      if( use_nnsp_true ) { /* check if array is null on the connected component in case use_nnsp_true has been requested */
+        Bs = PetscBLASIntCast(size_of_constraint);
+        quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone);
+      }
+      if ( quad_value > 0.0 ) { /* keep indices and values */
+        temp_constraints++;
+        temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
+        total_counts++;
+      }
     }
     ierr = ISRestoreIndices(*used_IS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    /* perform SVD on the constraint if use true has not be requested by the user */
+    /* perform SVD on the constraint if use_nnsp_true has not be requested by the user */
     if(!use_nnsp_true) {
+
       Bs = PetscBLASIntCast(size_of_constraint);
       Bt = PetscBLASIntCast(temp_constraints);
+
 #if defined(PETSC_MISSING_LAPACK_GESVD)
       ierr = PetscMemzero(correlation_mat,Bt*Bt*sizeof(PetscScalar));CHKERRQ(ierr);
       /* Store upper triangular part of correlation matrix */
@@ -978,7 +986,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
           }
         }
       }
+
 #else  /* on missing GESVD */
+
       PetscInt min_n = temp_constraints;
       if(min_n > size_of_constraint) min_n = size_of_constraint;
       dummy_int = Bs;
@@ -996,6 +1006,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       j=0;
       while( j < min_n && singular_vals[min_n-j-1] < tol) j++;
       total_counts = total_counts-(PetscInt)Bt+(min_n-j);
+
 #endif
     }
   }
@@ -1037,9 +1048,10 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   ierr = PetscFree(localnearnullsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#ifdef BDDC_USE_POD
+#ifdef UNDEF_PETSC_MISSING_LAPACK_GESVD
 #undef PETSC_MISSING_LAPACK_GESVD
 #endif
+
 /* -------------------------------------------------------------------------- */
 /*  
    PCBDDCCoarseSetUp - 
