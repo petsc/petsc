@@ -1276,7 +1276,7 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
 
 /* -------------------------------------------------------------------------- */
 /*MC
-     PCCreate_GAMG - Geometric algebraic multigrid (AMG) preconditioning framework. 
+     PCGAMG - Geometric algebraic multigrid (AMG) preconditioning framework.
        - This is the entry point to GAMG, registered in pcregis.c
 
    Options Database Keys:
