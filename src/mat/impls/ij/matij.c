@@ -41,7 +41,7 @@ M*/
 typedef struct {
   PetscBool multivalued;  /* Whether the underlying pseudograph is not a graph. */
   /* The following data structures are using for stashing. */
-  StashMPIIJ stash;
+  MatStashMPIIJ stash;
   /* The following data structures are used for mapping. */
   PetscHashI hsupp; /* local support in a hash table */
   PetscInt m,n;
@@ -613,7 +613,7 @@ PetscErrorCode MatIJSetMultivalued(Mat A, PetscBool multivalued)
   ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_FALSE,1); 
-  ierr = StashMPIIJSetMultivalued_Private(pg->stash,multivalued); CHKERRQ(ierr);
+  ierr = MatStashMPIIJSetMultivalued_Private(pg->stash,multivalued); CHKERRQ(ierr);
   pg->multivalued = multivalued;
   PetscFunctionReturn(0);
 }
@@ -804,7 +804,7 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
     }
     iyidx = iiyidx;
   }
-  ierr = StashMPIIJExtend_Private(pg->stash, len, ixidx, iyidx); CHKERRQ(ierr);
+  ierr = MatStashMPIIJExtend_Private(pg->stash, len, ixidx, iyidx); CHKERRQ(ierr);
   if(!iixidx) {
     ierr = PetscFree(iixidx); CHKERRQ(ierr);
   }
@@ -913,7 +913,7 @@ PetscErrorCode MatIJGetEdges(Mat A, PetscInt *len, PetscInt **ixidx, PetscInt **
   if(!len && !ixidx && !iyidx) PetscFunctionReturn(0);
 
   ierr = MatIJGetAssembledEdges_Private(A, &lenI, PETSC_NULL, PETSC_NULL);              CHKERRQ(ierr);
-  ierr = StashMPIIJGetIndicesMerged_Private(pg->stash, &lenII, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatStashMPIIJGetIndicesMerged_Private(pg->stash, &lenII, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
  
   len_ = lenI + lenII;
   if(len) *len = len_;
@@ -924,7 +924,7 @@ PetscErrorCode MatIJGetEdges(Mat A, PetscInt *len, PetscInt **ixidx, PetscInt **
 
   if(!lenI) {
     /* Only stash indices need to be returned. */
-    ierr = StashMPIIJGetIndicesMerged_Private(pg->stash, len, ixidx, iyidx); CHKERRQ(ierr);
+    ierr = MatStashMPIIJGetIndicesMerged_Private(pg->stash, len, ixidx, iyidx); CHKERRQ(ierr);
   }
   else if(!lenII) {
     /* Only assembled edges must be returned. */
@@ -933,7 +933,7 @@ PetscErrorCode MatIJGetEdges(Mat A, PetscInt *len, PetscInt **ixidx, PetscInt **
   else {
     /* Retrieve the two sets of indices. */
     ierr = MatIJGetAssembledEdges_Private(A, &lenI, &ixidxI, &iyidxI);                CHKERRQ(ierr);
-    ierr = StashMPIIJGetIndicesMerged_Private(pg->stash, &lenII, &ixidxII, &iyidxII); CHKERRQ(ierr);
+    ierr = MatStashMPIIJGetIndicesMerged_Private(pg->stash, &lenII, &ixidxII, &iyidxII); CHKERRQ(ierr);
     /* Merge. */
     ierr = PetscMergeIntArrayPair(lenI,ixidxI,iyidxI,lenII,ixidxII,iyidxII,len,ixidx,iyidx); CHKERRQ(ierr);
     /* Clean up. */
@@ -1163,12 +1163,12 @@ PetscErrorCode MatAssemblyBegin_IJ(Mat A, MatAssemblyType type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = StashMPIIJAssemble_Private(ij->stash);              CHKERRQ(ierr);
+  ierr = MatStashMPIIJAssemble_Private(ij->stash);              CHKERRQ(ierr);
   if(type == MAT_FINAL_ASSEMBLY) {
     ierr = MatIJGetEdges(A, &len, &ixidx, &iyidx);           CHKERRQ(ierr);
-    ierr = StashMPIIJClear_Private(ij->stash);               CHKERRQ(ierr);
+    ierr = MatStashMPIIJClear_Private(ij->stash);               CHKERRQ(ierr);
 
-    ierr = StashMPIIJSetPreallocation_Private(ij->stash, 0,0); CHKERRQ(ierr);
+    ierr = MatStashMPIIJSetPreallocation_Private(ij->stash, 0,0); CHKERRQ(ierr);
     ierr = MatIJClear_Private(A);                            CHKERRQ(ierr);  
     ierr = MatIJSetEdgesLocal_Private(A, len, ixidx, iyidx); CHKERRQ(ierr);
   }
@@ -1986,7 +1986,7 @@ PetscErrorCode MatZeroEntries_IJ(Mat A)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatIJClear_Private(A); CHKERRQ(ierr);
-  ierr = StashMPIIJClear_Private(pg->stash); CHKERRQ(ierr);
+  ierr = MatStashMPIIJClear_Private(pg->stash); CHKERRQ(ierr);
   A->was_assembled = A->assembled;
   A->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -2050,7 +2050,7 @@ PetscErrorCode MatDestroy_IJ(Mat A) {
   
   PetscFunctionBegin;
   ierr = MatIJClear_Private(A); CHKERRQ(ierr);
-  ierr = StashMPIIJDestroy_Private(&(pg->stash)); CHKERRQ(ierr);
+  ierr = MatStashMPIIJDestroy_Private(&(pg->stash)); CHKERRQ(ierr);
   A->data = PETSC_NULL;
   
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_ij_ij_C", "",PETSC_NULL); CHKERRQ(ierr);
@@ -2072,7 +2072,7 @@ PetscErrorCode MatCreate_IJ(Mat A) {
   ierr = PetscLayoutSetUp(A->rmap);         CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);         CHKERRQ(ierr);
 
-  ierr = StashMPIIJCreate_Private(A->rmap, &(pg->stash));  CHKERRQ(ierr);
+  ierr = MatStashMPIIJCreate_Private(A->rmap, &(pg->stash));  CHKERRQ(ierr);
 
   ierr = PetscMemzero(A->ops,sizeof(*(A->ops)));CHKERRQ(ierr);
   A->ops->assemblybegin         = MatAssemblyBegin_IJ;

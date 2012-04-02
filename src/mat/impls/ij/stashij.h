@@ -7,43 +7,42 @@
 /* Need PetscHash */
 #include <../src/sys/utils/hash.h>
 
-struct _StashSeqIJ {
+struct _MatStashSeqIJ {
   PetscInt      n;
   PetscBool     multivalued;
   PetscHashIJ   h;
 };
-typedef struct _StashSeqIJ *StashSeqIJ;
+typedef struct _MatStashSeqIJ *MatStashSeqIJ;
 
-struct _StashMPIIJ {
+struct _MatStashMPIIJ {
   PetscLayout rmap;
-  StashSeqIJ astash, bstash;
-  PetscBool  assembled;
+  MatStashSeqIJ  astash, bstash;
+  PetscBool   assembled;
 };
-typedef struct _StashMPIIJ *StashMPIIJ;
+typedef struct _MatStashMPIIJ *MatStashMPIIJ;
+
+extern PetscErrorCode MatStashSeqIJCreate_Private(MatStashSeqIJ*);
+extern PetscErrorCode MatStashSeqIJGetMultivalued_Private(MatStashSeqIJ, PetscBool*);
+extern PetscErrorCode MatStashSeqIJSetMultivalued_Private(MatStashSeqIJ, PetscBool);
+extern PetscErrorCode MatStashSeqIJExtend_Private(MatStashSeqIJ, PetscInt, const PetscInt*, const PetscInt*);
+
+extern PetscErrorCode MatStashSeqIJSetPreallocation_Private(MatStashSeqIJ, PetscInt);
+extern PetscErrorCode MatStashSeqIJGetIndices_Private(MatStashSeqIJ, PetscInt*,PetscInt**, PetscInt**);
+extern PetscErrorCode MatStashSeqIJClear_Private(MatStashSeqIJ);
+extern PetscErrorCode MatStashSeqIJDestroy_Private(MatStashSeqIJ *);
 
 
+extern PetscErrorCode MatStashMPIIJCreate_Private(PetscLayout, MatStashMPIIJ*);
+extern PetscErrorCode MatStashMPIIJGetMultivalued_Private(MatStashMPIIJ, PetscBool*);
+extern PetscErrorCode MatStashMPIIJSetMultivalued_Private(MatStashMPIIJ, PetscBool);
+extern PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ *);
+extern PetscErrorCode MatStashMPIIJClear_Private(MatStashMPIIJ);
 
-extern PetscErrorCode StashSeqIJCreate_Private(StashSeqIJ*);
-extern PetscErrorCode StashSeqIJGetMultivalued_Private(StashSeqIJ, PetscBool*);
-extern PetscErrorCode StashSeqIJSetMultivalued_Private(StashSeqIJ, PetscBool);
-extern PetscErrorCode StashSeqIJExtend_Private(StashSeqIJ, PetscInt, const PetscInt*, const PetscInt*);
+extern PetscErrorCode MatStashMPIIJSetPreallocation_Private(MatStashMPIIJ, PetscInt, PetscInt);
+extern PetscErrorCode MatStashMPIIJExtend_Private(MatStashMPIIJ, PetscInt, const PetscInt*, const PetscInt*);
+extern PetscErrorCode MatStashMPIIJGetIndices_Private(MatStashMPIIJ, PetscInt*,PetscInt**, PetscInt**,PetscInt*,PetscInt**,PetscInt**);
+
+extern PetscErrorCode MatStashMPIIJGetIndicesMerged_Private(MatStashMPIIJ, PetscInt*,PetscInt**, PetscInt**);
+
+extern PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ);
 #endif
-extern PetscErrorCode StashSeqIJSetPreallocation_Private(StashSeqIJ, PetscInt);
-extern PetscErrorCode StashSeqIJGetIndices_Private(StashSeqIJ, PetscInt*,PetscInt**, PetscInt**);
-extern PetscErrorCode StashSeqIJClear_Private(StashSeqIJ);
-extern PetscErrorCode StashSeqIJDestroy_Private(StashSeqIJ *);
-
-
-extern PetscErrorCode StashMPIIJCreate_Private(PetscLayout, StashMPIIJ*);
-extern PetscErrorCode StashMPIIJGetMultivalued_Private(StashMPIIJ, PetscBool*);
-extern PetscErrorCode StashMPIIJSetMultivalued_Private(StashMPIIJ, PetscBool);
-extern PetscErrorCode StashMPIIJDestroy_Private(StashMPIIJ *);
-extern PetscErrorCode StashMPIIJClear_Private(StashMPIIJ);
-
-extern PetscErrorCode StashMPIIJSetPreallocation_Private(StashMPIIJ, PetscInt, PetscInt);
-extern PetscErrorCode StashMPIIJExtend_Private(StashMPIIJ, PetscInt, const PetscInt*, const PetscInt*);
-extern PetscErrorCode StashMPIIJGetIndices_Private(StashMPIIJ, PetscInt*,PetscInt**, PetscInt**,PetscInt*,PetscInt**,PetscInt**);
-
-extern PetscErrorCode StashMPIIJGetIndicesMerged_Private(StashMPIIJ, PetscInt*,PetscInt**, PetscInt**);
-
-extern PetscErrorCode StashMPIIJAssemble_Private(StashMPIIJ);
