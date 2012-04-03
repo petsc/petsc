@@ -832,6 +832,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, const SNESLineSe
    SNESGetSNESLineSearch().  This routine is therefore mainly called within SNES
    implementations.
 
+   Level: developer
 
 .seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
 @*/
@@ -846,7 +847,10 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetSNES"
 /*@
-   SNESLineSearchGetSNES - Gets the SNES for the linesearch for function evaluation.
+   SNESLineSearchGetSNES - Gets the SNES instance associated with the line search.
+   Having an associated SNES is necessary because most line search implementations must be able to
+   evaluate the function using SNESComputeFunction() for the associated SNES.  This routine
+   is used in the line search implementations when one must get this associated SNES instance.
 
    Input Parameters:
 .  linesearch - linesearch context
@@ -854,7 +858,7 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes){
    Output Parameters:
 .  snes - The snes instance
 
-   Level: advanced
+   Level: developer
 
 .seealso: SNESLineSearchGetSNES(), SNESLineSearchSetVecs(), SNES
 @*/
