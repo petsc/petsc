@@ -545,6 +545,11 @@ runex50_6:
 	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex50_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_6.tmp
+runex50_7: 
+	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -da_refine 1 -ksp_type fgmres  > ex19_7.tmp 2>&1; \
+	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_7, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_7.tmp
 
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas \

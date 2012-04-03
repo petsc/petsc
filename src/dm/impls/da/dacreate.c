@@ -176,7 +176,7 @@ PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, I
     ierr = DMDASetStencilWidth(da, dd->s);CHKERRQ(ierr);
     ierr = DMSetUp(da);CHKERRQ(ierr);
     ierr = PetscMalloc(dof*sizeof(DM),dmlist);CHKERRQ(ierr);
-    for (i=0; i<dof+1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
+    for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
   *len = dof;
