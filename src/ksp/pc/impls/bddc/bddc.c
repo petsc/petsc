@@ -777,6 +777,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   const MatType  impMatType=MATSEQAIJ;
   PetscBLASInt   Bs,Bt,lwork,lierr;
   PetscReal      tol=1.0e-8;
+  MatNullSpace   nearnullsp;
+  const Vec      *nearnullvecs;
   Vec            *localnearnullsp;
   PetscScalar    *work,*temp_basis,*array_vector,*correlation_mat;
   PetscReal      *rwork,*singular_vals;
@@ -796,9 +798,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
 
   PetscFunctionBegin;
   /* check if near null space is attached to global mat */
-  if(pc->pmat->nearnullsp) {
-    nnsp_has_cnst = pc->pmat->nearnullsp->has_cnst;
-    nnsp_size = pc->pmat->nearnullsp->n;
+  ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
+  if (nearnullsp) {
+    ierr = MatNullSpaceGetVecs(nearnullsp,&nnsp_has_cnst,&nnsp_size,&nearnullvecs);CHKERRQ(ierr);
   } else { /* if near null space is not provided it uses constants */ 
     nnsp_has_cnst = PETSC_TRUE;
     use_nnsp_true = PETSC_TRUE; 
@@ -895,8 +897,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   ierr = PetscMalloc(nnsp_size*sizeof(Vec),&localnearnullsp);CHKERRQ(ierr);
   for(k=0;k<nnsp_size;k++) {
     ierr = VecDuplicate(pcis->vec1_N,&localnearnullsp[k]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pc->pmat->nearnullsp->vecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pc->pmat->nearnullsp->vecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   /* Now we can loop on constraining sets */
   total_counts=0;
