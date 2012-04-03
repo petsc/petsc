@@ -497,7 +497,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     if(!pc_gamg->createdefaultdata){
       SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_LIB,"'createdefaultdata' not set?!?! need to support NULL data!!!");
     }
-    ierr = pc_gamg->createdefaultdata( pc ); CHKERRQ(ierr);
+    ierr = pc_gamg->createdefaultdata( pc, Pmat ); CHKERRQ(ierr);
   }
   
   /* Get A_i and R_i */

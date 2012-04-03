@@ -86,7 +86,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetData_GEO"
-PetscErrorCode PCSetData_GEO( PC pc )
+PetscErrorCode PCSetData_GEO( PC pc, Mat m )
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_LIB,"GEO MG needs coordinates");

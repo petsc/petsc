@@ -678,11 +678,37 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetData_AGG"
-PetscErrorCode PCSetData_AGG( PC pc )
+PetscErrorCode PCSetData_AGG( PC pc, Mat a_A )
 {
   PetscErrorCode  ierr;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+  MatNullSpace mnull;
+
   PetscFunctionBegin;
-  ierr = PCSetCoordinates_AGG( pc, -1, PETSC_NULL ); CHKERRQ(ierr);
+  ierr = MatGetNearNullSpace( a_A, &mnull ); CHKERRQ(ierr);
+  if( !mnull ) {
+    ierr = PCSetCoordinates_AGG( pc, -1, PETSC_NULL ); CHKERRQ(ierr);
+  }
+  else {
+    PetscReal *nullvec;
+    PetscBool has_const;
+    PetscInt i,j,mlocal,nvec,bs;
+    const Vec *vecs; const PetscScalar *v;
+    ierr = MatGetLocalSize(a_A,&mlocal,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
+     ierr  = MatGetBlockSize( a_A, &bs );               CHKERRQ( ierr );
+    ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof *nullvec,&nullvec);CHKERRQ(ierr);
+    if (has_const) for (i=0; i<mlocal; i++) nullvec[i] = 1.0;
+    for (i=0; i<nvec; i++) {
+      ierr = VecGetArrayRead(vecs[i],&v);CHKERRQ(ierr);
+      for (j=0; j<mlocal; j++) nullvec[(i+!!has_const)*mlocal + j] = PetscRealPart(v[j]);
+      ierr = VecRestoreArrayRead(vecs[i],&v);CHKERRQ(ierr);
+    }
+    pc_gamg->data = nullvec;
+    pc_gamg->data_cell_cols = (nvec+!!has_const);
+    pc_gamg->data_cell_rows = bs;
+  }
   PetscFunctionReturn(0);
 }
 

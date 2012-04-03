@@ -28,7 +28,7 @@ typedef struct gamg_TAG{
   PetscErrorCode (*prolongator)( PC, const Mat, const Mat, PetscCoarsenData *, Mat* );
   PetscErrorCode (*optprol)( PC, const Mat, Mat* );
 
-  PetscErrorCode (*createdefaultdata)( PC ); /* for data methods that have a default (SA) */
+  PetscErrorCode (*createdefaultdata)( PC, Mat ); /* for data methods that have a default (SA) */
   void          *subctx;
 } PC_GAMG;
 
