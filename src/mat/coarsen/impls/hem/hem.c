@@ -404,7 +404,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   MPI_Comm       wcomm = ((PetscObject)a_Gmat)->comm;
   PetscInt       sub_it,kk,n,ix,*idx,*ii,iter,Iend,my0;
   PetscMPIInt    mype,npe;
-  const PetscInt nloc = a_Gmat->rmap->n,n_iter=4; /* need to figure out how to stop this */
+  const PetscInt nloc = a_Gmat->rmap->n,n_iter=6; /* need to figure out how to stop this */
   PetscInt      *lid_cprowID,*lid_gid;
   PetscBool     *lid_matched;
   Mat_SeqAIJ    *matA, *matB=0;
