@@ -1817,8 +1817,10 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
   if (!dm->ops->jacobian) {
     ISColoring     coloring;
     MatFDColoring  fd;
-
-    ierr = DMCreateColoring(dm,dm->coloringtype,MATAIJ,&coloring);CHKERRQ(ierr);
+    const MatType  mtype;
+    
+    ierr = PetscObjectGetType((PetscObject)B,&mtype);CHKERRQ(ierr);
+    ierr = DMCreateColoring(dm,dm->coloringtype,mtype,&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);

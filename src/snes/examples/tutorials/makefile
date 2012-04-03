@@ -550,6 +550,41 @@ runex50_7:
 	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_7, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_7.tmp
+runex50_8: 
+	-@${MPIEXEC} -n 1 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view   -fieldsplit_pc_type lu -da_refine 1 -ksp_type fgmres > ex19_8.tmp 2>&1; \
+	   if (${DIFF} output/ex19_8.out ex19_8.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_8, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_8.tmp
+runex50_9: 
+	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres  > ex19_9.tmp 2>&1; \
+	   if (${DIFF} output/ex19_9.out ex19_9.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_9, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_9.tmp
+runex50_10: 
+	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view  -da_refine 1 -ksp_type fgmres > ex19_10.tmp 2>&1; \
+	   if (${DIFF} output/ex19_10.out ex19_10.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_10, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_10.tmp
+runex50_11: #test pc_redundant
+	-@${MPIEXEC} -n 4 ./ex50  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres > ex19_11.tmp 2>&1; \
+	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_11, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_11.tmp
+runex50_12: #test pc_redundant
+	-@${MPIEXEC} -n 12 ./ex50 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
+	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_12, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_12.tmp
+runex50_13: #test pc_fieldsplit with -snes_mf_operator
+	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view  -da_refine 1 -ksp_type fgmres  -snes_mf_operator > ex19_13.tmp 2>&1; \
+	   if (${DIFF} output/ex19_13.out ex19_13.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_13.tmp
+runex50_14:
+	-@${MPIEXEC} -n 2 ./ex50 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
+	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_14.tmp
 
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas \
