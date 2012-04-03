@@ -372,12 +372,14 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
       SNESLS - Newton based nonlinear solver that uses a line search
 
    Options Database:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
-.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
-.   -snes_ls_monitor - print information about progress of line searches 
--   -snes_ls_damping - damping factor used if -snes_ls is basic or basicnonorms
++   -snes_linesearch [bt,basic] - Selects line search
+.   -snes_linesearch_order[quadratic,cubic] - Selects the order of the line search for bt
+.   -snes_linesearch_norms<true> - Turns on/off computation of the norms for basic
+.   -snes_linesearch_alpha<alpha> - Sets alpha used in determining if reduction in function norm is sufficient
+.   -snes_linesearch_maxstep<maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
+.   -snes_linesearch_minlambda<minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
+.   -snes_linesearch_monitor - print information about progress of line searches
+-   -snes_linesearch_damping - damping factor used for basic line search
 
 
     Notes: This is the default nonlinear solver in SNES
