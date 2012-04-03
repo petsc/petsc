@@ -31,17 +31,23 @@ class Configure(PETSc.package.NewPackage):
     self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
+  def __str__(self):
+    output  = PETSc.package.NewPackage.__str__(self)
+    output += '  Arch:     '+self.arch+'\n'
+    return output
+
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
     help.addArgument('CUDA', '-with-cuda-arch=<arch>', nargs.Arg(None, None, 'Target architecture for nvcc, e.g. sm_13'))
+    help.addArgument('CUDA', '-with-cuda-only=<bool>', nargs.ArgBool(None, 1, 'Allows CUDA compiles without Thrust and Cusp'))
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers',self)
     self.headers      = framework.require('config.headers',self)
-    self.scalartypes  = framework.require('PETSc.utilities.scalarTypes', self)        
+    self.scalartypes  = framework.require('PETSc.utilities.scalarTypes', self)
     self.languages    = framework.require('PETSc.utilities.languages',   self)
     self.cusp         = framework.require('config.packages.cusp',        self)
     self.thrust       = framework.require('config.packages.thrust',      self)
@@ -103,13 +109,14 @@ class Configure(PETSc.package.NewPackage):
         if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21']:
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_13\'')
         else:
-          self.setCompilers.addCompilerFlag('-arch='+ self.framework.argDB['with-cuda-arch'])
+          self.arch = '-arch='+ self.framework.argDB['with-cuda-arch']
       elif self.scalartypes.precision == 'double':
         #default to sm_13 for double precision
-        self.setCompilers.addCompilerFlag('-arch=sm_13')
+        self.arch = '-arch=sm_13'
       elif self.scalartypes.precision == 'single':
         #default to sm_10 for single precision
-        self.setCompilers.addCompilerFlag('-arch=sm_10')
+        self.arch = '-arch=sm_10'
+      self.setCompilers.addCompilerFlag(self.arch)
       self.setCompilers.popLanguage()
     self.checkSizeofVoidP()
     return
@@ -197,11 +204,12 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
     self.checkCUDAVersion()
-    self.checkThrustVersion()
-    self.checkCUSPVersion()
     self.checkNVCCDoubleAlign()
-    if not self.cusp.found or not self.thrust.found:
-      raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+    if not self.framework.argDB['with-cuda-only']:
+      if not self.cusp.found or not self.thrust.found:
+        raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+      self.checkThrustVersion()
+      self.checkCUSPVersion()
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')

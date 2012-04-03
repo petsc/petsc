@@ -3,9 +3,9 @@
 /* matimpl.h is needed only for logging of matrix operation */
 #include <petsc-private/matimpl.h>
 
-extern PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
-extern PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
-extern PetscErrorCode DiffParameterDestroy_More(void*);
+extern PetscErrorCode SNESDiffParameterCreate_More(SNES,Vec,void**);
+extern PetscErrorCode SNESDiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
+extern PetscErrorCode SNESDiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES         snes;             /* SNES context */
@@ -35,7 +35,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(&ctx->w);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
-  if (ctx->jorge || ctx->compute_err) {ierr = DiffParameterDestroy_More(ctx->data);CHKERRQ(ierr);}
+  if (ctx->jorge || ctx->compute_err) {ierr = SNESDiffParameterDestroy_More(ctx->data);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -114,7 +114,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
     /* Use Jorge's method to compute h */
     if (ctx->jorge) {
-      ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
+      ierr = SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
 
     /* Use the Brown/Saad method to compute h */
     } else { 
@@ -122,7 +122,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
       ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
       if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
-        ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
+        ierr = SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
         ierr = PetscInfo3(snes,"Using Jorge's noise: noise=%G, sqrt(noise)=%G, h_more=%G\n",noise,ctx->error_rel,h);CHKERRQ(ierr);
         ctx->compute_err_iter = iter;
@@ -249,7 +249,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   }
   if (mfctx->compute_err) mfctx->need_err = PETSC_TRUE;
   if (mfctx->jorge || mfctx->compute_err) {
-    ierr = DiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
+    ierr = SNESDiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);

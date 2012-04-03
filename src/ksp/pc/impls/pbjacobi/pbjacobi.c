@@ -255,6 +255,23 @@ static PetscErrorCode PCDestroy_PBJacobi(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCView_PBJacobi"
+static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  point-block Jacobi: block size %D\n",jac->bs);CHKERRQ(ierr);
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for point-block Jacobi",((PetscObject)viewer)->type_name);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*MC
      PCPBJACOBI - Point block Jacobi
@@ -303,7 +320,7 @@ PetscErrorCode  PCCreate_PBJacobi(PC pc)
   pc->ops->setup               = PCSetUp_PBJacobi;
   pc->ops->destroy             = PCDestroy_PBJacobi;
   pc->ops->setfromoptions      = 0;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_PBJacobi;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;

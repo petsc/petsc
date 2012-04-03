@@ -102,7 +102,6 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);
-  PetscPreLoadBegin(PETSC_TRUE,"SetUp");
     ierr = DMMGCreate(comm,nlevels,&user,&dmmg);CHKERRQ(ierr);
 
     /*
@@ -156,7 +155,6 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
-  PetscPreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -176,7 +174,6 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  PetscPreLoadEnd();
 
 /********  PetscDraw draw;
   ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&draw);CHKERRQ(ierr);

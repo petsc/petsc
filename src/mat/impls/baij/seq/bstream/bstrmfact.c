@@ -4,7 +4,7 @@
 #include "../src/mat/impls/baij/seq/bstream/bstream.h"
 
 extern PetscErrorCode MatDestroy_SeqBSTRM(Mat A);
-extern PetscErrorCode SeqBSTRM_convert_bstrm(Mat A);
+extern PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A);
 /*=========================================================*/ 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBSTRM_4"
@@ -213,7 +213,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
   
   ierr = PetscNewLog(F,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
   F->spptr = (void *) bstrm;  
-  ierr = SeqBSTRM_convert_bstrm(F);CHKERRQ(ierr);
+  ierr = MatSeqBSTRM_convert_bstrm(F);CHKERRQ(ierr);
 /*.........................................................
   F->ops->solve          = MatSolve_SeqBSTRM_5;
   .........................................................*/ 

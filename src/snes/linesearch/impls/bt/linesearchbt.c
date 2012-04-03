@@ -36,6 +36,8 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
    Input Parameters:
 .  linesearch - linesearch context
+
+   Output Parameters:
 .  alpha - The descent parameter
 
    Level: intermediate

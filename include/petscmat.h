@@ -1737,8 +1737,11 @@ extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 extern PetscErrorCode  MatGetNullSpace(Mat, MatNullSpace *);
 extern PetscErrorCode  MatSetNullSpace(Mat,MatNullSpace);
 extern PetscErrorCode  MatSetNearNullSpace(Mat,MatNullSpace);
+extern PetscErrorCode  MatGetNearNullSpace(Mat,MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
 extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
+extern PetscErrorCode MatNullSpaceGetVecs(MatNullSpace,PetscBool*,PetscInt*,const Vec**);
+extern PetscErrorCode MatNullSpaceCreateRigidBody(Vec,MatNullSpace*);
 
 extern PetscErrorCode  MatReorderingSeqSBAIJ(Mat,IS);
 extern PetscErrorCode  MatMPISBAIJSetHashTableFactor(Mat,PetscReal);

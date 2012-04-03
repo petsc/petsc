@@ -2809,16 +2809,16 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           ibdiag[cnt] = 1.0/ibdiag[cnt];
           break;
         case 2:
-          ierr = Kernel_A_gets_inverse_A_2(ibdiag+cnt,shift);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 3:
-          ierr = Kernel_A_gets_inverse_A_3(ibdiag+cnt,shift);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 4:
-          ierr = Kernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 5:
-          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift);CHKERRQ(ierr);
           break;
        default:
 	 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);

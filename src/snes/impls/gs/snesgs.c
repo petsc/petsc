@@ -2,7 +2,6 @@
 
 typedef struct {
   PetscInt  sweeps;
-  PetscBool norms;
 } SNES_GS;
 
 #undef __FUNCT__
@@ -38,11 +37,9 @@ PetscErrorCode SNESSetUp_GS(SNES snes)
 PetscErrorCode SNESSetFromOptions_GS(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_GS        *gs = (SNES_GS *)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_gs_norms","Compute norms for monitoring","none",gs->norms,&gs->norms,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -65,7 +62,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   PetscInt       i;
   PetscReal      fnorm;
   PetscErrorCode ierr;
-  SNES_GS        *gs = (SNES_GS *)snes->data;
+  SNESNormType   normtype;
 
   PetscFunctionBegin;
 
@@ -73,49 +70,62 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   F = snes->vec_func;
   B = snes->vec_rhs;
 
-  fnorm = 1.;
-
-  snes->reason = SNES_CONVERGED_ITERATING;
-  /* compute the initial function and preconditioned update delX */
-  if (!snes->vec_func_init_set) {
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-  } else {
-    snes->vec_func_init_set = PETSC_FALSE;
-  }
-
-  /* convergence test */
-  if (!snes->norm_init_set) {
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-  } else {
-    fnorm = snes->norm_init;
-    snes->norm_init_set = PETSC_FALSE;
-  }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
-  snes->norm = fnorm;
+  snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,snes->norm,0);
-  ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
+  snes->reason = SNES_CONVERGED_ITERATING;
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
-  /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-  if (snes->reason) PetscFunctionReturn(0);
+  ierr = SNESGetNormType(snes, &normtype);CHKERRQ(ierr);
+  if (normtype == SNES_NORM_FUNCTION || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
+    /* compute the initial function and preconditioned update delX */
+    if (!snes->vec_func_init_set) {
+      ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+      if (snes->domainerror) {
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+        PetscFunctionReturn(0);
+      }
+    } else {
+      snes->vec_func_init_set = PETSC_FALSE;
+    }
+
+    /* convergence test */
+    if (!snes->norm_init_set) {
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+      if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    } else {
+      fnorm = snes->norm_init;
+      snes->norm_init_set = PETSC_FALSE;
+    }
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->iter = 0;
+    snes->norm = fnorm;
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    SNESLogConvHistory(snes,snes->norm,0);
+    ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
+
+    /* set parameter for default relative tolerance convergence test */
+    snes->ttol = fnorm*snes->rtol;
+
+    /* test convergence */
+    ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (snes->reason) PetscFunctionReturn(0);
+  } else {
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    SNESLogConvHistory(snes,snes->norm,0);
+    ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
+  }
+
 
   /* Call general purpose update function */
   if (snes->ops->update) {
     ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
   }
+
   for (i = 0; i < snes->max_its; i++) {
     ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
     /* only compute norms if requested or about to exit due to maximum iterations */
-    if (gs->norms || i == snes->max_its - 1) {
+    if (normtype == SNES_NORM_FUNCTION || ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY))) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
       if (snes->domainerror) {
         snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -123,24 +133,30 @@ PetscErrorCode SNESSolve_GS(SNES snes)
       }
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-      /* Monitor convergence */
-      ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-      snes->iter = i+1;
-      snes->norm = fnorm;
-      ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     }
+    /* Monitor convergence */
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->iter = i+1;
+    snes->norm = fnorm;
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (normtype == SNES_NORM_FUNCTION) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
-
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
   }
-  if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */
+  if (normtype == SNES_NORM_FUNCTION) {
+    if (i == snes->max_its) {
+      ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
+      if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    }
+  } else {
+    if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */
+  }
   PetscFunctionReturn(0);
 }
 
@@ -182,7 +198,6 @@ PetscErrorCode SNESCreate_GS(SNES snes)
 
   ierr = PetscNewLog(snes, SNES_GS, &gs);CHKERRQ(ierr);
   snes->data = (void*) gs;
-  gs->norms = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

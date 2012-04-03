@@ -272,7 +272,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat C,Mat A,c
     /* invert diagonal block */
     d = ba+k*49;
     ierr = PetscMemcpy(d,dk,49*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_7(d,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_7(d,shift);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

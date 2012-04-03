@@ -4,7 +4,7 @@
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-#define Kernel_A_gets_transpose_A_BODY(a,N)                             \
+#define PetscKernel_A_gets_transpose_A_BODY(a,N)                             \
     int i,j;                                                            \
     for (i=0; i<N; i++) {                                               \
       for (j=i+1; j<N; j++) {                                           \
@@ -15,21 +15,21 @@
     }                                                                   \
     return 0
 
-PETSC_STATIC_INLINE PetscErrorCode Kernel_A_gets_transpose_A_N (MatScalar *a,PetscInt N) {
-  Kernel_A_gets_transpose_A_BODY(a,N);
+PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_N (MatScalar *a,PetscInt N) {
+  PetscKernel_A_gets_transpose_A_BODY(a,N);
 }
-#define Kernel_A_gets_transpose_A_DECLARE(N)                            \
-  PETSC_STATIC_INLINE PetscErrorCode Kernel_A_gets_transpose_A_ ## N (MatScalar *a) { \
-    Kernel_A_gets_transpose_A_BODY(a,N);                                \
+#define PetscKernel_A_gets_transpose_A_DECLARE(N)                            \
+  PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_ ## N (MatScalar *a) { \
+    PetscKernel_A_gets_transpose_A_BODY(a,N);                                \
   }
 
-Kernel_A_gets_transpose_A_DECLARE(2)
-Kernel_A_gets_transpose_A_DECLARE(3)
-Kernel_A_gets_transpose_A_DECLARE(4)
-Kernel_A_gets_transpose_A_DECLARE(5)
-Kernel_A_gets_transpose_A_DECLARE(6)
-Kernel_A_gets_transpose_A_DECLARE(7)
-Kernel_A_gets_transpose_A_DECLARE(8)
-Kernel_A_gets_transpose_A_DECLARE(9)
+PetscKernel_A_gets_transpose_A_DECLARE(2)
+PetscKernel_A_gets_transpose_A_DECLARE(3)
+PetscKernel_A_gets_transpose_A_DECLARE(4)
+PetscKernel_A_gets_transpose_A_DECLARE(5)
+PetscKernel_A_gets_transpose_A_DECLARE(6)
+PetscKernel_A_gets_transpose_A_DECLARE(7)
+PetscKernel_A_gets_transpose_A_DECLARE(8)
+PetscKernel_A_gets_transpose_A_DECLARE(9)
 
 #endif

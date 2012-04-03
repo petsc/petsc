@@ -192,6 +192,52 @@ def stubs(args):
   maker.cleanup()
   return 0
 
+def showSingleRun(maker, ex, extraArgs = ''):
+  if isinstance(ex, list):
+    exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
+    exampleDir  = os.path.dirname(ex[0])
+  else:
+    exampleName = os.path.splitext(os.path.basename(ex))[0]
+    exampleDir  = os.path.dirname(ex)
+  objDir        = maker.getObjDir(exampleName)
+  executable    = os.path.join(objDir, exampleName)
+  paramKey      = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
+  if paramKey in builder.regressionRequirements:
+    if not builder.regressionRequirements[paramKey].issubset(packageNames):
+      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
+  params = builder.regressionParameters.get(paramKey, {})
+  if not params:
+    params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
+    maker.logPrint('Makefile params '+strparams)
+  if not isinstance(params, list):
+    params = [params]
+  for testnum, param in enumerate(params):
+    if 'num' in param: testnum = param['num']
+    if not args.testnum is None and testnum != args.testnum: continue
+    if not 'args' in param: param['args'] = ''
+    param['args'] += extraArgs
+    print(str(testnum)+':  '+maker.getTestCommand(executable, **param))
+  return 0
+
+def show(args):
+  '''Show run information'''
+  ret       = 0
+  extraArgs = ' '+' '.join(args.args)
+  maker     = builder.PETScMaker()
+  maker.setup()
+  # C test
+  examples = []
+  for f in args.files:
+    if f[0] == '[':
+      examples.append(map(os.path.abspath, f[1:-1].split(',')))
+    else:
+      examples.append(os.path.abspath(f))
+  for ex in examples:
+    ret = showSingleRun(maker, ex, extraArgs)
+    if ret: break
+  maker.cleanup()
+  return ret
+
 if __name__ == '__main__':
   # Argumnt parsing
   import argparse
@@ -226,6 +272,11 @@ if __name__ == '__main__':
   parser_stubs = subparsers.add_parser('stubs', help='Build stubs for certain languages')
   parser_stubs.add_argument('languages', nargs='+', help='Stub languages')
   parser_stubs.set_defaults(func=stubs)
+  parser_show = subparsers.add_parser('show', help='Print run information')
+  parser_show.add_argument('files', nargs='+', help='Examples to display run info for')
+  parser_show.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
+  parser_show.add_argument('--testnum', type=int, help='The test number to execute')
+  parser_show.set_defaults(func=show)
 
   args = parser.parse_args()
   print(args)

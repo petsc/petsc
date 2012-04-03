@@ -59,7 +59,7 @@ class Installer(script.Script):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
     self.arch          = self.framework.require('PETSc.utilities.arch',        None)
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
-    self.makesys       = self.framework.require('config.programs',        None)
+    self.makesys       = self.framework.require('config.programs',             None)
     self.compilers     = self.framework.require('config.compilers',            None)
     return
   
@@ -93,6 +93,39 @@ class Installer(script.Script):
     self.make      = self.makesys.make+' '+self.makesys.flags
     self.ranlib    = self.compilers.RANLIB
     self.libSuffix = self.compilers.AR_LIB_SUFFIX
+    return
+
+  def checkPrefix(self):
+    if not self.installDir:
+      print '********************************************************************'
+      print 'PETSc is built without prefix option. So "make install" is not appropriate.'
+      print 'If you need a prefix install of PETSc - rerun configure with --prefix option.'
+      print '********************************************************************'
+      sys.exit(1)
+    return
+
+  def checkDestdir(self):
+    if os.path.exists(self.destDir):
+      if os.path.samefile(self.destDir, self.rootDir):
+        print '********************************************************************'
+        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR'
+        print '********************************************************************'
+        sys.exit(1)
+      if os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
+        print '********************************************************************'
+        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR/PETSC_ARCH'
+        print '********************************************************************'
+        sys.exit(1)
+      if not os.path.isdir(os.path.realpath(self.destDir)):
+        print '********************************************************************'
+        print 'Specified destDir', self.destDir, 'is not a directory. Cannot proceed!'
+        print '********************************************************************'
+        sys.exit(1)
+      if not os.access(self.destDir, os.W_OK):
+        print '********************************************************************'
+        print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
+        print '********************************************************************'
+        sys.exit(1)
     return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
@@ -242,15 +275,13 @@ make PETSC_DIR=%s test
   def runfix(self):
     self.setup()
     self.setupDirectories()
+    self.checkPrefix()
+    self.checkDestdir()
     self.createUninstaller()
     self.fixConf()
 
+
   def runcopy(self):
-    if os.path.exists(self.destDir) and os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
-      print '********************************************************************'
-      print 'Install directory is current directory; nothing needs to be done'
-      print '********************************************************************'
-      return
     print '*** Installing PETSc at',self.destDir, ' ***'
     if not os.path.exists(self.destDir):
       try:
@@ -259,18 +290,7 @@ make PETSC_DIR=%s test
         print '********************************************************************'
         print 'Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"'
         print '********************************************************************'
-        return
-    if not os.path.isdir(os.path.realpath(self.destDir)):
-      print '********************************************************************'
-      print 'Specified destDir', self.destDir, 'is not a directory. Cannot proceed!'
-      print '********************************************************************'
-      return
-    if not os.access(self.destDir, os.W_OK):
-      print '********************************************************************'
-      print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
-      print '********************************************************************'
-      return
-
+        sys.exit(1)
     self.installIncludes()
     self.installConf()
     self.installBin()

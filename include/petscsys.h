@@ -553,7 +553,7 @@ M*/
 
 extern  PetscBool  PetscInitializeCalled;
 extern  PetscBool  PetscFinalizeCalled;
-extern PetscBool   synchronizeCUSP;
+extern PetscBool   PetscCUSPSynchronize;
 
 extern PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 extern PetscErrorCode  PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);

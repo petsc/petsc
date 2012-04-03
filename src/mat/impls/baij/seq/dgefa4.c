@@ -12,8 +12,8 @@
 #include <petscsys.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "Kernel_A_gets_inverse_A_4"
-PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *a,PetscReal shift)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_4"
+PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar *a,PetscReal shift)
 {
     PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[4],kb,k3;
     PetscInt   k4,j3;
@@ -156,8 +156,8 @@ PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *a,PetscReal shift)
 #include PETSC_HAVE_SSE
 
 #undef __FUNCT__
-#define __FUNCT__ "Kernel_A_gets_inverse_A_4_SSE"
-PetscErrorCode Kernel_A_gets_inverse_A_4_SSE(float *a)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_4_SSE"
+PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
 {
   /* 
      This routine is converted from Intel's Small Matrix Library.

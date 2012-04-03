@@ -18,6 +18,9 @@ EXTERN_C_BEGIN
 #include <ml_include.h>
 EXTERN_C_END
 
+typedef enum {PCML_NULLSPACE_AUTO,PCML_NULLSPACE_USER,PCML_NULLSPACE_BLOCK,PCML_NULLSPACE_SCALAR} PCMLNullSpaceType;
+static const char *const PCMLNullSpaceTypes[] = {"AUTO","USER","BLOCK","SCALAR","PCMLNullSpaceType","PCML_NULLSPACE_",0};
+
 /* The context (data structure) at each grid level */
 typedef struct {
   Vec        x,b,r;           /* global vectors */
@@ -51,6 +54,7 @@ typedef struct {
   PetscReal      Threshold,DampingFactor,EnergyMinimizationDropTol;
   PetscBool      SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
   PetscBool      reuse_interpolation;
+  PCMLNullSpaceType nulltype;
   PetscMPIInt    size; /* size of communicator for pc->pmat */
 } PC_ML;
 
@@ -661,7 +665,43 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ML_Aggregate_Create(&agg_object); 
   pc_ml->agg_object = agg_object;
 
-  ML_Aggregate_Set_NullSpace(agg_object,bs,bs,0,0);CHKERRQ(ierr);
+  {
+    MatNullSpace mnull;
+    ierr = MatGetNearNullSpace(A,&mnull);CHKERRQ(ierr);
+    if (pc_ml->nulltype == PCML_NULLSPACE_AUTO) {
+      if (mnull) pc_ml->nulltype = PCML_NULLSPACE_USER;
+      else if (bs > 1) pc_ml->nulltype = PCML_NULLSPACE_BLOCK;
+      else pc_ml->nulltype = PCML_NULLSPACE_SCALAR;
+    }
+    switch (pc_ml->nulltype) {
+    case PCML_NULLSPACE_USER: {
+      PetscScalar *nullvec;
+      const PetscScalar *v;
+      PetscBool has_const;
+      PetscInt i,j,mlocal,nvec,M;
+      const Vec *vecs;
+      if (!mnull) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
+      ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Aloc,&mlocal,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
+      ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof *nullvec,&nullvec);CHKERRQ(ierr);
+      if (has_const) for (i=0; i<mlocal; i++) nullvec[i] = 1.0/M;
+      for (i=0; i<nvec; i++) {
+        ierr = VecGetArrayRead(vecs[i],&v);CHKERRQ(ierr);
+        for (j=0; j<mlocal; j++) nullvec[(i+!!has_const)*mlocal + j] = v[j];
+        ierr = VecRestoreArrayRead(vecs[i],&v);CHKERRQ(ierr);
+      }
+      ierr = ML_Aggregate_Set_NullSpace(agg_object,bs,nvec+!!has_const,nullvec,mlocal);CHKERRQ(ierr);
+      ierr = PetscFree(nullvec);CHKERRQ(ierr);
+    } break;
+    case PCML_NULLSPACE_BLOCK:
+      ierr = ML_Aggregate_Set_NullSpace(agg_object,bs,bs,0,0);CHKERRQ(ierr);
+      break;
+    case PCML_NULLSPACE_SCALAR:
+      break;
+    default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Unknown null space type");
+    }
+  }
   ML_Aggregate_Set_MaxCoarseSize(agg_object,pc_ml->MaxCoarseSize);
   /* set options */
   switch (pc_ml->CoarsenScheme) { 
@@ -840,6 +880,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   ierr = PetscOptionsBool("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_ml_nullspace","Which type of null space information to use","None",PCMLNullSpaceTypes,(PetscEnum)pc_ml->nulltype,(PetscEnum*)&pc_ml->nulltype,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_ml_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",pc_ml->reuse_interpolation,&pc_ml->reuse_interpolation,PETSC_NULL);CHKERRQ(ierr);
   /*

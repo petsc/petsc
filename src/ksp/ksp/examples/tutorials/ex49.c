@@ -803,6 +803,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   Vec                    f,X;
   PetscInt               prop_dof,prop_stencil_width;
   Vec                    properties,l_properties;
+  MatNullSpace           matnull;
   PetscReal              dx,dy;
   PetscInt               M,N;
   DMDACoor2d               **_prop_coords,**_vel_coords;
@@ -1050,6 +1051,10 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMCreateMatrix(elas_da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(elas_da,&vel_coords);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
+  ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */

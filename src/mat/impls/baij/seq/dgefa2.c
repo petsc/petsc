@@ -13,8 +13,8 @@
 #include <petscsys.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "Kernel_A_gets_inverse_A_2"
-PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_2"
+PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 {
     PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[2],k3;
     PetscInt   k4,j3;
@@ -151,8 +151,8 @@ PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "Kernel_A_gets_inverse_A_9"
-PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_9"
+PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 {
     PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[9],kb,k3;
     PetscInt   k4,j3;
@@ -305,8 +305,8 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 */
 
 #undef __FUNCT__  
-#define __FUNCT__ "Kernel_A_gets_inverse_A_15"
-PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
+#define __FUNCT__ "PetscKernel_A_gets_inverse_A_15"
+PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
 {
     PetscInt         i__2,i__3,kp1,j,k,l,ll,i,kb,k3;
     PetscInt         k4,j3;

@@ -20,8 +20,8 @@ extern PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,doub
 extern PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
 #undef __FUNCT__  
-#define __FUNCT__ "DiffParameterCreate_More"
-PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
+#define __FUNCT__ "SNESDiffParameterCreate_More"
+PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {
   DIFFPAR_MORE   *neP;
   Vec            w;
@@ -62,8 +62,8 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DiffParameterDestroy_More"
-PetscErrorCode DiffParameterDestroy_More(void *nePv)
+#define __FUNCT__ "SNESDiffParameterDestroy_More"
+PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE *)nePv;
   PetscErrorCode ierr;
@@ -79,8 +79,8 @@ PetscErrorCode DiffParameterDestroy_More(void *nePv)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DiffParameterCompute_More"
-PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
+#define __FUNCT__ "SNESDiffParameterCompute_More"
+PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE *)nePv;
   Vec            w, xp, fvec;    /* work vectors to use in computing h */

@@ -25,6 +25,9 @@ const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN","DIV
                                                "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
 const char *const*SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
 
+const char *SNESNormTypes_Shifted[]        = {"DEFAULT","NONE","FUNCTION","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormType","SNES_NORM_",0};
+const char *const*const SNESNormTypes = SNESNormTypes_Shifted + 1;
+
 /*
       This is used by SNESSetType() to make sure that at least one 
     SNESRegisterAll() is called. In general, if there is more than one

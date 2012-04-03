@@ -384,6 +384,95 @@ extern PetscErrorCode  SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,SNESJacobian*,
 extern PetscErrorCode  SNESSetInitialFunction(SNES,Vec);
 extern PetscErrorCode  SNESSetInitialFunctionNorm(SNES,PetscReal);
 
+/*E
+    SNESNormType - Norm that is passed in the Krylov convergence
+       test routines.
+
+   Level: advanced
+
+   Support for these is highly dependent on the solver.
+
+   Notes:
+   This is primarily used to turn off extra norm and function computation
+   when the solvers are composed.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPSetNormType(),
+          KSPSetConvergenceTest(), KSPSetPCSide()
+E*/
+
+typedef enum {SNES_NORM_DEFAULT            = -1,
+              SNES_NORM_NONE               =  0,
+              SNES_NORM_FUNCTION           =  1,
+              SNES_NORM_INITIAL_ONLY       =  2,
+              SNES_NORM_FINAL_ONLY         =  3,
+              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormType;
+extern const char *const*const SNESNormTypes;
+/*MC
+    SNES_NORM_NONE - Don't compute function and its L2 norm.
+
+   Level: advanced
+
+    Notes:
+    This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_DEFAULT
+M*/
+
+/*MC
+    SNES_NORM_FUNCTION - Compute the function and its L2 norm at each iteration.
+
+   Level: advanced
+
+    Notes:
+    Most solvers will use this no matter what norm type is passed to them.
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_NONE
+M*/
+
+/*MC
+    SNES_NORM_INITIAL_ONLY - Compute the function and its L2 at iteration 0, but do not update it.
+
+   Level: advanced
+
+   Notes:
+   This method is useful in composed methods, when a true solution might actually be found before SNESSolve() is called.
+   This option enables the solve to abort on the zeroth iteration if this is the case.
+
+   For solvers that require the computation of the L2 norm of the function as part of the method, this merely cancels
+   the norm computation at the last iteration (if possible).
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+M*/
+
+/*MC
+    SNES_NORM_FINAL_ONLY - Compute the function and its L2 norm on only the final iteration.
+
+   Level: advanced
+
+   Notes:
+   For solvers that require the computation of the L2 norm of the function as part of the method, behaves
+   exactly as SNES_NORM_DEFAULT.  This method is useful when the function is gotten after SNESSolve and
+   used in subsequent computation for methods that do not need the norm computed during the rest of the
+   solution procedure.
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+M*/
+
+/*MC
+    SNES_NORM_INITIAL_FINAL_ONLY - Compute the function and its L2 norm on only the initial and final iterations.
+
+   Level: advanced
+
+   Notes:
+   This method combines the benefits of SNES_NORM_INITIAL_ONLY and SNES_NORM_FINAL_ONLY.
+
+.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
+M*/
+
+
+extern PetscErrorCode  SNESSetNormType(SNES,SNESNormType);
+extern PetscErrorCode  SNESGetNormType(SNES,SNESNormType*);
+
 extern PetscErrorCode  SNESSetGS(SNES,SNESGSFunction,void*);
 extern PetscErrorCode  SNESGetGS(SNES,SNESGSFunction*,void**);
 extern PetscErrorCode  SNESSetUseGS(SNES,PetscBool);
