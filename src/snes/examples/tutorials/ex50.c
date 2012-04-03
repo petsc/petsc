@@ -8,7 +8,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
   -contours : draw contour plots of solution\n\n";
 /*
-      The same as ex19.c except it does not use DMMG, it uses its replacement.
       See src/ksp/ksp/examples/tutorials/ex45.c
 */
 
