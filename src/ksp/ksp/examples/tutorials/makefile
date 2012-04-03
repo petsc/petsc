@@ -1013,6 +1013,11 @@ runex49_3:
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || echo ${PWD} "\nPossible problem with with ex49_3, diffs above \n========================================="; \
 	   ${RM} -f ex49_3.tmp
 
+runex49_4:
+	-@${MPIEXEC} -n 4 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebychev -elas_pc_type ml -elas_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 2 -use_nonsymbc -elas_pc_ml_nullspace user > ex49_4.tmp 2>&1; \
+	   ${DIFF} output/ex49_4.out ex49_4.tmp || echo ${PWD} "\nPossible problem with with ex49_4, diffs above \n========================================="; \
+	   ${RM} -f ex49_4.tmp
+
 runex50:
 	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view  > ex50.tmp 2>&1;         \
         ${DIFF} output/ex50.out ex50.tmp || echo ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; \
