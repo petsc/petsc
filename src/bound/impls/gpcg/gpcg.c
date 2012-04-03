@@ -1,4 +1,4 @@
-#include "private/kspimpl.h"
+#include "petsc-private/kspimpl.h"
 #include "gpcg.h"        /*I "gpcg.h" I*/
 
 

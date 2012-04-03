@@ -1,4 +1,4 @@
-#include "private/fortranimpl.h"
+#include "petsc-private/fortranimpl.h"
 #include "tao.h"
 
 extern PetscBool TaoBeganPetsc;

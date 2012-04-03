@@ -1,5 +1,5 @@
 #include "tao.h" /*I "tao.h" I*/
-#include "private/matimpl.h"
+#include "petsc-private/matimpl.h"
 #include "src/matrix/submatfree.h"
 #include "tao_util.h" /*I "tao_util.h" I*/
 

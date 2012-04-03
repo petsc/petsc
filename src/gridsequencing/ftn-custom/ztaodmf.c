@@ -1,4 +1,4 @@
-#include "private/fortranimpl.h"
+#include "petsc-private/fortranimpl.h"
 #include "taosolver.h"
 #include "private/taodm_impl.h"
 

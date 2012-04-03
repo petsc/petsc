@@ -4,8 +4,8 @@
 
 #include "petscksp.h"
 #include "petscpc.h"
-#include "private/kspimpl.h"
-#include "private/pcimpl.h"
+#include "petsc-private/kspimpl.h"
+#include "petsc-private/pcimpl.h"
 
 #define NLS_KSP_CG	0
 #define NLS_KSP_NASH	1

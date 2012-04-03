@@ -1,7 +1,7 @@
 #if !defined __TAO_LAPACK_H
 #define __TAO_LAPACK_H
 #include "petsc.h"
-#include "private/fortranimpl.h"
+#include "petsc-private/fortranimpl.h"
 
 #if defined(PETSC_BLASLAPACK_STDCALL) 
 # if defined(PETSC_USE_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
