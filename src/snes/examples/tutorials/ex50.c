@@ -123,8 +123,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
-  ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
 

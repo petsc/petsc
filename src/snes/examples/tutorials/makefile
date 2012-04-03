@@ -539,10 +539,12 @@ runex50_5: #test different scatters
            done;\
          done;\
 	 ${RM} -f ex19_5.tmp
-runex50_6: # test ASM with AIJ and bs>1
-	-@${MPIEXEC} -n 4 ./ex50 -da_refine 2 -snes_monitor_short -ksp_monitor_short -pc_type asm -pc_asm_overlap 2 > ex50_6.tmp 2>&1; \
-	   ${DIFF} output/ex50_6.out ex50_6.tmp || echo  ${PWD} "\nPossible problem with ex50_6, diffs above \n========================================="; \
-	   ${RM} -f ex50_6.tmp
+# fieldsplit preconditioner tests
+runex50_6: 
+	-@${MPIEXEC} -n 1 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -ksp_type fgmres -da_refine 1  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex50_6, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
 
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas \

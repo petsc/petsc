@@ -132,6 +132,59 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDecomposition_DA"
+PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)dm->data;
+  PetscInt       dof = dd->w;
+
+  PetscFunctionBegin;
+  if (islist) {
+    Vec      v;
+    PetscInt rstart,n;
+
+    ierr = DMGetGlobalVector(dm,&v);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);    
+    ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
+    for (i=0; i<dof; i++) {
+      ierr = ISCreateStride(((PetscObject)dm)->comm,n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
+    }
+  }
+  if (namelist) {
+    ierr = PetscMalloc(dof*sizeof(const char *), namelist);CHKERRQ(ierr);
+    if (dd->fieldname) {
+      for (i=0; i<dof; i++) {
+        ierr = PetscStrallocpy(dd->fieldname[i],&(*namelist)[i]);CHKERRQ(ierr);
+      }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently DMDA must have fieldnames");
+  }
+  if (dmlist) {
+    DM da;
+
+    ierr = DMDACreate(((PetscObject)dm)->comm, &da);CHKERRQ(ierr);
+    ierr = DMDASetDim(da, dd->dim);CHKERRQ(ierr);
+    ierr = DMDASetSizes(da, dd->M, dd->N, dd->P);CHKERRQ(ierr);
+    ierr = DMDASetNumProcs(da, dd->m, dd->n, dd->p);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(da, dd->bx, dd->by, dd->bz);CHKERRQ(ierr);
+    ierr = DMDASetDof(da, 1);CHKERRQ(ierr);
+    ierr = DMDASetStencilType(da, dd->stencil_type);CHKERRQ(ierr);
+    ierr = DMDASetStencilWidth(da, dd->s);CHKERRQ(ierr);
+    ierr = DMSetUp(da);CHKERRQ(ierr);
+    ierr = PetscMalloc(dof*sizeof(DM),dmlist);CHKERRQ(ierr);
+    for (i=0; i<dof+1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
+    for (i=0; i<dof; i++) (*dmlist)[i] = da;
+  }
+  *len = dof;
+
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_DA"
@@ -183,26 +236,27 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->elementtype  = DMDA_ELEMENT_Q1;
 
   ierr = PetscStrallocpy(VECSTANDARD,&da->vectype);CHKERRQ(ierr);
-  da->ops->globaltolocalbegin = DMGlobalToLocalBegin_DA;
-  da->ops->globaltolocalend   = DMGlobalToLocalEnd_DA;
-  da->ops->localtoglobalbegin = DMLocalToGlobalBegin_DA;
-  da->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
-  da->ops->createglobalvector = DMCreateGlobalVector_DA;
-  da->ops->createlocalvector  = DMCreateLocalVector_DA;
-  da->ops->createinterpolation   = DMCreateInterpolation_DA;
-  da->ops->getcoloring        = DMCreateColoring_DA;
-  da->ops->creatematrix          = DMCreateMatrix_DA;
-  da->ops->refine             = DMRefine_DA;
-  da->ops->coarsen            = DMCoarsen_DA;
-  da->ops->refinehierarchy    = DMRefineHierarchy_DA;
-  da->ops->coarsenhierarchy   = DMCoarsenHierarchy_DA;
-  da->ops->getinjection       = DMCreateInjection_DA;
-  da->ops->getaggregates      = DMCreateAggregates_DA;
-  da->ops->destroy            = DMDestroy_DA;
-  da->ops->view               = 0;
-  da->ops->setfromoptions     = DMSetFromOptions_DA;
-  da->ops->setup              = DMSetUp_DA;
-  da->ops->load               = DMLoad_DA;
+  da->ops->globaltolocalbegin  = DMGlobalToLocalBegin_DA;
+  da->ops->globaltolocalend    = DMGlobalToLocalEnd_DA;
+  da->ops->localtoglobalbegin  = DMLocalToGlobalBegin_DA;
+  da->ops->localtoglobalend    = DMLocalToGlobalEnd_DA;
+  da->ops->createglobalvector  = DMCreateGlobalVector_DA;
+  da->ops->createlocalvector   = DMCreateLocalVector_DA;
+  da->ops->createinterpolation = DMCreateInterpolation_DA;
+  da->ops->getcoloring         = DMCreateColoring_DA;
+  da->ops->creatematrix        = DMCreateMatrix_DA;
+  da->ops->refine              = DMRefine_DA;
+  da->ops->coarsen             = DMCoarsen_DA;
+  da->ops->refinehierarchy     = DMRefineHierarchy_DA;
+  da->ops->coarsenhierarchy    = DMCoarsenHierarchy_DA;
+  da->ops->getinjection        = DMCreateInjection_DA;
+  da->ops->getaggregates       = DMCreateAggregates_DA;
+  da->ops->destroy             = DMDestroy_DA;
+  da->ops->view                = 0;
+  da->ops->setfromoptions      = DMSetFromOptions_DA;
+  da->ops->setup               = DMSetUp_DA;
+  da->ops->load                = DMLoad_DA;
+  da->ops->createdecomposition = DMCreateDecomposition_DA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
