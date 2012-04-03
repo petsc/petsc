@@ -330,7 +330,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   }
   for (i=0; i<nlevels; i++) {
     /* generate hessian for this level */
-    ierr = DMGetMatrix(taodm[i]->dm,taodm[nlevels-1]->mtype,&taodm[i]->hessian);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(taodm[i]->dm,taodm[nlevels-1]->mtype,&taodm[i]->hessian);CHKERRQ(ierr);
     taodm[i]->hessian_pre = 0;
     if (taodm[i]->ops->computehessianlocal) {
       ierr = TaoSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);

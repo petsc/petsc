@@ -147,7 +147,7 @@ int main( int argc, char **argv )
   CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,7,PETSC_NULL,
+  ierr = MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,7,PETSC_NULL,
 			 3,PETSC_NULL,&(user.H)); CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
   

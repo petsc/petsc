@@ -474,7 +474,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
-  PetscBool sametype, issame, ismpidense, isseqdense;
+  PetscBool sametype, issame, isdense, isseqdense;
   TaoMatADACtx  ctx;
 
   PetscFunctionBegin;
@@ -484,14 +484,14 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATSAME,&issame); CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&isdense); CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense); CHKERRQ(ierr);
 
   if (sametype || issame) {
 
     ierr=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(ierr);
 
-  } else if (ismpidense) {
+  } else if (isdense) {
 
     PetscInt i,j,low,high,m,n,M,N;
     PetscReal *dptr;
@@ -500,14 +500,14 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr=MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateMPIDense(((PetscObject)mat)->comm,m,m,N,N,PETSC_NULL,NewMat);
+    ierr = MatCreateDense(((PetscObject)mat)->comm,m,m,N,N,PETSC_NULL,NewMat);
     CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
       ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
-	ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
     }
@@ -531,7 +531,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
       ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
-	ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
     }

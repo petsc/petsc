@@ -1193,7 +1193,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     for (i=0;i<user->ndesign;i++) {
       user->ones[i]=v;
     }
-    ierr = MatCreateMPIDense(PETSC_COMM_WORLD,ysubnlocal,PETSC_DECIDE,user->ndesign,1,user->ones,&user->Ones); CHKERRQ(ierr);
+    ierr = MatCreateDense(PETSC_COMM_WORLD,ysubnlocal,PETSC_DECIDE,user->ndesign,1,user->ones,&user->Ones); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatCreateLRC(user->DSG,user->Ones,user->Ones,&user->JsBlock); CHKERRQ(ierr);

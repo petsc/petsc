@@ -112,7 +112,7 @@ int main( int argc, char **argv )
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
-  ierr = DMGetMatrix(user.dm,MATAIJ,&user.A);
+  ierr = DMCreateMatrix(user.dm,MATAIJ,&user.A);
 
   /* User defined function -- compute linear term of quadratic */
   ierr = ComputeB(&user); CHKERRQ(ierr);

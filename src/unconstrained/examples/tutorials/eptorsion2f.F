@@ -95,7 +95,7 @@
       call DMCreateLocalVector(dm,localX,ierr)
 
 !     Create Hessian
-      call DMGetMatrix(dm,MATAIJ,H,ierr)
+      call DMCreateMatrix(dm,MATAIJ,H,ierr)
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
 
 !     The TAO code begins here

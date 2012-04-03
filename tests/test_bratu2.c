@@ -118,7 +118,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRQ(ierr);
 
   /*
     Get the global node numbers for all local nodes, including ghost points.

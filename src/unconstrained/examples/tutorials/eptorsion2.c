@@ -116,7 +116,7 @@ int main(int argc, char **argv)
     ierr = DMCreateLocalVector(user.dm,&user.localX); CHKERRQ(ierr);
 
     /* Create Hessian */
-    ierr = DMGetMatrix(user.dm,MATAIJ,&H); CHKERRQ(ierr);
+    ierr = DMCreateMatrix(user.dm,MATAIJ,&H); CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
 
     /* The TAO code begins here */

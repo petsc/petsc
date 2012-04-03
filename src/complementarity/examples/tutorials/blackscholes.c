@@ -224,7 +224,7 @@ int main(int argc, char **argv)
      Allocate the matrix used by TAO for the Jacobian.  Each row of
      the Jacobian matrix will have at most three elements.
   */
-  ierr = DMGetMatrix(user.dm,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm,MATAIJ,&J);CHKERRQ(ierr);
 	 
   /* The TAO code begins here */
 

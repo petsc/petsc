@@ -131,7 +131,7 @@
 
       call VecGetLocalSize(x,m,ierr)
       CHKERRQ(ierr)
-      call MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,  &
+      call MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,   &
      &     i3,PETSC_NULL_INTEGER,H,ierr)
       CHKERRQ(ierr)
 
