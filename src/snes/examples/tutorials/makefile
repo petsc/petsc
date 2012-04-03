@@ -585,7 +585,51 @@ runex50_14:
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_14.tmp
-
+runex50_superlu:
+	-@${MPIEXEC} -n 1 ./ex50 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex50_superlu_equil: #This test fails - I'll check it. Hong
+	-@${MPIEXEC} -n 1 ./ex50  -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_equil, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex50_superlu_dist:
+	-@${MPIEXEC} -n 1 ./ex50 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex50_superlu_dist_2:
+	-@${MPIEXEC} -n 2 ./ex50  -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex50_fieldsplit_2:
+	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex50_fieldsplit_3:
+	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_3.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex50_fieldsplit_4:
+	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_4.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex50_fieldsplit_mumps:
+	-@${MPIEXEC} -n 2 ./ex50 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_5, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex50_fieldsplit_hypre:
+	-@${MPIEXEC} -n 2 ./ex50  -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_hypre, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
 runex50_fas: #test ex50 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas \
         -fas_levels_snes_type gs -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex50_fas.tmp 2>&1; \
