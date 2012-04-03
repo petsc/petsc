@@ -31,6 +31,11 @@ class Configure(PETSc.package.NewPackage):
     self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
+  def __str__(self):
+    output  = PETSc.package.NewPackage.__str__(self)
+    output += '  Arch:     '+self.arch+'\n'
+    return output
+
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
@@ -104,13 +109,14 @@ class Configure(PETSc.package.NewPackage):
         if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21']:
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_13\'')
         else:
-          self.setCompilers.addCompilerFlag('-arch='+ self.framework.argDB['with-cuda-arch'])
+          self.arch = '-arch='+ self.framework.argDB['with-cuda-arch']
       elif self.scalartypes.precision == 'double':
         #default to sm_13 for double precision
-        self.setCompilers.addCompilerFlag('-arch=sm_13')
+        self.arch = '-arch=sm_13'
       elif self.scalartypes.precision == 'single':
         #default to sm_10 for single precision
-        self.setCompilers.addCompilerFlag('-arch=sm_10')
+        self.arch = '-arch=sm_10'
+      self.setCompilers.addCompilerFlag(self.arch)
       self.setCompilers.popLanguage()
     self.checkSizeofVoidP()
     return
