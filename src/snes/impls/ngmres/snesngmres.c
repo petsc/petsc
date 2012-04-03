@@ -115,7 +115,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   ierr = PetscOptionsReal("-snes_ngmres_gammaC", "  Residual restart constant",     "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_deltaB",   "Difference residual selection constant", "SNES", ngmres->deltaB, &ngmres->deltaB, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ngmres_singlereduction", "Aggregate reductions",       "SNES", ngmres->singlereduction, &ngmres->singlereduction, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_single_reduction", "Aggregate reductions",  "SNES", ngmres->singlereduction, &ngmres->singlereduction, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((ngmres->gammaA > ngmres->gammaC) && (ngmres->gammaC > 2.)) ngmres->gammaC = ngmres->gammaA;
 
