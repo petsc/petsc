@@ -1297,7 +1297,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }  
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix( eksp, "est_");         CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
       ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
       ierr = KSPSetOperators( eksp, Amat, Amat, SAME_NONZERO_PATTERN );
