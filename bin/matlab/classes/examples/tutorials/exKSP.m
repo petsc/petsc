@@ -22,6 +22,7 @@ x = b.Duplicate();
 mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
+mat.SetUp();
 for i=1:10
   mat.SetValues(i,i,10.0);
 end

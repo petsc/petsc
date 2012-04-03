@@ -46,6 +46,9 @@ classdef PetscMat < PetscObject
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'MatSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
+    function err = SetUp(obj)
+      err = calllib('libpetsc', 'MatSetUp', obj.pobj);PetscCHKERRQ(err);
+    end
     function err = SetFromOptions(obj)
       err = calllib('libpetsc', 'MatSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end

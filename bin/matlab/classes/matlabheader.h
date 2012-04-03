@@ -80,6 +80,7 @@ typedef struct {
 int MatCreate(MPI_Comm,Mat *);
 int MatSetType(Mat,const char*);
 int MatSetFromOptions(Mat);
+int MatSetUp(Mat);
 int MatSetSizes(Mat,int,int,int,int);
 int MatGetLocalSize(Mat,int*,int*);
 int MatSetValues(Mat,int,int*,int,int*,double*,InsertMode);
