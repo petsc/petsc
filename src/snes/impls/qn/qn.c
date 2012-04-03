@@ -11,7 +11,7 @@ typedef struct {
   PetscInt     m;                /* The number of kept previous steps */
   PetscScalar  *alpha, *beta;
   PetscScalar  *dXtdF, *dFtdX, *YtdX;
-  PetscBool    aggreduct;        /* Aggregated reduction implementation */
+  PetscBool    singlereduction;  /* Aggregated reduction implementation */
   PetscScalar  *dXdFmat;         /* A matrix of values for dX_i dot dF_j */
   PetscViewer  monitor;
   PetscReal    powell_gamma;     /* Powell angle restart condition */
@@ -59,13 +59,13 @@ PetscErrorCode SNESQNApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
 
   if (it < m) l = it;
 
-  if (qn->aggreduct) {
+  if (qn->singlereduction) {
     ierr = VecMDot(Y, l, qn->dX, YtdX);CHKERRQ(ierr);
   }
   /* outward recursion starting at iteration k's update and working back */
   for (i = 0; i < l; i++) {
     k = (it - i - 1) % l;
-    if (qn->aggreduct) {
+    if (qn->singlereduction) {
       /* construct t = dX[k] dot Y as Y_0 dot dX[k] + sum(-alpha[j]dX[k]dF[j]) */
       t = YtdX[k];
       for (j = 0; j < i; j++) {
@@ -103,13 +103,13 @@ PetscErrorCode SNESQNApplyJinv_Private(SNES snes, PetscInt it, Vec D, Vec Y) {
   } else {
     ierr = VecScale(Y, qn->scaling);CHKERRQ(ierr);
   }
-  if (qn->aggreduct) {
+  if (qn->singlereduction) {
     ierr = VecMDot(Y, l, qn->dF, YtdX);CHKERRQ(ierr);
   }
   /* inward recursion starting at the first update and working forward */
   for (i = 0; i < l; i++) {
     k = (it + i - l) % l;
-    if (qn->aggreduct) {
+    if (qn->singlereduction) {
       t = YtdX[k];
       for (j = 0; j < i; j++) {
         g = (it + j - l) % l;
@@ -341,7 +341,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = VecAXPY(dF[k], -1.0, Dold);CHKERRQ(ierr);
       ierr = VecCopy(X, dX[k]);CHKERRQ(ierr);
       ierr = VecAXPY(dX[k], -1.0, Xold);CHKERRQ(ierr);
-      if (qn->aggreduct) {
+      if (qn->singlereduction) {
         ierr = VecMDot(dF[k], l, dX, dXtdF);CHKERRQ(ierr);
         ierr = VecMDot(dX[k], l, dF, dFtdX);CHKERRQ(ierr);
         for (j = 0; j < l; j++) {
@@ -388,7 +388,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
                       qn->m, PetscScalar, &qn->beta,
                       qn->m, PetscScalar, &qn->dXtdF);CHKERRQ(ierr);
 
-  if (qn->aggreduct) {
+  if (qn->singlereduction) {
     ierr = PetscMalloc3(qn->m*qn->m, PetscScalar, &qn->dXdFmat,
                         qn->m, PetscScalar, &qn->dFtdX,
                         qn->m, PetscScalar, &qn->YtdX);CHKERRQ(ierr);
@@ -417,7 +417,7 @@ static PetscErrorCode SNESReset_QN(SNES snes)
     if (qn->dF) {
       ierr = VecDestroyVecs(qn->m, &qn->dF);CHKERRQ(ierr);
     }
-    if (qn->aggreduct) {
+    if (qn->singlereduction) {
       ierr = PetscFree3(qn->dXdFmat, qn->dFtdX, qn->YtdX);CHKERRQ(ierr);
     }
     ierr = PetscFree3(qn->alpha, qn->beta, qn->dXtdF);CHKERRQ(ierr);
@@ -460,7 +460,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   ierr = PetscOptionsReal("-snes_qn_powell_gamma",    "Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_downhill", "Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", monflg, &monflg, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_qn_aggreduct",       "Aggregate reductions",            "SNESQN", qn->aggreduct, &qn->aggreduct, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_qn_singlereduction", "Aggregate reductions",            "SNESQN", qn->singlereduction, &qn->singlereduction, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-snes_qn_composition",    "Composition type",                "SNESQN",compositions,2,"sequential",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
@@ -567,7 +567,7 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   qn->dFtdX           = PETSC_NULL;
   qn->dXdFmat         = PETSC_NULL;
   qn->monitor         = PETSC_NULL;
-  qn->aggreduct       = PETSC_FALSE;
+  qn->singlereduction = PETSC_FALSE;
   qn->powell_gamma    = 0.9;
   qn->powell_downhill = 0.2;
   qn->compositiontype = SNES_QN_SEQUENTIAL;

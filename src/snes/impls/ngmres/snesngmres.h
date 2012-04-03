@@ -15,6 +15,7 @@ typedef struct {
   Vec          *Fdot;          /* residual history -- length msize */
   Vec          *Xdot;          /* solution history -- length msize */
   PetscReal    *fnorms;        /* the residual norm history  */
+  PetscReal    *xnorms;        /* the solution norm history */
 
   /* General minimization problem context */
   PetscScalar  *h;             /* the constraint matrix */
@@ -27,6 +28,7 @@ typedef struct {
   /* Selection constants */
   PetscBool    anderson;       /* use anderson-mixing approach */
   PetscBool    additive;       /* use additive variant instead of selection */
+  PetscBool    singlereduction;/* use a single reduction (with more local work) for tolerance selection */
   PetscReal    gammaA;         /* Criterion A residual tolerance */
   PetscReal    epsilonB;       /* Criterion B difference tolerance */
   PetscReal    deltaB;         /* Criterion B residual tolerance */

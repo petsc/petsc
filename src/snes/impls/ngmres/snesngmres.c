@@ -27,6 +27,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
   ierr = PetscFree5(ngmres->h, ngmres->beta, ngmres->xi, ngmres->fnorms, ngmres->q);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
+  ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
 #if PETSC_USE_COMPLEX
   ierr = PetscFree(ngmres->rwork);
 #endif
@@ -58,6 +59,9 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
                         msize,PetscScalar,&ngmres->xi,
                         msize,PetscReal,  &ngmres->fnorms,
                         hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
+    if (ngmres->singlereduction) {
+      ierr = PetscMalloc(msize*sizeof(PetscReal),&ngmres->xnorms);CHKERRQ(ierr);
+    }
     ngmres->nrhs = 1;
     ngmres->lda = msize;
     ngmres->ldb = msize;
@@ -111,6 +115,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   ierr = PetscOptionsReal("-snes_ngmres_gammaC", "  Residual restart constant",     "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_deltaB",   "Difference residual selection constant", "SNES", ngmres->deltaB, &ngmres->deltaB, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_singlereduction", "Aggregate reductions",       "SNES", ngmres->singlereduction, &ngmres->singlereduction, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((ngmres->gammaA > ngmres->gammaC) && (ngmres->gammaC > 2.)) ngmres->gammaC = ngmres->gammaA;
 
@@ -160,10 +165,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* coefficients and RHS to the minimization problem */
   PetscScalar         *beta = ngmres->beta;
   PetscScalar         *xi   = ngmres->xi;
-  PetscReal           fnorm, fMnorm, fAnorm, ynorm, xnorm = 0.0;
+  PetscReal           fnorm, fMnorm, fAnorm;
   PetscReal           nu;
   PetscScalar         alph_total = 0.;
-  PetscScalar         qentry;
   PetscInt            i, j, k, k_restart, l, ivec, restart_count = 0;
 
   /* solution selection data */
@@ -215,7 +219,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     fnorm = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
   }
-
   fminnorm = fnorm;
   /* nu = (r, r) */
   nu = fnorm*fnorm;
@@ -347,18 +350,45 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     ierr = VecMAXPY(XA, l, beta, Xdot);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, XA, FA);CHKERRQ(ierr);
-    ierr = VecNorm(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
 
     /* differences for selection and restart */
-    ierr=VecCopy(XA, D);CHKERRQ(ierr);
-    ierr=VecAXPY(D, -1.0, X);CHKERRQ(ierr);
-    ierr=VecNorm(D, NORM_2, &dnorm);CHKERRQ(ierr);
-    dminnorm = -1.0;
-    for(i=0;i<l;i++) {
+
+    if (ngmres->singlereduction) {
+      dminnorm = -1.0;
       ierr=VecCopy(XA, D);CHKERRQ(ierr);
-      ierr=VecAXPY(D, -1.0, Xdot[i]);CHKERRQ(ierr);
-      ierr=VecNorm(D, NORM_2, &dcurnorm);CHKERRQ(ierr);
-      if((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
+      ierr=VecAXPY(D, -1.0, XM);CHKERRQ(ierr);
+      for(i=0;i<l;i++) {
+        ierr=VecAXPY(Xdot[i],-1.0,XA);CHKERRQ(ierr);
+      }
+      ierr = VecNormBegin(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(D, NORM_2, &dnorm);CHKERRQ(ierr);
+      for (i=0;i<l;i++) {
+        ierr = VecNormBegin(Xdot[i], NORM_2, &ngmres->xnorms[i]);CHKERRQ(ierr);
+      }
+      ierr = VecNormEnd(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(D, NORM_2, &dnorm);CHKERRQ(ierr);
+      for (i=0;i<l;i++) {
+        ierr = VecNormEnd(Xdot[i], NORM_2, &ngmres->xnorms[i]);CHKERRQ(ierr);
+      }
+      for(i=0;i<l;i++) {
+        dcurnorm = ngmres->xnorms[i];
+        if ((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
+        ierr=VecAXPY(Xdot[i],1.0,XA);CHKERRQ(ierr);
+      }
+    } else {
+      ierr=VecCopy(XA, D);CHKERRQ(ierr);
+      ierr=VecAXPY(D, -1.0, XM);CHKERRQ(ierr);
+      ierr=VecNormBegin(D, NORM_2, &dnorm);CHKERRQ(ierr);
+      ierr=VecNormBegin(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
+      ierr=VecNormEnd(D, NORM_2, &dnorm);CHKERRQ(ierr);
+      ierr=VecNormEnd(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
+      dminnorm = -1.0;
+      for(i=0;i<l;i++) {
+        ierr=VecCopy(XA, D);CHKERRQ(ierr);
+        ierr=VecAXPY(D, -1.0, Xdot[i]);CHKERRQ(ierr);
+        ierr=VecNorm(D, NORM_2, &dcurnorm);CHKERRQ(ierr);
+        if((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
+      }
     }
 
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
@@ -377,12 +407,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
           PetscFunctionReturn(0);
         }
       }
-      ierr = SNESLineSearchGetNorms(ngmres->additive_linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
       if (ngmres->monitor) {
         ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", fnorm);CHKERRQ(ierr);
       }
-      ierr = VecCopy(FA, F);CHKERRQ(ierr);
-      ierr = VecCopy(XA, X);CHKERRQ(ierr);
     } else {
       selectA = PETSC_TRUE;
       /* Conditions for choosing the accelerated answer */
@@ -473,20 +500,20 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         ierr = VecCopy(XM, Xdot[ivec]);CHKERRQ(ierr);
         ngmres->fnorms[ivec] = fMnorm;
         if (fminnorm > fMnorm) fminnorm = fMnorm;  /* the minimum norm is now of FM */
+        xi[ivec] = fMnorm*fMnorm;
         for (i = 0; i < l; i++) {
-          ierr = VecDot(FM, Fdot[i], &qentry);CHKERRQ(ierr);
-          Q(i, ivec) = qentry;
-          Q(ivec, i) = qentry;
+          Q(i, ivec) = xi[i];
+          Q(ivec, i) = xi[i];
         }
       } else {
         ierr = VecCopy(F, Fdot[ivec]);CHKERRQ(ierr);
         ierr = VecCopy(X, Xdot[ivec]);CHKERRQ(ierr);
         ngmres->fnorms[ivec] = fnorm;
         if (fminnorm > fnorm) fminnorm = fnorm;  /* the minimum norm is now of FA */
+        ierr = VecMDot(F, l, Fdot, xi);CHKERRQ(ierr);
         for (i = 0; i < l; i++) {
-          ierr = VecDot(F, Fdot[i], &qentry);CHKERRQ(ierr);
-          Q(i, ivec) = qentry;
-          Q(ivec, i) = qentry;
+          Q(i, ivec) = xi[i];
+          Q(ivec, i) = xi[i];
         }
       }
     }
@@ -498,7 +525,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     SNESLogConvHistory(snes, snes->norm, snes->iter);
     ierr = SNESMonitor(snes, snes->iter, snes->norm);CHKERRQ(ierr);
 
-    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
