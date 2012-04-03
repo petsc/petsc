@@ -38,6 +38,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,filename>',                       nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
   def getDefaultPrecision(self):
@@ -210,6 +211,8 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'), 1)
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)      
+      # Check MATLAB [ILP64] MKL
+      yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'], 1)
       # Check Linux MKL variations
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
@@ -596,8 +599,16 @@ class Configure(config.package.Package):
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
+  def check64BitBLASIndices(self):
+    '''Check for and use 64bit integer blas'''
+    if 'known-64-bit-blas-indices' in self.argDB:
+      if int(self.argDB['known-64-bit-blas-indices']):
+        self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+    return
+
   def configure(self):
     self.executeTest(self.configureLibrary)
+    self.executeTest(self.check64BitBLASIndices)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
