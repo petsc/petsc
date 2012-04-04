@@ -515,293 +515,167 @@ runex15_2:
 	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -precheck 1 > ex15_2.tmp 2>&1; \
 	   ${DIFF} output/ex15_2.out ex15_2.tmp || echo  ${PWD} "\nPossible problem with with ex15_2, diffs above \n========================================="; \
 	   ${RM} -f ex15_2.tmp
-runex50:
-	-@${MPIEXEC} -n 2 ./ex50 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
-	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_1.tmp
-runex50_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
-	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex50_3, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_3.tmp
-runex50_4: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
-	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex50_4, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_4.tmp
-runex50_5: #test different scatters
-	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
-           for B in " " -vecscatter_merge ; do \
-             ${MPIEXEC} -n 4 ./ex50 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full $$A $$B > ex19_5.tmp 2>&1; \
-	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
-	     else  echo  ${PWD} "\nPossible problem with with ex50_5 " $$A $$B " diffs above \n========================================="; fi; \
-           done;\
-         done;\
-	 ${RM} -f ex19_5.tmp
-# fieldsplit preconditioner tests
-runex50_6: 
-	-@${MPIEXEC} -n 1 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -ksp_type fgmres -da_refine 1  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex50_6, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_7: 
-	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -da_refine 1 -ksp_type fgmres  > ex19_7.tmp 2>&1; \
-	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_7, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_7.tmp
-runex50_8: 
-	-@${MPIEXEC} -n 1 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view   -fieldsplit_pc_type lu -da_refine 1 -ksp_type fgmres > ex19_8.tmp 2>&1; \
-	   if (${DIFF} output/ex19_8.out ex19_8.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_8, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_8.tmp
-runex50_9: 
-	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres  > ex19_9.tmp 2>&1; \
-	   if (${DIFF} output/ex19_9.out ex19_9.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_9, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_9.tmp
-runex50_10: 
-	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view  -da_refine 1 -ksp_type fgmres > ex19_10.tmp 2>&1; \
-	   if (${DIFF} output/ex19_10.out ex19_10.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_10, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_10.tmp
-runex50_11: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex50  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres > ex19_11.tmp 2>&1; \
-	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_11, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_11.tmp
-runex50_12: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex50 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
-	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_12, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_12.tmp
-runex50_13: #test pc_fieldsplit with -snes_mf_operator
-	-@${MPIEXEC} -n 3 ./ex50 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view  -da_refine 1 -ksp_type fgmres  -snes_mf_operator > ex19_13.tmp 2>&1; \
-	   if (${DIFF} output/ex19_13.out ex19_13.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_13.tmp
-runex50_14:
-	-@${MPIEXEC} -n 2 ./ex50 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
-	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_14.tmp
-runex50_superlu:
-	-@${MPIEXEC} -n 1 ./ex50 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex50_superlu_equil: #This test fails - I'll check it. Hong
-	-@${MPIEXEC} -n 1 ./ex50  -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_equil, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex50_superlu_dist:
-	-@${MPIEXEC} -n 1 ./ex50 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex50_superlu_dist_2:
-	-@${MPIEXEC} -n 2 ./ex50  -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex50_fieldsplit_2:
-	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_fieldsplit_3:
-	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_3.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_3, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_fieldsplit_4:
-	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_4.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_4, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_fieldsplit_mumps:
-	-@${MPIEXEC} -n 2 ./ex50 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_5, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_fieldsplit_hypre:
-	-@${MPIEXEC} -n 2 ./ex50  -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_hypre, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_composite_fieldsplit: #similar to runex50_fieldsplit_2
-	-@${MPIEXEC} -n 1 ./ex50  -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,none -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_composite_fieldsplit_bjacobi:
-	-@${MPIEXEC} -n 1 ./ex50 -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-runex50_composite_fieldsplit_bjacobi_2:
-	-@${MPIEXEC} -n 4 ./ex50 -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi_2.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex50_fas: #test ex50 with FAS and pointwise GS smoother
-	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type fas \
-        -fas_levels_snes_type gs -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex50_fas.tmp 2>&1; \
-	   ${DIFF} output/ex50_fas.out ex50_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_fas, diffs above \n========================================="; \
-           ${RM} -f ex50_fas.tmp
-
-runex50_ngmres_fas: #test ex50 with NGMRES preconditioned by FAS with pointwise GS smoother
-	-@${MPIEXEC} -n 1 ./ex50 -da_refine 4 -snes_monitor_short -snes_type ngmres \
-        -npc_snes_type fas -npc_fas_levels_snes_type gs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6  \
-        -lidvelocity 100 -grashof 4e4 \
-         > ex50_ngmres_fas.tmp 2>&1; \
-	   ${DIFF} output/ex50_ngmres_fas.out ex50_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex50_ngmres_fas, diffs above \n========================================="; \
-           ${RM} -f ex50_ngmres_fas.tmp
-
-runex50_ngmres_fas_ms: #test ex50 with NGMRES preconditioned by FAS with multi-stage smoother
-	-@${MPIEXEC} -n 2 ./ex50 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type ls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex50_ngmres_fas_ms.tmp 2>&1; \
-	   ${DIFF} output/ex50_ngmres_fas_ms.out ex50_ngmres_fas_ms.tmp || echo  ${PWD} "\nPossible problem with ex50_ngmres_fas_ms, diffs above \n========================================="; \
-           ${RM} -f ex50_ngmres_fas_ms.tmp
-
-runex50_bjacobi: #test hierarchical pc
-	-@${MPIEXEC} -n 4 ./ex50 -da_refine 4 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 2 -sub_ksp_type gmres -sub_ksp_max_it 2 -sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_type ilu -snes_monitor_short > ex50_1.tmp 2>&1; \
-	   if (${DIFF} output/ex50_bjacobi.out ex50_1.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex50_bjacobi, diffs above \n========================================="; fi; \
-	   ${RM} -f ex50_1.tmp
-
-runex18:
-	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
-	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex18, diffs above \n========================================="; fi; \
-	   ${RM} -f ex18_1.tmp
 runex19:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
-runex19_2:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_jacobian_fd -dmmg_iscoloring_type ghosted > ex19_2.tmp 2>&1; \
-	   if (${DIFF} output/ex19_1.out ex19_2.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_2.tmp
-prunex19_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+runex19_3: #test pc_redundant
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_3.tmp
 runex19_4: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_4.tmp
 runex19_5: #test different scatters
 	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
            for B in " " -vecscatter_merge ; do \
-             ${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 $$A $$B > ex19_5.tmp 2>&1; \
+             ${MPIEXEC} -n 4 ./ex19 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full $$A $$B > ex19_5.tmp 2>&1; \
 	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
 	     else  echo  ${PWD} "\nPossible problem with with ex19_5 " $$A $$B " diffs above \n========================================="; fi; \
            done;\
          done;\
 	 ${RM} -f ex19_5.tmp
-
 # fieldsplit preconditioner tests
 runex19_6: 
-	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view   > ex19_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -ksp_type fgmres -da_refine 1  > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_2:
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_3:
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_3.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_3, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_4:
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_4.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_4, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_mumps:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_5, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_hypre:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_hypre, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_fieldsplit_redundant:
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type redundant -fieldsplit_1_pc_redundant_number 2 -fieldsplit_1_redundant_ksp_type preonly -fieldsplit_1_redundant_pc_factor_mat_solver_package mumps -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_fieldsplit_redundant.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_redundant, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_composite_fieldsplit: #similar to runex19_fieldsplit_2
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,none -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_composite_fieldsplit_bjacobi:
-	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
-runex19_composite_fieldsplit_bjacobi_2:
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 1 -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
-	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi_2.out ex19_6.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_6.tmp
-
 runex19_7: 
-	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view   > ex19_7.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -da_refine 1 -ksp_type fgmres  > ex19_7.tmp 2>&1; \
 	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_7, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_7.tmp
 runex19_8: 
-	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view   -fieldsplit_pc_type lu > ex19_8.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view   -fieldsplit_pc_type lu -da_refine 1 -ksp_type fgmres > ex19_8.tmp 2>&1; \
 	   if (${DIFF} output/ex19_8.out ex19_8.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_8, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_8.tmp
 runex19_9: 
-	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view   > ex19_9.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres  > ex19_9.tmp 2>&1; \
 	   if (${DIFF} output/ex19_9.out ex19_9.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_9, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_9.tmp
 runex19_10: 
-	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view   > ex19_10.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view  -da_refine 1 -ksp_type fgmres > ex19_10.tmp 2>&1; \
 	   if (${DIFF} output/ex19_10.out ex19_10.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_10, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_10.tmp
 runex19_11: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2  > ex19_11.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres > ex19_11.tmp 2>&1; \
 	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_11, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_11.tmp
 runex19_12: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  > ex19_12.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
 	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_12, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_12.tmp
 runex19_13: #test pc_fieldsplit with -snes_mf_operator
-	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view   -snes_mf_operator > ex19_13.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view  -da_refine 1 -ksp_type fgmres  -snes_mf_operator > ex19_13.tmp 2>&1; \
 	   if (${DIFF} output/ex19_13.out ex19_13.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_13.tmp
+runex19_14:
+	-@${MPIEXEC} -n 2 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
+	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_14.tmp
+runex19_superlu:
+	-@${MPIEXEC} -n 1 ./ex19 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex19_superlu_equil: #This test fails - I'll check it. Hong
+	-@${MPIEXEC} -n 1 ./ex19  -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_equil, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex19_superlu_dist:
+	-@${MPIEXEC} -n 1 ./ex19 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex19_superlu_dist_2:
+	-@${MPIEXEC} -n 2 ./ex19  -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+runex19_fieldsplit_2:
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_fieldsplit_3:
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_3.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_fieldsplit_4:
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_4.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_fieldsplit_mumps:
+	-@${MPIEXEC} -n 2 ./ex19 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_fieldsplit_mumps, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_fieldsplit_hypre:
+	-@${MPIEXEC} -n 2 ./ex19  -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fieldsplit_hypre, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_composite_fieldsplit: #similar to runex19_fieldsplit_2
+	-@${MPIEXEC} -n 1 ./ex19  -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,none -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_composite_fieldsplit.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_composite_fieldsplit_bjacobi:
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_composite_fieldsplit_bjacobi_2:
+	-@${MPIEXEC} -n 4 ./ex19 -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi_2.out ex19_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fas: #test ex19 with FAS and pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas \
+        -fas_levels_snes_type gs -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex19_fas.tmp 2>&1; \
+	   ${DIFF} output/ex19_fas.out ex19_fas.tmp || echo  ${PWD} "\nPossible problem with ex19_fas, diffs above \n========================================="; \
+           ${RM} -f ex19_fas.tmp
+
+runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type ngmres \
+        -npc_snes_type fas -npc_fas_levels_snes_type gs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6  \
+        -lidvelocity 100 -grashof 4e4 \
+         > ex19_ngmres_fas.tmp 2>&1; \
+	   ${DIFF} output/ex19_ngmres_fas.out ex19_ngmres_fas.tmp || echo  ${PWD} "\nPossible problem with ex19_ngmres_fas, diffs above \n========================================="; \
+           ${RM} -f ex19_ngmres_fas.tmp
+
+runex19_ngmres_fas_ms: #test ex19 with NGMRES preconditioned by FAS with multi-stage smoother
+	-@${MPIEXEC} -n 2 ./ex19 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type ls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex19_ngmres_fas_ms.tmp 2>&1; \
+	   ${DIFF} output/ex19_ngmres_fas_ms.out ex19_ngmres_fas_ms.tmp || echo  ${PWD} "\nPossible problem with ex19_ngmres_fas_ms, diffs above \n========================================="; \
+           ${RM} -f ex19_ngmres_fas_ms.tmp
+
+runex19_bjacobi: #test hierarchical pc
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 4 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 2 -sub_ksp_type gmres -sub_ksp_max_it 2 -sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_type ilu -snes_monitor_short > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_bjacobi.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_bjacobi, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+
+runex18:
+	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
+	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex18, diffs above \n========================================="; fi; \
+	   ${RM} -f ex18_1.tmp
 
 
 testex19: ex19.PETSc
@@ -811,14 +685,14 @@ testex19: ex19.PETSc
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex19 manually"; \
 	elif [ -f ex19 ]; then \
-           ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4  > ex19_1.tmp 2>&1; \
+           ${MPIEXEC} -n 1 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; \
 	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
-           ${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
+           ${MPIEXEC} -n 2 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
@@ -827,71 +701,8 @@ testex19: ex19.PETSc
         ${RM} -f ex19_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 
-testxex19: ex19.PETSc
-	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
-           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
-           echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
-           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex19 manually"; \
-	elif [ -f ex19 ]; then \
-          D2=`grep "#define PETSC_HAVE_X 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
-          if [ "$$?" = 0 ]; then \
-             ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
-	     if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-             echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
-	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
-             echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
-             cat ex19_1.tmp; fi; \
-	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex19"; fi; \
-        ${RM} -f ex19_1.tmp; \
-        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
-runex19_14:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi > ex19_14.tmp 2>&1; \
-	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_14.tmp
-runex19_15:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_15.tmp 2>&1; \
-	   if (${DIFF} output/ex19_15.out ex19_15.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_15, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_15.tmp
-runex19_15a:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_15a.tmp 2>&1; \
-	   if (${DIFF} output/ex19_15a.out ex19_15a.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_15a, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_15a.tmp
-runex19_16:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_16.tmp 2>&1; \
-	   if (${DIFF} output/ex19_16.out ex19_16.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_16, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_16.tmp
-runex19_16a:
-	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_16a.tmp 2>&1; \
-	   if (${DIFF} output/ex19_16a.out ex19_16a.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_16a, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19_16a.tmp
-runex19_superlu:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex19_superlu_equil: #This test fails - I'll check it. Hong
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_equil, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex19_superlu_dist:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
-runex19_superlu_dist_2:
-	-@${MPIEXEC} -n 2 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex19_superlu_dist, diffs above \n========================================="; fi; \
-	   ${RM} -f ex19.tmp
 runex19_cusp:
-	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_cusp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19.tmp
@@ -1017,48 +828,6 @@ runex48_4:
 	   ${DIFF} output/ex48_4.out ex48.tmp || echo  ${PWD} "\nPossible problem with ex48_4, diffs above \n========================================="; \
 	   ${RM} -f ex48.tmp
 
-testex50: ex50.PETSc
-	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
-           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex50 with" ; \
-           echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
-           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex50 manually"; \
-	elif [ -f ex50 ]; then \
-           ${MPIEXEC} -n 1 ./ex50 -da_refine 3  > ex50_1.tmp 2>&1; \
-	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
-           echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
-	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
-           cat ex50_1.tmp; fi; \
-	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
-           ${MPIEXEC} -n 2 ./ex50 -da_refine 3   > ex50_1.tmp 2>&1; \
-	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
-           echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 2 MPI processes"; \
-	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
-           cat ex50_1.tmp; fi; fi; \
-        ${RM} -f ex50_1.tmp; \
-        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
-
-testxex50: ex50.PETSc
-	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
-           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex50 with" ; \
-           echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
-           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex50 manually"; \
-	elif [ -f ex50 ]; then \
-          D2=`grep "#define PETSC_HAVE_X 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
-          if [ "$$?" = 0 ]; then \
-             ${MPIEXEC} -n 1 ./ex50 -da_refine 3 -snes_monitor_draw  > ex50_1.tmp 2>&1; \
-	     if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
-             echo "Graphics example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
-	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex50 1 MPI process"; \
-             echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
-             cat ex50_1.tmp; fi; \
-	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex50"; fi; \
-        ${RM} -f ex50_1.tmp; \
-        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
-
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -mg_levels_pc_type sor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_1.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_1, diffs above \n========================================="; \
@@ -1076,18 +845,18 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm ex18.PETSc runex18 ex18.rm \
-                                 ex19.PETSc runex19 runex19_2 runex19_5 \
+                                 ex19.PETSc runex19 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 \
-                                 runex19_10 runex19_14 runex19_15 runex19_15a runex19_16 runex19_16a ex19.rm \
-                                 ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
+                                 runex19_10 runex19_14   runex19_fas runex19_bjacobi ex19.rm \
+                                 ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
-                                 ex50.PETSc runex50 runex50_5 runex50_6 runex50_fas runex50_bjacobi ex50.rm ex58.PETSc runex58 runex58_2 ex58.rm \
+                                 ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
 TESTEXAMPLES_C_X	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
@@ -1101,11 +870,10 @@ TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     = 
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
-TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm  \
-                                 ex50.PETSc runex50_3 runex50_4  ex50.rm 
+TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm 
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
-TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc  ex50.rm
-TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex50.PETSc runex50_11 runex50_12 ex50.rm
+TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
+TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
 TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm 
 
 include ${PETSC_DIR}/conf/test
