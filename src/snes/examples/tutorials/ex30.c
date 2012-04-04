@@ -225,7 +225,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user->Xguess);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  
+  ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -968,7 +968,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 
   if ( !(param->quiet) ) {
     PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");
-    PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));
+    /* PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));*/
 
     PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %G km,         Depth = %G km\n",param->width,param->depth);CHKERRQ(ierr);
@@ -1184,7 +1184,7 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   ivt          = param->ivisc;
   param->ivisc = param->output_ivisc;
 
-  ierr = DMCreateLocalVector(da, &localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
@@ -1214,6 +1214,7 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   }
   ierr = DMDAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &localX);CHKERRQ(ierr);
   param->ivisc = ivt;
   PetscFunctionReturn(0);
 }
@@ -1237,7 +1238,7 @@ PetscErrorCode StressField(DMMG *dmmg)
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
-  ierr = DMCreateLocalVector(da, &locVec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &locVec);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
@@ -1256,7 +1257,7 @@ PetscErrorCode StressField(DMMG *dmmg)
   /* Restore the fine grid of Xguess and X */
   ierr = DMDAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,locVec,(void**)&y);CHKERRQ(ierr);
-
+  ierr = DMRestoreLocalVector(da, &locVec);CHKERRQ(ierr);
   return 0;
 }
 
