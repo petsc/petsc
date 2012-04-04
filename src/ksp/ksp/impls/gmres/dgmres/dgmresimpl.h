@@ -1,58 +1,14 @@
-/*
-   Private data structure used by the GMRES method. This data structure
-  must be identical to the beginning of the KSP_FGMRES data structure
-  so if you CHANGE anything here you must also change it there.
-*/
 #if !defined(__DGMRES)
 #define __DGMRES
 
 #include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
+#define KSPGMRES_NO_MACROS
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 typedef struct {
-  /* Hessenberg matrix and orthogonalization information.  Hes holds
-       the original (unmodified) hessenberg matrix which may be used
-       to estimate the Singular Values of the matrix */
-  PetscScalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
+  KSPGMRESHEADER
 
-  PetscScalar *orthogwork; /* holds dot products computed in orthogonalization */
-
-  /* Work space for computing eigenvalues/singular values */
-  PetscReal   *Dsvd;
-  PetscScalar *Rsvd;
-      
-  /* parameters */
-  PetscReal   haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
-  PetscInt    max_k;             /* maximum size of the approximation space  
-  before restarting */
-
-  PetscErrorCode (*orthog)(KSP,PetscInt); /* Functions to use (special to gmres) */
-  KSPGMRESCGSRefinementType cgstype;
-    
-  Vec   *vecs;  /* holds the work vectors */
-  /* vv_allocated is the number of allocated gmres direction vectors */
-  PetscInt    q_preallocate,delta_allocate;
-  PetscInt    vv_allocated;
-  /* vecs_allocated is the total number of vecs available (used to 
-       simplify the dynamic allocation of vectors */
-  PetscInt    vecs_allocated;
-  /* Since we may call the user "obtain_work_vectors" several times, 
-       we have to keep track of the pointers that it has returned 
-      (so that we may free the storage) */
-  Vec         **user_work;
-  PetscInt    *mwork_alloc;    /* Number of work vectors allocated as part of
-                               a work-vector chunck */
-  PetscInt    nwork_alloc;     /* Number of work vectors allocated */
-
-  /* In order to allow the solution to be constructed during the solution
-     process, we need some additional information: */
-
-  PetscInt    it;              /* Current itethreshn: inside restart */
-  PetscScalar *nrs;            /* temp that holds the coefficients of the 
-                               Krylov vectors that form the minimum residual
-                               solution */
-  Vec         sol_temp;        /* used to hold temporary solution */
-  
   /* Data specific to DGMRES */
   Vec			*U;	/* Vectors that form the basis of the invariant subspace */
   PetscScalar	*T;	/* T=U^T*M^{-1}*A*U */
