@@ -55,18 +55,6 @@
       parameter (SNES_NORM_INITIAL_FINAL_ONLY     =  4)
 
 !
-! SNESLineSearchOrder
-!
-
-      PetscEnum SNES_LINESEARCH_LINEAR
-      PetscEnum SNES_LINESEARCH_CUBIC
-      PetscEnum SNES_LINESEARCH_QUADRATIC
-
-      parameter (SNES_LINESEARCH_LINEAR = 0)
-      parameter (SNES_LINESEARCH_CUBIC = 1)
-      parameter (SNES_LINESEARCH_QUADRATIC = 2)
-
-!
 !  Some PETSc fortran functions that the user might pass as arguments
 !
       external SNESDEFAULTCOMPUTEJACOBIAN

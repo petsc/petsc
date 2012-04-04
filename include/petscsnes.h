@@ -519,9 +519,9 @@ extern PetscBool     SNESLineSearchRegisterAllCalled;
 extern PetscFList    SNESLineSearchList;
 extern PetscLogEvent SNESLineSearch_Apply;
 
-typedef enum {SNES_LINESEARCH_LINEAR,
-              SNES_LINESEARCH_CUBIC,
-              SNES_LINESEARCH_QUADRATIC} SNESLineSearchOrder;
+#define SNES_LINESEARCH_ORDER_LINEAR    1
+#define SNES_LINESEARCH_ORDER_QUADRATIC 2
+#define SNES_LINESEARCH_ORDER_CUBIC     3
 
 typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
@@ -571,8 +571,8 @@ extern PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch,PetscReal);
 extern PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch,PetscReal*);
 extern PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 
-extern PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch,SNESLineSearchOrder *order);
-extern PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch,SNESLineSearchOrder order);
+extern PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch,PetscInt *order);
+extern PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch,PetscInt order);
 
 extern PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
 extern PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
