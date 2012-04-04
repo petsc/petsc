@@ -1,15 +1,13 @@
   0 SNES Function norm 0.146402 
   1 SNES Function norm 0.00120794 
-  2 SNES Function norm 2.81938e-05 
-  3 SNES Function norm 6.66168e-07 
-  4 SNES Function norm 1.56792e-08 
-  5 SNES Function norm 4.075e-10 
+  2 SNES Function norm 8.10713e-08 
+  3 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=15
-  total number of function evaluations=6
+  total number of linear solver iterations=9
+  total number of function evaluations=4
   KSP Object:   1 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -98,4 +96,4 @@ SNES Object: 1 MPI processes
     maxstep=1e+08, minlambda=1e-12
     tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
     maximum iterations=40
-Number of SNES iterations = 5
+Number of SNES iterations = 3

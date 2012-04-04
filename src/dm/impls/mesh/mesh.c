@@ -4278,7 +4278,7 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mesh_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
   SETERRQ(((PetscObject) mesh)->comm, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
   PetscFunctionReturn(0);
 }

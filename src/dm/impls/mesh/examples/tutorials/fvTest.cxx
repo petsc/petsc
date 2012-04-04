@@ -88,7 +88,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug = 0;
   options->dim   = 2;
 
-  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "fvTest.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "fvTest.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

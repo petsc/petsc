@@ -19,7 +19,6 @@
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
 	DM             = "typedef int DM;"
-	DMMG           = "typedef int DMMG;"
 	PC             = "typedef int PC;"
 	KSP           = "typedef int KSP;"
 	SNES           = "typedef int SNES;"
@@ -77,7 +76,6 @@
         Vec
         ISColoring
         DM
-        DMMG
         PC
         KSP
         SNES

@@ -5,7 +5,6 @@
 #include <petscmesh.hh>
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
-#include <petscdmmg.h>
 //TEST compile without triangle and tetgen
 //#undef PETSC_HAVE_TRIANGLE
 //#undef PETSC_HAVE_TETGEN
@@ -40,7 +39,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "Options");CHKERRQ(ierr);
   options->dim          = 2;
   ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
   options->debug        = 0;

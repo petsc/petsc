@@ -934,20 +934,11 @@ runex32:
 	   else echo ${PWD} ; echo "Possible problem with with ex32_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex32_1.tmp
 
-runex33:
-	-${MPIEXEC} -n ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor ${EXTRA_ARGS}
-
-runex33_quiet:
-	-${MPIEXEC} -n ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 ${EXTRA_ARGS}
-
 runex34:
 	-@${MPIEXEC} -n 1 ./ex34  -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view > ex34_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex34_1.out ex34_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex34_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex34_1.tmp
-
-runex36:
-	-${MPIEXEC} -n ${NP} ./ex36 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex36bc.data ${EXTRA_ARGS}
 
 runex38:
 	-@${MPIEXEC} -n 1 ./ex38 -ksp_monitor_short  > ex38_1.tmp 2>&1;	  \

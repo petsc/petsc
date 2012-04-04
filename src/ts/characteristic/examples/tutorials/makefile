@@ -8,7 +8,7 @@ CPPFLAGS           =
 FPPFLAGS           =
 LOCDIR		   = src/ts/characteristic/examples/tutorials/
 MANSEC             = SemiLagrange
-EXAMPLESC	   = ex1.c ex2.c ex4.c
+EXAMPLESC	   = 
 EXAMPLESF	   =
 EXAMPLESCH	   =
 EXAMPLESFH         =
@@ -30,24 +30,7 @@ ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_TS_LIB}
 	${RM} ex4.o
 #--------------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp 2>&1;   \
-	   if (${DIFF} output/ex1.out ex1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1.tmp
 
-runex2:
-	-@${MPIEXEC} -n 1 ./ex2 > ex2.tmp 2>&1;   \
-	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex2.tmp
-
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4 > ex4.tmp 2>&1;   \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4, diffs above \n========================================="; fi; \
-	   ${RM} -f ex4.tmp
-
-TESTEXAMPLES_C_NOCOMPLEX = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_C_NOCOMPLEX = 
 
 include ${PETSC_DIR}/conf/test
