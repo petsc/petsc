@@ -368,27 +368,38 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       break;
     case 1: /* Polak-Ribiere-Poylak */
       dXolddotFold = dXdotF;
-      ierr = VecDot(F, dX, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(Fold, dX, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(F, dX, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(Fold, dX, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(F, dX, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(Fold, dX, &dXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(((dXdotF - dXdotFold) / dXolddotFold));
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
     case 2: /* Hestenes-Stiefel */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, Fold, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, Fold, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart((dXdotF - dXdotFold) / (lXdotF - lXdotFold));
       break;
     case 3: /* Dai-Yuan */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / (lXdotFold - lXdotF));CHKERRQ(ierr);
       break;
     case 4: /* Conjugate Descent */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / lXdotFold);CHKERRQ(ierr);
       break;
     }
