@@ -420,7 +420,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   Options Database:
 +   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter.
-.   -snes_ls <basic,basicnormnorms,quadratic,critical,test> - Line search type.
+.   -snes_linesearch_type <cp,l2,basic> - Line search type.
 -   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
 Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
