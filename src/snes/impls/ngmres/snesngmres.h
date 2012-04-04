@@ -10,6 +10,10 @@ typedef struct {
   PetscInt     msize;          /* maximum size of krylov space */
   PetscInt     restart_it;     /* number of iterations the restart conditions persist before restart */
   PetscViewer  monitor;        /* debugging output for NGMRES */
+  PetscInt    restart_periodic;/* number of iterations to restart after */
+
+  SNESNGMRESRestartType   restart_type;
+  SNESNGMRESSelectType    select_type;
 
   /* History and subspace data */
   Vec          *Fdot;          /* residual history -- length msize */
@@ -27,7 +31,6 @@ typedef struct {
 
   /* Selection constants */
   PetscBool    anderson;       /* use anderson-mixing approach */
-  PetscBool    additive;       /* use additive variant instead of selection */
   PetscBool    singlereduction;/* use a single reduction (with more local work) for tolerance selection */
   PetscReal    gammaA;         /* Criterion A residual tolerance */
   PetscReal    epsilonB;       /* Criterion B difference tolerance */

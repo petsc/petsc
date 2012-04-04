@@ -84,5 +84,30 @@
       external SNESDMDACOMPUTEJACOBIANWITHADIFOR
       external SNESDMDACOMPUTEJACOBIAN
 
+!
+! SNESNGMRESRestartType
+!
+
+      PetscEnum SNES_NGMRES_RESTART_NONE
+      PetscEnum SNES_NGMRES_RESTART_PERIODIC
+      PetscEnum SNES_NGMRES_RESTART_DIFFERENCE
+
+      parameter (SNES_NGMRES_RESTART_NONE = 0)
+      parameter (SNES_NGMRES_RESTART_PERIODIC = 1)
+      parameter (SNES_NGMRES_RESTART_DIFFERENCE = 2)
+
+
+!
+! SNESNGMRESSelectionType
+!
+
+      PetscEnum SNES_NGMRES_SELECT_NONE
+      PetscEnum SNES_NGMRES_SELECT_DIFFERENCE
+      PetscEnum SNES_NGMRES_SELECT_LINESEARCH
+
+      parameter (SNES_NGMRES_SELECT_NONE = 0)
+      parameter (SNES_NGMRES_SELECT_DIFFERENCE = 1)
+      parameter (SNES_NGMRES_SELECT_LINESEARCH = 2)
+
 !  End of Fortran include file for the SNES package in PETSc
 

@@ -676,5 +676,23 @@ extern PetscErrorCode SNESMSInitializePackage(const char path[]);
 extern PetscErrorCode SNESMSRegisterDestroy(void);
 extern PetscErrorCode SNESMSRegisterAll(void);
 
+/* routines for NGMRES solver */
+
+typedef enum {
+  SNES_NGMRES_RESTART_NONE       = 0,
+  SNES_NGMRES_RESTART_PERIODIC   = 1,
+  SNES_NGMRES_RESTART_DIFFERENCE = 2} SNESNGMRESRestartType;
+extern const char *SNESNGMRESRestartTypes[];
+
+typedef enum {
+  SNES_NGMRES_SELECT_NONE       = 0,
+  SNES_NGMRES_SELECT_DIFFERENCE = 1,
+  SNES_NGMRES_SELECT_LINESEARCH = 2} SNESNGMRESSelectType;
+extern const char *SNESNGMRESSelectTypes[];
+
+extern PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
+extern PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
+
+
 PETSC_EXTERN_CXX_END
 #endif
