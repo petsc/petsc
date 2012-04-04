@@ -112,6 +112,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
                           (PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ngmres_anderson", "Use Anderson mixing storage",        "SNES", ngmres->anderson,  &ngmres->anderson, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_m",         "Number of directions",               "SNES", ngmres->msize,  &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_restart",   "Iterations before forced restart",   "SNES", ngmres->restart_periodic,  &ngmres->restart_periodic, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_restart_it","Tolerance iterations before restart","SNES", ngmres->restart_it,  &ngmres->restart_it, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ngmres_monitor",  "Monitor actions of NGMRES",          "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
   if (debug) {
@@ -565,7 +566,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     Options Database:
 +   -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
--   -snes_ngmres_restart_periodic[30] - sets the number of iterations before restart for periodic
+-   -snes_ngmres_restart[30] - sets the number of iterations before restart for periodic
 
     Level: intermediate
 
