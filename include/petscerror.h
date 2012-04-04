@@ -319,6 +319,8 @@ M*/
 #define SETERRQ4(c,n,s,a1,a2,a3,a4) 
 #define SETERRQ5(c,n,s,a1,a2,a3,a4,a5) 
 #define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6) 
+#define SETERRQ7(c,n,s,a1,a2,a3,a4,a5,a6,a7) 
+#define SETERRQ8(c,n,s,a1,a2,a3,a4,a5,a6,a7,a8) 
 #define SETERRABORT(comm,n,s) 
 
 #define CHKERRQ(n)     ;
