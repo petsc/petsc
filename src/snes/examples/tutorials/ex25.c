@@ -30,16 +30,13 @@ T*/
 #include <petscsnes.h>
 #include <petscdmda.h>
 #include <petscpcmg.h>
-#include <petscdmmg.h>
 
-extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
   SNES           snes;                      
   PetscErrorCode ierr;
   PetscInt       its,lits;
@@ -48,39 +45,18 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
-
-  /*
-      Create the multilevel DM data structure 
-  */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,0,&dmmg);CHKERRQ(ierr);
-
   /*
       Set the DMDA (grid structure) for the grids.
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
-  /*
-       Process adiC(36): FormFunctionLocal FormFunctionLocali
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-     Create the nonlinear solver, and tell the DMMG structure to use it
-  */
-  /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
-  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
-
-  /*
-      PetscPreLoadBegin() means that the following section of code is run twice. The first time
-     through the flag PetscPreLoading is on this the nonlinear solver is only run for a single step.
-     The second time through (the actually timed code) the maximum iterations is set to 10
-     Preload of the executable is done to eliminate from the timing the time spent bring the 
-     executable into memory from disk (paging in).
-  */
-  PetscPreLoadBegin(PETSC_TRUE,"Solve");
-    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  PetscPreLoadEnd();
-  snes = DMMGGetSNES(dmmg);
+  ierr = SNESSolve(snes,0,0);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((PetscReal)lits)/((PetscReal)its);
@@ -88,71 +64,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
 }
-/* --------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec T,Vec F,void* ptr)
-{
-  DMMG           dmmg = (DMMG)ptr;
-  PetscErrorCode ierr;
-  PetscInt       i,j,mx,my,xs,ys,xm,ym;
-  PetscScalar    hx,hy;
-  PetscScalar    **t,**f,gradup,graddown,gradleft,gradright,gradx,grady;
-  PetscScalar    coeffup,coeffdown,coeffleft,coeffright;
-  Vec            localT;
-
-  PetscFunctionBegin;
-  ierr = DMGetLocalVector(dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = 1.0/(PetscReal)(mx-1);  hy    = 1.0/(PetscReal)(my-1);
- 
-  /* Get ghost points */
-  ierr = DMGlobalToLocalBegin(dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dmmg->dm,localT,&t);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dmmg->dm,F,&f);CHKERRQ(ierr);
-
-  /* Evaluate function */
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-
-      if (i == 0 || i == mx-1 || j == 0 || j == my-1) {
-
-        f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
-      
-      } else {
-
-        gradup     = (t[j+1][i] - t[j][i])/hy;
-        graddown   = (t[j][i] - t[j-1][i])/hy;
-        gradright  = (t[j][i+1] - t[j][i])/hx;
-        gradleft   = (t[j][i] - t[j][i-1])/hx;
-
-        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
-        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
-
-        coeffup    = 1.0/PetscSqrtScalar(1.0 + gradup*gradup + gradx*gradx); 
-        coeffdown  = 1.0/PetscSqrtScalar(1.0 + graddown*graddown + gradx*gradx); 
-
-        coeffleft  = 1.0/PetscSqrtScalar(1.0 + gradleft*gradleft + grady*grady); 
-        coeffright = 1.0/PetscSqrtScalar(1.0 + gradright*gradright + grady*grady); 
-
-        f[j][i] = (coeffup*gradup - coeffdown*graddown)*hx + (coeffright*gradright - coeffleft*gradleft)*hy; 
-    
-      }
-
-    }
-  }
-  ierr = DMDAVecRestoreArray(dmmg->dm,localT,&t);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dmmg->dm,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmmg->dm,&localT);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} 
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormFunctionLocal"

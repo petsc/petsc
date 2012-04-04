@@ -11,7 +11,7 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                ex23.c ex24.c ex25.c ex26.c  ex28.c ex29.c ex30.c ex31.c \
+                ex23.c  ex25.c ex26.c  ex28.c ex29.c ex30.c ex31.c \
                 ex32.c ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c ex49.c \
                 ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633D_DB.c ex64.c ex65.c
@@ -728,13 +728,13 @@ runex23:
 	   ${RM} -f ex23_1.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25  > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex25 -pc_type mg -da_refine 1  -ksp_type fgmres  > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex25_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIEXEC} -n 2 ./ex25  > ex25_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -da_refine 1  -ksp_type fgmres > ex25_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex25_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_2.tmp
@@ -851,7 +851,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex19_7 runex19_8 runex19_9 \
                                  runex19_10 runex19_14   runex19_fas runex19_bjacobi ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
-                                 ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
+                                 ex23.PETSc runex23 ex23.rm  ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
