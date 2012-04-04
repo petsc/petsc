@@ -190,7 +190,6 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
-   dmmg - The DMMG context
    X - vector
 
    Output Parameter:
