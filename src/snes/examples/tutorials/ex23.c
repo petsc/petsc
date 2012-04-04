@@ -4,6 +4,7 @@ static char help[] = "Solves PDE problem from ex22.c\n\n";
 #include <petscdmda.h>
 #include <petscpf.h>
 #include <petscsnes.h>
+#include <petscdmmg.h>
 
 /*
 
@@ -26,7 +27,8 @@ typedef struct {
   PetscViewer  fu_viewer;
 } UserCtx;
 
-extern PetscErrorCode FormFunction(DM,Vec,Vec);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctionLocali(DMDALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -35,36 +37,41 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   UserCtx        user;
   DM             da;
-  SNES           snes;
+  DMMG           *dmmg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
   /* Hardwire several options; can be changed at command line */
-  ierr = PetscOptionsSetValue("-snes_grid_sequence","1");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-pc_type","mg");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_coarse_ksp_type","gmres");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","3");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
+  /* ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr); */
+  /* ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr); */
+  ierr = PetscOptionsSetValue("-snes_linesearch_type","basic");CHKERRQ(ierr);
+  /*  ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr); */
+  /*  ierr = PetscOptionsSetValue("-snes_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFunction(da,FormFunction);CHKERRQ(ierr);
 
   /* create graphics windows */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u - state variables",-1,-1,-1,-1,&user.u_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu - discretization of function",-1,-1,-1,-1,&user.fu_viewer);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,0,0);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,0);CHKERRQ(ierr);
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&user.u_viewer);CHKERRQ(ierr);
@@ -81,12 +88,14 @@ int main(int argc,char **argv)
      BUT the global, nonghosted version of FU
 
 */
-PetscErrorCode FormFunction(DM da,Vec U,Vec FU)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
+  DMMG           dmmg = (DMMG)dummy;
   PetscErrorCode ierr;
   PetscInt       xs,xm,i,N;
   PetscScalar    *u,*fu,d,h;
   Vec            vu;
+  DM             da =  dmmg->dm;
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(da,&vu);CHKERRQ(ierr);
@@ -113,3 +122,21 @@ PetscErrorCode FormFunction(DM da,Vec U,Vec FU)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "FormFunctionLocali"
+PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
+{
+  PetscInt     i,N = info->mx;
+  PetscScalar  d,h;
+
+  PetscFunctionBegin;
+  d    = N-1.0;
+  h    = 1.0/d;
+
+  i = pt->i;
+  if      (i == 0)   *fu = 2.0*d*(u[0] - .25) + h*u[0]*u[0];
+  else if (i == N-1) *fu = 2.0*d*u[N-1] + h*u[N-1]*u[N-1];
+  else               *fu = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
+
+  PetscFunctionReturn(0);
+}

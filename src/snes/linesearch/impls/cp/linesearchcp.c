@@ -59,9 +59,9 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     }
 
     /* compute the search direction */
-    if (linesearch->order == SNES_LINESEARCH_LINEAR) {
+    if (linesearch->order == SNES_LINESEARCH_ORDER_LINEAR) {
       s = (fty - fty_old) / delLambda;
-    } else if (linesearch->order == SNES_LINESEARCH_QUADRATIC) {
+    } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -0.5*(lambda + lambda_old), Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
@@ -173,6 +173,6 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
   linesearch->ops->reset          = PETSC_NULL;
   linesearch->ops->view           = PETSC_NULL;
   linesearch->ops->setup          = PETSC_NULL;
-  linesearch->order = SNES_LINESEARCH_LINEAR;
+  linesearch->order = SNES_LINESEARCH_ORDER_LINEAR;
   PetscFunctionReturn(0);
 }

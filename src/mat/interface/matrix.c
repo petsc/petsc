@@ -8271,7 +8271,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 
    Level: intermediate
 
-.seealso: MatPtAPSymbolic(), MatPtAPNumeric(), MatMatMult()
+.seealso: MatPtAPSymbolic(), MatPtAPNumeric(), MatMatMult(), MatRARt()
 @*/
 PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -8436,7 +8436,7 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
 
    Level: intermediate
 
-.seealso: MatRARtSymbolic(), MatRARtNumeric(), MatMatMult()
+.seealso: MatRARtSymbolic(), MatRARtNumeric(), MatMatMult(), MatPtAP()
 @*/
 PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -8610,7 +8610,7 @@ $   2) call MatMatMultSymbolic() once and then MatMatMultNumeric() for each prod
 
    Level: intermediate
 
-.seealso: MatMatMultSymbolic(), MatMatMultNumeric(), MatPtAP()
+.seealso: MatMatMultSymbolic(), MatMatMultNumeric(), MatTransposeMatMult(),  MatMatTransposeMult(), MatPtAP()
 @*/
 PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -8856,7 +8856,7 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 
    Level: intermediate
 
-.seealso: MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric(), MatPtAP()
+.seealso: MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric(), MatMatMult(), MatTransposeMatMult() MatPtAP()
 @*/
 PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -8926,7 +8926,7 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
 
    Level: intermediate
 
-.seealso: MatTransposeMatMultSymbolic(), MatTransposeMatMultNumeric(), MatPtAP()
+.seealso: MatTransposeMatMultSymbolic(), MatTransposeMatMultNumeric(), MatMatMult(), MatMatTransposeMult(), MatPtAP()
 @*/
 PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {

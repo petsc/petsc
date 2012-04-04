@@ -47,6 +47,15 @@
 #define SNESLINESEARCHSHELL 'shell'
 
 !
+! SNESLineSearchOrder
+!
+
+#define SNES_LINESEARCH_ORDER_LINEAR    1
+#define SNES_LINESEARCH_ORDER_QUADRATIC 2
+#define SNES_LINESEARCH_ORDER_CUBIC     3
+
+
+!
 !  SNESMSType
 !
 #define SNESMSEULER     'euler'

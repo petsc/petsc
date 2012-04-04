@@ -1455,7 +1455,6 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(f,VEC_CLASSID,2);
   PetscCheckSameComm(snes,1,f,2);
-  ierr = PetscObjectReference((PetscObject)f);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecCopy(f, vec_func);CHKERRQ(ierr);
   snes->vec_func_init_set = PETSC_TRUE;

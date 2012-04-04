@@ -519,9 +519,9 @@ extern PetscBool     SNESLineSearchRegisterAllCalled;
 extern PetscFList    SNESLineSearchList;
 extern PetscLogEvent SNESLineSearch_Apply;
 
-typedef enum {SNES_LINESEARCH_LINEAR,
-              SNES_LINESEARCH_CUBIC,
-              SNES_LINESEARCH_QUADRATIC} SNESLineSearchOrder;
+#define SNES_LINESEARCH_ORDER_LINEAR    1
+#define SNES_LINESEARCH_ORDER_QUADRATIC 2
+#define SNES_LINESEARCH_ORDER_CUBIC     3
 
 typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
@@ -571,8 +571,8 @@ extern PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch,PetscReal);
 extern PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch,PetscReal*);
 extern PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 
-extern PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch,SNESLineSearchOrder *order);
-extern PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch,SNESLineSearchOrder order);
+extern PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch,PetscInt *order);
+extern PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch,PetscInt order);
 
 extern PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
 extern PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
@@ -675,6 +675,24 @@ extern PetscErrorCode SNESMSFinalizePackage(void);
 extern PetscErrorCode SNESMSInitializePackage(const char path[]);
 extern PetscErrorCode SNESMSRegisterDestroy(void);
 extern PetscErrorCode SNESMSRegisterAll(void);
+
+/* routines for NGMRES solver */
+
+typedef enum {
+  SNES_NGMRES_RESTART_NONE       = 0,
+  SNES_NGMRES_RESTART_PERIODIC   = 1,
+  SNES_NGMRES_RESTART_DIFFERENCE = 2} SNESNGMRESRestartType;
+extern const char *SNESNGMRESRestartTypes[];
+
+typedef enum {
+  SNES_NGMRES_SELECT_NONE       = 0,
+  SNES_NGMRES_SELECT_DIFFERENCE = 1,
+  SNES_NGMRES_SELECT_LINESEARCH = 2} SNESNGMRESSelectType;
+extern const char *SNESNGMRESSelectTypes[];
+
+extern PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
+extern PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
+
 
 PETSC_EXTERN_CXX_END
 #endif

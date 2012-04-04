@@ -2287,6 +2287,7 @@ for(stage = 0; stage < numStages; stage++) {
   ierr = PetscFPrintf(comm,fd,"# ------------------------------------------------------\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"class Stage(object):\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"    def __init__(self, name, time, flops, numMessages, messageLength, numReductions):\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"        # The time and flops represent totals across processes, whereas reductions are only counted once\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"        self.name          = name\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"        self.time          = time\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"        self.flops         = flops\n");CHKERRQ(ierr);

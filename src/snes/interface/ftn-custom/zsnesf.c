@@ -30,7 +30,7 @@
 #define snesmonitorlg_                   SNESMONITORLG
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
-#define snesgetsneslinesearch            SNESGETSNESLINESEARCH
+#define snesgetsneslinesearch_           SNESGETSNESLINESEARCH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve

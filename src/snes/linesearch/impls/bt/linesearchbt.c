@@ -216,7 +216,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
           ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
-        if (linesearch->order == SNES_LINESEARCH_CUBIC) {
+        if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
           t1 = .5*(gnorm*gnorm - fnorm*fnorm) - lambda*initslope;
           t2 = .5*(gnormprev*gnormprev  - fnorm*fnorm) - lambdaprev*initslope;
           a  = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
@@ -228,7 +228,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
           } else {
             lambdatemp = (-b + PetscSqrtReal(d))/(3.0*a);
           }
-        } else if (linesearch->order == SNES_LINESEARCH_QUADRATIC) {
+        } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
           lambdatemp = -initslope/(gnorm*gnorm - fnorm*fnorm - 2.0*initslope);
         } else {
           SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_SUP, "unsupported line search order for type bt");
@@ -263,7 +263,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (.5*gnorm*gnorm < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
           if (monitor) {
             ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-            if (linesearch->order == SNES_LINESEARCH_CUBIC) {
+            if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Cubically determined step, current gnorm %14.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             } else {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Quadratically determined step, current gnorm %14.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         } else {
           if (monitor) {
             ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-            if (linesearch->order == SNES_LINESEARCH_CUBIC) {
+            if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Cubic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
             } else {
               ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Quadratic step no good, shrinking lambda, current gnorm %12.12e lambda=%18.16e\n",gnorm,lambda);CHKERRQ(ierr);
@@ -332,9 +332,9 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   bt = (SNESLineSearch_BT*)linesearch->data;
   if (iascii) {
-    if (linesearch->order == SNES_LINESEARCH_CUBIC) {
+    if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
     ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: cubic\n");CHKERRQ(ierr);
-    } else if (linesearch->order == SNES_LINESEARCH_QUADRATIC) {
+    } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
     ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: quadratic\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%G\n", bt->alpha);CHKERRQ(ierr);
@@ -410,7 +410,7 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);
   linesearch->data = (void *)bt;
   linesearch->max_its = 40;
-  linesearch->order = SNES_LINESEARCH_CUBIC;
+  linesearch->order = SNES_LINESEARCH_ORDER_CUBIC;
   bt->alpha = 1e-4;
 
   PetscFunctionReturn(0);

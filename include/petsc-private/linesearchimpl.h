@@ -52,7 +52,7 @@ struct _p_LineSearch {
   PetscReal           rtol;
   PetscReal           atol;
   PetscReal           ltol;
-  SNESLineSearchOrder order;
+  PetscInt            order;
 
   PetscReal           precheck_picard_angle;
 

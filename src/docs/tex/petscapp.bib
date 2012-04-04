@@ -1098,6 +1098,35 @@ year = 2003,
 % LiteralHTML:
 % LiteralHTML:  <a name="geosciences"><H3><center>Geosciences</center></H3>
 % LiteralHTML:
+@article{MayKnepley2011,
+  author  = {Dave A. May and Matthew G. Knepley},
+  title   = {Optimal, scalable forward models for computing gravity anomalies},
+  journal = {Geophysical Journal International},
+  volume  = {187},
+  number  = {1},
+  pages   = {161--177},
+  url     = {http://arxiv.org/abs/1107.5951},
+  note    = {\url{http://arxiv.org/abs/1107.5951}},
+  year    = {2011}
+}
+@inproceedings{BourdinKnepleyMaurini2010,
+  author    = {Blaise Bourdin and Matthew G. Knepley and C. Maurini},
+  title     = {Numerical Simulation of Reservoir Stimulation - A Variational Approach},
+  booktitle = {Proceedings of the 37th Stanford Geothermal Workshop},
+  url       = {http://www.geothermal-energy.org/pdf/IGAstandard/SGW/2011/bourdin.pdf},
+  note      = {\url{http://www.geothermal-energy.org/pdf/IGAstandard/SGW/2011/bourdin.pdf}},
+  address   = {Stanford, CA},
+  year      = {2010}
+}
+@inproceedings{BourdinKnepleyMaurini2010b,
+  author    = {Blaise Bourdin and Matthew G. Knepley and C. Maurini},
+  title     = {Secondary Thermal Cracks in EGS: a Variational Approach},
+  booktitle = {Proceedings of the 34th Annual Meeting of the Geothermal Resources Council},
+  url       = {https://www.math.lsu.edu/~bourdin/Biography_assets/Bourdin-Knepley-Maurini-2010.pdf},
+  note      = {\url{https://www.math.lsu.edu/~bourdin/Biography_assets/Bourdin-Knepley-Maurini-2010.pdf}},
+  address   = {Sacramento, CA},
+  year      = {2010}
+}
 @article{bueler2009shallow,
   title={Shallow shelf approximation as a ‘sliding law’in a thermomechanically coupled ice sheet model},
   author={Bueler, E. and Brown, J.},
@@ -1244,13 +1273,39 @@ year = 2003,
   journal={Earthquake},
   year={2008}
 }
-@inproceedings{AagaardKnepleyWilliams05,
-  author = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
-  title  = {Development of software for studying earthquakes across multiple spatial and temporal scales by coupling quasi-static and dynamic simulations},
-  booktitle = {Eos Transactions of the AGU},
+@inproceedings{MayKnepleyGurnis09,
+  author       = {Dave A. May and Matthew G. Knepley and Michael Gurnis},
+  title        = {CitcomSX: Robust preconditioning in CitcomS via PETSc},
+  booktitle    = {Eos Transactions of the AGU},
   organization = {American Geophysical Union},
-  note   = {Fall Meeting Supplemental, Abstract S53A-1072},
-  year   = {2005}
+  note         = {Fall Meeting Supplemental, Abstract P31A-A1241},
+  year         = {2009}
+}
+@inproceedings{YuenKnepleyErlebacherWright09,
+  author       = {David A. Yuen and Matthew G. Knepley and Gordon Erlebacher and Grady B. Wright},
+  title        = {The Coming Role of GPU in Computational Geodynamics},
+  booktitle    = {Eos Transactions of the AGU},
+  organization = {American Geophysical Union},
+  note         = {Fall Meeting Supplemental, Abstract DI22A-05},
+  year         = {2009}
+}
+@inproceedings{AagaardKnepleyWilliams07,
+  author       = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
+  title        = {PyLith: A Finite-Element Code for Modeling Quasi-Static and Dynamic Crustal Deformation},
+  booktitle    = {Eos Transactions of the AGU},
+  organization = {American Geophysical Union},
+  note         = {Fall Meeting Supplemental, Abstract T21B-1798},
+  year         = {2007}
+}
+@inproceedings{AagaardKnepleyWilliams05,
+  author       = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
+  title        = {Development of software for studying earthquakes across multiple spatial and temporal scales by coupling quasi-static and dynamic simulations},
+  booktitle    = {Eos Transactions of the AGU},
+  organization = {American Geophysical Union},
+  volume       = {86},
+  number       = {52},
+  note         = {Fall Meeting Supplemental, Abstract S53A-1072},
+  year         = {2005}
 }
 @inproceedings{WilliamsGableHagerMeadeAagaardKnepley08,
   author    = {Charles A. Williams and Carl Gable and Bradford H. Hager and Brendan Meade and Brad Aagaard and Matthew G. Knepley},
@@ -1259,6 +1314,15 @@ year = 2003,
   address   = {Wellington, NZ},
   month     = {November},
   year      = {2008}
+}
+@techreport{Zhang07,
+  title       = {Two New Approaches in Solving the Nonlinear Shallow Water Equations for Tsunamis},
+  author      = {C. Zhang and M. G. Knepley and D. A. Yuen and Y. Shi},
+  type        = {Preprint},
+  number      = {ANL/MCS-P1459-0907},
+  institution = {ANL},
+  month       = {September},
+  year        = {2007}
 }
 @Article{katz08b,
  author =     {Richard F. Katz},
@@ -1397,13 +1461,21 @@ keywords = "BFBt"
   year =         {2005},
   url = {http://www.ldeo.columbia.edu/\~{ }katz/thesis/Katz_Dissertation_Columbia05.pdf}
 }
-@InBook{KnepleyKatzSmith04,
-  author = {Matthew~G. Knepley and Richard~F. Katz and Barry~F. Smith},
-  editor = {A.~M. Bruaset and P. Bjorstad and A. Tveito},
-  title = {Numerical Solution of Partial Differential Equations},
-  chapter= {Developing a Geodynamics Simulation with PETSc},
-  publisher = {Springer-Verlag},
-  year = {2004}
+@incollection{KnepleyKatzSmith06,
+   author = {Knepley, Matthew G. and Katz, Richard F. and Smith, Barry},
+   affiliation = {Argonne National Laboratory Mathematics and Computer Science Division Argonne IL USA},
+   title = {Developing a Geodynamics Simulator with PETSc},
+   booktitle = {Numerical Solution of Partial Differential Equations on Parallel Computers},
+   series = {Lecture Notes in Computational Science and Engineering},
+   editor = {Bruaset, Are Magnus and Tveito, Aslak},
+   publisher = {Springer Berlin Heidelberg},
+   isbn = {978-3-540-31619-0},
+   keyword = {Mathematics and Statistics},
+   pages = {413-438},
+   volume = {51},
+   url = {http://dx.doi.org/10.1007/3-540-31619-1_12},
+   note = {10.1007/3-540-31619-1\_12},
+   year = {2006}
 }
 @Article{Katz04,
   author =	 {Richard F. Katz and Marc Spiegelman and S.M. Carbotte},
@@ -2039,6 +2111,14 @@ March, 10-14, 2003, Munich University of Technology, German",
  pages = "445--472",
  year = 2001
 }
+@inproceedings{KnepleySarinSameh99b,
+  title     = {Multilevel Preconditioning for Parallel CFD},
+  author    = {Matthew G. Knepley and Vivek Sarin and Ahmed H. Sameh},
+  booktitle = {International Conference On Preconditioning Techniques For Large Sparse Matrix Problems In Industrial Applications},
+  address   = {Minneapolis, MN},
+  month     = {June},
+  year      = {1999}
+}
 @InProceedings{garbey1,
  Author      =  {M. Garbey and B. Hadri and W. Shyy.},
  TITLE       =   "Fast Elliptic Solver for Incompressible Navier Stokes Flow and Heat Transfer Problems on the Grid",
@@ -2230,13 +2310,12 @@ year = 2005
  url     = "http://www.ulg.ac.be/aerodyn"
 }
 @INPROCEEDINGS{knepley98,
- AUTHOR=    "Matthew Knepley and Denis Vanderstraeten",
- TITLE=     "Parallel Building Blocks for Finite Element Simulations: Application to
-             Solid-Liquid Mixture Flows",
- PUBLISHER= "Elsevier",
- YEAR=      "1998",
- BOOKTITLE= "Proceedings of Parallel CFD'97",
- pages =    "281--287"
+  author    = {Matthew Knepley and Denis Vanderstraeten},
+  title     = {Parallel Building Blocks for Finite Element Simulations: Application to Solid-Liquid Mixture Flows},
+  booktitle = {Proceedings of Parallel CFD'97},
+  publisher = {Elsevier},
+  pages     = {281--287},
+  year      = {1998}
 }
 @INPROCEEDINGS{pcfd97,
  AUTHOR=    "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
@@ -2246,13 +2325,15 @@ year = 2005
  BOOKTITLE= "Proceedings of Parallel CFD'97",
  pages =    "333-344"
 }
-@INBOOK{knepleysamehsari98,
- AUTHOR=    "Matthew Knepley and Ahmed H. Sameh and Vivek Sarin",
- chapter=     "Parallel Simulation of Particulate Flows",
- editor= "A. Ferreira et al",
- YEAR=      "1998",
- TITLE= "Lecture Notes in Computer Science 1457",
- pages =    "226--237"
+@inproceedings{knepleysamehsari98,
+  author    = {Matthew Knepley and Ahmed H. Sameh and Vivek Sarin},
+  title     = {Parallel Simulation of Particulate Flows},
+  booktitle = {Solving Irregularly Structured Problems in Parallel},
+  editors   = {A. Ferreira et al},
+  year      = {1998},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {1457},
+  pages     = {226--237}
 }
 @Article{gkmt98,
     Author = "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
@@ -2347,14 +2428,14 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
         YEAR = "2000",
         URL  = "http://www.mcs.anl.gov/petsc-fun3d/Papers/sc00.pdf"
 } 
-@INPROCEEDINGS{knepleysamehsarin99,  
-        AUTHOR = " Matthew Knepley and Ahmed H. Sameh and Vivek Sarin",
-        TITLE = "Design of Large Scale Parallel Simulations",
-        BOOKTITLE = "Proceedings of Parallel CFD'99",
-        EDITOR = "A. Ecer et al.",
-        PUBLISHER = "Elsevier",
-        YEAR = "1999"
-} 
+@INPROCEEDINGS{knepleysamehsarin99,
+        AUTHOR    = {Matthew Knepley and Ahmed H. Sameh and Vivek Sarin},
+        TITLE     = {Design of Large Scale Parallel Simulations},
+        BOOKTITLE = {Proceedings of Parallel CFD'99},
+        EDITOR    = {A. Ecer et al.},
+        PUBLISHER = {Elsevier},
+        YEAR      = {1999}
+}
 @INPROCEEDINGS{GKKS-PCFD99,  
         AUTHOR = "W. D. Gropp and D. K. Kaushik and 
                   D. E. Keyes and B. F. Smith",
@@ -2574,18 +2655,18 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
   year =         "1998",
   pages =        "437--445",
 }
-@inbook{alghamdi2011petclaw,
-  title={Pet{C}law: A Scalable Parallel Nonlinear Wave Propagation Solver for {P}ython},
-  booktitle={Proceedings of SpringSim 2011},
-  publisher={ACM},
-  author={Alghamdi, A. and Ahmadia, Aron and Ketcheson, D.I. and Knepley, M.G. and Mandli, K.T. and Dalcin, L.},
-  year={2011}
+@inproceedings{alghamdi2011petclaw,
+  title     = {Pet{C}law: A Scalable Parallel Nonlinear Wave Propagation Solver for {P}ython},
+  booktitle = {Proceedings of SpringSim 2011},
+  publisher = {ACM},
+  author    = {Amal Alghamdi and Aron Ahmadia and David I. Ketcheson and Matthew G. Knepley and Kyle T. Mandli and Lisandro Dalcin},
+  year      = {2011}
 }
 @article{pyclaw2012,
   author  = {David I. Ketcheson and Kyle T. Mandli and Aron J. Ahmadia and Amal Alghamdi and Manuel Quezada de Luna and Matteo Parsani and Matthew G. Knepley and Matthew Emmett},
   journal = {SIAM Journal on Scientific Computing},
   title   = {{PyClaw}: Accessible, Extensible, Scalable Tools for Wave Propagation Problems},
-  note    = {to appear},
+  note    = {to appear, \url{http://arxiv.org/abs/1111.6583}},
   year    = {2012}
 }
 % LiteralHTML:
@@ -2692,17 +2773,27 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
   YEAR = "2003",
   note = "Winner of the the Best Student Paper at SC2003"
 }
-@article{YokotaBarbaKnepley09,
-  author = {Rio Yokota and L A Barba and Matthew G Knepley},
-  title  = {{PetRBF} -- A parallel {O(N)} algorithm for radial basis function interpolation},
-  note   = {Submitted},
-  url    = {http://arxiv.org/abs/0909.5413v1}
+@article{YokotaBarbaKnepley10,
+  author  = {Rio Yokota and L A Barba and Matthew G Knepley},
+  title   = {{PetRBF} -- A parallel {O(N)} algorithm for radial basis function interpolation},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume  = {199},
+  number  = {25-28},
+  pages   = {1793--1804},
+  url     = {http://arxiv.org/abs/0909.5413v1},
+  note    = {\url{http://arxiv.org/abs/0909.5413v1}},
+  year    = {2010}
 }
-@article{CruzKnepleyBarba09,
-  author = {Felipe A Cruz and Matthew G Knepley and L A Barba},
-  title  = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
-  note   = {Submitted},
-  url    = {http://arxiv.org/abs/0905.2637}
+@article{CruzKnepleyBarba10,
+  author  = {Felipe A Cruz and Matthew G Knepley and L A Barba},
+  title   = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
+  journal = {International Journal of Numerical Methods in Engineering},
+  volume  = {85},
+  number  = {4},
+  pages   = {403--428},
+  url     = {http://arxiv.org/abs/0905.2637},
+  note    = {\url{http://arxiv.org/abs/0905.2637}},
+  year    = {2010}
 }
 % LiteralHTML:
 % LiteralHTML:  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
@@ -2838,13 +2929,14 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 
 @article{KnepleyKarpeevDavidovitsEisenbergGillespie10,
   author  = {Matthew G. Knepley and Dmitry A. Karpeev and Seth Davidovits and Robert~S. Eisenberg and Dirk Gillespie},
-  title   = {Classical Density Functional Theory applied to a Confined Equilibrium Ionic Solution in Three Dimensions},
+  title   = {An Efficient Algorithm for Classical Density Functional Theory in Three Dimensions: Ionic Solutions},
   journal = {Journal of Physical Chemistry},
   volume  = {132},
   number  = {12},
   pages   = {124101--124111},
-  year    = {2010},
-  url     = {http://arxiv.org/abs/0910.1531}
+  url     = {http://arxiv.org/abs/0910.1531},
+  note    = {\url{http://arxiv.org/abs/0910.1531}},
+  year    = {2010}
 }
 
 @Article{scx2008,
@@ -3627,13 +3719,6 @@ pages   = "157--166"
   author      = "Victor Eijkhout",
   note = "This is no longer supported. A set of preconditioners built on PETSc"
 }
-@inproceedings{CruzKnepleyBarba09,
-  author   = {Felipe A. Cruz and Matthew G. Knepley and Lorena A. Barba},
-  title    = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
-  journal  = {Submitted to Int. J. Num. Meth. Eng.},
-  year     = {2009},
-  url      = {http://arxiv.org/abs/0905.2637}
-}
 @Unpublished{pism,
   title = 	"PISM: a Parallel Ice Sheet Model",
   author = "The PISM Team",
@@ -3975,6 +4060,15 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   number = "ANL/MCS-P2011-0112"
 }
 
+@techreport{ClearyKnepley99,
+  author      = {Andrew Cleary and Matthew G. Knepley},
+  title       = {Solvers as Operators},
+  institution = {Lawrence Livermore National Laboratory},
+  type        = {Technical Report},
+  number      = {UCRL-ID-135342},
+  year        = {1999}
+}
+
 @techreport{smcabbkz2012,
   author = "Barry Smith and Lois Curfman McInnes and Emil Constantinescu and Mark Adams and 
             Satish Balay and Jed Brown and Matthew Knepley and Hong Zhang",
@@ -3998,12 +4092,30 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
         BOOKTITLE = {Proceedings of SciDAC 2010 Annual Meeting},
         YEAR      = "2010"
 } 
-@INPROCEEDINGS{msk2010,
-        AUTHOR = " V. Minden and B. F. Smith and M. Knepley",
-        TITLE     = "Preliminary Implementation of {PETSc} Using {GPUs}",
+@INPROCEEDINGS{msk2012,
+        AUTHOR    = {Victor Minden and Barry F. Smith and Matthew G. Knepley},
+        TITLE     = {Preliminary Implementation of {PETSc} Using {GPUs}},
         BOOKTITLE = {Proceedings of the 2010 Workshop of GPU Solutions to Multiscale Problems in Science and Engineering},
-        YEAR      = "2010"
-} 
+        YEAR      = {2012}
+}
+@INPROCEEDINGS{KnepleyYuen12,
+        AUTHOR    = {Matthew G. Knepley and David A. Yuen},
+        TITLE     = {Why Scientists and Engineers need GPUs today},
+        BOOKTITLE = {Proceedings of the 2010 Workshop of GPU Solutions to Multiscale Problems in Science and Engineering},
+        YEAR      = {2012}
+}
+@INPROCEEDINGS{KarpeevKnepleyBrune12,
+        AUTHOR    = {Dmitry A. Karpeev and Matthew G. Knepley and Peter R. Brune},
+        TITLE     = {Accurate Evaluation of Local Averages on GPGPUs},
+        BOOKTITLE = {Proceedings of the 2010 Workshop of GPU Solutions to Multiscale Problems in Science and Engineering},
+        YEAR      = {2012}
+}
+@INPROCEEDINGS{Zheng12,
+        AUTHOR    = {Larry Zheng and Taras V. Gerya and Matthew G.~Knepley and David A.Yuen and Huai Zhang and Yaolin Shi},
+        TITLE     = {GPU Implementation of Multigrid Solver for Stokes equation with strongly variable viscosity},
+        BOOKTITLE = {Proceedings of the 2010 Workshop of GPU Solutions to Multiscale Problems in Science and Engineering},
+        YEAR      = {2012}
+}
 @inbook{s2011,
   author = "B. Smith",
   chapter = "PETSc, the Portable, Extensible Toolkit for Scientific computing",
@@ -4148,13 +4260,13 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
  year      = 1999,
  pages     = "21-29"
 }
-@INPROCEEDINGS{ knepleysarin8,
- AUTHOR=    "Matthew Knepley and Vivek Sarin",
- TITLE=     "Algorithm Development for Large Scale Computing",
- PUBLISHER= "SIAM",
- BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
-                Inter-operable Scientific and Engineering Computing",
- year      = 1999
+@INPROCEEDINGS{knepleysarin99,
+  author    = {Matthew Knepley and Vivek Sarin},
+  title     = {Algorithm Development for Large Scale Computing},
+  publisher = {SIAM},
+  booktitle = {Proceedings of the SIAM Workshop on Object Oriented Methods for Inter-operable Scientific and Engineering Computing},
+  note      = {\url{http://books.google.com/books?id=2Da5OcnjPSgC&lpg=PA58&ots=TJCK64BUeg&dq=Bill%20Gropp%20Science%20Engineering%20Object%20Oriented&pg=PA138#v=onepage&q&f=false}},
+  year      = {1999}
 }
 @INBOOK{bgms00,
  author    = "S. Balay and W. D. Gropp and L. C. McInnes and B. F. Smith",
@@ -4963,18 +5075,6 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
       url  = "http://www.cs.nyu.edu/csweb/Research/TechReports/TR1996-716/TR1996-716.pdf",
       NOTES="Thesis"
 }
-@TechReport{KirbyKnepleyScott04,
-  pages =        "14",
-  year =         "2004",
-  type =         "Technical Report",
-  number =       "TR-2004-04",
-  institution =  "University of Chicago",
-  title =        "Optimal Evaluation of Finite Element Matrices",
-  author =       "Robert C. Kirby and Matthew G. Knepley and L. Ridgway Scott",
-  abstract =     "",
-  url = 	 "http://www.cs.uchicago.edu/research/publications/techreports/TR-2004-04",
-  month =        "May"
-}
 
 @TechReport{KnepleyKarpeev05,
   pages =        "41",
@@ -5010,33 +5110,9 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   number  = {3},
   pages   = {215--230},
   year    = {2009},
-  doi     = {10.3233/SPR-2009-0249}
-}
-
-@TechReport{KnepleyKarpeev07B,
-  pages =        "14",
-  year =         "2007",
-  type =         "Technical Report",
-  number =       "ANL/MCS-P????-????",
-  institution =  "Argonne National Laboratory",
-  title =        "Sieve Concepts and Interfaces",
-  author =       "Matthew G. Knepley and Dmitry A. Karpeev",
-  abstract =     "",
-  url =          "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P????.pdf",
-  month =        "February"
-}
-
-@TechReport{KnepleyKarpeev07C,
-  pages =        "14",
-  year =         "2008",
-  type =         "Technical Report",
-  number =       "ANL/MCS to appear",
-  institution =  "Argonne National Laboratory",
-  title =        "Sieve Implementation",
-  author =       "Matthew G. Knepley and Dmitry A. Karpeev",
-  abstract =     "",
-  url =          "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P????.pdf",
-  month =        "January"
+  doi     = {10.3233/SPR-2009-0249},
+  url     = {http://arxiv.org/abs/0908.4427},
+  note    = {\url{http://arxiv.org/abs/0908.4427}}
 }
 @article {biezuner2012computing,
    author = {Biezuner, Rodney and Brown, Jed and Ercole, Grey and Martins, Eder},

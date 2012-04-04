@@ -635,8 +635,6 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   PetscErrorCode ierr;
-  const char       *orders[] = {"linear", "quadratic", "cubic"};
-  PetscInt         indx = 0;
   const char     *deft = SNESLINESEARCHBASIC;
   char           type[256];
   PetscBool      flg, set;
@@ -686,19 +684,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
       ierr = SNESLineSearchSetPreCheck(linesearch,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
   }
-
-  ierr = PetscOptionsEList("-snes_linesearch_order",  "Order of approximation", "SNESLineSearchSetOrder", orders,3,orders[(PetscInt)linesearch->order],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {
-    switch (indx) {
-    case 0: linesearch->order = SNES_LINESEARCH_LINEAR;
-      break;
-    case 1: linesearch->order = SNES_LINESEARCH_QUADRATIC;
-      break;
-    case 2: linesearch->order = SNES_LINESEARCH_CUBIC;
-      break;
-    }
-  }
-
+  ierr = PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
 
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
@@ -1130,7 +1116,7 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
 .seealso: SNESLineSearchSetOrder()
 @*/
 
-PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,SNESLineSearchOrder *order)
+PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
@@ -1151,9 +1137,9 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,SNESLineSearchO
    Level: intermediate
 
    Possible Values for order:
-+  SNES_LINESEARCH_LINEAR - linear method
-.  SNES_LINESEARCH_QUADRATIC - quadratic method
--  SNES_LINESEARCH_CUBIC - cubic method
++  SNES_LINESEARCH_ORDER_LINEAR - linear method
+.  SNES_LINESEARCH_ORDER_QUADRATIC - quadratic method
+-  SNES_LINESEARCH_ORDER_CUBIC - cubic method
 
    Notes:
    Variable orders are supported by the following line searches:
@@ -1162,7 +1148,7 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,SNESLineSearchO
 
 .seealso: SNESLineSearchGetOrder()
 @*/
-PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,SNESLineSearchOrder order)
+PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,PetscInt order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
