@@ -693,6 +693,17 @@ extern const char *SNESNGMRESSelectTypes[];
 extern PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
 extern PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
 
+/* routines for NCG solver */
+
+typedef enum {
+  SNES_NCG_FR,
+  SNES_NCG_PRP,
+  SNES_NCG_HS,
+  SNES_NCG_DY,
+  SNES_NCG_CD} SNESNCGType;
+extern const char *SNESNCGTypes[];
+
+extern PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
 PETSC_EXTERN_CXX_END
 #endif
