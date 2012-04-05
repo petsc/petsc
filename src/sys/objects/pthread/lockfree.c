@@ -21,7 +21,15 @@ static struct {
   PetscInt *list;    /* List of busy threads */
 } busy_threads;
 
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#define PetscAtomicCompareandSwap(ptr, oldval, newval) (OSAtomicCompareAndSwapPtr(oldval,newval,ptr))
+#elif defined(_MSC_VER)
+#define PetscAtomicCompareandSwap(ptr, oldval, newval) (InterlockedCompareExchange(ptr,newval,oldval))
+#elif (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 40100
 #define PetscAtomicCompareandSwap(ptr, oldval, newval) (__sync_bool_compare_and_swap(ptr,oldval,newval))
+#else
+#  error No maping for PetscAtomicCompareandSwap
+#endif
 
 static void* PetscThreadsFinish_LockFree(void* arg) {
   PetscAtomicCompareandSwap(&PetscThreadGo,PETSC_TRUE,PETSC_FALSE);
@@ -53,7 +61,7 @@ void* PetscThreadFunc_LockFree(void* arg)
       PetscAtomicCompareandSwap(&job_lockfree.my_job_status[iVal],0,1);
     }
   }
-  __sync_bool_compare_and_swap(&job_lockfree.my_job_status[iVal],0,1);
+  PetscAtomicCompareandSwap(&job_lockfree.my_job_status[iVal],0,1);
 
   pthread_setspecific(PetscThreadsRankKey,NULL);
   return NULL;
