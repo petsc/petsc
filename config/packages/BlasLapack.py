@@ -564,12 +564,13 @@ class Configure(config.package.Package):
 ''' % (routine, routine)
       self.pushLanguage('C')
       oldLibs = self.compilers.LIBS
-      self.compilers.LIBS = self.libraries.toString(self.blasLibrary)+' '+self.compilers.LIBS
+      self.compilers.LIBS = self.libraries.toString(self.lapackLibrary)+' '+self.libraries.toString(self.blasLibrary)+' '+self.compilers.LIBS
       self.complexDotArg = self.checkRun('#include <math.h>\n', code)
       self.compilers.LIBS = oldLibs
       self.popLanguage()
     else:
       self.framework.addBatchInclude('#include <math.h>')
+      self.framework.addBatchLib(self.lapackLibrary)
       self.framework.addBatchLib(self.blasLibrary)
       self.framework.addBatchBody(['{',
                                    'typedef struct{double re; double im;} mycomplex;',
