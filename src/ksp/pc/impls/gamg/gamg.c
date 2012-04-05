@@ -446,6 +446,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscInt         level_bs[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0,nnztot=0;
   MatInfo          info;
+  PetscBool        stokes = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -486,20 +487,35 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     PetscFunctionReturn(0);
   }
   assert(pc->setupcalled == 0);
- 
-  /* GAMG requires input of fine-grid matrix. It determines nlevels. */
-  ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
-  ierr = MatGetSize( Pmat, &M, &N );CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( Pmat, &Istart, &Iend ); CHKERRQ(ierr);
-  nloc = (Iend-Istart)/bs; assert((Iend-Istart)%bs == 0);
-  
-  if( pc_gamg->data == 0 && nloc > 0 ) {
-    if(!pc_gamg->createdefaultdata){
-      SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_LIB,"'createdefaultdata' not set?!?! need to support NULL data!!!");
+
+  /* deal with Stokes */ 
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
+
+  if( pc_gamg->data == 0 ) {
+    if( !pc_gamg->createdefaultdata ){
+      SETERRQ(wcomm,PETSC_ERR_LIB,"'createdefaultdata' not set?!?! need to support NULL data!!!");
+    }
+    if( stokes ) {
+      SETERRQ(wcomm,PETSC_ERR_LIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
     }
     ierr = pc_gamg->createdefaultdata( pc, Pmat ); CHKERRQ(ierr);
   }
-  
+
+  /* get basic dims */
+  if( stokes ) {
+    bs = pc_gamg->data_cell_rows;
+    nloc = pc_gamg->data_sz/pc_gamg->data_cell_cols/bs;
+    /* M,N,Iend,Istart,Pmat -- TODO */
+    ierr = MatGetBlockSize( Pmat, &M ); CHKERRQ(ierr); assert(M==bs);
+    ierr = MatGetOwnershipRange( Pmat, &Istart, &Iend ); CHKERRQ(ierr); assert((Iend-Istart)/bs == nloc);
+    ierr = MatGetSize( Pmat, &M, &N );CHKERRQ(ierr);
+  }
+  else {
+    ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
+    ierr = MatGetSize( Pmat, &M, &N );CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange( Pmat, &Istart, &Iend ); CHKERRQ(ierr);
+    nloc = (Iend-Istart)/bs; assert((Iend-Istart)%bs == 0);
+  }
   /* Get A_i and R_i */
   if (pc_gamg->verbose) {
     if(pc_gamg->verbose==1) ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info); 
@@ -760,6 +776,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
           }
           if( removedEqs[level] ) {
+            /* being very careful - zeroing out BC rows (this is not done in agg.c estimates) */
             PetscScalar *zeros; 
             PetscInt ii,jj, *idx_bs, sz, bs=level_bs[level];
             const PetscInt *idx;

@@ -1696,13 +1696,13 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].
 
-.seealso: PCPROMETHEUS
+.seealso: MatSetNearNullSpace
 @*/
-PetscErrorCode  PCSetCoordinates(PC pc,PetscInt dim,PetscReal *coords)
+PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords )
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
