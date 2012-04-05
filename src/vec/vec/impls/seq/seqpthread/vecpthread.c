@@ -1548,7 +1548,6 @@ PetscErrorCode VecSetThreadAffinities(Vec v,const PetscInt affinities[])
 PetscErrorCode VecView_SeqPthread(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
