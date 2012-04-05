@@ -416,7 +416,7 @@ extern PetscErrorCode  PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 extern PetscErrorCode  PCGalerkinSetRestriction(PC,Mat);
 extern PetscErrorCode  PCGalerkinSetInterpolation(PC,Mat);
 
-extern PetscErrorCode  PCSetCoordinates(PC,PetscInt,PetscReal*);
+extern PetscErrorCode  PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
 extern PetscErrorCode  PCSASetVectors(PC,PetscInt,PetscReal *);
 
 extern PetscErrorCode  PCPythonSetType(PC,const char[]);

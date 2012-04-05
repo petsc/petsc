@@ -115,7 +115,7 @@ int main(int argc,char **args)
 
     ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
 
-    assert(m == Iend - Istart);
+    assert(m == Iend-Istart);
     /* Generate vectors */
     ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
     ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
@@ -246,7 +246,7 @@ int main(int argc,char **args)
 
   /* finish KSP/PC setup */
   ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-  ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
+  ierr = PCSetCoordinates( pc, 3, m/3, coords );                   CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);

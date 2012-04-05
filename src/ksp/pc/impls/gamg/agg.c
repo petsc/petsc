@@ -235,28 +235,54 @@ PetscErrorCode PCDestroy_AGG( PC pc )
 /* -------------------------------------------------------------------------- */
 /*
    PCSetCoordinates_AGG
+     - collective
 
    Input Parameter:
    .  pc - the preconditioner context
+   . ndm - dimesion 
+   . a_nloc - number of vertices local
+   . coords - [a_nloc][ndm] - interleaved coordinate data: {x_0, y_0, z_0, x_1, y_1, ...}
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_AGG"
-PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscReal *coords )
+PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords )
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscErrorCode ierr;
-  PetscInt       arrsz,bs,my0,kk,ii,jj,nloc,Iend;
+  PetscInt       arrsz,bs,kk,ii,jj,nloc;
   Mat            Amat = pc->pmat;
+  MPI_Comm       wcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
-  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
-  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
-  nloc = (Iend-my0)/bs; 
-  if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
- 
+  /* set 'bs' and 'nloc' */
+  ierr = MatGetBlockSize( Amat, &bs );  CHKERRQ( ierr );
+  if( a_nloc == -1 ) {
+    PetscInt my0, Iend;
+    /* stokes = PETSC_FALSE; */
+    ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+    nloc = (Iend-my0)/bs; 
+    if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);    
+  }
+  else {
+    ierr = MPI_Allreduce( &a_nloc, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); CHKERRQ( ierr );
+    ierr = MatGetSize( Amat, &kk, &jj );               CHKERRQ( ierr );    
+    if( bs==1 && ii!=kk ) {
+      /* stokes = PETSC_TRUE; */
+      bs = ndm;
+      nloc = a_nloc;
+    }
+    else{
+      PetscInt       my0,Iend;
+      /* stokes = PETSC_FALSE; */
+      ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+      nloc = (Iend-my0)/bs; 
+      if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+    }
+  }
+
   /* SA: null space vectors */
   if( coords && bs==1 ) pc_gamg->data_cell_cols = 1; /* scalar w/ coords and SA (not needed) */
   else if( coords ) pc_gamg->data_cell_cols = (ndm==2 ? 3 : 6); /* elasticity */
@@ -268,11 +294,12 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscReal *coords )
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree( pc_gamg->data );  CHKERRQ(ierr);
-    ierr = PetscMalloc(arrsz*sizeof(PetscReal), &pc_gamg->data ); CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz+1)*sizeof(PetscReal), &pc_gamg->data ); CHKERRQ(ierr);
+    /* !nul if if nloc==0 */
   }
   /* copy data in - column oriented */
   for(kk=0;kk<nloc;kk++){
-    const PetscInt M = Iend - my0;
+    const PetscInt M = nloc*pc_gamg->data_cell_rows;
     PetscReal *data = &pc_gamg->data[kk*bs];
     if( pc_gamg->data_cell_cols==1 ) *data = 1.0;
     else {
@@ -688,7 +715,7 @@ PetscErrorCode PCSetData_AGG( PC pc, Mat a_A )
   PetscFunctionBegin;
   ierr = MatGetNearNullSpace( a_A, &mnull ); CHKERRQ(ierr);
   if( !mnull ) {
-    ierr = PCSetCoordinates_AGG( pc, -1, PETSC_NULL ); CHKERRQ(ierr);
+    ierr = PCSetCoordinates_AGG( pc, -1, -1, PETSC_NULL ); CHKERRQ(ierr);
   }
   else {
     PetscReal *nullvec;
