@@ -1543,6 +1543,26 @@ PetscErrorCode VecSetThreadAffinities(Vec v,const PetscInt affinities[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_SeqPthread"
+PetscErrorCode VecView_SeqPthread(Vec xin,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  const char        *name;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  ierr = VecView_Seq(xin,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number threads used=%D\n",xin->map->tmap->nthreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -1575,7 +1595,7 @@ static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecSetOption_Seq, /* 30 */
             VecSetValuesBlocked_Seq,
             VecDestroy_SeqPThread,
-            VecView_Seq,
+            VecView_SeqPthread,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
             VecDot_SeqPThread,

@@ -771,7 +771,6 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"length=%D\n",rows);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
     }
   }
   ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
