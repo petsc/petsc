@@ -197,6 +197,7 @@ PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
 }
 #endif
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetFlowControl_Binary"
 PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer,PetscInt *fc)
@@ -207,6 +208,7 @@ PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer,PetscI
   *fc = vbinary->flowcontrol;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetFlowControl"
@@ -236,6 +238,7 @@ PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetFlowControl_Binary"
 PetscErrorCode  PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,PetscInt fc)
@@ -247,6 +250,7 @@ PetscErrorCode  PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,PetscI
   vbinary->flowcontrol = fc;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetFlowControl"
@@ -412,6 +416,7 @@ PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *s
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetSkipHeader_Binary"
 PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer,PetscBool  skip)
@@ -422,6 +427,7 @@ PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer,PetscBoo
   vbinary->skipheader = skip;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetSkipHeader"
@@ -455,6 +461,7 @@ PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer viewer,PetscBool  skip
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetSkipHeader_Binary"
 PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer,PetscBool  *skip)
@@ -465,6 +472,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer,PetscBoo
   *skip   = vbinary->skipheader;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetSkipHeader"
@@ -498,6 +506,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *ski
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetInfoPointer_Binary"
 PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE **file)
@@ -508,7 +517,7 @@ PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE *
   *file = vbinary->fdes_info;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetInfoPointer"
