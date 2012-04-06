@@ -75,6 +75,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   PetscReal      dp = 0.0;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   Vec            P2,S2;
+  PC             pc;
 
   PetscFunctionBegin;
   X       = ksp->vec_sol;
@@ -130,7 +131,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
 
     /* ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr); */ /*   v <- K p           */
-    PC pc;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (pc->setupcalled < 2) {
       ierr = PCSetUp(pc);CHKERRQ(ierr);
