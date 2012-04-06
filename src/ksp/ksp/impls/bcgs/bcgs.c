@@ -12,7 +12,7 @@ typedef struct {
 PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_BCGS       *bcgs = ksp->data;
+  KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   PetscBool      flg;
   
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp)
 PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  KSP_BCGS       *bcgs = ksp->data;
+  KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   PetscBool      iascii;
 
   PetscFunctionBegin;
@@ -50,7 +50,7 @@ PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
 static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_BCGS       *bcgs = ksp->data;
+  KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   PetscBool      fbcgs = bcgs->fbcgs;
 
   PetscFunctionBegin;
@@ -403,7 +403,6 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPCreate_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscBool      fbcgs = PETSC_FALSE;
   KSP_BCGS       *bcgs;
 
   PetscFunctionBegin;
