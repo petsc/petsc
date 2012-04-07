@@ -163,7 +163,7 @@ PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void** data,
 	  job_lockfree.pdata[i+PetscMainThreadShareWork] = data[j];
 	  busy_threads.list[k++] = i;
 	  /* signal thread i to start the job */
-	  PetscAtomicCompareandSwap(&(job_lockfree.my_job_status[i]),1,0);
+          PetscAtomicCompareandSwap(&(job_lockfree.my_job_status[i]),1,0);
 	}
       }
     }

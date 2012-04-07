@@ -3,7 +3,11 @@
 
 #if defined(PETSC_USE_DEBUG)  && !defined(PETSC_USE_PTHREAD)
 
-PetscStack  *petscstack = 0;
+#if defined(PETSC_ThreadLocal)
+PETSC_ThreadLocal PetscStack  *petscstack = 0;
+#else
+PetscStack *petscstack = 0;
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPublish"
