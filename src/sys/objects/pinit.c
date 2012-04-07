@@ -998,7 +998,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
   if (PetscStackActive) {
     ierr = PetscStackDestroy();CHKERRQ(ierr);
   }
@@ -1120,7 +1120,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     flg2 = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg2,PETSC_NULL);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
     if (PETSC_RUNNING_ON_VALGRIND) flg2 = PETSC_FALSE;
 #else
     flg2 = PETSC_FALSE;         /* Skip reporting for optimized builds regardless of -malloc_test */

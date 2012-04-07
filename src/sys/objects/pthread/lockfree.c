@@ -1,4 +1,3 @@
-/* The code is active only when the flag PETSC_USE_PTHREAD is set */
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
