@@ -1389,11 +1389,7 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree(vs);CHKERRQ(ierr);
-
-  if(!v->map->refcnt) {
-    ierr = PetscThreadsLayoutDestroy(&v->map->tmap);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(v->data);CHKERRQ(ierr);
 
   vecs_created--;
   /* Free the kernel data structure on the destruction of the last vector */
