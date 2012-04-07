@@ -291,7 +291,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
           This is not supported for complex numbers.
 
    Reference: The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
-                     Architectures. L. T. Yand and R. Brent, Proceedings of the Fifth International Conference on Algorithms and 
+                     Architectures. L. T. Yang and R. Brent, Proceedings of the Fifth International Conference on Algorithms and
                      Architectures for Parallel Processing, 2002, IEEE.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
