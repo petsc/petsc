@@ -222,8 +222,16 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
     N_CORES = get_nprocs();
 #elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
-    size_t   len = sizeof(N_CORES);
-    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+    {
+      size_t   len = sizeof(N_CORES);
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+    }
+#elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
+    {
+      SYSTEM_INFO sysinfo;
+      GetSystemInfo( &sysinfo );
+      N_CORES = sysinfo.dwNumberOfProcessors;
+    }
 #endif
 
   if(nthreads == PETSC_DECIDE) {
