@@ -3,8 +3,8 @@
 
 #if defined(PETSC_USE_DEBUG)
 
-#if defined(PETSC_ThreadLocal)
-PETSC_ThreadLocal PetscStack  *petscstack = 0;
+#if defined(PETSC_PTHREAD_LOCAL)
+PETSC_PTHREAD_LOCAL PetscStack  *petscstack = 0;
 #else
 PetscStack *petscstack = 0;
 #endif

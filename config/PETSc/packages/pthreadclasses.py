@@ -23,7 +23,7 @@ class Configure(PETSc.package.NewPackage):
     self.found = 1
     self.framework.packages.append(self)
     if self.checkCompile('__thread int a;\n',''):
-      self.addDefine('ThreadLocal','__thread')
+      self.addDefine('PTHREAD_LOCAL','__thread')
     if self.checkCompile('__declspec(thread) int i;\n',''):
-      self.addDefine('ThreadLocal','__declspec(thread)')
+      self.addDefine('PTHREAD_LOCAL','__declspec(thread)')
     

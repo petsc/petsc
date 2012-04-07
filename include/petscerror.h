@@ -383,8 +383,8 @@ typedef struct  {
         int currentsize;
 } PetscStack;
 
-#if defined(PETSC_ThreadLocal)
-extern  PETSC_ThreadLocal PetscStack *petscstack;
+#if defined(PETSC_PTHREAD_LOCAL)
+extern  PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
 extern PetscStack *petscstack;
 #endif
