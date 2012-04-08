@@ -52,12 +52,13 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
-  PetscReal      res_norm,res;
+  PetscReal      res_norm,res,newnorm;
   PetscErrorCode ierr;
   PetscInt       it = 0,j,k;
   PetscBool      hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (itcount) *itcount = 0;
   ierr = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
   res    = res_norm;
   *RS(0) = res_norm;
@@ -70,7 +71,6 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   KSPLogResidualHistory(ksp,res);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
-    if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
     ierr = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -92,7 +92,8 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
     }
 
     if (it > 1) {               /* Complete the pending reduction */
-      ierr = VecNormEnd(VEC_VV(it-1),NORM_2,HH(it-1,it-2));CHKERRQ(ierr);
+      ierr = VecNormEnd(VEC_VV(it-1),NORM_2,&newnorm);CHKERRQ(ierr);
+      *HH(it-1,it-2) = newnorm;
     }
     if (it > 0) {               /* Finish the reduction computing the latest column of H */
       ierr = VecMDotEnd(Zcur,it,&(VEC_VV(0)),HH(0,it-1));CHKERRQ(ierr);
@@ -164,7 +165,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       ierr = VecMAXPY(Zcur,it,work,&VEC_VV(0));CHKERRQ(ierr);
       /* Zcur is now orthogonal, and will be referred to as VEC_VV(it) again, though it is still not normalized. */
       /* Begin computing the norm of the new vector, will be normalized after the MatMult in the next iteration. */
-      ierr = VecNormBegin(VEC_VV(it),NORM_2,HH(it,it-1));CHKERRQ(ierr);
+      ierr = VecNormBegin(VEC_VV(it),NORM_2,&newnorm);CHKERRQ(ierr);
     }
 
     /* Compute column of H (to the diagonal, but not the subdiagonal) to be able to orthogonalize the newest vector. */
@@ -335,8 +336,8 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
 
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it+1] / rs[it]),pgmres->haptol);
-  if (hh[it+1] < hapbnd) {
-    ierr = PetscInfo4(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)*HH(it+1,it));CHKERRQ(ierr);
+  if (PetscAbsScalar(hh[it+1]) < hapbnd) {
+    ierr = PetscInfo4(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it)));CHKERRQ(ierr);
     *hapend = PETSC_TRUE;
   }
 
