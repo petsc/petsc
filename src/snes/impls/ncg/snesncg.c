@@ -1,4 +1,5 @@
-#include <../src/snes/impls/ncg/snesncgimpl.h>
+#include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
+const char         *SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NCG"
@@ -71,19 +72,16 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
 {
   SNES_NCG           *ncg     = (SNES_NCG *)snes->data;
-  const char         *betas[] = {"FR","PRP","HS", "DY", "CD"};
   PetscErrorCode     ierr;
-  PetscBool          debug, flg;
-  PetscInt           indx;
-  SNESLineSearch    linesearch;
+  PetscBool          debug;
+  SNESLineSearch     linesearch;
+  SNESNCGType        ncgtype;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ncg_monitor", "Monitor NCG iterations", "SNES", ncg->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-snes_ncg_type","Nonlinear CG update used","", betas, 5, "FR",&indx, &flg);CHKERRQ(ierr);
-  if (flg) {
-    ncg->betatype = indx;
-  }
+  ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor NCG iterations","SNES",ncg->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
   if (debug) {
     ncg->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
   }
@@ -204,6 +202,54 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESNCGSetType"
+/*@
+    SNESNCGSetType - Sets the conjugate update type for SNESNCG.
+
+    Logically Collective on SNES
+
+    Input Parameters:
++   snes - the iterative context
+-   btype - update type
+
+    Options Database:
+.   -snes_ncg_type<prp,fr,hs,dy,cd>
+
+    Level: intermediate
+
+    SNESNCGSelectTypes:
++   SNES_NCG_FR - Fletcher-Reeves update
+.   SNES_NCG_PRP - Polak-Ribiere-Polyak update
+.   SNES_NCG_HS - Hestenes-Steifel update
+.   SNES_NCG_DY - Dai-Yuan update
+-   SNES_NCG_CD - Conjugate Descent update
+
+   Notes:
+   PRP is the default, and the only one that tolerates generalized search directions.
+
+.keywords: SNES, SNESNCG, selection, type, set
+@*/
+PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscTryMethod(snes,"SNESNCGSetType_C",(SNES,SNESNCGType),(snes,btype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESNCGSetType_NCG"
+PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype) {
+  SNES_NCG *ncg = (SNES_NCG *)snes->data;
+  PetscFunctionBegin;
+  ncg->type = btype;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*
   SNESSolve_NCG - Solves a nonlinear system with the Nonlinear Conjugate Gradient method.
 
@@ -308,7 +354,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   for(i = 1; i < maxits + 1; i++) {
     lsSuccess = PETSC_TRUE;
     /* some update types require the old update direction or conjugate direction */
-    if (ncg->betatype == 1 || ncg->betatype == 2 || ncg->betatype == 3 || ncg->betatype == 4) { /* prp, hs, dy, cd need dXold*/
+    if (ncg->type != SNES_NCG_FR) {
       ierr = VecCopy(F, Fold);CHKERRQ(ierr);
     }
     ierr = SNESLineSearchApply(linesearch, X, F, &fnorm, lX);CHKERRQ(ierr);
@@ -360,35 +406,46 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
 
     /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
-    switch(ncg->betatype) {
-    case 0: /* Fletcher-Reeves */
+    switch(ncg->type) {
+    case SNES_NCG_FR: /* Fletcher-Reeves */
       dXolddotFold = dXdotF;
       ierr = VecDot(dX, dX, &dXdotF);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / dXolddotFold);
       break;
-    case 1: /* Polak-Ribiere-Poylak */
+    case SNES_NCG_PRP: /* Polak-Ribiere-Poylak */
       dXolddotFold = dXdotF;
-      ierr = VecDot(F, dX, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(Fold, dX, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(F, dX, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(Fold, dX, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(F, dX, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(Fold, dX, &dXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(((dXdotF - dXdotFold) / dXolddotFold));
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
-    case 2: /* Hestenes-Stiefel */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+    case SNES_NCG_HS: /* Hestenes-Stiefel */
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, Fold, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, Fold, &dXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart((dXdotF - dXdotFold) / (lXdotF - lXdotFold));
       break;
-    case 3: /* Dai-Yuan */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+    case SNES_NCG_DY: /* Dai-Yuan */
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / (lXdotFold - lXdotF));CHKERRQ(ierr);
       break;
-    case 4: /* Conjugate Descent */
-      ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDot(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+    case SNES_NCG_CD: /* Conjugate Descent */
+      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
       beta = PetscRealPart(dXdotF / lXdotFold);CHKERRQ(ierr);
       break;
     }
@@ -402,6 +459,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
+
+
 /*MC
   SNESNCG - Nonlinear Conjugate-Gradient method for the solution of general nonlinear systems.
 
@@ -409,7 +468,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   Options Database:
 +   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter.
-.   -snes_ls <basic,basicnormnorms,quadratic,critical,test> - Line search type.
+.   -snes_linesearch_type <cp,l2,basic> - Line search type.
 -   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
 Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
@@ -446,7 +505,8 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->monitor = PETSC_NULL;
-  neP->betatype = 1;
+  neP->type = SNES_NCG_PRP;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNCGSetType_C","SNESNCGSetType_NCG", SNESNCGSetType_NCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

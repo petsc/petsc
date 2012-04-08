@@ -5013,6 +5013,11 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
     mat->hermitian_set              = PETSC_FALSE;
     mat->structurally_symmetric_set = PETSC_FALSE;
   }
+#if defined(PETSC_HAVE_CUSP)
+  if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
@@ -5028,11 +5033,6 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
   }
   inassm--;
-#if defined(PETSC_HAVE_CUSP)
-  if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

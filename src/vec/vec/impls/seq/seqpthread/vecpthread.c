@@ -1,14 +1,12 @@
 /*
    Implements the sequential pthread based vectors.
 */
-#include <sched.h>
 #include <petscconf.h>
 #include <../src/vec/vec/impls/dvecimpl.h>                          /*I  "petscvec.h" I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 #include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <petscblaslapack.h>
 #include <petsc-private/petscaxpy.h>
-#include <unistd.h>
 
 PetscInt vecs_created=0;
 Vec_KernelData *vec_kerneldatap;
@@ -23,20 +21,24 @@ void* VecDot_Kernel(void *arg)
   Vec_KernelData *data = (Vec_KernelData*)arg;
   const PetscScalar *x, *y;
   PetscInt    n;
+#if defined(PETSC_USE_COMPLEX)
+  PetscInt     i;
+  PetscScalar  sum;
+# else
+  PetscBLASInt one = 1, bn;
+#endif
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
   n = data->n;
 #if defined(PETSC_USE_COMPLEX)
-  PetscInt i;
-  PetscScalar sum = 0.0;
-  for(i=0;i < n; i++) {
+  for(i=0,sum=0.0;i < n; i++) {
     sum += x[i]*PetscConj(y[i]);
   }
   data->result = sum;
 # else
-  PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+  bn = PetscBLASIntCast(n);
   data->result = BLASdot_(&bn,x,&one,y,&one);
 #endif
   return(0);
@@ -86,20 +88,24 @@ void* VecTDot_Kernel(void *arg)
   Vec_KernelData *data = (Vec_KernelData*)arg;
   const PetscScalar *x, *y;
   PetscInt    n;
+#if defined(PETSC_USE_COMPLEX)
+  PetscInt     i;
+  PetscScalar  sum;
+# else
+  PetscBLASInt one = 1, bn;
+#endif
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
   n = data->n;
 #if defined(PETSC_USE_COMPLEX)
-  PetscInt i;
-  PetscScalar sum = 0.0;
-  for(i=0;i < n; i++) {
+  for(i=0,sum=0.0;i < n; i++) {
     sum += x[i]*y[i];
   }
   data->result = sum;
 # else
-  PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+  bn = PetscBLASIntCast(n);
   data->result = BLASdot_(&bn,x,&one,y,&one);
 #endif
   return(0);
@@ -151,7 +157,7 @@ void* VecScale_Kernel(void *arg)
   PetscBLASInt one = 1, bn;
   PetscInt    n;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = data->x;
   a = data->alpha;
   n = data->n;
@@ -201,7 +207,7 @@ void* VecAXPY_Kernel(void *arg)
   PetscBLASInt one = 1, bn;
   PetscInt    n;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = data->y;
   a = data->alpha;
@@ -247,8 +253,9 @@ void* VecAYPX_Kernel(void *arg)
   PetscScalar       a,*y;
   const PetscScalar *x;
   PetscInt          n;
+  PetscInt          i;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = data->y;
   a = data->alpha;
@@ -257,7 +264,6 @@ void* VecAYPX_Kernel(void *arg)
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
   fortranaypx_(&n,&a,x,y);
 #else
-  PetscInt i;
   if(a==-1.0) {
     for (i=0; i<n; i++) {
       y[i] = x[i] - y[i];
@@ -320,7 +326,7 @@ void* VecAX_Kernel(void *arg)
   const PetscScalar *x;
   PetscInt           n,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = data->y;
   a = data->alpha;
@@ -336,7 +342,7 @@ void* VecAXPBY_Kernel(void *arg)
   const PetscScalar *x;
   PetscInt           n,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   y = data->y;
   a = data->alpha;
@@ -415,7 +421,7 @@ void* VecWAXPY_Kernel(void *arg)
   PetscInt          i,n;
   PetscErrorCode    ierr;
 
-  PetscThreadsDoCoreAffinity();
+  
   ww = data->w;
   xx = (const PetscScalar*)data->x;
   yy = (const PetscScalar*)data->y;
@@ -492,7 +498,7 @@ void* VecNorm_Kernel(void *arg)
   NormType type;
   PetscInt    i,n;
 
-  PetscThreadsDoCoreAffinity();
+  
   x = (const PetscScalar*)data->x;
   type = data->typeUse;
   n = data->n;
@@ -586,11 +592,15 @@ void* VecMDot_Kernel4(void* arg)
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
   const PetscScalar  *y2 = (const PetscScalar*)data->y2;
   const PetscScalar  *y3 = (const PetscScalar*)data->y3;
-
-  PetscThreadsDoCoreAffinity();
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt i;
-    PetscScalar sum0,sum1,sum2,sum3;
+  PetscInt i;
+  PetscScalar sum0,sum1,sum2,sum3;
+#else
+  PetscBLASInt one = 1, bn;
+#endif
+
+  
+#if defined(PETSC_USE_COMPLEX)
     sum0 = sum1 = sum2 = sum3 = 0.0;
     for(i=0;i<n;i++) {
       sum0 += x[i]*PetscConj(y0[i]);
@@ -600,7 +610,7 @@ void* VecMDot_Kernel4(void* arg)
     }
     data->result0 = sum0; data->result1 = sum1; data->result2 = sum2; data->result3 = sum3;
 # else
-    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    bn = PetscBLASIntCast(n);
     data->result0 = BLASdot_(&bn,x,&one,y0,&one);
     data->result1 = BLASdot_(&bn,x,&one,y1,&one);
     data->result2 = BLASdot_(&bn,x,&one,y2,&one);
@@ -617,11 +627,15 @@ void* VecMDot_Kernel3(void* arg)
   const PetscScalar  *y0 = (const PetscScalar*)data->y0;
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
   const PetscScalar  *y2 = (const PetscScalar*)data->y2;
-
-  PetscThreadsDoCoreAffinity();
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt i;
-    PetscScalar sum0,sum1,sum2;
+  PetscInt i;
+  PetscScalar sum0,sum1,sum2;
+#else
+  PetscBLASInt one = 1, bn;
+#endif
+
+  
+#if defined(PETSC_USE_COMPLEX)
     sum0 = sum1 = sum2 = 0.0;
     for(i=0;i<n;i++) {
       sum0 += x[i]*PetscConj(y0[i]);
@@ -630,7 +644,7 @@ void* VecMDot_Kernel3(void* arg)
     }
     data->result0 = sum0; data->result1 = sum1; data->result2 = sum2;
 # else
-    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    bn = PetscBLASIntCast(n);
     data->result0 = BLASdot_(&bn,x,&one,y0,&one);
     data->result1 = BLASdot_(&bn,x,&one,y1,&one);
     data->result2 = BLASdot_(&bn,x,&one,y2,&one);
@@ -645,11 +659,15 @@ void* VecMDot_Kernel2(void* arg)
   const PetscScalar  *x = (const PetscScalar*)data->x;
   const PetscScalar  *y0 = (const PetscScalar*)data->y0;
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
-
-  PetscThreadsDoCoreAffinity();
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt i;
-    PetscScalar sum0,sum1;
+  PetscInt i;
+  PetscScalar sum0,sum1;
+#else
+  PetscBLASInt one = 1, bn;
+#endif
+
+  
+#if defined(PETSC_USE_COMPLEX)
     sum0 = sum1 = 0.0;
     for(i=0;i<n;i++) {
       sum0 += x[i]*PetscConj(y0[i]);
@@ -657,7 +675,7 @@ void* VecMDot_Kernel2(void* arg)
     }
     data->result0 = sum0; data->result1 = sum1;
 # else
-    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    bn = PetscBLASIntCast(n);
     data->result0 = BLASdot_(&bn,x,&one,y0,&one);
     data->result1 = BLASdot_(&bn,x,&one,y1,&one);
 #endif
@@ -670,18 +688,22 @@ void* VecMDot_Kernel1(void* arg)
   PetscInt           n = data->n;
   const PetscScalar  *x = (const PetscScalar*)data->x;
   const PetscScalar  *y0 = (const PetscScalar*)data->y0;
-
-  PetscThreadsDoCoreAffinity();
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt i;
-    PetscScalar sum0;
+  PetscInt i;
+  PetscScalar sum0;
+# else
+  PetscBLASInt one = 1, bn;
+#endif
+
+  
+#if defined(PETSC_USE_COMPLEX)
     sum0 = 0.0;
     for(i=0;i<n;i++) {
       sum0 += x[i]*PetscConj(y0[i]);
     }
     data->result0 = sum0;
 # else
-    PetscBLASInt one = 1, bn = PetscBLASIntCast(n);
+    bn = PetscBLASIntCast(n);
     data->result0 = BLASdot_(&bn,x,&one,y0,&one);
 #endif
     return(0);
@@ -852,7 +874,7 @@ void* VecMax_Kernel(void *arg)
   PetscInt          i,j,n = data->n;
   PetscReal         lmax,tmp;
 
-  PetscThreadsDoCoreAffinity();
+  
 #if defined(PETSC_USE_COMPLEX)
   lmax = PetscRealPart(*xx++); j = 0;
 #else
@@ -919,7 +941,7 @@ void* VecMin_Kernel(void *arg)
   PetscInt          i,j,n = data->n;
   PetscReal         lmin,tmp;
 
-  PetscThreadsDoCoreAffinity();
+  
 #if defined(PETSC_USE_COMPLEX)
   lmin = PetscRealPart(*xx++); j = 0;
 #else
@@ -987,7 +1009,7 @@ void* VecPointwiseMult_Kernel(void *arg)
   PetscScalar *ww = data->w,*xx = data->x,*yy = data->y;
   PetscInt    n = data->n,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   if (ww == xx) {
     for (i=0; i<n; i++) ww[i] *= yy[i];
   } else if (ww == yy) {
@@ -1041,7 +1063,7 @@ void* VecPointwiseDivide_Kernel(void *arg)
   PetscScalar *ww = data->w,*xx = data->x,*yy = data->y;
   PetscInt    n = data->n,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   for (i=0; i<n; i++) {
     ww[i] = xx[i] / yy[i];
   }
@@ -1087,8 +1109,7 @@ void* VecSwap_Kernel(void *arg)
   Vec_KernelData *data = (Vec_KernelData*)arg;
   PetscScalar *xa = data->x,*ya = data->y;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(data->n);
-
-  PetscThreadsDoCoreAffinity();
+  
   BLASswap_(&bn,xa,&one,ya,&one);
   return(0);
 }
@@ -1131,7 +1152,7 @@ void* VecSetRandom_Kernel(void *arg)
   PetscInt     i,n = data->n;
   PetscErrorCode ierr;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0; i<n; i++) {
     ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQP(ierr);
   }
@@ -1172,7 +1193,7 @@ void* VecCopy_Kernel(void *arg)
   PetscInt           n = data->n;
   PetscErrorCode     ierr;
 
-  PetscThreadsDoCoreAffinity();
+  
   ierr = PetscMemcpy(ya,xa,n*sizeof(PetscScalar));CHKERRQP(ierr);
   return(0);
 }
@@ -1221,7 +1242,7 @@ void* VecMAXPY_Kernel(void* arg)
 #pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
 #endif
 
-  PetscThreadsDoCoreAffinity();
+  
   switch (j_rem=nv&0x3) {
   case 3: 
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
@@ -1319,7 +1340,6 @@ void* VecSet_Kernel(void *arg)
   PetscInt       i,n = data->n;
   PetscErrorCode ierr;
 
-  PetscThreadsDoCoreAffinity();
   if (alpha == (PetscScalar)0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQP(ierr);
   } else {
@@ -1367,11 +1387,7 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-  ierr = PetscFree(vs);CHKERRQ(ierr);
-
-  if(!v->map->refcnt) {
-    ierr = PetscThreadsLayoutDestroy(&v->map->tmap);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(v->data);CHKERRQ(ierr);
 
   vecs_created--;
   /* Free the kernel data structure on the destruction of the last vector */
@@ -1543,6 +1559,25 @@ PetscErrorCode VecSetThreadAffinities(Vec v,const PetscInt affinities[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_SeqPthread"
+PetscErrorCode VecView_SeqPthread(Vec xin,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  ierr = VecView_Seq(xin,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number threads used=%D\n",xin->map->tmap->nthreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -1554,7 +1589,7 @@ static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecScale_SeqPThread,
             VecCopy_SeqPThread, /* 10 */
             VecSet_SeqPThread,
-            VecSwap_Seq,
+            VecSwap_SeqPThread,
             VecAXPY_SeqPThread,
             VecAXPBY_SeqPThread,
             VecMAXPY_SeqPThread,
@@ -1575,7 +1610,7 @@ static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecSetOption_Seq, /* 30 */
             VecSetValuesBlocked_Seq,
             VecDestroy_SeqPThread,
-            VecView_Seq,
+            VecView_SeqPthread,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
             VecDot_SeqPThread,

@@ -148,9 +148,9 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
+  Y		= snes->vec_sol_update; /* newton step */
+  G		= snes->work[0];
+  W		= snes->work[1];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -215,10 +215,9 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     }
 
     /* Compute a (scaled) negative update in the line search routine:
-         Y <- X - lambda*Y
-       and evaluate G = function(Y) (depends on the line search).
+         X <- X - lambda*Y
+       and evaluate F = function(X) (depends on the line search).
     */
-    ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     gnorm = fnorm;
     ierr = SNESLineSearchApply(linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     ierr = SNESLineSearchGetSuccess(linesearch, &lssucceed);CHKERRQ(ierr);
@@ -234,7 +233,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool  ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,F,X,fnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -280,7 +279,7 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

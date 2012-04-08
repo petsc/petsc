@@ -7,39 +7,7 @@ static char help[] = "Surface processes in geophysics.\n\n";
    Processors: n
 T*/
 
-/* ------------------------------------------------------------------------
 
-    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
-    the partial differential equation
-  
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
-    with boundary conditions
-   
-             u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
-    A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
-    system of equations.
-
-    Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] 
-     e.g.,
-      ./ex5 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
-      mpiexec -n 2 ./ex5 -fd_jacobian_ghosted -log_summary
-
-  ------------------------------------------------------------------------- */
-
-/* 
-   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
-#include <petscdmmg.h>
 #include <petscsnes.h>
 
 /* 
@@ -48,7 +16,6 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-  DM          da; /* distributed array data structure */
   PassiveReal D;  /* The diffusion coefficient */
   PassiveReal K;  /* The advection coefficient */
   PetscInt    m;  /* Exponent for A */
@@ -59,17 +26,16 @@ typedef struct {
 */
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
-extern PetscErrorCode FormInitialGuess(AppCtx *,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG                  *dmmg;
   SNES                   snes;                 /* nonlinear solver */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
   PetscErrorCode         ierr;
+  DM                     da;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -80,7 +46,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");CHKERRQ(ierr);
     user.D = 1.0;
     ierr = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, PETSC_NULL);CHKERRQ(ierr);
     user.K = 1.0;
@@ -92,119 +58,44 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-  ierr = DMMGCreate(PETSC_COMM_WORLD, 1, &user, &dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg, (DM) user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes, da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, FormJacobianLocal, 0, 0);CHKERRQ(ierr);
+  ierr = DMDASetLocalFunction(da, (DMDALocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Form initial guess
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  //ierr = FormInitialGuess(&user,DMMGGetx(dmmg));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  snes = DMMGGetSNES(dmmg);
+  ierr = SNESSolve(snes,0,0);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
-  ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
-/* 
-   FormInitialGuess - Forms initial approximation.
-
-   Input Parameters:
-   user - user-defined application context
-   X - vector
-
-   Output Parameter:
-   X - vector
- */
-PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
-{
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscErrorCode ierr;
-  PetscReal      D,temp1,temp,hx,hy;
-  PetscScalar    **x;
-
-  PetscFunctionBegin;
-  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-
-  D      = user->D;
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
-  temp1  = D/(D + 1.0);
-
-  /*
-     Get a pointer to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
-  */
-  ierr = DMDAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries (for 2-dimensional DMDA):
-       xs, ys   - starting grid indices (no ghost points)
-       xm, ym   - widths of local grid (no ghost points)
-
-  */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Compute initial guess over the locally owned part of the grid
-  */
-  for (j=ys; j<ys+ym; j++) {
-    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
-    for (i=xs; i<xs+xm; i++) {
-      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        /* boundary conditions are all zero Dirichlet */
-        x[j][i] = 0.0; 
-      } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
-      }
-    }
-  }
-
-  /*
-     Restore vector
-  */
-  ierr = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-} 
 
 #undef __FUNCT__
 #define __FUNCT__ "funcU"
@@ -265,8 +156,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   /*
      Compute function over the locally owned part of the grid
   */
-  ierr = DMDAGetCoordinateDA(user->da, &coordDA);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(user->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {

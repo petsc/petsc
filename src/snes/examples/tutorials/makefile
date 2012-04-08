@@ -11,14 +11,14 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                ex23.c  ex25.c ex26.c  ex28.c ex29.c ex30.c \
+                ex25.c ex26.c  ex28.c ex30.c \
                 ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c ex49.c \
                 ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633D_DB.c ex64.c ex65.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex39f90.F ex40f90.F
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
-EXAMPLESMATLAB   = ex5m.m ex29view.m ex61genm.m ex61m.m
+EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
 DIRS		 = ex10d
 
 include ${PETSC_DIR}/conf/variables
@@ -571,7 +571,7 @@ runex19_11: #test pc_redundant
 	   else  echo  ${PWD} "\nPossible problem with with ex19_11, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_11.tmp
 runex19_12: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
 	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_12, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_12.tmp
@@ -721,11 +721,6 @@ runex22:
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex22_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp
-runex23:
-	-@${MPIEXEC} -n 2 ./ex23 -snes_monitor_short  > ex23_1.tmp 2>&1; \
-	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex23_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex23_1.tmp
 
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25 -pc_type mg -da_refine 1  -ksp_type fgmres  > ex25_1.tmp 2>&1;	  \
@@ -757,15 +752,12 @@ runex28_3:
 runex28_4:
 	-@${MPIEXEC} -n 6 ./ex28 -da_grid_x 257 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_u_ksp_type gmres -fieldsplit_u_ksp_pc_side right -fieldsplit_u_pc_type mg -fieldsplit_u_pc_mg_levels 4 -fieldsplit_u_mg_levels_ksp_type richardson -fieldsplit_u_mg_levels_pc_type sor -fieldsplit_u_pc_mg_galerkin -fieldsplit_u_ksp_converged_reason -fieldsplit_k_pc_type jacobi > ex28_4.tmp 2>&1; \
 	  ${DIFF} output/ex28_4.out ex28_4.tmp || echo  ${PWD} "\nPossible problem with ex28_4 ; diffs above \n========================================="; ${RM} -f ex28_4.tmp;
+runex30:
+	-@${MPIEXEC} -n 1 ./ex30  > ex30_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex30_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex30_1.tmp
 
-runex32:
-	-@${MPIEXEC} -n 1 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd_operator -da_grid_x 10 -da_grid_y 10
-runex32_2:
-	-@${MPIEXEC} -n 1 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd -da_grid_x 10 -da_grid_y 10
-runex32_3:
-	-@${MPIEXEC} -n 3 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd_operator -da_grid_x 10 -da_grid_y 10
-runex32_4:
-	-@${MPIEXEC} -n 3 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd -da_grid_x 10 -da_grid_y 10
 runex40f90:
 	-@${MPIEXEC} -n 1 ./ex40f90 -snes_monitor_short -snes_view  -da_refine 1 -pc_type mg  -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin  > ex40f90_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex40f90.out ex40f90_1.tmp) then true; \
@@ -804,6 +796,11 @@ runex45_3:
 	   if (${DIFF} output/ex45_0.out ex45.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex45_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex45.tmp
+runex46:
+	-@${MPIEXEC} -n 1 ./ex46 -snes_view -snes_monitor_short -da_refine 1 -pc_type mg -ksp_type fgmres -pc_mg_type full  > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex46, diffs above \n========================================="; fi; \
+	   ${RM} -f ex46.tmp
 
 runex47cu:
 	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -dm_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
@@ -851,10 +848,10 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex19_7 runex19_8 runex19_9 \
                                  runex19_10 runex19_14   runex19_fas runex19_bjacobi ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
-                                 ex23.PETSc runex23 ex23.rm  ex25.PETSc runex25 runex25_2 \
-                                 ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
+                                 ex25.PETSc runex25 runex25_2 \
+                                 ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex30.PETSc runex30 ex30.rm \
                                  ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
-                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
+                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm ex46.PETSc runex46 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm

@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm)
   c_factor = 2; //default
   r_factor = 0;
   debug = 0;
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", "ex_coarsen", baseFile, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);    

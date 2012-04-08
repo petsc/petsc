@@ -2791,8 +2791,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   }
     
   /*
-    This is a horrible, horrible, hack. See DMMGComputeJacobian_Multigrid() it inproperly sets
-    coloring->F for the coarser grids from the finest
+    This is a horrible, horrible, hack. 
   */
   if (coloring->F) {
     ierr = VecGetLocalSize(coloring->F,&m1);CHKERRQ(ierr);

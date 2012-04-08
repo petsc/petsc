@@ -13,6 +13,8 @@
 #endif
 #if defined(PETSC_HAVE_PTHREAD_H)
 #include <pthread.h>
+#elif defined(PETSC_HAVE_WINPTHREADS_H)
+#include "winpthreads.h"       /* http://locklessinc.com/downloads/winpthreads.h */
 #endif
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
@@ -40,8 +42,7 @@ extern PetscInt*      PetscThreadsCoreAffinities;           /* Core affinity of 
 extern PetscInt       PetscMainThreadShareWork;     /* Is the main thread also a worker? 1 = Yes */
 extern PetscInt       PetscMainThreadCoreAffinity;       /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
-extern pthread_key_t  PetscThreadsRankKey;
-extern PetscInt*      PetscThreadsRank;                  /* Array to hold thread ranks */
+extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank;    /* Thread rank */
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 

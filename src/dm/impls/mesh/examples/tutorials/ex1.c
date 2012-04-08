@@ -361,7 +361,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   inputFt  = (PetscInt) options->inputFileType;
   outputFt = (PetscInt) options->outputFileType;
 
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);

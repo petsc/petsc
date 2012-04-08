@@ -1,9 +1,13 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_DEBUG)  && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
 
-PetscStack  *petscstack = 0;
+#if defined(PETSC_PTHREAD_LOCAL)
+PETSC_PTHREAD_LOCAL PetscStack  *petscstack = 0;
+#else
+PetscStack *petscstack = 0;
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPublish"

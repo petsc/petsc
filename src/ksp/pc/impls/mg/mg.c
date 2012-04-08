@@ -472,7 +472,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PC_MG_Levels            **mglevels = mg->levels;
   PetscErrorCode          ierr;
   PetscInt                i,n = mglevels[0]->levels;
-  PC                      cpc,mpc;
+  PC                      cpc;
   PetscBool               preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset;
   Mat                     dA,dB;
   MatStructure            uflag;
@@ -492,15 +492,19 @@ PetscErrorCode PCSetUp_MG(PC pc)
       mglevels =  mg->levels;
     }
   }
+  ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
 
 
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
   /* Is this what we always want? What if user wants to keep old one? */
   ierr = KSPGetOperatorsSet(mglevels[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
-  ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
-  ierr = KSPGetPC(mglevels[n-1]->smoothd,&mpc);CHKERRQ(ierr);
-  if (!opsset || ((cpc->setupcalled == 1) && (mpc->setupcalled == 2)) || ((mpc == cpc) && (mpc->setupcalled == 2))) {
+  if (opsset) {
+    Mat mmat;
+    ierr = KSPGetOperators(mglevels[n-1]->smoothd,PETSC_NULL,&mmat,PETSC_NULL);CHKERRQ(ierr);
+    if (mmat == pc->pmat) opsset = PETSC_FALSE;
+  }
+  if (!opsset) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
@@ -637,6 +641,12 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
+  if (pc->dm) {
+    /* need to tell all the coarser levels to rebuild the matrix using the DM for that level */
+    for (i=0; i<n-1; i++){
+      if (mglevels[i]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[i]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
+    }
+  }
 
   for (i=1; i<n; i++) {
     if (mglevels[i]->smoothu == mglevels[i]->smoothd) {
@@ -656,7 +666,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {
       Mat          downmat,downpmat;
       MatStructure matflag;
-      PetscBool    opsset;
 
       /* check if operators have been set for up, if not use down operators to set them */
       ierr = KSPGetOperatorsSet(mglevels[i]->smoothu,&opsset,PETSC_NULL);CHKERRQ(ierr);

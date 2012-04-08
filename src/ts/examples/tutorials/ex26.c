@@ -107,10 +107,6 @@ int main(int argc,char **argv)
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
-  /*
-      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
-      for principal unknowns (x) and governing residuals (f)
-  */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
 

@@ -693,6 +693,31 @@ extern const char *SNESNGMRESSelectTypes[];
 extern PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
 extern PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
 
+/* routines for NCG solver */
+
+typedef enum {
+  SNES_NCG_FR,
+  SNES_NCG_PRP,
+  SNES_NCG_HS,
+  SNES_NCG_DY,
+  SNES_NCG_CD} SNESNCGType;
+extern const char *SNESNCGTypes[];
+
+extern PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
+
+/* routines for QN solver */
+
+typedef enum {SNES_QN_SEQUENTIAL, SNES_QN_COMPOSED} SNESQNCompositionType;
+extern const char *SNESQNCompositionTypes[];
+typedef enum {SNES_QN_SCALE_NONE, SNES_QN_SCALE_SHANNO, SNES_QN_SCALE_LINESEARCH, SNES_QN_SCALE_JACOBIAN} SNESQNScaleType;
+extern const char *SNESQNScaleTypes[];
+typedef enum {SNES_QN_RESTART_NONE, SNES_QN_RESTART_POWELL, SNES_QN_RESTART_PERIODIC} SNESQNRestartType;
+extern const char *SNESQNRestartTypes[];
+
+extern PetscErrorCode SNESQNSetCompositionType(SNES, SNESQNCompositionType);
+extern PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);
+extern PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
+
 
 PETSC_EXTERN_CXX_END
 #endif

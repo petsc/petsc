@@ -371,7 +371,7 @@ extern PetscErrorCode PetscFPTrapPop(void);
 /*
       Allows the code to build a stack frame as it runs
 */
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
 
 #define PETSCSTACKSIZE 64
 
@@ -383,7 +383,11 @@ typedef struct  {
         int currentsize;
 } PetscStack;
 
-extern  PetscStack *petscstack;
+#if defined(PETSC_PTHREAD_LOCAL)
+extern  PETSC_PTHREAD_LOCAL PetscStack *petscstack;
+#else
+extern PetscStack *petscstack;
+#endif
 extern PetscErrorCode   PetscStackCopy(PetscStack*,PetscStack*);
 extern PetscErrorCode   PetscStackPrint(PetscStack*,FILE* fp);
 

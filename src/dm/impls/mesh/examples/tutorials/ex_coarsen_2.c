@@ -32,7 +32,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);

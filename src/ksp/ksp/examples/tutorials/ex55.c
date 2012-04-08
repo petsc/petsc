@@ -197,7 +197,7 @@ int main(int argc,char **args)
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     if( use_coords ) {
-      ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
+      ierr = PCSetCoordinates( pc, 2, m, coords );                   CHKERRQ(ierr);
     }
   }
 

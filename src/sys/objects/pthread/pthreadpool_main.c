@@ -34,8 +34,8 @@ static char* arrready;
 
   PetscInt* pId = (PetscInt*)arg;
   PetscInt ThreadId = *pId;
+  PetscThreadRank=ThreadId+1;
 
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
 #endif
@@ -80,18 +80,19 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+#if defined(PETSC_HAVE_MEMALIGN)
+  size_t Val1 = (size_t)CACHE_LINE_SIZE;
+#endif
+  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MEMALIGN)
-  size_t Val1 = (size_t)CACHE_LINE_SIZE;
-  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
   arrmutex = (char*)memalign(Val1,Val2);
   arrcond1 = (char*)memalign(Val1,Val2);
   arrcond2 = (char*)memalign(Val1,Val2);
   arrstart = (char*)memalign(Val1,Val2);
   arrready = (char*)memalign(Val1,Val2);
 #else
-  size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
   arrmutex = (char*)malloc(Val2);
   arrcond1 = (char*)malloc(Val2);
   arrcond2 = (char*)malloc(Val2);
@@ -124,12 +125,10 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
 
-  PetscThreadsRank[0] = 0; /* rank of main thread */
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
+  PetscThreadRank = 0; /* rank of main thread */
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_main[i] = i;
-    PetscThreadsRank[i+1] = i+1;
     job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);CHKERRQ(ierr);
@@ -149,7 +148,7 @@ PetscErrorCode PetscThreadsSynchronizationFinalize_Main() {
   PetscThreadsRunKernel(PetscThreadsFinish,NULL,PetscMaxThreads,PETSC_NULL);  /* set up job and broadcast work */
   /* join the threads */
   for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(pVal_main);CHKERRQ(ierr);

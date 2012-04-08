@@ -33,7 +33,7 @@ int petsc_geo_mg_compare (const void *a, const void *b)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_GEO"
-PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscReal *coords )
+PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords )
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -45,7 +45,8 @@ PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscReal *coords )
   PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
   ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
   ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
-  nloc = (Iend-my0)/bs; 
+  nloc = (Iend-my0)/bs;
+  if(nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   pc_gamg->data_cell_rows = 1;

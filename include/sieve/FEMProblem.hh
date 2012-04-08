@@ -831,7 +831,6 @@ namespace ALE {
     };
     /*
 
-    Jacobian and RHS assembly functions to pass to DMMG which depend on a GenericFormSubProblem rather than on some options.
     
 
     */
