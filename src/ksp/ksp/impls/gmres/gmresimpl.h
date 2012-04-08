@@ -48,6 +48,23 @@ typedef struct {
   KSPGMRESHEADER
 } KSP_GMRES;
 
+extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
+extern PetscErrorCode KSPSetUp_GMRES(KSP);
+extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
+extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPReset_GMRES(KSP);
+extern PetscErrorCode KSPDestroy_GMRES(KSP);
+extern PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
+
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+PETSC_EXTERN_C PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+PETSC_EXTERN_C PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+PETSC_EXTERN_C PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+
 /* These macros are guarded because they are redefined by derived implementations */
 #if !defined(KSPGMRES_NO_MACROS)
 #define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))

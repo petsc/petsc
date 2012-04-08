@@ -31,7 +31,6 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
-static PetscErrorCode    KSPGMRESGetNewVectors(KSP,PetscInt);
 static PetscErrorCode    KSPGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal*);
 static PetscErrorCode    KSPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
@@ -160,6 +159,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* vv(i+1) . vv(i+1) */
     ierr = VecNormalize(VEC_VV(it+1),&tt);CHKERRQ(ierr);
+
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -425,7 +425,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  ha
  */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESGetNewVectors" 
-static PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
+PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
   PetscErrorCode ierr;
