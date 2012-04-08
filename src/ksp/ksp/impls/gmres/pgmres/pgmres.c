@@ -87,7 +87,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
     Znext = VEC_VV(it+1);       /* This iteration will compute Znext, update with a deferred correction once we know how
                                  * Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
 
-    if (it < pgmres->max_k+1 && ksp->its+1 < ksp->max_it) { /* We don't know whether what we have computed is enough, so apply the matrix. */
+    if (it < pgmres->max_k+1 && ksp->its+1 < PetscMax(2,ksp->max_it)) { /* We don't know whether what we have computed is enough, so apply the matrix. */
       ierr = KSP_PCApplyBAorAB(ksp,Zcur,Znext,VEC_TEMP_MATOP);CHKERRQ(ierr);
     }
 
