@@ -1589,7 +1589,7 @@ static struct _VecOps DvOps = {VecDuplicate_SeqPThread, /* 1 */
             VecScale_SeqPThread,
             VecCopy_SeqPThread, /* 10 */
             VecSet_SeqPThread,
-            VecSwap_Seq,
+            VecSwap_SeqPThread,
             VecAXPY_SeqPThread,
             VecAXPBY_SeqPThread,
             VecMAXPY_SeqPThread,
