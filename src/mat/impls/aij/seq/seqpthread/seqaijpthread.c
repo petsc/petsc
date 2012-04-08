@@ -14,7 +14,7 @@ void* MatRealPart_Kernel(void* arg)
   PetscInt          nrows=data->nrows;
   PetscInt          nz,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   nz = ai[nrows] - ai[0];
   aa = aabase + ai[0];
   for(i=0;i<nz;i++) aa[i] = PetscRealPart(aa[i]);
@@ -57,7 +57,7 @@ void* MatImaginaryPart_Kernel(void* arg)
   PetscInt          nrows=data->nrows;
   PetscInt          nz,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   nz = ai[nrows] - ai[0];
   aa = aabase + ai[0];
   for(i=0;i<nz;i++) aa[i] = PetscImaginaryPart(aa[i]);
@@ -100,7 +100,7 @@ void* MatFactorGetDiagonal_Kernel(void* arg)
   PetscScalar       *x = (PetscScalar*)data->x; 
   PetscInt           nrows=(PetscInt)data->nrows,i;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0;i < nrows;i++) {
     x[i] = 1.0/aa[adiag[i]];
   }
@@ -117,7 +117,7 @@ void* MatGetDiagonal_Kernel(void* arg)
   PetscInt           i,j,row;
   PetscInt           rstart=(PetscInt)data->rstart;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0;i < nrows;i++) {
     row = rstart+i;
     for(j=ai[i]; j < ai[i+1];j++) {
@@ -187,7 +187,7 @@ void* MatZeroEntries_Kernel(void* arg)
   PetscInt          nrows=data->nrows;
   PetscInt          nz;
 
-  PetscThreadsDoCoreAffinity();
+  
   nz = ai[nrows] - ai[0];
   aa = aabase + ai[0];
   PetscMemzero(aa,nz*sizeof(PetscScalar));
@@ -232,7 +232,7 @@ void* MatMult_Kernel(void* arg)
   PetscInt           nz,i;
   PetscScalar        sum;
 
-  PetscThreadsDoCoreAffinity();
+  
   data->nonzerorow = 0;
   for(i=0;i<nrows;i++) {
     nz = ai[i+1] - ai[i];
@@ -299,7 +299,7 @@ void* MatMultAdd_Kernel(void* arg)
   PetscInt           nz,i;
   PetscScalar        sum;
 
-  PetscThreadsDoCoreAffinity();
+  
   data->nonzerorow = 0;
   for(i=0;i<nrows;i++) {
     nz = ai[i+1] - ai[i];
@@ -370,7 +370,7 @@ void* MatMarkDiagonal_Kernel(void* arg)
   PetscInt           i,j,row;
   PetscInt           rstart=(PetscInt)data->rstart;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0;i < nrows;i++) {
     row = rstart+i;
     for(j=ai[i]; j < ai[i+1];j++) {
@@ -423,7 +423,7 @@ void* MatFindZeroDiagonalCount_Kernel(void* arg)
   PetscInt           i,row;
   PetscInt           rstart = (PetscInt)data->rstart;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0;i < nrows; i++) {
     row = rstart+i;
     if((aj[adiag[i]] != row) || (aa[adiag[i]] == 0.0)) data->nzerodiags++;
@@ -441,7 +441,7 @@ void* MatFindZeroDiagonals_Kernel(void* arg)
   PetscInt           i,row;
   PetscInt           rstart = (PetscInt)data->rstart,cnt=0;;
 
-  PetscThreadsDoCoreAffinity();
+  
   for(i=0;i < nrows; i++) {
     row = rstart+i;
     if((aj[adiag[i]] != row) || (aa[adiag[i]] == 0.0)) data->zerodiags[cnt++] = row;
@@ -506,7 +506,7 @@ void* MatMissingDiagonal_Kernel(void* arg)
   PetscInt           i,row;
   PetscInt           rstart=(PetscInt)data->rstart;
 
-  PetscThreadsDoCoreAffinity();
+  
   data->missing_diag = PETSC_FALSE;
   for(i=0; i < nrows; i++) {
     row = rstart + i;
