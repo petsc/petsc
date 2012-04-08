@@ -7,8 +7,6 @@
 
 typedef struct {
   KSPGMRESHEADER
-  Vec Zcur,Znext;               /* Pipelined Krylov vectors */
-  Vec *Zalloc;                  /* Originally allocated Z vectors */
 } KSP_PGMRES;
 
 #define HH(a,b)  (pgmres->hh_origin + (b)*(pgmres->max_k+2)+(a)) 

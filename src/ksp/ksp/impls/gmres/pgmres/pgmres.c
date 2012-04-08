@@ -23,14 +23,9 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_PGMRES     *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ksp->vec_sol,2,&pgmres->Zalloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,2,pgmres->Zalloc);CHKERRQ(ierr);
-  pgmres->Zcur = pgmres->Zalloc[0];
-  pgmres->Znext = pgmres->Zalloc[1];
   PetscFunctionReturn(0);
 }
 
@@ -66,13 +61,11 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
   res    = res_norm;
   *RS(0) = res_norm;
-  pgmres->Zcur = VEC_VV(0);
 
   /* check for the convergence */
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  pgmres->it = it - 3; /* the number of completed iterations lags the iteration in progress by the pipeline length (2) plus 1 */
   KSPLogResidualHistory(ksp,res);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
@@ -84,19 +77,24 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   for ( ; !ksp->reason; it++) {
+    Vec Zcur,Znext;
     if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = KSPGMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
     }
+    /* VEC_VV(it-1) is orthogonal, it will be normalized once the VecNorm arrives. */
+    Zcur = VEC_VV(it);          /* Zcur is not yet orthogonal, but the VecMDot to orthogonalize it has been started. */
+    Znext = VEC_VV(it+1);       /* This iteration will compute Znext, update with a deferred correction once we know how
+                                 * Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
 
     if (it < pgmres->max_k+1 && ksp->its+1 < ksp->max_it) { /* We don't know whether what we have computed is enough, so apply the matrix. */
-      ierr = KSP_PCApplyBAorAB(ksp,pgmres->Zcur,pgmres->Znext,VEC_TEMP_MATOP);CHKERRQ(ierr);
+      ierr = KSP_PCApplyBAorAB(ksp,Zcur,Znext,VEC_TEMP_MATOP);CHKERRQ(ierr);
     }
 
     if (it > 1) {               /* Complete the pending reduction */
       ierr = VecNormEnd(VEC_VV(it-1),NORM_2,HH(it-1,it-2));CHKERRQ(ierr);
     }
     if (it > 0) {               /* Finish the reduction computing the latest column of H */
-      ierr = VecMDotEnd(pgmres->Zcur,it,&(VEC_VV(0)),HH(0,it-1));CHKERRQ(ierr);
+      ierr = VecMDotEnd(Zcur,it,&(VEC_VV(0)),HH(0,it-1));CHKERRQ(ierr);
     }
 
     if (it > 1) {
@@ -119,9 +117,9 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       if (!(it < pgmres->max_k+1 && ksp->its < ksp->max_it)) break;
 
       /* The it-2 column of H was not scaled when we computed Zcur, apply correction */
-      ierr = VecScale(pgmres->Zcur,1./ *HH(it-1,it-2));CHKERRQ(ierr);
+      ierr = VecScale(Zcur,1./ *HH(it-1,it-2));CHKERRQ(ierr);
       /* And Znext computed in this iteration was computed using the under-scaled Zcur */
-      ierr = VecScale(pgmres->Znext,1./ *HH(it-1,it-2));CHKERRQ(ierr);
+      ierr = VecScale(Znext,1./ *HH(it-1,it-2));CHKERRQ(ierr);
 
       /* In the previous iteration, we projected an unnormalized Zcur against the Krylov basis, so we need to fix the column of H resulting from that projection. */
       for (k=0; k<it; k++) *HH(k,it-1) /= *HH(it-1,it-2);
@@ -157,30 +155,25 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
         work[k] = 0;
         for (j=PetscMax(0,k-1); j<it; j++) work[k] -= *HES(k,j) * *HH(j,it-1);
       }
-      ierr = VecMAXPY(pgmres->Znext,it+1,work,&VEC_VV(0));CHKERRQ(ierr);
-      ierr = VecAXPY(pgmres->Znext,-*HH(it-1,it-1),pgmres->Zcur);CHKERRQ(ierr);
+      ierr = VecMAXPY(Znext,it+1,work,&VEC_VV(0));CHKERRQ(ierr);
+      ierr = VecAXPY(Znext,-*HH(it-1,it-1),Zcur);CHKERRQ(ierr);
 
-      /* Orthogonalize Zcur against existing basis vectors */
+      /* Orthogonalize Zcur against existing basis vectors. */
       for (k=0; k<it; k++) work[k] = - *HH(k,it-1);
-      ierr = VecMAXPY(pgmres->Zcur,it,work,&VEC_VV(0));CHKERRQ(ierr);
-
-      /* Rotate as-yet-unscaled Zcur into next basis vector */
-      VEC_VV(it) = pgmres->Zcur;
-
+      ierr = VecMAXPY(Zcur,it,work,&VEC_VV(0));CHKERRQ(ierr);
+      /* Zcur is now orthogonal, and will be referred to as VEC_VV(it) again, though it is still not normalized. */
       /* Begin computing the norm of the new vector, will be normalized after the MatMult in the next iteration. */
       ierr = VecNormBegin(VEC_VV(it),NORM_2,HH(it,it-1));CHKERRQ(ierr);
     }
-    pgmres->Zcur = pgmres->Znext;
-    pgmres->Znext = VEC_VV(it+1);
 
-    /* Compute column of H (to the diagonal, but not the subdiagonal) to be able to orthogonalize the newest vector (now called Zcur) */
-    ierr = VecMDotBegin(pgmres->Zcur,it+1,&VEC_VV(0),HH(0,it));CHKERRQ(ierr);
+    /* Compute column of H (to the diagonal, but not the subdiagonal) to be able to orthogonalize the newest vector. */
+    ierr = VecMDotBegin(Znext,it+1,&VEC_VV(0),HH(0,it));CHKERRQ(ierr);
 
     /* Start an asynchronous split-mode reduction, the result of the MDot and Norm will be collected on the next iteration. */
-    ierr = PetscCommSplitReductionBegin(((PetscObject)pgmres->Zcur)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(((PetscObject)Znext)->comm);CHKERRQ(ierr);
   }
 
-  if (itcount) *itcount = it-2; /* Number of iterations actually completed. */
+  if (itcount) *itcount = it-1; /* Number of iterations actually completed. */
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
@@ -454,11 +447,9 @@ PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp)
 #define __FUNCT__ "KSPReset_PGMRES"
 PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
-  KSP_PGMRES     *pgmres = (KSP_PGMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(2,&pgmres->Zalloc);CHKERRQ(ierr);
   ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
