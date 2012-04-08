@@ -175,6 +175,16 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
+
+    if (B->rmap->bs < 0) {
+      PetscInt newbs = -1;
+      ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSetBlockSize",newbs,&newbs,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscLayoutSetBlockSize(B->rmap,newbs);CHKERRQ(ierr);
+        ierr = PetscLayoutSetBlockSize(B->cmap,newbs);CHKERRQ(ierr);
+      }
+    }
+
     ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetType(B,type);CHKERRQ(ierr);

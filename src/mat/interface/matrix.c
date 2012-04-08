@@ -3823,9 +3823,7 @@ PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
   }
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
-  if ((reuse == MAT_REUSE_MATRIX) && (mat != *M)) {
-    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
-  }
+  if ((reuse == MAT_REUSE_MATRIX) && (mat != *M)) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
 
   if ((reuse == MAT_REUSE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
   
@@ -6769,15 +6767,13 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 @*/
 PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
-  if (mat->rmap->n > -1 && mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for since local size m=%D not divisible",bs,mat->rmap->n);
-  if (mat->cmap->n > -1 && mat->cmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for since local size n=%D not divisible",bs,mat->cmap->n);
-  if (mat->rmap->bs > 0 && bs != mat->rmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot change blocksize %d to %D after set",mat->rmap->bs,bs);
-  mat->rmap->bs = bs;
-  mat->cmap->bs = bs;
+  ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

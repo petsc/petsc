@@ -2590,7 +2590,11 @@ PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,-PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0);CHKERRQ(ierr);
+  if (A->rmap->bs < 0) {
+    ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  }
+  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,A->rmap->bs,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3107,7 +3111,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
 {
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  PetscInt       i,mbs,nbs,bs2,newbs = PetscAbs(bs);
+  PetscInt       i,mbs,nbs,bs2;
   PetscBool      flg,skipallocation = PETSC_FALSE,realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -3116,15 +3120,6 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     skipallocation = PETSC_TRUE;
     nz             = 0;
   }
-
-  if (bs < 0) {
-    ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",newbs,&newbs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    bs   = PetscAbs(bs);
-  }
-  if (nnz && newbs != bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
-  bs   = newbs;
 
   ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
@@ -3202,7 +3197,6 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       break;
     }
   }
-  B->rmap->bs  = bs;
   b->mbs       = mbs;
   b->nbs       = nbs;
   if (!skipallocation) {
@@ -3241,7 +3235,6 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     b->free_ij    = PETSC_FALSE;
   }
 
-  B->rmap->bs          = bs;
   b->bs2              = bs2;
   b->mbs              = mbs;
   b->nz               = 0;

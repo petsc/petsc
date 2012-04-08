@@ -96,9 +96,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
         do {
           m  = qm; qm = q[m];
         } while(qm < vj);
-        if (qm == vj) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
-        }     
+        if (qm == vj) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
         nzk++;
         q[m]  = vj;
         q[vj] = qm;  

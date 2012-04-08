@@ -113,6 +113,8 @@
         <li>Added MatMatTransposeMult() for C=A*B^T</li>
         <li>Added MatRARt() for C=R*A*R^T</li>
         <li>Preallocation routines now automatically set MAT_NEW_NONZERO_ALLOCATION_ERR, if you intentionally preallocate less than necessary then use MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE) to disable the error generation.</li>
+        <li> MatSetBlockSize() must be called before MatSetUp() or MatXXXXSetPreallocation() or block size defaults to 1 </li>
+        <li> -mat_block_size is NOT processed by MatXXXXSetPreallocation() you MUST call MatSetFromOptions() before MatSetUp() to have it processed</li>
         <li>You MUST now call MatXXXSetPreallocation() or MatSetUp() on any matrix you create directly (not using DMCreateMatrix()) before calling MatSetValues(), MatSetValuesBlocked() etc.</li>
         <li>MatSetUpPreallocation() and MatPreallocated() are removed, use MatSetUp()</li>
         <li>MatPreallocateSymmetricInitialize() is removed, use MatPreallocateInitialize()</li>
