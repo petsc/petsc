@@ -31,6 +31,7 @@
 #define KSPFGMRES 'fgmres'
 #define KSPLGMRES 'lgmres'
 #define KSPDGMRES 'dgmres'
+#define KSPPGMRES 'pgmres'
 #define KSPTCQMR 'tcqmr'
 #define KSPBCGS 'bcgs'
 #define KSPIBCGS 'ibcgs'
