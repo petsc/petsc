@@ -2591,18 +2591,6 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetBlockSize_SeqAIJ"
-PetscErrorCode MatSetBlockSize_SeqAIJ(Mat A,PetscInt bs)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatConjugate_SeqAIJ"
 PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
 {
@@ -2945,7 +2933,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
        MatZeroRowsColumns_SeqAIJ,
-/*49*/ MatSetBlockSize_SeqAIJ,
+/*49*/ 0,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
@@ -3390,8 +3378,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     nz             = 0;
   }
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 

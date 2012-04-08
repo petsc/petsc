@@ -6750,8 +6750,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize"
 /*@
-   MatSetBlockSize - Sets the matrix block size; for many matrix types you 
-     cannot use this and MUST set the blocksize when you preallocate the matrix
+   MatSetBlockSize - Sets the matrix block size.
    
    Logically Collective on Mat
 
@@ -6760,8 +6759,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 -  bs - block size
 
    Notes:
-     For BAIJ matrices, this just checks that the block size agrees with the BAIJ size,
-     it is not possible to change BAIJ block sizes after preallocation.
+     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
 
    Level: intermediate
 
@@ -6771,19 +6769,15 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 @*/
 PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  MatCheckPreallocated(mat,1);
   if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
-  if(mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for m=%D",bs,mat->rmap->n);
-  if(mat->cmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for n=%D",bs,mat->cmap->n);
-  if (mat->ops->setblocksize) {
-    ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
+  if (mat->rmap->n > -1 && mat->rmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for since local size m=%D not divisible",bs,mat->rmap->n);
+  if (mat->cmap->n > -1 && mat->cmap->n%bs!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize %d for since local size n=%D not divisible",bs,mat->cmap->n);
+  if (mat->rmap->bs > 0 && bs != mat->rmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot change blocksize %d to %D after set",mat->rmap->bs,bs);
+  mat->rmap->bs = bs;
+  mat->cmap->bs = bs;
   PetscFunctionReturn(0);
 }
 

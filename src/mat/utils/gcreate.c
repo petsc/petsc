@@ -105,31 +105,26 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
    Likewise, the 'n' used must match that used as the local size in
    VecCreateMPI() for 'x'.
 
+   You cannot change the sizes once they have been set.
+
+   The sizes must be set before MatSetUp() or MatXXXSetPreallocation() is called.
+
   Level: beginner
 
 .seealso: MatGetSize(), PetscSplitOwnership()
 @*/
 PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
-  if (A->ops->setsizes) {
-    /* Since this will not be set until the type has been set, this will NOT be called on the initial
-       call of MatSetSizes() (which must be called BEFORE MatSetType() */
-    ierr = (*A->ops->setsizes)(A,m,n,M,N);CHKERRQ(ierr);
-  } else {
-    if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
-    if ((A->cmap->n >= 0 || A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
-  }
+  if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
+  if ((A->cmap->n >= 0 || A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M;
   A->cmap->N = N;
-
   PetscFunctionReturn(0);
 }
 

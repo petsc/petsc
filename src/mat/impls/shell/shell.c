@@ -373,18 +373,6 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 
 extern PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetBlockSize_Shell"
-PetscErrorCode MatSetBlockSize_Shell(Mat A,PetscInt bs)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static struct _MatOps MatOps_Values = {0,
        0,
        0,
@@ -434,7 +422,7 @@ static struct _MatOps MatOps_Values = {0,
        MatShift_Shell,
        0,
        0,
-/*49*/ MatSetBlockSize_Shell,
+/*49*/ 0,
        0,
        0,
        0,

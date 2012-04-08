@@ -791,9 +791,9 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
       ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
-  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
@@ -1032,10 +1032,10 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
       }
     }
   }
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(J,ltogb,ltogb);CHKERRQ(ierr);
 
@@ -1110,9 +1110,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,col*nc,0,col*nc,0);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
   
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);

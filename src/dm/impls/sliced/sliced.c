@@ -27,6 +27,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
   bs = slice->bs;
   ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,slice->n*bs,slice->n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(*J,bs,slice->d_nz,slice->d_nnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(*J,bs,slice->d_nz,slice->d_nnz,slice->o_nz,slice->o_nnz);CHKERRQ(ierr);
@@ -58,8 +59,6 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
       ierr = PetscFree2(sd_nnz,so_nnz);CHKERRQ(ierr);
     }
   }
-
-  ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
 
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
   ierr = PetscMalloc((slice->n+slice->Nghosts)*bs*sizeof(PetscInt),&globals);CHKERRQ(ierr);

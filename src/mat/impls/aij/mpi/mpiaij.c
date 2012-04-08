@@ -2107,20 +2107,6 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetBlockSize_MPIAIJ"
-PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
-{
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__  
 #define __FUNCT__ "MatSetUnfactored_MPIAIJ"
 PetscErrorCode MatSetUnfactored_MPIAIJ(Mat A)
 {
@@ -3028,7 +3014,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatZeroRowsColumns_MPIAIJ,
-/*49*/ MatSetBlockSize_MPIAIJ,
+/*49*/ 0,
        0,
        0,
        0,
@@ -3174,8 +3160,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
   if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -5483,7 +5467,6 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
   ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
 
   B->insertmode   = NOT_SET_VALUES;

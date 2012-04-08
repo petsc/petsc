@@ -101,7 +101,6 @@ PetscErrorCode test_view( void )
   ierr = VecMin( X, &index, &val );CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n", val, index );
 
-  PetscViewerSetFormat( PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL );
   ierr = VecView( X, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);

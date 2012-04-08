@@ -1034,20 +1034,6 @@ PetscErrorCode MatSetUp_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetBlockSize_MPIDense"
-PetscErrorCode MatSetBlockSize_MPIDense(Mat A,PetscInt bs)
-{
-  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #if defined(PETSC_HAVE_PLAPACK)
 
 #undef __FUNCT__   
@@ -1590,7 +1576,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*49*/ MatSetBlockSize_MPIDense,
+/*49*/ 0,
        0,
        0,
        0,

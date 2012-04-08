@@ -75,7 +75,7 @@ struct _MatOps {
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
   PetscErrorCode (*zerorowscolumns)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
   /*49*/
-  PetscErrorCode (*setblocksize)(Mat,PetscInt);
+  PetscErrorCode (*dummy6)(void);
   PetscErrorCode (*getrowij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
   PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,PetscInt *[],PetscInt *[],PetscBool  *);
   PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
@@ -139,7 +139,7 @@ struct _MatOps {
   PetscErrorCode (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=mpiaij */
   PetscErrorCode (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, A=mpiaij */
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
-  PetscErrorCode (*setsizes)(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
+  PetscErrorCode (*dummy5)(void);
   /*104*/
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);

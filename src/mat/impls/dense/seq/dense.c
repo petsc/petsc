@@ -1598,35 +1598,6 @@ PetscErrorCode MatSetUp_SeqDense(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetSizes_SeqDense"
-PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
-{
-  PetscFunctionBegin;
-  /* this will not be called before lda, Mmax,  and Nmax have been set */
-  m = PetscMax(m,M);
-  n = PetscMax(n,N);
-
-  /*  if (m > a->Mmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
-    if (n > a->Nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
-  */
-  A->rmap->n = A->rmap->N = m;
-  A->cmap->n = A->cmap->N = n;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetBlockSize_SeqDense"
-PetscErrorCode MatSetBlockSize_SeqDense(Mat A,PetscInt bs)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatConjugate_SeqDense"
 static PetscErrorCode MatConjugate_SeqDense(Mat A)
 {
@@ -1963,7 +1934,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*49*/ MatSetBlockSize_SeqDense,
+/*49*/ 0,
        0,
        0,
        0,
@@ -2017,7 +1988,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        MatConjugate_SeqDense,
-       MatSetSizes_SeqDense,
+       0,
 /*104*/0,
        MatRealPart_SeqDense,
        MatImaginaryPart_SeqDense,

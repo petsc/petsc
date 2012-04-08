@@ -821,7 +821,8 @@ runex48_3:
 	   ${DIFF} output/ex48_3.out ex48.tmp || echo  ${PWD} "\nPossible problem with ex48_3, diffs above \n========================================="; \
 	   ${RM} -f ex48.tmp
 runex48_4:
-	-@${MPIEXEC} -n 6 ./ex48 -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -dmmg_grid_sequence 1 -dmmg_view -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-2 -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_monitor_short -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -thi_nlevels 4 > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 6 ./ex48 -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -dmmg_grid_sequence 1 -dmmg_view -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-2 -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_monitor_short -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -thi_nlevels 4
+ > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_4.out ex48.tmp || echo  ${PWD} "\nPossible problem with ex48_4, diffs above \n========================================="; \
 	   ${RM} -f ex48.tmp
 

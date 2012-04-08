@@ -131,7 +131,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->bs <=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");
+  if (map->bs <=0) map->bs = 1;
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
@@ -446,7 +446,7 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
-  map->bs = bs;
+  if (map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);;
   PetscFunctionReturn(0);
 }
 
