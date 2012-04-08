@@ -23,7 +23,7 @@ void* PetscThreadFunc_None(void* arg)
   PetscInt iVal;
 
   iVal = *(PetscInt*)arg;
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[iVal+1]);
+  PetscThreadRank=iVal+1;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
@@ -31,7 +31,6 @@ void* PetscThreadFunc_None(void* arg)
 
   job_none.funcArr[iVal+PetscMainThreadShareWork](job_none.pdata[iVal+PetscMainThreadShareWork]);
 
-  pthread_setspecific(PetscThreadsRankKey,NULL);
   return NULL;
 }
   
@@ -62,11 +61,9 @@ PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void** data,Pets
   ierr = PetscMalloc(n*sizeof(pfunc),&(job_none.funcArr));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(void*),&(job_none.pdata));CHKERRQ(ierr);
 
-  PetscThreadsRank[0] = 0;
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
+  PetscThreadRank=0;
   for(i=0;i< Nnew_threads;i++) {
     pVal_none[i] = i;
-    PetscThreadsRank[i+1] = i+1;
     PetscThreadsCoreAffinities[i] = cpu_affinity[i+PetscMainThreadShareWork];
     job_none.funcArr[i+PetscMainThreadShareWork] = pFunc;
     job_none.pdata[i+PetscMainThreadShareWork]  = data[i+PetscMainThreadShareWork];

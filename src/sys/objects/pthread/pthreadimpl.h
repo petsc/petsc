@@ -42,8 +42,7 @@ extern PetscInt*      PetscThreadsCoreAffinities;           /* Core affinity of 
 extern PetscInt       PetscMainThreadShareWork;     /* Is the main thread also a worker? 1 = Yes */
 extern PetscInt       PetscMainThreadCoreAffinity;       /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled; /* Check whether PetscThreadsInitialize has been called */ 
-extern pthread_key_t  PetscThreadsRankKey;
-extern PetscInt*      PetscThreadsRank;                  /* Array to hold thread ranks */
+extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank;    /* Thread rank */
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 

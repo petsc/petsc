@@ -9,8 +9,7 @@ PetscInt*   PetscThreadsCoreAffinities=NULL;
 PetscInt    PetscMainThreadShareWork = 1;
 PetscInt    PetscMainThreadCoreAffinity = 0;
 PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
-pthread_key_t PetscThreadsRankKey;
-PetscInt*   PetscThreadsRank=NULL;
+PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
@@ -30,26 +29,7 @@ void* PetscThreadsFinish(void* arg) {
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetThreadRank"
-/*
-  PetscGetThreadRank - Gets the rank of the calling thread.
-
-  Level: developer
-
-  Notes: The ranks of all the threads spawned via PetscThreadsInitialize() start from 1 and the
-         main control thread assigned rank 0.
-*/
-PETSC_STATIC_INLINE PetscErrorCode PetscGetThreadRank(PetscInt* rankp)
-{
-  PetscInt trank;
-
-  PetscFunctionBegin;
-  trank = *(PetscInt*)pthread_getspecific(PetscThreadsRankKey);
-  *rankp = trank;
-  PetscFunctionReturn(0);
-}
-
+#define PetscGetThreadRank() (PetscThreadRank)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 /* Set CPU affinity for the main thread */
 void PetscSetMainThreadAffinity(PetscInt icorr)
@@ -65,10 +45,8 @@ void PetscThreadsDoCoreAffinity(void)
 {
   PetscInt  i,icorr=0; 
   cpu_set_t mset;
-  PetscInt  myrank;
+  PetscInt  myrank=PetscGetThreadRank();
   
-  PetscGetThreadRank(&myrank);
-
   switch(thread_aff_policy) {
   case THREADAFFINITYPOLICY_ONECORE:
     if(myrank == 0) icorr = PetscMainThreadCoreAffinity;
@@ -145,10 +123,6 @@ PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
 
   /* Set thread affinities */
   ierr = PetscThreadsSetAffinities(PETSC_NULL);CHKERRQ(ierr);
-  /* Create key to store the thread rank */
-  ierr = pthread_key_create(&PetscThreadsRankKey,NULL);CHKERRQ(ierr);
-  /* Create array to store thread ranks */
-  ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&PetscThreadsRank);CHKERRQ(ierr);
   /* Initialize thread pool */
   if(PetscThreadsSynchronizationInitialize) {
     ierr = (*PetscThreadsSynchronizationInitialize)(nthreads);CHKERRQ(ierr);
@@ -178,9 +152,7 @@ PetscErrorCode PetscThreadsFinalize(void)
     ierr = (*PetscThreadsSynchronizationFinalize)();CHKERRQ(ierr);
   }
 
-  ierr = pthread_key_delete(PetscThreadsRankKey);CHKERRQ(ierr);
   ierr = PetscFree(PetscThreadsCoreAffinities);CHKERRQ(ierr);
-  ierr = PetscFree(PetscThreadsRank);CHKERRQ(ierr);
   PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

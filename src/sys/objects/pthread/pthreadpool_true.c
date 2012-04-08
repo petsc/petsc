@@ -36,8 +36,8 @@ void* PetscThreadFunc_True(void* arg)
 {
   PetscInt* pId      = (PetscInt*)arg;
   PetscInt  ThreadId = *pId; 
+  PetscThreadRank=ThreadId+1;
 
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
 #endif
@@ -101,11 +101,9 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt N)
   /* Initialize the barrier */
   ierr = pthread_barrier_init(&pbarr,NULL,PetscMaxThreads);CHKERRQ(ierr);
 
-  PetscThreadsRank[0] = 0;
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
+  PetscThreadRank=0;
   for(i=0; i<N; i++) {
     pVal_true[i] = i;
-    PetscThreadsRank[i+1] = i+1;
     job_true.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_true.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_true[i]);CHKERRQ(ierr);
