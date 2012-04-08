@@ -68,11 +68,11 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&gmres->vecs);CHKERRQ(ierr);
-  gmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&gmres->user_work);CHKERRQ(ierr);
+  gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
+  ierr = PetscMalloc((gmres->vecs_allocated)*sizeof(Vec),&gmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(Vec*),&gmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;

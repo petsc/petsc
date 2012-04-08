@@ -66,6 +66,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  pgmres->it = it-2;
   KSPLogResidualHistory(ksp,res);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
@@ -107,7 +108,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       ksp->rnorm = res;
 
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-      if (it < pgmres->max_k+1 || ksp->reason || ksp->its <= ksp->max_it) {  /* Monitor if we are continuing or know that we will not return for a restart */
+      if (it < pgmres->max_k+1 || ksp->reason || ksp->its == ksp->max_it) {  /* Monitor if we are done or still iterating, but not before a restart. */
         KSPLogResidualHistory(ksp,res);
         ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
       }
@@ -153,7 +154,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
        */
       for (k=0; k<it+1; k++) {
         work[k] = 0;
-        for (j=PetscMax(0,k-1); j<it; j++) work[k] -= *HES(k,j) * *HH(j,it-1);
+        for (j=PetscMax(0,k-1); j<it-1; j++) work[k] -= *HES(k,j) * *HH(j,it-1);
       }
       ierr = VecMAXPY(Znext,it+1,work,&VEC_VV(0));CHKERRQ(ierr);
       ierr = VecAXPY(Znext,-*HH(it-1,it-1),Zcur);CHKERRQ(ierr);
@@ -207,7 +208,6 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !pgmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
-
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -526,6 +526,7 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_PGMRES(KSP ksp)
                                     "KSPGMRESGetCGSRefinementType_GMRES",
                                      KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
+  pgmres->nextra_vecs         = 1;
   pgmres->haptol              = 1.0e-30;
   pgmres->q_preallocate       = 0;
   pgmres->delta_allocate      = PGMRES_DELTA_DIRECTIONS;

@@ -25,6 +25,7 @@
                                                                         \
   PetscReal haptol;                                       /* tolerance for happy ending */ \
   PetscInt  max_k;                                        /* number of vectors in Krylov space, restart size */ \
+  PetscInt  nextra_vecs;                                  /* number of extra vecs needed, e.g. for a pipeline */ \
                                                                         \
   PetscErrorCode            (*orthog)(KSP,PetscInt);                    \
   KSPGMRESCGSRefinementType cgstype;                                    \
