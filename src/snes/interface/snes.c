@@ -453,7 +453,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   {
-    PetscBool flg = PETSC_TRUE;
+    PetscBool flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_kspcompute",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {                  /* Plan to transition to this model */
       KSP ksp;
