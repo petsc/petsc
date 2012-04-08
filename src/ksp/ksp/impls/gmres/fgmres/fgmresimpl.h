@@ -1,70 +1,12 @@
-/*
-   Private data structure used by the FGMRES method. The beginning of this
- data structure MUST be identical to the beginning of KSP_GMRES since they
- share several functions!
-*/
-
 #if !defined(__FGMRES)
 #define __FGMRES
 
 #include <petsc-private/kspimpl.h>
+#define KSPGMRES_NO_MACROS
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 typedef struct {
-    /* Hessenberg matrix and orthogonalization information. */ 
-    PetscScalar *hh_origin;   /* holds hessenburg matrix that has been
-                            multiplied by plane rotations (upper tri) */
-    PetscScalar *hes_origin;  /* holds the original (unmodified) hessenberg matrix 
-                            which may be used to estimate the Singular Values
-                            of the matrix */
-    PetscScalar *cc_origin;   /* holds cosines for rotation matrices */
-    PetscScalar *ss_origin;   /* holds sines for rotation matrices */
-    PetscScalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
-
-    PetscScalar *orthogwork; /* holds dot products computed in orthogonalization */
-
-    /* Work space for computing eigenvalues/singular values */
-    PetscReal   *Dsvd;
-    PetscScalar *Rsvd;
-      
-    /* parameters */
-    PetscReal haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
-    PetscInt  max_k;             /* maximum number of Krylov directions to find 
-                                    before restarting */
-
-    PetscErrorCode (*orthog)(KSP,PetscInt); /* orthogonalization function to use */
-    KSPGMRESCGSRefinementType cgstype;
-    
-    Vec       *vecs;              /* holds the work vectors */
-   
-    PetscInt  q_preallocate;     /* 0 = don't pre-allocate space for work vectors */
-    PetscInt  delta_allocate;    /* the number of vectors to allocate in each block 
-                                    if not pre-allocated */
-    PetscInt  vv_allocated;      /* vv_allocated is the number of allocated fgmres 
-                                    direction vectors */
-    
-    PetscInt  vecs_allocated;    /* vecs_allocated is the total number of vecs 
-                                    available - used to simplify the dynamic
-                                    allocation of vectors */
-   
-    Vec       **user_work;       /* Since we may call the user "obtain_work_vectors" 
-                                    several times, we have to keep track of the pointers
-                                    that it has returned (so that we may free the 
-                                    storage) */
-
-    PetscInt *mwork_alloc;       /* Number of work vectors allocated as part of
-                                    a work-vector chunck */
-    PetscInt nwork_alloc;         /* Number of work-vector chunks allocated */
-
-
-    /* In order to allow the solution to be constructed during the solution
-       process, we need some additional information: */
-
-    PetscInt    it;              /* Current iteration */
-    PetscScalar *nrs;            /* temp that holds the coefficients of the 
-                                    Krylov vectors that form the minimum residual
-                                    solution */
-    Vec         sol_temp;        /* used to hold temporary solution */
-
+  KSPGMRESHEADER
 
     /* new storage for fgmres */
     Vec         *prevecs;        /* holds the preconditioned basis vectors for fgmres.  

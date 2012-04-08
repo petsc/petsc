@@ -273,7 +273,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       Setup the memory management; support for tracing malloc() usage 
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
     if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
@@ -297,7 +297,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg1,PETSC_NULL);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
   if (flg1 && !PETSC_RUNNING_ON_VALGRIND) {
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     ierr = PetscMallocSetDumpLog();CHKERRQ(ierr);
@@ -545,7 +545,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 

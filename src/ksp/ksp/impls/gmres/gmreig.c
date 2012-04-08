@@ -26,7 +26,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   bN = PetscBLASIntCast(N);
   lwork = PetscBLASIntCast(5*N);
   idummy = PetscBLASIntCast(N);
-  if (!n) {
+  if (n <= 0) {
     *emax = *emin = 1.0;
     PetscFunctionReturn(0);
   }

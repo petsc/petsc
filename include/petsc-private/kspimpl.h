@@ -117,9 +117,16 @@ typedef struct {
   Vec        work;
 } KSPDefaultConvergedCtx;
 
-#define KSPLogResidualHistory(ksp,norm) \
-    {if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) \
-     ksp->res_hist[ksp->res_hist_len++] = norm;}
+#undef __FUNCT__
+#define __FUNCT__ "KSPLogResidualHistory"
+PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
+{
+  PetscFunctionBegin;
+  if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
+    ksp->res_hist[ksp->res_hist_len++] = norm;
+  }
+  PetscFunctionReturn(0);
+}
 
 extern PetscErrorCode KSPDefaultDestroy(KSP);
 extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);

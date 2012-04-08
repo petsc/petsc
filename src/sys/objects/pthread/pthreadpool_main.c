@@ -34,8 +34,8 @@ static char* arrready;
 
   PetscInt* pId = (PetscInt*)arg;
   PetscInt ThreadId = *pId;
+  PetscThreadRank=ThreadId+1;
 
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[ThreadId+1]);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
 #endif
@@ -125,12 +125,10 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt N)
     *(job_main.arrThreadReady[i])    = PETSC_FALSE;
   }
 
-  PetscThreadsRank[0] = 0; /* rank of main thread */
-  pthread_setspecific(PetscThreadsRankKey,&PetscThreadsRank[0]);
+  PetscThreadRank = 0; /* rank of main thread */
   /* create threads */
   for(i=0; i<N; i++) {
     pVal_main[i] = i;
-    PetscThreadsRank[i+1] = i+1;
     job_main.funcArr[i+PetscMainThreadShareWork] = NULL;
     job_main.pdata[i+PetscMainThreadShareWork] = NULL;
     ierr = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal_main[i]);CHKERRQ(ierr);

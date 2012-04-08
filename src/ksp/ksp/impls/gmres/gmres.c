@@ -31,7 +31,6 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
-static PetscErrorCode    KSPGMRESGetNewVectors(KSP,PetscInt);
 static PetscErrorCode    KSPGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal*);
 static PetscErrorCode    KSPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
@@ -69,11 +68,11 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&gmres->vecs);CHKERRQ(ierr);
-  gmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&gmres->user_work);CHKERRQ(ierr);
+  gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
+  ierr = PetscMalloc((gmres->vecs_allocated)*sizeof(Vec),&gmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(Vec*),&gmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
@@ -160,6 +159,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* vv(i+1) . vv(i+1) */
     ierr = VecNormalize(VEC_VV(it+1),&tt);CHKERRQ(ierr);
+
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -425,7 +425,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  ha
  */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESGetNewVectors" 
-static PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
+PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
   PetscErrorCode ierr;

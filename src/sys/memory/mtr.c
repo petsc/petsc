@@ -32,7 +32,7 @@ typedef struct _trSPACE {
     const char      *functionname;
     const char      *dirname;
     PetscClassId    classid;        
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
     PetscStack      stack;
 #endif
     struct _trSPACE *next,*prev;
@@ -71,15 +71,10 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 #define __FUNCT__ "PetscSetUseTrMalloc_Private"
 PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
-#if !defined(PETSC_USE_PTHREAD)
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_PTHREAD)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc's debug malloc when using pthreads");
-#else
-  ierr              = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
+  ierr = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
   TRallocated       = 0;
   TRfrags           = 0;
   TRhead            = 0;
@@ -89,7 +84,6 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
   PetscLogMallocMax = 10000;
   PetscLogMalloc    = -1;
   PetscFunctionReturn(0);
-#endif
 }
 
 #undef __FUNCT__  
@@ -218,7 +212,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   }
   TRfrags++;
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
 #endif
 
@@ -477,7 +471,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
   head = TRhead;
   while (head) {
     fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s%s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->dirname,head->filename);
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_USE_DEBUG)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
     head = head->next;

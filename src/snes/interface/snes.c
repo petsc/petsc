@@ -361,6 +361,8 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeOperators_SNES"
+/* This may be called to rediscretize the operator on levels of linear multigrid. The DM shuffle is so the user can
+ * safely call SNESGetDM() in their residual evaluation routine. */
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
 {
   SNES snes = (SNES)ctx;
