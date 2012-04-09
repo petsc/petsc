@@ -660,7 +660,6 @@ void* VecMDot_Kernel4(void* arg)
   const PetscScalar  *y2 = (const PetscScalar*)data->y2;
   const PetscScalar  *y3 = (const PetscScalar*)data->y3;
 
-  ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQP(ierr);
 #if defined(PETSC_USE_COMPLEX)
   PetscInt i;
   PetscScalar sum0,sum1,sum2,sum3;
@@ -668,6 +667,8 @@ void* VecMDot_Kernel4(void* arg)
   PetscInt     n;
   PetscBLASInt one = 1, bn,bstart;
 #endif
+
+  ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQP(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
     sum0 = sum1 = sum2 = sum3 = 0.0;
