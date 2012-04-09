@@ -1247,10 +1247,10 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecGetArray(X,&x);CHKERRQ(ierr);
       ierr = MPI_Comm_size(((PetscObject)X)->comm,&size);CHKERRQ(ierr);
       if (size == 1) {
-        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,n,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,1,n,x+start,&Z);CHKERRQ(ierr);
       } else {
         ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,n,N,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,1,n,N,x+start,&Z);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     } else {                    /* Have to create a scatter and do a copy */

@@ -383,8 +383,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscInt dN;
       ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
       ierr = ISGetSize(osm->is[i],&dN);CHKERRQ(ierr);
-      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
-      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,1,dn,dN,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,1,dn,dN,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(osm->gx, &gxarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(osm->gy, &gyarray);CHKERRQ(ierr);

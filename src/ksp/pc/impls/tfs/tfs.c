@@ -121,9 +121,9 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
     localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
   }
   /* generate the vectors needed for the local solves */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->rmap->n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->cmap->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
   tfs->nd = a->A->cmap->n;
 
 

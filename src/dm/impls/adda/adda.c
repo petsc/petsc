@@ -747,12 +747,10 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   dd->lgsize *= dof;
 
   /* create global and local prototype vector */
-  ierr = VecCreateMPIWithArray(comm,dd->lsize,PETSC_DECIDE,0,&(dd->global));CHKERRQ(ierr);
-  ierr = VecSetBlockSize(dd->global,dd->dof);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(comm,dd->dof,dd->lsize,PETSC_DECIDE,0,&(dd->global));CHKERRQ(ierr);
 #if ADDA_NEEDS_LOCAL_VECTOR
   /* local includes ghost points */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->lgsize,0,&(dd->local));CHKERRQ(ierr);
-  ierr = VecSetBlockSize(dd->local,dof);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->lgsize,0,&(dd->local));CHKERRQ(ierr);
 #endif
 
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->refine));CHKERRQ(ierr);

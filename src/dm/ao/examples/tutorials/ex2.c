@@ -728,8 +728,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   ierr = VecCreateSeq(PETSC_COMM_SELF,2*gdata->nlocal,&vert);CHKERRQ(ierr);
 
   /* create a vector to contain the old ordered vertex information */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,2*gdata->mlocal_vert,PETSC_DECIDE,gdata->vert,
-                               &overt);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,2*gdata->mlocal_vert,PETSC_DECIDE,gdata->vert,&overt);CHKERRQ(ierr);
 
   /* 
       There are two data items per vertex, the x and y coordinates (i.e. one can think 

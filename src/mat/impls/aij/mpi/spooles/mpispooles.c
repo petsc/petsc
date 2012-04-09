@@ -159,7 +159,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   if( !lu->scat ){ /* create followings once for each numfactorization */
     /* vec_spooles <- mtxX */
 #if !defined(PETSC_USE_COMPLEX) 
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); 
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); 
 #else    
     ierr = VecCreateSeq(PETSC_COMM_SELF,lu->nmycol,&lu->vec_spooles);CHKERRQ(ierr);
 #endif 

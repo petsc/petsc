@@ -93,9 +93,9 @@ int main(int argc,char **args)
 
   /* Create sub vectors without arrays. Place b's and x's local arrays into subb and subx */
   ierr = MatGetLocalSize(subA,&m,&n);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,m,PETSC_DECIDE,PETSC_NULL,&subb);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,n,PETSC_DECIDE,PETSC_NULL,&subx);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,n,PETSC_DECIDE,PETSC_NULL,&subu);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,PETSC_NULL,&subb);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&subx);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&subu);CHKERRQ(ierr);
 
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);

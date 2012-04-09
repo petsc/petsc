@@ -313,8 +313,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     allocated with zero space arrays because the actual array space is provided
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,1,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,1,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
 

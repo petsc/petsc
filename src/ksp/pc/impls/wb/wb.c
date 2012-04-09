@@ -169,9 +169,9 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     PetscScalar *xint_tmp;
 
     ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
     ierr = MatGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&b);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     for (i=0; i<26; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
@@ -443,9 +443,9 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     PetscScalar *xint_tmp;
 
     ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
     ierr = MatGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&b);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     for (i=0; i<6; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);

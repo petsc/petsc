@@ -760,7 +760,7 @@ PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex Vec");
 #else
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

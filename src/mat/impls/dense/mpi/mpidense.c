@@ -1213,7 +1213,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   /*
     PetscPrintf(PETSC_COMM_SELF," [%d] b - local_m %d local_stride %d, loc_buf: %g %g, nb: %d\n",rank,loc_m,loc_stride,loc_buf[0],loc_buf[(loc_m-1)*loc_stride],lu->nb); 
   */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
     
     PLA_Temp_comm_row_info(lu->templ,&Plapack_comm_2d,&r_rank,&r_nproc);

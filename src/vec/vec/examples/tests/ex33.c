@@ -42,7 +42,7 @@ int main(int argc,char **argv)
      and do a VecView() */
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&len);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
   ierr = VecView(y_t,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&y_t);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);

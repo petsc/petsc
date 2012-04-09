@@ -951,8 +951,8 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   A->rmap->bs = A->cmap->bs = bs;
   bmat->mbs  = A->rmap->n/bs;
 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
 
   if (!bmat->imax) {

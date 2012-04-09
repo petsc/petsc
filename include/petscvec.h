@@ -125,9 +125,9 @@ extern PetscErrorCode  VecCreateSeq(MPI_Comm,PetscInt,Vec*);
 PetscPolymorphicSubroutine(VecCreateSeq,(PetscInt n,Vec *x),(PETSC_COMM_SELF,n,x))
 extern PetscErrorCode  VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
 PetscPolymorphicSubroutine(VecCreateMPI,(PetscInt n,PetscInt N,Vec *x),(PETSC_COMM_WORLD,n,N,x))
-extern PetscErrorCode  VecCreateSeqWithArray(MPI_Comm,PetscInt,const PetscScalar[],Vec*);
+extern PetscErrorCode  VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PetscPolymorphicSubroutine(VecCreateSeqWithArray,(PetscInt n,PetscScalar s[],Vec *x),(PETSC_COMM_SELF,n,s,x))
-extern PetscErrorCode  VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
+extern PetscErrorCode  VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscScalar s[],Vec *x),(PETSC_COMM_WORLD,n,N,s,x))
 extern PetscErrorCode  VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 extern PetscErrorCode  VecSetFromOptions(Vec);
@@ -571,7 +571,7 @@ S*/
 typedef struct _n_Vecs* Vecs;
 #define VecsDestroy(x)            (VecDestroy(&(x)->v)         || PetscFree(x))
 #define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
-#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
+#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeqWithArray(comm,1,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
 #define VecsDuplicate(x,y)        (PetscNew(struct _n_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
 
 #if defined(PETSC_HAVE_CUSP)

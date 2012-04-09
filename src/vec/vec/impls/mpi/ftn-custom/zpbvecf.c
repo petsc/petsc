@@ -12,10 +12,10 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
+void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(s);
-  *ierr = VecCreateMPIWithArray(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*n,*N,s,V);
+  *ierr = VecCreateMPIWithArray(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*bs,*n,*N,s,V);
 }
 
 void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,

@@ -184,11 +184,11 @@ rather than having PETSc internally allocate the array space.
 \sindex{vectors, user-supplied arrays} 
 Such vectors can be created with the routines
 \begin{tabbing}
-  VecCreateSeqWithArray(PETSC\_COMM\_SELF,int n,PetscScalar *array,Vec *V);
+  VecCreateSeqWithArray(PETSC\_COMM\_SELF,int bs,int n,PetscScalar *array,Vec *V);
 \end{tabbing}
 and  
 \begin{tabbing}
-  VecCreateMPIWithArray(MPI\_Comm comm,int n,int N,PetscScalar *array,Vec *vv);
+  VecCreateMPIWithArray(MPI\_Comm comm,int bs,int n,int N,PetscScalar *array,Vec *vv);
 \end{tabbing}
 Note that here one must provide the value \trl{n}, it cannot be PETSC\_DECIDE and
 the user is responsible for providing enough space in the array; {\em n*sizeof(PetscScalar)}.

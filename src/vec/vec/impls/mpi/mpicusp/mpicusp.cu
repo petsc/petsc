@@ -139,7 +139,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);

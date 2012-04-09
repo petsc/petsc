@@ -58,11 +58,11 @@ PetscInt main(PetscInt argc,char **args)
     data_in   = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out2 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_in,&x);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_in,&x);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real Space vector");CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out,&y);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out,&y);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out2,&z);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out2,&z);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
 
     fplan = fftw_mpi_plan_dft_2d(N0,N1,data_in,data_out,PETSC_COMM_WORLD,FFTW_FORWARD,FFTW_ESTIMATE);

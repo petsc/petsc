@@ -167,7 +167,7 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx
      This way, we can use the data structures already in the program
      by using VecPlaceArray() subroutine at a later stage.
   */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,PETSC_NULL,&userctx->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,N,PETSC_NULL,&userctx->b);CHKERRQ(ierr);
   ierr = VecDuplicate(userctx->b,&userctx->x);CHKERRQ(ierr);
 
   /* 

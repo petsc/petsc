@@ -2175,11 +2175,11 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 
   ierr = VecGetLocalSize(a->slvec1,&nt);CHKERRQ(ierr);
   ierr = VecGetArray(a->slvec1,&array);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs*mbs,array,&a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,array+bs*mbs,&a->slvec1b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs*mbs,array,&a->slvec1a);CHKERRQ(ierr); 
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nt-bs*mbs,array+bs*mbs,&a->slvec1b);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec1,&array);CHKERRQ(ierr);
   ierr = VecGetArray(a->slvec0,&array);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,array+bs*mbs,&a->slvec0b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nt-bs*mbs,array+bs*mbs,&a->slvec0b);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&array);CHKERRQ(ierr); 
   ierr = PetscLogObjectParent(mat,a->slvec0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,a->slvec1);CHKERRQ(ierr);

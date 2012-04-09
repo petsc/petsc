@@ -939,7 +939,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
+PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -947,6 +947,7 @@ PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar
   PetscFunctionBegin;
   ierr = VecCreate(comm,V);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   ierr = VecCreate_Seq_Private(*V,array);CHKERRQ(ierr);

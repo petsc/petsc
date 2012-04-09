@@ -53,9 +53,9 @@ PetscInt main(PetscInt argc,char **args)
 //    printf("The value n is  %d from process %d\n",n,rank);  
 //    printf("The value n1 is  %d from process %d\n",n1,rank);  
     /* Creating data vector and accompanying array with VeccreateMPIWithArray */
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N,( PetscScalar*)in1,&fin);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N,(PetscScalar*)in2,&fout1);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,( PetscScalar*)in1,&fin);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1);CHKERRQ(ierr);
 
     /* Set the vector with random data */
     ierr = VecSet(fin,zero);CHKERRQ(ierr);

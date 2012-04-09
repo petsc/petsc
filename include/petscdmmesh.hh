@@ -164,9 +164,9 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   ierr = ISCreateGeneral(PETSC_COMM_SELF, globalIndx, globalIndices,PETSC_OWN_POINTER, &globalIS);CHKERRQ(ierr);
   // Can remove this when I test it with NULL
 #ifdef PETSC_USE_COMPLEX
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);
 #else
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,s->getStorageSize(), s->restrictSpace(), &localVec);CHKERRQ(ierr);
 #endif
   ierr = VecScatterCreate(localVec, localIS, globalVec, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&globalIS);CHKERRQ(ierr);

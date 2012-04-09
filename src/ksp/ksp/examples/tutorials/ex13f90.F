@@ -208,7 +208,7 @@
 !  This way, we can use the data structures already in the program
 !  by using VecPlaceArray() subroutine at a later stage.
 !
-      call VecCreateSeqWithArray(PETSC_COMM_SELF,Ntot,                  &
+      call VecCreateSeqWithArray(PETSC_COMM_SELF,1,Ntot,                  &
      &     PETSC_NULL_SCALAR,b,ierr)
       call VecDuplicate(b,x,ierr)
 

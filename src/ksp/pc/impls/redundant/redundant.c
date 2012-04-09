@@ -110,12 +110,12 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     mloc_sub = rend_sub - rstart_sub;
     ierr = VecCreateMPI(subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
     /* create xsub with empty local arrays, because xdup's arrays will be placed into it */
-    ierr = VecCreateMPIWithArray(subcomm,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
 
     /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it. 
        Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */      
     ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->ydup);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->ydup);CHKERRQ(ierr);
   
     /* create vec scatters */
     if (!red->scatterin){

@@ -4753,7 +4753,7 @@ PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
     ALE::Obj<PETSC_MESH_TYPE> mesh;
     ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
     const Obj<PETSC_MESH_TYPE::real_section_type>& coords = mesh->getRealSection("coordinates");
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, coords->getStorageSize(), coords->restrictSpace(), coordinates);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1, coords->getStorageSize(), coords->restrictSpace(), coordinates);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

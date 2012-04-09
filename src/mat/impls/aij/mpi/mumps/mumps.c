@@ -704,7 +704,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 #else
       lu->id.sol_loc  = sol_loc;
 #endif
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lsol_loc,sol_loc,&lu->x_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&lu->x_seq);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

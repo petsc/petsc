@@ -892,8 +892,8 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       KSPSolve() on the block.
     */
     ierr = MatGetSize(pmat,&m,&m);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&bjac->x);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&bjac->y);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&bjac->x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&bjac->y);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,bjac->y);CHKERRQ(ierr);
   } else {
@@ -1130,7 +1130,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&y);CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&y);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,x);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,y);CHKERRQ(ierr);
       bjac->x[i]      = x;
@@ -1313,8 +1313,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
 
     /* create dummy vectors xsub and ysub */
     ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(subcomm,n,PETSC_DECIDE,PETSC_NULL,&mpjac->xsub);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(subcomm,m,PETSC_DECIDE,PETSC_NULL,&mpjac->ysub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&mpjac->xsub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,PETSC_NULL,&mpjac->ysub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mpjac->ysub);CHKERRQ(ierr);
 

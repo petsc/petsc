@@ -55,17 +55,17 @@ int main(int argc,char **argv)
   for (i=0; i<size; i++) {
     x[i] = 1.0;
   }
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,x,&X);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&y);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,y,&Y);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,z,&Z);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 

@@ -389,11 +389,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*z*dof;
-  ierr = VecCreateMPIWithArray(comm,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->nlocal,0,&local);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */

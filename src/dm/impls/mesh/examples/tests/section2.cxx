@@ -91,14 +91,14 @@ PetscErrorCode GeneralSectionTest(MPI_Comm comm, Options *options)
   ierr = VecDuplicate(vecIn, &vecOut);CHKERRQ(ierr);
 
   ierr = MeshCreateGlobalScatter(m, section, &scatter);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, section->sizeWithBC(), section->restrictSpace(), &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,section->sizeWithBC(), section->restrictSpace(), &localVec);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter, localVec, vecIn, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter, localVec, vecIn, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(&localVec);CHKERRQ(ierr);
   ierr = VecView(vecIn, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecCopy(vecIn, vecOut);CHKERRQ(ierr);
   ierr = VecView(vecOut, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, newSection->sizeWithBC(),  newSection->restrictSpace(), &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,newSection->sizeWithBC(),  newSection->restrictSpace(), &localVec);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter, vecOut, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter, vecOut, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecDestroy(&localVec);CHKERRQ(ierr);
