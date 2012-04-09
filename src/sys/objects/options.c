@@ -1739,15 +1739,14 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
 #define __FUNCT__ "PetscOptionsGetIntArray"
 /*@C
    PetscOptionsGetIntArray - Gets an array of integer values for a particular 
-   option in the database.  The values must be separated with commas with 
-   no intervening spaces. 
+   option in the database.
 
    Not Collective
 
    Input Parameters:
 +  pre - string to prepend to each name or PETSC_NULL
 .  name - the option one is seeking
--  nmax - maximum number of values to retrieve, can include d-D to indicate d,d+1,..,D-1
+-  nmax - maximum number of values to retrieve
 
    Output Parameter:
 +  dvalue - the integer values to return
@@ -1755,6 +1754,15 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
+
+   Notes:
+   The array can be passed as
+   a comma seperated list:                                 0,1,2,3,4,5,6,7
+   a range (start:end+1):                                  0-8
+   a range with given increment (start-end+1:inc):         0-8:1
+   a combination of values and ranges seperated by commas: 0,1-4,4-8:1
+
+   There must be no intervening spaces between the values.
 
    Concepts: options database^array of ints
 
@@ -1769,7 +1777,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscInt       n = 0,i,start,end;
+  PetscInt       n = 0,i,j,start,end,inc,nvalues;
   size_t         len;
   PetscBool      flag,foundrange;
   PetscToken     token;
@@ -1797,11 +1805,22 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
       if (value[i] == '-') {
         if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
         value[i] = 0;
-        ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);        
+        ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
+	inc = 1;
+	j = i+1;
+	for(;j<(int)len; j++) {
+	  if (value[j] == ':') {
+	    value[j] = 0;
+	    ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);
+	    if(inc <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);CHKERRQ(ierr);
+	    break;
+	  }
+	}
         ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);        
         if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
-        if (n + end - start - 1 >= *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
-        for (;start<end; start++) {
+	nvalues = (end-start)/inc + (end-start)%inc;
+        if (n + nvalues  > *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
+        for (;start<end; start+=inc) {
           *dvalue = start; dvalue++;n++;
         }
         foundrange = PETSC_TRUE;

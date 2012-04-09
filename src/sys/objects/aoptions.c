@@ -1256,8 +1256,7 @@ PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const c
 #define __FUNCT__ "PetscOptionsIntArray"
 /*@C
    PetscOptionsIntArray - Gets an array of integers for a particular
-   option in the database. The values must be separated with commas with 
-   no intervening spaces. 
+   option in the database.
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
 
@@ -1275,11 +1274,17 @@ PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const c
    Level: beginner
 
    Notes: 
-   The user should pass in an array of integers
+   The array can be passed as
+   a comma seperated list:                                 0,1,2,3,4,5,6,7
+   a range (start:end+1):                                  0-8
+   a range with given increment (start-end+1:inc):         0-8:1
+   a combination of values and ranges seperated by commas: 0,1-4,4-8:1
+
+   There must be no intervening spaces between the values.
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
+   Concepts: options database^array of ints
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
