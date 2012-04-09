@@ -31,18 +31,18 @@ Initial hump neither shrinks nor grows when degenerate (otherwise similar soluti
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_linesearch_monitor   -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and then grows)
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -mymonitor
 
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -degenerate -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_final_time 1. -degenerate -mymonitor
 
 
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_linesearch_monitor -theta .00000001  -vi -ts_monitor_solution -ts_monitor_solution_initial -mymonitor
 
 
 

@@ -628,7 +628,7 @@ EXTERN_C_END
 .     -snes_qn_powell_angle - Angle condition for restart.
 .     -snes_qn_powell_descent - Descent condition for restart.
 .     -snes_qn_composition <sequential, composed>- Type of composition.
-.     -snes_ls <basic, basicnonorms, quadratic, critical> - Type of line search.
+.     -snes_linesearch_type <cp, l2, basic> - Type of line search.
 -     -snes_qn_monitor - Monitors the quasi-newton jacobian.
 
       Notes: This implements the L-BFGS algorithm for the solution of F(x) = b using previous change in F(x) and x to
