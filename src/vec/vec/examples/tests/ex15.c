@@ -19,8 +19,10 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"Must be run with one processor");
 
   /* create vector */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
+  ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
   indices[0] = 0; indices[1] = 2;

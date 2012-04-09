@@ -3485,8 +3485,10 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = MatCreateMAIJ(mpiaij->B,dof,&b->OAIJ);CHKERRQ(ierr);
 
       ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,n*dof,&b->w);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_SELF,&b->w);CHKERRQ(ierr);
+      ierr = VecSetSizes(b->w,n*dof,n*dof);CHKERRQ(ierr);
       ierr = VecSetBlockSize(b->w,dof);CHKERRQ(ierr);
+      ierr = VecSetType(b->w,VECSEQ);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
       ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);

@@ -105,6 +105,7 @@
       <h4>Vec:</h4>
       <ul>
         <li>VecCreateSeqWithArray() and VecCreateMPIWithArray() now take a blocksize argument before the local length</li>
+        <li>VecSetBlockSize() cannot be called after VecCreateSeq() or VecCreateMPI() and must be called before VecSetUp() or VecSetFromOptions() or before either VecSetType() or VecSetSizes()</li>
       </ul>
       <h4>VecScatter:</h4>
       <h4>Mat:</h4>

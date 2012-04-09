@@ -92,8 +92,10 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec* g)
       ierr = VecDuplicate(dd->natural,g);CHKERRQ(ierr);
     }
   } else { /* create the first version of this guy */
-    ierr = VecCreateMPI(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
+    ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*g, dd->w);CHKERRQ(ierr);
+    ierr = VecSetType(*g,VECMPI);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
     dd->natural = *g;
   }

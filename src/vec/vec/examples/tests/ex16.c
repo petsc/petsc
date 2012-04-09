@@ -20,7 +20,8 @@ int main(int argc,char **argv)
   if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"Must be run with two processors");
 
   /* create vector */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 

@@ -2125,8 +2125,11 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,PETSC_NULL);CHKERRQ(ierr);
 
   /* Move the count and offset into a Vec so that we can use VecScatter, translating offset from local to global */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2*nnodesLoc,2*nnodes,&VNodeEdgeInfo);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&VNodeEdgeInfo);CHKERRQ(ierr);
+  ierr = VecSetSizes(VNodeEdgeInfo,2*nnodesLoc,2*nnodes);CHKERRQ(ierr);
   ierr = VecSetBlockSize(VNodeEdgeInfo,2);CHKERRQ(ierr);
+  ierr = VecSetType(VNodeEdgeInfo,VECMPI);CHKERRQ(ierr);
+
   ierr = VecGetArray(VNodeEdgeInfo,&vnei);CHKERRQ(ierr);
   for (i=0; i<nnodesLoc; i++) {
     vnei[i*2+0] = nodeEdgeCount[i];                   /* Total number of edges from this vertex */
@@ -2136,8 +2139,11 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = PetscFree2(nodeEdgeCount,nodeEdgeOffset);CHKERRQ(ierr);
 
   /* Create a Vec to receive the edge count and global offset for each node in owned+ghosted, get them, and clean up */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,2*nvertices,&VNodeEdgeInfoOv);CHKERRQ(ierr); /* To hold the count and offset of each ghosted node */
+  ierr = VecCreate(PETSC_COMM_SELF,&VNodeEdgeInfoOv);CHKERRQ(ierr);
+  ierr = VecSetSizes(VNodeEdgeInfoOv,2*nvertices,2*nvertices);CHKERRQ(ierr);
   ierr = VecSetBlockSize(VNodeEdgeInfoOv,2);CHKERRQ(ierr);
+  ierr = VecSetType(VNodeEdgeInfoOv,VECSEQ);CHKERRQ(ierr);
+
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr); /* Address the nodes in overlap to get info from */
   ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,PETSC_NULL,&neiscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2302,8 +2308,12 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   if (nloc/bs != nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%D to match nvertices=%D",nloc/bs,nvertices);CHKERRQ(ierr);
   if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%D to match grid->nvertices=%D",nvertices,grid->nvertices);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices*3,&Xuloc);CHKERRQ(ierr);
+
+  ierr = VecCreate(PETSC_COMM_SELF,&Xuloc);CHKERRQ(ierr);
+  ierr = VecSetSizes(Xuloc,3*nvertices,3*nvertices);CHKERRQ(ierr);
   ierr = VecSetBlockSize(Xuloc,3);CHKERRQ(ierr);
+  ierr = VecSetType(Xuloc,VECSEQ);CHKERRQ(ierr);
+
   ierr = VecGetArrayRead(Xloc,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xploc,&xp);CHKERRQ(ierr);
   ierr = VecGetArray(Xuloc,&xu);CHKERRQ(ierr);
@@ -2421,17 +2431,31 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 
    /* Set up the PETSc datastructures */
  
-   ierr = VecCreateMPI(comm,bs*nnodesLoc,bs*nnodes,&grid->qnode);CHKERRQ(ierr);
+   ierr = VecCreate(comm,&grid->qnode);CHKERRQ(ierr);
+   ierr = VecSetSizes(grid->qnode,bs*nnodesLoc,bs*nnodes);CHKERRQ(ierr);
    ierr = VecSetBlockSize(grid->qnode,bs);CHKERRQ(ierr);
+   ierr = VecSetType(grid->qnode,VECMPI);CHKERRQ(ierr);
+
    ierr = VecDuplicate(grid->qnode,&grid->res);CHKERRQ(ierr);
    ierr = VecDuplicate(grid->qnode,&tsCtx->qold);CHKERRQ(ierr);
    ierr = VecDuplicate(grid->qnode,&tsCtx->func);CHKERRQ(ierr);
-   ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&grid->qnodeLoc);CHKERRQ(ierr);
+
+   ierr = VecCreate(MPI_COMM_SELF,&grid->qnodeLoc);CHKERRQ(ierr);
+   ierr = VecSetSizes(grid->qnodeLoc,bs*nvertices,bs*nvertices);CHKERRQ(ierr);
    ierr = VecSetBlockSize(grid->qnodeLoc,bs);CHKERRQ(ierr);
-   ierr = VecCreateMPI(comm,3*bs*nnodesLoc,3*bs*nnodes,&grid->grad);
+   ierr = VecSetType(grid->qnodeLoc,VECSEQ);CHKERRQ(ierr);
+
+   ierr = VecCreate(comm,&grid->grad);
+   ierr = VecSetSizes(grid->grad,3*bs*nnodesLoc,3*bs*nnodes);CHKERRQ(ierr);
    ierr = VecSetBlockSize(grid->grad,3*bs);CHKERRQ(ierr);
-   ierr = VecCreateSeq(MPI_COMM_SELF,3*bs*nvertices,&grid->gradLoc);
+   ierr = VecSetType(grid->grad,VECMPI);CHKERRQ(ierr);
+
+   ierr = VecCreate(MPI_COMM_SELF,&grid->gradLoc);
+   ierr = VecSetSizes(grid->gradLoc,3*bs*nvertices,3*bs*nvertices);CHKERRQ(ierr);
    ierr = VecSetBlockSize(grid->gradLoc,3*bs);CHKERRQ(ierr);
+   ierr = VecSetType(grid->gradLoc,VECSEQ);CHKERRQ(ierr);
+
+
 /* Create Scatter between the local and global vectors */
 /* First create scatter for qnode */
    ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);

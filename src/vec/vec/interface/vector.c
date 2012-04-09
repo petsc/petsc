@@ -1523,7 +1523,6 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   if (bs == v->map->bs) PetscFunctionReturn(0);
-  if (v->map->bs == 1) v->map->bs = -1;
   ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
