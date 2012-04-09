@@ -5041,7 +5041,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    may be specific to certain storage formats.  Some options
    determine how values will be inserted (or added). Sorted, 
    row-oriented input will generally assemble the fastest. The default
-   is row-oriented, nonsorted input. 
+   is row-oriented. 
 
    Logically Collective on Mat
 
@@ -5139,6 +5139,8 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_IGNORE_LOWER_TRIANGULAR - For SBAIJ matrices will ignore any insertions you make in the lower triangular 
         part of the matrix (since they should match the upper triangular part).
 
+   Notes: Can only be called after MatSetSizes() and MatSetType() have been set.
+
    Level: intermediate
 
    Concepts: matrices^setting options
@@ -5156,7 +5158,7 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool  flg)
 
   if (((int) op) < 0 || ((int) op) >= NUM_MAT_OPTIONS) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
-  MatCheckPreallocated(mat,1);
+
   switch (op) {
   case MAT_NO_OFF_PROC_ENTRIES:
     mat->nooffprocentries                = flg;
