@@ -1812,7 +1812,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
 	  if (value[j] == ':') {
 	    value[j] = 0;
 	    ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);
-	    if(inc <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);CHKERRQ(ierr);
+	    if(inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);CHKERRQ(ierr);
 	    break;
 	  }
 	}
