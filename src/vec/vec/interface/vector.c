@@ -1518,16 +1518,13 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 @*/
 PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (bs <= 0) bs = 1;
   if (bs == v->map->bs) PetscFunctionReturn(0);
-  if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
-  if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
-   Try setting blocksize before setting the vector type",v->map->n,bs);
-  PetscValidLogicalCollectiveInt(v,bs,2);  
-
-  v->map->bs   = bs;
+  if (v->map->bs == 1) v->map->bs = -1;
+  ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
@@ -1559,10 +1556,11 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 @*/
 PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidIntPointer(bs,2);
-  *bs = v->map->bs;
+  ierr = PetscLayoutGetBlockSize(v->map,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -61,6 +61,8 @@
 
       call VecCreate(PETSC_COMM_WORLD,x,ierr)
       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
+      bs = 2
+      call VecSetBlockSize(x,bs,ierr)
       call VecSetFromOptions(x,ierr)
 
 !
@@ -74,8 +76,6 @@
  100     format ('Norm of entire vector ',1pe8.2)
       endif
 
-      bs = 2
-      call VecSetBlockSize(x,bs,ierr)
       comp = 0
       call VecStrideNorm(x,comp,NORM_2,norm,ierr) 
       if (rank .eq. 0) then

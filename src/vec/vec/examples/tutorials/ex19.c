@@ -39,10 +39,12 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x1);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x1);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(x1, &x2);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD, &x2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x2, "TestVec");CHKERRQ(ierr);
-  ierr = VecCopy(x1, x2);CHKERRQ(ierr);
+  ierr = VecSetSizes(x2, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x2, 2);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x2);CHKERRQ(ierr);
+  ierr = VecCopy(x1, x2);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);

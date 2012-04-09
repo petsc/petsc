@@ -30,14 +30,16 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       bs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = VecGetBlockSize(c,&bs);CHKERRQ(ierr);
+  if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA");
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
   dd->coordinates = c;
-  ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -71,14 +73,16 @@ PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       bs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = VecGetBlockSize(c,&bs);CHKERRQ(ierr);
+  if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA");
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
   dd->ghosted_coordinates = c;
-  ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

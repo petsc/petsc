@@ -21,8 +21,8 @@ int main(int argc,char **argv)
 
   /* create vector */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   if (!rank) {
     for (i=0; i<4; i++) values[i] = i+1;

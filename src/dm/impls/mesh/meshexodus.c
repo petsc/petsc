@@ -1078,7 +1078,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize()
 . exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
 - exofield - the position in the exodus field of the first component
@@ -1180,7 +1180,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be read (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize()
 . exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to read
 - exofield - the position in the exodus field of the first component
@@ -1282,7 +1282,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize()
 . vsID  - the vertex set ID
 . exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
@@ -1402,7 +1402,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be read (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize()
 . vsID  - the vertex set ID
 . exoid - the id of the exodusII file (obtained with ex_open or ex_create)
 . step  - the time step to write
@@ -1513,7 +1513,7 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize().
 . comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
   . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
@@ -1696,7 +1696,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be read (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize().
 . comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
   . if size(comm) > 1, the values are sent to cpu 0, and written in a single file
@@ -1867,7 +1867,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize().
 . csID - the ID of the cell set
 . comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file
@@ -1985,7 +1985,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   Input Parameters:
 + dm   - the DMMesh representing the mesh
 . v    - the LOCAL vector of values to be saved (i.e. with ghost values) obtained with SectionRealCreateLocalVector.
-         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize.
+         if v represents a field with several components, the block size must be set accordingly using VecSetBlockSize().
 . csID - the ID of the cell set
 . comm - the communicator associated to the exo file
   + if size(comm) == 1 each processor writes its local vector into a separate file

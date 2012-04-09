@@ -57,8 +57,8 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   PetscValidPointer(g,2);
   ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
   ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
+  ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && dd->dim == 2) {

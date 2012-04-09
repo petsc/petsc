@@ -119,10 +119,10 @@ int main(int argc,char **args)
     /* Generate vectors */
     ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
     ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
+    ierr = VecSetBlockSize(xx,3);      CHKERRQ(ierr);
     ierr = VecSetFromOptions(xx);  CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&bb);   CHKERRQ(ierr);
     ierr = VecSet(bb,.0);         CHKERRQ(ierr);
-    ierr = VecSetBlockSize(bb,3);      CHKERRQ(ierr);
     /* generate element matrices */
     {
       FILE *file;

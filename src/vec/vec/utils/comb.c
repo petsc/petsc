@@ -164,9 +164,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
           sum_flg = 1;
         } else if (reducetype[i] == REDUCE_MIN) {
           min_flg = 1;
-        } else {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
-        }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       }
       if (sum_flg + max_flg + min_flg > 1) {
         /* 
@@ -271,9 +269,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
         sum_flg = 1;
       } else if (reducetype[i] == REDUCE_MIN) {
         min_flg = 1;
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
     }
     if (sum_flg + max_flg + min_flg > 1) {
       /* 
@@ -326,9 +322,9 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
-  PetscInt         maxops = sr->maxops,*reducetype = sr->reducetype;
-  PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  void        *invecs = sr->invecs;
+  PetscInt       maxops = sr->maxops,*reducetype = sr->reducetype;
+  PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
+  void           *invecs = sr->invecs;
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;

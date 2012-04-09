@@ -46,13 +46,13 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 
   /* create the scatter context */
   ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecGetSize(global,&N);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
   ierr = VecDestroy(&global);CHKERRQ(ierr);  
@@ -99,13 +99,13 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   /* create the scatter context */
   ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,m,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(global,&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,M,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
   ierr = VecDestroy(&global);CHKERRQ(ierr);  
