@@ -9,7 +9,7 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
- ./ex653D -ksp_type fgmres -snes_vi_monitor -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason -snes_ls_monitor -pc_type mg -pc_mg_galerkin -log_summary  -da_refine 2
+ ./ex653D -ksp_type fgmres -snes_vi_monitor -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor -pc_type mg -pc_mg_galerkin -log_summary  -da_refine 2
 */
 
 // Void grow case only

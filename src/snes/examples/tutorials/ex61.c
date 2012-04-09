@@ -9,16 +9,16 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
- ./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 3  -T 0.1   -ksp_monitor_true_residual -pc_type lu -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic
+ ./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 3  -T 0.1   -ksp_monitor_true_residual -pc_type lu -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_linesearch_monitor -VG 10 -draw_fields 1,3,4 -snes_linesearch_type basic
 
-./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 4 -T 0.1   -ksp_monitor_true_residual -pc_type sor -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic
+./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 4 -T 0.1   -ksp_monitor_true_residual -pc_type sor -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_linesearch_monitor -VG 10 -draw_fields 1,3,4 -snes_linesearch_type basic
 
-./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -T 0.1   -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic -pc_type mg -pc_mg_galerkin
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -T 0.1   -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_linesearch_monitor -VG 10 -draw_fields 1,3,4 -snes_linesearch_type basic -pc_type mg -pc_mg_galerkin
 
-./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_linesearch_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
 
 Movie version
-./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_linesearch_monitor -VG 10 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_linesearch_type basic -T .0020 
 
  */
 
