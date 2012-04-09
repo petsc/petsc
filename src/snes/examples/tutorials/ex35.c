@@ -13,7 +13,7 @@ T*/
 
     Richardson
       Nonlinear:
-        -snes_rtol 1.e-12 -snes_monitor -snes_type nrichardson -snes_ls_monitor
+        -snes_rtol 1.e-12 -snes_monitor -snes_type nrichardson -snes_linesearch_monitor
 
       Linear:
         -snes_rtol 1.e-12 -snes_monitor -ksp_rtol 1.e-12  -ksp_monitor -ksp_type richardson -pc_type none -ksp_richardson_self_scale -info
@@ -27,7 +27,7 @@ T*/
 
     CG
        Nonlinear:
-            -snes_rtol 1.e-12 -snes_monitor  -snes_type ncg -snes_ls_monitor
+            -snes_rtol 1.e-12 -snes_monitor  -snes_type ncg -snes_linesearch_monitor
 
        Linear:
              -snes_rtol 1.e-12 -snes_monitor  -ksp_type cg -ksp_monitor -ksp_rtol 1.e-12 -pc_type none

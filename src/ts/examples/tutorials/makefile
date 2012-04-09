@@ -319,7 +319,7 @@ runex17_2:
 	   ${RM} -f ex17_2.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none -snes_ls basic > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none -snes_linesearch_type basic > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
