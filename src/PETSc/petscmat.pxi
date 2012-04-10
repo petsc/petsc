@@ -481,11 +481,10 @@ cdef inline int Mat_BlockSize(object bsize, PetscInt *_bs) except -1:
     _bs[0] = bs
     return 0
 
-cdef inline int Mat_SplitSizes(MPI_Comm comm,
-                               object size, object bsize,
-                               PetscInt *b,
-                               PetscInt *m, PetscInt *n,
-                               PetscInt *M, PetscInt *N) except -1:
+cdef inline int Mat_Sizes(object size, object bsize,
+                          PetscInt *b,
+                          PetscInt *m, PetscInt *n,
+                          PetscInt *M, PetscInt *N) except -1:
     # unpack row and column sizes
     cdef object rsize, csize
     try:
@@ -493,8 +492,8 @@ cdef inline int Mat_SplitSizes(MPI_Comm comm,
     except (TypeError, ValueError):
         rsize = csize = size
     # split row and column sizes
-    CHKERR( Sys_SplitSizes(comm, rsize, bsize, b, m, M) )
-    CHKERR( Sys_SplitSizes(comm, csize, bsize, b, n, N) )
+    Sys_Sizes(rsize, bsize, b, m, M)
+    Sys_Sizes(csize, bsize, b, n, N)
     return 0
 
 
@@ -690,8 +689,8 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     cdef Py_ssize_t k=0
     for k from 0 <= k < nm:
         CHKERR( setvalues(A,
-                          <PetscInt>si, &i[k*si], 
-                          <PetscInt>sj, &j[k*sj], 
+                          <PetscInt>si, &i[k*si],
+                          <PetscInt>sj, &j[k*sj],
                           &v[k*sv], addv) )
     return 0
 
@@ -830,7 +829,7 @@ cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
     cdef dtcount = options.pop('dtcount', None)
     if dtcount is not None:
         info.dtcount = <PetscReal>asInt(dtcount)
-    if ((dt is not None) or 
+    if ((dt is not None) or
         (dtcol is not None) or
         (dtcount is not None)):
         info.usedt = <PetscReal>PETSC_TRUE

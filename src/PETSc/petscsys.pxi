@@ -43,14 +43,14 @@ cdef extern from * nogil:
     int PetscSequentialPhaseEnd(MPI_Comm,int)
     int PetscSleep(int)
 
-cdef inline int Sys_SplitSizes(MPI_Comm comm, object size, object bsize,
-                               PetscInt *_b, PetscInt *_n, PetscInt *_N) except -1:
+
+cdef inline int Sys_Sizes(object size, object bsize,
+                          PetscInt *_b, PetscInt *_n, PetscInt *_N) except -1:
 
     # get block size
     cdef PetscInt bs=PETSC_DECIDE, b=PETSC_DECIDE
-    if bsize is not None: bs = asInt(bsize)
+    if bsize is not None: bs = b = asInt(bsize)
     if bs == PETSC_DECIDE: bs = 1
-    else: b = bs
     # unpack and get local and global sizes
     cdef PetscInt n=PETSC_DECIDE, N=PETSC_DECIDE
     cdef object on, oN
@@ -69,16 +69,22 @@ cdef inline int Sys_SplitSizes(MPI_Comm comm, object size, object bsize,
         "local size %d not divisible by block size %d" %
         (toInt(n), toInt(bs)) )
     if (N > 0) and (N % bs): raise ValueError(
-        "global size %d not divisible by block size %d" % 
+        "global size %d not divisible by block size %d" %
         (toInt(N), toInt(bs)) )
-    # split ownership
-    if n > 0: n = n // bs
-    if N > 0: N = N // bs
-    CHKERR( PetscSplitOwnership(comm, &n, &N) )
-    n = n * bs
-    N = N * bs
-    # set result
+    # return result to the caller
     if _b != NULL: _b[0] = b
     if _n != NULL: _n[0] = n
     if _N != NULL: _N[0] = N
+    return 0
+
+cdef inline int Sys_Layout(MPI_Comm comm,
+                           PetscInt bs, PetscInt *_n, PetscInt *_N) except -1:
+    cdef PetscInt n = _n[0]
+    cdef PetscInt N = _N[0]
+    if bs < 0: bs = 1
+    if n  > 0: n = n // bs
+    if N  > 0: N = N // bs
+    CHKERR( PetscSplitOwnership(comm, &n, &N) )
+    _n[0] = n * bs
+    _N[0] = N * bs
     return 0
