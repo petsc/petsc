@@ -166,7 +166,20 @@ PetscErrorCode KSPSetFromOptions_Chebychev(KSP ksp)
   ierr = PetscOptionsHead("KSP Chebychev Options");CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebychev_eigenvalues","extreme eigenvalues","KSPChebychevSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebychev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebychev eigenvalue bounds","KSPChebychevSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPChebychevSetEstimateEigenvalues(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);}
+  if (flg) {
+    switch (four) {
+    case 0:
+      ierr = KSPChebychevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      break;
+    case 2:                     /* Base everything on the max eigenvalues */
+      ierr = KSPChebychevSetEstimateEigenvalues(ksp,PETSC_DECIDE,tform[0],PETSC_DECIDE,tform[1]);CHKERRQ(ierr);
+      break;
+    case 4:                     /* Use the full 2x2 linear transformation */
+      ierr = KSPChebychevSetEstimateEigenvalues(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);
+      break;
+    default: SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Must specify either 0, 2, or 4 parameters for eigenvalue estimation");
+    }
+  }
   if (cheb->kspest) {
     /* Mask the PC so that PCSetFromOptions does not do anything */
     ierr = KSPSetPC(cheb->kspest,cheb->pcnone);CHKERRQ(ierr);
@@ -401,8 +414,8 @@ PetscErrorCode  KSPCreate_Chebychev(KSP ksp)
 
   chebychevP->tform[0]           = 0.0;
   chebychevP->tform[1]           = 0.02;
-  chebychevP->tform[1]           = 0;
-  chebychevP->tform[2]           = 1.1;
+  chebychevP->tform[2]           = 0;
+  chebychevP->tform[3]           = 1.1;
 
   ksp->ops->setup                = KSPSetUp_Chebychev;
   ksp->ops->solve                = KSPSolve_Chebychev;
