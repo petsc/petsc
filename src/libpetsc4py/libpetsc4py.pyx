@@ -443,8 +443,6 @@ cdef extern from * nogil:
         PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except IERR
         PetscErrorCode (*getsubmatrix)(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*) except IERR
         PetscErrorCode (*setoption)(PetscMat,MatOption,PetscBool) except IERR
-        PetscErrorCode (*setsizes)(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt) except IERR
-        PetscErrorCode (*setblocksize)(PetscMat,PetscInt) except IERR
         PetscErrorCode (*setup"_MatOps_setup")(PetscMat) except IERR
         PetscErrorCode (*assemblybegin)(PetscMat,MatAssemblyType) except IERR
         PetscErrorCode (*assemblyend)(PetscMat,MatAssemblyType) except IERR
@@ -529,8 +527,6 @@ cdef PetscErrorCode MatCreate_Python(
     ops.copy              = MatCopy_Python
     ops.getsubmatrix      = MatGetSubMatrix_Python
     ops.setoption         = MatSetOption_Python
-    ops.setsizes          = MatSetSizes_Python
-    ops.setblocksize      = MatSetBlockSize_Python
     ops.setup             = MatSetUp_Python
     ops.assemblybegin     = MatAssemblyBegin_Python
     ops.assemblyend       = MatAssemblyEnd_Python
@@ -704,37 +700,6 @@ cdef PetscErrorCode MatSetOption_Python(
     cdef setOption = PyMat(mat).setOption
     if setOption is not None:
         setOption(Mat_(mat), <long>op, <bint>flag)
-    return FunctionEnd()
-
-cdef PetscErrorCode MatSetSizes_Python(
-    PetscMat mat,
-    PetscInt m,PetscInt n,
-    PetscInt M,PetscInt N,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"MatSetSizes_Python")
-    CHKERR( PetscLayoutSetLocalSize(mat.rmap,m) )
-    CHKERR( PetscLayoutSetLocalSize(mat.cmap,n) )
-    CHKERR( PetscLayoutSetSize(mat.rmap,M) )
-    CHKERR( PetscLayoutSetSize(mat.cmap,N) )
-    cdef setSizes = PyMat(mat).setSizes
-    if setSizes is not None:
-        setSizes(Mat_(mat), (toInt(m), toInt(M)), (toInt(n), toInt(N)))
-    return FunctionEnd()
-
-cdef PetscErrorCode MatSetBlockSize_Python(
-    PetscMat mat,
-    PetscInt bs,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"MatSetBlockSize_Python")
-    CHKERR( PetscLayoutSetBlockSize(mat.rmap,bs) )
-    CHKERR( PetscLayoutSetBlockSize(mat.cmap,bs) )
-    CHKERR( PetscLayoutSetUp(mat.rmap)           )
-    CHKERR( PetscLayoutSetUp(mat.cmap)           )
-    cdef setBlockSize = PyMat(mat).setBlockSize
-    if setBlockSize is not None:
-        setBlockSize(Mat_(mat), toInt(bs))
     return FunctionEnd()
 
 cdef PetscErrorCode MatSetUp_Python(

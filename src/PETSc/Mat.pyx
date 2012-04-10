@@ -221,6 +221,8 @@ cdef class Mat(Object):
         cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
+        if bs != PETSC_DECIDE:
+            CHKERR( MatSetBlockSize(self.mat, bs) )
 
     #
 
@@ -284,19 +286,18 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
         if array is not None:
-            array = Mat_AllocDense_ARRAY(self.mat, bs, array)
+            array = Mat_AllocDense_ARRAY(self.mat, array)
             self.set_attr('__array__', array)
         else:
-            Mat_AllocDense_DEFAULT(self.mat, bs)
+            Mat_AllocDense_DEFAULT(self.mat)
         return self
 
-    def setPreallocationDense(self, array, bsize=None):
-        cdef PetscInt bs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &bs) )
+    def setPreallocationDense(self, array):
         if array is not None:
-            CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
+            array = Mat_AllocDense_ARRAY(self.mat, array)
+            self.set_attr('__array__', array)
         else:
-            CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
+            CHKERR( Mat_AllocDense_DEFAULT(self.mat) )
 
     def createIS(self, size, LGMap lgmap, comm=None):
         if comm is None: comm = lgmap.getComm()

@@ -186,20 +186,19 @@ cdef class Vec(Object):
         cdef PetscInt na=0
         cdef PetscScalar *sa=NULL
         array = iarray_s(array, &na, &sa)
-        if size is None: size = (toInt(na), PETSC_DECIDE)
+        if size is None: size = (toInt(na), toInt(PETSC_DECIDE))
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
+        if bs == PETSC_DECIDE: bs = 1
         if na < n:  raise ValueError(
             "array size %d and vector local size %d block size %d" %
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( VecCreateSeqWithArray(ccomm,n,sa,&newvec) )
+            CHKERR( VecCreateSeqWithArray(ccomm,bs,n,sa,&newvec) )
         else:
-            CHKERR( VecCreateMPIWithArray(ccomm,n,N,sa,&newvec) )
+            CHKERR( VecCreateMPIWithArray(ccomm,bs,n,N,sa,&newvec) )
         PetscCLEAR(self.obj); self.vec = newvec
-        if bs != PETSC_DECIDE:
-            CHKERR( VecSetBlockSize(self.vec, bs) )
         self.set_attr('__array__', array)
         return self
 

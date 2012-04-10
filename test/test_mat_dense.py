@@ -25,13 +25,13 @@ class BaseTestMatAnyDense(object):
     def setUp(self):
         COMM   = self.COMM
         GM, GN = self.GRID
-        BS     = self.BSIZE or 1
+        BS     = self.BSIZE #or 1
         #
         self.A = PETSc.Mat().create(comm=COMM)
-        bs = BS; m, N = GM, GN;
+        bs = BS or 1; m, N = GM, GN;
         rowsz = (m*bs, None)
         colsz = (None, N*bs)
-        self.A.setSizes([rowsz, colsz], bs)
+        self.A.setSizes([rowsz, colsz], BS)
         self.A.setType(self.TYPE)
 
     def tearDown(self):
@@ -147,8 +147,9 @@ class BaseTestMatDense_B(BaseTestMatAnyDense, unittest.TestCase):
     GRID  = 0, 0
     BSIZE = 1
     def _preallocate(self):
-        self.A.setPreallocationDense(None, self.BSIZE)
-        self.A.setBlockSize(self.BSIZE)
+        #self.A.setBlockSize(self.BSIZE)
+        self.A.setPreallocationDense(None)
+        #self.A.setBlockSize(self.BSIZE)
         self._chk_bs(self.A, self.BSIZE)
 
 # -- Seq Dense + Block --

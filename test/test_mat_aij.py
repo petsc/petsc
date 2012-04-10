@@ -43,10 +43,11 @@ class BaseTestMatAnyAIJ(object):
         self.vals = N.array(range(1, 1 + len(self.adjy)* BS**2), dtype=sdt)
         self.vals.shape = (-1, BS, BS)
         #
+        BS = self.BSIZE
         self.A = A = PETSc.Mat().create(comm=COMM)
-        bs = BS; m, n = GM, GN; cs = COMM.getSize()
+        bs = BS or 1; m, n = GM, GN; cs = COMM.getSize()
         rowsz = colsz = (m*n*bs, None)
-        A.setSizes([rowsz, colsz], bs)
+        A.setSizes([rowsz, colsz], BS)
         A.setType(self.TYPE)
 
     def tearDown(self):
@@ -428,7 +429,6 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
         self._chk_aij(self.A, ai, aj)
     def _preallocate(self):
         self.A.setPreallocationNNZ([5*self.BSIZE, 3*self.BSIZE])
-        self.A.setBlockSize(self.BSIZE)
         self._chk_bs(self.A, self.BSIZE)
     def _chk_aij(self, A, i, j):
         bs = self.BSIZE or 1

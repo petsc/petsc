@@ -3,6 +3,7 @@
 
 #include "petsc-32/petsc.h"
 #include "petsc-32/petscshell.h"
+#include "petsc-32/petscvec.h"
 #include "petsc-32/petscmat.h"
 #include "petsc-32/petscpc.h"
 #include "petsc-32/petscsnes.h"
