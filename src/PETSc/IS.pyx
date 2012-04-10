@@ -326,6 +326,9 @@ cdef class LGMap(Object):
         self.obj = <PetscObject*> &self.lgm
         self.lgm = NULL
 
+    def __call__(self, indices, result=None):
+        self.apply(indices, result)
+
     #
 
     def view(self, Viewer viewer=None):
@@ -355,13 +358,25 @@ cdef class LGMap(Object):
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
+    def block(self, bsize):
+        cdef PetscInt bs = toInt(bsize)
+        cdef LGMap lgmap = LGMap()
+        CHKERR( ISLocalToGlobalMappingBlock(self.lgm,bs,&lgmap.lgm) )
+        return lgmap
+
+    def unblock(self, bsize):
+        cdef PetscInt bs = toInt(bsize)
+        cdef LGMap lgmap = LGMap()
+        CHKERR( ISLocalToGlobalMappingUnBlock(self.lgm,bs,&lgmap.lgm) )
+        return lgmap
+
     def getSize(self):
         cdef PetscInt n = 0
         CHKERR( ISLocalToGlobalMappingGetSize(self.lgm, &n) )
         return toInt(n)
 
     def getIndices(self):
-        cdef PetscInt size = 0 
+        cdef PetscInt size = 0
         cdef const_PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
