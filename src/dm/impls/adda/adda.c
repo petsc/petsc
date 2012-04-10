@@ -691,9 +691,7 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   /* check for validity */
   procsleft = 1;
   for(i=0; i<dim; i++) {
-    if (nodes[i] < procs[i]) {
-      SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
-    }
+    if (nodes[i] < procs[i]) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
     procsleft *= procs[i];
   }
   if (procsleft != size) SETERRQ(comm,PETSC_ERR_PLIB, "Created or was provided with inconsistent distribution of processors");

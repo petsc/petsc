@@ -105,13 +105,9 @@ PetscErrorCode DMView_Cartesian(DM dm, PetscViewer viewer)
   ierr = DMCartesianGetMesh(dm, m);CHKERRQ(ierr);
   if (iascii){
     ierr = DMView_Cartesian_Ascii(m, viewer);CHKERRQ(ierr);
-  } else if (isbinary) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
-  } else if (isdraw){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
-  }
+  } else if (isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
+  else if (isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
