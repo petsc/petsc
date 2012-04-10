@@ -891,9 +891,6 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
 
-  if (v->map->bs == -1) {
-    ierr = PetscLayoutSetBlockSize(v->map,1);CHKERRQ(ierr);
-  }
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)

@@ -1766,7 +1766,6 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
   }
   vecs_created++;
 
-  if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
 
   tmap->N = v->map->n;

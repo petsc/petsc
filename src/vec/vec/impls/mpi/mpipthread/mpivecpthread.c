@@ -299,7 +299,6 @@ PetscErrorCode VecCreate_MPIPThread_Private(Vec v,PetscBool  alloc,PetscInt ngho
   s->nghost      = nghost;
   v->petscnative = PETSC_TRUE;
 
-  if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
 
   if(!v->map->tmap) {

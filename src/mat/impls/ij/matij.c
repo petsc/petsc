@@ -2060,15 +2060,15 @@ PetscErrorCode MatDestroy_IJ(Mat A) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatCreate_IJ"
-PetscErrorCode MatCreate_IJ(Mat A) {
+PetscErrorCode MatCreate_IJ(Mat A) 
+{
   PetscErrorCode ierr;
-  Mat_IJ  *pg;
+  Mat_IJ         *pg;
+
   PetscFunctionBegin;
   ierr = PetscNewLog(A, Mat_IJ, &pg); CHKERRQ(ierr);
   A->data = (void*)pg;
 
-  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);         CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);         CHKERRQ(ierr);
 

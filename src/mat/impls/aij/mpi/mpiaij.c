@@ -3628,8 +3628,6 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],co
   PetscFunctionBegin;
   if (Ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   m      = B->rmap->n;
@@ -5615,8 +5613,6 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
   maij->donotstash     = PETSC_TRUE;
   (*mat)->preallocated = PETSC_TRUE;
 
-  ierr = PetscLayoutSetBlockSize((*mat)->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*mat)->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*mat)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*mat)->cmap);CHKERRQ(ierr);
 

@@ -177,9 +177,6 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   (*N)->assembled           = PETSC_TRUE;
   (*N)->preallocated        = PETSC_TRUE;
 
-  /* treats the new matrix as having block size of 1 which is most likely the case */
-  ierr = PetscLayoutSetBlockSize((*N)->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*N)->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*N)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*N)->cmap);CHKERRQ(ierr);
 

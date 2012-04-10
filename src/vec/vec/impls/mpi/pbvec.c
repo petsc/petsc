@@ -185,7 +185,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   s->nghost      = nghost;
   v->petscnative = PETSC_TRUE;
 
-  if (v->map->bs == -1) v->map->bs = 1;
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
