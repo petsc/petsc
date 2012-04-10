@@ -228,8 +228,14 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (ksp->setupstage == KSP_SETUP_NEWRHS) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
-  if (!ksp->setupstage) {
+  switch (ksp->setupstage) {
+  case KSP_SETUP_NEW:
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
+    break;
+  case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
+    ierr = KSPChebychevSetNewMatrix(ksp);CHKERRQ(ierr);
+  } break;
+  default: break;
   }
 
   /* scale the matrix if requested */

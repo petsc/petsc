@@ -176,6 +176,7 @@ extern PetscErrorCode  KSPRichardsonSetScale(KSP,PetscReal);
 extern PetscErrorCode  KSPRichardsonSetSelfScale(KSP,PetscBool );
 extern PetscErrorCode  KSPChebychevSetEigenvalues(KSP,PetscReal,PetscReal);
 extern PetscErrorCode  KSPChebychevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode  KSPChebychevSetNewMatrix(KSP);
 extern PetscErrorCode  KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode  KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
 extern PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);

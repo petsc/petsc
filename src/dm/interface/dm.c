@@ -1181,8 +1181,6 @@ $    restricthook(DM fine,Mat mrestrict,Mat inject,DM coarse,void *ctx)
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
-   The 
-
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
    extract the finest level information from its context (instead of from the SNES).
 
