@@ -65,6 +65,7 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_Chebychev(KSP ksp,PetscReal a
     if (b >= 0) cheb->tform[1] = b;
     if (c >= 0) cheb->tform[2] = c;
     if (d >= 0) cheb->tform[3] = d;
+    cheb->estimate_current = PETSC_FALSE;
   } else {
     ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
     ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
@@ -72,6 +73,17 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_Chebychev(KSP ksp,PetscReal a
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPChebychevSetNewMatrix_Chebychev"
+PETSC_EXTERN_C PetscErrorCode  KSPChebychevSetNewMatrix_Chebychev(KSP ksp)
+{
+  KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
+
+  PetscFunctionBegin;
+  cheb->estimate_current = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPChebychevSetEigenvalues"
@@ -150,6 +162,32 @@ PetscErrorCode KSPChebychevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
   PetscValidLogicalCollectiveReal(ksp,c,4);
   PetscValidLogicalCollectiveReal(ksp,d,5);
   ierr = PetscTryMethod(ksp,"KSPChebychevSetEstimateEigenvalues_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPChebychevSetNewMatrix"
+/*@
+   KSPChebychevSetNewMatrix - Indicates that the matrix has changed, causes eigenvalue estimates to be recomputed if appropriate.
+
+   Logically Collective on KSP
+
+   Input Parameter:
+.  ksp - the Krylov space context
+
+   Level: developer
+
+.keywords: KSP, Chebyshev, set, eigenvalues
+
+.seealso: KSPChebychevSetEstimateEigenvalues()
+@*/
+PetscErrorCode KSPChebychevSetNewMatrix(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscTryMethod(ksp,"KSPChebychevSetNewMatrix_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -370,6 +408,7 @@ PetscErrorCode KSPDestroy_Chebychev(KSP ksp)
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetNewMatrix_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -432,6 +471,9 @@ PetscErrorCode  KSPCreate_Chebychev(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C",
                                     "KSPChebychevSetEstimateEigenvalues_Chebychev",
                                     KSPChebychevSetEstimateEigenvalues_Chebychev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetNewMatrix_C",
+                                    "KSPChebychevSetNewMatrix_Chebychev",
+                                    KSPChebychevSetNewMatrix_Chebychev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
