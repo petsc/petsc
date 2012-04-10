@@ -153,11 +153,11 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
    Not collective
  
-   Level: advanced
+   Level: developer
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
 @*/
-PetscErrorCode  PetscSetDebuggerFromString(char *string)
+PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 {
   const char     *debugger = PETSC_NULL;
   PetscBool      xterm    = PETSC_TRUE;

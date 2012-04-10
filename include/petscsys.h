@@ -2417,7 +2417,7 @@ extern PetscErrorCode  PetscByteSwap(void *,PetscDataType,PetscInt);
 extern PetscErrorCode  PetscSetDebugTerminal(const char[]);
 extern PetscErrorCode  PetscSetDebugger(const char[],PetscBool );
 extern PetscErrorCode  PetscSetDefaultDebugger(void);
-extern PetscErrorCode  PetscSetDebuggerFromString(char*);
+extern PetscErrorCode  PetscSetDebuggerFromString(const char*);
 extern PetscErrorCode  PetscAttachDebugger(void);
 extern PetscErrorCode  PetscStopForDebugger(void);
 
@@ -2495,7 +2495,7 @@ extern const char *PetscSubcommTypes[];
 extern PetscErrorCode  PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm,PetscInt);
-extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
+extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 
 #include <petscctable.h>
