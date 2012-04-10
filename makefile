@@ -204,6 +204,8 @@ chk_petsc_dir:
 	  echo "Aborting build"; \
 	  false; fi
 #
+reconfigure:
+	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
