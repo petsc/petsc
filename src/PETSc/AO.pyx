@@ -45,6 +45,26 @@ cdef class AO(Object):
         PetscCLEAR(self.obj); self.ao = newao
         return self
 
+    def createMemoryScalable(self, app, petsc=None, comm=None):
+        cdef PetscIS isapp = NULL, ispetsc = NULL
+        cdef PetscInt napp = 0, *idxapp = NULL,
+        cdef PetscInt npetsc = 0, *idxpetsc = NULL
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscAO newao = NULL
+        if isinstance(app, IS):
+            isapp = (<IS>app).iset
+            if petsc is not None:
+                ispetsc = (<IS?>petsc).iset
+            CHKERR( AOCreateMemoryScalableIS(isapp, ispetsc, &newao) )
+        else:
+            app = iarray_i(app, &napp, &idxapp)
+            if petsc is not None:
+                petsc = iarray_i(app, &npetsc, &idxpetsc)
+                assert napp == npetsc, "incompatible array sizes"
+            CHKERR( AOCreateMemoryScalable(ccomm, napp, idxapp, idxpetsc, &newao) )
+        PetscCLEAR(self.obj); self.ao = newao
+        return self
+
     def createMapping(self, app, petsc=None, comm=None):
         cdef PetscIS isapp = NULL, ispetsc = NULL
         cdef PetscInt napp = 0, *idxapp = NULL,
