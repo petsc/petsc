@@ -283,8 +283,9 @@ extern PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 extern PetscErrorCode  PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 #endif
 
+typedef enum {PETSC_VTK_POINT_FIELD, PETSC_VTK_CELL_FIELD} PetscViewerVTKFieldType;
 typedef PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer);
-extern PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscObject);
+extern PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscViewerVTKFieldType,PetscObject);
 extern PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*
