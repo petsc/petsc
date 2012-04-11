@@ -6,7 +6,7 @@
 
 static PetscInt    mats_created=0;
 
-void* MatRealPart_Kernel(void* arg)
+PetscErrorCode MatRealPart_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai;
@@ -49,7 +49,7 @@ PetscErrorCode MatRealPart_SeqAIJPThread(Mat A)
   PetscFunctionReturn(0);
 }
 
-void* MatImaginaryPart_Kernel(void* arg)
+PetscErrorCode MatImaginaryPart_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai;
@@ -92,7 +92,7 @@ PetscErrorCode MatImaginaryPart_SeqAIJPThread(Mat A)
   PetscFunctionReturn(0);
 }
 
-void* MatFactorGetDiagonal_Kernel(void* arg)
+PetscErrorCode MatFactorGetDiagonal_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *adiag = (const PetscInt*)data->adiag;
@@ -107,7 +107,7 @@ void* MatFactorGetDiagonal_Kernel(void* arg)
   return(0);
 }
 
-void* MatGetDiagonal_Kernel(void* arg)
+PetscErrorCode MatGetDiagonal_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
@@ -178,7 +178,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJPThread(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-void* MatZeroEntries_Kernel(void* arg)
+PetscErrorCode MatZeroEntries_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai;
@@ -221,7 +221,7 @@ PetscErrorCode MatZeroEntries_SeqAIJPThread(Mat A)
   PetscFunctionReturn(0);
 }
 
-void* MatMult_Kernel(void* arg)
+PetscErrorCode MatMult_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai,*ajbase = (const PetscInt*)data->aj,*aj;
@@ -287,7 +287,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-void* MatMultAdd_Kernel(void* arg)
+PetscErrorCode MatMultAdd_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
@@ -361,7 +361,7 @@ PetscErrorCode MatMultAdd_SeqAIJPThread(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-void* MatMarkDiagonal_Kernel(void* arg)
+PetscErrorCode MatMarkDiagonal_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
@@ -413,7 +413,7 @@ PetscErrorCode MatMarkDiagonal_SeqAIJPThread(Mat A)
   PetscFunctionReturn(0);
 }
 
-void* MatFindZeroDiagonalCount_Kernel(void* arg)
+PetscErrorCode MatFindZeroDiagonalCount_Kernel(void* arg)
 {
   Mat_KernelData     *data=(Mat_KernelData*)arg;
   const PetscInt     *aj = (const PetscInt*)data->aj;
@@ -431,7 +431,7 @@ void* MatFindZeroDiagonalCount_Kernel(void* arg)
   return(0);
 }
 
-void* MatFindZeroDiagonals_Kernel(void* arg)
+PetscErrorCode MatFindZeroDiagonals_Kernel(void* arg)
 {
   Mat_KernelData     *data=(Mat_KernelData*)arg;
   const PetscInt     *aj = (const PetscInt*)data->aj;
@@ -497,7 +497,7 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJPThread(Mat A,IS *zrows)
   PetscFunctionReturn(0);
 }
   
-void* MatMissingDiagonal_Kernel(void* arg)
+PetscErrorCode MatMissingDiagonal_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *aj = (const PetscInt*)data->aj;
@@ -561,7 +561,7 @@ PetscErrorCode MatMissingDiagonal_SeqAIJPThread(Mat A, PetscBool *missing,PetscI
   PetscFunctionReturn(0);
 }
 
-void* MatDiagonalScale_Kernel(void* arg)
+PetscErrorCode MatDiagonalScale_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   const PetscInt    *ai = (const PetscInt*)data->ai,*aj = (const PetscInt*)data->aj;
@@ -636,7 +636,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJPThread(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
  
-void* MatDiagonalSet_Kernel(void* arg)
+PetscErrorCode MatDiagonalSet_Kernel(void* arg)
 {
   Mat_KernelData    *data=(Mat_KernelData*)arg;
   MatScalar         *aa = (MatScalar*)data->aa;

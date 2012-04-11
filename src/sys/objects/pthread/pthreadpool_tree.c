@@ -8,7 +8,7 @@ static PetscInt*         pVal_tree;
 
 typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_tree;
 
-typedef void* (*pfunc)(void*);
+typedef PetscErrorCode (*pfunc)(void*);
 
 /* Tree thread pool data structure */
 typedef struct {
@@ -263,7 +263,7 @@ void* PetscThreadsWait_Tree(void* arg) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Tree"
-PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
+PetscErrorCode PetscThreadsRunKernel_Tree(PetscErrorCode (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
   PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
@@ -295,9 +295,7 @@ PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void** data,Pets
   ierr = pthread_cond_signal(job_tree.cond2array[0]);CHKERRQ(ierr);
   if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
-      job_tree.funcArr[0] = pFunc;
-      job_tree.pdata[0] = data[0];
-      job_tree.funcArr[0](job_tree.pdata[0]);
+      (*pFunc)(data[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }

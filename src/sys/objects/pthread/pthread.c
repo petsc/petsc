@@ -15,7 +15,7 @@ void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationFinalize)(void) = NULL;
 void*          (*PetscThreadsWait)(void*) = NULL;
-PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
+PetscErrorCode (*PetscThreadsRunKernel)(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*)=NULL;
 
 static const char *const PetscThreadsSynchronizationTypes[] = {"NOPOOL","MAINPOOL","TRUEPOOL","CHAINPOOL","TREEPOOL","LOCKFREE","PetscThreadsSynchronizationType","THREADSYNC_",0};
 static const char *const PetscThreadsAffinityPolicyTypes[] = {"ALL","ONECORE","NONE","ThreadAffinityPolicyType","THREADAFFINITYPOLICY_",0};
@@ -24,7 +24,7 @@ static PetscThreadsAffinityPolicyType thread_aff_policy=THREADAFFINITYPOLICY_ONE
 
 static PetscInt     N_CORES;
 
-void* PetscThreadsFinish(void* arg) {
+PetscErrorCode PetscThreadsFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }

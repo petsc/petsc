@@ -76,14 +76,14 @@ extern void*          (*PetscThreadFunc)(void*);
 extern PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt);
 extern PetscErrorCode (*PetscThreadsSynchronizationFinalize)(void);
 extern void*          (*PetscThreadsWait)(void*);
-extern PetscErrorCode (*PetscThreadsRunKernel)(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode (*PetscThreadsRunKernel)(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void PetscThreadsDoCoreAffinity(void);
 #else
 #define PetscThreadsDoCoreAffinity()
 #endif
-extern void* PetscThreadsFinish(void*);
+extern PetscErrorCode PetscThreadsFinish(void*);
 
 extern PetscErrorCode PetscThreadsInitialize(PetscInt);
 extern PetscErrorCode PetscThreadsFinalize(void);
@@ -93,39 +93,39 @@ extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_Tree(PetscInt);
 extern PetscErrorCode PetscThreadsSynchronizationFinalize_Tree(void);
 extern void*          PetscThreadsWait_Tree(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Tree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_Tree(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Main Thread Pool Functions */
 extern void*          PetscThreadFunc_Main(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_Main(PetscInt);
 extern PetscErrorCode PetscThreadsSynchronizationFinalize_Main(void);
 extern void*          PetscThreadsWait_Main(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_Main(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Chain Thread Pool Functions */
 extern void*          PetscThreadFunc_Chain(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_Chain(PetscInt);
 extern PetscErrorCode PetscThreadsSynchronizationFinalize_Chain(void);
 extern void*          PetscThreadsWait_Chain(void*);
-extern PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_Chain(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* True Thread Pool Functions */
 extern void*          PetscThreadFunc_True(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_True(PetscInt);
 extern PetscErrorCode PetscThreadsSynchronizationFinalize_True(void);
 extern void*          PetscThreadsWait_True(void*);
-extern PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_True(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* NO Thread Pool Functions */
 extern void*          PetscThreadFunc_None(void*);
 extern void*          PetscThreadsWait_None(void*);
-extern PetscErrorCode PetscThreadsRunKernel_None(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_None(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt);
 extern PetscErrorCode PetscThreadsSynchronizationFinalize_LockFree(void);
 extern void*          PetscThreadsWait_LockFree(void*);
-extern PetscErrorCode PetscThreadsRunKernel_LockFree(void* (*pFunc)(void*),void**,PetscInt,PetscInt*);
+extern PetscErrorCode PetscThreadsRunKernel_LockFree(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
 
 #endif

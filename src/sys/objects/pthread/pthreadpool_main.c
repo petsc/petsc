@@ -6,7 +6,7 @@ static PetscInt*         pVal_main;
 
 #define CACHE_LINE_SIZE 64  /* used by 'chain', 'main','tree' thread pools */
 
-typedef void* (*pfunc)(void*);
+typedef PetscErrorCode (*pfunc)(void*);
 
 /* main thread pool data structure */
 typedef struct {
@@ -30,7 +30,8 @@ static char* arrready;
    ----------------------------
    'Main' Thread Pool Functions
    ---------------------------- 
-*/void* PetscThreadFunc_Main(void* arg) {
+*/
+void* PetscThreadFunc_Main(void* arg) {
 
   PetscInt* pId = (PetscInt*)arg;
   PetscInt ThreadId = *pId;
@@ -187,7 +188,7 @@ void* PetscThreadsWait_Main(void* arg) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Main"
-PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+PetscErrorCode PetscThreadsRunKernel_Main(PetscErrorCode (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
@@ -220,9 +221,7 @@ PetscErrorCode PetscThreadsRunKernel_Main(void* (*pFunc)(void*),void** data,Pets
   }
   if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
-      job_main.funcArr[0] = pFunc;
-      job_main.pdata[0] = data[0];
-      job_main.funcArr[0](job_main.pdata[0]);
+      (*pFunc)(data[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }

@@ -8,7 +8,7 @@ static PetscInt*           pVal_chain;
 
 typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat_chain;
 
-typedef void* (*pfunc)(void*);
+typedef PetscErrorCode (*pfunc)(void*);
 
 typedef struct {
   pthread_mutex_t** mutexarray;
@@ -248,7 +248,7 @@ void* PetscThreadsWait_Chain(void* arg) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_Chain"
-PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
+PetscErrorCode PetscThreadsRunKernel_Chain(PetscErrorCode (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) {
   PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
 
@@ -279,9 +279,7 @@ PetscErrorCode PetscThreadsRunKernel_Chain(void* (*pFunc)(void*),void** data,Pet
   ierr = pthread_cond_signal(job_chain.cond2array[0]);CHKERRQ(ierr);
   if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
-      job_chain.funcArr[0] = pFunc;
-      job_chain.pdata[0] = data[0];
-      ierr = (PetscErrorCode)(long int)job_chain.funcArr[0](job_chain.pdata[0]);
+      (*pFunc)(data[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }

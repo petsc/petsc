@@ -6,7 +6,7 @@ static PetscInt*           pVal_true;
 
 #define CACHE_LINE_SIZE 64
 
-typedef void* (*pfunc)(void*);
+typedef PetscErrorCode (*pfunc)(void*);
 
 /* true thread pool data structure */
 #if defined(PETSC_HAVE_PTHREAD_BARRIER_T)
@@ -148,7 +148,7 @@ void* PetscThreadsWait_True(void* arg) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsRunKernel_True"
-PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
+PetscErrorCode PetscThreadsRunKernel_True(PetscErrorCode (*pFunc)(void*),void** data,PetscInt n,PetscInt* cpu_affinity) 
 {
   PetscInt i,j,issetaffinity;
   PetscErrorCode ierr;
@@ -182,9 +182,7 @@ PetscErrorCode PetscThreadsRunKernel_True(void* (*pFunc)(void*),void** data,Pets
   ierr = pthread_cond_broadcast(&job_true.cond);CHKERRQ(ierr);
   if(pFunc!=PetscThreadsFinish) {
     if(PetscMainThreadShareWork) {
-      job_true.funcArr[0] = pFunc;
-      job_true.pdata[0] = data[0];
-      job_true.funcArr[0](job_true.pdata[0]);
+      (*pFunc)(data[0]);
     }
     PetscThreadsWait(NULL); /* why wait after? guarantees that job gets done */
   }
