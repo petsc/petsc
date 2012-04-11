@@ -4,7 +4,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.6.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.8-p1.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
