@@ -2501,7 +2501,7 @@ PetscErrorCode DMComplexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt st
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  if (i != nvtxs) {SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   if (global_method == INERTIAL_METHOD) {
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
