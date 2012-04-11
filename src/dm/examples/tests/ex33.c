@@ -73,9 +73,7 @@ int main(int argc,char **argv)
   } else if (ishdf5) {
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
-  }
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
@@ -97,9 +95,7 @@ int main(int argc,char **argv)
   } else if (ishdf5) {
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
-  }
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
 
   ierr = DMCreateGlobalVector(da2,&global2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global2,"Test_Vec");CHKERRQ(ierr);

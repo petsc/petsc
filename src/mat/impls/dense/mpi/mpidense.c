@@ -1676,8 +1676,6 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
    allocates the local dense storage space.  We should add error checking. */
 
   a    = (Mat_MPIDense*)mat->data;
-  ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   a->nvec = mat->cmap->n;

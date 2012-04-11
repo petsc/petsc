@@ -80,4 +80,6 @@ for l=1:nargin-1
     write(fd,A,precision);
   end
 end
-if ischar(inarg) | isinteger(inarg) close(fd); end;
+if ischar(inarg) || isinteger(inarg)
+    close(fd)
+end

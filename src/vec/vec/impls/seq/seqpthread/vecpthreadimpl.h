@@ -7,9 +7,10 @@
 
 /* Common data for all kernels */
 typedef struct {
+  Vec           X;
+  PetscInt      thread_id;
   PetscScalar   *x,*y,*w;
   PetscScalar   *y0,*y1,*y2,*y3;
-  PetscInt      n;
   PetscScalar   result,result0,result1,result2,result3;
   PetscScalar   alpha;
   PetscScalar   beta;
@@ -17,13 +18,11 @@ typedef struct {
   Vec*          yvec;
   PetscInt      nvec;
   PetscScalar*  results;
-  PetscInt      gind;
   PetscInt      localind;
   PetscReal     localmax;
   PetscReal     localmin;
   PetscRandom   rand;
   const PetscScalar*  amult;   /* multipliers */
-  PetscInt      istart;
 } Vec_KernelData;
 
 Vec_KernelData *vec_kerneldatap;

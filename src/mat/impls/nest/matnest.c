@@ -1034,10 +1034,8 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
 
   ierr = PetscLayoutSetSize(A->rmap,M);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(A->rmap,m);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(A->cmap,N);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(A->cmap,n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);

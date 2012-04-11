@@ -1807,11 +1807,9 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
 #endif
   if (a != b) {
 #if defined(PETSC_USE_DEBUG)
-    if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+    if ((al > bl && (al - bl) < nl) || (bl - al) < nl)  SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
               Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
-    }
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
@@ -2417,7 +2415,7 @@ extern PetscErrorCode  PetscByteSwap(void *,PetscDataType,PetscInt);
 extern PetscErrorCode  PetscSetDebugTerminal(const char[]);
 extern PetscErrorCode  PetscSetDebugger(const char[],PetscBool );
 extern PetscErrorCode  PetscSetDefaultDebugger(void);
-extern PetscErrorCode  PetscSetDebuggerFromString(char*);
+extern PetscErrorCode  PetscSetDebuggerFromString(const char*);
 extern PetscErrorCode  PetscAttachDebugger(void);
 extern PetscErrorCode  PetscStopForDebugger(void);
 
@@ -2495,7 +2493,7 @@ extern const char *PetscSubcommTypes[];
 extern PetscErrorCode  PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm,PetscInt);
-extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
+extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 
 #include <petscctable.h>

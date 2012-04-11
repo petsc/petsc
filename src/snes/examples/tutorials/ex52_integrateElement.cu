@@ -254,13 +254,13 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
 {
   PetscFunctionBegin;
   z = 1;
-  if (N % blockSize) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);}
+  if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   const int Nblocks = N/blockSize;
   for(x = (int) (sqrt(Nblocks) + 0.5); x > 0; --x) {
     y = Nblocks/x;
     if (x*y == Nblocks) break;
   }
-  if (x*y != Nblocks) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);}
+  if (x*y != Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);
   PetscFunctionReturn(0);
 }
 
@@ -303,8 +303,8 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Nbl != N_bl) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsisten block size %d should be %d", Nbl, N_bl);}
-  if (Nbc*N_comp != N_t) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);}
+  if (Nbl != N_bl) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsisten block size %d should be %d", Nbl, N_bl);
+  if (Nbc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);
   if (!Ne) {
     PetscStageLog     stageLog;
     PetscEventPerfLog eventLog = PETSC_NULL;

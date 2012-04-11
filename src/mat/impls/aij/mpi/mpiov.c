@@ -1532,13 +1532,9 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
   }
   ierr = MatCreate(comm, C); CHKERRQ(ierr);
   ierr = MatSetSizes(*C,A->rmap->n, A->cmap->n, PETSC_DECIDE, PETSC_DECIDE); CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*C)->rmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*C)->cmap,A->cmap->bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->cmap);CHKERRQ(ierr);
-  if((*C)->cmap->N != A->cmap->n + B->cmap->n) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
-  }
+  if((*C)->cmap->N != A->cmap->n + B->cmap->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
   ierr = MatSetType(*C, MATMPIAIJ); CHKERRQ(ierr);
   aij = (Mat_MPIAIJ*)((*C)->data);
   aij->A = A;

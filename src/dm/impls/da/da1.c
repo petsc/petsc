@@ -209,9 +209,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  }
+  if ((x < s) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   /* From now on x,xs,xe,Xs,Xe are the exact location in the array */
   x  *= dof;

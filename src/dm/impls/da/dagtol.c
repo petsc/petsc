@@ -105,9 +105,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!dd->natural) {
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
-  }
+  if (!dd->natural) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
 
   /* create the scatter context */
   ierr = VecGetLocalSize(dd->natural,&m);CHKERRQ(ierr);

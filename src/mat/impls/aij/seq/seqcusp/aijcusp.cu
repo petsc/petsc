@@ -694,7 +694,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
         } else {
           PetscInt i;
 
-          if (m+1 != (PetscInt) cuspstruct->mat->row_offsets.size()) {SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", cuspstruct->mat->row_offsets.size()-1, m);}
+          if (m+1 != (PetscInt) cuspstruct->mat->row_offsets.size()) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", cuspstruct->mat->row_offsets.size()-1, m);
           a->nz    = cuspstruct->mat->values.size();
           a->maxnz = a->nz; /* Since we allocate exactly the right amount */
           A->preallocated = PETSC_TRUE;

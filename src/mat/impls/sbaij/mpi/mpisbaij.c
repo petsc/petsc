@@ -1369,10 +1369,6 @@ PetscErrorCode MatSetUp_MPISBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->rmap->bs < 0) {
-    ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
-  }
   ierr = MatMPISBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1582,6 +1578,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
 
   if (d_nnz) {
     for (i=0; i<B->rmap->n/bs; i++) {
@@ -1652,6 +1649,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
   m      = B->rmap->n/bs;
   rstart = B->rmap->rstart/bs;
   cstart = B->cmap->rstart/bs;

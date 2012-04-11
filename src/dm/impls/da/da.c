@@ -543,10 +543,8 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
        * coarse stencil width of the last coarse node in the current subdomain. */
       while ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width) want--;
       /* Make sure all constraints are satisfied */
-      if (want < 0 || want > remaining
-          || ((startf+want)/ratio < nextc - stencil_width)
-          || ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width))
-        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible refined ownership range");
+      if (want < 0 || want > remaining || ((startf+want)/ratio < nextc - stencil_width)
+          || ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible refined ownership range");
     }
     lf[i] = want;
     startc += lc[i];
@@ -589,9 +587,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
        * fine node is within one stencil width. */
       while ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width) want++;
       if (want < 0 || want > remaining
-          || (nextf/ratio < startc+want-stencil_width)
-          || ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width))
-        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible coarsened ownership range");
+          || (nextf/ratio < startc+want-stencil_width) || ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible coarsened ownership range");
     }
     lc[i] = want;
     startc += lc[i];

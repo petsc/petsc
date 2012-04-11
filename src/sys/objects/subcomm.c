@@ -57,7 +57,7 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()
 @*/
-PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,const PetscSubcommType subcommtype)
+PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subcommtype)
 {
   PetscErrorCode ierr;
 
@@ -69,9 +69,7 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,const PetscSubcommType
     ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
   } else if (subcommtype == PETSC_SUBCOMM_INTERLACED){
     ierr = PetscSubcommCreate_interlaced(psubcomm);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",subcommtype);
-  }
+  } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",subcommtype);
   PetscFunctionReturn(0);
 }
 
@@ -109,9 +107,8 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm 
      if duprank is not a valid number, then dupcomm is not created - not all applications require dupcomm! */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (duprank == PETSC_DECIDE){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"duprank==PETSC_DECIDE is not supported yet");
-  } else if (duprank >= 0 && duprank < size){
+  if (duprank == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"duprank==PETSC_DECIDE is not supported yet");
+  else if (duprank >= 0 && duprank < size){
     ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   } 
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
@@ -159,8 +156,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
- 
+  PetscFunctionBegin; 
   ierr = PetscNew(struct _n_PetscSubcomm,psubcomm);CHKERRQ(ierr);
   (*psubcomm)->parent = comm;
   PetscFunctionReturn(0);
