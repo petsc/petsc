@@ -53,8 +53,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     if (PetscAbsScalar(fty) < atol && i > 0) break;
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g], ftys = [%g, %g]\n",
-                                    lambda, lambda_old, PetscRealPart(fty), PetscRealPart(fty_old));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g], ftys = [%g, %g]\n",lambda, lambda_old, PetscRealPart(fty), PetscRealPart(fty_old));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
 
