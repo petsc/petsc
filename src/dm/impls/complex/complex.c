@@ -3900,7 +3900,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
         PetscInt        numFaces, faceSize, f;
 
         ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-        if (faceSize != 2) {SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
+        if (faceSize != 2) SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
         for(f = 0; f < numFaces; ++f) {
           PetscBool found = PETSC_FALSE;
 
