@@ -1245,9 +1245,7 @@ PetscErrorCode  DMDAMultiplyByJacobian1WithAD(DM da,Vec u,Vec v,Vec f,void *w)
 #endif
   } else if (dd->adiformf_lf) {
     ierr = DMDAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Must call DMDASetLocalAdiforMFFunction() or DMDASetLocalAdicMFFunction() before using");
-  }
+  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Must call DMDASetLocalAdiforMFFunction() or DMDASetLocalAdicMFFunction() before using");
   PetscFunctionReturn(0);
 }
 
@@ -1430,12 +1428,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  }
-  if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
-  }
+  if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 

@@ -7588,11 +7588,8 @@ PetscErrorCode TetGenMeshLawson3D(TetGenMesh *m, Queue *flipqueue, long *numFlip
                 flipedge.ver = 2;
                 copflag = 0;
               } else {
-                if (ori3 < 0) { /*  (+--) */
-                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
-                } else { /*  (+-0) */
-                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
-                }
+                if (ori3 < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]"); /*  (+--) */
+                else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]"); /*  (+-0) */
               }
             } else { /*  ori2 == 0 */
               if (ori3 > 0) { /*  (+0+) */
@@ -7600,11 +7597,8 @@ PetscErrorCode TetGenMeshLawson3D(TetGenMesh *m, Queue *flipqueue, long *numFlip
                 flipedge.ver = 2;
                 copflag = 1;
               } else {
-                if (ori3 < 0) { /*  (+0-) */
-                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
-                } else { /*  (+00) */
-                  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]");
-                }
+                if (ori3 < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]"); /*  (+0-) */
+                else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not possible when pe is inside the circumsphere of the tet [pa, pb, pc, pd]"); /*  (+00) */
               }
             }
           }
@@ -11030,9 +11024,8 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
     det = distance(insertarray[0], insertarray[i]);
     if (det > (m->longest * eps)) break;
   }
-  if (i == arraysize) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be identical,");
-  } else {
+  if (i == arraysize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be identical,");
+  else {
     /*  Swap to move b from index i to index 1. */
     swappt         = insertarray[i];
     insertarray[i] = insertarray[1];
@@ -11045,9 +11038,8 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
     ierr = TetGenMeshIsCollinear(m, insertarray[0], insertarray[1], insertarray[i], eps, &co);CHKERRQ(ierr);
     if (!co) break;
   }
-  if (i == arraysize) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be collinear.");
-  } else {
+  if (i == arraysize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be collinear.");
+  else {
     /*  Swap to move c from index i to index 2. */
     swappt         = insertarray[i];
     insertarray[i] = insertarray[2];
@@ -11062,9 +11054,8 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
     ierr = TetGenMeshIsCoplanar(m, insertarray[0], insertarray[1], insertarray[2], insertarray[i], det, eps, &co);CHKERRQ(ierr);
     if (!co) break;
   }
-  if (i == arraysize) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be coplanar.");
-  } else {
+  if (i == arraysize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be coplanar.");
+  else {
     /*  Swap to move d from index i to index 3. */
     swappt         = insertarray[i];
     insertarray[i] = insertarray[3];
@@ -12192,10 +12183,7 @@ PetscErrorCode TetGenMeshFindDirectionSub(TetGenMesh *m, face *searchsh, point t
   while (rightflag) {
     /*  Turn right until satisfied. */
     spivotself(searchsh);
-    if (searchsh->sh == m->dummysh) {
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in finddirectionsub():  Unable to find a subface leading from %d to %d.\n",
-               pointmark(m, startpoint), pointmark(m, tend));
-    }
+    if (searchsh->sh == m->dummysh) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in finddirectionsub():  Unable to find a subface leading from %d to %d.\n",pointmark(m, startpoint), pointmark(m, tend));
     if (sdest(searchsh) != startpoint) sesymself(searchsh);
     if (sdest(searchsh) != startpoint) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
     senextself(searchsh);
@@ -14056,9 +14044,7 @@ PetscErrorCode TetGenMeshScoutSubface(TetGenMesh *m, face *pssub, triface *searc
           PetscFunctionReturn(0);
         }
       } else if (dir == BELOWHULL2) {
-        if (convexflag > 0) {
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
-        }
+        if (convexflag > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
         /*  The domain is non-convex, and we got stucked at a boundary face. */
         ierr = TetGenMeshPoint2TetOrg(m, pa, searchtet);CHKERRQ(ierr);
         ierr = TetGenMeshFindDirection3(m, searchtet, pb, &dir);CHKERRQ(ierr);
@@ -14596,15 +14582,10 @@ PetscErrorCode TetGenMeshFormCavity(TetGenMesh *m, face *pssub, ArrayPool *cross
         if (spintet.tet != m->dummytet) {
           /*  Check the validity of the PLC. */
           tspivot(m, &spintet, &checksh);
-          if (checksh.sh != m->dummysh) {
-            SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error:  Invalid PLC! Two subfaces intersect.\n  1st (#%4d): (%d, %d, %d)\n  2nd (#%4d): (%d, %d, %d)\n",
+          if (checksh.sh != m->dummysh) SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error:  Invalid PLC! Two subfaces intersect.\n  1st (#%4d): (%d, %d, %d)\n  2nd (#%4d): (%d, %d, %d)\n",
                      shellmark(m, pssub), pointmark(m, pa), pointmark(m, pb), pointmark(m, pc), shellmark(m, &checksh),
                      pointmark(m, sorg(&checksh)), pointmark(m, sdest(&checksh)), pointmark(m, sapex(&checksh)));
-          }
-        } else {
-          /*  Encounter a boundary face. */
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");
-        }
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet"); /*  Encounter a boundary face. */
         if (apex(&spintet) == pg) break;
       }
       /*  Detect new cross edges. */
@@ -14657,10 +14638,7 @@ PetscErrorCode TetGenMeshFormCavity(TetGenMesh *m, face *pssub, ArrayPool *cross
           }
         /*  } */
         tfnextself(m, &spintet);
-        if (spintet.tet == m->dummytet) {
-          /*  Encounter a boundary face. */
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");
-        }
+        if (spintet.tet == m->dummytet) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");/*  Encounter a boundary face. */
         if (apex(&spintet) == pg) break;
       }
     }
@@ -14704,9 +14682,7 @@ PetscErrorCode TetGenMeshFormCavity(TetGenMesh *m, face *pssub, ArrayPool *cross
         if (!edgemarked(m, &spintet)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
         unmarkedge(m, &spintet);
         tfnextself(m, &spintet); /*  Go to the neighbor tet. */
-        if (spintet.tet == m->dummytet) {
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");
-        }
+        if (spintet.tet == m->dummytet) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not handled yet");
         if (apex(&spintet) == pg) break;
       }
     }
@@ -15342,9 +15318,7 @@ PetscErrorCode TetGenMeshConstrainedFacets(TetGenMesh *m)
           /*  Recover subfaces by flipping edges in surface mesh. */
           ierr = TetGenMeshRecoverSubfaceByFlips(m, &ssub, &searchtet, facfaces);CHKERRQ(ierr);
           success = PETSC_TRUE;
-        } else { /*  dir == TOUCHFACE */
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
-        }
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong"); /*  dir == TOUCHFACE */
         if (!success) break;
       } /*  while */
 
@@ -15451,9 +15425,7 @@ PetscErrorCode TetGenMeshSplitSubEdge_arraypool(TetGenMesh *m, point newpt, face
     }
     /*  Insert the new point on facet. New subfaces are queued for reocvery. */
     ierr = TetGenMeshSInsertVertex(m, newpt, searchsh, PETSC_NULL, PETSC_TRUE, PETSC_FALSE, &loc);CHKERRQ(ierr);
-    if (loc == OUTSIDE) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
-    }
+    if (loc == OUTSIDE) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
   }
   PetscFunctionReturn(0);
 }
@@ -15639,9 +15611,7 @@ PetscErrorCode TetGenMeshConstrainedFacets2(TetGenMesh *m)
           /*  Recover subfaces by flipping edges in surface mesh. */
           ierr = TetGenMeshRecoverSubfaceByFlips(m, &ssub, &searchtet, facfaces);CHKERRQ(ierr);
           success = PETSC_TRUE;
-        } else { /*  dir == TOUCHFACE */
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
-        }
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong"); /*  dir == TOUCHFACE */
         if (!success) break;
       } /*  while */
 
@@ -16321,9 +16291,7 @@ PetscErrorCode TetGenMeshTransferNodes(TetGenMesh *m)
   y = m->ymax - m->ymin;
   z = m->zmax - m->zmin;
   m->longest = sqrt(x * x + y * y + z * z);
-  if (m->longest == 0.0) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The point set is trivial.\n");
-  }
+  if (m->longest == 0.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The point set is trivial.\n");
   /*  Two identical points are distinguished by 'lengthlimit'. */
   m->lengthlimit = m->longest * b->epsilon * 1e+2;
   PetscFunctionReturn(0);
@@ -18873,10 +18841,8 @@ PetscErrorCode TetGenMeshRepairEncSubs(TetGenMesh *m, PetscBool chkbadtet)
         /*    same for a f' which is nearly co-circular with f.  Whatsoever, */
         /*    there are encroached segs by v, but the routine tallencsegs() */
         /*    did not find them out. */
-        if (loc == ONVERTEX) {
-          SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "During repairing encroached subface (%d, %d, %d)\n  New point %d is coincident with an existing vertex %d\n",
-                   pointmark(m, encloop->forg), pointmark(m, encloop->fdest), pointmark(m, encloop->fapex), pointmark(m, newpt), pointmark(m, sorg(&splitsub)));
-        }
+        if (loc == ONVERTEX) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "During repairing encroached subface (%d, %d, %d)\n  New point %d is coincident with an existing vertex %d\n",
+                                      pointmark(m, encloop->forg), pointmark(m, encloop->fdest), pointmark(m, encloop->fapex), pointmark(m, newpt), pointmark(m, sorg(&splitsub)));
         if (loc != OUTSIDE) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
         /*  The circumcenter lies outside of the facet. Mark it to avoid */
         /*    rechecking it later. */
@@ -20567,9 +20533,7 @@ PetscErrorCode TetGenTetrahedralize(TetGenOpts *b, PLC *in, PLC *out)
     ierr = TetGenMeshReconstructMesh(m, PETSC_NULL);CHKERRQ(ierr);
   } else {
     ierr = TetGenMeshDelaunizeVertices(m);CHKERRQ(ierr);
-    if (!m->hullsize) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input point set does not span a 3D subspace.");
-    }
+    if (!m->hullsize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input point set does not span a 3D subspace.");
   }
   /*  PetscLogEventEnd(DelaunayOrReconstruct) */
 
@@ -20847,15 +20811,10 @@ PetscErrorCode TetGenCheckOpts(TetGenOpts *t)
   t->useshelles = t->plc || t->refine || t->coarse || t->quality;
   t->goodratio  = t->minratio;
   t->goodratio *= t->goodratio;
-  if (t->plc && t->refine) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switch -r cannot use together with -p.");
-  }
-  if (t->refine && (t->plc || t->noiterationnum)) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -p, -d, and -I cannot use together with -r.\n");
-  }
-  if (t->diagnose && (t->quality || t->insertaddpoints || (t->order == 2) || t->neighout || t->docheck)) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -q, -i, -o2, -n, and -C cannot use together with -d.\n");
-  }
+  if (t->plc && t->refine) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switch -r cannot use together with -p.");
+  if (t->refine && (t->plc || t->noiterationnum)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -p, -d, and -I cannot use together with -r.\n");
+  if (t->diagnose && (t->quality || t->insertaddpoints || (t->order == 2) || t->neighout || t->docheck)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Switches -q, -i, -o2, -n, and -C cannot use together with -d.\n");
+
   /* Be careful not to allocate space for element area constraints that will never be assigned any value (other than the default -1.0). */
   if (!t->refine && !t->plc) {
     t->varvolume = 0;

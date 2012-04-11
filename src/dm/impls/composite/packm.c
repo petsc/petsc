@@ -26,9 +26,7 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,const MatType mtype,Ma
       Mat sub = PETSC_NULL;
       if (i == j) {
         ierr = DMCreateMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
-      } else if (com->FormCoupleLocations) {
-        SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
-      }
+      } else if (com->FormCoupleLocations) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
       submats[i*n+j] = sub;
     }
   }
