@@ -153,7 +153,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   // Skip everything until the line which begins with "FEAP"
   do {
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);}
+    if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "FEAP", 4, &match);CHKERRQ(ierr);
   } while(!match);
   // Read sizes

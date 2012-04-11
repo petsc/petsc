@@ -410,11 +410,8 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
   /* totally local removes ... PCTFS_ct_bits == 0 */
   get_ngh_buf(gs);
 
-  if (gs->level)
-    {set_pairwise(gs);}
-
-  if (gs->max_left_over)
-    {set_tree(gs);}
+  if (gs->level) set_pairwise(gs);
+  if (gs->max_left_over) set_tree(gs);
 
   /* intersection local and pairwise/tree? */
   gs->num_local_total = gs->num_local;

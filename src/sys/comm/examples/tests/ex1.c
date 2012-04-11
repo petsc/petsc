@@ -76,9 +76,9 @@ PetscErrorCode TestSameChart(MPI_Comm comm) {
   recvSection.pEnd   = -1;
   recvSection.numDof = -1;
   ierr = PetscCopySection(sendOverlap, recvOverlap, &sendSection, &recvSection);CHKERRQ(ierr);
-  if (recvSection.pStart != sendSection.pStart) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);}
-  if (recvSection.pEnd   != sendSection.pEnd)   {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);}
-  if (recvSection.numDof != sendSection.numDof) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);}
+  if (recvSection.pStart != sendSection.pStart) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);
+  if (recvSection.pEnd   != sendSection.pEnd)   SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);
+  if (recvSection.numDof != sendSection.numDof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);
   ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
   ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -114,7 +114,7 @@ PetscErrorCode TestDifferentChart(MPI_Comm comm) {
     ierr = PetscOverlapGetRank(recvOverlap, r, &recvRank);CHKERRQ(ierr);
     pStart = PetscMin(pStart, recvRank);
   }
-  if (recvSection.pStart != pStart) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, pStart);}
+  if (recvSection.pStart != pStart) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, pStart);
   pEnd = 1000;
   for(r = 0; r < numRecvRanks; ++r) {
     PetscInt recvRank;
@@ -122,8 +122,8 @@ PetscErrorCode TestDifferentChart(MPI_Comm comm) {
     ierr = PetscOverlapGetRank(recvOverlap, r, &recvRank);CHKERRQ(ierr);
     pEnd = PetscMax(pEnd, 1000+recvRank);
   }
-  if (recvSection.pEnd   != pEnd)   {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   pEnd);}
-  if (recvSection.numDof != sendSection.numDof) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);}
+  if (recvSection.pEnd   != pEnd)   SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   pEnd);
+  if (recvSection.numDof != sendSection.numDof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);
   ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
   ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -152,9 +152,9 @@ PetscErrorCode TestSameSection(MPI_Comm comm) {
 
   ierr = PetscCopySection(sendOverlap, recvOverlap, &sendSection->atlasLayout, &recvSection->atlasLayout, sendSection->atlasDof, &recvSection->atlasDof);CHKERRQ(ierr);
 
-  if (recvSection.pStart != sendSection.pStart) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);}
-  if (recvSection.pEnd   != sendSection.pEnd)   {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);}
-  if (recvSection.numDof != sendSection.numDof) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);}
+  if (recvSection.pStart != sendSection.pStart) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);
+  if (recvSection.pEnd   != sendSection.pEnd)   SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);
+  if (recvSection.numDof != sendSection.numDof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);
   ierr = PetscFree(sendStorage);CHKERRQ(ierr);
   ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
   ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);

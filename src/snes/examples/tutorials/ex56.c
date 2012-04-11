@@ -375,15 +375,15 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim != SPATIAL_DIM_0) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);}
-  if (dim != SPATIAL_DIM_1) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);}
+  if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
   for(PetscInt d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
   }
   for(PetscInt f = 0; f < numFields; ++f) {
     for(PetscInt d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");}
+      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   if (user->bcType == DIRICHLET) {
@@ -463,7 +463,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
     PetscReal          elemError = 0.0;
 
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, localX, c, &x);CHKERRQ(ierr);
 
     for(PetscInt field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {

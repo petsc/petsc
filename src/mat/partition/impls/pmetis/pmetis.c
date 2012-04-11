@@ -19,9 +19,9 @@ typedef struct {
 } MatPartitioning_Parmetis;
 
 #define CHKERRQPARMETIS(n) \
-  if (n == METIS_ERROR_INPUT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options");} \
-  else if (n == METIS_ERROR_MEMORY) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory");} \
-  else if (n == METIS_ERROR) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error");} \
+  if (n == METIS_ERROR_INPUT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options"); \
+  else if (n == METIS_ERROR_MEMORY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory"); \
+  else if (n == METIS_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error"); \
 
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel

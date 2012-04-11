@@ -691,7 +691,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
     PetscReal          elemError = 0.0;
 
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, localX, c, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
     for(int q = 0; q < numQuadPoints; ++q) {
@@ -1010,7 +1010,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, X, c, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
 
@@ -1105,7 +1105,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMMeshComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, X, c, &x);CHKERRQ(ierr);
 
     for(int q = 0; q < numQuadPoints; ++q) {

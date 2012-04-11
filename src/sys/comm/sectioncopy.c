@@ -55,7 +55,7 @@ PetscErrorCode PetscOverlapGetRank(PetscOverlap overlap, PetscInt r, PetscInt *r
 {
   PetscFunctionBegin;
   PetscValidIntPointer(rank,3);
-  if (r < 0 || r >= overlap->numRanks) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);}
+  if (r < 0 || r >= overlap->numRanks) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);
   *rank = overlap->ranks[r];
   PetscFunctionReturn(0);
 };
@@ -80,7 +80,7 @@ PetscErrorCode PetscOverlapGetNumPoints(PetscOverlap overlap, PetscInt r, PetscI
 {
   PetscFunctionBegin;
   PetscValidIntPointer(numPoints,3);
-  if (r < 0 || r >= overlap->numRanks) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);}
+  if (r < 0 || r >= overlap->numRanks) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);
   *numPoints = overlap->pointsOffset[r+1] - overlap->pointsOffset[r];
   PetscFunctionReturn(0);
 };
@@ -90,7 +90,7 @@ PetscErrorCode PetscOverlapGetPoints(PetscOverlap overlap, PetscInt r, const Pet
 {
   PetscFunctionBegin;
   PetscValidIntPointer(points,3);
-  if (r < 0 || r >= overlap->numRanks) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);}
+  if (r < 0 || r >= overlap->numRanks) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);
   *points = &overlap->points[overlap->pointsOffset[r]];
   PetscFunctionReturn(0);
 };
@@ -100,7 +100,7 @@ PetscErrorCode PetscOverlapGetRemotePoints(PetscOverlap overlap, PetscInt r, con
 {
   PetscFunctionBegin;
   PetscValidIntPointer(remotePoints,3);
-  if (r < 0 || r >= overlap->numRanks) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);}
+  if (r < 0 || r >= overlap->numRanks) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);
   *remotePoints = &overlap->remotePoints[overlap->pointsOffset[r]];
   PetscFunctionReturn(0);
 };
@@ -197,7 +197,7 @@ PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverl
     if (dof < 0) {
       dof = v[2];
     } else {
-      if (dof != v[2]) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of dof %d from rank %d should be %d", v[2], rank, dof);}
+      if (dof != v[2]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of dof %d from rank %d should be %d", v[2], rank, dof);
     }
   }
   recvSection->pStart = min;
