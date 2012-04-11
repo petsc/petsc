@@ -1901,8 +1901,8 @@ PetscReal TetGenOrient3DAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, Petsc
   INEXACT PetscReal _i, _j, _k;
   PetscReal _0;
 
-  ////////////////////////////////////////////////////////
-  // To avoid uninitialized warnings reported by valgrind.
+  /* ///////////////////////////////////////////////////// */
+  /* To avoid uninitialized warnings reported by valgrind. */
   int i;
   for (i = 0; i < 8; i++) {
     adet[i] = bdet[i] = cdet[i] = 0.0;
@@ -1910,7 +1910,7 @@ PetscReal TetGenOrient3DAdapt(PetscReal *pa, PetscReal *pb, PetscReal *pc, Petsc
   for (i = 0; i < 16; i++) {
     abdet[i] = 0.0;
   }
-  ////////////////////////////////////////////////////////
+  /* //////////////////////////////////////////////////// */
 
   adx = (PetscReal) (pa[0] - pd[0]);
   bdx = (PetscReal) (pb[0] - pd[0]);

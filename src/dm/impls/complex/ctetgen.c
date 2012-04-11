@@ -7873,7 +7873,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByFlip32(TetGenMesh *m, PetscReal *key, trifa
 {
   TetGenOpts    *b  = m->b;
   PLC           *in = m->in;
-  triface dcea = {PETSC_NULL, 0, 0}, cdeb = {PETSC_NULL, 0, 0}; // new configuration.
+  triface dcea = {PETSC_NULL, 0, 0}, cdeb = {PETSC_NULL, 0, 0}; /* new configuration. */
   triface newfront = {PETSC_NULL, 0, 0}, oldfront = {PETSC_NULL, 0, 0}, adjfront = {PETSC_NULL, 0, 0};
   face checksh = {PETSC_NULL, 0};
   point pa, pb, pc, pd, pe;
