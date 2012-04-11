@@ -171,11 +171,21 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
-   SNESLINESEARCHL2 - Search in the L^2 norm of the residual.
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function.
+
+   The function norm is evaluated at points in [0, damping] to construct
+   a polynomial fitting.  This fitting is used to construct a new lambda
+   based upon secant descent.  The process is repeated on the new
+   interval, [lambda, lambda_old], max_it - 1 times.
+
+   Options Database Keys:
++  -snes_linesearch_max_it<1> - maximum number of iterations
+.  -snes_linesearch_damping<1.0> - initial steplength
+-  -snes_linesearch_minlambda - minimum allowable lambda
 
    Level: advanced
 
-.keywords: SNES, nonlinear, line search, norm
+.keywords: SNES, nonlinear, line search, norm, secant
 
 .seealso: SNESLineSearchBT, SNESLineSearchCP, SNESLineSearch
 M*/

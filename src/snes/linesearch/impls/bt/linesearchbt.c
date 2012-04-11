@@ -377,17 +377,24 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_BT"
 /*MC
-   SNESLINESEARCHBT - Backtracking line searches.
+   SNESLINESEARCHBT - Backtracking line search.
 
-   These linesearches try a polynomial fit for the L2 norm of the error
-   using the gradient.  Failing that, they step back and try again.
+   This line search finds the minimum of a polynomial fitting of the L2 norm of the
+   function. If this fit does not satisfy the conditions for progress, the interval shrinks
+   and the fit is reattempted at most max_it times or until lambda is below minlambda.
 
    Options Database Keys:
 +  -snes_linesearch_alpha<1e-4> - slope descent parameter
-.  -snes_linesearch_damping<1.0> - full steplength
--  -snes_linesearch_order<cubic, quadratic> - order of the approximation
+.  -snes_linesearch_damping<1.0> - initial step length
+.  -snes_linesearch_max_it<40> - maximum number of shrinking step
+.  -snes_linesearch_minlambda<1e-12> - minimum step length allowed
+-  -snes_linesearch_order<cubic,quadratic> - order of the approximation
 
    Level: advanced
+
+   Notes:
+   This line search is taken from "Numerical Methods for Unconstrained
+   Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
 .keywords: SNES, SNESLineSearch, damping
 
