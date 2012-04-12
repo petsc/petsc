@@ -135,8 +135,6 @@ void tuned_STREAM_Add();
 void tuned_STREAM_Triad(double);
 void tuned_STREAM_2A();
 
-extern void PetscThreadsDoCoreAffinity();
-
 PetscInt nWorkThreads;
 PetscInt* ThreadAffinities;
 
@@ -400,13 +398,12 @@ void checkSTREAMresults () {
 }
 
 #if WITH_PTHREADS
-void* tuned_STREAM_2A_Kernel(void* arg) 
+PetscErrorCode tuned_STREAM_2A_Kernel(void* arg) 
 {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai = data->a;
   int         nloc = data->nloc,i=0;
   
-  PetscThreadsDoCoreAffinity();
   for(i=0;i<nloc;i++)
     ai[i] = 2.0E0*ai[i];
   
@@ -418,12 +415,11 @@ void tuned_STREAM_2A()
   PetscThreadsRunKernel(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-void* tuned_STREAM_Initialize_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai = data->a,*bi = data->b, *ci = data->c;
   int         nloc = data->nloc,i=0;
 
-  PetscThreadsDoCoreAffinity();
   for(i=0;i<nloc;i++) {
     ai[i] = 1.0;
     bi[i] = 2.0;
@@ -459,12 +455,11 @@ void tuned_STREAM_Initialize(double scalar) {
   PetscThreadsRunKernel(tuned_STREAM_Initialize_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-void* tuned_STREAM_Copy_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg) {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*ci=data->c;
   int         j=0,nloc=data->nloc;
 
-  PetscThreadsDoCoreAffinity();
   for (j=0; j<nloc; j++)
     ci[j] = ai[j];
   return(0);
@@ -474,13 +469,12 @@ void tuned_STREAM_Copy() {
   PetscThreadsRunKernel(tuned_STREAM_Copy_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-void* tuned_STREAM_Scale_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg) {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      scalar = data->scalar;
   double      *bi=data->b,*ci=data->c;
   int         j=0,nloc=data->nloc;
 
-  PetscThreadsDoCoreAffinity();
   for (j=0; j<nloc; j++)
     bi[j] = scalar*ci[j];
   return(0);
@@ -490,12 +484,11 @@ void tuned_STREAM_Scale(double scalar) {
   PetscThreadsRunKernel(tuned_STREAM_Scale_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-void* tuned_STREAM_Add_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Add_Kernel(void* arg) {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c;
   int         j=0,nloc=data->nloc;
 
-  PetscThreadsDoCoreAffinity();
   for (j=0; j<nloc; j++)
     ci[j] = ai[j]+bi[j];
 
@@ -506,12 +499,11 @@ void tuned_STREAM_Add() {
   PetscThreadsRunKernel(tuned_STREAM_Add_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-void* tuned_STREAM_Triad_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg) {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c,scalar=data->scalar;
   int         j=0,nloc=data->nloc;
 
-  PetscThreadsDoCoreAffinity();
   for (j=0; j<nloc; j++)
     ai[j] = bi[j]+scalar*ci[j];
 
