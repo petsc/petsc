@@ -10,6 +10,7 @@ PetscInt    PetscMainThreadShareWork = 1;
 PetscInt    PetscMainThreadCoreAffinity = 0;
 PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
 PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank;
+PetscInt*   PetscThreadRanks;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
 PetscErrorCode (*PetscThreadsSynchronizationInitialize)(PetscInt) = NULL;
@@ -116,11 +117,15 @@ PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
 PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
 
   PetscFunctionBegin;
   if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
 
+  /* Set thread ranks */
+  ierr = PetscMalloc((PetscMaxThreads+1)*sizeof(PetscInt),&PetscThreadRanks);CHKERRQ(ierr);
+  for(i=0;i<PetscMaxThreads+1;i++) PetscThreadRanks[i] = i;
   /* Set thread affinities */
   ierr = PetscThreadsSetAffinities(PETSC_NULL);CHKERRQ(ierr);
   /* Initialize thread pool */
@@ -153,6 +158,7 @@ PetscErrorCode PetscThreadsFinalize(void)
   }
 
   ierr = PetscFree(PetscThreadsCoreAffinities);CHKERRQ(ierr);
+  ierr = PetscFree(PetscThreadRanks);CHKERRQ(ierr);
   PetscThreadsInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
