@@ -29,7 +29,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscVie
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,4);
-  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscObject),(viewer,dm,func,fieldtype,vec));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscViewerVTKFieldType,PetscObject),(viewer,dm,func,fieldtype,vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
