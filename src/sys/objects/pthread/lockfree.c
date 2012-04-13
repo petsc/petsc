@@ -37,20 +37,20 @@ static struct {
 */
 void* PetscThreadFunc_LockFree(void* arg)
 {
-  PetscInt iVal;
+  PetscInt thread_num;
 
-  iVal = *(PetscInt*)arg;
-  PetscThreadRank=iVal+1;
+  thread_num = *(PetscInt*)arg;
+  PetscThreadRank=thread_num+PetscMainThreadShareWork;
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
 #endif
 
   /* Spin loop */
-  while(PetscReadOnce(int,job_lockfree.my_job_status[iVal]) != -1) {
-    if(job_lockfree.my_job_status[iVal] == 1) {
-      (*job_lockfree.pfunc)(job_lockfree.pdata[iVal+PetscMainThreadShareWork]);
-      job_lockfree.my_job_status[iVal] = 0;
+  while(PetscReadOnce(int,job_lockfree.my_job_status[thread_num]) != -1) {
+    if(job_lockfree.my_job_status[thread_num] == 1) {
+      (*job_lockfree.pfunc)(job_lockfree.pdata[PetscThreadRank]);
+      job_lockfree.my_job_status[thread_num] = 0;
     }
   }
 
@@ -71,7 +71,10 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   ierr = PetscMalloc(N*sizeof(PetscInt),&(job_lockfree.my_job_status));CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscInt),&(busy_threads.list));CHKERRQ(ierr);
 
-  PetscThreadRank=0; /* Main thread rank */
+  if(PetscMainThreadShareWork) { 
+    PetscThreadRank=0; /* Main thread rank */
+    job_lockfree.pdata[0] =NULL;
+  }
 
   /* Create threads */
   for(i=0; i<N; i++) {

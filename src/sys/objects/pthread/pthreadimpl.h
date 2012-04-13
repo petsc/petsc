@@ -38,12 +38,12 @@
 extern PetscBool      PetscThreadGo;                 /* Flag to keep the threads spinning in a loop */
 extern PetscMPIInt    PetscMaxThreads;               /* Max. threads created */
 extern pthread_t*     PetscThreadPoint;              /* Pointer to thread ids */
-extern PetscInt*      PetscThreadsCoreAffinities;    /* Core affinity of each thread */
+extern PetscInt*      PetscThreadsCoreAffinities;    /* Core affinity of each thread, includes the main thread affinity is PetscMainThreadShareWork is 1 */
 extern PetscInt       PetscMainThreadShareWork;      /* Is the main thread also a worker? 1 = Yes */
 extern PetscInt       PetscMainThreadCoreAffinity;   /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled;  /* Check whether PetscThreadsInitialize has been called */ 
 extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank; /* Thread rank ... thread local variable */
-extern PetscInt*      PetscThreadRanks;              /* Thread ranks */
+extern PetscInt*      PetscThreadRanks;              /* Thread ranks, if main thread is a worker then main thread rank is 0 and ranks for other threads start from 1, else the thread ranks start from 0 */
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 
@@ -89,6 +89,7 @@ extern PetscErrorCode PetscThreadsFinish(void*);
 extern PetscErrorCode PetscThreadsInitialize(PetscInt);
 extern PetscErrorCode PetscThreadsFinalize(void);
 
+#if 0 /* Disabling all the thread thread pools except lockfree */
 /* Tree Thread Pool Functions */
 extern void*          PetscThreadFunc_Tree(void*);
 extern PetscErrorCode PetscThreadsSynchronizationInitialize_Tree(PetscInt);
@@ -121,6 +122,7 @@ extern PetscErrorCode PetscThreadsRunKernel_True(PetscErrorCode (*pFunc)(void*),
 extern void*          PetscThreadFunc_None(void*);
 extern void*          PetscThreadsWait_None(void*);
 extern PetscErrorCode PetscThreadsRunKernel_None(PetscErrorCode (*pFunc)(void*),void**,PetscInt,PetscInt*);
+#endif
 
 /* Lock free Functions */
 extern void*          PetscThreadFunc_LockFree(void*);

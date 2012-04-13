@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = ${VALGRIND_INCLUDE}
 FFLAGS   =
-SOURCEC  = pthread.c pthreadpool_main.c pthreadpool_chain.c pthreadpool_tree.c pthreadpool_true.c lockfree.c nopool.c
+SOURCEC  = pthread.c lockfree.c # pthreadpool_main.c pthreadpool_chain.c pthreadpool_tree.c pthreadpool_true.c nopool.c
 SOURCEF  =
 SOURCEH  = pthreadimpl.h
-OBJSC    = pthread.o pthreadpool_main.o pthreadpool_chain.o pthreadpool_tree.o pthreadpool_true.o lockfree.o nopool.o
+OBJSC    = pthread.o lockfree.o # pthreadpool_main.o pthreadpool_chain.o pthreadpool_tree.o pthreadpool_true.o nopool.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
