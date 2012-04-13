@@ -24,13 +24,6 @@ extern PetscErrorCode  KSPSetUp_GMRES (KSP);
 extern PetscErrorCode  KSPView_GMRES (KSP,PetscViewer);
 extern PetscErrorCode  KSPDestroy_GMRES (KSP);
 extern PetscErrorCode  KSPSetFromOptions_GMRES (KSP);
-EXTERN_C_BEGIN
-extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES (KSP);
-extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES (KSP,PetscErrorCode (*) (KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESSetRestart_GMRES (KSP,PetscInt);
-extern PetscErrorCode  KSPGMRESSetHapTol_GMRES (KSP,double);
-extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES (KSP,KSPGMRESCGSRefinementType);
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetEigen"
