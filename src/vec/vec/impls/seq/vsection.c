@@ -478,6 +478,50 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetPointLayout"
+PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
+{
+  PetscInt       pStart, pEnd, p, localSize = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    if (dof > 0) {++localSize;}
+  }
+  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetValueLayout"
+PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
+{
+  PetscInt       pStart, pEnd, p, localSize = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    if (dof > 0) {localSize += dof;}
+  }
+  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetOffset"
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {

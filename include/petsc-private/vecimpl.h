@@ -178,6 +178,8 @@ extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 extern PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
+extern PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
+extern PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 
 /* Sieve support */
 extern PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
