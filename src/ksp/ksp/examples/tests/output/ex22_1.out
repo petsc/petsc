@@ -2,23 +2,17 @@ test_solve
 x1 
 Vector Object: 1 MPI processes
   type: seq
-0.655738
--0.983607
-0.491803
+  length=3
 x2 
 Vector Object: 1 MPI processes
   type: seq
--0.147541
-0.311475
+  length=2
 test_solve_matgetvecs 
 x1 
 Vector Object: 1 MPI processes
   type: seq
-0.655738
--0.983607
-0.491803
+  length=3
 x2 
 Vector Object: 1 MPI processes
   type: seq
--0.147541
-0.311475
+  length=2

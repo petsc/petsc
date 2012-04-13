@@ -2,216 +2,41 @@ Level 0 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements   4 x   4 x
 Level 1 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements   8 x   8 x   2 (     128), size (m) 10000 x 10000 x 1000
 Level 2 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x   2 (     512), size (m) 5000 x 5000 x 1000
 Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements  16 x  16 x   4 (    1024), size (m) 5000 x 5000 x 333.333
-        0 SNES Function norm 993.383 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        1 SNES Function norm 893.578 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        2 SNES Function norm 850.65 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        3 SNES Function norm 776.127 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        4 SNES Function norm 662.606 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        5 SNES Function norm 498.952 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        6 SNES Function norm 117.71 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        7 SNES Function norm 7.28654 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        8 SNES Function norm 0.032632 
         Linear solve converged due to CONVERGED_ITS iterations 1
-        9 SNES Function norm 7.96769e-07 
       Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 9
-      0 SNES Function norm 1086.02 
-        0 KSP Residual norm 1086.02 
-        1 KSP Residual norm 243.29 
-        2 KSP Residual norm 112.822 
-        3 KSP Residual norm 20.3883 
-        4 KSP Residual norm 3.40026 
       Linear solve converged due to CONVERGED_RTOL iterations 4
-      1 SNES Function norm 630.039 
-        0 KSP Residual norm 630.039 
-        1 KSP Residual norm 204.154 
-        2 KSP Residual norm 96.0524 
-        3 KSP Residual norm 45.9585 
-        4 KSP Residual norm 16.4006 
-        5 KSP Residual norm 5.37102 
       Linear solve converged due to CONVERGED_RTOL iterations 5
-      2 SNES Function norm 478.153 
-        0 KSP Residual norm 478.153 
-        1 KSP Residual norm 106.958 
-        2 KSP Residual norm 68.2376 
-        3 KSP Residual norm 20.9096 
-        4 KSP Residual norm 7.95818 
-        5 KSP Residual norm 2.66774 
       Linear solve converged due to CONVERGED_RTOL iterations 5
-      3 SNES Function norm 245.544 
-        0 KSP Residual norm 245.544 
-        1 KSP Residual norm 54.8282 
-        2 KSP Residual norm 35.7055 
-        3 KSP Residual norm 17.1242 
-        4 KSP Residual norm 6.86799 
-        5 KSP Residual norm 2.80493 
-        6 KSP Residual norm 0.891824 
       Linear solve converged due to CONVERGED_RTOL iterations 6
-      4 SNES Function norm 104.776 
-        0 KSP Residual norm 104.776 
-        1 KSP Residual norm 27.0542 
-        2 KSP Residual norm 14.4097 
-        3 KSP Residual norm 9.20373 
-        4 KSP Residual norm 5.91596 
-        5 KSP Residual norm 1.53376 
-        6 KSP Residual norm 0.711535 
       Linear solve converged due to CONVERGED_RTOL iterations 6
-      5 SNES Function norm 10.642 
-        0 KSP Residual norm 10.642 
-        1 KSP Residual norm 3.06295 
-        2 KSP Residual norm 1.32354 
-        3 KSP Residual norm 0.364134 
-        4 KSP Residual norm 0.159182 
-        5 KSP Residual norm 0.0621622 
       Linear solve converged due to CONVERGED_RTOL iterations 5
-      6 SNES Function norm 0.347828 
-        0 KSP Residual norm 0.347828 
-        1 KSP Residual norm 0.106361 
-        2 KSP Residual norm 0.042362 
-        3 KSP Residual norm 0.0166758 
-        4 KSP Residual norm 0.00969477 
-        5 KSP Residual norm 0.00376604 
-        6 KSP Residual norm 0.00222046 
       Linear solve converged due to CONVERGED_RTOL iterations 6
-      7 SNES Function norm 0.00226647 
-        0 KSP Residual norm 0.00226647 
-        1 KSP Residual norm 0.00157095 
-        2 KSP Residual norm 0.00077263 
-        3 KSP Residual norm 0.000382956 
-        4 KSP Residual norm 0.000179455 
-        5 KSP Residual norm 7.10363e-05 
-        6 KSP Residual norm 2.4774e-05 
-        7 KSP Residual norm 6.90773e-06 
       Linear solve converged due to CONVERGED_RTOL iterations 7
-      8 SNES Function norm 6.9093e-06 
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
-    0 SNES Function norm 923.33 
-      0 KSP Residual norm 923.33 
-      1 KSP Residual norm 176.105 
-      2 KSP Residual norm 136.027 
-      3 KSP Residual norm 61.0162 
-      4 KSP Residual norm 19.9943 
-      5 KSP Residual norm 10.5637 
-      6 KSP Residual norm 4.1145 
     Linear solve converged due to CONVERGED_RTOL iterations 6
-    1 SNES Function norm 512.324 
-      0 KSP Residual norm 512.324 
-      1 KSP Residual norm 172.402 
-      2 KSP Residual norm 129.681 
-      3 KSP Residual norm 78.7855 
-      4 KSP Residual norm 30.5317 
-      5 KSP Residual norm 11.4974 
-      6 KSP Residual norm 5.17935 
-      7 KSP Residual norm 2.42853 
     Linear solve converged due to CONVERGED_RTOL iterations 7
-    2 SNES Function norm 209.505 
-      0 KSP Residual norm 209.505 
-      1 KSP Residual norm 67.8233 
-      2 KSP Residual norm 47.5519 
-      3 KSP Residual norm 30.4185 
-      4 KSP Residual norm 14.8711 
-      5 KSP Residual norm 6.98656 
-      6 KSP Residual norm 2.70816 
-      7 KSP Residual norm 1.49476 
     Linear solve converged due to CONVERGED_RTOL iterations 7
-    3 SNES Function norm 72.9553 
-      0 KSP Residual norm 72.9553 
-      1 KSP Residual norm 21.4648 
-      2 KSP Residual norm 7.1902 
-      3 KSP Residual norm 5.41212 
-      4 KSP Residual norm 3.18475 
-      5 KSP Residual norm 1.56898 
-      6 KSP Residual norm 0.659902 
     Linear solve converged due to CONVERGED_RTOL iterations 6
-    4 SNES Function norm 51.7958 
-      0 KSP Residual norm 51.7958 
-      1 KSP Residual norm 5.3067 
-      2 KSP Residual norm 1.20101 
-      3 KSP Residual norm 0.247828 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    5 SNES Function norm 32.9821 
-      0 KSP Residual norm 32.9821 
-      1 KSP Residual norm 3.12416 
-      2 KSP Residual norm 0.950477 
-      3 KSP Residual norm 0.226375 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    6 SNES Function norm 15.6528 
-      0 KSP Residual norm 15.6528 
-      1 KSP Residual norm 2.05354 
-      2 KSP Residual norm 0.515173 
-      3 KSP Residual norm 0.177574 
-      4 KSP Residual norm 0.0911158 
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    7 SNES Function norm 4.46269 
-      0 KSP Residual norm 4.46269 
-      1 KSP Residual norm 2.2976 
-      2 KSP Residual norm 0.105377 
-      3 KSP Residual norm 0.0587939 
-      4 KSP Residual norm 0.0364293 
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    8 SNES Function norm 0.218822 
-      0 KSP Residual norm 0.218822 
-      1 KSP Residual norm 0.192744 
-      2 KSP Residual norm 0.0214758 
-      3 KSP Residual norm 0.0142022 
-      4 KSP Residual norm 0.0121719 
-      5 KSP Residual norm 0.00502714 
-      6 KSP Residual norm 0.00103699 
     Linear solve converged due to CONVERGED_RTOL iterations 6
-    9 SNES Function norm 0.00120906 
-      0 KSP Residual norm 0.00120906 
-      1 KSP Residual norm 0.000560704 
-      2 KSP Residual norm 0.000153931 
-      3 KSP Residual norm 8.09934e-05 
-      4 KSP Residual norm 2.01888e-05 
-      5 KSP Residual norm 9.11133e-06 
     Linear solve converged due to CONVERGED_RTOL iterations 5
-   10 SNES Function norm 9.11207e-06 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 10
-  0 SNES Function norm 636.227 
-    0 KSP Residual norm 636.227 
-    1 KSP Residual norm 45.898 
-    2 KSP Residual norm 3.38725 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 112.062 
-    0 KSP Residual norm 112.062 
-    1 KSP Residual norm 6.1956 
-    2 KSP Residual norm 1.27411 
-    3 KSP Residual norm 0.511771 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 6.16273 
-    0 KSP Residual norm 6.16273 
-    1 KSP Residual norm 0.476629 
-    2 KSP Residual norm 0.362322 
-    3 KSP Residual norm 0.199836 
-    4 KSP Residual norm 0.0495092 
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  3 SNES Function norm 0.0796381 
-    0 KSP Residual norm 0.0796381 
-    1 KSP Residual norm 0.0169718 
-    2 KSP Residual norm 0.0122959 
-    3 KSP Residual norm 0.00792622 
-    4 KSP Residual norm 0.00284202 
-    5 KSP Residual norm 0.000870813 
-    6 KSP Residual norm 0.000206082 
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  4 SNES Function norm 0.000205894 
-    0 KSP Residual norm 0.000205894 
-    1 KSP Residual norm 6.1559e-05 
-    2 KSP Residual norm 2.39369e-05 
-    3 KSP Residual norm 8.37711e-06 
-    4 KSP Residual norm 4.37038e-06 
-    5 KSP Residual norm 2.94749e-06 
-    6 KSP Residual norm 1.48429e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  5 SNES Function norm 1.4843e-06 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 DMMG Object with 4 levels
 Using ghosted Jacobian coloring computation
@@ -317,7 +142,7 @@ PC Object: 6 MPI processes
       linear system matrix = precond matrix:
       Matrix Object:       6 MPI processes
         type: mpiaij
-        rows=64, cols=64
+        rows=64, cols=64, bs=2
         total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls =0
   Down solver (pre-smoother) on level 1 -------------------------------
@@ -349,7 +174,7 @@ PC Object: 6 MPI processes
             Factored matrix follows:
               Matrix Object:               1 MPI processes
                 type: seqsbaij
-                rows=48, cols=48
+                rows=48, cols=48, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=804, allocated nonzeros=804
                 total number of mallocs used during MatSetValues calls =0
@@ -357,14 +182,14 @@ PC Object: 6 MPI processes
         linear system matrix = precond matrix:
         Matrix Object:         1 MPI processes
           type: seqsbaij
-          rows=48, cols=48
+          rows=48, cols=48, bs=2
           total: nonzeros=608, allocated nonzeros=608
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
       Matrix Object:       6 MPI processes
         type: mpisbaij
-        rows=256, cols=256
+        rows=256, cols=256, bs=2
         total: nonzeros=4864, allocated nonzeros=4864
         total number of mallocs used during MatSetValues calls =0
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -398,7 +223,7 @@ PC Object: 6 MPI processes
             Factored matrix follows:
               Matrix Object:               1 MPI processes
                 type: seqsbaij
-                rows=192, cols=192
+                rows=192, cols=192, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=3012, allocated nonzeros=3012
                 total number of mallocs used during MatSetValues calls =0
@@ -406,14 +231,14 @@ PC Object: 6 MPI processes
         linear system matrix = precond matrix:
         Matrix Object:         1 MPI processes
           type: seqsbaij
-          rows=192, cols=192
+          rows=192, cols=192, bs=2
           total: nonzeros=3008, allocated nonzeros=3008
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
       Matrix Object:       6 MPI processes
         type: mpisbaij
-        rows=1024, cols=1024
+        rows=1024, cols=1024, bs=2
         total: nonzeros=19456, allocated nonzeros=19456
         total number of mallocs used during MatSetValues calls =0
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -447,7 +272,7 @@ PC Object: 6 MPI processes
             Factored matrix follows:
               Matrix Object:               1 MPI processes
                 type: seqsbaij
-                rows=384, cols=384
+                rows=384, cols=384, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=7428, allocated nonzeros=7428
                 total number of mallocs used during MatSetValues calls =0
@@ -455,21 +280,21 @@ PC Object: 6 MPI processes
         linear system matrix = precond matrix:
         Matrix Object:        (thi_)         1 MPI processes
           type: seqsbaij
-          rows=384, cols=384
+          rows=384, cols=384, bs=2
           total: nonzeros=7424, allocated nonzeros=7424
           total number of mallocs used during MatSetValues calls =0
               block size is 2
       linear system matrix = precond matrix:
       Matrix Object:      (thi_)       6 MPI processes
         type: mpisbaij
-        rows=2048, cols=2048
+        rows=2048, cols=2048, bs=2
         total: nonzeros=48128, allocated nonzeros=48128
         total number of mallocs used during MatSetValues calls =0
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
   Matrix Object:  (thi_)   6 MPI processes
     type: mpisbaij
-    rows=2048, cols=2048
+    rows=2048, cols=2048, bs=2
     total: nonzeros=48128, allocated nonzeros=48128
     total number of mallocs used during MatSetValues calls =0
 Solution statistics after solve: Full
