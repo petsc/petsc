@@ -14,17 +14,6 @@ static PetscErrorCode    KSPDGMRESGetNewVectors (KSP,PetscInt);
 static PetscErrorCode    KSPDGMRESUpdateHessenberg (KSP,PetscInt,PetscTruth,PetscReal*);
 static PetscErrorCode    KSPDGMRESBuildSoln (PetscScalar*,Vec,Vec,KSP,PetscInt);
 
-/* Functions from gmres */
-extern PetscErrorCode  KSPComputeExtremeSingularValues_GMRES (KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode  KSPComputeEigenvalues_GMRES (KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
-extern PetscErrorCode  KSPGMRESGetRestart_GMRES (KSP,PetscInt*);
-extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES (KSP,PetscErrorCode (**) (KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES (KSP,KSPGMRESCGSRefinementType*);
-extern PetscErrorCode  KSPSetUp_GMRES (KSP);
-extern PetscErrorCode  KSPView_GMRES (KSP,PetscViewer);
-extern PetscErrorCode  KSPDestroy_GMRES (KSP);
-extern PetscErrorCode  KSPSetFromOptions_GMRES (KSP);
-
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetEigen"
 PetscErrorCode  KSPDGMRESSetEigen (KSP ksp,PetscInt nb_eig) 

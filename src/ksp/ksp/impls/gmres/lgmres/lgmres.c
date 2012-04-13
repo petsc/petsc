@@ -30,7 +30,6 @@ PetscErrorCode  KSPLGMRESSetConstant(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetUp_GMRES(KSP);
 /*
     KSPSetUp_LGMRES - Sets up the workspace needed by lgmres.
 
@@ -381,7 +380,6 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPDestroy_GMRES(KSP);
 /*
 
    KSPDestroy_LGMRES - Frees all memory space used by the Krylov method.
@@ -699,8 +697,6 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_LGMRES" 
 PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
@@ -725,8 +721,6 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_LGMRES"
 PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
@@ -746,10 +740,6 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 /*functions for extra lgmres options here*/
 EXTERN_C_BEGIN

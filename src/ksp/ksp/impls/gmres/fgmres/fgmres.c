@@ -21,8 +21,6 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP,PetscInt);
 static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal *);
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
-extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
-extern PetscErrorCode KSPSetUp_GMRES(KSP);
 /*
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
@@ -308,7 +306,6 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPDestroy_GMRES(KSP);
 extern PetscErrorCode KSPReset_FGMRES(KSP);
 /*
 
@@ -581,8 +578,6 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
 PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
@@ -601,9 +596,6 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
-
 typedef PetscErrorCode (*FCN1)(KSP,PetscInt,PetscInt,PetscReal,void*); /* force argument to next function to not be extern C*/
 typedef PetscErrorCode (*FCN2)(void*);
 EXTERN_C_BEGIN
@@ -619,8 +611,6 @@ PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-extern PetscErrorCode KSPReset_GMRES(KSP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPReset_FGMRES" 
@@ -676,11 +666,6 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
   *max_k = gmres->max_k;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-extern PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 EXTERN_C_END
 
 /*MC
