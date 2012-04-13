@@ -38,12 +38,15 @@
 extern PetscBool      PetscThreadGo;                 /* Flag to keep the threads spinning in a loop */
 extern PetscMPIInt    PetscMaxThreads;               /* Max. threads created */
 extern pthread_t*     PetscThreadPoint;              /* Pointer to thread ids */
-extern PetscInt*      PetscThreadsCoreAffinities;    /* Core affinity of each thread, includes the main thread affinity is PetscMainThreadShareWork is 1 */
-extern PetscInt       PetscMainThreadShareWork;      /* Is the main thread also a worker? 1 = Yes */
+extern PetscInt*      PetscThreadsCoreAffinities;    /* Core affinity of threads, includes the main thread affinity 
+                                                        if the main thread is also a work thread */
+extern PetscInt       PetscMainThreadShareWork;      /* Is the main thread also a worker? 1 = Yes (Default)*/
 extern PetscInt       PetscMainThreadCoreAffinity;   /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled;  /* Check whether PetscThreadsInitialize has been called */ 
-extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank; /* Thread rank ... thread local variable */
-extern PetscInt*      PetscThreadRanks;              /* Thread ranks, if main thread is a worker then main thread rank is 0 and ranks for other threads start from 1, else the thread ranks start from 0 */
+extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank; /* Rank of the thread ... thread local variable */
+extern PetscInt*      PetscThreadRanks;              /* Thread ranks - if main thread is a worker then main thread 
+                                                        rank is 0 and ranks for other threads start from 1, 
+                                                        otherwise the thread ranks start from 0 */
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 

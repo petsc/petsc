@@ -1641,7 +1641,7 @@ PetscErrorCode VecSetThreadAffinities(Vec v,const PetscInt affinities[])
       ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,thread_affinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
     } else {
       /* Reuse the core affinities set for the first nthreads */
-      ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,PetscThreadsCoreAffinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+      ierr = PetscMemcpy(tmap->affinity,PetscThreadsCoreAffinities,tmap->nthreads*sizeof(PetscInt));
     }
     ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
   } else {

@@ -32,7 +32,7 @@ PetscErrorCode PetscThreadsFinish(void* arg) {
 
 #define PetscGetThreadRank() (PetscThreadRank)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-/* Set CPU affinity for the main thread */
+/* Set CPU affinity for the main thread, only called by main thread */
 void PetscSetMainThreadAffinity(PetscInt icorr)
 {
   cpu_set_t mset;
@@ -42,6 +42,7 @@ void PetscSetMainThreadAffinity(PetscInt icorr)
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 }
 
+/* Only called by spawned threads */
 void PetscThreadsDoCoreAffinity(void)
 {
   PetscInt  i,icorr=0; 
@@ -50,8 +51,7 @@ void PetscThreadsDoCoreAffinity(void)
   
   switch(thread_aff_policy) {
   case THREADAFFINITYPOLICY_ONECORE:
-    if(myrank == 0) icorr = PetscMainThreadCoreAffinity;
-    else icorr = PetscThreadsCoreAffinities[myrank-1];
+    icorr = PetscThreadsCoreAffinities[myrank];
     CPU_ZERO(&mset);
     CPU_SET(icorr%N_CORES,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
@@ -74,11 +74,12 @@ PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
 {
   PetscErrorCode ierr;
   PetscInt       nmax=PetscMaxThreads;
+  PetscInt       nworkThreads=PetscMaxThreads+PetscMainThreadShareWork;
   PetscBool      flg;
 
   PetscFunctionBegin;
 
-  ierr = PetscMalloc(PetscMaxThreads*sizeof(PetscInt),&PetscThreadsCoreAffinities);CHKERRQ(ierr);
+  ierr = PetscMalloc(nworkThreads*sizeof(PetscInt),&PetscThreadsCoreAffinities);CHKERRQ(ierr);
 
   if(affinities == PETSC_NULL) {
     /* PETSc decides affinities */
@@ -91,7 +92,12 @@ PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
     } else {
       /* PETSc default affinities */
       PetscInt i;
-      for(i=0; i< PetscMaxThreads; i++) PetscThreadsCoreAffinities[i] = (i+1)%N_CORES;
+      if(PetscMainThreadShareWork) {
+	PetscThreadsCoreAffinities[0] = PetscMainThreadCoreAffinity;
+	for(i=1; i< nworkThreads; i++) PetscThreadsCoreAffinities[i] = i%N_CORES;
+      } else {
+	for(i=0;i < nworkThreads;i++) PetscThreadsCoreAffinities[i] = (i+1)%N_CORES;
+      }
     }
   } else {
     /* Set user provided affinities */
@@ -100,7 +106,6 @@ PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
     PetscFunctionReturn(0);
   }
       
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadsInitialize"
 /*
@@ -118,13 +123,14 @@ PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscInt       nworkThreads=PetscMaxThreads+PetscMainThreadShareWork;
 
   PetscFunctionBegin;
   if(PetscThreadsInitializeCalled) PetscFunctionReturn(0);
 
   /* Set thread ranks */
-  ierr = PetscMalloc((PetscMaxThreads+PetscMainThreadShareWork)*sizeof(PetscInt),&PetscThreadRanks);CHKERRQ(ierr);
-  for(i=0;i<PetscMaxThreads+PetscMainThreadShareWork;i++) PetscThreadRanks[i] = i;
+  ierr = PetscMalloc(nworkThreads*sizeof(PetscInt),&PetscThreadRanks);CHKERRQ(ierr);
+  for(i=0;i< nworkThreads;i++) PetscThreadRanks[i] = i;
   /* Set thread affinities */
   ierr = PetscThreadsSetAffinities(PETSC_NULL);CHKERRQ(ierr);
   /* Initialize thread pool */
@@ -194,29 +200,25 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
   PetscFunctionBegin;
 
   N_CORES=1; /* Default value if N_CORES cannot be found out */
-  PetscMaxThreads = N_CORES;
   /* Find the number of cores */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
-    N_CORES = get_nprocs();
+  N_CORES = get_nprocs();
 #elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
-    {
-      size_t   len = sizeof(N_CORES);
-      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
-    }
+  {
+    size_t   len = sizeof(N_CORES);
+    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+  }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
-    {
-      SYSTEM_INFO sysinfo;
-      GetSystemInfo( &sysinfo );
-      N_CORES = sysinfo.dwNumberOfProcessors;
-    }
+  {
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo( &sysinfo );
+    N_CORES = sysinfo.dwNumberOfProcessors;
+  }
 #endif
-
+  PetscMaxThreads = N_CORES-1;
   if(nthreads == PETSC_DECIDE) {
     /* Check if run-time option is given */
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-nthreads",&PetscMaxThreads,&flg);CHKERRQ(ierr);
-    if(!flg) {
-      PetscMaxThreads = N_CORES - PetscMainThreadShareWork;
-    } 
+    ierr = PetscOptionsInt("-nthreads","Set number of threads to create","PetscSetMaxPThreads",PetscMaxThreads,&PetscMaxThreads,&flg);CHKERRQ(ierr);
   } else PetscMaxThreads = nthreads;
   PetscFunctionReturn(0);
 }
@@ -253,30 +255,24 @@ PetscErrorCode PetscGetMaxPThreads(PetscInt *nthreads)
 #define __FUNCT__ "PetscOptionsCheckInitial_Private_Pthread"
 PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
 {
-  PetscErrorCode                 ierr;
-  PetscBool                      flg1=PETSC_FALSE;
-  PetscThreadsSynchronizationType      thread_sync_type=THREADSYNC_LOCKFREE;
+  PetscErrorCode                  ierr;
+  PetscBool                       flg1=PETSC_FALSE;
+  PetscThreadsSynchronizationType thread_sync_type=THREADSYNC_LOCKFREE;
 
   PetscFunctionBegin;
 
-  /* Check to see if the user wants the main thread not to share work with the other threads */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mainthread_no_share_work",&flg1);CHKERRQ(ierr);
-  if(flg1) PetscMainThreadShareWork = 0;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread Options","Sys");CHKERRQ(ierr);
 
-  /*
-      Set maximum number of threads
-  */
+  /* Set nthreads */
   ierr = PetscSetMaxPThreads(PETSC_DECIDE);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
-  if(flg1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&PetscMainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);
+  /* Check to see if the user wants the main thread not to share work with the other threads */
+  ierr = PetscOptionsInt("-mainthread_is_worker","Main thread is also a work thread",PETSC_NULL,PetscMainThreadShareWork,&PetscMainThreadShareWork,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mainthread_affinity","CPU affinity of main thread","PetscSetMainThreadAffinity",PetscMainThreadCoreAffinity,&PetscMainThreadCoreAffinity,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-    PetscSetMainThreadAffinity(PetscMainThreadCoreAffinity);
+  PetscSetMainThreadAffinity(PetscMainThreadCoreAffinity);
 #endif
-  }
  
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread Options","Sys");CHKERRQ(ierr);
   /* Get thread affinity policy */
   ierr = PetscOptionsEnum("-thread_aff_policy","Type of thread affinity policy"," ",PetscThreadsAffinityPolicyTypes,(PetscEnum)thread_aff_policy,(PetscEnum*)&thread_aff_policy,&flg1);CHKERRQ(ierr);
   /* Get thread synchronization scheme */
