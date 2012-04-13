@@ -782,19 +782,6 @@ EXTERN_C_END
 
 /* end new lgmres functions */
 
-
-/* use these options from gmres */
-EXTERN_C_BEGIN
-extern PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP,double);
-extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-extern PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-extern PetscErrorCode  KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-extern PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
-EXTERN_C_END
-
 /*MC
     KSPLGMRES - Augments the standard GMRES approximation space with approximations to
                 the error from previous restart cycles.

@@ -58,11 +58,14 @@ extern PetscErrorCode KSPReset_GMRES(KSP);
 extern PetscErrorCode KSPDestroy_GMRES(KSP);
 extern PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
 
+typedef PetscErrorCode (*FCN)(KSP,PetscInt); /* force argument to next function to not be extern C*/
+
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,double);
 PETSC_EXTERN_C PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 PETSC_EXTERN_C PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
 PETSC_EXTERN_C PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-PETSC_EXTERN_C PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
+PETSC_EXTERN_C PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,FCN);
+PETSC_EXTERN_C PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,FCN*);
 PETSC_EXTERN_C PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
 PETSC_EXTERN_C PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 

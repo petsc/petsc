@@ -620,14 +620,6 @@ PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-extern PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-extern PetscErrorCode  KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
-EXTERN_C_END
-
 extern PetscErrorCode KSPReset_GMRES(KSP);
 
 #undef __FUNCT__  
