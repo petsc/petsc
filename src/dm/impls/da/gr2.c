@@ -480,7 +480,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = PetscObjectSetName((PetscObject)Y,((PetscObject)xin)->name);CHKERRQ(ierr);
     }
     ierr = VecCopy(xin,Y);CHKERRQ(ierr);
-    ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,(PetscObject)Y);CHKERRQ(ierr);
+    ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,PETSC_VTK_POINT_FIELD,(PetscObject)Y);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);

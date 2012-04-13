@@ -1,13 +1,13 @@
 A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):
   type: mpibaij
-  rows=10, cols=10
+  rows=10, cols=10, bs=2
   total: nonzeros=52, allocated nonzeros=1780
   total number of mallocs used during MatSetValues calls =7
       block size is 2
 
 A is obtained with MatCopy(,,SAME_NONZERO_PATTERN):
   type: mpibaij
-  rows=10, cols=10
+  rows=10, cols=10, bs=2
   total: nonzeros=52, allocated nonzeros=52
   total number of mallocs used during MatSetValues calls =0
       block size is 2

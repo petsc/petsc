@@ -11,6 +11,7 @@
 + viewer - VTK viewer
 . dm - DM on which Vec lives
 . func - function to write this Vec
+. fieldtype - Either PETSC_VTK_POINT_FIELD or PETSC_VTK_CELL_FIELD
 - vec - Vec to write
 
    Level: developer
@@ -20,7 +21,7 @@
 
 .seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll()
 @*/
-PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction func,PetscObject vec)
+PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction func,PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
   PetscErrorCode ierr;
 
@@ -28,7 +29,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscVie
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,4);
-  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscObject),(viewer,dm,func,vec));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscViewerVTKFieldType,PetscObject),(viewer,dm,func,fieldtype,vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +111,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerVTKAddField_VTK"
-PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction dmwriteall,PetscObject vec)
+PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction dmwriteall,PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link;
@@ -123,6 +124,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   vtk->dm = dm;
   vtk->dmwriteall = dmwriteall;
   ierr = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
+  link->ft = fieldtype;
   link->vec = vec;
   /* Prepend to list */
   link->next = vtk->link;
