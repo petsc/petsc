@@ -228,6 +228,9 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    This implements essentially a semismooth Newton method with a
    line search. The default line search does not do any line seach
    but rather takes a full newton step.
+
+   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_LS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
+
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_VISS"
