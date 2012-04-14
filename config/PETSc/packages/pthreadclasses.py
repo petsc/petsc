@@ -25,6 +25,4 @@ class Configure(PETSc.package.NewPackage):
       self.addDefine('PTHREAD_LOCAL','__thread')
     elif self.checkCompile('__declspec(thread) int i;\n',''):
       self.addDefine('PTHREAD_LOCAL','__declspec(thread)')
-    else:
-       raise RuntimeError('pthread local does not exist on this system, cannot use --with-pthreadclasses')
 

@@ -35,7 +35,12 @@ static struct {
 */
 void* PetscThreadFunc_LockFree(void* arg)
 {
+#if defined(PETSC_PTHREAD_LOCAL)
   PetscThreadRank = *(PetscInt*)arg;
+#else
+  PetscInt PetscThreadRank=*(PetscInt*)arg;
+  pthread_setspecific(PetscThreadsRankkey,&PetscThreadRank);
+#endif
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   PetscThreadsDoCoreAffinity();
@@ -67,7 +72,6 @@ PetscErrorCode PetscThreadsSynchronizationInitialize_LockFree(PetscInt N)
   ierr = PetscMalloc(N*sizeof(PetscInt),&(busy_threads.list));CHKERRQ(ierr);
 
   if(PetscMainThreadShareWork) { 
-    PetscThreadRank=0; /* Main thread rank */
     job_lockfree.pdata[0] =NULL;
     PetscThreadPoint[0] = pthread_self();
   }
