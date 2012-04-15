@@ -21,6 +21,24 @@
 
 #include <petsc-private/vecimpl.h>                              /*I   "petscvec.h"   I*/
 
+#if defined(PETSC_HAVE_PAMI)
+PetscErrorCode PetscMPI_Iallreduce_PAMI(void*,void*,PetscMPIInt,MPI_Datatype,MPI_Op,MPI_Comm,MPI_Request*);
+#endif
+
+static PetscErrorCode PetscMPI_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
+{
+  PETSC_UNUSED PetscErrorCode ierr;
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPIX_IALLREDUCE)
+  ierr = MPIX_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
+#elif defined (PETSC_HAVE_PAMI)
+  ierr = PetscMPI_Iallreduce_PAMI(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
+#else
+  SETERRQ(comm,PETSC_ERR_SUP_SYS,"Nothing comparable to MPI_Iallreduce() available");
+#endif
+  PetscFunctionReturn(0);
+}
+
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
 #define REDUCE_SUM  0
@@ -72,7 +90,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->request     = MPI_REQUEST_NULL;
   ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE)
+#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
 #endif
@@ -144,7 +162,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE)
+#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI)
   if (sr->async) {              /* Bad reuse, setup code copied from PetscSplitReductionApply(). */
     PetscInt       i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
     PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
@@ -175,9 +193,9 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
           lvalues[numops+i] = reducetype[i];
         }
 #if defined(PETSC_USE_COMPLEX)
-        ierr = MPIX_Iallreduce(lvalues,gvalues,2*2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,2*2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
 #else
-        ierr = MPIX_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
 #endif
       } else if (max_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -185,9 +203,9 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
          complex case we max both the real and imaginary parts, the imaginary part
          is just ignored later
          */
-        ierr = MPIX_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
 #else
-        ierr = MPIX_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
 #endif
       } else if (min_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -195,12 +213,12 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
          complex case we min both the real and imaginary parts, the imaginary part
          is just ignored later
          */
-        ierr = MPIX_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
 #else
-        ierr = MPIX_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
 #endif
       } else {
-        ierr = MPIX_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request);CHKERRQ(ierr);
+        ierr = PetscMPI_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request);CHKERRQ(ierr);
       }
     }
     sr->state     = STATE_PENDING;
