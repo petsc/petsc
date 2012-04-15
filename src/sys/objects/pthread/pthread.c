@@ -200,7 +200,7 @@ PetscErrorCode PetscThreadsFinalize(void)
 .  nthreads - # of pthreads.
 
    Options Database Keys:
-   -nthreads <nthreads> Number of pthreads to used.
+   -nthreads <nthreads> Number of pthreads to be used.
 
    Level: developer
  
