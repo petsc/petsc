@@ -643,6 +643,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         self.outputMakeMacro(f, pair[0], pair[1])
     return
 
+  def getFullDefineName(self, child, name, prefix = None):
+    if prefix is None: prefix = self.getHeaderPrefix(child)
+    if prefix:         prefix = prefix+'_'
+    return prefix+name
+
   def outputDefines(self, f, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
     The prefix to each define is calculated as follows:
@@ -657,14 +662,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = child.help
     else:
       help = {}
-    if prefix is None: prefix = self.getHeaderPrefix(child)
-    if prefix:         prefix = prefix+'_'
     for pair in child.defines.items():
       if not pair[1]: continue
       if help.has_key(pair[0]):
-        self.outputDefine(f, prefix+pair[0], pair[1], help[pair[0]])
+        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
       else:
-        self.outputDefine(f, prefix+pair[0], pair[1])
+        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
     return
 
   def outputTypedefs(self, f, child):
