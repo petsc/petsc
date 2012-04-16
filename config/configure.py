@@ -38,7 +38,7 @@ def getBuildSystem(configDir,bsDir):
   else:
     print '++ Mercurial clone found. URL : ' + output
     bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
-    if bsurl.find('bitbucket.org'): bsurl = bsurl.lower()
+    if bsurl.find('bitbucket.org') >=0: bsurl = bsurl.lower()
     print '++ Using: hg clone '+ bsurl +' '+ bsDir
     (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
     if status:
