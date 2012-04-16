@@ -398,10 +398,10 @@ class Configure(config.base.Configure):
       for pkg in self.framework.packages:
         if pkg.useddirectly:
           cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE)
-        if not hasattr(child, 'defines'):
-          for pair in child.defines.items():
+        if not hasattr(pkg, 'defines'):
+          for pair in pkg.defines.items():
             if pair[1]:
-              cmakeset(fd, self.framework.getFullDefineName(child, pair[0]), pair[1])
+              cmakeset(fd, self.framework.getFullDefineName(pkg, pair[0]), pair[1])
       for name,val in self.functions.defines.items():
         cmakeset(fd,'PETSC_'+name,val)
       for dct in [self.defines, self.libraryoptions.defines]:
