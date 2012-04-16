@@ -77,15 +77,19 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
   PetscErrorCode  ierr;
-  PetscBool       isvts;
+  PetscBool       isvtk, isvts;
   size_t          len;
 
   PetscFunctionBegin;
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
-  if (isvts) {
+  if (isvtk) {
+    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
+    if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
+  } else if (isvts) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTS);CHKERRQ(ierr);}
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
@@ -114,7 +118,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction dmwriteall,PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
-  PetscViewerVTKObjectLink link;
+  PetscViewerVTKObjectLink link, tail = vtk->link;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -126,9 +130,14 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   ierr = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
   link->ft = fieldtype;
   link->vec = vec;
-  /* Prepend to list */
-  link->next = vtk->link;
-  vtk->link = link;
+  link->next = PETSC_NULL;
+  /* Append to list */
+  if (tail) {
+    while(tail->next) tail = tail->next;
+    tail->next = link;
+  } else {
+    vtk->link = link;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -155,7 +164,7 @@ PetscErrorCode  PetscViewerCreate_VTK(PetscViewer v)
                                            PetscViewerFileSetName_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_VTK",
                                            PetscViewerFileSetMode_VTK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerVTKAddField_C","PetscViewerVTKAddField_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerVTKAddField_C","PetscViewerVTKAddField_VTK",
                                            PetscViewerVTKAddField_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

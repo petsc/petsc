@@ -4524,6 +4524,44 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshConvertSection"
+PetscErrorCode DMMeshConvertSection(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const Obj<PETSC_MESH_TYPE::real_section_type>& s, PetscSection *section)
+{
+  const PetscInt pStart    = s->getChart().min();
+  const PetscInt pEnd      = s->getChart().max();
+  PetscInt       numFields = s->getNumSpaces();
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionCreate(mesh->comm(), section);CHKERRQ(ierr);
+  if (numFields) {
+    ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
+    for(PetscInt f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldComponents(*section, f, s->getSpaceComponents(f));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
+  for(PetscInt p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
+    for(PetscInt f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(*section, p, f, s->getFiberDimension(p, f));CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
+    for(PetscInt f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldConstraintDof(*section, p, f, s->getConstraintDimension(p, f));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+  for(PetscInt p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
+    for(PetscInt f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, (PetscInt *) s->getConstraintDof(p, f));CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshGetSection"
 PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
@@ -4531,38 +4569,7 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
-  {
-    const Obj<PETSC_MESH_TYPE::real_section_type>& s = mesh->getRealSection(name);
-    const PetscInt pStart    = s->getChart().min();
-    const PetscInt pEnd      = s->getChart().max();
-    PetscInt       numFields = s->getNumSpaces();
-
-    ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
-    if (numFields) {
-      ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
-      for(PetscInt f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldComponents(*section, f, s->getSpaceComponents(f));CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-    for(PetscInt p = pStart; p < pEnd; ++p) {
-      ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
-      for(PetscInt f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(*section, p, f, s->getFiberDimension(p, f));CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
-      for(PetscInt f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldConstraintDof(*section, p, f, s->getConstraintDimension(p, f));CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-    for(PetscInt p = pStart; p < pEnd; ++p) {
-      ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
-      for(PetscInt f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, (PetscInt *) s->getConstraintDof(p, f));CHKERRQ(ierr);
-      }
-    }
-  }
+  ierr = DMMeshConvertSection(mesh, mesh->getRealSection(name), section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

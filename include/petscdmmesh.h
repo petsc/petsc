@@ -94,6 +94,7 @@ extern PetscErrorCode DMMeshMarkBoundaryCells(DM, const char [], PetscInt, Petsc
 extern PetscErrorCode DMMeshGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 extern PetscErrorCode DMMeshCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
+extern PetscErrorCode DMMeshConvertSection(const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, PetscSection *);
 extern PetscErrorCode DMMeshGetSection(DM, const char [], PetscSection *);
 extern PetscErrorCode DMMeshSetSection(DM, const char [], PetscSection);
 extern PetscErrorCode DMMeshGetDefaultSection(DM, PetscSection *);
