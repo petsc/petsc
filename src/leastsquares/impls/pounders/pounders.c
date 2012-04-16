@@ -1049,7 +1049,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
   if (!mfqP->usegqt) {
       KSP       ksp;
       PC        pc;
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->Xsubproblem,&mfqP->subx); CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Xsubproblem,&mfqP->subx); CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->subxl); CHKERRQ(ierr);
       ierr = VecDuplicate(mfqP->subxl,&mfqP->subb); CHKERRQ(ierr);
       ierr = VecDuplicate(mfqP->subxl,&mfqP->subxu); CHKERRQ(ierr);
