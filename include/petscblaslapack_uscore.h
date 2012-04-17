@@ -11,6 +11,7 @@
 #  define LAPACKungqr_ sorgqr_
 #  define LAPACKgetrf_ sgetrf_
 #  define BLASdot_     sdot_
+#  define BLASdotu_    sdot_
 #  define BLASnrm2_    snrm2_
 #  define BLASscal_    sscal_
 #  define BLAScopy_    scopy_
@@ -47,6 +48,7 @@
 #  define LAPACKungqr_ dorgqr_
 #  define LAPACKgetrf_ dgetrf_
 #  define BLASdot_     ddot_
+#  define BLASdotu_    ddot_
 #  define BLASnrm2_    dnrm2_
 #  define BLASscal_    dscal_
 #  define BLAScopy_    dcopy_
@@ -83,6 +85,7 @@
 #  define LAPACKungqr_ qorgqr_
 #  define LAPACKgetrf_ qgetrf_
 #  define BLASdot_     qdot_
+#  define BLASdotu_    qdot_
 #  define BLASnrm2_    qnrm2_
 #  define BLASscal_    qscal_
 #  define BLAScopy_    qcopy_
@@ -121,6 +124,7 @@
 #  define LAPACKungqr_ cungqr_
 #  define LAPACKgetrf_ cgetrf_
 #  define BLASdot_     cdotc_
+#  define BLASdotu_    cdotu_
 #  define BLASnrm2_    scnrm2_
 #  define BLASscal_    cscal_
 #  define BLAScopy_    ccopy_
@@ -159,14 +163,23 @@
 #ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
 EXTERN_C_BEGIN
 extern void zdotc_(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) {
+PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
+{
   PetscScalar tmpz;
   zdotc_(&tmpz,n,x,sx,y,sy);
+  return tmpz;
+}
+extern void zdotu_(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
+{
+  PetscScalar tmpz;
+  zdotu_(&tmpz,n,x,sx,y,sy);
   return tmpz;
 }
 EXTERN_C_END
 #else
 #  define BLASdot_     zdotc_
+#  define BLASdotu_    zdotu_
 #endif
 #  define BLASnrm2_    dznrm2_
 #  define BLASscal_    zscal_

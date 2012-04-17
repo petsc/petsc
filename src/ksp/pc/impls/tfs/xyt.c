@@ -416,10 +416,10 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       if (a_n!=a_m)
 	{PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);}
       PCTFS_rvec_zero(u,n);
-     do_matvec(xyt_handle->mvi,v,u);
+      do_matvec(xyt_handle->mvi,v,u);
 
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - local portion */
-     dlen = PetscBLASIntCast(n);
+      dlen = PetscBLASIntCast(n);
       alpha = BLASdot_(&dlen,u,&i1,u,&i1);
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
       PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);

@@ -95,7 +95,7 @@ typedef struct { /* grid parameters */
   DMDAStencilType  stencil;
   PetscInt       corner,ni,nj,jlid,jfault,inose;
   PetscInt       dof,stencil_width,mglevels;
-  PassiveScalar  dx,dz;
+  PetscReal      dx,dz;
 } GridInfo;
 
 typedef struct { /* application context */
@@ -221,7 +221,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   PC                  pc;
   SNESConvergedReason reason;
   Parameter           *param = user->param;
-  PassiveScalar       cont_incr=0.3;
+  PetscReal           cont_incr=0.3;
   PetscInt            its;
   PetscErrorCode      ierr;
   PetscBool           q = PETSC_FALSE;
@@ -439,7 +439,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
 PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z, Parameter *param)
 /*---------------------------------------------------------------------*/
 {
-  PetscScalar  result=0.0;
+  PetscReal    result=0.0;
   ViscParam    difn=param->diffusion, disl=param->dislocation;
   PetscInt          iVisc=param->ivisc;
   double       eps_scale=param->V/(param->L*1000.0);
@@ -1475,7 +1475,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
       /************* TEMPERATURE *************/
       if (j==0) {
 	/* on the surface */
-	f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(x[j][i].T,0.0);
+	f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(PetscRealPart(x[j][i].T),0.0);
 
       } else if (i==0) {
 	/* slab inflow boundary */
@@ -1483,12 +1483,12 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
       } else if (i==ilim) {
 	/* right side boundary */
-	mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j][i-1].u/param->cb,1.0),0.0)), 5.0 );
+	mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j][i-1].u)/param->cb,1.0),0.0)), 5.0 );
 	f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
 
       } else if (j==jlim) {
 	/* bottom boundary */
-	mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(x[j-1][i].w/param->sb,1.0),0.0)), 5.0 );
+	mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j-1][i].w)/param->sb,1.0),0.0)), 5.0 );
 	f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
 
       } else {

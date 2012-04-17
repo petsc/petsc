@@ -52,27 +52,15 @@ PetscErrorCode VecDot_Kernel(void *arg)
   PetscInt           thread_id=data->thread_id;
   const PetscScalar  *x, *y;
   PetscInt           n,start,end;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt     i;
-  PetscScalar  sum;
-# else
   PetscBLASInt one = 1, bn,bstart;
-#endif
 
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
-#if defined(PETSC_USE_COMPLEX)
-  for(i=start,sum=0.0;i < end; i++) {
-    sum += x[i]*PetscConj(y[i]);
-  }
-  data->result = sum;
-# else
   n = end-start;
   bn = PetscBLASIntCast(n);
   bstart = PetscBLASIntCast(start);
   data->result = BLASdot_(&bn,x+bstart,&one,y+bstart,&one);
-#endif
   return(0);
 }
 
@@ -123,27 +111,15 @@ PetscErrorCode VecTDot_Kernel(void *arg)
   PetscInt        thread_id=data->thread_id;
   const PetscScalar *x, *y;
   PetscInt    n,start,end;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt     i;
-  PetscScalar  sum;
-# else
   PetscBLASInt one = 1, bn,bstart;
-#endif
 
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
   x = (const PetscScalar*)data->x;
   y = (const PetscScalar*)data->y;
-#if defined(PETSC_USE_COMPLEX)
-  for(i=start,sum=0.0;i < end; i++) {
-    sum += x[i]*y[i];
-  }
-  data->result = sum;
-# else
   n = end-start;
   bn = PetscBLASIntCast(n);
   bstart = PetscBLASIntCast(start);
-  data->result = BLASdot_(&bn,x+bstart,&one,y+bstart,&one);
-#endif
+  data->result = BLASdotu_(&bn,x+bstart,&one,y+bstart,&one);
   return(0);
 }
 
@@ -576,8 +552,7 @@ PetscErrorCode VecNorm_Kernel(void *arg)
       }
     }
     data->result = maxv;
-  }
-  else {
+  } else {
     PetscBLASInt one = 1, bn = PetscBLASIntCast(n),bstart=PetscBLASIntCast(start);
     data->result = BLASdot_(&bn,x+bstart,&one,x+bstart,&one);
   }
@@ -655,36 +630,20 @@ PetscErrorCode VecMDot_Kernel4(void* arg)
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
   const PetscScalar  *y2 = (const PetscScalar*)data->y2;
   const PetscScalar  *y3 = (const PetscScalar*)data->y3;
-
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt i;
-  PetscScalar sum0,sum1,sum2,sum3;
-#else
-  PetscInt     n;
-  PetscBLASInt one = 1, bn,bstart;
-#endif
+  PetscInt           i;
+  PetscScalar        sum0,sum1,sum2,sum3;
 
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_COMPLEX)
-    sum0 = sum1 = sum2 = sum3 = 0.0;
-    for(i=start;i<end;i++) {
-      sum0 += x[i]*PetscConj(y0[i]);
-      sum1 += x[i]*PetscConj(y1[i]);
-      sum2 += x[i]*PetscConj(y2[i]);
-      sum3 += x[i]*PetscConj(y3[i]);
-    }
-    data->result0 = sum0; data->result1 = sum1; data->result2 = sum2; data->result3 = sum3;
-# else
-    n  = end-start;
-    bn = PetscBLASIntCast(n);
-    bstart = PetscBLASIntCast(start);
-    data->result0 = BLASdot_(&bn,x+bstart,&one,y0+bstart,&one);
-    data->result1 = BLASdot_(&bn,x+bstart,&one,y1+bstart,&one);
-    data->result2 = BLASdot_(&bn,x+bstart,&one,y2+bstart,&one);
-    data->result3 = BLASdot_(&bn,x+bstart,&one,y3+bstart,&one);
-#endif
-    return(0);
+  sum0 = sum1 = sum2 = sum3 = 0.0;
+  for(i=start;i<end;i++) {
+    sum0 += PetscConj(x[i])*(y0[i]);
+    sum1 += PetscConj(x[i])*(y1[i]);
+    sum2 += PetscConj(x[i])*(y2[i]);
+    sum3 += PetscConj(x[i])*(y3[i]);
+  }
+  data->result0 = sum0; data->result1 = sum1; data->result2 = sum2; data->result3 = sum3;
+  return(0);
 }
 
 PetscErrorCode VecMDot_Kernel3(void* arg)
@@ -698,37 +657,23 @@ PetscErrorCode VecMDot_Kernel3(void* arg)
   const PetscScalar  *y0 = (const PetscScalar*)data->y0;
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
   const PetscScalar  *y2 = (const PetscScalar*)data->y2;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt i;
-  PetscScalar sum0,sum1,sum2;
-#else
-  PetscInt     n;
-  PetscBLASInt one = 1, bn,bstart;
-#endif
+  PetscInt           i;
+  PetscScalar        sum0,sum1,sum2;
   
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-    sum0 = sum1 = sum2 = 0.0;
-    for(i=start;i<end;i++) {
-      sum0 += x[i]*PetscConj(y0[i]);
-      sum1 += x[i]*PetscConj(y1[i]);
-      sum2 += x[i]*PetscConj(y2[i]);
-    }
-    data->result0 = sum0; data->result1 = sum1; data->result2 = sum2;
-# else
-    n  = end-start;
-    bn = PetscBLASIntCast(n);
-    bstart = PetscBLASIntCast(start);
-    data->result0 = BLASdot_(&bn,x+bstart,&one,y0+bstart,&one);
-    data->result1 = BLASdot_(&bn,x+bstart,&one,y1+bstart,&one);
-    data->result2 = BLASdot_(&bn,x+bstart,&one,y2+bstart,&one);
-#endif
-    return(0);
+  sum0 = sum1 = sum2 = 0.0;
+  for(i=start;i<end;i++) {
+    sum0 += PetscConj(x[i])*(y0[i]);
+    sum1 += PetscConj(x[i])*(y1[i]);
+    sum2 += PetscConj(x[i])*(y2[i]);
+  }
+  data->result0 = sum0; data->result1 = sum1; data->result2 = sum2;
+  return(0);
 }
 
 PetscErrorCode VecMDot_Kernel2(void* arg)
 {
-  Vec_KernelData        *data = (Vec_KernelData*)arg;
+  Vec_KernelData     *data = (Vec_KernelData*)arg;
   PetscErrorCode     ierr;
   Vec                X=data->X;
   PetscInt           thread_id=data->thread_id;
@@ -736,30 +681,17 @@ PetscErrorCode VecMDot_Kernel2(void* arg)
   const PetscScalar  *x = (const PetscScalar*)data->x;
   const PetscScalar  *y0 = (const PetscScalar*)data->y0;
   const PetscScalar  *y1 = (const PetscScalar*)data->y1;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt i;
-  PetscScalar sum0,sum1;
-#else
-  PetscInt     n;
-  PetscBLASInt one = 1, bn,bstart;
-#endif
+  PetscInt           i;
+  PetscScalar        sum0,sum1;
 
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-    sum0 = sum1 = 0.0;
-    for(i=start;i<end;i++) {
-      sum0 += x[i]*PetscConj(y0[i]);
-      sum1 += x[i]*PetscConj(y1[i]);
-    }
-    data->result0 = sum0; data->result1 = sum1;
-# else
-    n  = end-start;
-    bn = PetscBLASIntCast(n);
-    bstart = PetscBLASIntCast(start);
-    data->result0 = BLASdot_(&bn,x+bstart,&one,y0+bstart,&one);
-    data->result1 = BLASdot_(&bn,x+bstart,&one,y1+bstart,&one);
-#endif
-    return(0);
+  sum0 = sum1 = 0.0;
+  for(i=start;i<end;i++) {
+    sum0 += PetscConj(x[i])*(y0[i]);
+    sum1 += PetscConj(x[i])*(y1[i]);
+  }
+  data->result0 = sum0; data->result1 = sum1;
+  return(0);
 }
 
 #undef __FUNCT__
