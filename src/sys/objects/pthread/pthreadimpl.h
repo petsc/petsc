@@ -51,6 +51,7 @@ extern pthread_key_t  PetscThreadsRankkey;
 extern PetscInt*      PetscThreadRanks;              /* Thread ranks - if main thread is a worker then main thread 
                                                         rank is 0 and ranks for other threads start from 1, 
                                                         otherwise the thread ranks start from 0 */
+
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 
