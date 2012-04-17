@@ -244,8 +244,8 @@ static PetscMPIInt PetscMPIGrequestPoll_PAMI(void *state,MPI_Status *status)
 #define PetscMPIGrequestWait_PAMI ((MPIX_Grequest_wait_function*)0)
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscMPI_Iallreduce_PAMI"
-PetscErrorCode PetscMPI_Iallreduce_PAMI(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
+#define __FUNCT__ "MPIPetsc_Iallreduce_PAMI"
+PetscErrorCode MPIPetsc_Iallreduce_PAMI(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
   PetscErrorCode ierr;
   PetscMPIInt match;
