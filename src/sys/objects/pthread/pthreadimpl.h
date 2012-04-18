@@ -43,10 +43,15 @@ extern PetscInt*      PetscThreadsCoreAffinities;    /* Core affinity of threads
 extern PetscInt       PetscMainThreadShareWork;      /* Is the main thread also a worker? 1 = Yes (Default)*/
 extern PetscInt       PetscMainThreadCoreAffinity;   /* Core affinity of the main thread */
 extern PetscBool      PetscThreadsInitializeCalled;  /* Check whether PetscThreadsInitialize has been called */ 
+#if defined(PETSC_PTHREAD_LOCAL)
 extern PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank; /* Rank of the thread ... thread local variable */
+#else
+extern pthread_key_t  PetscThreadsRankkey;
+#endif
 extern PetscInt*      PetscThreadRanks;              /* Thread ranks - if main thread is a worker then main thread 
                                                         rank is 0 and ranks for other threads start from 1, 
                                                         otherwise the thread ranks start from 0 */
+
 /*
   PetscThreadsSynchronizationType - Type of thread synchronization for pthreads
 

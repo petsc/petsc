@@ -772,9 +772,8 @@ PetscErrorCode MatDestroy_SeqAIJPThread(Mat A)
 PetscErrorCode MatSetNThreads(Mat A,PetscInt nthreads)
 {
   PetscErrorCode     ierr;
-  PetscInt           nthr;
-  PetscBool          flg;
   PetscThreadsLayout tmap=A->rmap->tmap;
+  PetscInt           nworkThreads=PetscMaxThreads+PetscMainThreadShareWork;
 
   PetscFunctionBegin;
   
@@ -784,19 +783,18 @@ PetscErrorCode MatSetNThreads(Mat A,PetscInt nthreads)
   }
 
   if(nthreads == PETSC_DECIDE) {
-    ierr = PetscOptionsInt("-mat_threads","Set number of threads to be used for matrix operations","MatSetNThreads",PetscMaxThreads,&nthr,&flg);CHKERRQ(ierr);
-    if(flg && nthr > PetscMaxThreads) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mat A: threads requested %D, Max. threads initialized %D",nthr,PetscMaxThreads);
+    tmap->nthreads = nworkThreads;
+    ierr = PetscOptionsInt("-mat_threads","Set number of threads to be used for matrix operations","MatSetNThreads",nworkThreads,&tmap->nthreads,PETSC_NULL);CHKERRQ(ierr);
+    if(tmap->nthreads > nworkThreads) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mat A: threads requested %D, Max. threads initialized %D",tmap->nthreads,nworkThreads);
     }
-    if(!flg) nthr = PetscMaxThreads;
-    tmap->nthreads = nthr+PetscMainThreadShareWork;
   } else {
-    if(nthreads > PetscMaxThreads) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mat A: threads requested %D, Max. threads initialized %D",nthreads,PetscMaxThreads);
+    if(nthreads > nworkThreads) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mat A: threads requested %D, Max. threads initialized %D",nthreads,nworkThreads);
     }
-    tmap->nthreads = nthreads + PetscMainThreadShareWork;
+    tmap->nthreads = nthreads;
   }
-
+  
   PetscFunctionReturn(0);
 }
 
@@ -875,10 +873,10 @@ PetscErrorCode MatSetThreadAffinities(Mat A,const PetscInt affinities[])
     /* Check if run-time option is set */
     ierr = PetscOptionsIntArray("-mat_thread_affinities","Set CPU affinity for each thread","MatSetThreadAffinities",thread_affinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
-      if(nmax != tmap->nthreads-PetscMainThreadShareWork) {
-	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, matrix A Threads = %D, CPU affinities set = %D",tmap->nthreads-PetscMainThreadShareWork,nmax);
+      if(nmax != tmap->nthreads) {
+	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, matrix A Threads = %D, CPU affinities set = %D",tmap->nthreads,nmax);
       }
-      ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,thread_affinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+      ierr = PetscMemcpy(tmap->affinity,thread_affinities,tmap->nthreads*sizeof(PetscInt));
     } else {
       /* Reuse the core affinities set for first s->nthreads */
       ierr = PetscMemcpy(tmap->affinity,PetscThreadsCoreAffinities,tmap->nthreads*sizeof(PetscInt));
@@ -886,9 +884,8 @@ PetscErrorCode MatSetThreadAffinities(Mat A,const PetscInt affinities[])
     ierr = PetscFree(thread_affinities);CHKERRQ(ierr);
   } else {
     /* Set user provided affinities */
-    ierr = PetscMemcpy(tmap->affinity+PetscMainThreadShareWork,affinities,(tmap->nthreads-PetscMainThreadShareWork)*sizeof(PetscInt));
+    ierr = PetscMemcpy(tmap->affinity,affinities,tmap->nthreads*sizeof(PetscInt));
   }
-  if(PetscMainThreadShareWork) tmap->affinity[0] = PetscMainThreadCoreAffinity;
   PetscFunctionReturn(0);
 }
 

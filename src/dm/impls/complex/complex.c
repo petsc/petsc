@@ -2520,6 +2520,7 @@ PetscErrorCode DMComplexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt st
 PetscErrorCode DMComplexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
 {
   PetscFunctionBegin;
+  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "ParMetis not yet supported");
   PetscFunctionReturn(0);
 }
 #endif
@@ -3061,6 +3062,106 @@ PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexInterpolate_2D"
+PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
+{
+  DM             idm;
+  DM_Complex    *mesh;
+  PetscInt      *off;
+  const PetscInt numCorners = 3;
+  PetscInt       dim, numCells, cStart, cEnd, c, numVertices, vStart, vEnd;
+  PetscInt       numEdges, firstEdge, edge, e;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  numCells    = cEnd - cStart;
+  numVertices = vEnd - vStart;
+  firstEdge   = numCells + numVertices;
+  numEdges    = 0 ;
+  /* Count edges using algorithm from CreateNeighborCSR */
+  ierr = DMComplexCreateNeighborCSR(dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
+  if (off) {
+    numEdges = off[numCells]/2;
+    /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
+    numEdges += 3*numCells - off[numCells];
+  }
+  /* Create interpolated mesh */
+  ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
+  ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(idm, dim);CHKERRQ(ierr);
+  ierr = DMComplexSetChart(idm, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
+  for(c = 0; c < numCells; ++c) {
+    ierr = DMComplexSetConeSize(idm, c, numCorners);CHKERRQ(ierr);
+  }
+  for(e = firstEdge; e < firstEdge+numEdges; ++e) {
+    ierr = DMComplexSetConeSize(idm, e, 2);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(idm);CHKERRQ(ierr);
+  for(c = 0, edge = firstEdge; c < numCells; ++c) {
+    const PetscInt *faces;
+    PetscInt        numFaces, faceSize, f;
+
+    ierr = DMComplexGetFaces(dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+    if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
+    for(f = 0; f < numFaces; ++f) {
+      PetscBool found = PETSC_FALSE;
+
+      /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
+      for(e = firstEdge; e < edge; ++e) {
+        const PetscInt *cone;
+
+        ierr = DMComplexGetCone(idm, e, &cone);CHKERRQ(ierr);
+        if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
+            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
+          found = PETSC_TRUE;
+          break;
+        }
+      }
+      if (!found) {
+        ierr = DMComplexSetCone(idm, edge, &faces[f*faceSize]);CHKERRQ(ierr);
+        ++edge;
+      }
+      ierr = DMComplexInsertCone(idm, c, f, e);CHKERRQ(ierr);
+    }
+  }
+  if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
+  ierr = PetscFree(off);CHKERRQ(ierr);
+  ierr = DMComplexSymmetrize(idm);CHKERRQ(ierr);
+  ierr = DMComplexStratify(idm);CHKERRQ(ierr);
+  mesh = (DM_Complex *) (idm)->data;
+  for(c = 0; c < numCells; ++c) {
+    const PetscInt *cone, *faces;
+    PetscInt        coneSize, coff, numFaces, faceSize, f;
+
+    ierr = DMComplexGetConeSize(idm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(idm, c, &cone);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
+    ierr = DMComplexGetFaces(dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+    if (coneSize != numFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);
+    for(f = 0; f < numFaces; ++f) {
+      const PetscInt *econe;
+      PetscInt        esize;
+
+      ierr = DMComplexGetConeSize(idm, cone[f], &esize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(idm, cone[f], &econe);CHKERRQ(ierr);
+      if (esize != 2) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);
+      if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+        /* Correctly oriented */
+        mesh->coneOrientations[coff+f] = 0;
+      } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+        /* Start at index 1, and reverse orientation */
+        mesh->coneOrientations[coff+f] = -(1+1);
+      }
+    }
+  }
+  *dmInt  = idm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGenerate_Triangle"
 PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
 {
@@ -3174,88 +3275,12 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     ierr = DMComplexSymmetrize(*dm);CHKERRQ(ierr);
     ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
     if (interpolate) {
-      DM        imesh;
-      PetscInt *off;
-      PetscInt  firstEdge = numCells+numVertices, numEdges = 0, edge, e;
+      DM idm;
 
-      /* Count edges using algorithm from CreateNeighborCSR */
-      ierr = DMComplexCreateNeighborCSR(*dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
-      if (off) {
-        numEdges = off[numCells]/2;
-        /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
-        numEdges += 3*numCells - off[numCells];
-      }
-      /* Create interpolated mesh */
-      ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
-      ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
-      ierr = DMComplexSetDimension(imesh, dim);CHKERRQ(ierr);
-      ierr = DMComplexSetChart(imesh, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
-      for(c = 0; c < numCells; ++c) {
-        ierr = DMComplexSetConeSize(imesh, c, numCorners);CHKERRQ(ierr);
-      }
-      for(e = firstEdge; e < firstEdge+numEdges; ++e) {
-        ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
-      }
-      ierr = DMSetUp(imesh);CHKERRQ(ierr);
-      for(c = 0, edge = firstEdge; c < numCells; ++c) {
-        const PetscInt *faces;
-        PetscInt        numFaces, faceSize, f;
-
-        ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-        if (faceSize != 2) SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
-        for(f = 0; f < numFaces; ++f) {
-          PetscBool found = PETSC_FALSE;
-
-          /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
-          for(e = firstEdge; e < edge; ++e) {
-            const PetscInt *cone;
-
-            ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
-            if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
-                ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
-              found = PETSC_TRUE;
-              break;
-            }
-          }
-          if (!found) {
-            ierr = DMComplexSetCone(imesh, edge, &faces[f*faceSize]);CHKERRQ(ierr);
-            ++edge;
-          }
-          ierr = DMComplexInsertCone(imesh, c, f, e);CHKERRQ(ierr);
-        }
-      }
-      if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
-      ierr = PetscFree(off);CHKERRQ(ierr);
-      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
-      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
-      mesh = (DM_Complex *) (imesh)->data;
-      for(c = 0; c < numCells; ++c) {
-        const PetscInt *cone, *faces;
-        PetscInt        coneSize, coff, numFaces, faceSize, f;
-
-        ierr = DMComplexGetConeSize(imesh, c, &coneSize);CHKERRQ(ierr);
-        ierr = DMComplexGetCone(imesh, c, &cone);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
-        ierr = DMComplexGetFaces(*dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-        if (coneSize != numFaces) SETERRQ3(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);
-        for(f = 0; f < numFaces; ++f) {
-          const PetscInt *econe;
-          PetscInt        esize;
-
-          ierr = DMComplexGetConeSize(imesh, cone[f], &esize);CHKERRQ(ierr);
-          ierr = DMComplexGetCone(imesh, cone[f], &econe);CHKERRQ(ierr);
-          if (esize != 2) SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);
-          if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
-            /* Correctly oriented */
-            mesh->coneOrientations[coff+f] = 0;
-          } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
-            /* Start at index 1, and reverse orientation */
-            mesh->coneOrientations[coff+f] = -(1+1);
-          }
-        }
-      }
+      ierr = DMComplexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = imesh;
+      *dm  = idm;
+      mesh = (DM_Complex *) (idm)->data;
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {
@@ -3410,88 +3435,12 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
     ierr = DMComplexStratify(*dmRefined);CHKERRQ(ierr);
 
     if (interpolate) {
-      DM        imesh;
-      PetscInt *off;
-      PetscInt  firstEdge = numCells+numVertices, numEdges = 0, edge, e;
+      DM idm;
 
-      /* Count edges using algorithm from CreateNeighborCSR */
-      ierr = DMComplexCreateNeighborCSR(*dmRefined, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
-      if (off) {
-        numEdges = off[numCells]/2;
-        /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
-        numEdges += 3*numCells - off[numCells];
-      }
-      /* Create interpolated mesh */
-      ierr = DMCreate(comm, &imesh);CHKERRQ(ierr);
-      ierr = DMSetType(imesh, DMCOMPLEX);CHKERRQ(ierr);
-      ierr = DMComplexSetDimension(imesh, dim);CHKERRQ(ierr);
-      ierr = DMComplexSetChart(imesh, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
-      for(c = 0; c < numCells; ++c) {
-        ierr = DMComplexSetConeSize(imesh, c, numCorners);CHKERRQ(ierr);
-      }
-      for(e = firstEdge; e < firstEdge+numEdges; ++e) {
-        ierr = DMComplexSetConeSize(imesh, e, 2);CHKERRQ(ierr);
-      }
-      ierr = DMSetUp(imesh);CHKERRQ(ierr);
-      for(c = 0, edge = firstEdge; c < numCells; ++c) {
-        const PetscInt *faces;
-        PetscInt        numFaces, faceSize, f;
-
-        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-        if (faceSize != 2) SETERRQ1(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
-        for(f = 0; f < numFaces; ++f) {
-          PetscBool found = PETSC_FALSE;
-
-          /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
-          for(e = firstEdge; e < edge; ++e) {
-            const PetscInt *cone;
-
-            ierr = DMComplexGetCone(imesh, e, &cone);CHKERRQ(ierr);
-            if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
-                ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
-              found = PETSC_TRUE;
-              break;
-            }
-          }
-          if (!found) {
-            ierr = DMComplexSetCone(imesh, edge, &faces[f*faceSize]);CHKERRQ(ierr);
-            ++edge;
-          }
-          ierr = DMComplexInsertCone(imesh, c, f, e);CHKERRQ(ierr);
-        }
-      }
-      if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
-      ierr = PetscFree(off);CHKERRQ(ierr);
-      ierr = DMComplexSymmetrize(imesh);CHKERRQ(ierr);
-      ierr = DMComplexStratify(imesh);CHKERRQ(ierr);
-      mesh = (DM_Complex *) (imesh)->data;
-      for(c = 0; c < numCells; ++c) {
-        const PetscInt *cone, *faces;
-        PetscInt        coneSize, coff, numFaces, faceSize, f;
-
-        ierr = DMComplexGetConeSize(imesh, c, &coneSize);CHKERRQ(ierr);
-        ierr = DMComplexGetCone(imesh, c, &cone);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
-        ierr = DMComplexGetFaces(*dmRefined, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-        if (coneSize != numFaces) SETERRQ3(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);
-        for(f = 0; f < numFaces; ++f) {
-          const PetscInt *econe;
-          PetscInt        esize;
-
-          ierr = DMComplexGetConeSize(imesh, cone[f], &esize);CHKERRQ(ierr);
-          ierr = DMComplexGetCone(imesh, cone[f], &econe);CHKERRQ(ierr);
-          if (esize != 2) SETERRQ2(((PetscObject) imesh)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);
-          if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
-            /* Correctly oriented */
-            mesh->coneOrientations[coff+f] = 0;
-          } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
-            /* Start at index 1, and reverse orientation */
-            mesh->coneOrientations[coff+f] = -(1+1);
-          }
-        }
-      }
+      ierr = DMComplexInterpolate_2D(*dmRefined, &idm);CHKERRQ(ierr);
       ierr = DMDestroy(dmRefined);CHKERRQ(ierr);
-      *dmRefined  = imesh;
+      *dmRefined = idm;
+      mesh = (DM_Complex *) (idm)->data;
     }
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
     for(v = numCells; v < numCells+numVertices; ++v) {
@@ -6006,5 +5955,331 @@ PetscErrorCode DMComplexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0,
   default:
     SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented) {
+  MPI_Comm       comm      = ((PetscObject) dm)->comm;
+  PetscBool      posOrient = PETSC_FALSE;
+  const PetscInt debug     = 0;
+  PetscInt       cellDim, faceSize, f;
+  PetscErrorCode ierr;
+
+  ierr = DMComplexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  if (debug) {PetscPrintf(comm, "cellDim: %d numCorners: %d\n", cellDim, numCorners);CHKERRQ(ierr);}
+
+  if (cellDim == numCorners-1) {
+    /* Simplices */
+    faceSize  = numCorners-1;
+    posOrient = !(oppositeVertex%2) ? PETSC_TRUE : PETSC_FALSE;
+  } else if (cellDim == 1 && numCorners == 3) {
+    /* Quadratic line */
+    faceSize  = 1;
+    posOrient = PETSC_TRUE;
+  } else if (cellDim == 2 && numCorners == 4) {
+    /* Quads */
+    faceSize  = 2;
+    if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {
+      posOrient = PETSC_TRUE;
+    } else if ((indices[0] == 3) && (indices[1] == 0)) {
+      posOrient = PETSC_TRUE;
+    } else {
+      if (((indices[0] > indices[1]) && (indices[0] - indices[1] == 1)) || ((indices[0] == 0) && (indices[1] == 3))) {
+        posOrient = PETSC_FALSE;
+      } else {
+        SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
+      }
+    }
+  } else if (cellDim == 2 && numCorners == 6) {
+    /* Quadratic triangle (I hate this) */
+    /* Edges are determined by the first 2 vertices (corners of edges) */
+    const PetscInt faceSizeTri = 3;
+    PetscInt  sortedIndices[3], i, iFace;
+    PetscBool found = PETSC_FALSE;
+    PetscInt  faceVerticesTriSorted[9] = {
+      0, 3,  4, /* bottom */
+      1, 4,  5, /* right */
+      2, 3,  5, /* left */
+    };
+    PetscInt  faceVerticesTri[9] = {
+      0, 3,  4, /* bottom */
+      1, 4,  5, /* right */
+      2, 5,  3, /* left */
+    };
+
+    faceSize = faceSizeTri;
+    for(i = 0; i < faceSizeTri; ++i) sortedIndices[i] = indices[i];
+    ierr = PetscSortInt(faceSizeTri, sortedIndices);CHKERRQ(ierr);
+    for(iFace = 0; iFace < 4; ++iFace) {
+      const PetscInt ii = iFace*faceSizeTri;
+      PetscInt       fVertex, cVertex;
+
+      if ((sortedIndices[0] == faceVerticesTriSorted[ii+0]) &&
+          (sortedIndices[1] == faceVerticesTriSorted[ii+1])) {
+        for(fVertex = 0; fVertex < faceSizeTri; ++fVertex) {
+          for(cVertex = 0; cVertex < faceSizeTri; ++cVertex) {
+            if (indices[cVertex] == faceVerticesTri[ii+fVertex]) {
+              faceVertices[fVertex] = origVertices[cVertex];
+              break;
+            }
+          }
+        }
+        found = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid tri crossface");
+    *posOriented = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else if (cellDim == 2 && numCorners == 9) {
+    /* Quadratic quad (I hate this) */
+    /* Edges are determined by the first 2 vertices (corners of edges) */
+    const PetscInt faceSizeQuad = 3;
+    PetscInt  sortedIndices[3], i, iFace;
+    PetscBool found = PETSC_FALSE;
+    PetscInt  faceVerticesQuadSorted[12] = {
+      0, 1,  4, /* bottom */
+      1, 2,  5, /* right */
+      2, 3,  6, /* top */
+      0, 3,  7, /* left */
+    };
+    PetscInt  faceVerticesQuad[12] = {
+      0, 1,  4, /* bottom */
+      1, 2,  5, /* right */
+      2, 3,  6, /* top */
+      3, 0,  7, /* left */
+    };
+
+    faceSize = faceSizeQuad;
+    for(i = 0; i < faceSizeQuad; ++i) sortedIndices[i] = indices[i];
+    ierr = PetscSortInt(faceSizeQuad, sortedIndices);CHKERRQ(ierr);
+    for(iFace = 0; iFace < 4; ++iFace) {
+      const PetscInt ii = iFace*faceSizeQuad;
+      PetscInt       fVertex, cVertex;
+
+      if ((sortedIndices[0] == faceVerticesQuadSorted[ii+0]) &&
+          (sortedIndices[1] == faceVerticesQuadSorted[ii+1])) {
+        for(fVertex = 0; fVertex < faceSizeQuad; ++fVertex) {
+          for(cVertex = 0; cVertex < faceSizeQuad; ++cVertex) {
+            if (indices[cVertex] == faceVerticesQuad[ii+fVertex]) {
+              faceVertices[fVertex] = origVertices[cVertex];
+              break;
+            }
+          }
+        }
+        found = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossface");
+    *posOriented = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else if (cellDim == 3 && numCorners == 8) {
+    /* Hexes
+       A hex is two oriented quads with the normal of the first
+       pointing up at the second.
+
+          7---6
+         /|  /|
+        4---5 |
+        | 3-|-2
+        |/  |/
+        0---1
+
+        Faces are determined by the first 4 vertices (corners of faces) */
+    const PetscInt faceSizeHex = 4;
+    PetscInt  sortedIndices[4], i, iFace;
+    PetscBool found = PETSC_FALSE;
+    PetscInt faceVerticesHexSorted[24] = {
+      0, 1, 2, 3,  /* bottom */
+      4, 5, 6, 7,  /* top */
+      0, 1, 4, 5,  /* front */
+      1, 2, 5, 6,  /* right */
+      2, 3, 6, 7,  /* back */
+      0, 3, 4, 7,  /* left */
+    };
+    PetscInt faceVerticesHex[24] = {
+      3, 2, 1, 0,  /* bottom */
+      4, 5, 6, 7,  /* top */
+      0, 1, 5, 4,  /* front */
+      1, 2, 6, 5,  /* right */
+      2, 3, 7, 6,  /* back */
+      3, 0, 4, 7,  /* left */
+    };
+
+    faceSize = faceSizeHex;
+    for(i = 0; i < faceSizeHex; ++i) sortedIndices[i] = indices[i];
+    ierr = PetscSortInt(faceSizeHex, sortedIndices);CHKERRQ(ierr);
+    for(iFace = 0; iFace < 6; ++iFace) {
+      const PetscInt ii = iFace*faceSizeHex;
+      PetscInt       fVertex, cVertex;
+
+      if ((sortedIndices[0] == faceVerticesHexSorted[ii+0]) &&
+          (sortedIndices[1] == faceVerticesHexSorted[ii+1]) &&
+          (sortedIndices[2] == faceVerticesHexSorted[ii+2]) &&
+          (sortedIndices[3] == faceVerticesHexSorted[ii+3])) {
+        for(fVertex = 0; fVertex < faceSizeHex; ++fVertex) {
+          for(cVertex = 0; cVertex < faceSizeHex; ++cVertex) {
+            if (indices[cVertex] == faceVerticesHex[ii+fVertex]) {
+              faceVertices[fVertex] = origVertices[cVertex];
+              break;
+            }
+          }
+        }
+        found = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
+    *posOriented = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else if (cellDim == 3 && numCorners == 10) {
+    /* Quadratic tet */
+    /* Faces are determined by the first 3 vertices (corners of faces) */
+    const PetscInt faceSizeTet = 6;
+    PetscInt  sortedIndices[6], i, iFace;
+    PetscBool found = PETSC_FALSE;
+    PetscInt faceVerticesTetSorted[24] = {
+      0, 1, 2,  6, 7, 8, /* bottom */
+      0, 3, 4,  6, 7, 9,  /* front */
+      1, 4, 5,  7, 8, 9,  /* right */
+      2, 3, 5,  6, 8, 9,  /* left */
+    };
+    PetscInt faceVerticesTet[24] = {
+      0, 1, 2,  6, 7, 8, /* bottom */
+      0, 4, 3,  6, 7, 9,  /* front */
+      1, 5, 4,  7, 8, 9,  /* right */
+      2, 3, 5,  8, 6, 9,  /* left */
+    };
+
+    faceSize = faceSizeTet;
+    for(i = 0; i < faceSizeTet; ++i) sortedIndices[i] = indices[i];
+    ierr = PetscSortInt(faceSizeTet, sortedIndices);CHKERRQ(ierr);
+    for(iFace=0; iFace < 6; ++iFace) {
+      const PetscInt ii = iFace*faceSizeTet;
+      PetscInt       fVertex, cVertex;
+
+      if ((sortedIndices[0] == faceVerticesTetSorted[ii+0]) &&
+          (sortedIndices[1] == faceVerticesTetSorted[ii+1]) &&
+          (sortedIndices[2] == faceVerticesTetSorted[ii+2]) &&
+          (sortedIndices[3] == faceVerticesTetSorted[ii+3])) {
+        for(fVertex = 0; fVertex < faceSizeTet; ++fVertex) {
+          for(cVertex = 0; cVertex < faceSizeTet; ++cVertex) {
+            if (indices[cVertex] == faceVerticesTet[ii+fVertex]) {
+              faceVertices[fVertex] = origVertices[cVertex];
+              break;
+            }
+          }
+        }
+        found = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid tet crossface");
+    *posOriented = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else if (cellDim == 3 && numCorners == 27) {
+    /* Quadratic hexes (I hate this)
+       A hex is two oriented quads with the normal of the first
+       pointing up at the second.
+
+         7---6
+        /|  /|
+       4---5 |
+       | 3-|-2
+       |/  |/
+       0---1
+
+       Faces are determined by the first 4 vertices (corners of faces) */
+    const PetscInt faceSizeQuadHex = 9;
+    PetscInt  sortedIndices[9], i, iFace;
+    PetscBool found = PETSC_FALSE;
+    PetscInt faceVerticesQuadHexSorted[54] = {
+      0, 1, 2, 3,  8, 9, 10, 11,  24, /* bottom */
+      4, 5, 6, 7,  12, 13, 14, 15,  25, /* top */
+      0, 1, 4, 5,  8, 12, 16, 17,  22, /* front */
+      1, 2, 5, 6,  9, 13, 17, 18,  21, /* right */
+      2, 3, 6, 7,  10, 14, 18, 19,  23, /* back */
+      0, 3, 4, 7,  11, 15, 16, 19,  20, /* left */
+    };
+    PetscInt faceVerticesQuadHex[54] = {
+      3, 2, 1, 0,  10, 9, 8, 11,  24, /* bottom */
+      4, 5, 6, 7,  12, 13, 14, 15,  25, /* top */
+      0, 1, 5, 4,  8, 17, 12, 16,  22, /* front */
+      1, 2, 6, 5,  9, 18, 13, 17,  21, /* right */
+      2, 3, 7, 6,  10, 19, 14, 18,  23, /* back */
+      3, 0, 4, 7,  11, 16, 15, 19,  20 /* left */
+    };
+
+    faceSize = faceSizeQuadHex;
+    for(i = 0; i < faceSizeQuadHex; ++i) sortedIndices[i] = indices[i];
+    ierr = PetscSortInt(faceSizeQuadHex, sortedIndices);CHKERRQ(ierr);
+    for(iFace = 0; iFace < 6; ++iFace) {
+      const PetscInt ii = iFace*faceSizeQuadHex;
+      PetscInt       fVertex, cVertex;
+
+      if ((sortedIndices[0] == faceVerticesQuadHexSorted[ii+0]) &&
+          (sortedIndices[1] == faceVerticesQuadHexSorted[ii+1]) &&
+          (sortedIndices[2] == faceVerticesQuadHexSorted[ii+2]) &&
+          (sortedIndices[3] == faceVerticesQuadHexSorted[ii+3])) {
+        for(fVertex = 0; fVertex < faceSizeQuadHex; ++fVertex) {
+          for(cVertex = 0; cVertex < faceSizeQuadHex; ++cVertex) {
+            if (indices[cVertex] == faceVerticesQuadHex[ii+fVertex]) {
+              faceVertices[fVertex] = origVertices[cVertex];
+              break;
+            }
+          }
+        }
+        found = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!found) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");}
+    *posOriented = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown cell type for faceOrientation().");
+  if (!posOrient) {
+    if (debug) {ierr = PetscPrintf(comm, "  Reversing initial face orientation\n");CHKERRQ(ierr);}
+    for(f = 0; f < faceSize; ++f) {
+      faceVertices[f] = origVertices[faceSize-1 - f];
+    }
+  } else {
+    if (debug) {ierr = PetscPrintf(comm, "  Keeping initial face orientation\n");CHKERRQ(ierr);}
+    for(f = 0; f < faceSize; ++f) {
+      faceVertices[f] = origVertices[f];
+    }
+  }
+  *posOriented = posOrient;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetOrientedFace"
+PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
+{
+  const PetscInt *cone;
+  PetscInt        coneSize, v, f, v2;
+  PetscInt        oppositeVertex;
+  const PetscInt  debug = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
+  ierr = DMComplexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+  for(v = 0, v2 = 0; v < coneSize; ++v) {
+    PetscBool found  = PETSC_FALSE;
+
+    for(f = 0; f < faceSize; ++f) {
+      if (face[f] == cone[v]) {found = PETSC_TRUE; break;}
+    }
+    if (found) {
+      indices[v2]      = v;
+      origVertices[v2] = cone[v];
+      ++v2;
+    } else {
+      oppositeVertex = v;
+    }
+  }
+  ierr = faceOrientation(dm, cell, numCorners, indices, oppositeVertex, origVertices, faceVertices, posOriented);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

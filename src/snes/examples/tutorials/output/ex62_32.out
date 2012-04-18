@@ -25,8 +25,6 @@
   1 SNES Function norm 2.02299e-08 
 SNES Object: 1 MPI processes
   type: ls
-    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-    damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=22
@@ -42,7 +40,7 @@ SNES Object: 1 MPI processes
     using UNPRECONDITIONED norm type for convergence test
   PC Object:   1 MPI processes
     type: fieldsplit
-      FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = -1
+      FieldSplit with MULTIPLICATIVE composition: total splits = 2
       Solver info for each split is in the following KSP objects:
       Split number 0 Defined by IS
       KSP Object:      (fieldsplit_velocity_)       1 MPI processes
@@ -95,7 +93,13 @@ SNES Object: 1 MPI processes
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 513 nodes, limit used is 5
-  line search variant: bt
+  SNESLineSearch Object:   1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=0.0001
+    maxstep=1e+08, minlambda=1e-12
+    tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+    maximum iterations=40
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
 L_2 Error: 6.47e-07

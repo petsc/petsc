@@ -56,7 +56,6 @@ namespace ALE {
       const typename Section::chart_type&   chart    = pointPermutation->getChart();
       typename Section::value_type          maxPoint = 0;
 
-      PETSc::Log::Event("PermutationClosure").begin();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
@@ -114,7 +113,6 @@ namespace ALE {
           }
         }
       }
-      PETSc::Log::Event("PermutationClosure").end();
     }
 
     template<typename Section, typename Labeling>

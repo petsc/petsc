@@ -9,7 +9,12 @@ PetscInt*   PetscThreadsCoreAffinities=NULL;
 PetscInt    PetscMainThreadShareWork = 1;
 PetscInt    PetscMainThreadCoreAffinity = 0;
 PetscBool   PetscThreadsInitializeCalled = PETSC_FALSE;
+#if defined(PETSC_PTHREAD_LOCAL)
 PETSC_PTHREAD_LOCAL PetscInt PetscThreadRank;
+#else
+pthread_key_t PetscThreadsRankkey;
+#endif
+
 PetscInt*   PetscThreadRanks;
 
 void*          (*PetscThreadFunc)(void*) = NULL;
@@ -30,7 +35,15 @@ PetscErrorCode PetscThreadsFinish(void* arg) {
   return(0);
 }
 
-#define PetscGetThreadRank() (PetscThreadRank)
+PETSC_STATIC_INLINE PetscInt PetscGetThreadRank()
+{
+#if defined(PETSC_PTHREAD_LOCAL)
+  return PetscThreadRank;
+#else
+  return *((PetscInt*)pthread_getspecific(PetscThreadsRankkey));
+#endif
+}
+
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 /* Set CPU affinity for the main thread, only called by main thread */
 void PetscSetMainThreadAffinity(PetscInt icorr)
@@ -73,8 +86,8 @@ void PetscThreadsDoCoreAffinity(void)
 PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
 {
   PetscErrorCode ierr;
-  PetscInt       nmax=PetscMaxThreads;
   PetscInt       nworkThreads=PetscMaxThreads+PetscMainThreadShareWork;
+  PetscInt       nmax=nworkThreads;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -86,8 +99,8 @@ PetscErrorCode PetscThreadsSetAffinities(PetscInt affinities[])
     /* Check if the run-time option is set */
     ierr = PetscOptionsIntArray("-thread_affinities","Set CPU affinities of threads","PetscThreadsSetAffinities",PetscThreadsCoreAffinities,&nmax,&flg);CHKERRQ(ierr);
     if(flg) {
-      if(nmax != PetscMaxThreads) {
-	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, CPU affinities set = %D",PetscMaxThreads,nmax);
+      if(nmax != nworkThreads) {
+	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, CPU affinities set = %D",nworkThreads,nmax);
       }
     } else {
       /* PETSc default affinities */
@@ -131,6 +144,14 @@ PetscErrorCode PetscThreadsInitialize(PetscInt nthreads)
   /* Set thread ranks */
   ierr = PetscMalloc(nworkThreads*sizeof(PetscInt),&PetscThreadRanks);CHKERRQ(ierr);
   for(i=0;i< nworkThreads;i++) PetscThreadRanks[i] = i;
+#if defined(PETSC_PTHREAD_LOCAL)
+  if(PetscMainThreadShareWork) PetscThreadRank=0; /* Main thread rank */
+#else
+  ierr = pthread_key_create(&PetscThreadsRankkey,NULL);CHKERRQ(ierr);
+  if(PetscMainThreadShareWork) {
+    ierr = pthread_setspecific(PetscThreadsRankkey,&PetscThreadRanks[0]);CHKERRQ(ierr);
+  }
+#endif
   /* Set thread affinities */
   ierr = PetscThreadsSetAffinities(PETSC_NULL);CHKERRQ(ierr);
   /* Initialize thread pool */
@@ -171,7 +192,7 @@ PetscErrorCode PetscThreadsFinalize(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMaxPThreads"
 /*
-   PetscSetMaxPThreads - Sets the number of pthreads to create.
+   PetscSetMaxPThreads - Sets the number of pthreads to be used.
 
    Not collective
   
@@ -179,16 +200,17 @@ PetscErrorCode PetscThreadsFinalize(void)
 .  nthreads - # of pthreads.
 
    Options Database Keys:
-   -nthreads <nthreads> Number of pthreads to create.
+   -nthreads <nthreads> Number of pthreads to used.
 
-   Level: beginner
+   Level: developer
  
    Notes:
-   Use nthreads = PETSC_DECIDE for PETSc to calculate the maximum number of pthreads to create.
-   By default, the main execution thread is also considered as a work thread. Hence, PETSc will 
-   create (ncpus - 1) threads where ncpus is the number of processing cores available. 
-   The option -mainthread_no_share_work can be used to have the main thread act as a controller only. 
-   For this case, PETSc will create ncpus threads.
+   Use nthreads = PETSC_DECIDE for PETSc to calculate the maximum number of pthreads to be used.
+   If nthreads = PETSC_DECIDE, PETSc will create (ncpus - 1) threads where ncpus is the number of 
+   available processing cores. 
+   
+   By default, the main execution thread is also considered as a work thread.
+   
    
 .seealso: PetscGetMaxPThreads()
 */ 
@@ -196,6 +218,7 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 {
   PetscErrorCode ierr;
   PetscBool      flg=PETSC_FALSE;
+  PetscInt       nworkThreads;
 
   PetscFunctionBegin;
 
@@ -215,10 +238,11 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
     N_CORES = sysinfo.dwNumberOfProcessors;
   }
 #endif
-  PetscMaxThreads = N_CORES-1;
+  PetscMaxThreads=N_CORES-1;
   if(nthreads == PETSC_DECIDE) {
     /* Check if run-time option is given */
-    ierr = PetscOptionsInt("-nthreads","Set number of threads to create","PetscSetMaxPThreads",PetscMaxThreads,&PetscMaxThreads,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-nthreads","Set number of threads to be used for the thread pool","PetscSetMaxPThreads",N_CORES,&nworkThreads,&flg);CHKERRQ(ierr);
+    if(flg) PetscMaxThreads = nworkThreads-1;
   } else PetscMaxThreads = nthreads;
   PetscFunctionReturn(0);
 }
@@ -226,12 +250,12 @@ PetscErrorCode PetscSetMaxPThreads(PetscInt nthreads)
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetMaxPThreads"
 /*
-   PetscGetMaxPThreads - Returns the number of pthreads created.
+   PetscGetMaxPThreads - Returns the number of pthreads used in the thread pool.
 
    Not collective
   
    Output Parameters:
-.  nthreads - Number of pthreads created.
+.  nthreads - Number of pthreads in the the thread pool.
 
    Level: beginner
  
@@ -246,7 +270,7 @@ PetscErrorCode PetscGetMaxPThreads(PetscInt *nthreads)
   if(PetscMaxThreads < 0) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscSetMaxPThreads() first");
   } else {
-    *nthreads = PetscMaxThreads;
+    *nthreads = PetscMaxThreads+PetscMainThreadShareWork;
   }
   PetscFunctionReturn(0);
 }
@@ -340,7 +364,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void)
     PetscThreadsSynchronizationFinalize   = &PetscThreadsSynchronizationFinalize_LockFree;
     PetscThreadsWait      = &PetscThreadsWait_LockFree;
     PetscThreadsRunKernel = &PetscThreadsRunKernel_LockFree;
-    PetscInfo1(PETSC_NULL,"Using lock-free thread synchronization with %d threads\n",PetscMaxThreads);
+    PetscInfo1(PETSC_NULL,"Using lock-free thread synchronization with %d threads\n",PetscMaxThreads+PetscMainThreadShareWork);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only Lock-free synchronization scheme supported currently");
