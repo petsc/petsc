@@ -187,7 +187,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
   MatStencil     col[5], row;
-  PetscScalar    D, K, A, v[5], hx, hy, hxdhy, hydhx, ux, uy, normGradZ;
+  PetscScalar    D, K, A, v[5], hx, hy, hxdhy, hydhx, ux, uy;
+  PetscReal      normGradZ;
   PetscInt       i, j,k;
   PetscErrorCode ierr;
 
@@ -221,7 +222,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         /* interior grid points */
         ux        = (x[j][i+1] - x[j][i])/hx;
         uy        = (x[j+1][i] - x[j][i])/hy;
-        normGradZ = sqrt(ux*ux + uy*uy);
+        normGradZ = PetscRealPart(sqrt(ux*ux + uy*uy));
         //PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ);
         if (normGradZ < 1.0e-8) {
           normGradZ = 1.0e-8;

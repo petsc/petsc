@@ -637,10 +637,10 @@ PetscErrorCode VecMDot_Kernel4(void* arg)
 
   sum0 = sum1 = sum2 = sum3 = 0.0;
   for(i=start;i<end;i++) {
-    sum0 += PetscConj(x[i])*(y0[i]);
-    sum1 += PetscConj(x[i])*(y1[i]);
-    sum2 += PetscConj(x[i])*(y2[i]);
-    sum3 += PetscConj(x[i])*(y3[i]);
+    sum0 += (x[i])*PetscConj(y0[i]);
+    sum1 += (x[i])*PetscConj(y1[i]);
+    sum2 += (x[i])*PetscConj(y2[i]);
+    sum3 += (x[i])*PetscConj(y3[i]);
   }
   data->result0 = sum0; data->result1 = sum1; data->result2 = sum2; data->result3 = sum3;
   return(0);
@@ -663,9 +663,9 @@ PetscErrorCode VecMDot_Kernel3(void* arg)
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
   sum0 = sum1 = sum2 = 0.0;
   for(i=start;i<end;i++) {
-    sum0 += PetscConj(x[i])*(y0[i]);
-    sum1 += PetscConj(x[i])*(y1[i]);
-    sum2 += PetscConj(x[i])*(y2[i]);
+    sum0 += (x[i])*PetscConj(y0[i]);
+    sum1 += (x[i])*PetscConj(y1[i]);
+    sum2 += (x[i])*PetscConj(y2[i]);
   }
   data->result0 = sum0; data->result1 = sum1; data->result2 = sum2;
   return(0);
@@ -687,8 +687,8 @@ PetscErrorCode VecMDot_Kernel2(void* arg)
   ierr = VecGetThreadOwnershipRange(X,thread_id,&start,&end);CHKERRQ(ierr);
   sum0 = sum1 = 0.0;
   for(i=start;i<end;i++) {
-    sum0 += PetscConj(x[i])*(y0[i]);
-    sum1 += PetscConj(x[i])*(y1[i]);
+    sum0 += (x[i])*PetscConj(y0[i]);
+    sum1 += (x[i])*PetscConj(y1[i]);
   }
   data->result0 = sum0; data->result1 = sum1;
   return(0);
