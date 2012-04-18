@@ -485,8 +485,9 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   PetscInt        i,j,k,limit=0,maxits=5;
   PetscInt        mx,my;
   PetscInt        bsize=0, lsize=0, tsize=0, rsize=0;
-  PetscScalar     one=1.0, two=2.0, three=3.0, tol=1e-10;
-  PetscScalar     fnorm,det,hx,hy,xt=0,yt=0;
+  PetscScalar     one=1.0, two=2.0, three=3.0;
+  PetscScalar     det,hx,hy,xt=0,yt=0;
+  PetscReal       fnorm, tol=1e-10;
   PetscScalar     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
   PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscScalar     *boundary;
@@ -542,7 +543,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
       for (k=0; k<maxits; k++){
 	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
 	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=sqrt(nf1*nf1+nf2*nf2);
+	fnorm=PetscRealPart(sqrt(nf1*nf1+nf2*nf2));
 	if (fnorm <= tol) break;
 	njac11=one+u2*u2-u1*u1;
 	njac12=two*u1*u2;

@@ -60,7 +60,8 @@ PetscErrorCode VecDot_Kernel(void *arg)
   n = end-start;
   bn = PetscBLASIntCast(n);
   bstart = PetscBLASIntCast(start);
-  data->result = BLASdot_(&bn,x+bstart,&one,y+bstart,&one);
+  /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
+  data->result = BLASdot_(&bn,y+bstart,&one,x+bstart,&one);
   return(0);
 }
 

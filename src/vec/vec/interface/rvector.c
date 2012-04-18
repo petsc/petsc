@@ -69,7 +69,9 @@ $    work load inbalance that causes certain processes to arrive much earlier th
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
 $     val = (x,y) = y^H x,
-   where y^H denotes the conjugate transpose of y.
+   where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex 
+   inner product where the SECOND argument gets the complex conjugate. Since the BLASdot() complex conjugates the first
+   first argument we call the BLASdot() with the arguments reversed.
 
    Use VecTDot() for the indefinite form
 $     val = (x,y) = y^T x,

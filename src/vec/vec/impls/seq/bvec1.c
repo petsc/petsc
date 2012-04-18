@@ -19,7 +19,8 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
-  *z = BLASdot_(&bn,xa,&one,ya,&one);
+  /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
+  *z = BLASdot_(&bn,ya,&one,xa,&one);
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
