@@ -58,23 +58,23 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-cpp=<prog>', nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
-    help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
+    help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, None, 'Specify the C preprocessor options'))
     help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-CC=<prog>',             nargs.Arg(None, None, 'Specify the C compiler'))
-    help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, '',   'Specify the C compiler options'))
+    help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, None, 'Specify the C compiler options'))
     help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
 
     help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
-    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, '',   'Specify the C++ preprocessor options'))
+    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
-    help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C++ compiler options'))
+    help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, None, 'Specify the C++ compiler options'))
     help.addArgument('Compilers', '-CXX_CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler-only options'))
     help.addArgument('Compilers', '-CXX_LINKER_FLAGS=<string>',       nargs.Arg(None, [], 'Specify the C++ linker flags'))
 
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FC=<prog>',             nargs.Arg(None, None, 'Specify the Fortran compiler'))
-    help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, '',   'Specify the Fortran compiler options'))
+    help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, None, 'Specify the Fortran compiler options'))
     help.addArgument('Compilers', '-FC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the FC linker flags'))
 
     help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
@@ -83,9 +83,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
-    help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
+    help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
     
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
@@ -391,11 +391,13 @@ class Configure(config.base.Configure):
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
       for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
-        setattr(self, flagsArg, self.argDB[flagsArg])
+        if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
+        else: setattr(self, flagsArg, '')
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
     for flagsArg in ['CPPFLAGS', 'CUDAPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
-      setattr(self, flagsArg, self.argDB[flagsArg])
+      if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
+      else: setattr(self, flagsArg, '')
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
       self.LIBS = self.argDB['LIBS']
