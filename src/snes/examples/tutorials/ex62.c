@@ -965,7 +965,15 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
     for(p = 0; p < user->numProcs; ++p) {
-      if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      if (p == user->rank) {
+        Vec f;
+
+        ierr = VecDuplicate(F, &f);CHKERRQ(ierr);
+        ierr = VecCopy(F, f);CHKERRQ(ierr);
+        ierr = VecChop(f, 1.0e-10);CHKERRQ(ierr);
+        ierr = VecView(f, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        ierr = VecDestroy(&f);CHKERRQ(ierr);
+      }
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
   }

@@ -58,8 +58,8 @@ Vector Object: 1 MPI processes
 0
 0
 0.0208333
--1.00009e-12
--9.99978e-13
+0
+0
 0
 0
 0
@@ -119,7 +119,7 @@ Vector Object: 1 MPI processes
 -0.0625
 -2.25
 -0.25
--3.46945e-18
+0
 0
 0
 0.0625
