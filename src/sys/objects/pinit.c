@@ -79,7 +79,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) || defined(PETSC_HAVE_JULIA)
+
 extern PetscBool PetscBeganMPI;
 
 #undef __FUNCT__  
@@ -106,6 +107,7 @@ PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,
   char           **myargs = args;
 
   PetscFunctionBegin;
+  /*  printf("%s %s\n",args[0],args[1]);*/
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;

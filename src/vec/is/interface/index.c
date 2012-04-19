@@ -994,9 +994,7 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <engine.h>   /* MATLAB include file */
-#include <mex.h>      /* MATLAB include file */
+#if defined(PETSC_HAVE_MATLAB_ENGINE) || defined(PETSC_HAVE_JULIA)
 EXTERN_C_BEGIN
 #undef __FUNCT__ 
 #define __FUNCT__ "ISGetIndicesMatlab"
