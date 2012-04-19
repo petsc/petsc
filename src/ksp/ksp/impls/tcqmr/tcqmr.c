@@ -59,13 +59,13 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     ksp->its++;
 
     ierr   = KSP_PCApplyBAorAB(ksp,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
-    ierr   = VecDot(v0,y,&dp11);CHKERRQ(ierr);
-    ierr   = VecDot(v0,u,&dp2);CHKERRQ(ierr);
+    ierr   = VecDot(y,v0,&dp11);CHKERRQ(ierr);
+    ierr   = VecDot(u,v0,&dp2);CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
     deltmp = alpha;
     ierr   = VecCopy(y,z);CHKERRQ(ierr);
     ierr   = VecAXPY(z,-alpha,u);CHKERRQ(ierr); /* z = y - alpha u */
-    ierr   = VecDot(v0,u,&rho);CHKERRQ(ierr);
+    ierr   = VecDot(u,v0,&rho);CHKERRQ(ierr);
     beta   = rho / (f*rhom1);
     rhom1  = rho;
     ierr   = VecCopy(z,utmp);CHKERRQ(ierr);    /* up1 = (A-alpha*I)*
