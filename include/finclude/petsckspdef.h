@@ -47,7 +47,6 @@
 #define KSPSYMMLQ 'symmlq'
 #define KSPLCD 'lcd'
 #define KSPPYTHON 'python'
-#define KSPBROYDEN 'broyden'
 #define KSPGCR 'gcr'
 #define KSPSPECEST 'specest'
 #endif
