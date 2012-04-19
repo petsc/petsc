@@ -31,7 +31,7 @@ end
 
 function PetscInitialize(args,filename,help)
   # argument list starts with program name
-  arg = ["julia",args]; 
+  args = ["julia",args]; 
   #
   #   If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
   #
@@ -67,11 +67,18 @@ type PetscIS
     comm = PETSC_COMM_SELF();
     is = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :ISCreate),Int32,(Int64,Ptr{Int64}),comm,is);if (err != 0) return err;end
-    new(is[1])
+    is = new(is[1])
+    finalizer(is,PetscISDestroy) 
+    # does not seem to be called immediately when is is no longer visible, is it called later during garbage collection?
+    return is
   end
 end
 
-  function PetscIS(indices)
+  function PetscISDestroy(is::PetscIS)
+    err = ccall(dlsym(libpetsc, :ISDestroy),Int32,(Ptr{Int64},), &is.pobj);    
+  end
+
+  function PetscIS(indices::Array{Int64})
     is = PetscIS()
     err = ccall(dlsym(libpetsc, :ISSetType),Int32,(Int64,Ptr{Uint8}), is.pobj,cstring("general"));
     COPY_VALUES = 0
@@ -79,17 +86,17 @@ end
     return is
   end
 
-  function PetscView(obj,viewer)
+  function PetscView(obj::PetscIS,viewer)
    err = ccall(dlsym(libpetsc, :ISView),Int32,(Int64,Int64),obj.pobj,0);
   end
 
-  function PetscISGetSize(obj)
+  function PetscISGetSize(obj::PetscIS)
     n = Array(Int32,1)
     err = ccall(dlsym(libpetsc, :ISGetSize),Int32,(Int64,Ptr{Int32}), obj.pobj,n);
     return n[1]
   end
 
-  function PetscISGetIndices(obj)
+  function PetscISGetIndices(obj::PetscIS)
     len = PetscISGetSize(obj)
     indices = Array(Int32,len);
     err = ccall(dlsym(libpetsc,:ISGetIndicesMatlab),Int32,(Int64,Ptr{Int32}),obj.pobj,indices);
@@ -97,5 +104,49 @@ end
     return indices  
   end
 
+# -------------------------------------
+#
+type PetscVec
+  pobj::Int64
+  function PetscVec()
+    comm = PETSC_COMM_SELF();
+    vec = Array(Int64,1)
+    err = ccall(dlsym(libpetsc, :VecCreate),Int32,(Int64,Ptr{Int64}),comm,vec);
+    vec = new(vec[1])
+    finalizer(vec,PetscVecDestroy)  
+    # does not seem to be called immediately when vec is no longer visible, is it called later during garbage collection?
+    return vec
+  end
+end
+
+  function PetscVecDestroy(vec::PetscVec)
+    err = ccall(dlsym(libpetsc, :VecDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+  end
+
+  function PetscVec(array::Array{Float64})
+    vec = PetscVec()
+    err = ccall(dlsym(libpetsc, :VecSetType),Int32,(Int64,Ptr{Uint8}), vec.pobj,cstring("seq"));
+    err = ccall(dlsym(libpetsc, :VecSetSizes),Int32,(Int64,Int32,Int32), vec.pobj,length(array),length(array));
+    # want a 32 bit int array so build it ourselves
+    idx = Array(Int32,length(array)); 
+    println(idx); 
+    for i=1:length(array); println(i); idx[i] = i-1;  end
+    println(idx)
+    INSERT_VALUES = 1
+    err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),idx,array,INSERT_VALUES);
+    err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), vec.pobj);
+    err = ccall(dlsym(libpetsc, :VecAssemblyEnd),Int32,(Int64,), vec.pobj);
+    return vec
+  end
+
+  function PetscView(obj::PetscVec,viewer)
+   err = ccall(dlsym(libpetsc, :VecView),Int32,(Int64,Int64),obj.pobj,0);
+  end
+
+  function PetscVecGetSize(obj::PetscVec)
+    n = Array(Int32,1)
+    err = ccall(dlsym(libpetsc, :VecGetSize),Int32,(Int64,Ptr{Int32}), obj.pobj,n);
+    return n[1]
+  end
 
 

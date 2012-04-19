@@ -107,7 +107,6 @@ PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,
   char           **myargs = args;
 
   PetscFunctionBegin;
-  /*  printf("%s %s\n",args[0],args[1]);*/
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;
