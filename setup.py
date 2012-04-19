@@ -245,9 +245,9 @@ def tarball():
         return None
     bits = VERSION.split('.')
     if len(bits) == 2: bits.append('0')
-    VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
+    PETSC_VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
-            'petsc-lite-%s.tar.gz' % VERSION)
+            'petsc-lite-%s.tar.gz#egg=petsc-%s' % (PETSC_VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
