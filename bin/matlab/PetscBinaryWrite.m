@@ -41,9 +41,12 @@ for l=1:nargin-2
 end
 
 for l=1:nargin-1
-  A = varargin{l}; 
-  if issparse(A)
+  A = varargin{l};
+  if issparse(A) || min(size(A)) > 1
     % save sparse matrix in special Matlab format
+    if ~issparse(A)
+        A = sparse(A);
+    end
     [m,n] = size(A);
 
     if min(size(A)) == 1     %a one-rank matrix will be compressed to a
