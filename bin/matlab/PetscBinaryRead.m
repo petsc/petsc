@@ -97,7 +97,7 @@ for l=1:narg
     if (nz == -1)
       if arecomplex
         s     = read(fd,2*m*n,precision);
-        iReal = linspace(1,n*m*2-1,n*m);
+        iReal = 1:2:n*m*2-1;
         iImag = iReal +1 ;
         A     = complex(reshape(s(iReal),n,m)',reshape(s(iImag),n,m)') ;
       else
