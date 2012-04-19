@@ -39,7 +39,8 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 #elif defined(PETSC_HAVE_DCMF)
   ierr = MPIPetsc_Iallreduce_DCMF(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #else
-  SETERRQ(comm,PETSC_ERR_SUP_SYS,"Nothing comparable to MPI_Iallreduce() available");
+  ierr = MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
+  *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);
 }
@@ -95,7 +96,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->request     = MPI_REQUEST_NULL;
   ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI)
+#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI) || defined(PETSC_HAVE_DCMF)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
 #endif
@@ -167,7 +168,6 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI)
   if (sr->async) {              /* Bad reuse, setup code copied from PetscSplitReductionApply(). */
     PetscInt       i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
     PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
@@ -232,9 +232,6 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   } else {
     ierr = PetscSplitReductionApply(sr);CHKERRQ(ierr);
   }
-#else
-  ierr = PetscSplitReductionApply(sr);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
