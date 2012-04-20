@@ -1,7 +1,7 @@
 Matrix mpibaij(2)
 Matrix Object: 2 MPI processes
   type: mpibaij
-  rows=8, cols=8
+  rows=8, cols=8, bs=2
   total: nonzeros=64, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
     [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem SKIP
@@ -44,7 +44,7 @@ row 7: (0, 114)  (1, 116)  (2, 98)  (3, 120)  (4, 122)  (5, 124)  (6, 126)  (7, 
 Matrix mpisbaij(2)
 Matrix Object: 2 MPI processes
   type: mpisbaij
-  rows=8, cols=8
+  rows=8, cols=8, bs=2
   total: nonzeros=40, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
     [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem SKIP
