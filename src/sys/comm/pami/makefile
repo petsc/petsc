@@ -11,7 +11,7 @@ OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = src/sys/pami/
+LOCDIR	  = src/sys/comm/pami/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

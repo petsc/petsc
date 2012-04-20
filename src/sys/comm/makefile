@@ -1,18 +1,8 @@
-#requireslanguage CXXONLY
-#requirespackage  'PETSC_HAVE_SIEVE'
 ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-SOURCEC	  = # sectioncopy.c
-SOURCEF	  =
-SOURCEH	  =
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
-MANSEC	  = Sys
-LIBBASE	  = libpetscsys
-DIRS	  =
-LOCDIR	  = src/sys/comm/
+SOURCEH   =
+DIRS      = pami
+LOCDIR    = src/sys/comm/
+MANSEC    = Sys
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
