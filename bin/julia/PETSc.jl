@@ -17,6 +17,19 @@ libpetsclocation = strcat(PETSC_DIR, "/", PETSC_ARCH, "/lib/", "libpetsc")
 libpetsc = dlopen(libpetsclocation)
 
 # -------------------------------------
+
+PETSC_INSERT_VALUES = 1;
+PETSC_ADD_VALUES    = 2;
+PETSC_COPY_VALUES   = 0;
+
+PETSC_NORM_1         = 0;
+PETSC_NORM_2         = 1;
+PETSC_NORM_FROBENIUS = 2;
+PETSC_NORM_INFINITY  = 3;
+PETSC_NORM_MAX       = PETSC_NORM_INFINITY;
+
+
+# -------------------------------------
 #    These are the Julia interface methods for all the visible PETSc functions. Julia datatypes for PETSc objects simply contain the C pointer to the 
 #    underlying PETSc object.
 #   
@@ -61,29 +74,42 @@ end
 
 # -------------------------------------
 #
-type PetscIS
+abstract PetscObject
+
+function PetscView(obj::PetscObject)
+  PetscView(obj,0)
+end
+
+type PetscIS <: PetscObject
   pobj::Int64
   function PetscIS()
     comm = PETSC_COMM_SELF();
     is = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :ISCreate),Int32,(Int64,Ptr{Int64}),comm,is);if (err != 0) return err;end
     is = new(is[1])
-    finalizer(is,PetscISDestroy) 
+    finalizer(is,PetscDestroy) 
     # does not seem to be called immediately when is is no longer visible, is it called later during garbage collection?
     return is
   end
 end
 
-  function PetscISDestroy(is::PetscIS)
-    err = ccall(dlsym(libpetsc, :ISDestroy),Int32,(Ptr{Int64},), &is.pobj);    
+  function PetscDestroy(is::PetscIS)
+    if (is.pobj != 0) then 
+      err = ccall(dlsym(libpetsc, :ISDestroy),Int32,(Ptr{Int64},), &is.pobj);   
+    end
+    is.pobj = 0 
+    return 0
   end
 
   function PetscIS(indices::Array{Int64})
     is = PetscIS()
     err = ccall(dlsym(libpetsc, :ISSetType),Int32,(Int64,Ptr{Uint8}), is.pobj,cstring("general"));
-    COPY_VALUES = 0
-    err = ccall(dlsym(libpetsc, :ISGeneralSetIndices),Int32,(Int64,Int32,Ptr{Int32},Int32),is.pobj,length(indices),convert(Array{Int32},indices),COPY_VALUES)
+    err = ccall(dlsym(libpetsc, :ISGeneralSetIndices),Int32,(Int64,Int32,Ptr{Int32},Int32),is.pobj,length(indices),convert(Array{Int32},indices),PETSC_COPY_VALUES)
     return is
+  end
+
+  function PetscISSetType(vec::PetscIS,name)
+    err = ccall(dlsym(libpetsc, :ISSetType),Int32,(Int64,Ptr{Uint8}), vec.pobj,cstring(name));
   end
 
   function PetscView(obj::PetscIS,viewer)
@@ -106,21 +132,28 @@ end
 
 # -------------------------------------
 #
-type PetscVec
+type PetscVec <: PetscObject
   pobj::Int64
   function PetscVec()
     comm = PETSC_COMM_SELF();
     vec = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :VecCreate),Int32,(Int64,Ptr{Int64}),comm,vec);
     vec = new(vec[1])
-    finalizer(vec,PetscVecDestroy)  
+    finalizer(vec,PetscDestroy)  
     # does not seem to be called immediately when vec is no longer visible, is it called later during garbage collection?
     return vec
   end
 end
 
-  function PetscVecDestroy(vec::PetscVec)
-    err = ccall(dlsym(libpetsc, :VecDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+  function PetscDestroy(vec::PetscVec)
+    if (vec.pobj != 0) 
+      err = ccall(dlsym(libpetsc, :VecDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+    end
+    vec.pobj = 0
+  end
+
+  function PetscVecSetType(vec::PetscVec,name)
+    err = ccall(dlsym(libpetsc, :VecSetType),Int32,(Int64,Ptr{Uint8}), vec.pobj,cstring(name));
   end
 
   function PetscVec(array::Array{Float64})
@@ -129,24 +162,54 @@ end
     err = ccall(dlsym(libpetsc, :VecSetSizes),Int32,(Int64,Int32,Int32), vec.pobj,length(array),length(array));
     # want a 32 bit int array so build it ourselves
     idx = Array(Int32,length(array)); 
-    println(idx); 
-    for i=1:length(array); println(i); idx[i] = i-1;  end
-    println(idx)
-    INSERT_VALUES = 1
-    err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),idx,array,INSERT_VALUES);
+    for i=1:length(array);  idx[i] = i-1;  end
+    err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),idx,array,PETSC_INSERT_VALUES);
     err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), vec.pobj);
     err = ccall(dlsym(libpetsc, :VecAssemblyEnd),Int32,(Int64,), vec.pobj);
     return vec
   end
 
+  function PetscVecSetValues(vec::PetscVec,idx::Array{Int64},array::Array{Float64},flag::Int)
+    err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),convert(Array{Int32},idx),array,flag);
+  end
+  function PetscVecSetValues(vec::PetscVec,idx::Array{Int64},array::Array{Float64})
+    PetscVecSetValues(vec,idx,array,PETSC_INSERT_VALUES)
+  end
+  function PetscVecSetValues(vec::PetscVec,array::Array{Float64})
+    idx = Array(Int64,length(array))
+    for i=1:length(array);  idx[i] = i-1;  end
+    PetscVecSetValues(vec,idx,array,PETSC_INSERT_VALUES)
+  end
+
+  function PetscVecAssemblyBegin(obj::PetscVec)
+    err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), vec.pobj);
+  end
+
+  function PetscVecAssemblyEnd(obj::PetscVec)
+    err = ccall(dlsym(libpetsc, :VecAssemblyEnd),Int32,(Int64,), vec.pobj);
+  end
+
+  function PetscVecSetSizes(vec::PetscVec,n::Int,N::Int)
+    err = ccall(dlsym(libpetsc, :VecSetSizes),Int32,(Int64,Int32,Int32), vec.pobj,n,N);
+  end
+
   function PetscView(obj::PetscVec,viewer)
-   err = ccall(dlsym(libpetsc, :VecView),Int32,(Int64,Int64),obj.pobj,0);
+    err = ccall(dlsym(libpetsc, :VecView),Int32,(Int64,Int64),obj.pobj,0);
   end
 
   function PetscVecGetSize(obj::PetscVec)
     n = Array(Int32,1)
     err = ccall(dlsym(libpetsc, :VecGetSize),Int32,(Int64,Ptr{Int32}), obj.pobj,n);
     return n[1]
+  end
+
+  function PetscVecNorm(obj::PetscVec,normtype::Int)
+    n = Array(Float64,1)
+    err = ccall(dlsym(libpetsc, :VecNorm),Int32,(Int64,Int32,Ptr{Int32}), obj.pobj,normtype, n);
+    return n[1]
+  end
+  function PetscVecNorm(obj::PetscVec)
+    return PetscVecNorm(obj,PETSC_NORM_2)
   end
 
 
