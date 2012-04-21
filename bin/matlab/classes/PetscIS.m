@@ -40,7 +40,7 @@ classdef PetscIS < PetscObject
     function [indices,err] = GetIndices(obj,idx)
         [n,err] = GetSize(obj);
         indices = zeros(n,1);
-        [err,indices] = calllib('libpetsc','ISGetIndicesMatlab',obj.pobj,indices);
+        [err,indices] = calllib('libpetsc','ISGetIndicesCopy',obj.pobj,indices);
         indices = indices + 1;
     end
     function err = View(obj,viewer)

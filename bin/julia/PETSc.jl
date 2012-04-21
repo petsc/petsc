@@ -48,7 +48,7 @@ function PetscInitialize(args,filename,help)
   #
   #   If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
   #
-  init = ccall(dlsym(libpetsc,:PetscInitializedMatlab),Int32,());
+  init = ccall(dlsym(libpetsc,:PetscInitializedNoPointers),Int32,());
   if (init != 0) 
     err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());if (err != 0) return err; end
   end
@@ -57,7 +57,7 @@ function PetscInitialize(args,filename,help)
     arr[i] = cstring(args[i])
   end
   ptrs = _jl_pre_exec(arr)
-  err = ccall(dlsym(libpetsc, :PetscInitializeMatlab),Int32,(Int32,Ptr{Ptr{Uint8}},Ptr{Uint8},Ptr{Uint8}), length(ptrs), ptrs,cstring(filename),cstring(help));
+  err = ccall(dlsym(libpetsc, :PetscInitializeNoPointers),Int32,(Int32,Ptr{Ptr{Uint8}},Ptr{Uint8},Ptr{Uint8}), length(ptrs), ptrs,cstring(filename),cstring(help));
   return err
 end
 
@@ -68,7 +68,7 @@ end
 
 function PETSC_COMM_SELF()
   comm = Array(Int64, 1)
-  err = ccall(dlsym(libpetsc, :PetscGetPETSC_COMM_SELFMatlab),Int32,(Ptr{Int64},),comm);
+  err = ccall(dlsym(libpetsc, :PetscGetPETSC_COMM_SELF),Int32,(Ptr{Int64},),comm);
   return comm[1]
 end
 
@@ -125,7 +125,7 @@ end
   function PetscISGetIndices(obj::PetscIS)
     len = PetscISGetSize(obj)
     indices = Array(Int32,len);
-    err = ccall(dlsym(libpetsc,:ISGetIndicesMatlab),Int32,(Int64,Ptr{Int32}),obj.pobj,indices);
+    err = ccall(dlsym(libpetsc,:ISGetIndicesCopy),Int32,(Int64,Ptr{Int32}),obj.pobj,indices);
     indices = indices + 1
     return indices  
   end

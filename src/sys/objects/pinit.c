@@ -79,28 +79,26 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) || defined(PETSC_HAVE_JULIA)
-
 extern PetscBool PetscBeganMPI;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInitializeMatlab"
+#define __FUNCT__ "PetscInitializeNoPointers"
 /*
-      PetscInitializeMatlab - Calls PetscInitialize() from C/C++ without the pointers to argc and args
+      PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
    Collective
   
    Level: advanced
 
-    Notes: this is called only by the PETSc MATLAB interface. Even though it might start MPI it sets the flag to 
+    Notes: this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to 
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to 
-     be called multiple times from MATLAB without the problem of trying to initialize MPI more than once.
+     be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
 
      Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
 
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
 */
-PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,const char *help)
+PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filename,const char *help)
 {
   PetscErrorCode ierr;
   int            myargc = argc;
@@ -114,19 +112,19 @@ PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInitializedMatlab"
+#define __FUNCT__ "PetscInitializedNoPointers"
 /*
-      PetscInitializedMatlab - Has PETSc been initialized already?
+      PetscInitializedNoPointers - Has PETSc been initialized already?
 
    Not Collective
   
    Level: advanced
 
-    Notes: this is called only by the PETSc MATLAB interface.
+    Notes: this is called only by the PETSc MATLAB and Julia interface.
 
-.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
+.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments(), PetscInitializeNoPointers()
 */
-int  PetscInitializedMatlab(void)
+int  PetscInitializedNoPointers(void)
 {
   PetscBool flg;
 
@@ -136,17 +134,16 @@ int  PetscInitializedMatlab(void)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscGetPETSC_COMM_SELFMatlab"
+#define __FUNCT__ "PetscGetPETSC_COMM_SELF"
 /*
-      Used by MATLAB interface to get communicator
+      Used by MATLAB and Julia interface to get communicator
 */
-PetscErrorCode  PetscGetPETSC_COMM_SELFMatlab(MPI_Comm *comm)
+PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 {
   PetscFunctionBegin;
   *comm = PETSC_COMM_SELF;
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNoArguments"

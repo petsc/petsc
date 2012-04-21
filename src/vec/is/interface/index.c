@@ -994,11 +994,10 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) || defined(PETSC_HAVE_JULIA)
 EXTERN_C_BEGIN
 #undef __FUNCT__ 
-#define __FUNCT__ "ISGetIndicesMatlab"
-PetscErrorCode ISGetIndicesMatlab(IS is, PetscInt idx[])
+#define __FUNCT__ "ISGetIndicesCopy"
+PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt       len,i;
@@ -1012,7 +1011,6 @@ PetscErrorCode ISGetIndicesMatlab(IS is, PetscInt idx[])
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#endif
 
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.

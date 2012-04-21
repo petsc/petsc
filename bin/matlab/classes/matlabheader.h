@@ -7,10 +7,10 @@
 */
 typedef struct mxArray_tag mxArray;
 
-int PetscInitializeMatlab(int,char **,const char*,const char*);
-int PetscInitializedMatlab(void);
+int PetscInitializeNoPointers(int,char **,const char*,const char*);
+int PetscInitializedNoPointers(void);
 typedef int MPI_Comm;
-int PetscGetPETSC_COMM_SELFMatlab(MPI_Comm*);
+int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
 
 typedef int PetscLogStage;
@@ -50,7 +50,7 @@ int ISCreate(MPI_Comm,IS *);
 int ISSetType(IS,const char*);
 int ISGeneralSetIndices(IS,int,const int[],CopyMode);
 int ISGetSize(IS,int*);
-int ISGetIndicesMatlab(IS,int*);
+int ISGetIndicesCopy(IS,int*);
 int ISView(IS,PetscViewer);
 int ISDestroy(IS*);
 

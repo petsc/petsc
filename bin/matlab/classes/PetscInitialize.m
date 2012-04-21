@@ -56,10 +56,10 @@ arg = ['matlab',args];
 %
 % If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
 %
-init = calllib('libpetsc', 'PetscInitializedMatlab');
+init = calllib('libpetsc', 'PetscInitializedNoPointers');
 if (init) 
   err = calllib('libpetsc', 'PetscFinalize');PetscCHKERRQ(err);
 end
-err = calllib('libpetsc', 'PetscInitializeMatlab', length(arg), arg,argfile,arghelp);PetscCHKERRQ(err);
+err = calllib('libpetsc', 'PetscInitializeNoPointers', length(arg), arg,argfile,arghelp);PetscCHKERRQ(err);
 
 
