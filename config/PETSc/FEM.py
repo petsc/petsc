@@ -424,7 +424,10 @@ class QuadratureGenerator(script.Script):
     f1 = Define()
     f1.identifier = 'f1_func'
     f1.replacementText = 'f1_'+operator
-    return [f1]
+    f1coef = Define()
+    f1coef.identifier = 'f1_coef_func'
+    f1coef.replacementText = 'f1_'+operator+'_coef'
+    return [f1, f1coef]
 
   def getComputationTypes(self, element, num):
     '''Right now, this is used for GPU'''
