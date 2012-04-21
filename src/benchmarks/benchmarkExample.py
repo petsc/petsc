@@ -50,12 +50,12 @@ class PETScExample(object):
     return
 
   @staticmethod
-  def runShellCommand(command, cwd = None):
+  def runShellCommand(command, cwd = None, log = True):
     import subprocess
 
     Popen = subprocess.Popen
     PIPE  = subprocess.PIPE
-    print 'Executing: %s\n' % (command,)
+    if log: print 'Executing: %s\n' % (command,)
     pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE, bufsize=-1, shell=True, universal_newlines=True)
     (out, err) = pipe.communicate()
     ret = pipe.returncode
@@ -71,7 +71,7 @@ class PETScExample(object):
         a.append('-'+key+' '+str(value))
     return ' '.join(a)
 
-  def run(self, numProcs = 1, **opts):
+  def run(self, numProcs = 1, log = True, **opts):
     if self.petsc.mpiexec() is None:
       cmd = self.petsc.example(self.num)
     else:
@@ -81,12 +81,12 @@ class PETScExample(object):
       del opts['batch']
       filename = generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
       # Submit job
-      out, err, ret = self.runShellCommand('qsub -q gpu '+filename)
+      out, err, ret = self.runShellCommand('qsub -q gpu '+filename, log = log)
       if ret:
         print err
         print out
     else:
-      out, err, ret = self.runShellCommand(cmd)
+      out, err, ret = self.runShellCommand(cmd, log = log)
       if ret:
         print err
         print out
@@ -294,14 +294,14 @@ def getDMComplexSize(dim, out):
       break
   return size
 
-def run_DMDA(ex, name, opts, args, sizes, times, events):
+def run_DMDA(ex, name, opts, args, sizes, times, events, log=True):
   for n in map(int, args.size):
-    ex.run(da_grid_x=n, da_grid_y=n, **opts)
+    ex.run(log=log, da_grid_x=n, da_grid_y=n, **opts)
     sizes[name].append(n*n * args.comp)
     processSummary('summary', args.stage, args.events, times[name], events[name])
   return
 
-def run_DMComplex(ex, name, opts, args, sizes, times, events):
+def run_DMComplex(ex, name, opts, args, sizes, times, events, log=True):
   # This should eventually be replaced by a direct FFC/Ignition interface
   if args.operator == 'laplacian':
     numComp  = 1
@@ -322,9 +322,23 @@ def run_DMComplex(ex, name, opts, args, sizes, times, events):
     times[name][numBlock]  = []
     events[name][numBlock] = {}
     for r in map(float, args.refine):
-      out = ex.run(refinement_limit=r, **opts)
+      out = ex.run(log=log, refinement_limit=r, **opts)
       sizes[name][numBlock].append(getDMComplexSize(args.dim, out))
       processSummary('summary', args.stage, args.events, times[name][numBlock], events[name][numBlock])
+  return
+
+def outputData(sizes, times, events, name = 'output.py'):
+  if os.path.exists(name):
+    base, ext = os.path.splitext(name)
+    num = 1
+    while os.path.exists(base+str(num)+ext):
+      num += 1
+    name = base+str(num)+ext
+  with file(name, 'w') as f:
+    f.write('#PETSC_ARCH='+os.environ['PETSC_ARCH']+' '+' '.join(sys.argv)+'\n')
+    f.write('sizes  = '+repr(sizes)+'\n')
+    f.write('times  = '+repr(times)+'\n')
+    f.write('events = '+repr(events)+'\n')
   return
 
 if __name__ == '__main__':
@@ -339,6 +353,7 @@ if __name__ == '__main__':
   parser.add_argument('--stage',   default='Main_Stage',               help='The default logging stage')
   parser.add_argument('--events',  nargs='+',                          help='Events to process')
   parser.add_argument('--batch',   action='store_true', default=False, help='Generate batch files for the runs instead')
+  parser.add_argument('--daemon',  action='store_true', default=False, help='Run as a daemon')
   subparsers = parser.add_subparsers(help='DM types')
 
   parser_dmda = subparsers.add_parser('DMDA', help='Use a DMDA for the problem geometry')
@@ -366,6 +381,12 @@ if __name__ == '__main__':
   sizes  = {}
   times  = {}
   events = {}
+  log    = not args.daemon
+
+  if args.daemon:
+    import daemon
+    print 'Starting daemon'
+    daemon.createDaemon('.')
 
   for run in args.runs:
     name, stropts = run.split('=', 1)
@@ -374,16 +395,14 @@ if __name__ == '__main__':
       sizes[name]  = []
       times[name]  = []
       events[name] = {}
-      run_DMDA(ex, name, opts, args, sizes, times, events)
+      run_DMDA(ex, name, opts, args, sizes, times, events, log=log)
     elif args.dmType == 'DMComplex':
       sizes[name]  = {}
       times[name]  = {}
       events[name] = {}
-      run_DMComplex(ex, name, opts, args, sizes, times, events)
-  print('sizes',sizes)
-  print('times',times)
-  print('events',events)
-  if not args.batch: plotSummaryLine(args.library, args.num, args.events, sizes, times, events)
+      run_DMComplex(ex, name, opts, args, sizes, times, events, log=log)
+  outputData(sizes, times, events)
+  if not args.batch and log: plotSummaryLine(args.library, args.num, args.events, sizes, times, events)
 # Benchmark for ex50
 # ./src/benchmarks/benchmarkExample.py --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --num 50 DMDA --size 10 20 50 100 --comp 4 CPU='pc_type=none mat_no_inode dm_vec_type=seq dm_mat_type=seqaij' GPU='pc_type=none mat_no_inode dm_vec_type=seqcusp dm_mat_type=seqaijcusp cusp_synchronize'
 # Benchmark for ex52
