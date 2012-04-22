@@ -10,11 +10,6 @@ PETSC_EXTERN_CXX_BEGIN
 #endif
 #include <sched.h>
 #endif
-#if defined(PETSC_HAVE_PTHREAD_H)
-#include <pthread.h>
-#elif defined(PETSC_HAVE_WINPTHREADS_H)
-#include "winpthreads.h"       /* http://locklessinc.com/downloads/winpthreads.h */
-#endif
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif

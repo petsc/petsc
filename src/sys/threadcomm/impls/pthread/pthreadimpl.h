@@ -4,6 +4,12 @@
 
 #include <petsc-private/threadcommimpl.h>
 
+#if defined(PETSC_HAVE_PTHREAD_H)
+#include <pthread.h>
+#elif defined(PETSC_HAVE_WINPTHREADS_H)
+#include "winpthreads.h"       /* http://locklessinc.com/downloads/winpthreads.h */
+#endif
+
 /*
   PetscPThreadCommSynchronizationType - Type of thread synchronization for pthreads communicator.
 
