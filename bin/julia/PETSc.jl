@@ -213,4 +213,63 @@ end
     return PetscVecNorm(obj,PETSC_NORM_2)
   end
 
+# -------------------------------------
+type PetscMat <: PetscObject
+  pobj::Int64
+  function PetscMat()
+    comm = PETSC_COMM_SELF();
+    vec = Array(Int64,1)
+    err = ccall(dlsym(libpetsc, :MatCreate),Int32,(Int64,Ptr{Int64}),comm,vec);
+    vec = new(vec[1])
+    finalizer(vec,PetscDestroy)  
+    # does not seem to be called immediately when vec is no longer visible, is it called later during garbage collection?
+    return vec
+  end
+end
 
+  function PetscDestroy(vec::PetscMat)
+    if (vec.pobj != 0) 
+      err = ccall(dlsym(libpetsc, :MatDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+    end
+    vec.pobj = 0
+  end
+
+  function PetscMatSetType(vec::PetscMat,name)
+    err = ccall(dlsym(libpetsc, :MatSetType),Int32,(Int64,Ptr{Uint8}), vec.pobj,cstring(name));
+  end
+
+  function PetscSetUp(vec::PetscMat)
+    err = ccall(dlsym(libpetsc, :MatSetUp),Int32,(Int64,), vec.pobj);
+  end
+
+  PETSC_MAT_FLUSH_ASSEMBLY = 1;
+  PETSC_MAT_FINAL_ASSEMBLY = 0
+
+  function PetscMatAssemblyBegin(obj::PetscMat,flg::Int)
+    err = ccall(dlsym(libpetsc, :MatAssemblyBegin),Int32,(Int64,Int32), obj.pobj,flg);
+  end
+  function PetscMatAssemblyBegin(obj::PetscMat)
+    return PetscMatAssemblyBegin(obj,PETSC_MAT_FINAL_ASSEMBLY);
+  end
+
+  function PetscMatAssemblyEnd(obj::PetscMat,flg::Int)
+    err = ccall(dlsym(libpetsc, :MatAssemblyEnd),Int32,(Int64,Int32), obj.pobj,flg);
+  end
+  function PetscMatAssemblyEnd(obj::PetscMat)
+    return PetscMatAssemblyEnd(obj,PETSC_MAT_FINAL_ASSEMBLY);
+  end
+
+  function PetscMatSetSizes(vec::PetscMat,m::Int,n::Int,M::Int,N::Int)
+    err = ccall(dlsym(libpetsc, :MatSetSizes),Int32,(Int64,Int32,Int32,Int32,Int32), vec.pobj,m,n,M,N);
+  end
+
+  function PetscView(obj::PetscMat,viewer)
+    err = ccall(dlsym(libpetsc, :MatView),Int32,(Int64,Int64),obj.pobj,0);
+  end
+
+  function PetscMatGetSize(obj::PetscMat)
+    m = Array(Int32,1)
+    n = Array(Int32,1)
+    err = ccall(dlsym(libpetsc, :MatGetSize),Int32,(Int64,Ptr{Int32},Ptr{Int32}), obj.pobj,m,n);
+    return (m[1],n[1])
+  end
