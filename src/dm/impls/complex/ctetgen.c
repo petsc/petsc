@@ -515,6 +515,7 @@ extern PetscErrorCode TetGenMeshShellFaceTraverse(TetGenMesh *, MemoryPool *, sh
 extern PetscErrorCode TetGenMeshTetrahedronTraverse(TetGenMesh *, tetrahedron **);
 extern PetscErrorCode TetGenMeshGetNextSFace(TetGenMesh *, face *, face *);
 extern PetscErrorCode TetGenMeshSplitSubEdge_arraypool(TetGenMesh *, point, face *, ArrayPool *, ArrayPool *);
+extern PetscErrorCode TetGenMeshCheck4FixedEdge(TetGenMesh *, point, point, PetscBool *);
 extern PetscErrorCode TetGenMeshGetFacetAbovePoint(TetGenMesh *, face *);
 extern PetscErrorCode TetGenMeshSInsertVertex(TetGenMesh *, point, face *, face *, PetscBool, PetscBool, locateresult *);
 extern PetscErrorCode TetGenMeshInsertVertexBW(TetGenMesh *, point, triface *, PetscBool, PetscBool, PetscBool, PetscBool, locateresult *);
@@ -8101,7 +8102,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByTranNM(TetGenMesh *m, PetscReal *key, Petsc
           ierr = TetGenMeshTetAllDihedral(m, p[n - 1], p[1], p[0], pa, PETSC_NULL, &d1, PETSC_NULL);CHKERRQ(ierr);
           ierr = TetGenMeshTetAllDihedral(m, p[1], p[n - 1], p[0], pb, PETSC_NULL, &d2, PETSC_NULL);CHKERRQ(ierr);
           cosmaxd = d1 < d2 ? d1 : d2; /* Choose the bigger angle. */
-          doflip = *key < cosmaxd; /* Can the local quality be improved? */
+          doflip = *key < cosmaxd ? PETSC_TRUE : PETSC_FALSE; /* Can the local quality be improved? */
         }
       }
       if (doflip && m->elemfliplist) {
@@ -8307,6 +8308,368 @@ PetscErrorCode TetGenMeshRemoveEdgeByTranNM(TetGenMesh *m, PetscReal *key, Petsc
   } /* for (i = 0; i < n; i++) */
 
   if (isFlipped) {*isFlipped = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRemoveEdgeByCombNM"
+/* removeedgebycombNM()    Remove an edge by combining two flipNMs.          */
+/*                                                                           */
+/* Given a set T of tets surrounding edge ab. The premise is that ab can not */
+/* be removed by a flipNM. This routine attempts to remove ab by two flipNMs,*/
+/* i.e., first find and flip an edge af (or bf) by flipNM, then flip ab by   */
+/* flipNM. If it succeeds, two sets T(ab) and T(af) of tets are replaced by  */
+/* a new set T' and both ab and af are not edges in T' anymore.              */
+/*                                                                           */
+/* 'abtetlist' contains n tets sharing ab. Imaging that ab is perpendicular  */
+/* to the screen, such that a lies in front of and b lies behind it. Let the */
+/* projections of the n apexes on the screen in clockwise order are: p_0,...,*/
+/* p_n-1, respectively. So the list of tets are: [0]abp_0p_n-1, [1]abp_1p_0, */
+/* ..., [n-1]abp_n-1p_n-2, respectively.                                     */
+/*                                                                           */
+/* The principle of the approach is: for a face a.b.p_0, check if edge b.p_0 */
+/* is of type N32 (or N44). If it is, then try to do a flipNM on it. If the  */
+/* flip is successful, then try to do another flipNM on a.b.  If one of the  */
+/* two flipNMs fails, restore the old tets as they have never been flipped.  */
+/* Then try the next face a.b.p_1.  The process can be looped for all faces  */
+/* having ab. Stop if ab is removed or all faces have been visited. Note in  */
+/* the above description only b.p_0 is considered, a.p_0 is done by swapping */
+/* the position of a and b.                                                  */
+/*                                                                           */
+/* Similar operations have been described in [Joe,1995].  My approach checks */
+/* more cases for finding flips than Joe's.  For instance, the cases (1)-(7) */
+/* of Joe only consider abf for finding a flip (T23/T32).  My approach looks */
+/* all faces at ab for finding flips. Moreover, the flipNM can flip an edge  */
+/* whose star may have more than 3 tets while Joe's only works on 3-tet case.*/
+/*                                                                           */
+/* If ab is removed, 'newtetlist' contains the new tets. Two sets 'abtetlist'*/
+/* (n tets) and 'bftetlist' (n1 tets) have been replaced.  The number of new */
+/* tets can be calculated by follows: the 1st flip transforms n1 tets into   */
+/* (n1 - 2) * 2 new tets, however,one of the new tets goes into the new link */
+/* of ab, i.e., the reduced tet number in Star(ab) is n - 1;  the 2nd flip   */
+/* transforms n - 1 tets into (n - 3) * 2 new tets. Hence the number of new  */
+/* tets are: m = ((n1 - 2) * 2 - 1) + (n - 3) * 2.  The old tets are NOT del-*/
+/* eted. The caller has the right to delete them or reverse the operation.   */
+/* tetgenmesh::removeedgebycombNM() */
+PetscErrorCode TetGenMeshRemoveEdgeByCombNM(TetGenMesh *m, PetscReal *key, PetscInt n, triface *abtetlist, PetscInt *n1, triface *bftetlist, triface *newtetlist, Queue *flipque, PetscBool *isCombined)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  triface tmpabtetlist[21];
+  triface newfront = {PETSC_NULL, 0, 0}, oldfront = {PETSC_NULL, 0, 0}, adjfront = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  point pa, pb, p[21];
+  PetscReal ori, tmpkey, tmpkey2;
+  PetscReal attrib, volume;
+  PetscBool doflip, success;
+  PetscInt twice, count;
+  PetscInt i, j, k, m1;
+  long bakflipcount; /* Used for elemfliplist. */
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Maximal 20 tets in Star(ab). */
+  if (n >= 20) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This routine cannot handle %d > 20 tets", n);
+
+  /* Do the following procedure twice, one for flipping edge b.p_0 and the */
+  /*   other for p_0.a which is symmetric to the first. */
+  twice = 0;
+  do {
+    /* Two points a and b are fixed. */
+    pa = org(&abtetlist[0]);
+    pb = dest(&abtetlist[0]);
+    /* The points p_0, ..., p_n-1 are permuted in the following loop. */
+    for(i = 0; i < n; i++) {
+      /* Get the n points for the current configuration. */
+      for(j = 0; j < n; j++) {
+        p[j] = apex(&abtetlist[(i + j) % n]);
+      }
+      /* Check if b.p_0 is of type N32 or N44. */
+      ori = TetGenOrient3D(pb, p[0], p[1], p[n - 1]);
+      if ((ori > 0) && key) {
+        /* b.p_0 is not N32. However, it is possible that the tet b.p_0.p_1. */
+        /*   p_n-1 has worse quality value than the key. In such case, also */
+        /*   try to flip b.p_0. */
+        ierr = TetGenMeshTetAllDihedral(m, pb, p[0], p[n - 1], p[1], PETSC_NULL, &tmpkey, PETSC_NULL);CHKERRQ(ierr);
+        if (tmpkey < *key) ori = 0.0;
+      }
+      if (m->fixededgelist && (ori <= 0.0)) {
+        PetscBool isFixed;
+        /* b.p_0 is either N32 or N44. Do not flip a fixed edge. */
+        ierr = TetGenMeshCheck4FixedEdge(m, pb, p[0], &isFixed);CHKERRQ(ierr);
+        if (isFixed) {
+          ori = 1.0; /* Do not flip this edge. Skip it. */
+        }
+      }
+      if (ori <= 0.0) {
+        /* b.p_0 is either N32 or N44. Try the 1st flipNM. */
+        bftetlist[0] = abtetlist[i];
+        enextself(&bftetlist[0]);/* go to edge b.p_0. */
+        adjustedgering_triface(&bftetlist[0], CW); /* edge p_0.b. */
+        if (apex(&bftetlist[0]) != pa) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+        /* Form Star(b.p_0). */
+        doflip = PETSC_TRUE;
+        *n1 = 0;
+        do {
+          /* Is the list full? */
+          if (*n1 == 20) break;
+          if (m->checksubfaces) {
+            /* Stop if a subface appears. */
+            tspivot(m, &bftetlist[*n1], &checksh);
+            if (checksh.sh != m->dummysh) {
+              doflip = PETSC_FALSE; break;
+            }
+          }
+          /* Get the next tet at p_0.b. */
+          if (!fnext(m, &bftetlist[*n1], &bftetlist[(*n1) + 1])) {
+            /* Meet a boundary face. Do not flip. */
+            doflip = PETSC_FALSE; break;
+          }
+          (*n1)++;
+        } while (apex(&bftetlist[*n1]) != pa);
+        /* 2 < n1 <= b->maxflipedgelinksize. */
+        if (doflip) {
+          success = PETSC_FALSE;
+          tmpkey = -1.0;  /* = acos(pi). */
+          if (key) tmpkey = *key;
+          m1 = 0;
+          if (*n1 == 3) {
+            /* Three tets case. Try flip32. */
+            ierr = TetGenMeshRemoveEdgeByFlip32(m, &tmpkey, bftetlist, newtetlist, flipque, &success);CHKERRQ(ierr);
+            m1 = 2;
+          } else if ((*n1 > 3) && (*n1 <= b->maxflipedgelinksize)) {
+            /* Four or more tets case. Try flipNM. */
+            ierr = TetGenMeshRemoveEdgeByTranNM(m, &tmpkey, *n1, bftetlist, newtetlist, p[1], p[n - 1], flipque, &success);CHKERRQ(ierr);
+            /* If success, the number of new tets. */
+            m1 = ((*n1) - 2) * 2;
+          } else {
+            PetscInfo1(b->in, "  !! Unhandled case: n1 = %d.\n", *n1);
+          }
+          if (success) {
+            /* b.p_0 is flipped. The link of ab is reduced (by 1), i.e., p_0 */
+            /*   is not on the link of ab. Two old tets a.b.p_0.p_n-1 and */
+            /*   a.b.p_1.p_0 have been removed from the Star(ab) and one new */
+            /*   tet t = a.b.p_1.p_n-1 belongs to Star(ab).  */
+            /* Find t in the 'newtetlist' and remove it from the list. */
+            setpointmark(m, pa, -pointmark(m, pa) - 1);
+            setpointmark(m, pb, -pointmark(m, pb) - 1);
+            if (m1 <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+            for(j = 0; j < m1; j++) {
+              tmpabtetlist[0] = newtetlist[j];
+              /* Does it has ab? */
+              count = 0;
+              for(k = 0; k < 4; k++) {
+                if (pointmark(m, (point) (tmpabtetlist[0].tet[4+k])) < 0) count++;
+              }
+              if (count == 2) {
+                /* It is. Adjust t to be the edge ab. */
+                for(tmpabtetlist[0].loc = 0; tmpabtetlist[0].loc < 4; tmpabtetlist[0].loc++) {
+                  if ((oppo(&tmpabtetlist[0]) != pa) && (oppo(&tmpabtetlist[0]) != pb)) break;
+                }
+                /* The face of t must contain ab. */
+                if (tmpabtetlist[0].loc >= 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+                ierr = TetGenMeshFindEdge_triface(m, &(tmpabtetlist[0]), pa, pb);CHKERRQ(ierr);
+                break;
+              }
+            }
+            if (j >= m1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong"); /* The tet must exist. */
+            /* Remove t from list. Fill t's position by the last tet. */
+            newtetlist[j] = newtetlist[m1 - 1];
+            setpointmark(m, pa, -(pointmark(m, pa) + 1));
+            setpointmark(m, pb, -(pointmark(m, pb) + 1));
+            /* Create the temporary Star(ab) for the next flipNM. */
+            adjustedgering_triface(&tmpabtetlist[0], CCW);
+            if (org(&tmpabtetlist[0]) != pa) {
+              fnextself(m, &tmpabtetlist[0]);
+              esymself(&tmpabtetlist[0]);
+            }
+            /* SELF_CHECK: Make sure current edge is a->b. */
+            if (org(&tmpabtetlist[0]) != pa) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+            if (dest(&tmpabtetlist[0]) != pb) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+            if (apex(&tmpabtetlist[0]) != p[n - 1]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+            if (oppo(&tmpabtetlist[0]) != p[1]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
+            /* There are n - 2 left temporary tets. */
+            for(j = 1; j < n - 1; j++) {
+              ierr = TetGenMeshMakeTetrahedron(m, &(tmpabtetlist[j]));CHKERRQ(ierr);
+              setorg(&tmpabtetlist[j], pa);
+              setdest(&tmpabtetlist[j], pb);
+              setapex(&tmpabtetlist[j], p[j]);
+              setoppo(&tmpabtetlist[j], p[j + 1]);
+            }
+            /* Transfer the element attributes. */
+            for(j = 0; j < in->numberoftetrahedronattributes; j++) {
+              attrib = elemattribute(m, abtetlist[0].tet, j);
+              for(k = 0; k < n - 1; k++) {
+                setelemattribute(m, tmpabtetlist[k].tet, j, attrib);
+              }
+            }
+            /* Transfer the volume constraints. */
+            if (b->varvolume && !b->refine) {
+              volume = volumebound(m, abtetlist[0].tet);
+              for (k = 0; k < n - 1; k++) {
+                setvolumebound(m, tmpabtetlist[k].tet, volume);
+              }
+            }
+            /* Glue n - 1 internal faces of Star(ab). */
+            for(j = 0; j < n - 1; j++) {
+              fnext(m, &tmpabtetlist[j], &newfront);
+              bond(m, &newfront, &tmpabtetlist[(j + 1) % (n - 1)]); /* a.b.p_j+1 */
+            }
+            /* Substitute the old tets with the new tets by connecting the */
+            /*   new tets to the adjacent tets in the mesh. There are (n-2) */
+            /*   * 2 (outer) faces of the new tets need to be operated. */
+            /* Note that the old tets still have the pointers to their */
+            /*   adjacent tets in the mesh.  These pointers can be re-used */
+            /*   to inverse the substitution. */
+            for(j = 2; j < n; j++) {
+              /* Get an old tet: [j]a.b.p_j.p_j-1, (j > 1). */
+              oldfront = abtetlist[(i + j) % n];
+              esymself(&oldfront);
+              enextfnextself(m, &oldfront);
+              /* Get an adjacent tet at face: [j]a.p_j.p_j-1. */
+              sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+              /* Get the corresponding face from the new tets. */
+              /* j >= 2. */
+              enext2fnext(m, &tmpabtetlist[j - 1], &newfront); /* a.p_j.p_j-1 */
+              bond(m, &newfront, &adjfront);
+              if (m->checksubfaces) {
+                tspivot(m, &oldfront, &checksh);
+                if (checksh.sh != m->dummysh) {
+                  tsbond(m, &newfront, &checksh);
+                }
+              }
+            }
+            for(j = 2; j < n; j++) {
+              /* Get an old tet: [j]a.b.p_j.p_j-1, (j > 2). */
+              oldfront = abtetlist[(i + j) % n];
+              esymself(&oldfront);
+              enext2fnextself(m, &oldfront);
+              /* Get an adjacent tet at face: [j]b.p_j.p_j-1. */
+              sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+              /* Get the corresponding face from the new tets. */
+              /* j >= 2. */
+              enextfnext(m, &tmpabtetlist[j - 1], &newfront); /* b.p_j.p_j-1 */
+              bond(m, &newfront, &adjfront);
+              if (m->checksubfaces) {
+                tspivot(m, &oldfront, &checksh);
+                if (checksh.sh != m->dummysh) {
+                  tsbond(m, &newfront, &checksh);
+                }
+              }
+            }
+            /* Adjust the faces in the temporary new tets at ab for */
+            /*   recursively processing on the n-1 tets. */
+            for(j = 0; j < n - 1; j++) {
+              fnextself(m, &tmpabtetlist[j]);
+            }
+            tmpkey2 = -1;
+            if (key) tmpkey2 = *key;
+            if (m->elemfliplist) {
+              /* Remember the current registered flips. */
+              bakflipcount = m->elemfliplist->objects;
+            }
+            if ((n - 1) == 3) {
+              ierr = TetGenMeshRemoveEdgeByFlip32(m, &tmpkey2, tmpabtetlist, &(newtetlist[m1 - 1]), flipque, &success);CHKERRQ(ierr);
+            } else { /* assert((n - 1) >= 4); */
+              ierr = TetGenMeshRemoveEdgeByTranNM(m, &tmpkey2, n - 1, tmpabtetlist, &(newtetlist[m1 - 1]), PETSC_NULL, PETSC_NULL, flipque, &success);CHKERRQ(ierr);
+            }
+            /* No matter it was success or not, delete the temporary tets. */
+            for(j = 0; j < n - 1; j++) {
+              ierr = TetGenMeshTetrahedronDealloc(m, tmpabtetlist[j].tet);CHKERRQ(ierr);
+            }
+            if (success) {
+              /* The new configuration is good.  */
+              /* Do not delete the old tets. */
+              /* for (j = 0; j < n; j++) { */
+              /*   tetrahedrondealloc(abtetlist[j].tet); */
+              /* } */
+              /* Return the bigger dihedral in the two sets of new tets. */
+              if (key) {
+                *key = tmpkey2 < tmpkey ? tmpkey2 : tmpkey;
+              }
+              if (isCombined) {*isCombined = PETSC_TRUE;}
+              PetscFunctionReturn(0);
+            } else {
+              /* The new configuration is bad, substitue back the old tets. */
+              if (m->elemfliplist) {
+                /* Restore the registered flips. */
+                m->elemfliplist->objects = bakflipcount;
+              }
+              for(j = 0; j < n; j++) {
+                oldfront = abtetlist[(i + j) % n];
+                esymself(&oldfront);
+                enextfnextself(m, &oldfront); /* [0]a.p_0.p_n-1, [j]a.p_j.p_j-1. */
+                sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+                bond(m, &oldfront, &adjfront);
+                if (m->checksubfaces) {
+                  tspivot(m, &oldfront, &checksh);
+                  if (checksh.sh != m->dummysh) {
+                    tsbond(m, &oldfront, &checksh);
+                  }
+                }
+              }
+              for(j = 0; j < n; j++) {
+                oldfront = abtetlist[(i + j) % n];
+                esymself(&oldfront);
+                enext2fnextself(m, &oldfront); /* [0]b.p_0.p_n-1, [j]b.p_j.p_j-1. */
+                sym(&oldfront, &adjfront); /* adjfront may be dummy */
+                bond(m, &oldfront, &adjfront);
+                if (m->checksubfaces) {
+                  tspivot(m, &oldfront, &checksh);
+                  if (checksh.sh != m->dummysh) {
+                    tsbond(m, &oldfront, &checksh);
+                  }
+                }
+              }
+              /* Substitute back the old tets of the first flip. */
+              for(j = 0; j < *n1; j++) {
+                oldfront = bftetlist[j];
+                esymself(&oldfront);
+                enextfnextself(m, &oldfront);
+                sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+                bond(m, &oldfront, &adjfront);
+                if (m->checksubfaces) {
+                  tspivot(m, &oldfront, &checksh);
+                  if (checksh.sh != m->dummysh) {
+                    tsbond(m, &oldfront, &checksh);
+                  }
+                }
+              }
+              for(j = 0; j < *n1; j++) {
+                oldfront = bftetlist[j];
+                esymself(&oldfront);
+                enext2fnextself(m, &oldfront); /* [0]b.p_0.p_n-1, [j]b.p_j.p_j-1. */
+                sym(&oldfront, &adjfront); /* adjfront may be dummy */
+                bond(m, &oldfront, &adjfront);
+                if (m->checksubfaces) {
+                  tspivot(m, &oldfront, &checksh);
+                  if (checksh.sh != m->dummysh) {
+                    tsbond(m, &oldfront, &checksh);
+                  }
+                }
+              }
+              /* Delete the new tets of the first flip. Note that one new */
+              /*   tet has already been removed from the list. */
+              for(j = 0; j < m1 - 1; j++) {
+                ierr = TetGenMeshTetrahedronDealloc(m, newtetlist[j].tet);CHKERRQ(ierr);
+              }
+            } /* if (success) */
+          } /* if (success) */
+        } /* if (doflip) */
+      } /* if (ori <= 0.0) */
+    } /* for (i = 0; i < n; i++) */
+    /* Inverse a and b and the tets configuration. */
+    for(i = 0; i < n; i++) newtetlist[i] = abtetlist[i];
+    for(i = 0; i < n; i++) {
+      oldfront = newtetlist[n - i - 1];
+      esymself(&oldfront);
+      fnextself(m, &oldfront);
+      abtetlist[i] = oldfront;
+    }
+    twice++;
+  } while (twice < 2);
+
+  if (isCombined) {*isCombined = PETSC_FALSE;}
   PetscFunctionReturn(0);
 }
 
@@ -9026,8 +9389,6 @@ PetscErrorCode TetGenMeshFormStarPolyhedron(TetGenMesh *m, point pt, List* tetli
   PetscFunctionReturn(0);
 }
 
-/* /////////////////////////////////////////////////////////////////////////// */
-/*                                                                             */
 /*  Terminology: BC(p) and CBC(p), B(p) and C(p).                              */
 /*                                                                             */
 /*  Given an arbitrary point p,  the Bowyer-Watson cavity BC(p) is formed by   */
@@ -9042,8 +9403,6 @@ PetscErrorCode TetGenMeshFormStarPolyhedron(TetGenMesh *m, point pt, List* tetli
 /*  If p is on a segment S which is shared by n facets.  There exist n C(p)s,  */
 /*  each one is a non-closed polygon (without S). B(p) is split into n parts,  */
 /*  each of them is denoted as B_i(p), some B_i(p) may be empty.               */
-/*                                                                             */
-/* /////////////////////////////////////////////////////////////////////////// */
 
 #undef __FUNCT__
 #define __FUNCT__ "TetGenMeshFormBowatCavitySub"
@@ -16542,6 +16901,43 @@ PetscErrorCode TetGenMeshCarveHoles(TetGenMesh *m)
 /*                                                                        //// */
 /*  constrained_cxx ////////////////////////////////////////////////////////// */
 
+/*  steiner_cxx ////////////////////////////////////////////////////////////// */
+/*                                                                        //// */
+/*                                                                        //// */
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshCheck4FixedEdge"
+/* check4fixededge()    Check if the given edge [a, b] is a fixed edge.      */
+/*                                                                           */
+/* A fixed edge is saved in the "fixededgelist". Return TRUE if [a, b] has   */
+/* already existed in the list, otherwise, return FALSE.                     */
+/* tetgenmesh::check4fixededge() */
+PetscErrorCode TetGenMeshCheck4FixedEdge(TetGenMesh *m, point pa, point pb, PetscBool *isFixed)
+{
+  TetGenOpts *b  = m->b;
+  point      *ppt;
+  PetscInt    i;
+
+  PetscFunctionBegin;
+  pinfect(m, pa);
+  pinfect(m, pb);
+  for(i = 0; i < m->fixededgelist->objects; ++i) {
+    ppt = (point *) fastlookup(m->fixededgelist, i);
+    if (pinfected(m, ppt[0]) && pinfected(m, ppt[1])) {
+      PetscInfo2(b->in, "    Edge (%d, %d) is fixed.\n", pointmark(m, pa), pointmark(m, pb));
+      break; /* This edge already exists. */
+    }
+  }
+  puninfect(m, pa);
+  puninfect(m, pb);
+  if (isFixed) {*isFixed = i < m->fixededgelist->objects;}
+  PetscFunctionReturn(0);
+}
+
+/*                                                                        //// */
+/*                                                                        //// */
+/*  steiner_cxx ////////////////////////////////////////////////////////////// */
+
 /*  reconstruct_cxx ////////////////////////////////////////////////////////// */
 /*                                                                        //// */
 /*                                                                        //// */
@@ -19735,11 +20131,7 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
   if (!remflag && (key == remedge->key) && (n <= b->maxflipedgelinksize)) {
     /*  Try to do a combination of flips. */
     n1 = 0;
-#if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
-#else
-    remflag = removeedgebycombNM(&key, n, abtetlist, &n1, bftetlist, newtetlist, PETSC_NULL);
-#endif
+    ierr = TetGenMeshRemoveEdgeByCombNM(m, &key, n, abtetlist, &n1, bftetlist, newtetlist, PETSC_NULL, &remflag);CHKERRQ(ierr);
     if (remflag) {
       m->optcount[9]++;
       /*  Delete the old tets. */
@@ -20234,9 +20626,9 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
 
     if ((m->badtetrahedrons->items > 0l) && optflag  && (b->optlevel > 2)) {
       /*  Get a list of slivers and try to split them. */
-      ierr = ListCreate(sizeof(badface), NULL, 256, PETSC_DECIDE, &splittetlist);CHKERRQ(ierr);
-      ierr = ListCreate(sizeof(triface), NULL, 256, PETSC_DECIDE, &tetlist);CHKERRQ(ierr);
-      ierr = ListCreate(sizeof(triface), NULL, 256, PETSC_DECIDE, &ceillist);CHKERRQ(ierr);
+      ierr = ListCreate(sizeof(badface), PETSC_NULL, 256, PETSC_DECIDE, &splittetlist);CHKERRQ(ierr);
+      ierr = ListCreate(sizeof(triface), PETSC_NULL, 256, PETSC_DECIDE, &tetlist);CHKERRQ(ierr);
+      ierr = ListCreate(sizeof(triface), PETSC_NULL, 256, PETSC_DECIDE, &ceillist);CHKERRQ(ierr);
 
       /*  Form a list of slivers to be split and clean the pool. */
       ierr = MemoryPoolTraversalInit(m->badtetrahedrons);CHKERRQ(ierr);
@@ -20250,8 +20642,10 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
       ierr = ListLength(splittetlist, &len);CHKERRQ(ierr);
       slivercount = 0;
       for(i = 0; i < len; i++) {
-        ierr = ListItem(splittetlist, i, (void **) &remtet);CHKERRQ(ierr);
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong, you need to fix the ListItem");
+        badface remtet2;
+
+        remtet = &remtet2;
+        ierr = ListItem(splittetlist, i, (void **) &remtet2);CHKERRQ(ierr);
         if (!isdead_triface(&remtet->tt) && org(&remtet->tt) == remtet->forg &&
             dest(&remtet->tt) == remtet->fdest &&
             apex(&remtet->tt) == remtet->fapex &&
