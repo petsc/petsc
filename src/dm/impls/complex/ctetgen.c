@@ -22,7 +22,7 @@
 /*  lies on S.                                                                 */
 /*                                                                             */
 /*  The following routines use arbitrary precision floating-point arithmetic.  */
-/*  They are provided by J. R. Schewchuk in public domain (http:www.cs.cmu. // */
+/*  They are provided by J. R. Schewchuk in public domain (http:www.cs.cmu.    */
 /*  edu/~quake/robust.html). The source code are in "predicates.cxx".          */
 PetscReal TetGenExactInit();
 PetscReal TetGenOrient3D(PetscReal *pa, PetscReal *pb, PetscReal *pc, PetscReal *pd);
@@ -7993,6 +7993,318 @@ PetscErrorCode TetGenMeshRemoveEdgeByFlip32(TetGenMesh *m, PetscReal *key, trifa
     if (isFlipped) {*isFlipped = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } /* if (doflip) */
+
+  if (isFlipped) {*isFlipped = PETSC_FALSE;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TetGenMeshRemoveEdgeByTranNM"
+/* removeedgebytranNM()    Remove an edge by transforming n-to-m tets.       */
+/*                                                                           */
+/* This routine attempts to remove a given edge (ab) by transforming the set */
+/* T of tets surrounding ab into another set T' of tets.  T and T' have the  */
+/* same outer faces and ab is not an edge of T' anymore. Let |T|=n, and |T'| */
+/* =m, it is actually a n-to-m flip for n > 3.  The relation between n and m */
+/* depends on the method, ours is found below.                               */
+/*                                                                           */
+/* 'abtetlist' contains n tets sharing ab. Imaging that ab is perpendicular  */
+/* to the screen, where a lies in front of and b lies behind it.  Let the    */
+/* projections of the n apexes onto screen in clockwise order are: p_0, ...  */
+/* p_n-1, respectively. The tets in the list are: [0]abp_0p_n-1,[1]abp_1p_0, */
+/* ..., [n-1]abp_n-1p_n-2, respectively.                                     */
+/*                                                                           */
+/* The principle of the approach is: Recursively reduce the link of ab by    */
+/* using flip23 until only three faces remain, hence a flip32 can be applied */
+/* to remove ab. For a given face a.b.p_0, check a flip23 can be applied on  */
+/* it, i.e, edge p_1.p_n-1 crosses it. NOTE*** We do the flip even p_1.p_n-1 */
+/* intersects with a.b (they are coplanar). If so, a degenerate tet (a.b.p_1.*/
+/* p_n-1) is temporarily created, but it will be eventually removed by the   */
+/* final flip32. This relaxation splits a flip44 into flip23 + flip32. *NOTE */
+/* Now suppose a.b.p_0 gets flipped, p_0 is not on the link of ab anymore.   */
+/* The link is then reduced (by 1). 2 of the 3 new tets, p_n-1.p_1.p_0.a and */
+/* p_1.p_n-1.p_0.b, will be part of the new configuration.  The left new tet,*/
+/* a.b.p_1.p_n-1, goes into the new link of ab. A recurrence can be applied. */
+/*                                                                           */
+/* If 'e1' and 'e2' are not NULLs, they specify an wanted edge to appear in  */
+/* the new tet configuration. In such case, only do flip23 if edge e1<->e2   */
+/* can be recovered. It is used in removeedgebycombNM().                     */
+/*                                                                           */
+/* If ab gets removed. 'newtetlist' contains m new tets.  By using the above */
+/* approach, the pairs (n, m) can be easily enumerated.  For example, (3, 2),*/
+/* (4, 4), (5, 6), (6, 8), (7, 10), (8, 12), (9, 14), (10, 16),  and so on.  */
+/* It is easy to deduce, that m = (n - 2) * 2, when n >= 3.  The n tets in   */
+/* 'abtetlist' are NOT deleted in this routine. The caller has the right to  */
+/* either delete them or reverse this operation.                             */
+/* tetgenmesh::removeedgebytranNM() */
+PetscErrorCode TetGenMeshRemoveEdgeByTranNM(TetGenMesh *m, PetscReal *key, PetscInt n, triface *abtetlist, triface *newtetlist, point e1, point e2, Queue *flipque, PetscBool *isFlipped)
+{
+  TetGenOpts    *b  = m->b;
+  PLC           *in = m->in;
+  triface tmpabtetlist[21]; /* Temporary max 20 tets configuration. */
+  triface newfront = {PETSC_NULL, 0, 0}, oldfront = {PETSC_NULL, 0, 0}, adjfront = {PETSC_NULL, 0, 0};
+  face checksh = {PETSC_NULL, 0};
+  point pa, pb, p[21];
+  PetscReal ori, cosmaxd, d1, d2;
+  PetscReal tmpkey;
+  PetscReal attrib, volume;
+  PetscBool doflip, copflag, success;
+  PetscInt i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Maximum 20 tets. */
+  if (n >= 20) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This routine cannot handle %d > 20 tets", n);
+  /* Two points a and b are fixed. */
+  pa = org(&abtetlist[0]);
+  pb = dest(&abtetlist[0]);
+  /* The points p_0, p_1, ..., p_n-1 are permuted in each new configuration. */
+  /*   These permutations can be easily done in the following loop. */
+  /* Loop through all the possible new tets configurations. Stop on finding */
+  /*   a valid new tet configuration which also immproves the quality value. */
+  for(i = 0; i < n; i++) {
+    /* Get other n points for the current configuration. */
+    for(j = 0; j < n; j++) {
+      p[j] = apex(&abtetlist[(i + j) % n]);
+    }
+    /* Is there a wanted edge? */
+    if (e1 && e2) {
+      /* Yes. Skip this face if p[1]<->p[n-1] is not the edge. */
+      if (!(((p[1] == e1) && (p[n - 1] == e2)) ||
+	    ((p[1] == e2) && (p[n - 1] == e1)))) continue;
+    }
+    /* Test if face a.b.p_0 can be flipped (by flip23), ie, to check if the */
+    /*   edge p_n-1.p_1 crosses face a.b.p_0 properly. */
+    /* Note. It is possible that face a.b.p_0 has type flip44, ie, a,b,p_1, */
+    /*   and p_n-1 are coplanar. A trick is to split the flip44 into two */
+    /*   steps: frist a flip23, then a flip32. The first step creates a */
+    /*   degenerate tet (vol=0) which will be removed by the second flip. */
+    ori = TetGenOrient3D(pa, pb, p[1], p[n - 1]);
+    copflag = (ori == 0.0) ? PETSC_TRUE : PETSC_FALSE; /* Are they coplanar? */
+    if (ori >= 0.0) {
+      /* Accept the coplanar case which supports flip44. */
+      ori = TetGenOrient3D(pb, p[0], p[1], p[n - 1]);
+      if (ori > 0.0) {
+        ori = TetGenOrient3D(p[0], pa, p[1], p[n - 1]);
+      }
+    }
+    /* Is face abc flipable? */
+    if (ori > 0.0) {
+      /* A valid (2-to-3) flip (or 4-to-4 flip) is found. */
+      copflag ? m->flip44s++ : m->flip23s++;
+      doflip = PETSC_TRUE;
+      if (key) {
+        if (*key > -1.0) {
+          /* Test if the new tets reduce the maximal dihedral angle. Only 2 */
+          /*   tets, p_n-1.p_1.p_0.a and p_1.p_n-1.p_0.b, need to be tested */
+          /*   The left one a.b.p_n-1.p_1 goes into the new link of ab. */
+          ierr = TetGenMeshTetAllDihedral(m, p[n - 1], p[1], p[0], pa, PETSC_NULL, &d1, PETSC_NULL);CHKERRQ(ierr);
+          ierr = TetGenMeshTetAllDihedral(m, p[1], p[n - 1], p[0], pb, PETSC_NULL, &d2, PETSC_NULL);CHKERRQ(ierr);
+          cosmaxd = d1 < d2 ? d1 : d2; /* Choose the bigger angle. */
+          doflip = *key < cosmaxd; /* Can the local quality be improved? */
+        }
+      }
+      if (doflip && m->elemfliplist) {
+#if 1
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
+#else
+        /* Comment: The flipping face must be not fixed. This case has been */
+        /*   tested during collecting the face ring of this edge. */
+        /* Do not flip this face if it has been registered before. */
+        if (!registerelemflip(T23, pa, pb, p[0], p[1], p[n-1], m->dummypoint)) {
+          doflip = PETSC_FALSE; /* Do not flip this face. */
+        }
+#endif
+      }
+      if (doflip) {
+        tmpkey = key ? *key : -1.0;
+        /* Create the two new tets. */
+        ierr = TetGenMeshMakeTetrahedron(m, &(newtetlist[0]));CHKERRQ(ierr);
+        setorg(&newtetlist[0], p[n - 1]);
+        setdest(&newtetlist[0], p[1]);
+        setapex(&newtetlist[0], p[0]);
+        setoppo(&newtetlist[0], pa);
+        ierr = TetGenMeshMakeTetrahedron(m, &(newtetlist[1]));CHKERRQ(ierr);
+        setorg(&newtetlist[1], p[1]);
+        setdest(&newtetlist[1], p[n - 1]);
+        setapex(&newtetlist[1], p[0]);
+        setoppo(&newtetlist[1], pb);
+        /* Create the n - 1 temporary new tets (the new Star(ab)). */
+        ierr = TetGenMeshMakeTetrahedron(m, &(tmpabtetlist[0]));CHKERRQ(ierr);
+        setorg(&tmpabtetlist[0], pa);
+        setdest(&tmpabtetlist[0], pb);
+        setapex(&tmpabtetlist[0], p[n - 1]);
+        setoppo(&tmpabtetlist[0], p[1]);
+        for(j = 1; j < n - 1; j++) {
+          ierr = TetGenMeshMakeTetrahedron(m, &(tmpabtetlist[j]));CHKERRQ(ierr);
+          setorg(&tmpabtetlist[j], pa);
+          setdest(&tmpabtetlist[j], pb);
+          setapex(&tmpabtetlist[j], p[j]);
+          setoppo(&tmpabtetlist[j], p[j + 1]);
+        }
+        /* Transfer the element attributes. */
+        for(j = 0; j < in->numberoftetrahedronattributes; j++) {
+          attrib = elemattribute(m, abtetlist[0].tet, j);
+          setelemattribute(m, newtetlist[0].tet, j, attrib);
+          setelemattribute(m, newtetlist[1].tet, j, attrib);
+          for(k = 0; k < n - 1; k++) {
+            setelemattribute(m, tmpabtetlist[k].tet, j, attrib);
+          }
+        }
+        /* Transfer the volume constraints. */
+        if (b->varvolume && !b->refine) {
+          volume = volumebound(m, abtetlist[0].tet);
+          setvolumebound(m, newtetlist[0].tet, volume);
+          setvolumebound(m, newtetlist[1].tet, volume);
+          for(k = 0; k < n - 1; k++) {
+            setvolumebound(m, tmpabtetlist[k].tet, volume);
+          }
+        }
+        /* Glue the new tets at their internal faces: 2 + (n - 1). */
+        bond(m, &newtetlist[0], &newtetlist[1]); /* p_n-1.p_1.p_0. */
+        fnext(m, &newtetlist[0], &newfront);
+        enext2fnext(m, &tmpabtetlist[0], &adjfront);
+        bond(m, &newfront, &adjfront); /* p_n-1.p_1.a. */
+        fnext(m, &newtetlist[1], &newfront);
+        enextfnext(m, &tmpabtetlist[0], &adjfront);
+        bond(m, &newfront, &adjfront); /* p_n-1.p_1.b. */
+        /* Glue n - 1 internal faces around ab. */
+        for(j = 0; j < n - 1; j++) {
+          fnext(m, &tmpabtetlist[j], &newfront);
+          bond(m, &newfront, &tmpabtetlist[(j + 1) % (n - 1)]); /* a.b.p_j+1 */
+        }
+        /* Substitute the old tets with the new tets by connecting the new */
+        /*   tets to the adjacent tets in the mesh. There are n * 2 (outer) */
+        /*   faces of the new tets need to be operated. */
+        /* Note, after the substitution, the old tets still have pointers to */
+        /*   their adjacent tets in the mesh.  These pointers can be re-used */
+        /*   to inverse the substitution. */
+        for(j = 0; j < n; j++) {
+          /* Get an old tet: [0]a.b.p_0.p_n-1 or [j]a.b.p_j.p_j-1, (j > 0). */
+          oldfront = abtetlist[(i + j) % n];
+          esymself(&oldfront);
+          enextfnextself(m, &oldfront);
+          /* Get an adjacent tet at face: [0]a.p_0.p_n-1 or [j]a.p_j.p_j-1. */
+          sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+          /* Get the corresponding face from the new tets. */
+          if (j == 0) {
+            enext2fnext(m, &newtetlist[0], &newfront); /* a.p_0.n_n-1 */
+          } else if (j == 1) {
+            enextfnext(m, &newtetlist[0], &newfront); /* a.p_1.p_0 */
+          } else { /* j >= 2. */
+            enext2fnext(m, &tmpabtetlist[j - 1], &newfront); /* a.p_j.p_j-1 */
+          }
+          bond(m, &newfront, &adjfront);
+          if (m->checksubfaces) {
+            tspivot(m, &oldfront, &checksh);
+            if (checksh.sh != m->dummysh) {
+              tsbond(m, &newfront, &checksh);
+            }
+          }
+          if (flipque) {
+            /* Only queue the faces of the two new tets. */
+            if (j < 2) {ierr = TetGenMeshEnqueueFlipFace(m, &newfront, flipque);CHKERRQ(ierr);}
+          }
+        }
+        for(j = 0; j < n; j++) {
+          /* Get an old tet: [0]a.b.p_0.p_n-1 or [j]a.b.p_j.p_j-1, (j > 0). */
+          oldfront = abtetlist[(i + j) % n];
+          esymself(&oldfront);
+          enext2fnextself(m, &oldfront);
+          /* Get an adjacent tet at face: [0]b.p_0.p_n-1 or [j]b.p_j.p_j-1. */
+          sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+          /* Get the corresponding face from the new tets. */
+          if (j == 0) {
+            enextfnext(m, &newtetlist[1], &newfront); /* b.p_0.n_n-1 */
+          } else if (j == 1) {
+            enext2fnext(m, &newtetlist[1], &newfront); /* b.p_1.p_0 */
+          } else { /* j >= 2. */
+            enextfnext(m, &tmpabtetlist[j - 1], &newfront); /* b.p_j.p_j-1 */
+          }
+          bond(m, &newfront, &adjfront);
+          if (m->checksubfaces) {
+            tspivot(m, &oldfront, &checksh);
+            if (checksh.sh != m->dummysh) {
+              tsbond(m, &newfront, &checksh);
+            }
+          }
+          if (flipque) {
+            /* Only queue the faces of the two new tets. */
+            if (j < 2) {ierr = TetGenMeshEnqueueFlipFace(m, &newfront, flipque);CHKERRQ(ierr);}
+          }
+        }
+        /* Adjust the faces in the temporary new tets at ab for recursively */
+        /*   processing on the n-1 tets.(See the description at beginning) */
+        for(j = 0; j < n - 1; j++) {
+          fnextself(m, &tmpabtetlist[j]);
+        }
+        if (n > 4) {
+          ierr = TetGenMeshRemoveEdgeByTranNM(m, &tmpkey, n-1, tmpabtetlist, &(newtetlist[2]), PETSC_NULL, PETSC_NULL, flipque, &success);CHKERRQ(ierr);
+        } else { /* assert(n == 4); */
+          ierr = TetGenMeshRemoveEdgeByFlip32(m, &tmpkey, tmpabtetlist, &(newtetlist[2]), flipque, &success);CHKERRQ(ierr);
+        }
+        /* No matter it was success or not, delete the temporary tets. */
+        for(j = 0; j < n - 1; j++) {
+          ierr = TetGenMeshTetrahedronDealloc(m, tmpabtetlist[j].tet);CHKERRQ(ierr);
+        }
+        if (success) {
+          /* The new configuration is good. */
+          /* Do not delete the old tets. */
+          /* for (j = 0; j < n; j++) { */
+          /*   tetrahedrondealloc(abtetlist[j].tet); */
+          /* } */
+          /* Save the minimal improved quality value. */
+          if (key) {
+            *key = (tmpkey < cosmaxd ? tmpkey : cosmaxd);
+          }
+          if (isFlipped) {*isFlipped = PETSC_TRUE;}
+          PetscFunctionReturn(0);
+        } else {
+          /* The new configuration is bad, substitue back the old tets. */
+          if (m->elemfliplist) {
+            /* Remove the last registered 2-to-3 flip. */
+            m->elemfliplist->objects--;
+          }
+          for(j = 0; j < n; j++) {
+            oldfront = abtetlist[(i + j) % n];
+            esymself(&oldfront);
+            enextfnextself(m, &oldfront); /* [0]a.p_0.p_n-1, [j]a.p_j.p_j-1. */
+            sym(&oldfront, &adjfront); /* adjfront may be dummy. */
+            bond(m, &oldfront, &adjfront);
+            if (m->checksubfaces) {
+              tspivot(m, &oldfront, &checksh);
+              if (checksh.sh != m->dummysh) {
+                tsbond(m, &oldfront, &checksh);
+              }
+            }
+          }
+          for(j = 0; j < n; j++) {
+            oldfront = abtetlist[(i + j) % n];
+            esymself(&oldfront);
+            enext2fnextself(m, &oldfront); /* [0]b.p_0.p_n-1, [j]b.p_j.p_j-1. */
+            sym(&oldfront, &adjfront); /* adjfront may be dummy */
+            bond(m, &oldfront, &adjfront);
+            if (m->checksubfaces) {
+              tspivot(m, &oldfront, &checksh);
+              if (checksh.sh != m->dummysh) {
+                tsbond(m, &oldfront, &checksh);
+              }
+            }
+          }
+          /* Delete the new tets. */
+          ierr = TetGenMeshTetrahedronDealloc(m, newtetlist[0].tet);CHKERRQ(ierr);
+          ierr = TetGenMeshTetrahedronDealloc(m, newtetlist[1].tet);CHKERRQ(ierr);
+          /* If tmpkey has been modified, then the failure was not due to */
+          /*   unflipable configuration, but the non-improvement. */
+          if (key && (tmpkey < *key)) {
+            *key = tmpkey;
+            if (isFlipped) {*isFlipped = PETSC_FALSE;}
+            PetscFunctionReturn(0);
+          }
+        } /* if (success) */
+      } /* if (doflip) */
+    } /* if (ori > 0.0) */
+  } /* for (i = 0; i < n; i++) */
 
   if (isFlipped) {*isFlipped = PETSC_FALSE;}
   PetscFunctionReturn(0);
@@ -19400,11 +19712,7 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
     ierr = TetGenMeshRemoveEdgeByFlip32(m, &key, abtetlist, newtetlist, PETSC_NULL, &remflag);CHKERRQ(ierr);
   } else if ((n > 3) && (n <= b->maxflipedgelinksize)) {
     /*  Four tets case. Try to do edge transformation. */
-#if 1
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Put in code");
-#else
-    remflag = removeedgebytranNM(&key,n,abtetlist,newtetlist,PETSC_NULL,PETSC_NULL,PETSC_NULL);
-#endif
+    ierr = TetGenMeshRemoveEdgeByTranNM(m, &key,n,abtetlist,newtetlist,PETSC_NULL,PETSC_NULL,PETSC_NULL, &remflag);CHKERRQ(ierr);
   } else {
     PetscInfo1(b->in, "  !! Unhandled case: n = %d.\n", n);
   }
