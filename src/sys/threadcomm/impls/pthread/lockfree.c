@@ -1,5 +1,9 @@
 #include <../src/sys/threadcomm/impls/pthread/pthreadimpl.h>
 
+#define THREAD_TERMINATE      -1
+#define THREAD_WAITING_FOR_JOB 0
+#define THREAD_RECIEVED_JOB    1
+
 /* lock-free data structure */
 typedef struct {
   PetscErrorCode (*pfunc)(void*);
@@ -9,7 +13,6 @@ typedef struct {
 
 static sjob_lockfree job_lockfree = {NULL,NULL,0};
 
-/* This struct holds information for PetscThreadsWait_LockFree */
 static struct {
   PetscInt nthreads; /* Number of busy threads */
   PetscInt *list;    /* List of busy threads */
@@ -30,10 +33,10 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 #endif
 
   /* Spin loop */
-  while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != -1) {
-    if(job_lockfree.my_job_status[PetscPThreadRank] == 1) {
+  while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
+    if(job_lockfree.my_job_status[PetscPThreadRank] == THREAD_RECIEVED_JOB) {
       (*job_lockfree.pfunc)(job_lockfree.pdata[PetscPThreadRank]);
-      job_lockfree.my_job_status[PetscPThreadRank] = 0;
+      job_lockfree.my_job_status[PetscPThreadRank] = THREAD_WAITING_FOR_JOB;
     }
   }
 
@@ -57,7 +60,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   /* Create threads */
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.pdata[i] = NULL;
-    job_lockfree.my_job_status[i] = 0;
+    job_lockfree.my_job_status[i] = THREAD_WAITING_FOR_JOB;
     ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->ranks[i]);CHKERRQ(ierr);
   }
 
@@ -74,7 +77,7 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   PetscInt                 i;
   PetscFunctionBegin;
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
-    job_lockfree.my_job_status[i] = -1;
+    job_lockfree.my_job_status[i] = THREAD_TERMINATE;
     ierr = pthread_join(ptcomm->tid[i],&jstatus);CHKERRQ(ierr);
   }
   ierr = PetscFree(job_lockfree.my_job_status);CHKERRQ(ierr);
@@ -115,7 +118,7 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm tcomm,PetscErr
     thread_num = ptcomm->ranks[i];
     job_lockfree.pdata[thread_num] = pdata[i];
     busy_threads.list[k++] = thread_num;
-    job_lockfree.my_job_status[thread_num] = 1;
+    job_lockfree.my_job_status[thread_num] = THREAD_RECIEVED_JOB;
   }
   if(ptcomm->ismainworker) (*pFunc)(pdata[0]);
 
