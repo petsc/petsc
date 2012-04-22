@@ -42,16 +42,16 @@ S*/
 typedef struct _p_PetscThreadComm* PetscThreadComm;
 
 /*MC
-   PETSC_THREAD_COMM - The basic thread communicator which uses all the threads that
+   PETSC_THREAD_COMM_WORLD - The basic thread communicator which uses all the threads that
                  PETSc knows about.
 
    Level: developer
 
    Notes: This is created during PetscInitialize() with the number of threads
           requested. All the other thread communicators use threads from
-          PETSC_THREAD_COMM for performing their operations.	  
+          PETSC_THREAD_COMM_WORLD for performing their operations.	  
 M*/		 
-extern PetscThreadComm PETSC_THREAD_COMM;
+extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
 extern PetscInt N_CORES; /* Number of available cores */
 

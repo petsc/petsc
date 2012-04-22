@@ -7,7 +7,7 @@ PetscInt N_CORES;
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
 
-PetscThreadComm PETSC_THREAD_COMM;
+PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"

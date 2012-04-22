@@ -32,11 +32,11 @@ void PetscPThreadCommDoCoreAffinity(void)
   PetscInt  i,icorr=0; 
   cpu_set_t mset;
   PetscInt  myrank=PetscGetPThreadRank();
-  PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM->data;
+  PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM_WORLD->data;
   
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
-    icorr = PETSC_THREAD_COMM->affinities[myrank];
+    icorr = PETSC_THREAD_COMM_WORLD->affinities[myrank];
     CPU_ZERO(&mset);
     CPU_SET(icorr%N_CORES,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
@@ -106,7 +106,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->ranks);CHKERRQ(ierr);
 
-  if(!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM */
+  if(!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM_WORLD */
     PetscPThreadCommInitializeCalled = PETSC_TRUE;
     PetscBool               flg1,flg2,flg3;
 
@@ -151,12 +151,12 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
 
   } else {
-    PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM->data;
+    PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM_WORLD->data;
     PetscInt *granks=gptcomm->ranks;
     PetscInt j;
-    PetscInt *gaffinities=PETSC_THREAD_COMM->affinities;
+    PetscInt *gaffinities=PETSC_THREAD_COMM_WORLD->affinities;
 
-    /* Copy over the data from the global PETSC_THREAD_COMM structure */
+    /* Copy over the data from the global PETSC_THREAD_COMM_WORLD structure */
     ptcomm->ismainworker     = gptcomm->ismainworker;
     ptcomm->thread_num_start = gptcomm->thread_num_start;
     ptcomm->sync             = gptcomm->sync;
@@ -164,7 +164,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ptcomm->runkernel        = gptcomm->runkernel;
     
     for(i=0; i < tcomm->nworkThreads;i++) {
-      for(j=0;j < PETSC_THREAD_COMM->nworkThreads; j++) {
+      for(j=0;j < PETSC_THREAD_COMM_WORLD->nworkThreads; j++) {
 	if(tcomm->affinities[i] == gaffinities[j]) {
 	  ptcomm->ranks[i] = granks[j];
 	}
