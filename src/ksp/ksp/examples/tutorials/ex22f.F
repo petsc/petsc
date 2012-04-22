@@ -29,6 +29,7 @@
       PetscErrorCode   ierr
       DM               da
       KSP              ksp
+      Vec              x
       external         ComputeRHS,ComputeMatrix
       PetscInt i1,i3
 
@@ -47,8 +48,9 @@
       call KSPSetDM(ksp,da,ierr)
 
       call KSPSetFromOptions(ksp,ierr)
-      call KSPSetUp(ksp,ierr)
       call KSPSolve(ksp,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call KSPGetSolution(ksp,x,ierr)
+!      call VecView(x,PETSC_NULL_OBJECT,ierr)
       call KSPDestroy(ksp,ierr)
       call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
