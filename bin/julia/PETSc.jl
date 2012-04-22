@@ -48,7 +48,8 @@ function PetscInitialize(args,filename,help)
   #
   #   If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
   #
-  init = ccall(dlsym(libpetsc,:PetscInitializedNoPointers),Int32,());
+  init = 0;
+  err = ccall(dlsym(libpetsc,:PetscInitialized),Int32,(Ptr{Int32},),&init);
   if (init != 0) 
     err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());if (err != 0) return err; end
   end
@@ -182,11 +183,11 @@ end
   end
 
   function PetscVecAssemblyBegin(obj::PetscVec)
-    err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), vec.pobj);
+    err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), obj.pobj);
   end
 
   function PetscVecAssemblyEnd(obj::PetscVec)
-    err = ccall(dlsym(libpetsc, :VecAssemblyEnd),Int32,(Int64,), vec.pobj);
+    err = ccall(dlsym(libpetsc, :VecAssemblyEnd),Int32,(Int64,), obj.pobj);
   end
 
   function PetscVecSetSizes(vec::PetscVec,n::Int,N::Int)

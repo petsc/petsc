@@ -112,28 +112,6 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInitializedNoPointers"
-/*
-      PetscInitializedNoPointers - Has PETSc been initialized already?
-
-   Not Collective
-  
-   Level: advanced
-
-    Notes: this is called only by the PETSc MATLAB and Julia interface.
-
-.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments(), PetscInitializeNoPointers()
-*/
-int  PetscInitializedNoPointers(void)
-{
-  PetscBool flg;
-
-  PetscInitialized(&flg);
-  if (flg) return 1;
-  else return 0;
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscGetPETSC_COMM_SELF"
 /*
       Used by MATLAB and Julia interface to get communicator

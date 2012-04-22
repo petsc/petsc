@@ -8,7 +8,7 @@
 typedef struct mxArray_tag mxArray;
 
 int PetscInitializeNoPointers(int,char **,const char*,const char*);
-int PetscInitializedNoPointers(void);
+int PetscInitialized(int*);
 typedef int MPI_Comm;
 int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
