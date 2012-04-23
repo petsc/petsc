@@ -17,6 +17,28 @@ libpetsclocation = strcat(PETSC_DIR, "/", PETSC_ARCH, "/lib/", "libpetsc")
 libpetsc = dlopen(libpetsclocation)
 
 # -------------------------------------
+function echodemo(filename)
+  f = open(filename)
+  h = readall(f)
+  close(f)
+  pos = 0
+  while (pos <= length(h))
+    (ex,pos)=parse(h,pos)
+    str = string(ex.args)
+    if _jl_have_color
+      print("\033[1m\033[30m")
+    end
+    println(str[2:strlen(str)-1])
+    if _jl_have_color
+      print(_jl_answer_color())
+      println(" ")
+    end
+    e = eval(ex)
+    println(" ")
+  end
+end
+
+# -------------------------------------
 
 PETSC_INSERT_VALUES = 1;
 PETSC_ADD_VALUES    = 2;
