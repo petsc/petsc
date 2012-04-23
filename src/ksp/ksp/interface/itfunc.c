@@ -211,6 +211,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
     if (kdm->computerhs) {
       ierr = (*kdm->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
+    } else {
+      PetscBool irhs;
+      ierr = DMHasFunction(ksp->dm,&irhs);CHKERRQ(ierr);
+      if (irhs) {
+        ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
+      }
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {

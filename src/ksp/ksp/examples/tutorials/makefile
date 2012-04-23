@@ -359,12 +359,12 @@ runex2_bjacobi_3:
 	   ${RM} -f ex2.tmp
 runex2_specest_1:
 	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_type fgmres -pc_type ksp -ksp_ksp_type specest -ksp_monitor_short > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_specest_1.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_specest_1, diffs above \n========================================="; \
-           ${RM} -f ex2.tmp
+	   ${DIFF} output/ex2_specest_1.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_specest_1, diffs above \n========================================="; \
+	   ${RM} -f ex2.tmp
 runex2_specest_2:
 	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_type fgmres -pc_type ksp -ksp_ksp_type specest -ksp_monitor_short -ksp_specest_ksp_type cg > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_specest_2.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_specest_2, diffs above \n========================================="; \
-           ${RM} -f ex2.tmp
+	   ${DIFF} output/ex2_specest_2.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_specest_2, diffs above \n========================================="; \
+	   ${RM} -f ex2.tmp
 runex2_chebyest_1:
 	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebychev -ksp_ksp_max_it 5 -ksp_ksp_chebychev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_monitor_short > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_1.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_1, diffs above \n========================================="; \
@@ -1077,16 +1077,16 @@ runex56:
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
-        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58, diffs above \n========================================="; \
-        ${RM} -f ex58.tmp
+	${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58, diffs above \n========================================="; \
+	${RM} -f ex58.tmp
 runex58_baij:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type baij > ex58.tmp 2>&1;         \
-        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_baij, diffs above \n========================================="; \
-        ${RM} -f ex58.tmp
+	${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_baij, diffs above \n========================================="; \
+	${RM} -f ex58.tmp
 runex58_sbaij:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type sbaij > ex58.tmp 2>&1;         \
-        ${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_sbaij, diffs above \n========================================="; \
-        ${RM} -f ex58.tmp
+	${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58_sbaij, diffs above \n========================================="; \
+	${RM} -f ex58.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
