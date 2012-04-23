@@ -696,22 +696,28 @@ extern PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
 /* routines for NCG solver */
 
 typedef enum {
-  SNES_NCG_FR,
-  SNES_NCG_PRP,
-  SNES_NCG_HS,
-  SNES_NCG_DY,
-  SNES_NCG_CD} SNESNCGType;
+  SNES_NCG_FR    = 0,
+  SNES_NCG_PRP   = 1,
+  SNES_NCG_HS    = 2,
+  SNES_NCG_DY    = 3,
+  SNES_NCG_CD    = 4} SNESNCGType;
 extern const char *SNESNCGTypes[];
 
 extern PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
 /* routines for QN solver */
 
-typedef enum {SNES_QN_SEQUENTIAL, SNES_QN_COMPOSED} SNESQNCompositionType;
+typedef enum {SNES_QN_SEQUENTIAL = 0,
+              SNES_QN_COMPOSED   = 1} SNESQNCompositionType;
 extern const char *SNESQNCompositionTypes[];
-typedef enum {SNES_QN_SCALE_NONE, SNES_QN_SCALE_SHANNO, SNES_QN_SCALE_LINESEARCH, SNES_QN_SCALE_JACOBIAN} SNESQNScaleType;
+typedef enum {SNES_QN_SCALE_NONE       = 0,
+              SNES_QN_SCALE_SHANNO     = 1,
+              SNES_QN_SCALE_LINESEARCH = 2,
+              SNES_QN_SCALE_JACOBIAN   = 3} SNESQNScaleType;
 extern const char *SNESQNScaleTypes[];
-typedef enum {SNES_QN_RESTART_NONE, SNES_QN_RESTART_POWELL, SNES_QN_RESTART_PERIODIC} SNESQNRestartType;
+typedef enum {SNES_QN_RESTART_NONE     = 0,
+              SNES_QN_RESTART_POWELL   = 1,
+              SNES_QN_RESTART_PERIODIC = 2} SNESQNRestartType;
 extern const char *SNESQNRestartTypes[];
 
 extern PetscErrorCode SNESQNSetCompositionType(SNES, SNESQNCompositionType);
