@@ -22,6 +22,9 @@ PETSC_EXTERN_CXX_BEGIN
 #if defined(PETSC_HAVE_SYS_SYSCTL_H)
 #include <sys/sysctl.h>
 #endif
+#if defined(PETSC_HAVE_WINDOWS_H)
+#include <windows.h>
+#endif
 
 extern PetscClassId PETSCTHREADCOMM_CLASSID;
 
