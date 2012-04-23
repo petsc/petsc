@@ -31,7 +31,7 @@ function echodemo(filename)
     println(str[2:strlen(str)-1])
     if _jl_have_color
       print(_jl_answer_color())
-      println(" ")
+      println(" ") # force a color change, otherwise answer color is not used
     end
     e = eval(ex)
     println(" ")
@@ -73,6 +73,7 @@ function PetscInitialize(args,filename,help)
   init = 0;
   err = ccall(dlsym(libpetsc,:PetscInitialized),Int32,(Ptr{Int32},),&init);
   if (init != 0) 
+    gc() # call garbage collection to force all PETSc objects be destroy that are queued up for destruction
     err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());if (err != 0) return err; end
   end
   arr = Array(ByteString, length(args))
@@ -85,8 +86,8 @@ function PetscInitialize(args,filename,help)
 end
 
 function PetscFinalize()
-  err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());
-  return err
+  gc() # call garbage collection to force all PETSc objects be destroy that are queued up for destruction
+  return ccall(dlsym(libpetsc,:PetscFinalize),Int32,());
 end
 
 function PETSC_COMM_SELF()
