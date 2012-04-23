@@ -141,7 +141,7 @@
         <li><code>edit .hg/hgrc and the two lines</code>
       <pre>
 [hooks]
-post-pull = "$HG" pull $@ --cwd config/BuildSystem
+post-pull = "$HG" $HG_ARGS  $@ --cwd config/BuildSystem
       </pre>
         </li>
         <li><code>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem config/BuildSystem</code></li>
