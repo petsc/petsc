@@ -16930,7 +16930,7 @@ PetscErrorCode TetGenMeshCheck4FixedEdge(TetGenMesh *m, point pa, point pb, Pets
   }
   puninfect(m, pa);
   puninfect(m, pb);
-  if (isFixed) {*isFixed = PetscBool(i < m->fixededgelist->objects);}
+  if (isFixed) {*isFixed = i < m->fixededgelist->objects ? PETSC_TRUE : PETSC_FALSE;}
   PetscFunctionReturn(0);
 }
 
