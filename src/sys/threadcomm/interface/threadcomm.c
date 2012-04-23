@@ -1,4 +1,4 @@
-#include <petsc-private/threadcommimpl.h>
+#include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
 
 PetscClassId PETSCTHREADCOMM_CLASSID;
 
