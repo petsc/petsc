@@ -103,18 +103,8 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
       raise RuntimeError('Your petsc-dev directory is broken, remove the entire directory and start all over again')
     return
 
-  def configureHgrcWithLinkToBuildSystem(self):
-    if os.path.exists(os.path.join(self.dir, '.hg')) and hasattr(self.sourceControl,'hg'):
-      if not os.popen(self.sourceControl.hg + " showconfig -u hooks.post-pull").read():
-        fd = open('.hg/hgrc','a')
-        fd.write('[hooks]\npost-pull = "$HG" pull $@ --cwd config/BuildSystem\n')
-        fd.close()
-        self.logPrintBox('***** Updated .hg/hgrc to chain pull BuildSystem ************')
-    return
-
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureExternalPackagesDir)
     self.executeTest(self.configureInstallationMethod)
-    self.executeTest(self.configureHgrcWithLinkToBuildSystem)
     return
