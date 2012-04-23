@@ -4,25 +4,6 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_SYS_SYSCTL_H)
-#include <sys/sysctl.h>
-#endif
-
 extern PetscClassId PETSCTHREADCOMM_CLASSID;
 
 /*S
@@ -79,4 +60,5 @@ extern PetscErrorCode PetscThreadCommRegisterDestroy(void);
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
+PETSC_EXTERN_CXX_END
 #endif
