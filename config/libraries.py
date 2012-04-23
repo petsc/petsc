@@ -230,6 +230,24 @@ extern "C" {
       self.logPrint('Warning: erf() not found')
     return
 
+  def checkCompression(self):
+    '''Check for libz, the compression library'''
+    self.compression = None
+    funcs = ['compress', 'uncompress']
+    prototypes = ['int   compress(char *dest, unsigned long *destLen, const char *source, unsigned long sourceLen);',
+                  'int uncompress(char *dest, unsigned long *destLen, const char *source, unsigned long sourceLen);']
+    calls = ['char *dest = 0; const char *source = 0; unsigned long destLen = 0, sourceLen = 0; int ret = 0; ret =   compress(dest, &destLen, source, sourceLen);\n',
+             'char *dest = 0; const char *source = 0; unsigned long destLen = 0, sourceLen = 0; int ret = 0; ret = uncompress(dest, &destLen, source, sourceLen);\n']
+    if self.check('', funcs, prototype = prototypes, call = calls):
+      self.logPrint('Compression functions are linked in by default')
+      self.compression = []
+    elif self.check('z', funcs, prototype = prototypes, call = calls):
+      self.logPrint('Using libz for the compression library')
+      self.compression = ['libz.a']
+    else:
+      self.logPrint('Warning: No compression library found')
+    return
+
   def checkRealtime(self):
     '''Check for presence of clock_gettime() in realtime library (POSIX Realtime extensions)'''
     self.rt = None
@@ -393,6 +411,7 @@ int checkInit(void) {
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
     return

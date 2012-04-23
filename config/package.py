@@ -42,6 +42,7 @@ class Package(config.base.Configure):
     self.cxx              = 0    # 1 means requires C++
     self.fc               = 0    # 1 means requires fortran
     self.needsMath        = 0    # 1 means requires the system math library
+    self.needsCompression = 0    # 1 means requires the system compression library
     self.noMPIUni         = 0    # 1 means requires a real MPI
     self.libdir           = 'lib'     # location of libraries in the package directory tree
     self.altlibdir        = 'lib64'   # alternate location of libraries in the package directory tree
@@ -438,6 +439,10 @@ class Package(config.base.Configure):
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')
       libs += self.libraries.math
+    if self.needsCompression:
+      if self.libraries.compression is None:
+        raise RuntimeError('Compression library not found')
+      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
@@ -1003,6 +1008,10 @@ class GNUPackage(Package):
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')
       libs += self.libraries.math
+    if self.needsCompression:
+      if self.libraries.compression is None:
+        raise RuntimeError('Compression library not found')
+      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
