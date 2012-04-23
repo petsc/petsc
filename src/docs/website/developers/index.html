@@ -138,6 +138,12 @@
       <ul>
         <li><code>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</code></li>
         <li><code>cd petsc-dev</code></li>
+        <li><code>edit .hg/hgrc and the two lines</code>
+      <pre>
+[hooks]
+post-pull = "$HG" pull $@ --cwd config/BuildSystem
+      </pre>
+        </li>
         <li><code>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem config/BuildSystem</code></li>
       </ul>
 
@@ -148,18 +154,7 @@
       <ul>
         <li><code>cd petsc-dev</code></li>
         <li><code>hg pull -u</code></li>
-        <li><code>cd config/BuildSystem</code></li>
-        <li><code>hg pull -u</code></li>
       </ul>
-
-      <b>Pro tip:</b>
-      Add the following to your <code>$PETSC_DIR/.hg/hgrc</code> so that <code>hg pull -u</code>
-      (executed from the top-level $PETSC_DIR) will <em>automatically</em> pull changes from BuildSystem.
-
-      <pre>
-[hooks]
-post-pull = "$HG" pull $@ --cwd config/BuildSystem
-      </pre>
 
       Once updated, you will usually want to rebuild completely
 
