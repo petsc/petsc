@@ -1103,6 +1103,19 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFOpTranslate"
+/* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPI_Allreduce) */
+static PetscErrorCode PetscSFOpTranslate(MPI_Op *op)
+{
+
+  PetscFunctionBegin;
+  if (*op == MPIU_SUM) *op = MPI_SUM;
+  else if (*op == MPIU_MAX) *op = MPI_MAX;
+  else if (*op == MPIU_MIN) *op = MPI_MIN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
@@ -1208,6 +1221,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     if (sf->sync == PETSCSF_SYNCHRONIZATION_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
@@ -1362,6 +1376,7 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
+  ierr = PetscSFOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<sf->nranks; i++) {
     ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,sf->ranks[i],0,win);CHKERRQ(ierr);
