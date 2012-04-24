@@ -113,11 +113,16 @@ extern void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 EXTERN_C_END
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Op MPIU_SUM;
-PETSC_EXTERN_C void MPIAPI PetscSum_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
-PETSC_EXTERN_C void MPIAPI PetscMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
-PETSC_EXTERN_C void MPIAPI PetscMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+EXTERN_C_BEGIN
+extern void  MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+EXTERN_C_END
+#endif
+#if defined(PETSC_USE_REAL___FLOAT128)
+void  MPIAPI PetscSum_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+void  MPIAPI PetscMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+void  MPIAPI PetscMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 #endif
 
 extern  MPI_Op PetscMaxSum_Op;
@@ -335,6 +340,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_C_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
 #endif
 
 #endif
