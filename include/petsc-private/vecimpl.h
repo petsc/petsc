@@ -52,10 +52,8 @@ extern PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
 extern PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
 extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
-PetscPolymorphicFunction(PetscLayoutGetLocalSize,(PetscLayout m),(m,&s),PetscInt,s)
 extern PetscErrorCode  PetscLayoutSetSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetSize(PetscLayout,PetscInt *);
-PetscPolymorphicFunction(PetscLayoutGetSize,(PetscLayout m),(m,&s),PetscInt,s)
 extern PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);

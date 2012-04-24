@@ -7,25 +7,15 @@
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode   PetscOptionsHasName(const char[],const char[],PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsHasName,(const char b[],PetscBool  *f),(PETSC_NULL,b,f))
 extern PetscErrorCode   PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetInt,(const char b[],PetscInt *i,PetscBool  *f),(PETSC_NULL,b,i,f))
 extern PetscErrorCode   PetscOptionsGetBool(const char[],const char [],PetscBool  *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetBool,(const char b[],PetscBool  *i,PetscBool  *f),(PETSC_NULL,b,i,f))
 extern PetscErrorCode   PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetReal,(const char b[],PetscReal *i,PetscBool  *f),(PETSC_NULL,b,i,f))
 extern PetscErrorCode   PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetScalar,(const char b[],PetscScalar i[],PetscBool  *f),(PETSC_NULL,b,i,f))
 extern PetscErrorCode   PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetIntArray,(const char b[],PetscInt i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
 extern PetscErrorCode   PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetRealArray,(const char b[],PetscReal i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
 extern PetscErrorCode   PetscOptionsGetBoolArray(const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetBoolArray,(const char b[],PetscBool  i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
 extern PetscErrorCode   PetscOptionsGetString(const char[],const char[],char[],size_t,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetString,(const char b[],char i[],size_t s,PetscBool  *f),(PETSC_NULL,b,i,s,f))
 extern PetscErrorCode   PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);
-PetscPolymorphicSubroutine(PetscOptionsGetStringArray,(const char b[],char *i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
 extern PetscErrorCode  PetscOptionsGetEList(const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
 extern PetscErrorCode  PetscOptionsGetEnum(const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
 extern PetscErrorCode  PetscOptionsValidKey(const char[],PetscBool *);

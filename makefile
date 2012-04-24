@@ -273,9 +273,6 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
 	-${PYTHON} bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
-	-grep -h Polymorphic include/*.h | grep -v '#define ' | sed "s?PetscPolymorphic[a-zA-Z]*(??g" | cut -f1 -d"{" > tmppoly
-	-${PYTHON} bin/maint/processpoly.py ${PETSC_DIR} ${LOC}
-	-${RM} tmppoly
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.

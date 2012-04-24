@@ -280,74 +280,6 @@ extern FILE* PETSC_STDERR;
 */
 extern FILE* PETSC_ZOPEFD;
 
-#if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-/*MC
-      PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 
-            a PETSc function that remove certain optional arguments for a simplier user interface
-
-   Synopsis:
-   PetscPolymorphicSubroutine(Functionname,(arguments of C++ function),(arguments of C function))
- 
-     Not collective
-
-   Level: developer
-
-    Example:
-      PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r)) generates the new routine
-           PetscErrorCode VecNorm(Vec x,PetscReal *r) = VecNorm(x,NORM_2,r)
-
-.seealso: PetscPolymorphicFunction()
-
-M*/
-#define PetscPolymorphicSubroutine(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {return A C;}
-
-/*MC
-      PetscPolymorphicScalar - allows defining a C++ polymorphic version of 
-            a PETSc function that replaces a PetscScalar * argument with a PetscScalar argument
-
-   Synopsis:
-   PetscPolymorphicScalar(Functionname,(arguments of C++ function),(arguments of C function))
- 
-   Not collective
-
-   Level: developer
-
-    Example:
-      PetscPolymorphicScalar(VecAXPY,(PetscScalar _val,Vec x,Vec y),(&_Val,x,y)) generates the new routine
-           PetscErrorCode VecAXPY(PetscScalar _val,Vec x,Vec y) = {PetscScalar _Val = _val; return VecAXPY(&_Val,x,y);}
-
-.seealso: PetscPolymorphicFunction(),PetscPolymorphicSubroutine()
-
-M*/
-#define PetscPolymorphicScalar(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {PetscScalar _Val = _val; return A C;}
-
-/*MC
-      PetscPolymorphicFunction - allows defining a C++ polymorphic version of 
-            a PETSc function that remove certain optional arguments for a simplier user interface
-            and returns the computed value (istead of an error code)
-
-   Synopsis:
-   PetscPolymorphicFunction(Functionname,(arguments of C++ function),(arguments of C function),return type,return variable name)
- 
-     Not collective
-
-   Level: developer
-
-    Example:
-      PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r) generates the new routine
-         PetscReal VecNorm(Vec x,NormType t) = {PetscReal r; VecNorm(x,t,&r); return r;}
-
-.seealso: PetscPolymorphicSubroutine()
-
-M*/
-#define PetscPolymorphicFunction(A,B,C,D,E) PETSC_STATIC_INLINE D A B {D E; A C;return E;}
-
-#else
-#define PetscPolymorphicSubroutine(A,B,C)
-#define PetscPolymorphicScalar(A,B,C)
-#define PetscPolymorphicFunction(A,B,C,D,E)
-#endif
-
 /*MC
     PetscUnlikely - hints the compiler that the given condition is usually FALSE
 
@@ -1321,7 +1253,6 @@ extern PetscErrorCode  PetscSleep(PetscReal);
    Initialization of PETSc
 */
 extern PetscErrorCode  PetscInitialize(int*,char***,const char[],const char[]);
-PetscPolymorphicSubroutine(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
 extern PetscErrorCode  PetscInitializeNoArguments(void);
 extern PetscErrorCode  PetscInitialized(PetscBool  *);
 extern PetscErrorCode  PetscFinalized(PetscBool  *);
@@ -1557,11 +1488,7 @@ extern PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary);
 extern PetscErrorCode  PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
 extern PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*);
 extern PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm,PetscMPIInt);
-PetscPolymorphicSubroutine(PetscSequentialPhaseBegin,(MPI_Comm comm),(comm,1))
-PetscPolymorphicSubroutine(PetscSequentialPhaseBegin,(void),(PETSC_COMM_WORLD,1))
 extern PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm,PetscMPIInt);
-PetscPolymorphicSubroutine(PetscSequentialPhaseEnd,(MPI_Comm comm),(comm,1))
-PetscPolymorphicSubroutine(PetscSequentialPhaseEnd,(void),(PETSC_COMM_WORLD,1))
 extern PetscErrorCode  PetscBarrier(PetscObject);
 extern PetscErrorCode  PetscMPIDump(FILE*);
 

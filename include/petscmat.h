@@ -165,8 +165,6 @@ typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
 extern PetscErrorCode  MatInitializePackage(const char[]);
 
 extern PetscErrorCode  MatCreate(MPI_Comm,Mat*);
-PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
-PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 extern PetscErrorCode  MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode  MatSetType(Mat,const MatType);
 extern PetscErrorCode  MatSetFromOptions(Mat);
@@ -244,91 +242,25 @@ typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATT
 extern PetscErrorCode  MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*); 
 extern PetscErrorCode  MatCreateSeqAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PetscPolymorphicFunction(MatCreateSeqAIJ,(PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[]),(PETSC_COMM_SELF,m,n,nz,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqAIJ,(PetscInt m,PetscInt n,PetscInt nz),(PETSC_COMM_SELF,m,n,nz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqAIJ,(PetscInt m,PetscInt n,const PetscInt nnz[]),(PETSC_COMM_SELF,m,n,0,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqAIJ,(PetscInt m,PetscInt n),(PETSC_COMM_SELF,m,n,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateSeqAIJ,(PetscInt m,PetscInt n,PetscInt nz,Mat *A),(PETSC_COMM_SELF,m,n,nz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateSeqAIJ,(PetscInt m,PetscInt n,const PetscInt nnz[],Mat *A),(PETSC_COMM_SELF,m,n,0,nnz,A))
-PetscPolymorphicSubroutine(MatCreateSeqAIJ,(PetscInt m,PetscInt n,Mat *A),(PETSC_COMM_SELF,m,n,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*); 
-PetscPolymorphicFunction(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(comm,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(comm,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(comm,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N),(comm,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(comm,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(comm,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateAIJ,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(comm,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
-PetscPolymorphicFunction(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(PETSC_COMM_WORLD,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(PETSC_COMM_WORLD,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(PETSC_COMM_WORLD,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N),(PETSC_COMM_WORLD,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(PETSC_COMM_WORLD,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(PETSC_COMM_WORLD,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(PETSC_COMM_WORLD,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 extern PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],Mat*);
 
 extern PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*); 
-PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[]),(PETSC_COMM_SELF,bs,m,n,nz,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz),(PETSC_COMM_SELF,bs,m,n,nz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,const PetscInt nnz[]),(PETSC_COMM_SELF,bs,m,n,0,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n),(PETSC_COMM_SELF,bs,m,n,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,Mat *A),(PETSC_COMM_SELF,bs,m,n,nz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,const PetscInt nnz[],Mat *A),(PETSC_COMM_SELF,bs,m,n,0,nnz,A))
-PetscPolymorphicSubroutine(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,Mat *A),(PETSC_COMM_SELF,bs,m,n,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PetscPolymorphicFunction(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(comm,bs,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(comm,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(comm,bs,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N),(comm,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(comm,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(comm,bs,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(comm,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
-PetscPolymorphicFunction(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(PETSC_COMM_WORLD,bs,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N),(PETSC_COMM_WORLD,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 
 extern PetscErrorCode  MatCreateMPIAdj(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateSeqSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*); 
-PetscPolymorphicFunction(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[]),(PETSC_COMM_SELF,bs,m,n,nz,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz),(PETSC_COMM_SELF,bs,m,n,nz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,const PetscInt nnz[]),(PETSC_COMM_SELF,bs,m,n,0,nnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n),(PETSC_COMM_SELF,bs,m,n,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,Mat *A),(PETSC_COMM_SELF,bs,m,n,nz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,const PetscInt nnz[],Mat *A),(PETSC_COMM_SELF,bs,m,n,0,nnz,A))
-PetscPolymorphicSubroutine(MatCreateSeqSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,Mat *A),(PETSC_COMM_SELF,bs,m,n,0,PETSC_NULL,A))
 
 extern PetscErrorCode  MatCreateSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PetscPolymorphicFunction(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(comm,bs,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(comm,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(comm,bs,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N),(comm,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(comm,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(comm,bs,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(comm,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
-PetscPolymorphicFunction(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[]),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,nnz,onz,onnz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[]),(PETSC_COMM_WORLD,bs,m,n,M,N,0,nnz,0,onz,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N),(PETSC_COMM_WORLD,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,&A),Mat,A)
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,0,nnz,0,onz,A))
-PetscPolymorphicSubroutine(MatCreateSBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(PETSC_COMM_WORLD,bs,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
 extern PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 extern PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 extern PetscErrorCode  MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*);
 
 extern PetscErrorCode  MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
-PetscPolymorphicFunction(MatCreateShell,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx),(comm,m,n,M,N,ctx,&A),Mat,A)
-PetscPolymorphicFunction(MatCreateShell,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx),(PETSC_COMM_WORLD,m,n,M,N,ctx,&A),Mat,A)
 extern PetscErrorCode  MatCreateAdic(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,void (*)(void),Mat*);
 extern PetscErrorCode  MatCreateNormal(Mat,Mat*);
-PetscPolymorphicFunction(MatCreateNormal,(Mat mat),(mat,&A),Mat,A)
 extern PetscErrorCode  MatCreateLRC(Mat,Mat,Mat,Mat*);
 extern PetscErrorCode  MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
 extern PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
@@ -442,7 +374,6 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
 extern const char *MatOptions[];
 extern PetscErrorCode  MatSetOption(Mat,MatOption,PetscBool );
 extern PetscErrorCode  MatGetType(Mat,const MatType*);
-PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),const MatType,t)
 
 extern PetscErrorCode  MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 extern PetscErrorCode  MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
@@ -453,10 +384,8 @@ extern PetscErrorCode  MatGetColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],c
 extern PetscErrorCode  MatRestoreColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 extern PetscErrorCode  MatGetColumnVector(Mat,Vec,PetscInt);
 extern PetscErrorCode  MatGetArray(Mat,PetscScalar *[]);
-PetscPolymorphicFunction(MatGetArray,(Mat mat),(mat,&a),PetscScalar*,a)
 extern PetscErrorCode  MatRestoreArray(Mat,PetscScalar *[]);
 extern PetscErrorCode  MatGetBlockSize(Mat,PetscInt *);
-PetscPolymorphicFunction(MatGetBlockSize,(Mat mat),(mat,&a),PetscInt,a)
 extern PetscErrorCode  MatSetBlockSize(Mat,PetscInt);
 extern PetscErrorCode MatSetNThreads(Mat,PetscInt);
 extern PetscErrorCode MatGetNThreads(Mat,PetscInt*);
@@ -464,16 +393,12 @@ extern PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 extern PetscErrorCode  MatMult(Mat,Vec,Vec);
 extern PetscErrorCode  MatMultDiagonalBlock(Mat,Vec,Vec);
 extern PetscErrorCode  MatMultAdd(Mat,Vec,Vec,Vec);
-PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 extern PetscErrorCode  MatMultTranspose(Mat,Vec,Vec);
 extern PetscErrorCode  MatMultHermitianTranspose(Mat,Vec,Vec);
 extern PetscErrorCode  MatIsTranspose(Mat,Mat,PetscReal,PetscBool *);
-PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B,PetscReal tol),(A,B,tol,&t),PetscBool ,t)
-PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0,&t),PetscBool ,t)
 extern PetscErrorCode  MatIsHermitianTranspose(Mat,Mat,PetscReal,PetscBool *);
 extern PetscErrorCode  MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 extern PetscErrorCode  MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
-PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 extern PetscErrorCode  MatMultConstrained(Mat,Vec,Vec);
 extern PetscErrorCode  MatMultTransposeConstrained(Mat,Vec,Vec);
 extern PetscErrorCode  MatMatSolve(Mat,Mat,Mat);
@@ -495,21 +420,14 @@ E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES,MAT_SHARE_NONZERO_PATTERN} MatDuplicateOption;
 
 extern PetscErrorCode  MatConvert(Mat,const MatType,MatReuse,Mat*);
-PetscPolymorphicFunction(MatConvert,(Mat A,const MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
 extern PetscErrorCode  MatDuplicate(Mat,MatDuplicateOption,Mat*);
-PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a)
-PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a)
 
 
 extern PetscErrorCode  MatCopy(Mat,Mat,MatStructure);
 extern PetscErrorCode  MatView(Mat,PetscViewer);
 extern PetscErrorCode  MatIsSymmetric(Mat,PetscReal,PetscBool *);
-PetscPolymorphicFunction(MatIsSymmetric,(Mat A,PetscReal tol),(A,tol,&t),PetscBool ,t)
-PetscPolymorphicFunction(MatIsSymmetric,(Mat A),(A,0,&t),PetscBool ,t)
 extern PetscErrorCode  MatIsStructurallySymmetric(Mat,PetscBool *);
-PetscPolymorphicFunction(MatIsStructurallySymmetric,(Mat A),(A,&t),PetscBool ,t)
 extern PetscErrorCode  MatIsHermitian(Mat,PetscReal,PetscBool *);
-PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscBool ,t)
 extern PetscErrorCode  MatIsSymmetricKnown(Mat,PetscBool *,PetscBool *);
 extern PetscErrorCode  MatIsHermitianKnown(Mat,PetscBool *,PetscBool *);
 extern PetscErrorCode  MatMissingDiagonal(Mat,PetscBool  *,PetscInt *);
@@ -560,21 +478,17 @@ extern PetscErrorCode  MatGetRowMaxAbs(Mat,Vec,PetscInt[]);
 extern PetscErrorCode  MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 extern PetscErrorCode  MatGetRowSum(Mat,Vec);
 extern PetscErrorCode  MatTranspose(Mat,MatReuse,Mat*);
-PetscPolymorphicFunction(MatTranspose,(Mat A),(A,MAT_INITIAL_MATRIX,&t),Mat,t)
 extern PetscErrorCode  MatHermitianTranspose(Mat,MatReuse,Mat*);
 extern PetscErrorCode  MatPermute(Mat,IS,IS,Mat *);
-PetscPolymorphicFunction(MatPermute,(Mat A,IS is1,IS is2),(A,is1,is2,&t),Mat,t)
 extern PetscErrorCode  MatDiagonalScale(Mat,Vec,Vec);
 extern PetscErrorCode  MatDiagonalSet(Mat,Vec,InsertMode);
 extern PetscErrorCode  MatEqual(Mat,Mat,PetscBool *);
-PetscPolymorphicFunction(MatEqual,(Mat A,Mat B),(A,B,&t),PetscBool ,t)
 extern PetscErrorCode  MatMultEqual(Mat,Mat,PetscInt,PetscBool *);
 extern PetscErrorCode  MatMultAddEqual(Mat,Mat,PetscInt,PetscBool *);
 extern PetscErrorCode  MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool *);
 extern PetscErrorCode  MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool *);
 
 extern PetscErrorCode  MatNorm(Mat,NormType,PetscReal *);
-PetscPolymorphicFunction(MatNorm,(Mat A,NormType t),(A,t,&n),PetscReal,n)
 extern PetscErrorCode  MatGetColumnNorms(Mat,NormType,PetscReal *);
 extern PetscErrorCode  MatZeroEntries(Mat);
 extern PetscErrorCode  MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -662,7 +576,6 @@ extern PetscErrorCode  MatStashGetInfo(Mat,PetscInt*,PetscInt*,PetscInt*,PetscIn
 
 extern PetscErrorCode  MatInterpolate(Mat,Vec,Vec);
 extern PetscErrorCode  MatInterpolateAdd(Mat,Vec,Vec,Vec);
-PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 extern PetscErrorCode  MatRestrict(Mat,Vec,Vec);
 extern PetscErrorCode  MatGetVecs(Mat,Vec*,Vec*);
 extern PetscErrorCode  MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
@@ -973,7 +886,6 @@ M*/
 
 /* Routines unique to particular data structures */
 extern PetscErrorCode  MatShellGetContext(Mat,void *);
-PetscPolymorphicFunction(MatShellGetContext,(Mat A),(A,&t),void*,t)
 
 extern PetscErrorCode  MatInodeAdjustForInodes(Mat,IS*,IS*);
 extern PetscErrorCode  MatInodeGetInodeSizes(Mat,PetscInt *,PetscInt *[],PetscInt *);
@@ -988,14 +900,10 @@ extern PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm,PetscInt,PetscInt,Petsc
 #define MAT_SKIP_ALLOCATION -4
 
 extern PetscErrorCode  MatSeqBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[]);
-PetscPolymorphicSubroutine(MatSeqBAIJSetPreallocation,(Mat A,PetscInt bs,const PetscInt nnz[]),(A,bs,0,nnz))
 extern PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[]);
-PetscPolymorphicSubroutine(MatSeqSBAIJSetPreallocation,(Mat A,PetscInt bs,const PetscInt nnz[]),(A,bs,0,nnz))
 extern PetscErrorCode  MatSeqAIJSetPreallocation(Mat,PetscInt,const PetscInt[]);
-PetscPolymorphicSubroutine(MatSeqAIJSetPreallocation,(Mat A,const PetscInt nnz[]),(A,0,nnz))
 
 extern PetscErrorCode  MatMPIBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-PetscPolymorphicSubroutine(MatMPIBAIJSetPreallocation,(Mat A,PetscInt bs,const PetscInt nnz[],const PetscInt onz[]),(A,bs,0,nnz,0,onz))
 extern PetscErrorCode  MatMPISBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 extern PetscErrorCode  MatMPIAIJSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 extern PetscErrorCode  MatSeqAIJSetPreallocationCSR(Mat,const PetscInt [],const PetscInt [],const PetscScalar []);

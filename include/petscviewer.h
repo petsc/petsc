@@ -115,7 +115,6 @@ M*/
 #endif
 
 extern PetscErrorCode  PetscViewerCreate(MPI_Comm,PetscViewer*);
-PetscPolymorphicSubroutine(PetscViewerCreate,(PetscViewer *v),(PETSC_COMM_SELF,v))
 extern PetscErrorCode  PetscViewerSetFromOptions(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscViewer*);
 
