@@ -28,9 +28,9 @@
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
-  PetscInt       nargs;                  /* Number of arguments for the kernel */
-  PetscErrorCode (*pfunc)(PetscInt,...); /* Kernel function */
-  void           *args[PETSC_KERNEL_NARGS_MAX];        /* Array of void* to hold the arguments */
+  PetscInt          nargs;                         /* Number of arguments for the kernel */
+  PetscThreadKernel pfunc;                         /* Kernel function */
+  void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
 };
 
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
