@@ -53,4 +53,5 @@ extern PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm,PetscInt);
 extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscInt[]);
 extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
 
+extern PetscMPIInt Petsc_ThreadComm_keyval;
 #endif

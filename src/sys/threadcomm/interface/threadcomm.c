@@ -9,6 +9,8 @@ PetscFList PetscThreadCommList              = PETSC_NULL;
 
 static PetscBool  PetscGetNCoresCalled      = PETSC_FALSE;
 
+PetscMPIInt Petsc_ThreadComm_keyval = MPI_KEYVAL_INVALID;
+
 PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
 #undef __FUNCT__
@@ -462,22 +464,46 @@ PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm tcomm,PetscErrorCode (*f
   ierr = (*tcomm->ops->runkernel)(tcomm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelThreadComm"
+/*
+  This frees the thread communicator attached to MPI_Comm
+
+  This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
+
+  Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+*/
+PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+{
+  PetscErrorCode  ierr;
+  PetscThreadComm tcomm=(PetscThreadComm)attr_val;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommDestroy(&tcomm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadComm_Init"
 /*
-  PetscThreadComm_Init - Initializes the global thread communicator
+  PetscThreadComm_Init - Initializes the global thread communicator and stashes it inside PETSC_COMM_WORLD
 
   PetscThreadComm_Init() defaults to 1 thread and PTHREAD type.
 */
-PetscErrorCode PetscThreadComm_Init(void)
+PetscErrorCode PetscThreadComm_Init(MPI_Comm comm)
 {
   PetscErrorCode ierr;
+  PetscThreadComm tcomm;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommCreate(&PETSC_THREAD_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetNThreads(PETSC_THREAD_COMM_WORLD,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetAffinities(PETSC_THREAD_COMM_WORLD,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetType(PETSC_THREAD_COMM_WORLD,PTHREAD);CHKERRQ(ierr);
+  ierr = MPI_Comm_create_keyval(MPI_NULL_COPY_FN,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = PetscThreadCommCreate(&tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetType(tcomm,PTHREAD);CHKERRQ(ierr);
+  ierr = MPI_Comm_set_attr(comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+  /*  PETSC_THREAD_COMM_WORLD = tcomm; */
   PetscFunctionReturn(0);
 }
