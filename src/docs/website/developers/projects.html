@@ -46,6 +46,12 @@
       student or advanced undergraduate in a couple of months.
 
       <ul>
+        <li>When PETSc loads a matrix rank 0 first loads its piece of data, then loads data to be sent to other processes.
+This algorithm basically causes that rank 0 uses twice the memory it needs, at least for a while.
+This is sometimes a problem, mainly for big matrices. If you know that a piece of your matrix will be safely stored on one node, sometimes it happens that a single node cannot keep twice its piece of the matrix.
+If MatLoad don't immediately load the data for rank 0 and they only store the file offset to the beginning of data for rank 0, they could start loading one by one the blocks of data to be sent to other processes. Only at the end, they will return to the saved offset and load the piece for the rank 0.
+        </li>
+
         <li>MatSOR() should used blocks when bs > 0 for AIJ matrices and no inodes        </li>
 
         <li>
