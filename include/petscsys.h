@@ -1229,12 +1229,15 @@ extern PetscErrorCode    PetscTokenDestroy(PetscToken*);
    These are  MPI operations for MPI_Allreduce() etc
 */
 extern  MPI_Op PetscMaxSum_Op;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 extern  MPI_Op MPIU_SUM;
+#else
+#define MPIU_SUM MPI_SUM
+#endif
+#if defined(PETSC_USE_REAL___FLOAT128)
 extern  MPI_Op MPIU_MAX;
 extern  MPI_Op MPIU_MIN;
 #else
-#define MPIU_SUM MPI_SUM
 #define MPIU_MAX MPI_MAX
 #define MPIU_MIN MPI_MIN
 #endif

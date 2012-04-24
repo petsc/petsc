@@ -17,6 +17,14 @@
 #define MatMFFDType PetscFortranAddr
 #define SNESLineSearch PetscFortranAddr
 #define SNESLineSearchOrder PetscEnum
+#define SNESNormType PetscEnum
+#define SNESQNRestartType PetscEnum
+#define SNESQNCompositionType PetscEnum
+#define SNESQNScaleType PetscEnum
+#define SNESNCGType PetscEnum
+#define SNESNGMRESRestartType PetscEnum
+#define SNESNGMRESSelectType PetscEnum
+
 !
 !  SNESType
 !
@@ -69,8 +77,9 @@
 
 !
 ! MatSNESMF
-! 
+!
 #define MATMFFD_DEFAULT 'ds'
 #define MATMFFD_WP 'wp'
+
 
 #endif

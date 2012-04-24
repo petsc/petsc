@@ -28,10 +28,11 @@ function echodemo(filename)
     if _jl_have_color
       print("\033[1m\033[30m")
     end
+    #  the next line doesn't work right for multiple line commands like for loops
     println(str[2:strlen(str)-1])
     if _jl_have_color
       print(_jl_answer_color())
-      println(" ")
+      println(" ") # force a color change, otherwise answer color is not used
     end
     e = eval(ex)
     println(" ")
@@ -73,6 +74,7 @@ function PetscInitialize(args,filename,help)
   init = 0;
   err = ccall(dlsym(libpetsc,:PetscInitialized),Int32,(Ptr{Int32},),&init);
   if (init != 0) 
+    gc() # call garbage collection to force all PETSc objects be destroy that are queued up for destruction
     err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());if (err != 0) return err; end
   end
   arr = Array(ByteString, length(args))
@@ -85,8 +87,8 @@ function PetscInitialize(args,filename,help)
 end
 
 function PetscFinalize()
-  err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());
-  return err
+  gc() # call garbage collection to force all PETSc objects be destroy that are queued up for destruction
+  return ccall(dlsym(libpetsc,:PetscFinalize),Int32,());
 end
 
 function PETSC_COMM_SELF()
@@ -193,7 +195,10 @@ end
   end
 
   function PetscVecSetValues(vec::PetscVec,idx::Array{Int64},array::Array{Float64},flag::Int)
+    idx = idx - 1
     err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),convert(Array{Int32},idx),array,flag);
+    idx = idx + 1
+    return err
   end
   function PetscVecSetValues(vec::PetscVec,idx::Array{Int64},array::Array{Float64})
     PetscVecSetValues(vec,idx,array,PETSC_INSERT_VALUES)
@@ -266,6 +271,15 @@ end
 
   PETSC_MAT_FLUSH_ASSEMBLY = 1;
   PETSC_MAT_FINAL_ASSEMBLY = 0
+
+  function PetscMatSetValues(vec::PetscMat,idi::Array{Int64},idj::Array{Int64},array::Array{Float64},flag::Int)
+    idi = idi - 1
+    idj = idj - 1
+    err = ccall(dlsym(libpetsc, :MatSetValues), Int32,(Int64,Int32,Ptr{Int32},Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idi),convert(Array{Int32},idi),length(idi),convert(Array{Int32},idj),array,flag);
+    idi = idi + 1
+    idj = idj + 1
+    return err
+  end
 
   function PetscMatAssemblyBegin(obj::PetscMat,flg::Int)
     err = ccall(dlsym(libpetsc, :MatAssemblyBegin),Int32,(Int64,Int32), obj.pobj,flg);

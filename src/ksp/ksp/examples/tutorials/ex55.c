@@ -51,11 +51,21 @@ int main(int argc,char **args)
   if(mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
-  ierr = MatCreateAIJ(wcomm,m,m,M,M,18,PETSC_NULL,12,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(wcomm,m,m,M,M,18,PETSC_NULL,12,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
+  ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Amat,18,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Amat,18,PETSC_NULL,12,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = MatCreate(wcomm,&Pmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(Pmat,2);CHKERRQ(ierr);
+  ierr = MatSetType(Pmat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pmat,18,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pmat,18,PETSC_NULL,12,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Amat,2);      CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Pmat,2);      CHKERRQ(ierr);
   m = Iend - Istart;
   /* Generate vectors */
   ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);

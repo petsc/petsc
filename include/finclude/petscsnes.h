@@ -97,5 +97,59 @@
       parameter (SNES_NGMRES_SELECT_DIFFERENCE = 1)
       parameter (SNES_NGMRES_SELECT_LINESEARCH = 2)
 
+
+!
+! SNESQNCompositionType
+!
+
+      PetscEnum SNES_QN_SEQUENTIAL
+      PetscEnum SNES_QN_COMPOSED
+
+      parameter (SNES_QN_SEQUENTIAL = 0)
+      parameter (SNES_QN_COMPOSED   = 1)
+
+!
+! SNESQNScaleType
+!
+
+      PetscEnum SNES_QN_SCALE_NONE
+      PetscEnum SNES_QN_SCALE_SHANNO
+      PetscEnum SNES_QN_SCALE_LINESEARCH
+      PetscEnum SNES_QN_SCALE_JACOBIAN
+
+      parameter(SNES_QN_SCALE_NONE       = 0)
+      parameter(SNES_QN_SCALE_SHANNO     = 1)
+      parameter(SNES_QN_SCALE_LINESEARCH = 2)
+      parameter(SNES_QN_SCALE_JACOBIAN   = 3)
+
+!
+! SNESQNRestartType
+!
+
+      PetscEnum SNES_QN_RESTART_NONE
+      PetscEnum SNES_QN_RESTART_POWELL
+      PetscEnum SNES_QN_RESTART_PERIODIC
+
+      parameter(SNES_QN_RESTART_NONE     = 0)
+      parameter(SNES_QN_RESTART_POWELL   = 1)
+      parameter(SNES_QN_RESTART_PERIODIC = 2)
+
+!
+! SNESNCGType
+!
+
+      PetscEnum SNES_NCG_FR
+      PetscEnum SNES_NCG_PRP
+      PetscEnum SNES_NCG_HS
+      PetscEnum SNES_NCG_DY
+      PetscEnum SNES_NCG_CD
+
+      parameter(SNES_NCG_FR  = 0)
+      parameter(SNES_NCG_PRP = 1)
+      parameter(SNES_NCG_HS  = 2)
+      parameter(SNES_NCG_DY  = 3)
+      parameter(SNES_NCG_CD  = 4)
+
+
 !  End of Fortran include file for the SNES package in PETSc
 
