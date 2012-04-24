@@ -2,7 +2,7 @@
 
 PetscClassId PETSCTHREADCOMM_CLASSID;
 
-PetscInt N_CORES;
+PetscInt N_CORES=1;
 
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
@@ -158,12 +158,15 @@ PetscErrorCode PetscThreadCommView(PetscThreadComm tcomm,PetscViewer viewer)
 -  nthreads - Number of threads
 
    Options Database keys:
-   -nthreads <nthreads> Number of threads to use
+   -threadcomm_nthreads <nthreads> Number of threads to use
 
    Level: developer
 
    Notes:
-   Use nthreads = PETSC_DECIDE for PETSc to decide the number of threads
+   Defaults to using 1 thread.
+
+   Use nthreads = PETSC_DECIDE or -threadcomm_nthreads PETSC_DECIDE for PETSc to decide the number of threads.
+
 
 .seealso: PetscThreadCommGetNThreads()
 */
@@ -171,13 +174,19 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 {
   PetscErrorCode ierr;
   PetscBool      flg;
+  PetscInt        nthr;
   PetscFunctionBegin;
   if(nthreads == PETSC_DECIDE) {
-    ierr = PetscGetNCores();CHKERRQ(ierr);
+    tcomm->nworkThreads = 1;
     ierr = PetscObjectOptionsBegin((PetscObject)tcomm);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",N_CORES,&tcomm->nworkThreads,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if(!flg) tcomm->nworkThreads = N_CORES;
+    if(flg){ 
+      if(nthr == PETSC_DECIDE) {
+      ierr = PetscGetNCores();CHKERRQ(ierr);
+      tcomm->nworkThreads = N_CORES;
+      } else tcomm->nworkThreads = nthr;
+    }
   } else tcomm->nworkThreads = nthreads;
   PetscFunctionReturn(0);
 }
