@@ -79,7 +79,7 @@ def processDir(tagfiles,dirname,names):
   etagfile = tagfiles[0]
   ctagfile = tagfiles[1]
   newls = []
-  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib']
+  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
   for l in names:
@@ -95,7 +95,7 @@ def processDir(tagfiles,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
+  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
