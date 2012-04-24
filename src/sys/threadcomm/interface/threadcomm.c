@@ -5,8 +5,9 @@ PetscClassId PETSCTHREADCOMM_CLASSID;
 PetscInt N_CORES;
 
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
-PetscBool  PetscGetNCoresCalled             = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
+
+static PetscBool  PetscGetNCoresCalled      = PETSC_FALSE;
 
 PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
