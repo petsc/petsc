@@ -46,7 +46,7 @@ PetscErrorCode PetscGetNCores(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate"
 /*@C
-   PetscPThreadCommCreate - Allocates a thread communicator object
+   PetscThreadCommCreate - Allocates a thread communicator object
   
    Output Parameters:
    tcomm - pointer to the thread communicator object
@@ -70,7 +70,7 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
   ierr = PetscHeaderCreate(tcommout,_p_PetscThreadComm,struct _PetscThreadCommOps,PETSCTHREADCOMM_CLASSID,0,"PetscThreadComm","Thread communicator","PetscThreadComm",PETSC_COMM_WORLD,PetscThreadCommDestroy,PetscThreadCommView);CHKERRQ(ierr);
   tcommout->nworkThreads =  -1;
   tcommout->affinities = PETSC_NULL;
-
+  ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobctx);CHKERRQ(ierr);
   *tcomm = tcommout;
   PetscFunctionReturn(0);
 }
@@ -102,6 +102,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
   } 
 
   ierr = PetscFree((*tcomm)->affinities);CHKERRQ(ierr);
+  ierr = PetscFree((*tcomm)->jobctx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -429,19 +430,43 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
 
    Input Parameters:
 +  tcomm - the thread communicator
-.  pfunc - the kernel
--  pdata - private data for threads
+.  func  - the kernel (needs to be cast to PetscThreadKernel)
+.  nargs - Number of input arguments for the kernel
+-  ...   - variable list of input arguments
 
    Level: developer
 
+   Notes:
+   All input arguments to the kernel must be passed by reference, Petsc objects are
+   inherrently passed by reference so you don't need to additionally & them.
+
+   Example usage - PetscThreadCommRunKernel(tcomm,(PetscThreadKernel)kernel_func,3,x,y,z);
+   with kernel_func declared as
+   PetscErrorCode kernel_func(PetscInt thread_id,PetscInt* x, PetscScalar* y, PetscReal* z)
+
+   The first input argument of kernel_func, thread_id, is the thread rank. This is passed implicitly
+   by PETSc.
+
 .seealso: PetscThreadCommCreate(), PetscThreadCommSetNThreads()
 @*/
-PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm tcomm,PetscErrorCode (*pFunc)(void*),void** pdata)
+PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm tcomm,PetscErrorCode (*func)(PetscInt,...),PetscInt nargs,...)
 {
   PetscErrorCode ierr;
+  va_list        argptr;
+  PetscInt       i;
+  PetscThreadCommJobCtx job=tcomm->jobctx;
 
   PetscFunctionBegin;
+  if(nargs > PETSC_KERNEL_NARGS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Requested %D input arguments for kernel, max. limit %D",nargs,PETSC_KERNEL_NARGS_MAX);
   PetscValidHeaderSpecific(tcomm,PETSCTHREADCOMM_CLASSID,1);
-  ierr = (*tcomm->ops->runkernel)(tcomm,pFunc,pdata);CHKERRQ(ierr);
+  job->nargs = nargs;
+  job->pfunc = func;
+  va_start(argptr,nargs);
+  for(i=0; i < nargs; i++) {
+    job->args[i] = va_arg(argptr,void*);
+  }
+  va_end(argptr);
+  
+  ierr = (*tcomm->ops->runkernel)(tcomm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

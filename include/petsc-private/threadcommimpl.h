@@ -26,18 +26,26 @@
 #include <windows.h>
 #endif
 
+typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
+struct  _p_PetscThreadCommJobCtx{
+  PetscInt       nargs;                  /* Number of arguments for the kernel */
+  PetscErrorCode (*pfunc)(PetscInt,...); /* Kernel function */
+  void           *args[PETSC_KERNEL_NARGS_MAX];        /* Array of void* to hold the arguments */
+};
+
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
-  PetscErrorCode (*runkernel)(PetscThreadComm,PetscErrorCode (*)(void*),void**);
+  PetscErrorCode (*runkernel)(PetscThreadComm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
 };
 
 struct _p_PetscThreadComm{
-  PETSCHEADER          (struct _PetscThreadCommOps);
-  PetscInt             nworkThreads; /* Number of threads in the pool */
-  PetscInt             *affinities;  /* Thread affinity */
-  void                 *data;    /* implementation specific data */
+  PETSCHEADER           (struct _PetscThreadCommOps);
+  PetscInt              nworkThreads; /* Number of threads in the pool */
+  PetscInt              *affinities;  /* Thread affinity */
+  void                  *data;        /* implementation specific data */
+  PetscThreadCommJobCtx jobctx;     /* Job context */
 };
 
 #endif

@@ -6,6 +6,11 @@ PETSC_EXTERN_CXX_BEGIN
 
 extern PetscClassId PETSCTHREADCOMM_CLASSID;
 
+/* Function pointer cast for the kernel function */
+typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
+
+/* Max. number of arguments for kernel */
+#define PETSC_KERNEL_NARGS_MAX 10
 /*S
   ThreadComm - Abstract PETSc object that manages all thread communication models
 
@@ -47,7 +52,7 @@ extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscIn
 extern PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm,PetscInt[]);
 extern PetscErrorCode PetscThreadCommView(PetscThreadComm,PetscViewer);
 extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
-extern PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm,PetscErrorCode (*)(void*),void**);
+extern PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
 
 /* register thread communicator models */
 extern PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));

@@ -74,13 +74,13 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel_PThread"
-PetscErrorCode PetscThreadCommRunKernel_PThread(PetscThreadComm tcomm,PetscErrorCode (*pFunc)(void*),void** pdata)
+PetscErrorCode PetscThreadCommRunKernel_PThread(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode          ierr;
   PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
 
   PetscFunctionBegin;
-  ierr = (*ptcomm->runkernel)(tcomm,pFunc,pdata);CHKERRQ(ierr);
+  ierr = (*ptcomm->runkernel)(tcomm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

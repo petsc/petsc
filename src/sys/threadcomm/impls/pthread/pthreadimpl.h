@@ -48,7 +48,7 @@ typedef struct {
   PetscPThreadCommAffinityPolicyType  aff; /* affinity policy */
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
-  PetscErrorCode (*runkernel)(PetscThreadComm,PetscErrorCode (*)(void*),void**);
+  PetscErrorCode (*runkernel)(PetscThreadComm,PetscThreadCommJobCtx);
 }PetscThreadComm_PThread;
 
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -65,7 +65,7 @@ EXTERN_C_END
 
 extern PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm);
 extern PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm);
-extern PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm,PetscErrorCode (*)(void*),void**);
+extern PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm,PetscThreadCommJobCtx);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void PetscPThreadCommDoCoreAffinity();
