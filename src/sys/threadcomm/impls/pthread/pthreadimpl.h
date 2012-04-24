@@ -39,9 +39,10 @@ typedef struct {
   PetscInt    nthreads;            /* Number of threads created */
   pthread_t  *tid;                 /* thread ids */
   PetscBool  ismainworker;         /* Is the main thread also a work thread?*/
-  PetscInt   *ranks;               /* Thread ranks - if main thread is a worker then main thread 
+  PetscInt   *granks;               /* Thread ranks - if main thread is a worker then main thread 
 				      rank is 0 and ranks for other threads start from 1, 
-				      otherwise the thread ranks start from 0 */
+				      otherwise the thread ranks start from 0.
+                                      These ranks are with respect to the first initialized thread pool */
   PetscInt    thread_num_start;     /* index for the first created thread (= 1 if the main thread is a worker
                                        else 0) */
   PetscPThreadCommSynchronizationType sync; /* Synchronization type */

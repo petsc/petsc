@@ -2,9 +2,10 @@
 
 PetscClassId PETSCTHREADCOMM_CLASSID;
 
-PetscInt N_CORES=1;
+PetscInt N_CORES;
 
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
+PetscBool  PetscGetNCoresCalled             = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
 
 PetscThreadComm PETSC_THREAD_COMM_WORLD;
@@ -72,6 +73,13 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
   tcommout->affinities = PETSC_NULL;
   ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobctx);CHKERRQ(ierr);
   *tcomm = tcommout;
+
+  if(!PetscGetNCoresCalled) {     
+    /* Set the number of available cores */
+    ierr = PetscGetNCores();CHKERRQ(ierr);
+    PetscGetNCoresCalled = PETSC_TRUE;
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -183,7 +191,6 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if(flg){ 
       if(nthr == PETSC_DECIDE) {
-      ierr = PetscGetNCores();CHKERRQ(ierr);
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;
     }
@@ -346,7 +353,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
   PetscValidHeaderSpecific(tcomm,PETSCTHREADCOMM_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  if(!PetscThreadCommRegisterAllCalled) {ierr = PetscThreadCommRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if(!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject)tcomm);CHKERRQ(ierr);
   ierr = PetscOptionsList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,PTHREAD,ttype,256,&flg);CHKERRQ(ierr);

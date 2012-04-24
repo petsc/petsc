@@ -12,11 +12,6 @@ typedef struct {
 
 static sjob_lockfree job_lockfree = {NULL,NULL};
 
-static struct {
-  PetscInt nthreads; /* Number of busy threads */
-  PetscInt *list;    /* List of busy threads */
-} busy_threads;
-
 void RunJob(PetscInt nargs,PetscThreadCommJobCtx job)
 {
   switch(nargs) {
@@ -93,12 +88,11 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscThreadCommJobCtx),&job_lockfree.data);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&job_lockfree.my_job_status);CHKERRQ(ierr);
-  ierr = PetscMalloc(ptcomm->nthreads*sizeof(PetscInt),&busy_threads.list);CHKERRQ(ierr);
 
   /* Create threads */
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_WAITING_FOR_JOB;
-    ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->ranks[i]);CHKERRQ(ierr);
+    ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -119,22 +113,22 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   }
   ierr = PetscFree(job_lockfree.my_job_status);CHKERRQ(ierr);
   ierr = PetscFree(job_lockfree.data);CHKERRQ(ierr);
-  ierr = PetscFree(busy_threads.list);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPThreadCommBarrier_LockFree"
-PetscErrorCode PetscPThreadCommBarrier_LockFree(void)
+PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
 {
   PetscInt active_threads=0,i;
   PetscBool wait=PETSC_TRUE;
+  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
 
   PetscFunctionBegin;
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for(i=0;i<busy_threads.nthreads;i++) active_threads += job_lockfree.my_job_status[busy_threads.list[i]];
+    for(i=ptcomm->thread_num_start;i<tcomm->nworkThreads;i++) active_threads += job_lockfree.my_job_status[ptcomm->granks[i]];
     if(active_threads) active_threads = 0;
     else wait=PETSC_FALSE;
   }
@@ -149,11 +143,9 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm tcomm,PetscThr
   PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
   PetscInt                i,thread_num,k=0;
   PetscFunctionBegin;
-  busy_threads.nthreads = tcomm->nworkThreads - ptcomm->thread_num_start;
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
-    thread_num = ptcomm->ranks[i];
+    thread_num = ptcomm->granks[i];
     job_lockfree.data[thread_num] = job;
-    busy_threads.list[k++] = thread_num;
     job_lockfree.my_job_status[thread_num] = THREAD_RECIEVED_JOB;
   }
   if(ptcomm->ismainworker) {
@@ -161,6 +153,6 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm tcomm,PetscThr
     RunJob(job->nargs, job_lockfree.data[0]);
   }
 
-  ierr = PetscPThreadCommBarrier_LockFree();CHKERRQ(ierr);
+  ierr = PetscPThreadCommBarrier_LockFree(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

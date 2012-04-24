@@ -67,7 +67,7 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
     ierr = (*ptcomm->finalize)(tcomm);CHKERRQ(ierr);
     ierr = PetscFree(ptcomm->tid);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ptcomm->ranks);CHKERRQ(ierr);
+  ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
   ierr = PetscFree(ptcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -104,7 +104,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
   tcomm->ops->runkernel = PetscThreadCommRunKernel_PThread;
 
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
 
   if(!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM_WORLD */
     PetscPThreadCommInitializeCalled = PETSC_TRUE;
@@ -134,14 +134,14 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only Lock-free synchronization scheme supported currently");
     }
     /* Set up thread ranks */
-    for(i=0;i< tcomm->nworkThreads;i++) ptcomm->ranks[i] = i;
+    for(i=0;i< tcomm->nworkThreads;i++) ptcomm->granks[i] = i;
 
     if(ptcomm->ismainworker) {
 #if defined(PETSC_PTHREAD_LOCAL)
       PetscPThreadRank=0; /* Main thread rank */
 #else
       ierr = pthread_key_create(&PetscPThreadRankkey,NULL);CHKERRQ(ierr);
-      ierr = pthread_setspecific(PetscPThreadRankkey,&ptcomm->ranks[0]);CHKERRQ(ierr);
+      ierr = pthread_setspecific(PetscPThreadRankkey,&ptcomm->granks[0]);CHKERRQ(ierr);
 #endif
     }
     /* Create array holding pthread ids */
@@ -152,7 +152,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
   } else {
     PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM_WORLD->data;
-    PetscInt *granks=gptcomm->ranks;
+    PetscInt *granks=gptcomm->granks;
     PetscInt j;
     PetscInt *gaffinities=PETSC_THREAD_COMM_WORLD->affinities;
 
@@ -166,7 +166,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     for(i=0; i < tcomm->nworkThreads;i++) {
       for(j=0;j < PETSC_THREAD_COMM_WORLD->nworkThreads; j++) {
 	if(tcomm->affinities[i] == gaffinities[j]) {
-	  ptcomm->ranks[i] = granks[j];
+	  ptcomm->granks[i] = granks[j];
 	}
       }
     }
