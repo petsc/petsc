@@ -1,4 +1,3 @@
-load("/Users/barrysmith/Src/petsc-dev/bin/julia/PETSc.jl"); 
 
 PetscInitialize(["-ksp_monitor","-malloc","-malloc_debug","-malloc_dump"]);
 #
@@ -17,9 +16,9 @@ A = PetscMat();
 PetscMatSetType(A,"seqaij");
 PetscMatSetSizes(A,10,10,10,10);
 PetscSetUp(A);
-#for i=1:10
-#  mat.SetValues(i,i,10.0);
-#end
+for i=1:10
+  PetscMatSetValues(A,[i],[i],[10.0],PETSC_ADD_VALUES);
+end
 PetscMatAssemblyBegin(A,PETSC_MAT_FINAL_ASSEMBLY);
 PetscMatAssemblyEnd(A,PETSC_MAT_FINAL_ASSEMBLY);
 PetscView(A);
