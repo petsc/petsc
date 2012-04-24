@@ -41,17 +41,15 @@ extern PetscInt N_CORES; /* Number of available cores */
 
 extern PetscFList PetscThreadCommList;
 
+extern PetscErrorCode PetscThreadComm_Init();
 extern PetscErrorCode PetscThreadCommInitializePackage(const char*);
 extern PetscErrorCode PetscThreadCommFinalizePackage(void);
-extern PetscErrorCode PetscThreadCommCreate(PetscThreadComm*);
+
 extern PetscErrorCode PetscThreadCommDestroy(PetscThreadComm*);
-extern PetscErrorCode PetscThreadCommReference(PetscThreadComm,PetscThreadComm*);
-extern PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm,PetscInt);
+
 extern PetscErrorCode PetscThreadCommGetNThreads(PetscThreadComm,PetscInt*);
-extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscInt[]);
 extern PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm,PetscInt[]);
 extern PetscErrorCode PetscThreadCommView(PetscThreadComm,PetscViewer);
-extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
 extern PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
 
 /* register thread communicator models */

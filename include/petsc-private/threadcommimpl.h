@@ -48,4 +48,9 @@ struct _p_PetscThreadComm{
   PetscThreadCommJobCtx jobctx;     /* Job context */
 };
 
+extern PetscErrorCode PetscThreadCommCreate(PetscThreadComm*);
+extern PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm,PetscInt);
+extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscInt[]);
+extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
+
 #endif

@@ -45,7 +45,7 @@ PetscErrorCode PetscGetNCores(void)
 			    
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate"
-/*@C
+/*
    PetscThreadCommCreate - Allocates a thread communicator object
   
    Output Parameters:
@@ -54,7 +54,7 @@ PetscErrorCode PetscGetNCores(void)
    Level: developer
 
 .seealso: PetscThreadCommDestroy()
-@*/
+*/
 PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 {
   PetscErrorCode  ierr;
@@ -77,7 +77,7 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommDestroy"
-/*@C
+/*
   PetscThreadCommDestroy - Frees a thread communicator object
 
   Input Parameters:
@@ -86,7 +86,7 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
   Level: developer
 
 .seealso: PetscThreadCommCreate()
-@*/
+*/
 PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
 {
   PetscErrorCode ierr;
@@ -104,31 +104,6 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
   ierr = PetscFree((*tcomm)->affinities);CHKERRQ(ierr);
   ierr = PetscFree((*tcomm)->jobctx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tcomm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommReference"
-/*@C
-  PetscThreadCommReference - Share an existing PetscThreadComm.
-
-  Input Parameter:
-.   in - input PetscThreadComm to be referenced
-
-  Output Parameter:
-.   out - the reference location
-
-  Level: developer
-
-.seealso: PetscThreadCommCreate()
-@*/
-PetscErrorCode PetscThreadCommReference(PetscThreadComm in,PetscThreadComm *out)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
-  *out = in;
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +148,7 @@ PetscErrorCode PetscThreadCommView(PetscThreadComm tcomm,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommSetNThreads"
-/*@C
+/*C
    PetscThreadCommSetNThreads - Set the thread count for the thread communicator
 
    Not collective
@@ -191,7 +166,7 @@ PetscErrorCode PetscThreadCommView(PetscThreadComm tcomm,PetscViewer viewer)
    Use nthreads = PETSC_DECIDE for PETSc to decide the number of threads
 
 .seealso: PetscThreadCommGetNThreads()
-@*/
+*/
 PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthreads)
 {
   PetscErrorCode ierr;
@@ -233,7 +208,7 @@ PetscErrorCode PetscThreadCommGetNThreads(PetscThreadComm tcomm,PetscInt *nthrea
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommSetAffinities"
-/*@C
+/*
    PetscThreadCommSetAffinities - Sets the core affinity for threads
                                   (which threads run on which cores)
    
@@ -266,7 +241,7 @@ PetscErrorCode PetscThreadCommGetNThreads(PetscThreadComm tcomm,PetscInt *nthrea
    There must be no intervening spaces between the values.
 
 .seealso: PetscThreadCommGetAffinities(), PetscThreadCommSetNThreads()
-@*/				  
+*/				  
 PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt affinities[])
 {
   PetscErrorCode ierr;
@@ -319,7 +294,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
     The user must allocate space (nthreads PetscInts) for the
     affinities. Must call PetscThreadCommSetAffinities before.
 
-@*/
+*/
 PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm tcomm,PetscInt affinities[])
 {
   PetscErrorCode ierr;
@@ -333,7 +308,7 @@ PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm tcomm,PetscInt affin
   
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommSetType"
-/*@C
+/*
    PetscThreadCommSetType - Sets the threading model for the communicator
 
    Logically collective
@@ -350,7 +325,7 @@ PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm tcomm,PetscInt affin
    See "petsc/include/petscthreadcomm.h" for available types
 
 .seealso: PetscThreadCommGetType()   
-@*/
+*/
 PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCommType type)
 {
   PetscErrorCode ierr,(*r)(PetscThreadComm);
@@ -383,7 +358,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscThreadCommRegisterDestroy"
-/*@
+/*@C
    PetscThreadCommRegisterDestroy - Frees the list of thread communicator models that were
    registered by PetscThreadCommRegisterDynamic().
 
@@ -468,5 +443,24 @@ PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm tcomm,PetscErrorCode (*f
   va_end(argptr);
   
   ierr = (*tcomm->ops->runkernel)(tcomm,job);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadComm_Init"
+/*
+  PetscThreadComm_Init - Initializes the global thread communicator
+
+  PetscThreadComm_Init() defaults to 1 thread and PTHREAD type.
+*/
+PetscErrorCode PetscThreadComm_Init(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommCreate(&PETSC_THREAD_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetNThreads(PETSC_THREAD_COMM_WORLD,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetAffinities(PETSC_THREAD_COMM_WORLD,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetType(PETSC_THREAD_COMM_WORLD,PTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
