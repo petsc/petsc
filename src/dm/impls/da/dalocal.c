@@ -68,6 +68,114 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDACreateSection"
+/*@C
+  DMDACreateSection - Create a PetscSection inside the DMDA that describes data layout. This allows multiple fields with
+  different numbers of dofs on vertices, cells, and faces in each direction.
+
+  Input Parameters:
++ dm- The DMDA
+. numFields - The number of fields
+. numComp - The number of components in each field, or PETSC_NULL for 1
+. numVertexDof - The number of dofs per vertex for each field, or PETSC_NULL
+. numFaceDof - The number of dofs per face for each field and direction, or PETSC_NULL
+- numCellDof - The number of dofs per cell for each field, or PETSC_NULL
+
+  Level: developer
+
+  Note:
+  The default DMDA numbering is as follows:
+
+    - Cells:    [0,             nC)
+    - Vertices: [nC,            nC+nV)
+    - X-Faces:  [nC+nV,         nC+nV+nXF)
+    - Y-Faces:  [nC+nV+nXF,     nC+nV+nXF+nYF)
+    - Z-Faces:  [nC+nV+nXF+nYF, nC+nV+nXF+nYF+nZF)
+
+  We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
+@*/
+PetscErrorCode DMDACreateSection(DM dm, PetscInt numFields, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  PetscInt       mx  = da->Xe - da->Xs, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  PetscInt       nC  = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
+  PetscInt       nV  = (mx+1)*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz+1) : 1) : 1);
+  PetscInt       nXF = (mx+1)*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
+  PetscInt       nYF = (mx  )*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz  ) : 0) : 1);
+  PetscInt       nZF = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz+1) : 0) : 0);
+  PetscInt       cStart  = 0,     cEnd  = cStart+nC;
+  PetscInt       vStart  = cEnd,  vEnd  = vStart+nV;
+  PetscInt       xfStart = vEnd,  xfEnd = xfStart+nXF;
+  PetscInt       yfStart = xfEnd, yfEnd = yfStart+nYF;
+  PetscInt       zfStart = yfEnd, zfEnd = zfStart+nZF;
+  PetscInt       pStart  = 0,     pEnd  = zfEnd;
+  PetscInt       numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
+  PetscInt       f, v, c, xf, yf, zf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for(f = 0; f < numFields; ++f) {
+    if (numVertexDof) {numVertexTotDof  += numVertexDof[f];}
+    if (numCellDof)   {numCellTotDof    += numCellDof[f];}
+    if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*da->dim+0];
+                       numFaceTotDof[1] += da->dim > 1 ? numFaceDof[f*da->dim+1] : 0;
+                       numFaceTotDof[2] += da->dim > 2 ? numFaceDof[f*da->dim+2] : 0;}
+  }
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &da->defaultSection);CHKERRQ(ierr);
+  if (numFields > 1) {
+    ierr = PetscSectionSetNumFields(da->defaultSection, numFields);CHKERRQ(ierr);
+    if (numComp) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldComponents(da->defaultSection, f, numComp[f]);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    numFields = 0;
+  }
+  ierr = PetscSectionSetChart(da->defaultSection, pStart, pEnd);CHKERRQ(ierr);
+  if (numVertexDof) {
+    for(v = vStart; v < vEnd; ++v) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(da->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(da->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
+    }
+  }
+  if (numFaceDof) {
+    for(xf = xfStart; xf < xfEnd; ++xf) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(da->defaultSection, xf, f, numFaceDof[f*da->dim+0]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(da->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
+    }
+    for(yf = yfStart; yf < yfEnd; ++yf) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(da->defaultSection, yf, f, numFaceDof[f*da->dim+1]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(da->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
+    }
+    for(zf = zfStart; zf < zfEnd; ++zf) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(da->defaultSection, zf, f, numFaceDof[f*da->dim+2]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(da->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
+    }
+  }
+  if (numCellDof) {
+    for(c = cStart; c < cEnd; ++c) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(da->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(da->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(da->defaultSection);CHKERRQ(ierr);
+  da->defaultGlobalSection = da->defaultSection;
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------- */
 #if defined(PETSC_HAVE_ADIC)
 

@@ -113,5 +113,8 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
+
+  ierr = PetscSectionDestroy(dd->defaultSection);CHKERRQ(ierr);
+  /* ierr = PetscSectionDestroy(dd->defaultGlobalSection);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }

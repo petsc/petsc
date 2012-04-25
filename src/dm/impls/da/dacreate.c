@@ -233,7 +233,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->ly           = PETSC_NULL;
   dd->lz           = PETSC_NULL;
 
-  dd->elementtype  = DMDA_ELEMENT_Q1;
+  dd->elementtype          = DMDA_ELEMENT_Q1;
+  dd->defaultSection       = PETSC_NULL;
+  dd->defaultGlobalSection = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD,&da->vectype);CHKERRQ(ierr);
   da->ops->globaltolocalbegin  = DMGlobalToLocalBegin_DA;
