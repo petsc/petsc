@@ -10,6 +10,7 @@ class QuadratureGenerator(script.Script):
     import os
     self.baseDir    = os.getcwd()
     self.quadDegree = -1
+    self.gpuScalarType = 'float'
     return
 
   def setupPaths(self):
@@ -415,7 +416,7 @@ class QuadratureGenerator(script.Script):
         basisDerTab = basisDerTabNew
       code.extend([self.Cxx.getDecl(numFunctions), self.Cxx.getDecl(numComponents),
                    self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'const PetscReal', static = False),
-                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'const float'+str(dim), static = False, packSize = dim)])
+                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'const '+self.gpuScalarType+str(dim), static = False, packSize = dim)])
     return code
 
   def getPhysicsRoutines(self, operator):
@@ -434,7 +435,7 @@ class QuadratureGenerator(script.Script):
     from Cxx import Define, Declarator
     dim  = element.get_reference_element().get_spatial_dimension()
     ext  = '_'+str(num)
-    real = 'float'
+    real = self.gpuScalarType
 
     spatialDim = Define()
     spatialDim.identifier = 'SPATIAL_DIM'+ext
