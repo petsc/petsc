@@ -158,7 +158,7 @@ PetscErrorCode PetscThreadCommView(MPI_Comm comm,PetscViewer viewer)
 {
   PetscErrorCode  ierr;
   PetscBool       iascii;
-  PetscThreadComm tcomm;
+  PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 {
   PetscErrorCode ierr;
-  PetscThreadComm tcomm;
+  PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
@@ -343,7 +343,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
 PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
 {
   PetscErrorCode ierr;
-  PetscThreadComm tcomm;
+  PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
@@ -377,7 +377,7 @@ PetscErrorCode PetscThreadCommSetType(MPI_Comm comm,const PetscThreadCommType ty
   PetscErrorCode ierr,(*r)(PetscThreadComm);
   char           ttype[256];
   PetscBool      flg;
-  PetscThreadComm tcomm;
+  PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
@@ -473,7 +473,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   PetscErrorCode        ierr;
   va_list               argptr;
   PetscInt              i;
-  PetscThreadComm       tcomm;
+  PetscThreadComm       tcomm=0;
   PetscThreadCommJobCtx job;
 
   PetscFunctionBegin;
