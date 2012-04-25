@@ -218,7 +218,7 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, Vec v, FILE
           if (d > 0) {
             ierr = PetscFPrintf(comm, fp, " ");CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fp, formatString, array[off+d]);CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fp, formatString, PetscRealPart(array[off+d]));CHKERRQ(ierr);
         }
         for(d = dof; d < enforceDof; d++) {
           ierr = PetscFPrintf(comm, fp, " 0.0");CHKERRQ(ierr);
@@ -239,7 +239,7 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, Vec v, FILE
           if (d > 0) {
             ierr = PetscFPrintf(comm, fp, " ");CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fp, formatString, remoteValues[p*maxDof+d]);CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fp, formatString, PetscRealPart(remoteValues[p*maxDof+d]));CHKERRQ(ierr);
         }
         for(d = maxDof; d < enforceDof; ++d) {
           ierr = PetscFPrintf(comm, fp, " 0.0");CHKERRQ(ierr);

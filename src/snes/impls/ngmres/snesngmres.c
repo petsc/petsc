@@ -179,7 +179,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   /* solution selection data */
   PetscBool           selectA, selectRestart;
-  PetscReal           dnorm, dminnorm, dcurnorm;
+  PetscReal           dnorm, dminnorm = 0.0, dcurnorm;
   PetscReal           fminnorm;
 
   SNESConvergedReason reason;

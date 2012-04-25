@@ -5958,7 +5958,9 @@ PetscErrorCode DMComplexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented) {
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetFaceOrientation"
+PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented) {
   MPI_Comm       comm      = ((PetscObject) dm)->comm;
   PetscBool      posOrient = PETSC_FALSE;
   const PetscInt debug     = 0;
@@ -6029,7 +6031,7 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       }
     }
     if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid tri crossface");
-    *posOriented = PETSC_TRUE;
+    if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else if (cellDim == 2 && numCorners == 9) {
     /* Quadratic quad (I hate this) */
@@ -6072,7 +6074,7 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       }
     }
     if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossface");
-    *posOriented = PETSC_TRUE;
+    if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 8) {
     /* Hexes
@@ -6131,7 +6133,7 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       }
     }
     if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
-    *posOriented = PETSC_TRUE;
+    if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 10) {
     /* Quadratic tet */
@@ -6176,7 +6178,7 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       }
     }
     if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid tet crossface");
-    *posOriented = PETSC_TRUE;
+    if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 27) {
     /* Quadratic hexes (I hate this)
@@ -6235,7 +6237,7 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       }
     }
     if (!found) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");}
-    *posOriented = PETSC_TRUE;
+    if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown cell type for faceOrientation().");
   if (!posOrient) {
@@ -6249,18 +6251,17 @@ PetscErrorCode faceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscI
       faceVertices[f] = origVertices[f];
     }
   }
-  *posOriented = posOrient;
+  if (posOriented) {*posOriented = posOrient;}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetOrientedFace"
-PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
+PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
   const PetscInt *cone;
   PetscInt        coneSize, v, f, v2;
-  PetscInt        oppositeVertex;
-  const PetscInt  debug = 0;
+  PetscInt        oppositeVertex = -1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -6280,6 +6281,6 @@ PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize,
       oppositeVertex = v;
     }
   }
-  ierr = faceOrientation(dm, cell, numCorners, indices, oppositeVertex, origVertices, faceVertices, posOriented);CHKERRQ(ierr);
+  ierr = DMComplexGetFaceOrientation(dm, cell, numCorners, indices, oppositeVertex, origVertices, faceVertices, posOriented);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
