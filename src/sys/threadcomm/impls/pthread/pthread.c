@@ -182,6 +182,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       }
     }
   }  
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

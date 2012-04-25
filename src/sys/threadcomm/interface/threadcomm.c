@@ -59,10 +59,12 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flg;
+  void*          ptr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_get_attr(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)tcommp,&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
+  *tcommp = (PetscThreadComm)ptr;
   PetscFunctionReturn(0);
 }
 
@@ -118,23 +120,22 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 
 .seealso: PetscThreadCommCreate()
 */
-PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
+PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(!*tcomm) PetscFunctionReturn(0);
+  if(!tcomm) PetscFunctionReturn(0);
 
   /* Destroy the implementation specific data struct */
-  if((*tcomm)->ops->destroy) {
-    (*((*tcomm))->ops->destroy)((*tcomm));
+  if(tcomm->ops->destroy) {
+    (*tcomm->ops->destroy)(tcomm);
   } 
 
-  ierr = PetscFree((*tcomm)->affinities);CHKERRQ(ierr);
-  ierr = PetscFree((*tcomm)->ops);CHKERRQ(ierr);
-  ierr = PetscFree((*tcomm)->jobctx);CHKERRQ(ierr);
-  ierr = PetscFree((*tcomm));CHKERRQ(ierr);
-  *tcomm = PETSC_NULL;
+  ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
+  ierr = PetscFree(tcomm->ops);CHKERRQ(ierr);
+  ierr = PetscFree(tcomm->jobctx);CHKERRQ(ierr);
+  ierr = PetscFree(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -355,11 +356,12 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
 #define __FUNCT__ "PetscThreadCommSetType"
 /*
    PetscThreadCommSetType - Sets the threading model for the thread communicator
+                            associated with the MPI communicator
 
    Logically collective
 
    Input Parameters:
-+  comm - the thread communicator
++  comm - the MPI communicator
 -  type  - the type of thread model needed
 
 
@@ -370,15 +372,16 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
    See "petsc/include/petscthreadcomm.h" for available types
 
 */
-PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCommType type)
+PetscErrorCode PetscThreadCommSetType(MPI_Comm comm,const PetscThreadCommType type)
 {
   PetscErrorCode ierr,(*r)(PetscThreadComm);
   char           ttype[256];
   PetscBool      flg;
+  PetscThreadComm tcomm;
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   if(!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting threading model",PETSC_NULL);CHKERRQ(ierr);
@@ -503,7 +506,8 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* tc
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommDestroy((PetscThreadComm*)&tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -527,7 +531,7 @@ PetscErrorCode PetscThreadComm_Init(MPI_Comm comm)
   ierr = PetscThreadCommCreate(comm,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetType(tcomm,PTHREAD);CHKERRQ(ierr);
   ierr = MPI_Comm_set_attr(comm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetType(comm,PTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

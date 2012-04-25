@@ -4,6 +4,9 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
+/* This key should be in petsc-private/threadcommimpl.h */
+extern PetscMPIInt Petsc_ThreadComm_keyval;
+
 /* Function pointer cast for the kernel function */
 typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 

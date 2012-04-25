@@ -23,7 +23,6 @@ PetscErrorCode PetscThreadCommInitializePackage(const char *path)
   PetscFunctionBegin;
   if(PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
   PetscThreadCommPackageInitialized = PETSC_TRUE;
-  ierr = PetscClassIdRegister("Thread communicator",&PETSCTHREADCOMM_CLASSID);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscThreadCommFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

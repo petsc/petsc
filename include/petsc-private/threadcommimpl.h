@@ -49,11 +49,6 @@ struct _p_PetscThreadComm{
   char                  type[256];    /* Thread model type */
 };
 
-extern PetscErrorCode PetscThreadCommCreate(MPI_Comm,PetscThreadComm*);
-extern PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm,PetscInt);
-extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscInt[]);
-extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
 extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 
-extern PetscMPIInt Petsc_ThreadComm_keyval;
 #endif
