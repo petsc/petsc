@@ -399,6 +399,36 @@ PetscErrorCode PetscThreadCommSetType(MPI_Comm comm,const PetscThreadCommType ty
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommBarrier"
+/*  PetscThreadCommBarrier - Apply a barrier on the thread communicator
+                             associated with the MPI communicator
+
+    Input Parameters:
+.   comm - the MPI communicator
+
+    Level: developer
+
+    Notes:
+    This routine provides an interface to put an explicit barrier between
+    successive kernel calls to ensure that the first kernel is executed
+    by all the threads before calling the next one.
+
+    May not be applicable to all types.
+*/
+PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
+{
+  PetscErrorCode ierr;
+  PetscThreadComm tcomm=0;
+
+  PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  if(tcomm->ops->barrier) {
+    (*tcomm->ops->barrier)(tcomm);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscThreadCommRegisterDestroy"
 /*@C

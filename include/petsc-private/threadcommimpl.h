@@ -38,6 +38,7 @@ struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
   PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
+  PetscErrorCode (*barrier)(PetscThreadComm);
 };
 
 struct _p_PetscThreadComm{
