@@ -137,12 +137,15 @@ PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPThreadCommRunKernel_LockFree"
-PetscErrorCode PetscPThreadCommRunKernel_LockFree(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
+PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode          ierr;
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
-  PetscInt                i,thread_num,k=0;
+  PetscThreadComm         tcomm;
+  PetscThreadComm_PThread *ptcomm;
+  PetscInt                i,thread_num;
   PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  ptcomm = (PetscThreadComm_PThread*)tcomm->data;
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     thread_num = ptcomm->granks[i];
     job_lockfree.data[thread_num] = job;

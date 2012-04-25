@@ -4,15 +4,13 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
-extern PetscClassId PETSCTHREADCOMM_CLASSID;
-
 /* Function pointer cast for the kernel function */
 typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
-/*S
-  ThreadComm - Abstract PETSc object that manages all thread communication models
+/*
+  ThreadComm - Abstract object that manages all thread communication models
 
   Level: developer
 
@@ -22,18 +20,6 @@ typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 S*/
 typedef struct _p_PetscThreadComm* PetscThreadComm;
 
-/*MC
-   PETSC_THREAD_COMM_WORLD - The basic thread communicator which uses all the threads that
-                 PETSc knows about.
-
-   Level: developer
-
-   Notes: This is created during PetscInitialize() with the number of threads
-          requested. All the other thread communicators use threads from
-          PETSC_THREAD_COMM_WORLD for performing their operations.	  
-M*/		 
-extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
-
 extern PetscInt N_CORES; /* Number of available cores */
 
 #define PetscThreadCommType char*
@@ -42,15 +28,10 @@ extern PetscInt N_CORES; /* Number of available cores */
 extern PetscFList PetscThreadCommList;
 
 extern PetscErrorCode PetscThreadComm_Init();
-extern PetscErrorCode PetscThreadCommInitializePackage(const char*);
-extern PetscErrorCode PetscThreadCommFinalizePackage(void);
-
-extern PetscErrorCode PetscThreadCommDestroy(PetscThreadComm*);
-
-extern PetscErrorCode PetscThreadCommGetNThreads(PetscThreadComm,PetscInt*);
-extern PetscErrorCode PetscThreadCommGetAffinities(PetscThreadComm,PetscInt[]);
-extern PetscErrorCode PetscThreadCommView(PetscThreadComm,PetscViewer);
-extern PetscErrorCode PetscThreadCommRunKernel(PetscThreadComm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
+extern PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm,PetscInt*);
+extern PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm,PetscInt[]);
+extern PetscErrorCode PetscThreadCommView(MPI_Comm,PetscViewer);
+extern PetscErrorCode PetscThreadCommRunKernel(MPI_Comm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
 
 /* register thread communicator models */
 extern PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));

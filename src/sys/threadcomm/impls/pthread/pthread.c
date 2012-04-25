@@ -32,11 +32,14 @@ void PetscPThreadCommDoCoreAffinity(void)
   PetscInt  i,icorr=0; 
   cpu_set_t mset;
   PetscInt  myrank=PetscGetPThreadRank();
-  PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM_WORLD->data;
+  PetscThreadComm          tcomm;
+  PetscThreadComm_PThread *gptcomm;
   
+  PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
+  gptcomm=(PetscThreadComm_PThread*)tcomm->data;
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
-    icorr = PETSC_THREAD_COMM_WORLD->affinities[myrank];
+    icorr = tcomm->affinities[myrank];
     CPU_ZERO(&mset);
     CPU_SET(icorr%N_CORES,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
@@ -74,13 +77,16 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel_PThread"
-PetscErrorCode PetscThreadCommRunKernel_PThread(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
+PetscErrorCode PetscThreadCommRunKernel_PThread(MPI_Comm comm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode          ierr;
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  PetscThreadComm         tcomm;
+  PetscThreadComm_PThread *ptcomm;
 
   PetscFunctionBegin;
-  ierr = (*ptcomm->runkernel)(tcomm,job);CHKERRQ(ierr);
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  ptcomm = (PetscThreadComm_PThread*)tcomm->data;
+  ierr = (*ptcomm->runkernel)(comm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +116,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     PetscPThreadCommInitializeCalled = PETSC_TRUE;
     PetscBool               flg1,flg2,flg3;
 
-    ierr = PetscObjectOptionsBegin((PetscObject)tcomm);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread communicator options",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-threadcomm_pthread_main_is_worker","Main thread is also a worker thread",PETSC_NULL,PETSC_TRUE,&ptcomm->ismainworker,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_affpolicy","Thread affinity policy"," ",PetscPThreadCommAffinityPolicyTypes,(PetscEnum)ptcomm->aff,(PetscEnum*)&ptcomm->aff,&flg2);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_type","Thread pool type"," ",PetscPThreadCommSynchronizationTypes,(PetscEnum)ptcomm->sync,(PetscEnum*)&ptcomm->sync,&flg3);CHKERRQ(ierr);
@@ -151,11 +157,16 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
 
   } else {
-    PetscThreadComm_PThread *gptcomm=(PetscThreadComm_PThread*)PETSC_THREAD_COMM_WORLD->data;
-    PetscInt *granks=gptcomm->granks;
+    PetscThreadComm          gtcomm;
+    PetscThreadComm_PThread *gptcomm;
+    PetscInt *granks;
     PetscInt j;
-    PetscInt *gaffinities=PETSC_THREAD_COMM_WORLD->affinities;
+    PetscInt *gaffinities;
 
+    ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&gtcomm);CHKERRQ(ierr);
+    gaffinities = gtcomm->affinities;
+    gptcomm = (PetscThreadComm_PThread*)tcomm->data;
+    granks = gptcomm->granks;
     /* Copy over the data from the global PETSC_THREAD_COMM_WORLD structure */
     ptcomm->ismainworker     = gptcomm->ismainworker;
     ptcomm->thread_num_start = gptcomm->thread_num_start;
@@ -164,7 +175,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ptcomm->runkernel        = gptcomm->runkernel;
     
     for(i=0; i < tcomm->nworkThreads;i++) {
-      for(j=0;j < PETSC_THREAD_COMM_WORLD->nworkThreads; j++) {
+      for(j=0;j < gtcomm->nworkThreads; j++) {
 	if(tcomm->affinities[i] == gaffinities[j]) {
 	  ptcomm->granks[i] = granks[j];
 	}

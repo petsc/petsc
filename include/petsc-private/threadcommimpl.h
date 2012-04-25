@@ -36,22 +36,24 @@ struct  _p_PetscThreadCommJobCtx{
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
-  PetscErrorCode (*runkernel)(PetscThreadComm,PetscThreadCommJobCtx);
+  PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
 };
 
 struct _p_PetscThreadComm{
-  PETSCHEADER           (struct _PetscThreadCommOps);
   PetscInt              nworkThreads; /* Number of threads in the pool */
   PetscInt              *affinities;  /* Thread affinity */
+  PetscThreadCommOps    ops;          /* Operations table */ 
   void                  *data;        /* implementation specific data */
-  PetscThreadCommJobCtx jobctx;     /* Job context */
+  PetscThreadCommJobCtx jobctx;       /* Job context */
+  char                  type[256];    /* Thread model type */
 };
 
-extern PetscErrorCode PetscThreadCommCreate(PetscThreadComm*);
+extern PetscErrorCode PetscThreadCommCreate(MPI_Comm,PetscThreadComm*);
 extern PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm,PetscInt);
 extern PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm,const PetscInt[]);
 extern PetscErrorCode PetscThreadCommSetType(PetscThreadComm,const PetscThreadCommType);
+extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 
 extern PetscMPIInt Petsc_ThreadComm_keyval;
 #endif
