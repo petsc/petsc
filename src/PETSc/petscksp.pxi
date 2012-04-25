@@ -12,6 +12,7 @@ cdef extern from * nogil:
     PetscKSPType   KSPFGMRES
     PetscKSPType   KSPLGMRES
     PetscKSPType   KSPDGMRES
+    PetscKSPType   KSPPGMRES
     PetscKSPType KSPTCQMR
     PetscKSPType KSPBCGS
     PetscKSPType   KSPIBCGS
@@ -27,9 +28,7 @@ cdef extern from * nogil:
     PetscKSPType KSPSYMMLQ
     PetscKSPType KSPLCD
     #PetscKSPType KSPPYTHON
-    PetscKSPType KSPBROYDEN
     PetscKSPType KSPGCR
-    PetscKSPType KSPNGMRES
     PetscKSPType KSPSPECEST
 
     ctypedef enum PetscKSPNormType "KSPNormType":
