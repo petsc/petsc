@@ -49,7 +49,6 @@ typedef struct {
   PetscPThreadCommAffinityPolicyType  aff; /* affinity policy */
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
-  PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
 }PetscThreadComm_PThread;
 
 #if defined(PETSC_PTHREAD_LOCAL)

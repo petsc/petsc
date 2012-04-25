@@ -75,21 +75,6 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommRunKernel_PThread"
-PetscErrorCode PetscThreadCommRunKernel_PThread(MPI_Comm comm,PetscThreadCommJobCtx job)
-{
-  PetscErrorCode          ierr;
-  PetscThreadComm         tcomm;
-  PetscThreadComm_PThread *ptcomm;
-
-  PetscFunctionBegin;
-  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  ptcomm = (PetscThreadComm_PThread*)tcomm->data;
-  ierr = (*ptcomm->runkernel)(comm,job);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_PThread"
@@ -108,7 +93,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   ptcomm->aff = PTHREADAFFPOLICY_ONECORE;
   ptcomm->ismainworker = PETSC_TRUE;
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
-  tcomm->ops->runkernel = PetscThreadCommRunKernel_PThread;
+  tcomm->ops->runkernel = PetscPThreadCommRunKernel_LockFree;
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
 
@@ -132,9 +117,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
     switch(ptcomm->sync) {
     case PTHREADSYNC_LOCKFREE:
-      ptcomm->initialize = PetscPThreadCommInitialize_LockFree;
-      ptcomm->finalize   = PetscPThreadCommFinalize_LockFree;
-      ptcomm->runkernel = PetscPThreadCommRunKernel_LockFree;
+      ptcomm->initialize      = PetscPThreadCommInitialize_LockFree;
+      ptcomm->finalize        = PetscPThreadCommFinalize_LockFree;
+      tcomm->ops->runkernel   = PetscPThreadCommRunKernel_LockFree;
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only Lock-free synchronization scheme supported currently");
@@ -167,12 +152,12 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     gaffinities = gtcomm->affinities;
     gptcomm = (PetscThreadComm_PThread*)tcomm->data;
     granks = gptcomm->granks;
-    /* Copy over the data from the global PETSC_THREAD_COMM_WORLD structure */
+    /* Copy over the data from the global thread communicator structure */
     ptcomm->ismainworker     = gptcomm->ismainworker;
     ptcomm->thread_num_start = gptcomm->thread_num_start;
     ptcomm->sync             = gptcomm->sync;
     ptcomm->aff              = gptcomm->aff;
-    ptcomm->runkernel        = gptcomm->runkernel;
+    tcomm->ops->runkernel    = gtcomm->ops->runkernel;
     
     for(i=0; i < tcomm->nworkThreads;i++) {
       for(j=0;j < gtcomm->nworkThreads; j++) {
