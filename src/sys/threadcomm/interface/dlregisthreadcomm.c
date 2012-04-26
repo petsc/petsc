@@ -15,7 +15,10 @@ static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscThreadCommFinalizePackage(void)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = PetscThreadCommRegisterDestroy();CHKERRQ(ierr);
+  ierr = MPI_Comm_free_keyval(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -40,6 +43,7 @@ PetscErrorCode PetscThreadCommInitializePackage(const char *path)
 
   PetscFunctionBegin;
   if(PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
+  ierr = PetscThreadCommInitialize();CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_TRUE;
   ierr = PetscRegisterFinalize(PetscThreadCommFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
