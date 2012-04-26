@@ -527,6 +527,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
     queue->ctr = 0;
   }
   job = queue->jobs[queue->ctr];
+  job->tcomm = tcomm;
   job->nargs = nargs;
   job->pfunc = func;
   va_start(argptr,nargs);

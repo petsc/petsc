@@ -36,6 +36,7 @@ extern PetscMPIInt Petsc_ThreadComm_keyval;
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
+  PetscThreadComm   tcomm;                         /* The thread communicator */
   PetscInt          nargs;                         /* Number of arguments for the kernel */
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */

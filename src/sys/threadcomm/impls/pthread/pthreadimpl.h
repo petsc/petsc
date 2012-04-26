@@ -29,6 +29,9 @@ $ PTHREADAFFPOLICY_NONE    - No set affinity policy. OS decides thread schedulin
 typedef enum {PTHREADAFFPOLICY_ALL,PTHREADAFFPOLICY_ONECORE,PTHREADAFFPOLICY_NONE} PetscPThreadCommAffinityPolicyType;
 extern const char *const PetscPTheadCommAffinityPolicyTypes[];
 
+typedef enum {PTHREADPOOLSPARK_LEADER,PTHREADPOOLSPARK_CHAIN} PetscPThreadCommPoolSparkType;
+extern const char *const PetscPThreadCommPoolSparkTypes[];
+
 /*
    PetscThreadComm_PThread - The main data structure to manage the thread
    communicator using pthreads. This data structure is shared by NONTHREADED
@@ -36,17 +39,22 @@ extern const char *const PetscPTheadCommAffinityPolicyTypes[];
    pthreads are created
 */
 typedef struct {
-  PetscInt    nthreads;            /* Number of threads created */
-  pthread_t  *tid;                 /* thread ids */
-  PetscBool  ismainworker;         /* Is the main thread also a work thread?*/
-  PetscInt   *granks;               /* Thread ranks - if main thread is a worker then main thread 
-				      rank is 0 and ranks for other threads start from 1, 
-				      otherwise the thread ranks start from 0.
-                                      These ranks are with respect to the first initialized thread pool */
-  PetscInt    thread_num_start;     /* index for the first created thread (= 1 if the main thread is a worker
-                                       else 0) */
-  PetscPThreadCommSynchronizationType sync; /* Synchronization type */
-  PetscPThreadCommAffinityPolicyType  aff; /* affinity policy */
+  PetscInt    nthreads;                      /* Number of threads created */
+  pthread_t  *tid;                           /* thread ids */
+  PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
+  PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread 
+				                rank is 0 and ranks for other threads start from 1, 
+				                otherwise the thread ranks start from 0.
+                                                These ranks are with respect to the first initialized thread pool */
+  PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
+                                                else 0) */
+  PetscInt    leader;                         /* Rank of the leader thread. The leader thread sparks the other
+                                                 threads in the thread pool and the main thread sparks the leader thread */
+  PetscInt    *ngranks;                        /* Stores the rank of the next thread to be sparked by this thread 
+						  Only used for CHAIN PoolSpark type */
+  PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
+  PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
+  PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
 }PetscThreadComm_PThread;
