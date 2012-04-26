@@ -32,11 +32,6 @@ PetscLogEvent  MAT_GetMultiProcBlock;
 PetscLogEvent  MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent  MAT_Merge;
 
-/* nasty global values for MatSetValue() */
-PetscInt     MatSetValue_Row = 0;
-PetscInt     MatSetValue_Column = 0;
-PetscScalar  MatSetValue_Value = 0.0;
-
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
 #undef __FUNCT__  
