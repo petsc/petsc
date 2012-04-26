@@ -481,6 +481,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscViewer             viewer = 0;
 
   PetscFunctionBegin;
+  /* FIX: Move this to PCSetFromOptions_MG? */
   if (mg->usedmfornumberoflevels) {
     PetscInt levels;
     ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
@@ -509,7 +510,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
-  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. */
+  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs? */
   if (pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;

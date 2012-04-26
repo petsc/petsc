@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da adda sliced composite mesh cartesian iga redundant complex shell
+DIRS     = da adda sliced composite mesh cartesian iga redundant complex shell akkt
 LOCDIR   = src/dm/impls
 MANSEC   = DM
 

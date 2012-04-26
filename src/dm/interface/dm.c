@@ -749,7 +749,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDecompositionDM"
 /*@C
-  DMCreateDecompositionDM - creates a DM that defines a decomposition of the original DM.
+  DMCreateDecompositionDM - creates a DM that encapsulates a decomposition of the original DM.
 
   Not Collective
 
