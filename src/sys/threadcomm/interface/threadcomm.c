@@ -365,12 +365,11 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
 #define __FUNCT__ "PetscThreadCommSetType"
 /*
    PetscThreadCommSetType - Sets the threading model for the thread communicator
-                            associated with the MPI communicator
 
    Logically collective
 
    Input Parameters:
-+  comm - the MPI communicator
++  tcomm - the thread communicator
 -  type  - the type of thread model needed
 
 
@@ -381,16 +380,14 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
    See "petsc/include/petscthreadcomm.h" for available types
 
 */
-PetscErrorCode PetscThreadCommSetType(MPI_Comm comm,const PetscThreadCommType type)
+PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCommType type)
 {
   PetscErrorCode ierr,(*r)(PetscThreadComm);
   char           ttype[256];
   PetscBool      flg;
-  PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   if(!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting threading model",PETSC_NULL);CHKERRQ(ierr);
@@ -422,6 +419,8 @@ PetscErrorCode PetscThreadCommSetType(MPI_Comm comm,const PetscThreadCommType ty
     This routine provides an interface to put an explicit barrier between
     successive kernel calls to ensure that the first kernel is executed
     by all the threads before calling the next one.
+
+    Called by the main thread only.
 
     May not be applicable to all types.
 */
@@ -539,6 +538,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelThreadComm"
@@ -561,13 +561,14 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* tc
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadComm_Init"
+#define __FUNCT__ "PetscThreadCommInitialize"
 /*
-  PetscThreadComm_Init - Initializes the global thread communicator and stashes it inside PETSC_COMM_WORLD
-
-  PetscThreadComm_Init() defaults to 1 thread and PTHREAD type.
+  PetscThreadCommInitialize - Initializes the thread communicator object 
+                              and stashes it inside PETSC_COMM_WORLD
+                              
+  PetscThreadCommInitialize() defaults to 1 thread and PTHREAD type.
 */
-PetscErrorCode PetscThreadComm_Init(MPI_Comm comm)
+PetscErrorCode PetscThreadCommInitialize(void)
 {
   PetscErrorCode ierr;
   PetscThreadComm tcomm;
@@ -576,10 +577,10 @@ PetscErrorCode PetscThreadComm_Init(MPI_Comm comm)
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_NULL_COPY_FN,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
   }
-  ierr = PetscThreadCommCreate(comm,&tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_set_attr(comm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetType(comm,PTHREAD);CHKERRQ(ierr);
+  ierr = MPI_Comm_set_attr(PETSC_COMM_WORLD,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetType(tcomm,PTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

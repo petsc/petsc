@@ -26,6 +26,14 @@
 #include <windows.h>
 #endif
 
+extern PetscMPIInt Petsc_ThreadComm_keyval;
+
+/* Max. number of arguments for kernel */
+#define PETSC_KERNEL_NARGS_MAX 10
+
+/* Max. number of kernels */
+#define PETSC_KERNELS_MAX 10
+
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
   PetscInt          nargs;                         /* Number of arguments for the kernel */
@@ -33,10 +41,11 @@ struct  _p_PetscThreadCommJobCtx{
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
 };
 
+/* Structure to manage job queue */
 typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
-  PetscInt ctr;
-  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];
+  PetscInt ctr;                                  /* job counter */
+  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX]; /* queue of jobs */
 };
 
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
@@ -57,5 +66,13 @@ struct _p_PetscThreadComm{
 };
 
 extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
+/* register thread communicator models */
+extern PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
+extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,0)
+#else
+#define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
+#endif
 
 #endif

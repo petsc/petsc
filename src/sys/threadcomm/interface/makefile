@@ -1,7 +1,7 @@
 ALL: lib
 
 SOURCEH	 = 
-SOURCEC  = threadcomm.c threadcommregi.c
+SOURCEC  = dlregisthreadcomm.c threadcomm.c threadcommregi.c
 OBJSC	 = $(SOURCEC:.c=.o)
 OBJSF	 =
 LIBBASE	 = libpetscsys

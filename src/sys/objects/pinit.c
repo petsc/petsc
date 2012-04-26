@@ -15,6 +15,8 @@
 #  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
 #endif
 
+#include <petscthreadcomm.h>
+
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
@@ -815,6 +817,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;
     ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-use_threadcomm",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscThreadCommInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   }
 
   /*
