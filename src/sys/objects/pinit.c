@@ -1214,11 +1214,6 @@ PetscErrorCode  PetscFinalize(void)
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
-  if (PETSC_ZOPEFD){ 
-    if (PETSC_ZOPEFD != PETSC_STDOUT) fprintf(PETSC_ZOPEFD, "<<<end>>>");
-    else fprintf(PETSC_STDOUT, "<<<end>>>");
-  }
-
 #if defined(PETSC_HAVE_CUDA)
   cublasShutdown();
 #endif

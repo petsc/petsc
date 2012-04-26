@@ -21,9 +21,6 @@ FILE *PETSC_STDOUT = 0;
 */
 FILE *PETSC_STDERR = 0;
 /*
-     Used to output to Zope
-*/
-FILE *PETSC_ZOPEFD = 0;
 
 /*
      Return the maximum expected new size of the format
@@ -153,32 +150,6 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscZopeLog"
-PetscErrorCode  PetscZopeLog(const char *format,va_list Argp)
-{
-  /* no malloc since may be called by error handler */
-  char        newformat[8*1024];
-  char        log[8*1024];
-  char        logstart[] = " <<<log>>>";
-  size_t      len,formatlen;
-
-  PetscFormatConvert(format,newformat,8*1024);
-  PetscStrlen(logstart, &len);
-  PetscMemcpy(log, logstart, len);
-  PetscStrlen(newformat, &formatlen);
-  PetscMemcpy(&(log[len]), newformat, formatlen);
-  if (PETSC_ZOPEFD){
-#if defined(PETSC_HAVE_VFPRINTF_CHAR)
-    vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
-#else
-    vfprintf(PETSC_ZOPEFD,log,Argp);
-#endif
-    fflush(PETSC_ZOPEFD);
-  }
-  return 0;
 }
 
 #undef __FUNCT__  

@@ -449,35 +449,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr);}
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
-  /*
-    Activates new sockets for zope if needed
-  */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
-  if (flgz){
-    int  sockfd;
-    char hostname[256];
-    char username[256];
-    int  remoteport = 9999;
-
-    ierr = PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
-    if (!hostname[0]){
-      ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-    }
-    ierr = PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
-    ierr = PetscGetUserName(username, 256);CHKERRQ(ierr);
-    PETSC_ZOPEFD = fdopen(sockfd, "w");
-    if (flgzout){
-      PETSC_STDOUT = PETSC_ZOPEFD;
-      fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
-      fprintf(PETSC_STDOUT, "<<<start>>>");
-    } else {
-      fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
-      fprintf(PETSC_ZOPEFD, "<<<start>>>");
-    }
-  }
-#endif
 #if defined(PETSC_USE_SERVER)
   ierr = PetscOptionsHasName(PETSC_NULL,"-server", &flgz);CHKERRQ(ierr);
   if (flgz){
