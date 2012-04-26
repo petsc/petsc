@@ -52,12 +52,19 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
   ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
-  ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
+  if (dd->defaultSection) {
+    PetscInt localSize;
+
+    ierr = PetscSectionGetStorageSize(dd->defaultSection, &localSize);CHKERRQ(ierr);
+    ierr = VecSetSizes(*g, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  } else {
+    ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
+  }
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -95,14 +102,14 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 
   We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
 @*/
-PetscErrorCode DMDACreateSection(DM dm, PetscInt numFields, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
+PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
 {
   DM_DA         *da  = (DM_DA *) dm->data;
-  PetscInt       mx  = da->Xe - da->Xs, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  PetscInt       mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   PetscInt       nC  = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
   PetscInt       nV  = (mx+1)*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz+1) : 1) : 1);
   PetscInt       nXF = (mx+1)*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
-  PetscInt       nYF = (mx  )*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz  ) : 0) : 1);
+  PetscInt       nYF = (mx  )*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz  ) : 1) : 0);
   PetscInt       nZF = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz+1) : 0) : 0);
   PetscInt       cStart  = 0,     cEnd  = cStart+nC;
   PetscInt       vStart  = cEnd,  vEnd  = vStart+nV;
@@ -110,12 +117,13 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numFields, PetscInt numComp[], 
   PetscInt       yfStart = xfEnd, yfEnd = yfStart+nYF;
   PetscInt       zfStart = yfEnd, zfEnd = zfStart+nZF;
   PetscInt       pStart  = 0,     pEnd  = zfEnd;
-  PetscInt       numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
+  PetscInt       numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
   PetscInt       f, v, c, xf, yf, zf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for(f = 0; f < numFields; ++f) {
     if (numVertexDof) {numVertexTotDof  += numVertexDof[f];}
     if (numCellDof)   {numCellTotDof    += numCellDof[f];}
@@ -126,8 +134,12 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numFields, PetscInt numComp[], 
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &da->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
     ierr = PetscSectionSetNumFields(da->defaultSection, numFields);CHKERRQ(ierr);
-    if (numComp) {
-      for(f = 0; f < numFields; ++f) {
+    for(f = 0; f < numFields; ++f) {
+      const char *name;
+
+      ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(da->defaultSection, f, name);CHKERRQ(ierr);
+      if (numComp) {
         ierr = PetscSectionSetFieldComponents(da->defaultSection, f, numComp[f]);CHKERRQ(ierr);
       }
     }

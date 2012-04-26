@@ -367,6 +367,8 @@ extern PetscErrorCode   admf_DARestoreArray(DM,PetscBool ,void*);
 
 extern PetscErrorCode   DMDACreatePF(DM,PF*);
 
+extern PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscInt[], PetscInt[]);
+
 #define DMDA_FILE_CLASSID 1211220
 PETSC_EXTERN_CXX_END
 #endif
