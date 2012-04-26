@@ -12,6 +12,10 @@ typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
+
+/* Max. number of kernels */
+#define PETSC_KERNELS_MAX 10
+
 /*
   ThreadComm - Abstract object that manages all thread communication models
 

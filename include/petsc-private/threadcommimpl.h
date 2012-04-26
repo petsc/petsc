@@ -33,6 +33,12 @@ struct  _p_PetscThreadCommJobCtx{
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
 };
 
+typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
+struct _p_PetscThreadCommJobQueue{
+  PetscInt ctr;
+  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];
+};
+
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
@@ -42,12 +48,12 @@ struct _PetscThreadCommOps {
 };
 
 struct _p_PetscThreadComm{
-  PetscInt              nworkThreads; /* Number of threads in the pool */
-  PetscInt              *affinities;  /* Thread affinity */
-  PetscThreadCommOps    ops;          /* Operations table */ 
-  void                  *data;        /* implementation specific data */
-  PetscThreadCommJobCtx jobctx;       /* Job context */
-  char                  type[256];    /* Thread model type */
+  PetscInt                nworkThreads; /* Number of threads in the pool */
+  PetscInt                *affinities;  /* Thread affinity */
+  PetscThreadCommOps      ops;          /* Operations table */ 
+  void                    *data;        /* implementation specific data */
+  PetscThreadCommJobQueue jobqueue;     /* Job queue */
+  char                    type[256];    /* Thread model type */
 };
 
 extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);

@@ -140,7 +140,7 @@ PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
 PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode          ierr;
-  PetscThreadComm         tcomm;
+  PetscThreadComm         tcomm=0;
   PetscThreadComm_PThread *ptcomm;
   PetscInt                i,thread_num;
   PetscFunctionBegin;
@@ -148,14 +148,16 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
   ptcomm = (PetscThreadComm_PThread*)tcomm->data;
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     thread_num = ptcomm->granks[i];
+    while(PetscReadOnce(int,job_lockfree.my_job_status[thread_num]) != THREAD_WAITING_FOR_JOB)
+      ;
     job_lockfree.data[thread_num] = job;
     job_lockfree.my_job_status[thread_num] = THREAD_RECIEVED_JOB;
   }
+  
   if(ptcomm->ismainworker) {
     job_lockfree.data[0] = job;
     RunJob(job->nargs, job_lockfree.data[0]);
   }
-
-  ierr = PetscPThreadCommBarrier_LockFree(tcomm);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }

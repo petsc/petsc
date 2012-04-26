@@ -87,6 +87,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcommout;
+  PetscInt        i;
 
   PetscFunctionBegin;
   PetscValidPointer(tcomm,2);
@@ -96,7 +97,11 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   tcommout->nworkThreads =  -1;
   tcommout->affinities = PETSC_NULL;
   ierr = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobctx);CHKERRQ(ierr);
+  ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&tcommout->jobqueue);CHKERRQ(ierr);
+  for(i=0;i<PETSC_KERNELS_MAX;i++) {
+    ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobqueue->jobs[i]);CHKERRQ(ierr);
+  }
+  tcommout->jobqueue->ctr = 0;
   *tcomm = tcommout;
 
   if(!PetscGetNCoresCalled) {     
@@ -123,6 +128,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if(!tcomm) PetscFunctionReturn(0);
@@ -134,7 +140,10 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
 
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
   ierr = PetscFree(tcomm->ops);CHKERRQ(ierr);
-  ierr = PetscFree(tcomm->jobctx);CHKERRQ(ierr);
+  for(i=0;i<PETSC_KERNELS_MAX;i++) {
+    ierr = PetscFree(tcomm->jobqueue->jobs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(tcomm->jobqueue);CHKERRQ(ierr);
   ierr = PetscFree(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -500,16 +509,25 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
 @*/
 PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(PetscInt,...),PetscInt nargs,...)
 {
-  PetscErrorCode        ierr;
-  va_list               argptr;
-  PetscInt              i;
-  PetscThreadComm       tcomm=0;
-  PetscThreadCommJobCtx job;
+  PetscErrorCode          ierr;
+  va_list                 argptr;
+  PetscInt                i;
+  PetscThreadComm         tcomm=0;
+  PetscThreadCommJobQueue queue;
+  PetscThreadCommJobCtx   job;
 
   PetscFunctionBegin;
   if(nargs > PETSC_KERNEL_NARGS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Requested %D input arguments for kernel, max. limit %D",nargs,PETSC_KERNEL_NARGS_MAX);
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  job = tcomm->jobctx;
+  queue = tcomm->jobqueue;
+  if(queue->ctr == PETSC_KERNELS_MAX) {
+    /* Put a barrier so that the last given job is finished and reset the
+       job queue counter
+    */
+    ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
+    queue->ctr = 0;
+  }
+  job = queue->jobs[queue->ctr];
   job->nargs = nargs;
   job->pfunc = func;
   va_start(argptr,nargs);
@@ -517,7 +535,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
     job->args[i] = va_arg(argptr,void*);
   }
   va_end(argptr);
-  
+  queue->ctr++;
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
