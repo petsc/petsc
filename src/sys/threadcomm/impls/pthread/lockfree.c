@@ -58,10 +58,11 @@ void SparkThreads_LockFree(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
   PetscInt                 next;
 
   ptcomm = (PetscThreadComm_PThread*)tcomm->data;
+  
   switch(ptcomm->spark) {
   case PTHREADPOOLSPARK_LEADER:
-  /* Only leader sparks all the other threads */
-    if(PetscReadOnce(int,ptcomm->leader) == PetscPThreadRank) {
+    if(PetscReadOnce(int,tcomm->leader) == PetscPThreadRank) {
+      /* Only leader sparks all the other threads */
       for(i=ptcomm->thread_num_start+1; i < tcomm->nworkThreads;i++) {
 	thread_num = ptcomm->granks[i];
 	while(PetscReadOnce(int,job_lockfree.my_job_status[thread_num]) != THREAD_WAITING_FOR_JOB)
@@ -84,7 +85,6 @@ void SparkThreads_LockFree(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
     break;
   }
 }
-
 
 void* PetscPThreadCommFunc_LockFree(void* arg)
 {
@@ -192,7 +192,7 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
   if(ptcomm->nthreads) {
     PetscInt thread_num;
     /* Spark the leader thread */
-    thread_num = ptcomm->leader;
+    thread_num = tcomm->leader;
     /* Wait till the leader thread has finished its previous job */
     while(PetscReadOnce(int,job_lockfree.my_job_status[thread_num]) != THREAD_WAITING_FOR_JOB)
       ;

@@ -102,6 +102,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
     ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobqueue->jobs[i]);CHKERRQ(ierr);
   }
   tcommout->jobqueue->ctr = 0;
+  tcommout->leader = 0;
   *tcomm = tcommout;
 
   if(!PetscGetNCoresCalled) {     

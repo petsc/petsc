@@ -145,8 +145,8 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     }
     /* Set the leader thread rank */
     if(ptcomm->nthreads) {
-      if(ptcomm->ismainworker) ptcomm->leader = ptcomm->granks[1];
-      else ptcomm->leader = ptcomm->granks[0];
+      if(ptcomm->ismainworker) tcomm->leader = ptcomm->granks[1];
+      else tcomm->leader = ptcomm->granks[0];
     }
   
     if(ptcomm->spark == PTHREADPOOLSPARK_CHAIN) {

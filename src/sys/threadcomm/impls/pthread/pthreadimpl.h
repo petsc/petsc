@@ -48,10 +48,8 @@ typedef struct {
                                                 These ranks are with respect to the first initialized thread pool */
   PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
                                                 else 0) */
-  PetscInt    leader;                         /* Rank of the leader thread. The leader thread sparks the other
-                                                 threads in the thread pool and the main thread sparks the leader thread */
-  PetscInt    *ngranks;                        /* Stores the rank of the next thread to be sparked by this thread 
-						  Only used for CHAIN PoolSpark type */
+  PetscInt    *ngranks;                      /* Stores the rank of the next thread to be sparked by this thread 
+						Only used for CHAIN PoolSpark type */
   PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
   PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */

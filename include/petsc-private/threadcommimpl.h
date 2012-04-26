@@ -64,6 +64,9 @@ struct _p_PetscThreadComm{
   void                    *data;        /* implementation specific data */
   PetscThreadCommJobQueue jobqueue;     /* Job queue */
   char                    type[256];    /* Thread model type */
+  PetscInt                leader;       /* Rank of the leader thread. This thread manages
+                                           the synchronization for collective operatons like reductions.
+					*/
 };
 
 extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
