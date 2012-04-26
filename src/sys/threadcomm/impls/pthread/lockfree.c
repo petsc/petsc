@@ -133,6 +133,9 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
     job_lockfree.my_job_status[i] = THREAD_WAITING_FOR_JOB;
     ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
   }
+  if(ptcomm->ismainworker) {
+    job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
+  }
 
   PetscFunctionReturn(0);
 }
@@ -148,7 +151,7 @@ PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
   PetscFunctionBegin;
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for(i=ptcomm->thread_num_start;i<tcomm->nworkThreads;i++) active_threads += job_lockfree.my_job_status[ptcomm->granks[i]];
+    for(i=0;i<tcomm->nworkThreads;i++) active_threads += job_lockfree.my_job_status[ptcomm->granks[i]];
     if(active_threads) active_threads = 0;
     else wait=PETSC_FALSE;
   }
@@ -197,9 +200,11 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
     job_lockfree.my_job_status[thread_num] = THREAD_RECIEVED_JOB;
   }
   if(ptcomm->ismainworker) {
+    job_lockfree.my_job_status[0] = THREAD_RECIEVED_JOB;
     job_lockfree.data[0] = job;
     RunJob_LockFree(job->nargs, job_lockfree.data[0]);
   }
-  
+  job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
+ 
   PetscFunctionReturn(0);
 }
