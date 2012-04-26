@@ -46,8 +46,6 @@ puts it into the Sieve ordering.
 
 Next Steps:
 
-- Fix 3D refinement with interpolation (markers are wrong, compare ex56_9.out and ex56_10.out)
-
 - Refine and show convergence of correct order automatically (use femTest.py)
 - Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Redo slides from GUCASTutorial for this new example
@@ -280,7 +278,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMCOMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   run = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
