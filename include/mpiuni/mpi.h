@@ -238,6 +238,12 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Comm_size     Petsc_MPI_Comm_size
 #define MPI_Comm_rank     Petsc_MPI_Comm_rank
 
+/* identical C bindings */
+#define MPI_Comm_create_keyval Petsc_MPI_Keyval_create
+#define MPI_Comm_free_keyval   Petsc_MPI_Keyval_free
+#define MPI_Comm_get_attr      Petsc_MPI_Attr_get
+#define MPI_Comm_set_attr      Petsc_MPI_Attr_put
+
 extern int    MPI_Abort(MPI_Comm,int);
 extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
 extern int    MPI_Keyval_free(int*);
