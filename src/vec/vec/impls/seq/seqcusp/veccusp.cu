@@ -1038,6 +1038,87 @@ struct cuspadd4 : thrust::binary_function<T,T,T>
 
 
 #undef __FUNCT__
+#define __FUNCT__ "VecMDot_SeqCUSP_CUBLAS"
+PetscErrorCode VecMDot_SeqCUSP_CUBLAS(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = xin->map->n,i;
+  CUSPARRAY      *xarray,*yy;
+  PetscScalar    *V,*xptr,*yptr,*zgpu;
+  Vec            *yyin = (Vec*)yin;
+  cublasStatus   stat;
+
+  PetscFunctionBegin;
+  stat = cublasAlloc(n*nv,sizeof(PetscScalar),(void**)&V);
+  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
+  stat = cublasAlloc(nv,sizeof(PetscScalar),(void**)&zgpu);
+  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
+  for (i=0;i<nv;i++) {
+    ierr = VecCUSPGetArrayRead(yyin[i],&yy);CHKERRQ(ierr);
+    yptr = thrust::raw_pointer_cast(&(*yy)[0]);
+    cudaMemcpy(V+i*n,yptr,n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);
+    ierr = VecCUSPRestoreArrayRead(yyin[i],&yy);CHKERRQ(ierr);
+  }
+  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+  xptr = thrust::raw_pointer_cast(&(*xarray)[0]);
+#if defined(PETSC_USE_REAL_DOUBLE)
+#define cublasXgemv cublasDgemv
+#else
+#define cublasXgemv cublasSgemv
+#endif
+  cublasXgemv('T',n,nv,1.0,V,n,xptr,1,0.0,zgpu,1.0);
+  cudaMemcpy(z,zgpu,nv*sizeof(PetscScalar),cudaMemcpyDeviceToHost);
+  ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+  cublasFree(V);
+  cublasFree(zgpu);
+  ierr = WaitForGPU();CHKERRCUSP(ierr);
+  ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecMDot_SeqCUSP_CUBLAS_1"
+PetscErrorCode VecMDot_SeqCUSP_CUBLAS_1(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = xin->map->n,i;
+  CUSPARRAY      *xarray,*yy;
+  PetscScalar    *V,*xptr,*yptr,*zgpu;
+  Vec            *yyin = (Vec*)yin;
+  cublasStatus   stat;
+  cudaError      cuerr;
+  size_t         pitch;
+
+  PetscFunctionBegin;
+  cuerr = cudaMallocPitch((void**)&V,&pitch,nv*sizeof(PetscScalar),n);
+  if (cuerr!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,1,"CUDA error %d",cuerr);
+  stat = cublasAlloc(nv,sizeof(PetscScalar),(void**)&zgpu);
+  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
+  for (i=0;i<nv;i++) {
+    ierr = VecCUSPGetArrayRead(yyin[i],&yy);CHKERRQ(ierr);
+    yptr = thrust::raw_pointer_cast(&(*yy)[0]);
+    cuerr = cudaMemcpy2D(V+i,pitch,yptr,sizeof(PetscScalar),sizeof(PetscScalar),n,cudaMemcpyDeviceToDevice);
+    if (cuerr!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,1,"CUDA error %d",cuerr);
+    ierr = VecCUSPRestoreArrayRead(yyin[i],&yy);CHKERRQ(ierr);
+  }
+  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+  xptr = thrust::raw_pointer_cast(&(*xarray)[0]);
+#if defined(PETSC_USE_REAL_DOUBLE)
+#define cublasXgemv cublasDgemv
+#else
+#define cublasXgemv cublasSgemv
+#endif
+  cublasXgemv('N',nv,n,1.0,V,pitch/sizeof(PetscScalar),xptr,1,0.0,zgpu,1.0);
+  cudaMemcpy(z,zgpu,nv*sizeof(PetscScalar),cudaMemcpyDeviceToHost);
+  ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+  cublasFree(V);
+  cublasFree(zgpu);
+  ierr = WaitForGPU();CHKERRCUSP(ierr);
+  ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecMDot_SeqCUSP"
 PetscErrorCode VecMDot_SeqCUSP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
@@ -1783,9 +1864,9 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
   V->ops->dot_local       = VecDot_SeqCUSP;
   V->ops->tdot_local      = VecTDot_SeqCUSP;
   V->ops->norm_local      = VecNorm_SeqCUSP;
-  V->ops->mdot_local      = VecMDot_SeqCUSP;
+  V->ops->mdot_local      = VecMDot_SeqCUSP_CUBLAS;
   V->ops->maxpy           = VecMAXPY_SeqCUSP;
-  V->ops->mdot            = VecMDot_SeqCUSP;
+  V->ops->mdot            = VecMDot_SeqCUSP_CUBLAS;
   V->ops->aypx            = VecAYPX_SeqCUSP;
   V->ops->waxpy           = VecWAXPY_SeqCUSP;
   V->ops->dotnorm2        = VecDotNorm2_SeqCUSP;

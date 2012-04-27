@@ -190,6 +190,10 @@ ex42: ex42.o  chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_VEC_LIB}
 	${RM} -f ex42.o
 
+ex43: ex43.o  chkopts 
+	-${CLINKER} -o ex43 ex43.o ${PETSC_VEC_LIB}
+	${RM} -f ex43.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1  ./ex1 ; \
@@ -391,6 +395,11 @@ runex38:
 	-@${MPIEXEC} -n 3 ./ex38 > ex38_1.tmp 2>&1;\
 	   ${DIFF} output/ex38_1.out ex38_1.tmp || echo  ${PWD} "\nPossible problem with ex38, diffs above \n========================================="; \
 	   ${RM} -f ex38_1.tmp
+
+runex43:
+	-@${MPIEXEC} -n 1 ./ex43 > ex43_1.tmp 2>&1;\
+	   ${DIFF} output/ex43_1.out ex43_1.tmp || echo  ${PWD} "\nPossible problem with ex43, diffs above \n========================================="; \
+	   ${RM} -f ex43_1.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
