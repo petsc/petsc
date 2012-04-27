@@ -8046,7 +8046,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByTranNM(TetGenMesh *m, PetscReal *key, Petsc
   triface newfront = {PETSC_NULL, 0, 0}, oldfront = {PETSC_NULL, 0, 0}, adjfront = {PETSC_NULL, 0, 0};
   face checksh = {PETSC_NULL, 0};
   point pa, pb, p[21];
-  PetscReal ori, cosmaxd, d1, d2;
+  PetscReal ori, cosmaxd = 0.0, d1, d2;
   PetscReal tmpkey;
   PetscReal attrib, volume;
   PetscBool doflip, copflag, success;
@@ -8364,7 +8364,7 @@ PetscErrorCode TetGenMeshRemoveEdgeByCombNM(TetGenMesh *m, PetscReal *key, Petsc
   PetscBool doflip, success;
   PetscInt twice, count;
   PetscInt i, j, k, m1;
-  long bakflipcount; /* Used for elemfliplist. */
+  long bakflipcount = 0; /* Used for elemfliplist. */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -20535,7 +20535,7 @@ PetscErrorCode TetGenMeshOptimize(TetGenMesh *m, PetscBool optflag)
   PetscReal      cosdd[6];
   List          *splittetlist, *tetlist, *ceillist;
   badface       *remtet, *newbadtet;
-  PetscReal      objdihed, cosobjdihed;
+  PetscReal      objdihed, cosobjdihed = 0.0;
   long           oldflipcount = 0, newflipcount = 0, oldpointcount, slivercount, optpasscount = 0;
   int            iter, len, i;
   PetscErrorCode ierr;

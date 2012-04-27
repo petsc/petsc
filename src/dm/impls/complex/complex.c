@@ -423,8 +423,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  maxClosureSize = 2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1);
-  maxAdjSize = pow((PetscReal) mesh->maxConeSize, depth)*pow((PetscReal) mesh->maxSupportSize, depth)+1;
+  maxClosureSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1));
+  maxAdjSize     = (PetscInt) (pow((PetscReal) mesh->maxConeSize, depth)*pow((PetscReal) mesh->maxSupportSize, depth)+1);
   ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
 
   /*
@@ -1435,7 +1435,7 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
     PetscInt depth, maxSize;
 
     ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
-    maxSize = 2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1);
+    maxSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1));
     ierr = PetscMalloc2(maxSize,PetscInt,&mesh->closureTmpA,maxSize,PetscInt,&mesh->closureTmpB);CHKERRQ(ierr);
   }
   closure = *points ? *points : mesh->closureTmpA;
@@ -2311,8 +2311,8 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
       }
     }
   }
-  maxClosure   = 2*PetscMax(pow((PetscReal) maxConeSize, depth)+1, pow((PetscReal) maxSupportSize, depth)+1);
-  maxNeighbors = pow((PetscReal) maxConeSize, depth)*pow((PetscReal) maxSupportSize, depth)+1;
+  maxClosure   = (PetscInt) (2*PetscMax(pow((PetscReal) maxConeSize, depth)+1, pow((PetscReal) maxSupportSize, depth)+1));
+  maxNeighbors = (PetscInt) (pow((PetscReal) maxConeSize, depth)*pow((PetscReal) maxSupportSize, depth)+1);
   ierr = PetscMalloc2(maxNeighbors,PetscInt,&neighborCells,maxClosure,PetscInt,&tmpClosure);CHKERRQ(ierr);
   ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &off);CHKERRQ(ierr);
   ierr = PetscMemzero(off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
