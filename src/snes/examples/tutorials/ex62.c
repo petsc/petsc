@@ -1,11 +1,9 @@
 static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
 We solve the Stokes problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMMESH) to discretize it.\n\
-The command line options include:\n\
-  -visc_model <name>, the viscosity model\n\n\n";
+domain, using a parallel unstructured mesh (DMCOMPLEX) to discretize it.\n\n\n";
 
 /*
- The variable-viscosity Stokes problem, which we discretize using the finite
+The isoviscous Stokes problem, which we discretize using the finite
 element method on an unstructured mesh. The weak form equations are
 
   < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
@@ -69,8 +67,8 @@ Possible new examples:
  -----------------------------------------------------------------------------*/
 #include "ex62.h"
 
-const int numFields     = 2;
-const int numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+const PetscInt numFields     = 2;
+const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
