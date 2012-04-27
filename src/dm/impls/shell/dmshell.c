@@ -22,7 +22,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,const MatType mtype,Mat *J)
   if (!A) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix() or DMShellSetCreateMatrix()");
   if (mtype) {
     PetscBool flg;
-    ierr = PetscTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
@@ -86,7 +86,7 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(J,MAT_CLASSID,2);
-  ierr = PetscTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  ierr = PetscTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);

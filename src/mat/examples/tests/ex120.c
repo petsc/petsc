@@ -108,7 +108,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* Convert aij matrix to MatSeqDense for LAPACK */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A_dense);CHKERRQ(ierr); 
   } else {

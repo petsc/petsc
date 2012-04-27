@@ -29,7 +29,7 @@ PetscErrorCode  PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isdrawnull);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->ellipse)(draw, x, y, a, b, c);CHKERRQ(ierr);
   PetscFunctionReturn(0);

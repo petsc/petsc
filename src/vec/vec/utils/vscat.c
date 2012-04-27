@@ -923,13 +923,13 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /*
      Determine types of index sets
   */
-  ierr = PetscTypeCompare((PetscObject)ix,ISBLOCK,&flag);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ix,ISBLOCK,&flag);CHKERRQ(ierr);
   if (flag) ix_type = IS_BLOCK_ID;
-  ierr = PetscTypeCompare((PetscObject)iy,ISBLOCK,&flag);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)iy,ISBLOCK,&flag);CHKERRQ(ierr);
   if (flag) iy_type = IS_BLOCK_ID;
-  ierr = PetscTypeCompare((PetscObject)ix,ISSTRIDE,&flag);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ix,ISSTRIDE,&flag);CHKERRQ(ierr);
   if (flag) ix_type = IS_STRIDE_ID;
-  ierr = PetscTypeCompare((PetscObject)iy,ISSTRIDE,&flag);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)iy,ISSTRIDE,&flag);CHKERRQ(ierr);
   if (flag) iy_type = IS_STRIDE_ID;
 
   /* ===========================================================================================================
@@ -1273,9 +1273,9 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
     }
 
-    ierr = PetscTypeCompare((PetscObject)ix,ISBLOCK,&ixblock);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)iy,ISBLOCK,&iyblock);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)iy,ISSTRIDE,&iystride);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ix,ISBLOCK,&ixblock);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)iy,ISBLOCK,&iyblock);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)iy,ISSTRIDE,&iystride);CHKERRQ(ierr);
     if (ixblock) {
       /* special case block to block */
       if (iyblock) {

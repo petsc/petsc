@@ -111,7 +111,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /*  User requests no graphics */

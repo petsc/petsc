@@ -1519,11 +1519,11 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
 
   PetscFunctionBegin;
   /* Check to make sure the component matrices are compatible with C. */
-  ierr = PetscTypeCompare((PetscObject)A, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
   if(!seqaij) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diagonal matrix is of wrong type");
   }
-  ierr = PetscTypeCompare((PetscObject)B, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)B, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
   if(!seqaij) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal matrix is of wrong type");
   }

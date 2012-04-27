@@ -57,7 +57,7 @@ PetscErrorCode  MatSetType(Mat mat, const MatType matype)
     names = names->next;
   }
 
-  ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
 
   ierr =  PetscFListFind(MatList,((PetscObject)mat)->comm,matype,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);

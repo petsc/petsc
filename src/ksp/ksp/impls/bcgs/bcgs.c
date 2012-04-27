@@ -36,7 +36,7 @@ PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii){
     if (bcgs->fbcgs) {ierr = PetscViewerASCIIPrintf(viewer,"  BCGS: flexible\n");CHKERRQ(ierr);}
   } else {

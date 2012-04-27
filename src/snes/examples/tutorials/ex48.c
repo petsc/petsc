@@ -1525,8 +1525,8 @@ int main(int argc,char *argv[])
     * functions will complain if we provide lower-triangular entries without setting this option. */
     Mat B = dmmg[i]->B;
     PetscBool  flg1,flg2;
-    ierr = PetscTypeCompare((PetscObject)B,MATSEQSBAIJ,&flg1);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQSBAIJ,&flg1);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) {
       ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     }

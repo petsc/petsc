@@ -460,7 +460,7 @@ static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
   if (!isnest) {
     /* Not nest */
     ierr = VecMax(x,&_entry_loc,&_entry_val);CHKERRQ(ierr);
@@ -511,7 +511,7 @@ static PetscErrorCode VecMin_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
   if (!isnest) {
     /* Not nest */
     ierr = VecMin(x,&_entry_loc,&_entry_val);CHKERRQ(ierr);
@@ -561,7 +561,7 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Vector Object:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);         /* push0 */
@@ -599,7 +599,7 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x,PetscBool globalsize,PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest);CHKERRQ(ierr);
   if (!isnest) {
     /* Not nest */
     if (globalsize) { ierr = VecGetSize(x,&size);CHKERRQ(ierr); }

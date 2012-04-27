@@ -74,9 +74,9 @@ int main(int argc,char **argv)
   /*
      Thinks it is a different type?
   */
-  ierr = PetscTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISStride");
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISBlock");
 
   ierr = ISDestroy(&is);CHKERRQ(ierr);

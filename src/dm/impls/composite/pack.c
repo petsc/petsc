@@ -58,7 +58,7 @@ PetscErrorCode  DMView_Composite(DM dm,PetscViewer v)
   DM_Composite   *com = (DM_Composite *)dm->data;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)v,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     struct DMCompositeLink *lnk = com->next;
     PetscInt               i;
@@ -440,7 +440,7 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
   com = (DM_Composite*)dm->data;
   next = com->next;
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     /* do I really want to call this? */
     ierr = VecView_MPI(gvec,viewer);CHKERRQ(ierr);

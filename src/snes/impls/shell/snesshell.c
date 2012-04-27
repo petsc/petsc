@@ -116,7 +116,7 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(ctx,2); 
-  ierr = PetscTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
   if (!flg) *ctx = 0; 
   else      *ctx = ((SNES_Shell*)(snes->data))->ctx; 
   PetscFunctionReturn(0);
@@ -149,7 +149,7 @@ PetscErrorCode  SNESShellSetContext(SNES snes,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
   }

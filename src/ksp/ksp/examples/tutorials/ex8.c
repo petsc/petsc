@@ -218,7 +218,7 @@ int main(int argc,char **args)
     /* 
        Flag an error if PCTYPE is changed from the runtime options
      */
-    ierr = PetscTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
     if (!isasm) SETERRQ(PETSC_COMM_WORLD,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /* 

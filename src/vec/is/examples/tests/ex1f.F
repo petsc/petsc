@@ -108,13 +108,13 @@
 
 !     Thinks it is a different type?
 
-      call PetscTypeCompare(is,ISSTRIDE,flag,ierr) 
+      call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr) 
            CHKERRQ(ierr)
       if (flag) then
          print*, 'Error checking stride'
          stop
       endif
-      call PetscTypeCompare(is,ISBLOCK,flag,ierr) 
+      call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr) 
            CHKERRQ(ierr)
       if (flag) then
          print*, 'Error checking block'

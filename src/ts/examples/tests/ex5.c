@@ -752,7 +752,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
 
   ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
   if (sundials || itime%60 == 0){
     ierr = VecGetArray(T,&array);CHKERRQ(ierr);

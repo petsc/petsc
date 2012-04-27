@@ -756,11 +756,11 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = PCMGGetSmoother( pc, lidx, &smoother ); CHKERRQ(ierr);
 
       /* do my own cheby */
-      ierr = PetscTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &flag ); CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &flag ); CHKERRQ(ierr);
       if( flag ) {
         PetscReal emax, emin;
         ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
-        ierr = PetscTypeCompare( (PetscObject)subpc, PCJACOBI, &flag ); CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare( (PetscObject)subpc, PCJACOBI, &flag ); CHKERRQ(ierr);
         if( flag && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
         else{ /* eigen estimate 'emax' */
           KSP eksp; Mat Lmat = Aarr[level];

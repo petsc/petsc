@@ -329,7 +329,7 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
   PetscBool         iascii;
   SNESLineSearch_BT *bt;
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   bt = (SNESLineSearch_BT*)linesearch->data;
   if (iascii) {
     if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {

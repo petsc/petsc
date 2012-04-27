@@ -295,7 +295,7 @@ PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal r
     ierr = KSPRichardsonSetScale(ksp, richardson_scale);CHKERRQ(ierr);
   } else {
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)(pc), PCNONE, &flg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)(pc), PCNONE, &flg);CHKERRQ(ierr);
     if (flg) {
       /* WORK: this is just an educated guess. Any number between 0 and 2/rho(A)
 	 should do. asa_lev->spec_rad has to be an upper bound on rho(A). */
@@ -359,12 +359,12 @@ PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, P
   /* set up problems for smoothers */
   ierr = KSPSetOperators(asa_lev->smoothd, asa_lev->A, asa_lev->A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetTolerances(asa_lev->smoothd, asa->smoother_rtol, asa->smoother_abstol, asa->smoother_dtol, maxits);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)(asa_lev->smoothd), KSPRICHARDSON, &flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)(asa_lev->smoothd), KSPRICHARDSON, &flg);CHKERRQ(ierr);
   if (flg) {
     /* special parameters for certain smoothers */
     ierr = KSPSetInitialGuessNonzero(asa_lev->smoothd, PETSC_TRUE);CHKERRQ(ierr);
     ierr = KSPGetPC(asa_lev->smoothd, &pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc, PCSOR, &flg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc, PCSOR, &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetSORomega_ASA(pc, asa->sor_omega);CHKERRQ(ierr);
     } else {
@@ -1201,7 +1201,7 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       if (asa_next_lev->smoothu) { KSPDestroy(&asa_next_lev->smoothu);CHKERRQ(ierr); }
     }
     ierr = KSPSetType(asa_next_lev->smoothd, asa->ksptype_direct);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)(asa_next_lev->smoothd), KSPRICHARDSON, &isrichardson);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)(asa_next_lev->smoothd), KSPRICHARDSON, &isrichardson);CHKERRQ(ierr);
     if (isrichardson) {
       ierr = KSPSetInitialGuessNonzero(asa_next_lev->smoothd, PETSC_TRUE);CHKERRQ(ierr);
     } else {
@@ -1946,7 +1946,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
   PC_ASA_level   *asa_lev = asa->levellist;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  ASA:\n");CHKERRQ(ierr);
     asa_lev = asa->levellist;

@@ -382,7 +382,7 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
   }
 
   /* get submatrices */
-  ierr = PetscTypeCompare( (PetscObject)Gmat_1, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare( (PetscObject)Gmat_1, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
   if(isMPI) {
     /* grab matrix objects */
     mpimat_2 = (Mat_MPIAIJ*)Gmat_2->data;

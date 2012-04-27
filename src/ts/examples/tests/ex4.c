@@ -178,7 +178,7 @@ int main(int argc,char **argv)
 
   /* display solver info for Sundials */ 
   ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   if (sundials){
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);

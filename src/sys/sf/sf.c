@@ -527,7 +527,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject)sf)->comm,&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sf,1,viewer,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
     PetscInt i,j;

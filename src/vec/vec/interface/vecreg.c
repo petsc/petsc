@@ -37,7 +37,7 @@ PetscErrorCode  VecSetType(Vec vec, const VecType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFListFind(VecList, ((PetscObject)vec)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);

@@ -276,7 +276,7 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
     rule.  These methods have equivalent linear stability, but the nonlinear stability is somewhat different.  The
     radiation system is inconvenient to write in explicit form because the ionization model is "on the left".
    */
-  ierr = PetscTypeCompare((PetscObject)ts,TSTHETA,&istheta);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ts,TSTHETA,&istheta);CHKERRQ(ierr);
   if (istheta && rd->endpoint) {
     ierr = TSThetaGetTheta(ts,Theta);CHKERRQ(ierr);
   } else {

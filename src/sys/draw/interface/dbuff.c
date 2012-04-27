@@ -28,7 +28,7 @@ PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidIntPointer(yes,2);
-  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) *yes = PETSC_TRUE;
   else            *yes = PETSC_FALSE;
   PetscFunctionReturn(0);

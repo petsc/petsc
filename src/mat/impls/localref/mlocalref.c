@@ -219,7 +219,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = PetscNewLog(B,Mat_LocalRef,&lr);CHKERRQ(ierr);
   B->data = (void*)lr;
 
-  ierr = PetscTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);
   if (islr) {
     Mat_LocalRef *alr = (Mat_LocalRef*)A->data;
     lr->Top = alr->Top;

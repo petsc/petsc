@@ -633,7 +633,7 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(shell,1,viewer,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "PetscShell can only be viewed with an ASCII viewer");
   }

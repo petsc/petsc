@@ -131,7 +131,7 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
 
     /* special case where IS is already block IS of the correct size */
-    ierr = PetscTypeCompare((PetscObject)is_in[i],ISBLOCK,&isblock);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)is_in[i],ISBLOCK,&isblock);CHKERRQ(ierr);
     if (isblock) {
       ierr = ISBlockGetLocalSize(is_in[i],&bbs);CHKERRQ(ierr);
       if (bs == bbs) {

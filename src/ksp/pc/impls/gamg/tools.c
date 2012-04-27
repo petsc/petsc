@@ -233,7 +233,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts( const Mat Gmat,
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare( (PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare( (PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr); 
   ierr = MatGetOwnershipRange( Gmat, &my0, &Iend );    CHKERRQ(ierr);

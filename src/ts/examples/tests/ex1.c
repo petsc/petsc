@@ -216,7 +216,7 @@ int main(int argc,char **argv)
     PetscBool  iseuler;
     ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 
-    ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRQ(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
         fprintf(stdout,"Error in Euler method: 2-norm %G expecting: 0.00257244\n",appctx.norm_2/steps);

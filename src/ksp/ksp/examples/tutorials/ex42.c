@@ -2029,7 +2029,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     PC pc;
     PetscBool same = PETSC_FALSE;
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&same);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&same);CHKERRQ(ierr);
     if (same) {
       ierr = PCMGSetupViaCoarsen(pc,da_Stokes);CHKERRQ(ierr);
     }

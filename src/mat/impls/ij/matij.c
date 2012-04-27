@@ -417,10 +417,10 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix 1 not of type MATIJ: %s", ((PetscObject)A)->type);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  ierr = PetscTypeCompare((PetscObject)B,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix 2 not of type MATIJ: %s", ((PetscObject)B)->type);
   PetscCheckSameComm((PetscObject)A,1,(PetscObject)B,2);
 
@@ -610,7 +610,7 @@ PetscErrorCode MatIJSetMultivalued(Mat A, PetscBool multivalued)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_FALSE,1); 
   ierr = MatStashMPIIJSetMultivalued_Private(pg->stash,multivalued); CHKERRQ(ierr);
@@ -642,7 +642,7 @@ PetscErrorCode MatIJGetMultivalued(Mat A, PetscBool *multivalued)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   PetscValidPointer(multivalued,2);
   *multivalued = pg->multivalued;
@@ -711,7 +711,7 @@ PetscErrorCode MatIJSetEdgesIS(Mat A, IS ix, IS iy)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
 
   PetscValidHeaderSpecific(ix,IS_CLASSID,2);
@@ -782,7 +782,7 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
 
   if(len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Negative edge array length: %D", len);
@@ -828,7 +828,7 @@ static PetscErrorCode MatIJGetAssembledEdges_Private(Mat A, PetscInt *len, Petsc
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
 
   if(!len && !ixidx && !iyidx) PetscFunctionReturn(0);
@@ -907,7 +907,7 @@ PetscErrorCode MatIJGetEdges(Mat A, PetscInt *len, PetscInt **ixidx, PetscInt **
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
 
   if(!len && !ixidx && !iyidx) PetscFunctionReturn(0);
@@ -979,7 +979,7 @@ PetscErrorCode MatIJGetEdgesIS(Mat A, IS *ix, IS *iy)
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   if(ix){
     _ixidx = &ixidx;
@@ -1222,7 +1222,7 @@ PetscErrorCode MatIJGetSupport(Mat A, PetscInt *len, PetscInt **supp)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   if(!len && !supp) PetscFunctionReturn(0);
@@ -1275,7 +1275,7 @@ PetscErrorCode MatIJGetSupportIS(Mat A, IS *supp)
   PetscInt       ilen, *isupp;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   if(!supp) PetscFunctionReturn(0);
@@ -1325,7 +1325,7 @@ PetscErrorCode MatIJGetImage(Mat A, PetscInt *len, PetscInt **image)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   ierr = MatIJLocalizeImage_Private(A); CHKERRQ(ierr);
@@ -1371,7 +1371,7 @@ PetscErrorCode MatIJGetMaxRowSize(Mat A, PetscInt *maxsize)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   *maxsize = pg->maxijlen;
@@ -1405,7 +1405,7 @@ PetscErrorCode MatIJGetMinRowSize(Mat A, PetscInt *minsize)
   PetscBool isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   *minsize = pg->minijlen;
@@ -1472,7 +1472,7 @@ PetscErrorCode MatIJGetImageIS(Mat A, IS *image)
   PetscBool      isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   if(image) {
@@ -1516,7 +1516,7 @@ PetscErrorCode MatIJGetRowSizes(Mat A, MatIJIndexType intype, PetscInt len, cons
   PetscBool      isij;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   ierr = MatIJMap(A,intype,len,inidxi,PETSC_NULL,PETSC_NULL,MATIJ_GLOBAL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,sizes); CHKERRQ(ierr);
@@ -1552,7 +1552,7 @@ PetscErrorCode MatIJGetSupportSize(Mat A, PetscInt *size)
   Mat_IJ *pg = (Mat_IJ*)A->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   PetscValidIntPointer(size,2);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
@@ -1590,7 +1590,7 @@ PetscErrorCode MatIJGetImageSize(Mat A, PetscInt *size)
   Mat_IJ *pg = (Mat_IJ*)A->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   PetscValidIntPointer(size,2);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
@@ -2005,10 +2005,10 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij); CHKERRQ(ierr);
   if(!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
-  ierr = PetscTypeCompare((PetscObject)v,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)v)->type_name);
   }

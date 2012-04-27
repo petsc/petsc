@@ -574,7 +574,7 @@ PetscErrorCode KSPView_DGMRES (KSP ksp,PetscViewer viewer) {
     PetscFunctionBegin;
     ierr = KSPView_GMRES (ksp,viewer);
     CHKERRQ(ierr);
-    ierr = PetscTypeCompare ( (PetscObject) viewer,PETSCVIEWERASCII,&iascii);
+    ierr = PetscObjectTypeCompare ( (PetscObject) viewer,PETSCVIEWERASCII,&iascii);
     CHKERRQ(ierr);
     if (iascii) {
         if (dgmres->force)

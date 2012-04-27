@@ -27,9 +27,9 @@ int main(int argc,char **args)
   
   ierr = MatGetType(C,&type);CHKERRQ(ierr);
   if (size == 1){
-    ierr = PetscTypeCompare((PetscObject)C,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)C,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
   } else {
-    ierr = PetscTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocation(C,3,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(C,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);

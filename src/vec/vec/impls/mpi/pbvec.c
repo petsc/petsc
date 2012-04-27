@@ -485,7 +485,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)vv,VECMPI,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)vv,VECMPI,&flg);CHKERRQ(ierr);
   /* if already fully existant VECMPI then basically destroy it and rebuild with ghosting */
   if (flg) {
     PetscInt               n,N;

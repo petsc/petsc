@@ -414,7 +414,7 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
   SNES_MS          *ms = (SNES_MS*)snes->data;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     SNESMSTableau tab = ms->tableau;
     ierr = PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab?tab->name:"not yet set");CHKERRQ(ierr);

@@ -569,7 +569,7 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  l - the level (0 is coarsest) this is to be used for
+.  l - the level (0 is coarsest) this is to be used for (do not supply the finest level)
 -  c - the space
 
    Level: advanced

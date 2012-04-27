@@ -785,7 +785,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  if (PetscTypeCompare(pc,PCMG)) {
+  if (PetscObjectTypeCompare(pc,PCMG)) {
 
     ierr = SLESSetOperators(finegrid->sles,finegrid->J,finegrid->J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 

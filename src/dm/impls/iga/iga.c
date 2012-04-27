@@ -28,7 +28,7 @@ PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
 
   if (iascii){
     ierr = PetscViewerASCIIPrintf(viewer, "IGA:\n");CHKERRQ(ierr);

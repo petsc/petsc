@@ -76,7 +76,7 @@ PetscErrorCode  ISSetType(IS is, const ISType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (!ISRegisterAllCalled) {ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);}

@@ -34,7 +34,7 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (!AORegisterAllCalled) {ierr = AORegisterAll(PETSC_NULL);CHKERRQ(ierr);}

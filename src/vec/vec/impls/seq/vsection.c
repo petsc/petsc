@@ -610,7 +610,7 @@ PetscErrorCode  PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionBegin;
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
     if (s->numFields) {
       ierr = PetscViewerASCIIPrintf(viewer, "PetscSection with %d fields\n", s->numFields);CHKERRQ(ierr);
@@ -703,7 +703,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject) v)->comm, &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
     const char *name;
 

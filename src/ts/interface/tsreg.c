@@ -49,7 +49,7 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFListFind( TSList,((PetscObject)ts)->comm, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);

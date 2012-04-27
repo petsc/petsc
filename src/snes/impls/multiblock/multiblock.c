@@ -122,7 +122,7 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
     if (snes->dm) {
       PetscBool dmcomposite;
 
-      ierr = PetscTypeCompare((PetscObject) snes->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject) snes->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
       if (dmcomposite) {
         PetscInt nDM;
         IS      *fields;
@@ -467,7 +467,7 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Multiblock with %s composition: total blocks = %D, blocksize = %D\n", PCCompositeTypes[mb->type], mb->numBlocks, mb->bs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following SNES objects:\n");CHKERRQ(ierr);

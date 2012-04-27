@@ -141,8 +141,8 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat F,Mat A,const MatFactorInfo *info
   }
 
   /* copy A to Spooles' InpMtx object */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isMPIAIJ);CHKERRQ(ierr);
   if (isSeqAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;

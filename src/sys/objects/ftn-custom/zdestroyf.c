@@ -12,7 +12,7 @@ void PETSC_STDCALL petsctypecompare_(PetscObject *obj,CHAR type_name PETSC_MIXED
 {
   char *c1;
   FIXCHAR(type_name,len,c1);
-  *ierr = PetscTypeCompare(*obj,c1,same);
+  *ierr = PetscObjectTypeCompare(*obj,c1,same);
   FREECHAR(type_name,c1);
 }
 

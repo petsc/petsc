@@ -55,7 +55,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
   if (pc->setupcalled != 0){
     try {
@@ -105,8 +105,8 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
   CUSPARRAY       *xarray,*yarray;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
   if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
   if (!ainv->AINVCUSP) {
     ierr = PCSetUp_AINVCUSP(pc);CHKERRQ(ierr);

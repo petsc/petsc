@@ -398,7 +398,7 @@ PetscErrorCode  DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
   ierr =  PCMGSetType(pc,PC_MG_FULL);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
@@ -412,9 +412,9 @@ PetscErrorCode  DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
       */
-      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)dmmg[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)dmmg[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
       if (isshell || ismf || ismffd) {
         PC  lpc;
         ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
@@ -497,7 +497,7 @@ PetscErrorCode  DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscError
 
   /* evalute matrix on each level */
   ierr = KSPGetPC(dmmg[nlevels-1]->ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
   }
@@ -563,8 +563,8 @@ PetscErrorCode  DMMGView(DMMG *dmmg,PetscViewer viewer)
   ierr = MPI_Comm_compare(comm,dmmg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the DMMG and the PetscViewer");
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
     for (i=0; i<nlevels; i++) {
       ierr = MatView(dmmg[i]->J,viewer);CHKERRQ(ierr);
@@ -646,7 +646,7 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
     ierr = KSPSetNullSpace(dmmg[i]->ksp,nullsp);CHKERRQ(ierr);
     for (j=i; j<nlevels; j++) {
       ierr = KSPGetPC(dmmg[j]->ksp,&pc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
       if (ismg) {
         ierr = PCMGGetSmoother(pc,i,&iksp);CHKERRQ(ierr);
         ierr = KSPSetNullSpace(iksp, nullsp);CHKERRQ(ierr);
@@ -660,11 +660,11 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
   /* make all the coarse grid solvers have LU shift since they are singular */
   for (i=0; i<nlevels; i++) {
     ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
     if (ismg) {
       ierr = PCMGGetSmoother(pc,0,&iksp);CHKERRQ(ierr);
       ierr = KSPGetPC(iksp,&ipc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)ipc,PCREDUNDANT,&isred);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)ipc,PCREDUNDANT,&isred);CHKERRQ(ierr);
       if (isred) {
         KSP iksp;
         ierr = PCRedundantGetKSP(ipc,&iksp);CHKERRQ(ierr);

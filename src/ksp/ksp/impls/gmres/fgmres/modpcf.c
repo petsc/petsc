@@ -117,7 +117,7 @@ PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its
   PetscFunctionBegin;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
   if (isksp) { 
     ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
   

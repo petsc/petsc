@@ -16,7 +16,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   PetscBool       flg;
   
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
 
   pcis->pure_neumann = matis->pure_neumann;

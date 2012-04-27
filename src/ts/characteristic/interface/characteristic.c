@@ -33,7 +33,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (!iascii) {
     if (c->ops->view) {
       ierr = (*c->ops->view)(c, viewer);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
   PetscValidCharPointer(type, 2);
 
-  ierr = PetscTypeCompare((PetscObject) c, type, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) c, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (c->data) {

@@ -238,7 +238,7 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%G, Alpha_f=%G, Gamma=%G\n",th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
   }
@@ -413,7 +413,7 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
 #if PETSC_USE_DEBUG
   {
     PetscBool match;
-    ierr = PetscTypeCompare((PetscObject)ts,TSALPHA,&match);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ts,TSALPHA,&match);CHKERRQ(ierr);
     if (!match) SETERRQ(((PetscObject)ts)->comm,1,"Only for TSALPHA");
   }
 #endif

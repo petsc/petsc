@@ -509,13 +509,13 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
       PC        pc;
       PetscBool flg;
       ierr = KSPGetPC(snes->ksp,&pc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCFIELDSPLIT,&flg);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&flg);CHKERRQ(ierr);
       if (flg) {
         KSP      *subksps;
         ierr = PCFieldSplitGetSubKSP(pc,PETSC_NULL,&subksps);CHKERRQ(ierr);
         ierr = KSPGetPC(subksps[0],&pc);CHKERRQ(ierr);
         ierr = PetscFree(subksps);CHKERRQ(ierr);
-        ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&flg);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&flg);CHKERRQ(ierr);
         if (flg) {
           PetscInt       n,N = 101*101,j,cnts[3] = {0,0,0};
           const PetscInt *ii;

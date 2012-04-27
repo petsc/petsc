@@ -57,7 +57,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
   ierr = MPI_Comm_size( wcomm, &npe );   CHKERRQ(ierr);
 
   /* get submatrices */
-  ierr = PetscTypeCompare( (PetscObject)Gmat, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare( (PetscObject)Gmat, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
   if (isMPI) {
     mpimat = (Mat_MPIAIJ*)Gmat->data;
     matA = (Mat_SeqAIJ*)mpimat->A->data;
@@ -68,7 +68,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
     assert( matB->compressedrow.use );
   } else {
     PetscBool      isAIJ;
-    ierr = PetscTypeCompare( (PetscObject)Gmat, MATSEQAIJ, &isAIJ ); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare( (PetscObject)Gmat, MATSEQAIJ, &isAIJ ); CHKERRQ(ierr);
     assert(isAIJ);
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
@@ -385,7 +385,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = MPI_Comm_rank(((PetscObject)coarse)->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

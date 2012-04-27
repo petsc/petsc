@@ -73,7 +73,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(type,2);
   CHKMEMQ;
-  ierr = PetscTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /* cleanup any old type that may be there */

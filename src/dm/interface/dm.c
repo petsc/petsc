@@ -1882,7 +1882,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
@@ -1964,7 +1964,7 @@ PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidType(dm,1);
   PetscValidPointer(M,3);
-  ierr = PetscTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
   {
     PetscErrorCode (*conv)(DM, const DMType, DM *) = PETSC_NULL;

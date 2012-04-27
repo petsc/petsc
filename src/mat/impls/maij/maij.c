@@ -45,8 +45,8 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
   PetscBool      ismpimaij,isseqmaij;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A,MATMPIMAIJ,&ismpimaij);CHKERRQ(ierr);  
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQMAIJ,&isseqmaij);CHKERRQ(ierr);  
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIMAIJ,&ismpimaij);CHKERRQ(ierr);  
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQMAIJ,&isseqmaij);CHKERRQ(ierr);  
   if (ismpimaij) {
     Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
 

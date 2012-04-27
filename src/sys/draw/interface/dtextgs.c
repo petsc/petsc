@@ -31,7 +31,7 @@ PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->stringgetsize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw object %s does not support getting string size",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->stringgetsize)(draw,width,height);CHKERRQ(ierr);

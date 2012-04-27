@@ -60,7 +60,7 @@ PetscErrorCode  PCSetType(PC pc,const PCType type)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFListFind(PCList,((PetscObject)pc)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);

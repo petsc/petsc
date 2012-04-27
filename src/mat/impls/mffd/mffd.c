@@ -114,11 +114,11 @@ PetscErrorCode  MatMFFDSetType(Mat mat,const MatMFFDType ftype)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(ftype,2);
 
-  ierr = PetscTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
   if (!match) PetscFunctionReturn(0);
 
   /* already set, so just return */
-  ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /* destroy the old one if it exists */
@@ -276,7 +276,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   const char*    prefix;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix-free approximation:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
@@ -876,7 +876,7 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
   PetscBool      match;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
 
   *h = ctx->currenth;
@@ -1118,7 +1118,7 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
   PetscBool      match;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)J,MATMFFD,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)J,MATMFFD,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(((PetscObject)J)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;

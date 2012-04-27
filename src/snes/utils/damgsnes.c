@@ -62,7 +62,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
   }
@@ -803,9 +803,9 @@ PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,v
       ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
       ierr = PCMGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);  
       ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);
       if (flg1 || flg2 || flg3) {
         ierr = KSPSetType(dmmg[i]->ksp,KSPPREONLY);CHKERRQ(ierr);
         ierr = PetscObjectGetComm((PetscObject) pc,&comm);CHKERRQ(ierr);

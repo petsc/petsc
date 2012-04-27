@@ -68,7 +68,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;
@@ -493,7 +493,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)is,ISSTRIDE,&stride);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&stride);CHKERRQ(ierr);
   if (size == 1 && stride) { /* should handle parallel ISStride also */
     ierr = ISStrideGetInfo(is,&first,&step);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,isout);CHKERRQ(ierr);
