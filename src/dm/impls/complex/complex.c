@@ -3954,6 +3954,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 }
 #endif
 
+#ifdef PETSC_HAVE_CTETGEN
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGenerate_CTetgen"
 PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
@@ -4447,6 +4448,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
   ierr = PLCDestroy(&out);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGenerate"
@@ -4498,7 +4500,11 @@ PetscErrorCode DMComplexGenerate(DM boundary, const char name[], PetscBool inter
     break;
   case 2:
     if (!name || isCTetgen) {
+#ifdef PETSC_HAVE_CTETGEN
       ierr = DMComplexGenerate_CTetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
+#else
+      SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --with-ctetgen.");
+#endif
     } else if (isTetgen) {
 #ifdef PETSC_HAVE_TETGEN
       ierr = DMComplexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
@@ -4580,6 +4586,7 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
     break;
   case 3:
     if (!name || isCTetgen) {
+#ifdef PETSC_HAVE_CTETGEN
       PetscReal *maxVolumes;
 
       ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscReal), &maxVolumes);CHKERRQ(ierr);
@@ -4587,6 +4594,9 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
         maxVolumes[c] = refinementLimit;
       }
       ierr = DMComplexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#else
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --with-ctetgen.");
+#endif
     } else if (isTetgen) {
 #ifdef PETSC_HAVE_TETGEN
       double *maxVolumes;

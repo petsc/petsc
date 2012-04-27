@@ -38,6 +38,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-iphone=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone version of PETSc'))
+    help.addArgument('CTetgen', '-with-ctetgen=<bool>',           nargs.ArgBool(None, 0, 'Enable CTetgen support'))
     return
 
   def setupDependencies(self, framework):
@@ -214,10 +215,12 @@ class Configure(config.base.Configure):
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
       self.addDefine('USE_SOCKET_VIEWER','1')
       if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
-        self.addDefine('HAVE_SO_REUSEADDR','1')      
+        self.addDefine('HAVE_SO_REUSEADDR','1')
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
+    if self.framework.argDB['with-ctetgen']:
+      self.addDefine('HAVE_CTETGEN', 1)
     self.framework.packages.reverse()
     includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     libs = []
