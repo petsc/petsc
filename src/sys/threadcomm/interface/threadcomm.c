@@ -62,7 +62,7 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   void*          ptr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_get_attr(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
   *tcommp = (PetscThreadComm)ptr;
   PetscFunctionReturn(0);
@@ -577,12 +577,12 @@ PetscErrorCode PetscThreadCommInitialize(void)
 
   PetscFunctionBegin;
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_create_keyval(MPI_NULL_COPY_FN,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
   }
   ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_set_attr(PETSC_COMM_WORLD,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+  ierr = MPI_Attr_put(PETSC_COMM_WORLD,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetType(tcomm,PTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
