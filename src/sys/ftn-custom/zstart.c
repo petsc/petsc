@@ -120,9 +120,11 @@ extern void  MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
+EXTERN_C_BEGIN
 void  MPIAPI PetscSum_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 void  MPIAPI PetscMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 void  MPIAPI PetscMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+EXTERN_C_END
 #endif
 
 extern  MPI_Op PetscMaxSum_Op;
